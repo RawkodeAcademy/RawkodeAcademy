@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { ApolloServer } from "apollo-server";
-import { getSchema } from "./schema";
+import { getSchema } from "./schema.js";
 
 async function bootstrap() {
   const server = new ApolloServer({

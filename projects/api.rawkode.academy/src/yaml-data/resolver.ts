@@ -1,12 +1,15 @@
-import { default as fs } from "fs";
-import { default as path } from "path";
-import { getSchema } from "../schema";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { GraphQLObjectType } from "graphql";
 import { load } from "js-yaml";
 import { Query, Resolver, ClassType } from "type-graphql";
-import { readFile } from "fs/promises";
+import { readdir } from "node:fs";
+import { readFile } from "node:fs/promises";
 
-const dataDirectory = path.resolve(__dirname, "../../../../../data");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const dataDirectory = resolve(__dirname, "../../../../../data");
 
 export function createYamlResolver<T extends ClassType>(
   objectTypeCls: T,
@@ -14,43 +17,54 @@ export function createYamlResolver<T extends ClassType>(
   plural: string
 ) {
   @Resolver()
-  abstract class YamlResolver {
+  class YamlResolver {
+    protected typeName: string;
+    protected typePlural: string;
+    protected dataPath: string;
     protected data: T[];
+    protected initialized: boolean;
 
-    constructor() {
-      this.loadData().then((data) => (this.data = data));
+    protected constructor() {
+      this.initialized = false;
+
+      this.typeName = name.toLowerCase();
+      this.typePlural = plural.toLowerCase();
+      this.dataPath = dataDirectory + "/" + this.typePlural;
     }
 
-    async loadData() {
+    protected async loadData(): Promise<T[]> {
       const data: T[] = [];
+      const dataPath = this.dataPath;
 
-      const schema = await getSchema();
-
-      const schemaType = schema.getType(name) as GraphQLObjectType;
-      const directoryPath = dataDirectory + "/" + schemaType.extensions.plural;
-
-      console.log(`Checking for data in ${directoryPath}`);
-
-      fs.readdir(directoryPath, function (err, files) {
+      await readdir(dataPath, async function (err, files) {
         if (err) {
           return console.log("Unable to scan directory: " + err);
         }
 
-        files.forEach(async function (file) {
-          const filepath = path.join(directoryPath, file);
+        await files.forEach(async function (file) {
+          const filepath = join(dataPath, file);
           const yaml = load(await readFile(filepath, "utf8")) as T;
           // yaml.id = file.replace(".yaml", "");
 
+          console.log(`Adding some data`);
           data.push(yaml);
         });
       });
 
+      this.data = data;
+      this.initialized = true;
+
+      console.log(`Loaded`);
+      console.log(data);
+
       return data;
     }
 
-    @Query((type) => [objectTypeCls], { name: `getAll${plural}` })
-    async getAll(): Promise<T[]> {
-      await this.loadData();
+    @Query((type) => [objectTypeCls], { name: `get${plural}` })
+    public async getAll(): Promise<T[]> {
+      if (this.initialized === false) {
+        return await this.loadData();
+      }
 
       return this.data;
     }

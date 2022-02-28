@@ -1,11 +1,10 @@
 import { ID, Field, ObjectType, Extensions } from "type-graphql";
-import { SocialAccounts } from "./socialAccounts";
+import { SocialAccounts } from "./socialAccounts.js";
 
 @ObjectType({
   description:
     "A person object, used to represent guests on the Rawkode Academy YouTube channel",
 })
-@Extensions({ plural: "people" })
 export class Person {
   @Field({ description: "The person's full name" })
   name: string;
