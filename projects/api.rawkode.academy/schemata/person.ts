@@ -7,9 +7,6 @@ import { SocialAccounts } from "./socialAccounts";
 })
 @Extensions({ plural: "people" })
 export class Person {
-  @Field((type) => ID)
-  id: string;
-
   @Field({ description: "The person's full name" })
   name: string;
 

@@ -5,7 +5,7 @@ import { Person } from "../schemata/person";
 
 export const getSchema = async () =>
   await buildSchema({
-    resolvers: [createYamlResolver("people", Person)],
+    resolvers: [createYamlResolver(Person, "Person", "people")],
     emitSchemaFile: {
       path: __dirname + "/../generated/schema.graphql",
       commentDescriptions: true,

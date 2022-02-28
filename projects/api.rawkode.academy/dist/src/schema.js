@@ -6,7 +6,7 @@ const type_graphql_1 = require("type-graphql");
 const resolver_1 = require("./yaml-data/resolver");
 const person_1 = require("../schemata/person");
 const getSchema = async () => await (0, type_graphql_1.buildSchema)({
-    resolvers: [(0, resolver_1.createYamlResolver)("people", person_1.Person)],
+    resolvers: [(0, resolver_1.createYamlResolver)(person_1.Person, "Person", "people")],
     emitSchemaFile: {
         path: __dirname + "/../generated/schema.graphql",
         commentDescriptions: true,

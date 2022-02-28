@@ -15,10 +15,6 @@ const socialAccounts_1 = require("./socialAccounts");
 let Person = class Person {
 };
 __decorate([
-    (0, type_graphql_1.Field)((type) => type_graphql_1.ID),
-    __metadata("design:type", String)
-], Person.prototype, "id", void 0);
-__decorate([
     (0, type_graphql_1.Field)({ description: "The person's full name" }),
     __metadata("design:type", String)
 ], Person.prototype, "name", void 0);
