@@ -1,5 +1,5 @@
 import { ID, Field, ObjectType } from "type-graphql";
-import { HasID } from "@schemata/hasId.js";
+import { HasID } from "#schemata/hasId.js";
 import { SocialAccounts } from "./socialAccounts.js";
 
 @ObjectType({

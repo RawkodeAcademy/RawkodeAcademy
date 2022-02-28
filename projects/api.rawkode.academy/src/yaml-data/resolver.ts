@@ -5,7 +5,7 @@ import { Query, Resolver, ClassType } from "type-graphql";
 import { readdir } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
-import { HasID } from "@schemata/hasId.js";
+import { HasID } from "#schemata/hasId.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,9 +44,7 @@ export function createYamlResolver<T extends ClassType>(
         const filepath = join(dataPath, file);
         const yaml: T = load(await readFile(filepath, "utf8")) as T;
 
-        if (yaml instanceof HasID) {
-          yaml.id = file.replace(".yaml", "").replace(".yml", "");
-        }
+        yaml["id"] = file.replace(".yaml", "").replace(".yml", "");
 
         data.push(yaml);
       }
