@@ -6,6 +6,9 @@ import { SocialAccounts } from "./socialAccounts.js";
     "A person object, used to represent guests on the Rawkode Academy YouTube channel",
 })
 export class Person {
+  @Field(() => ID)
+  id: string;
+
   @Field({ description: "The person's full name" })
   name: string;
 

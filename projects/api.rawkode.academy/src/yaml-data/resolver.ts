@@ -1,10 +1,10 @@
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { GraphQLObjectType } from "graphql";
 import { load } from "js-yaml";
 import { Query, Resolver, ClassType } from "type-graphql";
 import { readdir } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { promisify } from "node:util";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,20 +36,16 @@ export function createYamlResolver<T extends ClassType>(
       const data: T[] = [];
       const dataPath = this.dataPath;
 
-      await readdir(dataPath, async function (err, files) {
-        if (err) {
-          return console.log("Unable to scan directory: " + err);
-        }
+      const awaitReaddir = promisify(readdir);
+      const files = await awaitReaddir(dataPath);
 
-        await files.forEach(async function (file) {
-          const filepath = join(dataPath, file);
-          const yaml = load(await readFile(filepath, "utf8")) as T;
-          // yaml.id = file.replace(".yaml", "");
+      for (const file of files) {
+        const filepath = join(dataPath, file);
+        const yaml: T = load(await readFile(filepath, "utf8")) as T;
+        // yaml.id = file.replace(".yaml", "");
 
-          console.log(`Adding some data`);
-          data.push(yaml);
-        });
-      });
+        data.push(yaml);
+      }
 
       this.data = data;
       this.initialized = true;
