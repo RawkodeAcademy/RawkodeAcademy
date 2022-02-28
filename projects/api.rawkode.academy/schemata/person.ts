@@ -1,11 +1,12 @@
-import { ID, Field, ObjectType, Extensions } from "type-graphql";
+import { ID, Field, ObjectType } from "type-graphql";
+import { HasID } from "@schemata/hasId.js";
 import { SocialAccounts } from "./socialAccounts.js";
 
 @ObjectType({
   description:
     "A person object, used to represent guests on the Rawkode Academy YouTube channel",
 })
-export class Person {
+export class Person extends HasID {
   @Field(() => ID)
   id: string;
 
