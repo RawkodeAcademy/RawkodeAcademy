@@ -9,8 +9,8 @@ _schema: {
 		supportedExtensions: ["yaml", "yml", "md", "mdx"]
 	}
 
-	name:  string @template("Your Name")
-	email: string @template("me@example.com")
+	name:   string @template("Your Name")
+	email?: string @template("me@example.com")
 
 	github?:  string
 	twitter?: string
