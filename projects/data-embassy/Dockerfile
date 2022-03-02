@@ -12,5 +12,5 @@ RUN mkdir -p ${CUEBLOX_ROOT}
 WORKDIR ${CUEBLOX_ROOT}
 COPY ${PROJECT_DIR}/blox.cue ${CUEBLOX_ROOT}/blox.cue
 
-ENTRYPOINT [ "blox" ]
+ENTRYPOINT [ "/blox" ]
 CMD [ "serve" ]
