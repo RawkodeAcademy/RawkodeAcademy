@@ -1,4 +1,4 @@
-FROM ghcr.io/cueblox/blox:v0.7.4
+FROM ghcr.io/cueblox/blox:v0.7.5
 
 ARG PROJECT_DIR
 ARG DATA_DIR
