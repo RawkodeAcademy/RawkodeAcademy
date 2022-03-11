@@ -11,19 +11,22 @@ _schema: {
 		supportedExtensions: ["yaml", "yml", "md", "mdx"]
 	}
 
-	title:    string
-	show:     string @relationship(Show)
-	datetime: time.Time()
+	title:       string
+	show:        string @relationship(Show)
+	publishedAt: time.Time()
 
 	guests?: [...string] @relationship(Person)
 	technologies?: [...string] @relationship(Technology)
 
-	tags: [...string]
+	sponsored?: bool | *false
+
+	tags?: [...string]
+	links?: [...string]
 
 	chapters?: [...#Chapter]
 
-	youtubeCategoryId: int
-	youtubeId?:        string
+	youtubeCategory: int
+	youtubeId?:      string
 
 	body?: string
 }
