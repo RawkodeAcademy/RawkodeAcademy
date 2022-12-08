@@ -1,6 +1,6 @@
 ---
 title: "CommitOps"
-layout: "../../../layouts/base.astro"
+layout: "../../../layouts/page.astro"
 breadcrumbs:
   - title: "Shows"
     href: "/shows"
