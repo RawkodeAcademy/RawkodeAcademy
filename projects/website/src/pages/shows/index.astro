@@ -1,15 +1,36 @@
 ---
 import Layout from '../../layouts/page.astro';
 
-const shows = await Astro.glob('./*/index.md');
----
+interface Show {
+  name: string;
+  id: string;
+}
 
+const response = await fetch("https://api.rawkode.academy/v1/graphql",
+  {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      query: `
+        query MyQuery {
+            getShows {
+              id
+              name
+            }
+          }
+        `
+    }),
+  });
+
+const json = await response.json();
+const shows = json.data.getShows;
+---
 <Layout title="Shows">
   <main>
     <div>
-      {shows.map((show) => (
+      {shows.map((show: Show) => (
         <ul>
-          <a href={show.url}><li>{show.frontmatter.title}</li></a>
+          <a href={`/shows/${show.id}`}><li>{show.name}</li></a>
         </ul>
       ))}
       </div>
