@@ -2,8 +2,6 @@ package schemata
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Episode struct {
@@ -20,8 +18,6 @@ type Episode struct {
 	links []string
 
 	chapters []Chapter
-
-	gorm.Model
 }
 
 type Chapter struct {

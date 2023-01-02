@@ -1,9 +1,5 @@
 package schemata
 
-import (
-	"gorm.io/gorm"
-)
-
 type Person struct {
 	Id            string `gorm:"->;type:GENERATED ALWAYS AS (githubHandle) STORED; primaryKey;"`
 	Name          string
@@ -13,6 +9,4 @@ type Person struct {
 	YouTubeHandle string `gorm:"uniqueIndex; check:valid_youtube_handle, OR (char_length(\"youtubeHandle\") >= 3 AND char_length(\"youtubeHandle\") <= 30)"`
 	GitHubHandle  string `gorm:"uniqueIndex"`
 	Website       string `gorm:"uniqueIndex"`
-
-	gorm.Model
 }
