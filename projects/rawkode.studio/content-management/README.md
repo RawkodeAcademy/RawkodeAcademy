@@ -1,5 +1,17 @@
 # Content Management
 
+The content management system within the Rawkode Studio project is responsible for all data until it hits a consuming service. This includes:
+
+- Data
+  - Described as HCL in [data](./data)
+- Database
+  - Currently PostgreSQL on Neon
+- CLI
+  - Linting and validation
+  - Sync (two-way) to database
+- API
+  - Exposed via Hasura
+
 ## Data
 
 The data resides in [data](data). The data is split into four directories:
