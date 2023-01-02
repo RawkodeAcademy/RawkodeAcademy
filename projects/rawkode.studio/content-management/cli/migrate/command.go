@@ -19,7 +19,7 @@ var Command = &cobra.Command{
 		dsn := os.Getenv("DATABASE_URL")
 		db, _ := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
-		db.AutoMigrate(&schemata.Person{})
+		db.AutoMigrate(&schemata.Person{}, &schemata.Show{}, &schemata.Technology{}, &schemata.Episode{})
 
 		fmt.Println("Migrate")
 	},
