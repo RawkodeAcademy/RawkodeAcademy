@@ -18,6 +18,8 @@ type Episode struct {
 	links []string
 
 	chapters []Chapter
+
+	Guests []Person `gorm:"many2many:episode_guests;"`
 }
 
 type Chapter struct {

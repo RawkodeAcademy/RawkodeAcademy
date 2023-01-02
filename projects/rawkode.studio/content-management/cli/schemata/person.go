@@ -9,4 +9,7 @@ type Person struct {
 	YouTubeHandle string `gorm:"uniqueIndex; check:valid_youtube_handle, OR (char_length(\"youtubeHandle\") >= 3 AND char_length(\"youtubeHandle\") <= 30)"`
 	GitHubHandle  string `gorm:"uniqueIndex"`
 	Website       string `gorm:"uniqueIndex"`
+
+	Shows    []Show    `gorm:"many2many:show_hosts;"`
+	Episodes []Episode `gorm:"many2many:episode_guests;"`
 }
