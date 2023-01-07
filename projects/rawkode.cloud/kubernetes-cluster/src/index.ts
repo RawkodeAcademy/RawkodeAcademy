@@ -1,3 +1,4 @@
+import { secret } from "@pulumi/pulumi";
 import { Infrastructure } from "./infrastructure";
 import { Platform } from "./platform";
 
@@ -9,7 +10,9 @@ const platform = new Platform("platform", {
 
 import {
 	CertManager,
+	Chappaai,
 	CloudNativePG,
+	ExternalSecrets,
 	FluxCD,
 	PulumiOperator,
 	TemporalOperator,
@@ -17,7 +20,9 @@ import {
 
 platform
 	.addComponent(CertManager)
+	.addComponent(Chappaai)
 	.addComponent(CloudNativePG)
+	.addComponent(ExternalSecrets)
 	.addComponent(FluxCD)
 	.addComponent(PulumiOperator)
 	.addComponent(TemporalOperator)
@@ -25,4 +30,7 @@ platform
 		repository: "oci://ghcr.io/rawkodeacademy/studio-deploy",
 		directory: ".",
 		environment: {},
+		secrets: {
+			dopplerToken: secret(process.env.STUDIO_DOPPLER_SERVICE_TOKEN || ""),
+		},
 	});
