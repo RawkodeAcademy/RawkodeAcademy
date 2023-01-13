@@ -12,6 +12,8 @@ export class RawkodeProject extends pulumi.ComponentResource {
 	private readonly controlPlane: GcpControlPlane;
 	private readonly serviceAccount: gcp.serviceaccount.Account;
 	private key?: gcp.serviceaccount.Key;
+	private pulumiSecretsManagerCreateRoleBinding?: gcp.projects.IAMBinding;
+	private pulumiSecretsManagerAccessRoleBinding?: gcp.projects.IAMBinding;
 
 	constructor(
 		name: string,
@@ -57,34 +59,36 @@ export class RawkodeProject extends pulumi.ComponentResource {
 			);
 		}
 
-		// this.pulumiBinding = new gcp.projects.IAMBinding(
-		// 	this.name,
-		// 	{
-		// 		project: this.controlPlane.gcpProject,
-		// 		members: [
-		// 			pulumi.interpolate`serviceAccount:${this.serviceAccount.email}`,
-		// 		],
-		// 		role: this.controlPlane.getPulumiProjectRole().name,
-		// 	},
-		// 	this.resourceOptions,
-		// );
+		const pulumiIntegration = this.controlPlane.getPulumiIntegration();
 
-		// this.pulumiCondtionalBinding = new gcp.projects.IAMBinding(
-		// 	`${this.name}-conditional`,
-		// 	{
-		// 		project: this.controlPlane.gcpProject,
-		// 		members: [
-		// 			pulumi.interpolate`serviceAccount:${this.serviceAccount.email}`,
-		// 		],
-		// 		role: this.controlPlane.getPulumiProjectConditionalRole().name,
-		// 		condition: {
-		// 			title: "own-resources",
-		// 			description: "Only allow access to this projects own resources",
-		// 			expression: `resource.matchTag('managedBy', 'pulumi/${this.name}')`,
-		// 		},
-		// 	},
-		// 	this.resourceOptions,
-		// );
+		this.pulumiSecretsManagerCreateRoleBinding = new gcp.projects.IAMBinding(
+			`${this.name}-pulumi-secrets-manager-create`,
+			{
+				project: this.controlPlane.gcpProject,
+				members: [
+					pulumi.interpolate`serviceAccount:${this.serviceAccount.email}`,
+				],
+				role: pulumiIntegration.secretsManagerCreateRole.id,
+			},
+			this.resourceOptions,
+		);
+
+		this.pulumiSecretsManagerAccessRoleBinding = new gcp.projects.IAMBinding(
+			`${this.name}-pulumi-secrets-manager-access`,
+			{
+				project: this.controlPlane.gcpProject,
+				members: [
+					pulumi.interpolate`serviceAccount:${this.serviceAccount.email}`,
+				],
+				role: pulumiIntegration.secretsManagerAccessRole.id,
+				condition: {
+					title: "own-resources",
+					description: "Only allow access to this projects own resources",
+					expression: `resource.matchTag('managedBy', 'pulumi/${this.name}')`,
+				},
+			},
+			this.resourceOptions,
+		);
 
 		return this;
 	}

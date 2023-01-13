@@ -9,7 +9,7 @@ interface Args {
 
 export class GcpControlPlane extends pulumi.ComponentResource {
 	public readonly gcpProject: string;
-	private pulumiIntegration?: PulumiIntegration;
+	public pulumiIntegration?: PulumiIntegration;
 
 	constructor(
 		name: string,
@@ -41,12 +41,20 @@ export class GcpControlPlane extends pulumi.ComponentResource {
 		return this.pulumiIntegration !== undefined;
 	}
 
+	getPulumiIntegration(): PulumiIntegration {
+		if (!this.pulumiIntegration) {
+			throw new Error("PulumiIntegration not enabled");
+		}
+
+		return this.pulumiIntegration;
+	}
+
 	enablePulumiIntegration() {
 		if (this.pulumiIntegration) {
 			throw new Error("Pulumi project support has already been enabled.");
 		}
 
-		this.pulumiIntegration = new PulumiIntegration();
+		this.pulumiIntegration = new PulumiIntegration(this);
 
 		// this.pulumiProjectRole = new gcp.projects.IAMCustomRole(
 		// 	"pulumi-project-role",
@@ -57,7 +65,7 @@ export class GcpControlPlane extends pulumi.ComponentResource {
 		// 		project: this.gcpProject,
 		// 		permissions: [
 		// 			// Secrets Manager for getting and storing secrets
-		// 			"secretmanager.secrets.create",
+		// 			,
 		// 			// Storage for state
 		// 			"storage.objects.create",
 		// 		],
@@ -77,8 +85,7 @@ export class GcpControlPlane extends pulumi.ComponentResource {
 		// 		project: this.gcpProject,
 		// 		permissions: [
 		// 			// Secrets Manager for getting and storing secrets
-		// 			"secretmanager.secrets.get",
-		// 			"secretmanager.versions.access",
+
 		// 			// Storage for state
 		// 			"storage.objects.get",
 		// 			// Delete for removing the lockfile
