@@ -1,14 +1,15 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as gcp from "@pulumi/gcp";
 import { PulumiIntegration } from "./integrations";
 import { RawkodeProject } from "./project";
 
 interface Args {
 	gcpProject: string;
+	gcpRegion: string;
 }
 
 export class GcpControlPlane extends pulumi.ComponentResource {
 	public readonly gcpProject: string;
+	public readonly gcpRegion: string;
 	public pulumiIntegration?: PulumiIntegration;
 
 	constructor(
@@ -19,6 +20,7 @@ export class GcpControlPlane extends pulumi.ComponentResource {
 		super("rawkode:ControlPlane", name, {}, opts);
 
 		this.gcpProject = args.gcpProject;
+		this.gcpRegion = args.gcpRegion;
 	}
 
 	// getPulumiProjectRole(): gcp.projects.IAMCustomRole {

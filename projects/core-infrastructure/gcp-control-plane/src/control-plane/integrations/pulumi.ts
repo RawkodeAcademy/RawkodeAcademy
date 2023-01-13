@@ -1,10 +1,14 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
-import { GcpControlPlane } from "..";
+import type { GcpControlPlane } from "..";
 
 export class PulumiIntegration extends pulumi.ComponentResource {
-	public readonly secretsManagerCreateRole: gcp.projects.IAMCustomRole;
-	public readonly secretsManagerAccessRole: gcp.projects.IAMCustomRole;
+	public readonly bucket: gcp.storage.Bucket;
+	public readonly kmsKeyring: gcp.kms.KeyRing;
+	public readonly kmsAccessRole: gcp.projects.IAMCustomRole;
+	public readonly storageListRole: gcp.projects.IAMCustomRole;
+	public readonly storageAccessRole: gcp.projects.IAMCustomRole;
+	private readonly resourceOptions: pulumi.CustomResourceOptions;
 
 	constructor(gcpControlPlane: GcpControlPlane) {
 		super(
@@ -16,39 +20,73 @@ export class PulumiIntegration extends pulumi.ComponentResource {
 			},
 		);
 
-		this.secretsManagerCreateRole = new gcp.projects.IAMCustomRole(
-			"pulumi-secrets-manager-create",
+		this.resourceOptions = {
+			parent: this,
+			deleteBeforeReplace: true,
+		};
+
+		this.bucket = new gcp.storage.Bucket(
+			"pulumi",
 			{
-				title: "Pulumi Role for Creating Secrets",
-				roleId: "pulumi-secrets-manager-create".replace(/-/g, "."),
-				description:
-					"Pulumi Secrets Manager Create Role for Rawkode Academy Projects",
-				project: gcpControlPlane.gcpProject,
-				permissions: ["secretmanager.secrets.create"],
+				name: "gcp-control-plane-pulumi",
+				location: gcpControlPlane.gcpRegion,
 			},
-			{
-				parent: this,
-				deleteBeforeReplace: true,
-			},
+			this.resourceOptions,
 		);
 
-		this.secretsManagerAccessRole = new gcp.projects.IAMCustomRole(
-			"pulumi-secrets-manager-access",
+		this.kmsKeyring = new gcp.kms.KeyRing(
+			"pulumi",
 			{
-				title: "Pulumi Role for Accessing Secrets",
-				roleId: "pulumi-secrets-manager-access".replace(/-/g, "."),
-				description:
-					"Pulumi Secrets Manager Access Role for Rawkode Academy Projects",
+				name: "gcp-control-plane-pulumi",
+				project: gcpControlPlane.gcpProject,
+				location: gcpControlPlane.gcpRegion,
+			},
+			this.resourceOptions,
+		);
+
+		this.kmsAccessRole = new gcp.projects.IAMCustomRole(
+			"pulumi-kms",
+			{
+				title: "Pulumi KMS Access",
+				roleId: "pulumi.kms.access",
+				description: "Pulumi access to KMS for encrypting secrets",
 				project: gcpControlPlane.gcpProject,
 				permissions: [
-					"secretmanager.secrets.get",
-					"secretmanager.versions.access",
+					"cloudkms.cryptoKeys.get",
+					"cloudkms.cryptoKeyVersions.useToDecrypt",
+					"cloudkms.cryptoKeyVersions.useToEncrypt",
 				],
 			},
+			this.resourceOptions,
+		);
+
+		this.storageListRole = new gcp.projects.IAMCustomRole(
+			"pulumi-storage-list",
 			{
-				parent: this,
-				deleteBeforeReplace: true,
+				title: "Pulumi Storage List",
+				roleId: "pulumi.storage.list",
+				description: "Pulumi role for listing storage buckets",
+				project: gcpControlPlane.gcpProject,
+				permissions: ["storage.objects.list"],
 			},
+			this.resourceOptions,
+		);
+
+		this.storageAccessRole = new gcp.projects.IAMCustomRole(
+			"pulumi-storage-access",
+			{
+				title: "Pulumi Storage Access",
+				roleId: "pulumi.storage.access",
+				description: "Pulumi access to storage for encrypting secrets",
+				project: gcpControlPlane.gcpProject,
+				permissions: [
+					"storage.objects.get",
+					"storage.objects.create",
+					"storage.objects.update",
+					"storage.objects.delete",
+				],
+			},
+			this.resourceOptions,
 		);
 	}
 }
