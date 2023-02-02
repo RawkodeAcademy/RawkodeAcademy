@@ -1,13 +1,5 @@
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-
-#[derive(Debug, Clone, ValueEnum)]
-pub enum FileFormat {
-    Episode,
-    Show,
-    Technology,
-    Person,
-}
 
 #[derive(Debug, Parser)]
 pub struct Format {
