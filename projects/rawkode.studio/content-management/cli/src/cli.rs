@@ -25,11 +25,24 @@ pub struct Sync {
     pub apply: bool,
 }
 
+#[derive(Debug, Parser)]
+pub struct Template {
+    #[arg(short, long)]
+    pub template_path: PathBuf,
+
+    #[arg(short, long)]
+    pub path: PathBuf,
+
+    #[arg(short, long)]
+    pub episode_name: String,
+}
+
 #[derive(Debug, Subcommand)]
 pub(crate) enum SubCommand {
     Sync(Sync),
     Format(Format),
     Lint(Lint),
+    Template(Template),
 }
 
 #[derive(Parser)]
