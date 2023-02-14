@@ -67,6 +67,8 @@ episode "klustered-klustered-Marino-Wijay-John-Anderson" {
   **Incompatible control plane components**
   The fixer tried to see the pods running in the cluster , but they got an error saying `kubelet network is not ready` .
   This was fixed by reinstalling the kubelet and the containerd with the correct version
+  OTHER NOTES 
+  1. Bash script to install the necessary tools for debugging the cluster https://gist.githubusercontent.com/sontek/5b31111d56d30a48dca764fe72fd9b01/raw/e8c51a1e50a5d039b9270e7930c69913c5b87aac/klustered.sh 
   EOF 
 
 
