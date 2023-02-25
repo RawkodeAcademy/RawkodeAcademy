@@ -1,8 +1,8 @@
 ---
-title: "The Article Title"
-banner: "https://cdn.hashnode.com/res/hashnode/image/upload/v1676534606406/53718f44-a049-4569-83a5-d8b72c00a530.jpeg?w=1600&h=840&fit=crop&crop=entropy&auto=compress,format&format=webp"
-authors: ["Author Name", "Co-Author Name"]
-profileImage: "https://randomuser.me/api/portraits/men/3.jpg"
+title: "Here goes another one"
+banner: "https://cdn.hashnode.com/res/hashnode/image/upload/v1671817765346/7b365a4a-9419-4a6e-bcc7-843631587233.png?w=500&h=262&fit=crop&crop=entropy&auto=compress,format&format=webp"
+authors: ["It's The Author", "Co-Author Name"]
+profileImage: "https://randomuser.me/api/portraits/men/4.jpg"
 tags: ["Programming", "Kubernetes"]
 publishDate: "2021-01-01"
 role: "Cloud Advocate"
