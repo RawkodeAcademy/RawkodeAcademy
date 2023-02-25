@@ -3,8 +3,8 @@ episode "complete-guide-to-spin-rust-sdk-walkthrough" {
   draft = false
   show = ""
   live = false
-  scheduled_for = "2020-10-26T17:24:01Z"
-  youtube_id = "AyRZsAdhHi4"
+  scheduled_for = "2023-01-23T19:00:11Z"
+  youtube_id = "CvLRo_Yx3Wo"
   youtube_category = 24
   links = [
     "https://github.com/fermyon/spin",
