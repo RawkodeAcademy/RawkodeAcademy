@@ -2,6 +2,9 @@
 title: "My First Blog Post"
 author: "rawkode"
 slug: hello
+img: https://flowbite.com/docs/images/people/profile-picture-2.jpg
+date: February 8th, 2022
+role: Blog Writer
 ---
 
 ## SUMMARY

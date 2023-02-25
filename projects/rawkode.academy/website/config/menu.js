@@ -26,4 +26,11 @@ export const menuItems = [
         icon: "mdi:account-box-outline",
         regex: /^\/contact$/,
     },
+    {
+        title: "Articles",
+        exact: false,
+        href: "/articles",
+        icon: "mdi:account-box-outline",
+        regex: /^\/articles$/,
+    },
 ];
