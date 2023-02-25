@@ -2,7 +2,7 @@
 title: "The Article Title"
 banner: "https://cdn.hashnode.com/res/hashnode/image/upload/v1676534606406/53718f44-a049-4569-83a5-d8b72c00a530.jpeg?w=1600&h=840&fit=crop&crop=entropy&auto=compress,format&format=webp"
 authors: ["Author Name", "Co-Author Name"]
-profileImage: "https://randomuser.me/api/portraits/men/3.jpg"
+profileImage: "https://randomuser.me/api/portraits/men/1.jpg"
 tags: ["Programming", "Kubernetes"]
 publishDate: "2021-01-01"
 role: "Cloud Advocate"

@@ -1,8 +1,8 @@
 ---
-title: "The Article Title"
-banner: "https://cdn.hashnode.com/res/hashnode/image/upload/v1676534606406/53718f44-a049-4569-83a5-d8b72c00a530.jpeg?w=1600&h=840&fit=crop&crop=entropy&auto=compress,format&format=webp"
+title: "Another Post Title"
+banner: "https://cdn.hashnode.com/res/hashnode/image/upload/v1676231740075/bc1b2698-6e3f-40a5-9fcb-a68836fef865.png?w=500&h=262&fit=crop&crop=entropy&auto=compress,format&format=webp"
 authors: ["Author Name", "Co-Author Name"]
-profileImage: "https://randomuser.me/api/portraits/men/3.jpg"
+profileImage: "https://randomuser.me/api/portraits/men/2.jpg"
 tags: ["Programming", "Kubernetes"]
 publishDate: "2021-01-01"
 role: "Cloud Advocate"
