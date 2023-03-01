@@ -9,11 +9,9 @@ episode "portainer-in-production-part-3" {
   links = [
     "https://github.com/RawkodeAcademy/portainer-in-production",
     "https://www.youtube.com/playlist?list=PLz0t90fOInA7aRYTguuowv6qrNsMB-zxM",
-    "https://www.portainer.io/",
-    "https://docs.portainer.io/user/docker/stacks",
-    "https://developer.hashicorp.com/terraform/cdktf",
-    ""
-
+    "https://www.portainer.io/"
+    "https://developer.hashicorp.com/terraform/cdktf",  
+    "https://docs.portainer.io/admin/environments/add/edge"
   ]
 
   chapter "Introductions" {
