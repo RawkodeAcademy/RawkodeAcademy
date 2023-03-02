@@ -1,9 +1,9 @@
 interface MenuItem {
-  exact: boolean;
-  title: string;
-  href: string;
-  icon: string;
-  regex: RegExp;
+	exact: boolean;
+	title: string;
+	href: string;
+	icon: string;
+	regex: RegExp;
 }
 
 export const menuItems: MenuItem[] = [
