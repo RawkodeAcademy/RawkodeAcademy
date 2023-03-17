@@ -36,6 +36,10 @@ const breadcrumbs = [{
   title: 'Shows',
   href: '/shows'
 }]
+let startTime = '0';
+const convertToSeconds = (hours, minutes, seconds) => {
+  return (Number(hours) * 3600) + (Number(minutes) * 60) + Number(seconds);
+}
 ---
 <Layout
   title={`${episode.title} | ${episode.show.name} | Rawkode Academy`}
@@ -48,7 +52,7 @@ const breadcrumbs = [{
         <h1>{episode.title}</h1>
       </div>
       <div class="episode__video">
-        <iframe width="1280" height="620" src={`https://www.youtube.com/embed/${episode.youtube_id}?&autoplay=1&mute=1&playsinline=1`} title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+        <iframe width="1280" height="620" src={`https://www.youtube.com/embed/${episode.youtube_id}?&autoplay=1&mute=1&playsinline=1&start=${startTime}`} title="YouTube video player" frameborder="0" allowfullscreen></iframe>
       </div>
     </div>
     <div class="episode__container">
@@ -57,7 +61,13 @@ const breadcrumbs = [{
         <div class="episode__chapter-list">
           {episode.chapters.map(chapter => {
             return (
-            <button type="button"><span>{chapter.title}</span><span>{chapter.time}</span></button>
+            <button
+              type="button"
+              class="button--chapter"
+              data-time={convertToSeconds(chapter.time.split(':')[0], chapter.time.split(':')[1], chapter.time.split(':')[2])}
+            >
+              <span>{chapter.title}</span><span>{chapter.time}</span>
+            </button>
             )
           })}
         </div>
@@ -73,3 +83,20 @@ const breadcrumbs = [{
     </div>
   </div>
 </Layout>
+
+<script>
+  const buttons = document.querySelectorAll('.button--chapter');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const time = event.currentTarget.getAttribute("data-time");
+
+      if (time) {
+        let url = document.querySelector('iframe').src;
+        const newUrl = `${url.split('&start=')[0]}&start=${time}`;
+
+        document.querySelector('iframe').src = newUrl;
+      }
+    });
+  });
+</script>
