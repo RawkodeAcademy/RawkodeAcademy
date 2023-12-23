@@ -14,18 +14,21 @@ const (
 	FormLimitTagName       string = "form-limit"
 	JsonTagName            string = "json"
 	FormDescriptionTagName string = "form-description"
+	FormTypeTagName        string = "form-type"
 )
 
 type Form[T any] struct {
 	data       T
 	validators map[string]func(string) error
+	options    map[string][]string
 	theme      *huh.Theme
 }
 
-func NewForm[T any](data T, validators map[string]func(string) error, theme *huh.Theme) *Form[T] {
+func NewForm[T any](data T, validators map[string]func(string) error, options map[string][]string, theme *huh.Theme) *Form[T] {
 	return &Form[T]{
 		data:       data,
 		validators: validators,
+		options:    options,
 		theme:      theme,
 	}
 }
@@ -84,36 +87,47 @@ func (form *Form[T]) Run() (*T, error) {
 
 		var formField huh.Field
 
-		switch field.Tag.Get("form-type") {
+		switch field.Tag.Get(FormTypeTagName) {
 		case "input":
 			values[field.Name] = new(string)
 
-			input := huh.NewInput().Title(field.Name).Value(values[field.Name]).Description(description(field))
+			inputField := huh.NewInput().Title(field.Name).Value(values[field.Name]).Description(description(field))
 
 			if field.Tag.Get(FormLimitTagName) != "" {
-				input = input.CharLimit(charLimit(field.Tag.Get(FormLimitTagName)))
+				inputField = inputField.CharLimit(charLimit(field.Tag.Get(FormLimitTagName)))
 			}
 
 			if validator := validator(field, form.validators); validator != nil {
-				input = input.Validate(validator)
+				inputField = inputField.Validate(validator)
 			}
 
-			formField = input
+			formField = inputField
 
 		case "text":
 			values[field.Name] = new(string)
 
-			text := huh.NewText().Title(field.Name).Value(values[field.Name]).Description(description(field))
+			textField := huh.NewText().Title(field.Name).Value(values[field.Name]).Description(description(field))
 
 			if field.Tag.Get(FormLimitTagName) != "" {
-				text = text.CharLimit(charLimit(field.Tag.Get(FormLimitTagName)))
+				textField = textField.CharLimit(charLimit(field.Tag.Get(FormLimitTagName)))
 			}
 
 			if validator := validator(field, form.validators); validator != nil {
-				text = text.Validate(validator)
+				textField = textField.Validate(validator)
 			}
 
-			formField = text
+			formField = textField
+
+		case "select":
+			values[field.Name] = new(string)
+
+			selectField := huh.NewSelect[string]().Title(field.Name).Value(values[field.Name])
+
+			if options := form.options[field.Name]; len(options) > 0 {
+				selectField = selectField.Options(huh.NewOptions[string](options...)...)
+			}
+
+			formField = selectField
 		}
 
 		if formField != nil {

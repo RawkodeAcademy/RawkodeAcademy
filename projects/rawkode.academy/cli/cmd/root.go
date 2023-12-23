@@ -27,6 +27,9 @@ func init() {
 	rootCmd.AddCommand(completionCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(event.EventCommand)
+
+	rootCmd.SetErrPrefix("🤬 something is fucky:")
+	rootCmd.SilenceUsage = true
 }
 
 func Execute() error {
