@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"rawkode.academy/cli/cmd/event"
 )
@@ -19,23 +17,12 @@ var (
 )
 
 func init() {
-	v := viper.New()
+	rootCmd.PersistentFlags().String("supabase-api-url", "", "Supabase API URL")
+	rootCmd.PersistentFlags().String("supabase-service-role-key", "", "Supabase service role key")
 
-	v.AutomaticEnv()
-	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-
-	rootCmd.Flags().String("supabase-api-url", "", "Supabase API URL")
-	rootCmd.Flags().String("supabase-service-role-key", "", "Supabase service role key")
-
-	rootCmd.Flags().VisitAll(func(f *pflag.Flag) {
-		configName := f.Name
-
-		if !f.Changed && v.IsSet(configName) {
-			val := v.Get(configName)
-
-			rootCmd.Flags().Set(configName, fmt.Sprintf("%v", val))
-		}
-	})
+	viper.BindPFlags(rootCmd.PersistentFlags())
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
 	rootCmd.AddCommand(completionCmd)
 	rootCmd.AddCommand(versionCmd)

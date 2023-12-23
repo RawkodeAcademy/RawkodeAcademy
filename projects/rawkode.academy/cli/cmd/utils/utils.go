@@ -1,21 +1,23 @@
 package utils
 
 import (
-	"github.com/spf13/pflag"
+	"errors"
+
+	"github.com/spf13/viper"
 	"rawkode.academy/cli/pkg/supabase"
 )
 
-func GetSupabaseCredentials(flagset *pflag.FlagSet) (*supabase.SupabaseCredentials, error) {
-	supabaseApiUrl, err := flagset.GetString("supabase-api-url")
+func GetSupabaseCredentials() (*supabase.SupabaseCredentials, error) {
+	supabaseApiUrl := viper.GetString("supabase-api-url")
 
-	if err != nil {
-		return nil, err
+	if supabaseApiUrl == "" {
+		return nil, errors.New("supabase api url is not set")
 	}
 
-	supabaseServiceRoleKey, err := flagset.GetString("supabase-service-role-key")
+	supabaseServiceRoleKey := viper.GetString("supabase-service-role-key")
 
-	if err != nil {
-		return nil, err
+	if supabaseServiceRoleKey == "" {
+		return nil, errors.New("supabase service role key ist not set")
 	}
 
 	return &supabase.SupabaseCredentials{

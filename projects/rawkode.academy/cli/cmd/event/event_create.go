@@ -27,7 +27,7 @@ var EventCreateCommand = &cobra.Command{
 	Use:   "create",
 	Short: "create event",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		supabaseCredentials, err := utils.GetSupabaseCredentials(cmd.Root().Flags())
+		supabaseCredentials, err := utils.GetSupabaseCredentials()
 
 		if err != nil {
 			return err
