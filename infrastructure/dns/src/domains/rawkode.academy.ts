@@ -25,6 +25,12 @@ export default (scope: Construct): ManagedDomain => {
 			"_atproto",
 			"_atproto",
 			"did=did:plc:qtpysarntxepux4to4dr4hgr",
+		)
+		.addCNameRecord("kinde", "account", "eu.kinde.com")
+		.addCNameRecord(
+			"kinde-acme",
+			"_acme-challenge.account",
+			"_acme-challenge.37cee9a3f2a9e8c5d33d593eefcf51c6.rawkode.kinde.com",
 		);
 
 	return managedDomain;
