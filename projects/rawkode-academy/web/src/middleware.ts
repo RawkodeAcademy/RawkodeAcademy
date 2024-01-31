@@ -1,34 +1,14 @@
 import { defineMiddleware } from "astro:middleware";
-import { supabase } from "./lib/supabase";
+import { sessionManager } from "./lib/kinde";
 
-export const onRequest = defineMiddleware(async (context, next) => {
-	const cookies = context.cookies;
-	const locals = context.locals;
+export const onRequest = defineMiddleware(async ({ cookies, locals }, next) => {
+  const session = sessionManager(cookies);
 
-	const accessToken = cookies.get("sb-access-token");
-	const refreshToken = cookies.get("sb-refresh-token");
+  locals.user = (await session.getSessionItem("user")) as KindeUser;
+  locals.acStateKey = await session.getSessionItem("ac-state-key");
+  locals.idToken = await session.getSessionItem("id_token");
+  locals.accessToken = await session.getSessionItem("access_token");
+  locals.refreshToken = await session.getSessionItem("refresh_token");
 
-	if (!accessToken || !refreshToken) {
-		return next();
-	}
-
-	const { data, error } = await supabase.auth.setSession({
-		refresh_token: refreshToken.value,
-		access_token: accessToken.value,
-	});
-
-	if (error || (!data.user || !data.user.email || !data.user.user_metadata || !data.user.user_metadata.full_name)) {
-		cookies.delete("sb-access-token");
-		cookies.delete("sb-refresh-token");
-
-		return next();
-	}
-
-	locals.user = {
-		name: data.user.user_metadata.full_name,
-		email: data.user.email,
-		avatarUrl: data.user.user_metadata.avatar_url,
-	};
-
-	return next();
+  return next();
 });
