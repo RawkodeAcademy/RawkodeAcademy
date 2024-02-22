@@ -1,63 +1,41 @@
-import { loader } from "../utils";
+import { relations, sql } from "drizzle-orm";
+import { text, sqliteTable } from "drizzle-orm/sqlite-core";
+import { showHostsTable } from "../shows";
+import { readdirSync} from "fs";
 
-export const loadPeople = async () => loader<Person>("people");
+export const peopleTable = sqliteTable("people", {
+	id: text("id").notNull().primaryKey(),
+	name: text("name").notNull(),
+	biography: text("biography"),
+	socialAccounts: text("social_accounts", { mode: "json" }).$type<{
+		blueSky: string;
+		discord: string;
+		linkedin: string;
+		mastodon: string;
+		x: string;
+		youtube: string;
+	}>(),
+	createdAt: text("created_at")
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+});
 
-export class Person {
-	public readonly id: string;
-	public readonly name;
-	protected biography = "";
-	protected socialAccounts: SocialAccounts = {};
+export type Person = typeof peopleTable.$inferSelect;
+export type NewPerson = typeof peopleTable.$inferInsert;
 
-	constructor(id: string, name: string) {
-		this.id = id;
-		this.name = name;
-	}
+export const peopleRelations = relations(peopleTable, ({ many }) => ({
+	hosts: many(showHostsTable),
+}));
 
-	addBiography(biography: string): Person {
-		this.biography = biography.trimStart().trimEnd();
-		return this;
-	}
 
-	addBlueSky(handle: string): Person {
-		this.socialAccounts.blueSky = { handle };
-		return this;
-	}
-
-	addDiscord(handle: string): Person {
-		this.socialAccounts.discord = { handle };
-		return this;
-	}
-
-	addLinkedIn(handle: string): Person {
-		this.socialAccounts.linkedin = { handle };
-		return this;
-	}
-
-	addMastodon(handle: string): Person {
-		this.socialAccounts.mastodon = { handle };
-		return this;
-	}
-
-	addX(handle: string): Person {
-		this.socialAccounts.x = { handle };
-		return this;
-	}
-
-	addYouTube(handle: string): Person {
-		this.socialAccounts.youtube = { handle };
-		return this;
-	}
-}
-
-interface SocialAccounts {
-	blueSky?: SocialAccount;
-	discord?: SocialAccount;
-	linkedin?: SocialAccount;
-	mastodon?: SocialAccount;
-	x?: SocialAccount;
-	youtube?: SocialAccount;
-}
-
-interface SocialAccount {
-	handle: string;
-}
+export const loadPeople = async (): Promise<NewPerson[]> => {
+	const files = await readdirSync(__dirname);
+	return Promise.all(
+		files
+			.filter((file) => file.endsWith(".ts") && file !== "index.ts")
+			.map(async (file) => {
+				const module = await import(`./${file}`);
+				return module.person as NewPerson;
+			}),
+	);
+};

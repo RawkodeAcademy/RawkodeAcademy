@@ -1,4 +1,14 @@
-import { Show } from ".";
-import { default as rawkode } from "../people/rawkode";
+import type { NewShow, NewShowHost } from ".";
+import { person as rawkode } from "../people/rawkode";
 
-export default new Show("rawkode-live", "Rawkode Live").addHost(rawkode);
+export const show: NewShow = {
+	id: "rawkode-live",
+	name: "Rawkode Live",
+};
+
+export const showHosts: NewShowHost[] = [
+	{
+		showId: show.id,
+		personId: rawkode.id,
+	}
+];

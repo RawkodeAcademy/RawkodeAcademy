@@ -1,14 +1,18 @@
-import { Person } from ".";
+import { type NewPerson } from ".";
 
 const biography = `
 I am Rawkode!
 `;
 
-export default new Person("rawkode", "David Flanagan")
-	.addBiography(biography)
-	.addBlueSky("rawkode.dev")
-	.addDiscord("rawkode")
-	.addLinkedIn("rawkode")
-	.addMastodon("david@rawkode.academy")
-	.addX("rawkode")
-	.addYouTube("RawkodeAcademy");
+export const person: NewPerson = {
+	id: "rawkode",
+	name: "David Flanagan",
+	biography,
+	socialAccounts: {
+		blueSky: "rawkode.dev",
+		discord: "rawkode",
+		linkedin: "rawkode",
+		mastodon: "david@rawkode.academy",
+		x: "rawkode",
+	}
+};

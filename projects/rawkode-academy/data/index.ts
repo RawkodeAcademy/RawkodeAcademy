@@ -5,6 +5,7 @@ const people = await loadPeople();
 people.map((person) => console.log(person));
 // sync to Turso
 
-const shows = await loadShows();
+const {shows, showHosts} = await loadShows();
 shows.map((show) => console.log(show));
-// sync to Turso
+showHosts.map((showHost) => console.log(showHost));
+// // sync to Turso
