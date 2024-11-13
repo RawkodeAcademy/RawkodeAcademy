@@ -1,31 +1,38 @@
 import type { Directory, Service } from "@dagger.io/dagger";
-import { dag, object, func, argument } from "@dagger.io/dagger";
+import { argument, dag, func, object } from "@dagger.io/dagger";
 
 @object()
 class EpisodesService {
-	/**
-	 * Local Dev
-	 */
-	@func()
-	async dev(
-		@argument({ defaultPath: ".", ignore: [".dagger", "node_modules"] })
-		source: Directory,
-	): Promise<Service> {
-		const libsql = dag.sqld().service({
-			port: 2000,
-		});
+  /**
+   * Local Dev
+   */
+  @func()
+  async dev(
+    @argument({ defaultPath: ".", ignore: [".dagger", "node_modules"] }) source:
+      Directory,
+  ): Promise<Service> {
+    const libsql = dag.sqld().service({
+      port: 2000,
+    });
 
-		await dag
-			.deno()
-			.withCache(source)
-			.withEnvVariable("LIBSQL_URL", "http://libsql:2000")
-			.withEnvVariable("LIBSQL_TOKEN", "")
-			.withServiceBinding("libsql", libsql)
-			.withMountedDirectory("/code", source)
-			.withWorkdir("/code/data-model")
-			.withExec(["deno", "run", "--allow-read=./migrations", "--allow-net=libsql:2000", "--allow-env=LIBSQL_URL,LIBSQL_TOKEN", "migrate.ts"])
-			.stdout();
+    await dag
+      .deno()
+      .withCache(source)
+      .withEnvVariable("LIBSQL_URL", "http://libsql:2000")
+      .withEnvVariable("LIBSQL_TOKEN", "")
+      .withServiceBinding("libsql", libsql)
+      .withMountedDirectory("/code", source)
+      .withWorkdir("/code/data-model")
+      .withExec([
+        "deno",
+        "run",
+        "--allow-read=./migrations",
+        "--allow-net=libsql:2000",
+        "--allow-env=LIBSQL_URL,LIBSQL_TOKEN",
+        "migrate.ts",
+      ])
+      .stdout();
 
-		return libsql;
-	}
+    return libsql;
+  }
 }

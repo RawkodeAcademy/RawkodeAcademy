@@ -17,16 +17,36 @@ dagger call dev up
 ### Read Model
 
 ```shell '{"name": "read-model"}'
-deno run --allow-env --allow-net read-model/index.ts
+deno run --unstable --v8-flags=--max-heap-size=50,--max-old-space-size=50 --allow-env --allow-net read-model/main.ts
 ```
 
+### Checks, Formatting, & Linting
+
+````shell {"name": "check"}
+deno fmt
+deno lint
+``
+
 ## Deploy
+
+### Data Model
+
+```shell {"name": "deploy-data-model"}
+export LIBSQL_URL="https://episodes-rawkodeacademy.turso.io"
+export LIBSQL_TOKEN="op://sa.rawkode.academy/turso/platform-group/api-token"
+
+op run -- deno --allow-all data-model/migrate.ts
+```
 
 ### Read Model
 
 ```shell '{"name": "deploy-read-model"}'
-deno run --allow-all --no-config 'jsr:@deno/deployctl' deploy --config=deployctl-read-model.json --org="Rawkode Academy" --project plt-episodes-r --prod
-```
+epoch=$(date +%s)
+
+op read op://Employee/Scaleway/secretKey | docker login rg.nl-ams.scw.cloud/graphql-api --username nologin --password-stdin
+podman image build -t europe-west2-docker.pkg.dev/rawkode-academy/episodes-read:${epoch} .
+podman image push europe-west2-docker.pkg.dev/rawkode-academy/episodes-read:${epoch}
+scw container container create name=episodes namespace-id=0c22c1a2-34a7-4e80-90aa-8099dffba349 min-scale=0 max-scale=2 memory-limit=400 cpu-limit=400 timeout=10s privacy=public registry-image=rg.nl-ams.scw.cloud/graphql-api/episodes-read:latest port=8000 deploy=true region=nl-ams http-option=redirected protocol=h2c
 
 ### Write Model
 

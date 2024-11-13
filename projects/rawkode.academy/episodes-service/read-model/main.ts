@@ -1,77 +1,103 @@
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
-import { buildSubgraphSchema } from "@apollo/subgraph";
-import { createClient } from "@libsql/client";
-import * as path from "@std/path";
-import { and, eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/libsql";
-import { parse } from "graphql";
-import * as dataSchema from "../data-model/schema.ts";
+import { createClient } from '@libsql/client';
+import schemaBuilder from '@pothos/core';
+import directivesPlugin from '@pothos/plugin-directives';
+import drizzlePlugin from '@pothos/plugin-drizzle';
+import federationPlugin from '@pothos/plugin-federation';
+import { and, eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/libsql';
+import { createYoga } from 'graphql-yoga';
+import * as dataSchema from '../data-model/schema.ts';
 
-if (!Deno.env.has("LIBSQL_URL")) {
-	Deno.env.set("LIBSQL_URL", "http://localhost:2000");
-}
-
-if (!Deno.env.has("LIBSQL_TOKEN")) {
-	Deno.env.set("LIBSQL_TOKEN", "");
-}
+const port = parseInt(Deno.env.get('PORT') || '8000', 10);
+const url = Deno.env.get('LIBSQL_URL') || Deno.env.get('LIBSQL_BASE_URL')!;
 
 const client = createClient({
-	url: Deno.env.get("LIBSQL_URL") || "",
-	authToken: Deno.env.get("LIBSQL_TOKEN"),
+	url,
+	authToken: Deno.env.get('LIBSQL_TOKEN')!,
 });
 
 const db = drizzle(client, { schema: dataSchema });
+export interface PothosTypes {
+	DrizzleSchema: typeof dataSchema;
+}
 
-const resolvers = {
-	Show: {
-		__resolveReference({ code }: { code: string }) {
-			const show = db.query.episodesTable.findFirst({
-				where: eq(dataSchema.episodesTable.code, code),
-			});
-
-			if (!show) {
-				throw new Error(
-					`Episode with code ${code} not found`,
-				);
-			}
-
-			return show;
-		},
+const builder = new schemaBuilder<PothosTypes>({
+	plugins: [directivesPlugin, drizzlePlugin, federationPlugin],
+	drizzle: {
+		client: db,
 	},
-	Query: {
-		episodes() {
-			return db.select().from(dataSchema.episodesTable);
-		},
-		episodesByCode(code: string) {
-			return db.select().from(dataSchema.episodesTable).where(
-				eq(dataSchema.episodesTable.code, code),
-			).limit(1);
-		},
-		episodesByShow(showId: string) {
-			return db.select().from(dataSchema.episodesTable).where(
-				eq(dataSchema.episodesTable.showId, showId),
-			);
-		},
+});
+
+const episodeRef = builder.drizzleObject('episodesTable', {
+	name: 'episode',
+	fields: (t) => ({
+		code: t.exposeString('code'),
+		showId: t.exposeString('showId'),
+		title: t.exposeString('title'),
+		subtitle: t.exposeString('subtitle'),
+		description: t.exposeString('description'),
+	}),
+});
+
+builder.asEntity(episodeRef, {
+	key: builder.selection<{ showId: string; code: string }>('showId code'),
+	resolveReference: async (episode) =>
+		await db.query.episodesTable.findFirst({
+			where: and(
+				eq(dataSchema.episodesTable.code, episode.code),
+				eq(dataSchema.episodesTable.showId, episode.showId),
+			),
+		}).execute(),
+});
+
+builder.queryType({
+	fields: (t) => ({
+		episode: t.field({
+			type: episodeRef,
+			args: {
+				code: t.arg({
+					type: 'String',
+					required: true,
+				}),
+				showId: t.arg({
+					type: 'String',
+					required: true,
+				}),
+			},
+			resolve: async (_root, args, _ctx) =>
+				await db.query.episodesTable.findFirst({
+					where: and(
+						eq(dataSchema.episodesTable.code, args.code),
+						eq(dataSchema.episodesTable.showId, args.showId),
+					),
+				}).execute(),
+		}),
+		showEpisodes: t.field({
+			type: episodeRef,
+			args: {
+				showId: t.arg({
+					type: 'String',
+					required: true,
+				}),
+			},
+			resolve: async (_root, args, _ctx) =>
+				await db.query.episodesTable.findFirst({
+					where: eq(dataSchema.episodesTable.showId, args.showId),
+				}).execute(),
+		}),
+	}),
+});
+
+const yoga = createYoga({
+	schema: builder.toSubGraphSchema({
+		linkUrl: 'https://specs.apollo.dev/federation/v2.6',
+		federationDirectives: ['@key'],
+	}),
+});
+
+Deno.serve({
+	port,
+	onListen: ({ hostname, port, transport }) => {
+		console.log(`Listening on ${transport}://${hostname}:${port}`);
 	},
-};
-
-const schema = buildSubgraphSchema({
-	typeDefs: parse(
-		Deno.readTextFileSync(
-			`${path.dirname(path.fromFileUrl(import.meta.url))}/schema.graphql`,
-		),
-	),
-	resolvers,
-});
-
-const server = new ApolloServer({
-	schema,
-	introspection: true,
-});
-
-const { url } = await startStandaloneServer(server, {
-	listen: { port: 8000 },
-});
-
-console.log(`Server running on: ${url}`);
+}, yoga.fetch);

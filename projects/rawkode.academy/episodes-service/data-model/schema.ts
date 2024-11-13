@@ -1,18 +1,17 @@
-import { sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
+import { primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-export const episodesTable = sqliteTable("episodes", {
-	showId: text("showId").notNull(),
+export const episodesTable = sqliteTable('episodes', {
+	showId: text('showId').notNull(),
 	// We're not going to make this a sequential number,
 	// because episodes are often scheduled in advance and
 	// out of order.
 	// This code should also provide a simple
 	// way for viewers to identify the episode.
 	// Like, by visiting: rawkode.academy/RESTATE1
-	code: text("code").notNull(), // RESTATE1, K8S1, etc.
-	title: text("title").notNull(),
-	subtitle: text("subtitle").notNull(),
-	description: text("description").notNull(),
-
+	code: text('code').notNull(), // RESTATE1, K8S1, etc.
+	title: text('title').notNull(),
+	subtitle: text('subtitle').notNull(),
+	description: text('description').notNull(),
 	// I was going to include this, but
 	// as each episode could be delivered as multiple
 	// assets: video, audio, podcast, interview, whatever
