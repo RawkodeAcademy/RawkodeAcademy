@@ -5,7 +5,7 @@ import drizzlePlugin from '@pothos/plugin-drizzle';
 import federationPlugin from '@pothos/plugin-federation';
 import { and, eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { createYoga } from 'graphql-yoga';
+import { lexicographicSortSchema, printSchema } from 'graphql';
 import * as dataSchema from '../data-model/schema.ts';
 
 const port = parseInt(Deno.env.get('PORT') || '8000', 10);
@@ -53,7 +53,7 @@ builder.asEntity(episodeRef, {
 
 builder.queryType({
 	fields: (t) => ({
-		episode: t.drizzleField({
+		episode: t.field({
 			type: episodeRef,
 			args: {
 				code: t.arg({
@@ -65,40 +65,38 @@ builder.queryType({
 					required: true,
 				}),
 			},
-			resolve: (query, _root, args, _ctx) =>
-				db.query.episodesTable.findFirst(query({
+			resolve: (_root, args, _ctx) =>
+				db.query.episodesTable.findFirst({
 					where: and(
 						eq(dataSchema.episodesTable.showId, args.showId),
 						eq(dataSchema.episodesTable.code, args.code),
 					),
-				})).execute(),
+				}).execute(),
 		}),
-		showEpisodes: t.drizzleField({
-			type: [episodeRef],
+		showEpisodes: t.field({
+			type: t.listRef(episodeRef),
 			args: {
 				showId: t.arg({
 					type: 'String',
 					required: true,
 				}),
 			},
-			resolve: (query, _root, args, _ctx) =>
-				db.query.episodesTable.findMany(query({
+			resolve: (_root, args, _ctx) =>
+				db.query.episodesTable.findMany({
 					where: eq(dataSchema.episodesTable.showId, args.showId),
-				})).execute(),
+				}).execute(),
 		}),
 	}),
 });
 
-const yoga = createYoga({
-	schema: builder.toSubGraphSchema({
-		linkUrl: 'https://specs.apollo.dev/federation/v2.6',
-		federationDirectives: ['@key'],
-	}),
+const schema = builder.toSubGraphSchema({
+	linkUrl: 'https://specs.apollo.dev/federation/v2.6',
+	federationDirectives: ['@key'],
 });
 
-Deno.serve({
-	port,
-	onListen: ({ hostname, port, transport }) => {
-		console.log(`Listening on ${transport}://${hostname}:${port}`);
-	},
-}, yoga.fetch);
+const schemaAsString = printSchema(lexicographicSortSchema(schema));
+
+Deno.writeFileSync(
+	`${import.meta.dirname}/schema.gql`,
+	new TextEncoder().encode(schemaAsString),
+);
