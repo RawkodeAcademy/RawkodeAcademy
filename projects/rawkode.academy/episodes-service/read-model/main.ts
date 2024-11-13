@@ -9,7 +9,8 @@ import { createYoga } from 'graphql-yoga';
 import * as dataSchema from '../data-model/schema.ts';
 
 const port = parseInt(Deno.env.get('PORT') || '8000', 10);
-const url = Deno.env.get('LIBSQL_URL') || Deno.env.get('LIBSQL_BASE_URL')!;
+const url = Deno.env.get('LIBSQL_URL') ||
+	`https://episodes-${Deno.env.get('LIBSQL_BASE_URL')}`!;
 
 const client = createClient({
 	url,
@@ -41,8 +42,8 @@ const episodeRef = builder.drizzleObject('episodesTable', {
 
 builder.asEntity(episodeRef, {
 	key: builder.selection<{ showId: string; code: string }>('showId code'),
-	resolveReference: async (episode) =>
-		await db.query.episodesTable.findFirst({
+	resolveReference: (episode) =>
+		db.query.episodesTable.findFirst({
 			where: and(
 				eq(dataSchema.episodesTable.code, episode.code),
 				eq(dataSchema.episodesTable.showId, episode.showId),
@@ -64,24 +65,24 @@ builder.queryType({
 					required: true,
 				}),
 			},
-			resolve: async (_root, args, _ctx) =>
-				await db.query.episodesTable.findFirst({
+			resolve: (_root, args, _ctx) =>
+				db.query.episodesTable.findFirst({
 					where: and(
-						eq(dataSchema.episodesTable.code, args.code),
 						eq(dataSchema.episodesTable.showId, args.showId),
+						eq(dataSchema.episodesTable.code, args.code),
 					),
 				}).execute(),
 		}),
 		showEpisodes: t.field({
-			type: episodeRef,
+			type: t.listRef(episodeRef),
 			args: {
 				showId: t.arg({
 					type: 'String',
 					required: true,
 				}),
 			},
-			resolve: async (_root, args, _ctx) =>
-				await db.query.episodesTable.findFirst({
+			resolve: (_root, args, _ctx) =>
+				db.query.episodesTable.findMany({
 					where: eq(dataSchema.episodesTable.showId, args.showId),
 				}).execute(),
 		}),
