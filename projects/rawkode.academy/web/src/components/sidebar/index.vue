@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { initFlowbite } from 'flowbite';
-import { onMounted } from 'vue';
+import { initFlowbite } from "flowbite";
+import { onMounted } from "vue";
 import MenuItems from "./items.vue";
 import {
 	FilmIcon,
 	HomeIcon,
+	VideoCameraIcon,
 	InformationCircleIcon,
 	NewspaperIcon,
 	// QuestionMarkCircleIcon,
@@ -14,6 +15,7 @@ import {
 
 const menuItems = [
 	{ name: "Home", href: "/", icon: HomeIcon, current: true },
+	{ name: "Content", href: "/content", icon: VideoCameraIcon, current: false },
 	{
 		name: "Live",
 		href: "/live",
@@ -66,13 +68,15 @@ const menuItemsOrgs = [
 
 onMounted(() => {
 	initFlowbite();
-})
+});
 </script>
 
 <template>
 	<aside
 		class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-black dark:border-gray-700"
-		aria-label="Sidenav" id="drawer-navigation">
+		aria-label="Sidenav"
+		id="drawer-navigation"
+	>
 		<div class="overflow-y-auto py-5 px-3 h-full">
 			<!--  Search for  mobile
 			<form action="#" method="GET" class="md:hidden mb-2">
