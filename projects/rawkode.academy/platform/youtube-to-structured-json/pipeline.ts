@@ -1,15 +1,32 @@
-import { webvtt } from "@deepgram/captions";
-import { createClient } from "@deepgram/sdk";
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import {
+	PutObjectCommand,
+	PutObjectCommandInput,
+	S3Client,
+} from "@aws-sdk/client-s3";
+import { SpeechClient } from "@google-cloud/speech";
+import { Storage } from "@google-cloud/storage";
+import { createId } from "@paralleldrive/cuid2";
 import { existsSync } from "@std/fs";
 import { Buffer } from "node:buffer";
+import { parseFile} from "music-metadata";
 
-const geminiApiKey = Deno.env.get("GEMINI_API_KEY")!;
-const genAI = new GoogleGenerativeAI(geminiApiKey);
+const googleSpeechClient = new SpeechClient();
+const googleStorage = new Storage();
 
-const deepgram = createClient(Deno.env.get("DEEPGRAM_API_KEY")!);
+const cloudflareR2 = {
+	accountId: "0aeb879de8e3cdde5fb3d413025222ce",
+	accessKey: Deno.env.get("CLOUDFLARE_R2_ACCESS_KEY")!,
+	secretKey: Deno.env.get("CLOUDFLARE_R2_SECRET_KEY")!,
+};
 
-const bunnyApiKey = Deno.env.get("BUNNY_API_KEY")!;
+const s3 = new S3Client({
+	region: "auto",
+	endpoint: `https://${cloudflareR2.accountId}.eu.r2.cloudflarestorage.com`,
+	credentials: {
+		accessKeyId: cloudflareR2.accessKey,
+		secretAccessKey: cloudflareR2.secretKey,
+	},
+});
 
 const downloadVideo = async (id: string) => {
 	if (existsSync(`./pipeline/${id}/video.mkv`)) {
@@ -68,7 +85,7 @@ const downloadVideo = async (id: string) => {
 };
 
 const getAudioFromVideo = async (id: string) => {
-	if (existsSync(`./pipeline/${id}/audio.mka`)) {
+	if (existsSync(`./pipeline/${id}/audio.wav`)) {
 		return;
 	}
 
@@ -80,28 +97,17 @@ const getAudioFromVideo = async (id: string) => {
 			args: [
 				"-i",
 				`./pipeline/${id}/video.mkv`,
-				"-map",
-				"0:a",
-				"-c",
-				"copy",
-				`./pipeline/${id}/audio.mka`,
+				"-vn",
+				"-acodec",
+				"pcm_s16le",
+				"-ar",
+				"16000",
+				"-ac",
+				"1",
+				`./pipeline/${id}/audio.wav`,
 			],
 		},
 	).outputSync();
-};
-
-const firstLastWords = {
-	type: SchemaType.OBJECT,
-	properties: {
-		firstWordTimestamp: {
-			type: SchemaType.STRING,
-			description: "When is the first word said?",
-		},
-		lastWordTimestamp: {
-			type: SchemaType.STRING,
-			description: "When is the last word said?",
-		},
-	},
 };
 
 const transcribeAudio = async (id: string): Promise<boolean> => {
@@ -109,88 +115,170 @@ const transcribeAudio = async (id: string): Promise<boolean> => {
 		return true;
 	}
 
-	console.log("Transcribing audio...");
-	const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
-		Buffer.from(Deno.readFileSync(`./pipeline/${id}/audio.mka`)),
-		{
-			model: "nova-2",
-			detect_topics: true,
-			detect_entities: true,
-			detect_language: true,
-			language: "en-US",
-			profanity_filter: false,
-			punctuate: true,
-			summarize: true,
-			paragraphs: true,
-			keywords: Deno.readFileSync("./glossary.txt").toString().split(
-				"\n",
-			),
-		},
-	);
-
-	if (error) {
-		console.error(error);
-		return false;
-	}
-
-	Deno.writeFileSync(
-		`./pipeline/${id}/audio.json`,
-		new TextEncoder().encode(JSON.stringify(result)),
-	);
-
-	const captions = webvtt(result);
-
-	Deno.writeFileSync(
-		`./pipeline/${id}/audio.en.vtt`,
-		new TextEncoder().encode(captions),
-	);
-	return true;
-};
-
-const determinateFirstLastWords = async (id: string): Promise<boolean> => {
-	if (existsSync(`./pipeline/${id}/first-last-words.json`)) {
-		return true;
-	}
-
-	console.log("Finding first and last words...");
-
-	const audio = Deno.readTextFileSync(`./pipeline/${id}/audio.en.vtt`);
-
-	const model = genAI.getGenerativeModel({
-		model: "gemini-1.5-flash-latest",
-		generationConfig: {
-			responseMimeType: "application/json",
-			responseSchema: firstLastWords,
-		},
-	});
-
 	try {
-		const result = await model.generateContent(
-			[
-				`Here are subtitles for a video.
+		console.log("Uploading audio to Google Cloud Storage...");
+		await googleStorage.bucket("rawkode-academy-video-pipeline").upload(`./pipeline/${id}/audio.wav`, {
+			destination: `${id}/audio.wav`,
+		});
 
-				We need the exact timestamp for the first spoken word and the last spoken word.
+		console.log("Done");
 
-				To ensure we trim the video correctly, give a 300ms buffer on either side.
-
-				Subtitles: ${audio}`,
-			],
-			{
-				timeout: 180000,
+		const [operation] = await googleSpeechClient.longRunningRecognize({
+			config: {
+				enableAutomaticPunctuation: true,
+				languageCode: "en-US",
+				encoding: "LINEAR16",
+				sampleRateHertz: 16000,
+				enableSpokenPunctuation: {value: true},
+				profanityFilter: false,
+				useEnhanced: true,
+				model: "video",
+				adaptation: {
+					phraseSetReferences: [
+						"projects/458678766461/locations/global/phraseSets/rawkode-academy"
+					]
+				}
 			},
-		);
+			audio: {
+				uri: `gs://rawkode-academy-video-pipeline/${id}/audio.mka`,
+			},
+		});
 
-		Deno.writeTextFileSync(
-			`./pipeline/${id}/first-last-words.json`,
-			result.response.text(),
-		);
+		const [response] = await operation.promise();
+
+		console.debug(response);
+
+
+		if (!response.results) {
+			console.log(`Failed: ${id}`);
+			return false;
+		}
+
+		response.results.forEach(async (result) => {
+			if (!result.alternatives) {
+				return false;
+			}
+
+			const alternative = result.alternatives[0];
+
+			Deno.writeFileSync(
+				`./pipeline/${id}/transcript.json`,
+				new TextEncoder().encode(JSON.stringify(alternative)),
+			);
+
+			// const uploadCommand: PutObjectCommandInput = {
+			// 	Bucket: "rawkode-academy-video",
+			// 	Key: `${id}/transcript.json`,
+			// 	Body: JSON.stringify(alternative),
+			// 	ContentLength: alternative.transcript?.length,
+			// 	ContentType: "text/plain",
+			// };
+
+			// const s3Command = new PutObjectCommand(uploadCommand);
+			// await s3.send(s3Command);
+		});
 	} catch (error) {
+		console.log("Failed to transcribe audio...");
 		console.error(error);
 		return false;
 	}
-
 	return true;
+
+	// console.log("Transcribing audio...");
+	// const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+	// 	Buffer.from(Deno.readFileSync(`./pipeline/${id}/audio.mka`)),
+	// 	{
+	// 		model: "nova-2",
+	// 		detect_topics: true,
+	// 		detect_entities: true,
+	// 		detect_language: true,
+	// 		language: "en-US",
+	// 		profanity_filter: false,
+	// 		punctuate: true,
+	// 		summarize: true,
+	// 		paragraphs: true,
+	// 		keywords: Deno.readFileSync("./glossary.txt").toString().split(
+	// 			"\n",
+	// 		),
+	// 	},
+	// );
+
+	// if (error) {
+	// 	console.error(error);
+	// 	return false;
+	// }
+
+	// Deno.writeFileSync(
+	// 	`./pipeline/${id}/audio.json`,
+	// 	new TextEncoder().encode(JSON.stringify(result)),
+	// );
+
+	// const captions = webvtt(result);
+
+	// Deno.writeFileSync(
+	// 	`./pipeline/${id}/audio.en.vtt`,
+	// 	new TextEncoder().encode(captions),
+	// );
 };
+
+// const firstLastWords = {
+// 	type: SchemaType.OBJECT,
+// 	properties: {
+// 		firstWordTimestamp: {
+// 			type: SchemaType.STRING,
+// 			description: "When is the first word said?",
+// 		},
+// 		lastWordTimestamp: {
+// 			type: SchemaType.STRING,
+// 			description: "When is the last word said?",
+// 		},
+// 	},
+// };
+
+// const determinateFirstLastWords = async (id: string): Promise<boolean> => {
+// 	if (existsSync(`./pipeline/${id}/first-last-words.json`)) {
+// 		return true;
+// 	}
+
+// 	console.log("Finding first and last words...");
+
+// 	const audio = Deno.readTextFileSync(`./pipeline/${id}/audio.en.vtt`);
+
+// 	const model = genAI.getGenerativeModel({
+// 		model: "gemini-1.5-flash-latest",
+// 		generationConfig: {
+// 			responseMimeType: "application/json",
+// 			responseSchema: firstLastWords,
+// 		},
+// 	});
+
+// 	try {
+// 		const result = await model.generateContent(
+// 			[
+// 				`Here are subtitles for a video.
+
+// 				We need the exact timestamp for the first spoken word and the last spoken word.
+
+// 				To ensure we trim the video correctly, give a 300ms buffer on either side.
+
+// 				Subtitles: ${audio}`,
+// 			],
+// 			{
+// 				timeout: 180000,
+// 			},
+// 		);
+
+// 		Deno.writeTextFileSync(
+// 			`./pipeline/${id}/first-last-words.json`,
+// 			result.response.text(),
+// 		);
+// 	} catch (error) {
+// 		console.error(error);
+// 		return false;
+// 	}
+
+// 	return true;
+// };
 
 const trimVideo = async (id: string) => {
 	if (existsSync(`./pipeline/${id}/video-trim.mkv`)) {
@@ -224,160 +312,6 @@ const trimVideo = async (id: string) => {
 	).outputSync();
 };
 
-const deleteBunnyVideo = (id: string) => {
-	console.log(`Deleting video ${id} from Bunny.net...`);
-
-	new Deno.Command(
-		"curl",
-		{
-			args: [
-				"--request",
-				"DELETE",
-				"--url",
-				`https://video.bunnycdn.com/library/345630/videos/${json.guid}`,
-				"--header",
-				`AccessKey: ${bunnyApiKey}`,
-				"--header",
-				"accept: application/json",
-				"--header",
-				"content-type: application/json",
-			],
-		},
-	).outputSync();
-};
-
-interface BunnyResponse {
-	guid: string;
-}
-
-const uploadToBunny = (id: string): boolean => {
-	if (existsSync(`./pipeline/${id}/bunny.json`)) {
-		return true;
-	}
-
-	const title = JSON.parse(
-		Deno.readTextFileSync(`./pipeline/${id}/metadata.info.json`),
-	).title;
-
-	console.log("Uploading to Bunny.net...");
-
-	const response = new Deno.Command(
-		"curl",
-		{
-			args: [
-				"--request",
-				"POST",
-				"--url",
-				"https://video.bunnycdn.com/library/345630/videos",
-				"--header",
-				`AccessKey: ${bunnyApiKey}`,
-				"--header",
-				"accept: application/json",
-				"--header",
-				"content-type: application/json",
-				"--data",
-				`{"title":"${title}"}`,
-			],
-		},
-	).outputSync();
-
-	if (!response.success) {
-		return false;
-	}
-
-	const json = JSON.parse(
-		new TextDecoder().decode(response.stdout),
-	) as BunnyResponse;
-
-	Deno.writeTextFileSync(
-		`./pipeline/${id}/bunny.json`,
-		JSON.stringify(json),
-	);
-
-	console.log(`Uploading thumbnail for ${json.guid}...`);
-
-	const thumbnailResponse = new Deno.Command(
-		"curl",
-		{
-			args: [
-				"--request",
-				"POST",
-				"--url",
-				`https://video.bunnycdn.com/library/345630/videos/${json.guid}/thumbnail`,
-				"--header",
-				`AccessKey: ${bunnyApiKey}`,
-				"--header",
-				"accept: application/json",
-				"--header",
-				"content-type: application/json",
-				"--data-binary",
-				`@./pipeline/${id}/thumbnail.jpg`,
-			],
-		},
-	).outputSync();
-
-	if (!thumbnailResponse.success) {
-		Deno.removeSync(`./pipeline/${id}/bunny.json`);
-		deleteBunnyVideo(json.guid);
-		return false;
-	}
-
-	console.log(`Uploading captions for ${json.guid}...`);
-	// Captions as Base64
-	const captions = Deno.readFileSync(`./pipeline/${id}/audio.en.vtt`);
-	const base64Captions = btoa(new TextDecoder().decode(captions));
-
-	new Deno.Command(
-		"curl",
-		{
-			args: [
-				"--request",
-				"POST",
-				"--url",
-				`https://video.bunnycdn.com/library/345630/videos/${json.guid}/captions/en`,
-				"--header",
-				`AccessKey: ${bunnyApiKey}`,
-				"--header",
-				"accept: application/json",
-				"--header",
-				"content-type: application/json",
-				"--data",
-				`{"srclang":"en","captionsFile": "${base64Captions}"}`,
-			],
-		},
-	).outputSync();
-
-	console.log(`Uploading video for ${json.guid}...`);
-
-	const uploadResponse = new Deno.Command(
-		"curl",
-		{
-			args: [
-				"--request",
-				"PUT",
-				"--url",
-				`https://video.bunnycdn.com/library/345630/videos/${json.guid}`,
-				"--header",
-				`AccessKey: ${bunnyApiKey}`,
-				"--header",
-				"accept: application/json",
-				"--header",
-				"content-type: application/json",
-				"--data-binary",
-				`@./pipeline/${id}/video-trim.mkv`,
-			],
-		},
-	).outputSync();
-
-	if (!uploadResponse.success) {
-		deleteBunnyVideo(json.guid);
-		Deno.removeSync(`./pipeline/${id}/bunny.json`);
-		return false;
-	}
-
-	return true;
-};
-
 // loop over every json file in ./data-from-csv
 for (const file of Deno.readDirSync("./data-from-csv")) {
 	if (!file.name.endsWith(".json")) {
@@ -387,6 +321,10 @@ for (const file of Deno.readDirSync("./data-from-csv")) {
 	const json = JSON.parse(
 		await Deno.readTextFile(`./data-from-csv/${file.name}`),
 	);
+
+	if (json["Video ID"] !== "7J_j42jddDg") {
+		continue;
+	}
 
 	if (existsSync(`./data-from-csv/${json["Video ID"]}.done`)) {
 		console.log(`Skipping ${file.name} as it's been processed...`);
@@ -403,15 +341,9 @@ for (const file of Deno.readDirSync("./data-from-csv")) {
 
 	await getAudioFromVideo(videoId);
 
-	if (!(await transcribeAudio(videoId))) {
-		continue;
-	}
+	await transcribeAudio(videoId);
 
-	await determinateFirstLastWords(videoId);
-
-	await trimVideo(videoId);
-
-	await uploadToBunny(videoId);
+	// await trimVideo(videoId);
 
 	Deno.writeFileSync(
 		`./data-from-csv/${json["Video ID"]}.done`,
