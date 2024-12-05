@@ -1,0 +1,103 @@
+---
+title: The Rawkode Academy Architecture
+slug: our-architecture
+subtitle: "Over-Engineering for Fun & Profit"
+publishedAt: 2024-12-05
+updatedAt: 2024-12-05
+isDraft: true
+authors:
+  - rawkode
+---
+
+It's my job to make content that helps developers learn "stuff". That stuff has varied over the last
+ten years and I assume that will continue to be the case. Which appeals a lot for me, because
+I like shiny things.
+
+So when I decided to remove my dependency on YouTube and build my own platform, I decided to have
+some fun.
+
+Want to learn more? This is the article for you.
+
+Let me introduce you to the different patterns and techniques we've been using to build out the platform.
+
+This article will be a little high level, but stay tuned! Over the next few weeks we'll be going deeper into each pattern and technique, with code samples.
+
+Too impatient? Check out the [repository](https://github.com/RawkodeAcademy/RawkodeAcademy) today.
+
+## Cloud Native
+
+Giving that I founded the Rawkode Academy to help make Cloud Native, a vast and ever changing landscape, easier for developers; it's only fitting that whatever I build for the Rawkode Academy is built as Cloud Native as it can be.
+
+As such, the Rawkode Academy platform is built as a set of micro-services. Some are less micro and some are nano, so let's just settle on that this is a service-oriented architecture with it sometimes taking some liberties and sometimes going to extremes.
+
+We also adopted a hybrid-cloud approach, leveraging bare metal, managed Kubernetes, and serverless.
+
+Depending on what part of the platform you interactive with; you'll be hitting either:
+
+- **Website:** Cloudflare Pages + Workers
+- **GraphQL API:** Cloud Run
+- **Video Encoding:** Bare Metal on Equinix Metal
+- **Auth/Chat:** GKE AutoPilot
+    * We use GKE AutoPilot (with Spot) for consistently running services, such as [Zulip](https://zulip.org) and [Zitadel](https://zitadel.com).
+
+## Command Query Responsibility Segregation (CQRS)
+
+I've been a huge fan of the work of [Udi Dahan](https://udidahan.com/) and Greg Young for over ten years, even implementing my own CQRS & Event Sourcing libraries in a variety of languages (I actually used this as my project to learn new languages).
+
+Event Sourcing wasn't required for the platform, but CQRS is a fantastic pattern to implement in almost any project. It allows to to separate the read and write models for your application.
+
+In a strict CQRS fashion, these would likely actually have different views / data stores / projections; but we don't need to adopt this quite yet.
+
+Our read API is powered by GraphQL, with federation, and our write API is powered by [Restate](https://restate.dev).
+
+## GraphQL Federation
+
+We use a single GraphQL Gateway, powered by [WunderGraph Cosmo](https://cosmo.wundergraph.com), which can build a query plan for your GraphQL query. This query plan is realised by individual GraphQL APIs, to the object or field level, provided by each service.
+
+We'll be diving into this in great detail on our next article; expect it next week (December 9th, 2024).
+
+## Restate
+
+We use Restate as a HTTP RPC layer with built-in queues and durable execution which provides commands to write data to our, currently, shared data stores.
+Note: I shared shared as each service shares a data store for reads and writes, as we don't need to optimize for reads at this moment in time as our RPC commands can optimize for writes. We'll dive into our RPC and Restate in two weeks time (December 16th, 2024).
+
+We used Restate, with its durable execution, as writing to our platform is a complex task.
+
+Due to the service-oriented architecture, scheduling a new live stream is a many part process; but we want a simple command to-do so.
+
+Imagine the following write:
+
+```shell
+curl -XPOST https://rpc.rawkode.academy/live-stream/new -d '{
+  "title": "Overview of the Rawkode Academy Architecture",
+  "hosts": [ "rawkode" ],
+  "guests": [ "icepuma" ],
+  "when": "2024-12-23Z10:00:00:Z",
+  "description": "BLAH",
+  "technologies": ["Restate", "Rust", "TypeScript", "GraphQL", "CQRS"]
+}'
+```
+
+This is not a complete example, but to understand the complexity we need to understand this such a request is a [SAGA](https://microservices.io/patterns/data/saga.html).
+
+We need to write multiple entities to multiple services while also ensuring referential integrity across these boundaries.
+
+- Can we schedule a live stream for a date in the past? **No**.
+- Can we schedule an episode with host `rawkode` if that identifier doesn't exist in the `people` service: **No**.
+- Can we schedule an episode with guest `icepuma` if that identifier doesn't exist in the `people` service: **No**.
+- Same for technologies
+- and so forth
+
+We don't want the write to fail, we just need to build in checks and balances; because in a distributed system these people and technologies will be eventually consistent; but I don't want the read model to fail.
+
+Again, stay tuned; there's lots of examples and code we can share to dive into this deeper.
+
+---
+
+I hope you find this high level overview interesting enough to pop ba ck in a couple of weeks to see the lower level details and code.
+
+Don't want to miss the new articles?
+
+You can choose to join the chat on our [Zulip](https://chat.rawkode.academy) server or follow our [BlueSky](https://bsky.app/profile/rawkode.academy) account to keep up to date with the platform build out and our new articles.
+
+Until next time!
