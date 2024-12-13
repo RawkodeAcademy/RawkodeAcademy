@@ -9,7 +9,25 @@ import rehypeExternalLinks from "rehype-external-links";
 
 export default defineConfig({
   output: "server",
-  integrations: [mdx(), react(), sitemap(), tailwind(), vue()],
+  integrations: [
+    mdx(),
+    react({ experimentalReactChildren: true }),
+    sitemap(),
+    tailwind(),
+    vue(),
+  ],
+  vite: {
+    resolve: {
+      // Use react-dom/server.edge instead of react-dom/server.browser for React 19.
+      // Without this, MessageChannel from node:worker_threads needs to be polyfilled.
+      // https://github.com/withastro/adapters/pull/436
+      alias: import.meta.env.PROD
+        ? {
+          "react-dom/server": "react-dom/server.edge",
+        }
+        : {},
+    },
+  },
   adapter: cloudflare({
     imageService: "cloudflare",
   }),
