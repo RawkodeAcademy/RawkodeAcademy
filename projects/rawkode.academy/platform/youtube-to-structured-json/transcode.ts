@@ -264,7 +264,7 @@ const generatePlaylist = (resolutions: Resolution[]): string => {
 
 	for (const resolution of resolutions) {
 		playlist += `#EXT-X-STREAM-INF:BANDWIDTH=${getVideoBitrate(resolution.width, resolution.height)}\n`;
-		playlist += `${resolution.height}/playlist.m3u8\n`;
+		playlist += `${resolution.height}/stream.m3u8\n`;
 	}
 
 	return playlist;
@@ -275,8 +275,8 @@ const createHLSPlaylist = async (dirName: string, width: number, height: number)
 	const resolutions = getResolutions(width, height);
 	const playlist = generatePlaylist(resolutions);
 
-	Deno.writeTextFileSync(`transcode/${dirName}/playlist.m3u8`, playlist);
-	await uploadToR2(`transcode/${dirName}/playlist.m3u8`, `${dirName}/playlist.m3u8`);
+	Deno.writeTextFileSync(`transcode/${dirName}/stream.m3u8`, playlist);
+	await uploadToR2(`transcode/${dirName}/stream.m3u8`, `${dirName}/stream.m3u8`);
 }
 
 
@@ -287,7 +287,13 @@ for (const directory of allDirectories.directories) {
   if (!directory) {
     console.log(`Skipping directory: ${directory}`);
     continue;
-  }
+	}
+
+	//  rawkode-academy-videos/youtube/metadata.json
+	if (directory === "rawkode-academy-videos/") {
+		console.log(`Skipping root directory: ${directory}`);
+		continue;
+	}
 
   const dirName = directory.substring(0, directory.length - 1);
 
@@ -313,7 +319,7 @@ for (const directory of allDirectories.directories) {
     `./transcode/${dirName}/timestamps.json`,
   );
   if (timestamps) {
-    console.log(`Found timestamps, assuming already processed`);
+		console.log(`Found timestamps, assuming already processed`);
 
     await createHLSPlaylist(dirName, metadata.width, metadata.height);
 
