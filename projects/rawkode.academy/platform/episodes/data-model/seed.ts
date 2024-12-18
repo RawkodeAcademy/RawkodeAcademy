@@ -5,7 +5,7 @@ const seed = async () => {
 	await db
 		.insert(episodesTable)
 		.values({
-			contentId: 'SG1-S04E06',
+			videoId: 'SG1-S04E06',
 			showId: 'SG1',
 			code: 'S04E06',
 		})

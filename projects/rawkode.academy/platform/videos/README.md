@@ -38,6 +38,15 @@ deno lint
 
 ## Deploy
 
+### Data Model
+
+```sh {"name":"production-migrate"}
+export LIBSQL_URL="https://${SERVICE_NAME}-${LIBSQL_BASE_URL}"
+export LIBSQL_TOKEN="op://sa.rawkode.academy/turso/platform-group/api-token"
+
+(cd data-model && op run -- deno --allow-all migrate.ts)
+```
+
 ### Read Model
 
 ```sh {"name":"deploy-read-model"}
