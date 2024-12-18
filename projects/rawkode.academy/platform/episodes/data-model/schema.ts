@@ -1,4 +1,4 @@
-import { primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
 /**
  * Why don't episodes have a date?
@@ -13,17 +13,11 @@ import { primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
  * the times they are scheduled to be published.
  */
 export const episodesTable = sqliteTable('episodes', {
+	contentId: text('contentId').notNull().primaryKey(),
 	showId: text('showId').notNull(),
-	// We're not going to make this a sequential number,
-	// because episodes are often scheduled in advance and
-	// out of order.
-	// This code should also provide a simple
-	// way for viewers to identify the episode.
-	// Like, by visiting: rawkode.academy/RESTATE1
 	code: text('code').notNull(), // RESTATE1, K8S1, etc.
-	contentId: text('contentId').notNull(),
 }, (table) => (
 	{
-		pk: primaryKey({ columns: [table.showId, table.code] }),
+		episodecode: unique().on(table.showId, table.code),
 	}
 ));

@@ -1,14 +1,14 @@
 import { db } from './client.ts';
-import { videosTable } from './schema.ts';
+import { contentTable } from './schema.ts';
 
 const seed = async () => {
 	await db
-		.insert(videosTable)
+		.insert(contentTable)
 		.values({
+			contentType: 'episode',
 			title: 'Window of Opportunity',
 			subtitle: 'The team is stuck in a time loop.',
-			status: 'draft',
-			releasedAt: new Date(),
+			publishedAt: new Date(),
 		})
 		.returning()
 		.all();
