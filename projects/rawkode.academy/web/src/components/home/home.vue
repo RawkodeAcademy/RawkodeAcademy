@@ -35,53 +35,123 @@
 			</div>
 		</nav>
 
-		<!-- Categories -->
-		<div class="flex gap-2 p-3 overflow-x-auto categories-scroll">
-			<button
-				v-for="category in categories"
-				:key="category"
-				class="px-4 py-1 border border-gray-200 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-800 rounded-full text-sm whitespace-nowrap dark:hover:bg-gray-800"
-			>
-				{{ category }}
-			</button>
-		</div>
+		<!-- Video Grid or VideoPlayerPage -->
+		<div v-if="!selectedVideo">
+			<!-- Categories -->
+			<div class="flex gap-2 p-3 overflow-x-auto categories-scroll">
+				<button
+					v-for="category in categories"
+					:key="category"
+					class="px-4 py-1 border border-gray-200 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-800 rounded-full text-sm whitespace-nowrap dark:hover:bg-gray-800"
+				>
+					{{ category }}
+				</button>
+			</div>
 
-		<!-- Video Grid -->
-		<div
-			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 cursor-pointer"
-		>
+			<!-- Video Grid -->
 			<div
-				v-for="video in videos"
-				:key="video.id"
-				class="rounded-lg overflow-hidden hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-300"
+				class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 cursor-pointer"
 			>
-				<div class="relative">
-					<img
-						:src="video.thumbnail"
-						:alt="video.title"
-						class="w-full aspect-video object-cover"
-					/>
-					<span
-						class="absolute bottom-1 right-1 text-white bg-black px-1 rounded text-xs"
-					>
-						{{ video.duration }}
-					</span>
+				<!-- Skeleton Loaders -->
+				<div
+					v-if="loading"
+					v-for="n in 9"
+					:key="'skeleton-' + n"
+					class="rounded-lg overflow-hidden bg-gray-300 dark:bg-gray-700 animate-pulse"
+				>
+					<div class="aspect-video bg-gray-400 dark:bg-gray-800"></div>
+					<div class="p-3">
+						<div class="h-4 bg-gray-400 dark:bg-gray-800 rounded mb-2"></div>
+						<div class="h-4 bg-gray-400 dark:bg-gray-800 rounded w-3/4"></div>
+					</div>
 				</div>
-				<div class="p-3">
-					<h3 class="font-medium mb-1">{{ video.title }}</h3>
-					<p class="text-gray-400 text-sm">{{ video.channel }}</p>
-					<p class="text-gray-400 text-sm">
-						{{ video.views }} views • {{ video.uploadTime }}
-					</p>
+
+				<!-- Videos -->
+				<div
+					v-else
+					v-for="video in videos"
+					:key="video.id"
+					class="rounded-lg overflow-hidden hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-300"
+					@click="openVideo(video)"
+				>
+					<div class="relative">
+						<img
+							:src="video.thumbnailUrl"
+							:alt="video.title"
+							class="w-full aspect-video object-cover"
+						/>
+						<span
+							class="absolute bottom-1 right-1 text-white bg-black px-1 rounded text-xs"
+						>
+							{{ video.title }}
+						</span>
+					</div>
+					<div class="p-3">
+						<h3 class="font-medium mb-1">{{ video.title }}</h3>
+						<p class="text-gray-400 text-sm">Rawkode Academy</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Pagination Controls -->
+			<div class="flex justify-between items-center mt-6 space-x-4 mx-3">
+				<!-- Limit Selector -->
+				<div class="flex items-center space-x-2">
+					<label
+						for="limit"
+						class="text-gray-700 dark:text-gray-300 font-semibold"
+						>Videos per page:</label
+					>
+					<select
+						id="limit"
+						v-model="limit"
+						@change="fetchVideos"
+						class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:focus:ring-blue-400 transition duration-300"
+					>
+						<option
+							v-for="option in [10, 15, 20, 50, 100]"
+							:key="option"
+							:value="option"
+						>
+							{{ option }}
+						</option>
+					</select>
+				</div>
+
+				<!-- Pagination Buttons -->
+				<div class="flex space-x-4">
+					<button
+						@click="previousPage"
+						:disabled="offset === 0"
+						class="px-3 py-2 rounded-lg font-semibold transition duration-300 bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 dark:bg-blue-700 dark:hover:bg-blue-800 dark:disabled:bg-gray-600 dark:disabled:text-gray-400 shadow-md hover:shadow-lg disabled:shadow-none"
+					>
+						← Previous
+					</button>
+					<button
+						@click="nextPage"
+						:disabled="!hasMore"
+						class="px-3 py-2 rounded-lg font-semibold transition duration-300 bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 dark:bg-blue-700 dark:hover:bg-blue-800 dark:disabled:bg-gray-600 dark:disabled:text-gray-400 shadow-md hover:shadow-lg disabled:shadow-none"
+					>
+						Next →
+					</button>
 				</div>
 			</div>
 		</div>
+
+		<!-- Video Player Page -->
+		<VideoPlayerPage v-else :id="selectedVideo.id" :recommendations="videos" />
 	</div>
 </template>
 
 <script setup>
 import { SearchIcon, MicIcon, VideoIcon, BellIcon } from "lucide-vue-next";
+import { ref, onMounted, watch, nextTick } from "vue";
+import Hls from "hls.js";
+import { GraphQLClient } from "graphql-request";
+import VideoPlayerPage from "./VideoPlayerPage.vue";
+const selectedVideo = ref(null);
 
+// Categories
 const categories = [
 	"All",
 	"Music",
@@ -92,113 +162,193 @@ const categories = [
 	"Trailers",
 	"Live",
 	"Skills",
-	"Pakistani dramas",
+	"Dramas",
 	"Stadiums",
 	"Algorithms",
 	"Functions",
 	"Gadgets",
 ];
 
-const videos = [
-	{
-		id: 1,
-		thumbnail:
-			"https://plus.unsplash.com/premium_photo-1721979418259-b32d7de74637?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGRlc2VydHxlbnwwfHwwfHx8MA%3D%3D",
-		title: "Mix - Dekhne ko ya Muhammad",
-		channel: "MNGMinhajNaatGroup",
-		views: "1.2K",
-		uploadTime: "Updated today",
-		duration: "3:45",
+// Reactive state for videos
+const videos = ref([]);
+const currentVideoUrl = ref(null);
+const videoPlayer = ref(null);
+let hlsInstance = null;
+const isPictureInPicture = ref(false);
+const videoError = ref(null);
+const loading = ref(true);
+const limit = ref(10);
+const offset = ref(0);
+const hasMore = ref(true);
+
+// GraphQL Client
+const client = new GraphQLClient("https://api.rawkode.academy/graphql", {
+	method: "POST",
+	headers: {
+		"Content-Type": "application/json",
 	},
-	{
-		id: 2,
-		thumbnail:
-			"https://images.unsplash.com/photo-1514996937319-344454492b37?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDR8fHByb2dyYW1taW5nfGVufDB8fDB8fHww",
-		title: "MERN Stack is Dead? (the right full-stack path for 2025)",
-		channel: "Akshay Saini",
-		views: "115K",
-		uploadTime: "6 days ago",
-		duration: "22:16",
-	},
-	{
-		id: 3,
-		thumbnail:
-			"https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bXVzaWN8ZW58MHx8MHx8fDA%3D",
-		title: "Aaj Sajeya | Alaya F | Trending Wedding Song 2021",
-		channel: "Saregama Music",
-		views: "43M",
-		uploadTime: "3 years ago",
-		duration: "4:09",
-	},
-	{
-		id: 4,
-		thumbnail:
-			"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeZtO1hong-GyGnUaQj6gCcdenhOoaR0pbTX7sCsMTFtTUuT4yooapJbwrenZ-hC6PcZ4&usqp=CAU",
-		title: "Learn Kubernetes in 30 Minutes",
-		channel: "TechWorld with Nana",
-		views: "320K",
-		uploadTime: "1 year ago",
-		duration: "29:45",
-	},
-	{
-		id: 5,
-		thumbnail:
-			"https://images.unsplash.com/photo-1667372393096-9c864313e868?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzZ8fHByb2dyYW1taW5nJTIwbGFuZ3VhZ2V8ZW58MHx8MHx8fDA%3D",
-		title: "Top 10 Programming Languages for 2024",
-		channel: "Programming with Mosh",
-		views: "870K",
-		uploadTime: "2 weeks ago",
-		duration: "15:34",
-	},
-	{
-		id: 6,
-		thumbnail:
-			"https://images.unsplash.com/photo-1459499362902-55a20553e082?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGNvZGluZyUyMGludGVydmlld3xlbnwwfHwwfHx8MA%3D%3D",
-		title: "How to Ace Your Coding Interviews",
-		channel: "Clever Programmer",
-		views: "1.1M",
-		uploadTime: "3 months ago",
-		duration: "18:50",
-	},
-	{
-		id: 7,
-		thumbnail:
-			"https://media2.dev.to/dynamic/image/width=1600,height=900,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F58dq4jn8lczrttgp2gvo.jpg",
-		title: "Rust vs Go: Which One Should You Learn?",
-		channel: "Fireship",
-		views: "650K",
-		uploadTime: "4 months ago",
-		duration: "12:21",
-	},
-	{
-		id: 8,
-		thumbnail: "https://cms-cdn.katalon.com/top_devops_tools_e4bd2bfbab.png",
-		title: "Top 5 DevOps Tools for 2024",
-		channel: "DevOps Toolkit",
-		views: "95K",
-		uploadTime: "5 days ago",
-		duration: "10:05",
-	},
-	{
-		id: 9,
-		thumbnail:
-			"https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fv3o6v5x5rk4mjnpv6spc.png",
-		title: "Building a Web App with Vue 3",
-		channel: "Academind",
-		views: "45K",
-		uploadTime: "2 weeks ago",
-		duration: "25:50",
-	},
-	{
-		id: 10,
-		thumbnail: "https://i.ytimg.com/vi/sBws8MSXN7A/hqdefault.jpg",
-		title: "CSS Grid vs Flexbox: Which One Should You Use?",
-		channel: "Traversy Media",
-		views: "400K",
-		uploadTime: "8 months ago",
-		duration: "14:45",
-	},
-];
+});
+
+// GraphQL Query
+const GET_VIDEOS = `
+  query($limit: Int, $offset: Int) {
+    getLatestVideos(limit: $limit, offset: $offset) {
+      id
+      title
+      thumbnailUrl
+      playlistUrl
+    }
+  }
+`;
+
+// Fetch videos
+const fetchVideos = async () => {
+	loading.value = true;
+	try {
+		const data = await client.request(GET_VIDEOS, {
+			limit: limit.value,
+			offset: offset.value,
+		});
+		videos.value = data.getLatestVideos;
+
+		// Check if there are more videos
+		hasMore.value = data.getLatestVideos.length === limit.value;
+	} catch (error) {
+		console.error("Error fetching videos:", error);
+	} finally {
+		loading.value = false;
+	}
+};
+
+// Open Video Page
+const openVideo = (video) => {
+	selectedVideo.value = video;
+};
+
+// Scroll to top
+const scrollToTop = () => {
+	// Scroll to top
+	window.scrollTo({
+		top: 0,
+		behavior: "smooth",
+	});
+};
+
+// Pagination Methods
+const nextPage = () => {
+	offset.value += limit.value;
+	fetchVideos();
+	scrollToTop();
+};
+
+const previousPage = () => {
+	offset.value = Math.max(0, offset.value - limit.value);
+	fetchVideos();
+	scrollToTop();
+};
+
+watch(limit, () => {
+	offset.value = 0;
+	fetchVideos();
+	scrollToTop();
+});
+
+// Fetch videos on component mount
+onMounted(async () => {
+	fetchVideos();
+
+	// Listen for Picture-in-Picture events
+	videoPlayer.value?.addEventListener("enterpictureinpicture", () => {
+		console.log("Entered Picture-in-Picture mode.");
+		isPictureInPicture.value = true;
+	});
+
+	videoPlayer.value?.addEventListener("leavepictureinpicture", () => {
+		console.log("Exited Picture-in-Picture mode.");
+		isPictureInPicture.value = false;
+	});
+});
+
+// Watch currentVideoUrl for changes
+watch(currentVideoUrl, async (url) => {
+	if (!url) return;
+
+	await nextTick();
+
+	if (!videoPlayer.value) return;
+
+	// Destroy existing HLS instance
+	if (hlsInstance) {
+		hlsInstance.destroy();
+		hlsInstance = null;
+	}
+
+	// Initialize HLS.js
+	if (Hls.isSupported()) {
+		hlsInstance = new Hls();
+		hlsInstance.loadSource(url);
+		hlsInstance.attachMedia(videoPlayer.value);
+
+		hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+			videoPlayer.value.play();
+		});
+
+		hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+			if (
+				data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR ||
+				data.response?.code === 404
+			) {
+				videoError.value =
+					"The video you're trying to play could not be found. Please try again later.";
+			}
+		});
+	} else if (videoPlayer.value.canPlayType("application/vnd.apple.mpegurl")) {
+		videoPlayer.value.src = url; // Native HLS support
+		videoPlayer.value.load();
+		videoPlayer.value.onerror = () => {
+			videoError.value =
+				"The video you're trying to play could not be found. Please try again later.";
+		};
+	} else {
+		console.error("HLS is not supported in this browser.");
+	}
+
+	// Add Picture-in-Picture Event Listeners
+	videoPlayer.value.addEventListener("enterpictureinpicture", () => {
+		isPictureInPicture.value = true;
+	});
+
+	videoPlayer.value.addEventListener("leavepictureinpicture", () => {
+		isPictureInPicture.value = false;
+	});
+});
+
+// Play video
+const playVideo = async (url) => {
+	if (!url) return;
+
+	videoError.value = null; // Reset the error
+	// Check if Picture-in-Picture mode is active
+	if (document.pictureInPictureElement) {
+		try {
+			await document.exitPictureInPicture();
+		} catch (error) {
+			console.error("Error exiting Picture-in-Picture mode:", error);
+		}
+	}
+	currentVideoUrl.value = url;
+};
+
+// Close video player
+const closePlayer = () => {
+	currentVideoUrl.value = null;
+	videoError.value = "";
+
+	if (hlsInstance) {
+		hlsInstance.destroy();
+		hlsInstance = null;
+	}
+};
 </script>
 
 <style scoped>
@@ -208,5 +358,20 @@ const videos = [
 }
 .categories-scroll::-webkit-scrollbar {
 	display: none;
+}
+
+/* Skeleton Animation */
+.animate-pulse {
+	animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
 }
 </style>
