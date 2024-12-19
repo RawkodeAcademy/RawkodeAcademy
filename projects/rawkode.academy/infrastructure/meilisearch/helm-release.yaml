@@ -1,0 +1,47 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: meilisearch
+spec:
+  interval: 48h
+  url: https://meilisearch.github.io/meilisearch-kubernetes
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: meilisearch
+spec:
+  interval: 72h
+  timeout: 5m
+  chart:
+    spec:
+      chart: meilisearch
+      version: '0.22.*'
+      sourceRef:
+        kind: HelmRepository
+        name: meilisearch
+      interval: 5m
+  releaseName: meilisearch
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  test:
+    enable: true
+  values:
+    auth:
+      existingMasterKeySecret: meilisearch-master-key
+    environment:
+      MEILI_ENV: production
+    persiistence:
+      enabled: true
+      size: 1Gi
+    nodeSelector:
+      cloud.google.com/gke-spot: "true"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi

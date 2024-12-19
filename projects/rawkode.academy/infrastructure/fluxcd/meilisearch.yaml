@@ -1,0 +1,33 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: meilisearch
+  namespace: flux-system
+spec:
+  provider: gcp
+  interval: 5m0s
+  url: oci://europe-west2-docker.pkg.dev/rawkode-academy-production/rawkode-academy/meilisearch
+  ref:
+    semver: 'v1.0.*'
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: meilisearch
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: meilisearch
+  namespace: flux-system
+spec:
+  targetNamespace: meilisearch
+  interval: 15m0s
+  path: ./
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: OCIRepository
+    name: meilisearch
+  timeout: 3m0s
+  wait: true
