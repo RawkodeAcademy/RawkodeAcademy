@@ -1,0 +1,891 @@
+## Unreleased (e7690d6..3ec1540)
+#### Bug Fixes
+- **(chapters)** don't use drizzle integration - (9671fec) - David Flanagan
+- **(chapters)** needs composite primary key - (1fed422) - David Flanagan
+- **(ci)** need dist artifact to deploy - (df27df0) - David Flanagan
+- **(ci)** ensure we never have an empty pipeline - (82661b2) - David Flanagan
+- **(cloudflare)** update to wrangler breaks deployments. - (d6e4f7d) - David Flanagan
+- **(data)** setup prettier - (d87bd10) - David Flanagan
+- **(dns)** delegate domain from dnsimple to cloudflare (#103) - (94fa9c7) - David Flanagan
+- **(dns)** migrate away from gandi (#101) - (5e9655b) - David Flanagan
+- **(github)** remove surperflous fields from rawkode-live form - (4f51bb2) - David Flanagan
+- **(image-service)** remove width, height params from svg - (10d83d3) - Stefan Ruzitschka
+- **(image-service)** tweak design to match website - (5f77c96) - David Flanagan
+- **(image-service)** a lot of things - (4a4c6f9) - Stefan Ruzitschka
+- **(image-service)** support NixOS with workerd patch - (2749ee4) - David Flanagan
+- **(people)** allow publishing with dev schema as introspection is behind admin group - (13d8dae) - David Flanagan
+- **(rawkode.studio)** fix formatting - (63d5b07) - Stefan Ruzitschka
+- **(rawkode.studio)** don't validate secrets for now - (94af994) - Stefan Ruzitschka
+- **(rawkode.studio)** formatting - (83b1561) - Stefan Ruzitschka
+- **(rawkode.studio)** react 19 - (9f613c2) - Stefan Ruzitschka
+- **(rawkode.studio)** samesite strict and redirect hack - (8580d9d) - Stefan Ruzitschka
+- **(rawkode.studio)** samesite lax for now, due to callback redirect not sending the cookies - (22fe7c9) - Stefan Ruzitschka
+- **(rawkode.studio)** downgrade react - (17f055c) - Stefan Ruzitschka
+- **(rawkode.studio)** re-add menu open button - (38219ae) - Stefan Ruzitschka
+- **(rawkode.studio)** use vue to properly init flowbite - (60dde3d) - Stefan Ruzitschka
+- **(rawkode.studio)** build - (07af688) - Stefan Ruzitschka
+- **(rawkode.studio)** flowbite import bug - (d14ffb6) - Stefan Ruzitschka
+- **(rawkode.studio)** formatting - (749c238) - Stefan Ruzitschka
+- **(rawkode.studio)** server island problems - (f2c349f) - Stefan Ruzitschka
+- **(rawkode.studio)** re-add flowbite import to layout - (36ae68a) - Stefan Ruzitschka
+- **(rawkode.studio)** add flowbite to body - (df17e56) - Stefan Ruzitschka
+- **(rawkode.studio)** flowbite js not working properly - (d796648) - Stefan Ruzitschka
+- **(rawkode.studio)** fix role middleware flow - (eac430e) - Stefan Ruzitschka
+- **(rpc)** use correct workos payload types - (949462b) - David Flanagan
+- **(rpc)** default first name for email - (93804c0) - David Flanagan
+- **(technologies)** check new technology passes unique constraints - (51a7bb7) - David Flanagan
+- **(technologies)** add devenv - (ce0a8af) - David Flanagan
+- **(web)** allow only on pr approval - (1d11eb0) - David Flanagan
+- **(web)** allow manual job run - (404f744) - David Flanagan
+- **(web)** run job if job changes - (c934170) - David Flanagan
+- **(web)** export env before build - (477ac54) - David Flanagan
+- **(web)** convert menu to vue to enforce flowbite JS loaded - (4c0503f) - David Flanagan
+- **(web)** allow people to sign out - (386c27a) - David Flanagan
+- **(web)** ensure env vars are correct - (70b160d) - David Flanagan
+- **(web)** tests - (6869e5d) - Stefan Ruzitschka
+- **(web)** remove workos step for now - (ef4bb8e) - David Flanagan
+- **(web)** correct import - (760fd50) - David Flanagan
+- **(web)** cleanup logout middleware logic - (32dbc8e) - David Flanagan
+- **(web)** add viewbox for guidepad logo - (ba3075a) - David Flanagan
+- **(web)** try svg defs before paths for safari - (4903299) - David Flanagan
+- **(web)** sigh - (d221586) - David Flanagan
+- **(web)** bunch of pricing fixes - (408d16f) - David Flanagan
+- **(web)** comment out mobile search - (a857c65) - David Flanagan
+- **(web)** menu and typos - (9819c7c) - David Flanagan
+- **(web)** live page title - (4bfc907) - David Flanagan
+- **(web)** set "og:url" depending on DEV / PROD - (a86880d) - Stefan Ruzitschka
+- **(web)** use unique icons / emoji for our values - (d2713fd) - David Flanagan
+- **(web)** use getSecret for all variables - (89abf43) - David Flanagan
+- **(web)** client_id needs to be available server side - (2290482) - David Flanagan
+- **(web)** remove unneeded padding - (c5095dd) - David Flanagan
+- **(web)** don't use cloudflare to generate types - (eed8f88) - David Flanagan
+- **(web)** deployment pipeline work - (0f002d7) - David Flanagan
+- **(web)** environment key incorrect - (5f128e6) - David Flanagan
+- **(web)** formatting inconsistencies - (7863f69) - David Flanagan
+- **(web)** workos-node v7 broken with workers - (d0ed892) - David Flanagan
+- **(web)** handle runtime types for worker - (3d0111d) - David Flanagan
+- **(web)** handle runtime types for worker - (968c962) - David Flanagan
+- **(web)** tailwind conflict merge - (fba9f3c) - David Flanagan
+- **(web)** iac was wrapping onto second line on smaller screens - (a7e441c) - David Flanagan
+- **(web)** use 'client:only="react"' - (86d77e9) - Stefan Ruzitschka
+- **(web)** font css imports - (a920916) - Stefan Ruzitschka
+- **(web)** missing code from rebase - (b548349) - David Flanagan
+- **(web)** desktop page layout - (606fc6e) - David Flanagan
+- **(web)** sort blog - (7347786) - David Flanagan
+- **(web)** quote colon in title - (9d83643) - David Flanagan
+- **(web)** article styling - (cbd58bb) - David Flanagan
+- **(web)** article content needed wrapped in div - (e66cab8) - David Flanagan
+- **(web)** partner links open in new tab - (c5db3ea) - David Flanagan
+- **(web)** azure logo - (38ea0f4) - David Flanagan
+- **(website)** accidentally reverted markdown rendering - (3ec1540) - David Flanagan
+- **(website)** ensure we use streamUrl instead of deprecated playlistUrl - (a0fb958) - David Flanagan
+- **(website)** ensure correct timestamp and table name - (8256082) - David Flanagan
+- **(website)** ensure videos play at full width - (1acf896) - David Flanagan
+- **(website)** ensure video watch page has OpenGraph metadata - (3978283) - David Flanagan
+- **(website)** we don't need to run a deno fmt before building - (eb4bec3) - David Flanagan
+- **(workshop-automation)** allow code-server access (#100) - (f0c6e8c) - David Flanagan
+- **(youtube-scraper)** remove compromised supabase token - (4470137) - David Flanagan
+- refactor content to videos - (cb65e0d) - David Flanagan
+- deployment url - (f624ef8) - David Flanagan
+- auth tests - (40ddbdc) - Stefan Ruzitschka
+- hopefully fix missing secrets - (b60a981) - David Flanagan
+- use correct secrets for deployment and some runme scripts - (692b789) - David Flanagan
+- update restate for types - (859cf86) - David Flanagan
+- update restate for types - (aab7193) - David Flanagan
+- convert markdown to asciidoc - (94d147e) - David Flanagan
+- simple typo (#168) - (b33300f) - Adam Leskis
+- use author name in lieu of Rawkode Academy (#113) - (df300c2) - Todd Martin
+- ensure cilium can be installed (#98) - (10d545a) - David Flanagan
+- use correct github secret and ensure correct cgroupdriver for containerd (#97) - (27eaf26) - David Flanagan
+- update automation for workshops (#96) - (f5a4e0f) - David Flanagan
+- key id on paired graphs - (4a18c3a) - David Flanagan
+- ensure decoding jwt to infer user - (c3d77b4) - David Flanagan
+- deploy - (8b096ab) - David Flanagan
+- hide more generated - (9ce7eca) - David Flanagan
+- deployed and published graphs - (63cde8f) - David Flanagan
+- remove grafbase temp - (b55bbde) - David Flanagan
+- use consistent vocab, which is unfortunately user atm - (c7dacce) - David Flanagan
+- spf reject all - (874e6d9) - David Flanagan
+- squash bugs - (c6bded7) - David Flanagan
+- updates to supabase module - (c5873b3) - David Flanagan
+- global css for major elements - (5cb5369) - David Flanagan
+- Justfile now works for offline dev - (754d9df) - David Flanagan
+- dependency updates - (521ffe9) - David Flanagan
+- update code to reflect schema changes - (dac6aa7) - David Flanagan
+- revert to gsuite - (6829dcc) - David Flanagan
+- dkim and dmarc for domains - (6aab128) - David Flanagan
+- short links - (42026a8) - David Flanagan
+- update rawkode.link to pkgx - (f2e6871) - David Flanagan
+- code format - (46090a8) - David Flanagan
+- add mount for data - (f5c855f) - David Flanagan
+- dagger codegen doesn't like config struct - (3106719) - David Flanagan
+- use correct functions - (b109c48) - David Flanagan
+- use correct functions - (fd5c027) - David Flanagan
+- give up and use Supabase All in One - (a0ac6d4) - David Flanagan
+- latest schema from supabase cli - (dcc6262) - David Flanagan
+- debugging missing anon key - (9a280ac) - David Flanagan
+- use mod gen code instead of dagger - (b669f17) - David Flanagan
+- db var name - (9233415) - David Flanagan
+- go.work dagger ref - (7f6dac1) - David Flanagan
+- use environment for SUPBASE_ - (07195d9) - David Flanagan
+- luxon flickering - (c105603) - Stefan Ruzitschka
+- hating that I started this on main - (414faea) - David Flanagan
+- hating that I started this on main - (c60a4cb) - David Flanagan
+- gotrue may look for database_url - (cad0bba) - David Flanagan
+- hating that I started this on main - (b81a2f7) - David Flanagan
+- more env fixes - (ef81afb) - David Flanagan
+- more env fixes - (89e299a) - David Flanagan
+- env for runtime - (70d54cb) - David Flanagan
+- remove analytics for now - (3ef7270) - David Flanagan
+- don't use Supabase AllInOne - (295b076) - David Flanagan
+- needs service role key - (3f03cc9) - David Flanagan
+- needs anon key - (a951423) - David Flanagan
+- postgres fix - (0a0146e) - David Flanagan
+- service ordering - (d445681) - David Flanagan
+- port is int - (0b044b8) - David Flanagan
+- force some dependencies - (5e4b812) - David Flanagan
+- can use dagger up - (749ec0f) - David Flanagan
+- working on local endpoint - (855f8cd) - David Flanagan
+- file mounting - (1544d50) - David Flanagan
+- quoting of kong command - (ff30b7d) - David Flanagan
+- quoting of kong command - (93ac5a3) - David Flanagan
+- quoting of kong command - (38aaedd) - David Flanagan
+- disable analytics for now - (9c99bf6) - David Flanagan
+- analytics needed configured - (715c0ce) - David Flanagan
+- analytics needed configured - (733963f) - David Flanagan
+- dev needs studio - (8bc818e) - David Flanagan
+- fix postgres port - (a891216) - David Flanagan
+- revert to execs - (796ba2f) - David Flanagan
+- run postgres as postgres - (faacc06) - David Flanagan
+- entrypoints - (c360cb7) - David Flanagan
+- various consts - (b07c73a) - David Flanagan
+- webhook filename - (9a1968f) - David Flanagan
+- the vue-writer package is deprecated, found a good React one - (0ed0b5d) - David Flanagan
+- format code - (ecea485) - David Flanagan
+- change output back to "hybrid" - (e564e88) - Stefan Ruzitschka
+- local development - (d597687) - David Flanagan
+- make .envrc portable - (fccd52a) - Stefan Ruzitschka
+- rls policy for episode_channel display - (1480626) - David Flanagan
+- import tweaks and blog tweaks - (93b02e5) - David Flanagan
+- auth trigger / sync and article author view - (7223929) - David Flanagan
+- centre max width - (c71002d) - David Flanagan
+- biome linter - (dbb424f) - David Flanagan
+- citext adoption - (39b101b) - David Flanagan
+- catch api errors - (b93d811) - David Flanagan
+- use node - (4b17753) - David Flanagan
+- railway deploy - (745808e) - David Flanagan
+- authenticate wix email - (0821c2a) - David Flanagan
+- dkim keys - (c23c904) - David Flanagan
+- cloudflare priorities are changed to their levels - (0579e83) - David Flanagan
+- bluesky verification - (8d2aecc) - David Flanagan
+- remove scribe - (26b99a0) - David Flanagan
+- format with rome - (388fe48) - David Flanagan
+- tidy up debugging - (c85bfd0) - David Flanagan
+- export fetch handler - (2880c52) - David Flanagan
+- unbound worker with route - (9bb297a) - David Flanagan
+- use callbackUrl, path doesn't work - (2189bca) - David Flanagan
+- make button login wiuth github - (1756342) - David Flanagan
+- remove console.debug - (e9a0e83) - David Flanagan
+- don't need APPSETTING prefix for App Service - (568eb75) - David Flanagan
+- correct env for oauth callback - (0a3ca5d) - David Flanagan
+- index sortable fields required for cosmosDB - (3a571e0) - David Flanagan
+- proper startup - (7cc3a4f) - David Flanagan
+- azure auth with service principal - (8efacc7) - David Flanagan
+- ensure correct build - (7ee8470) - David Flanagan
+- multi-arch build - (cc48ccc) - David Flanagan
+- page height - (c4e771b) - David Flanagan
+- format how to ask for help tweaks - (1953f79) - David Flanagan
+- final tweaks - (4993c33) - David Flanagan
+- case wrong, remove - (7fd485e) - David Flanagan
+- making icons uniform - (dea0c60) - Ally Graham
+- some tidy ups of imports and commented out code - (01431c0) - Ally Graham
+- partytown type for analytics request - (f9eaa02) - David Flanagan
+- various - (f8fc271) - David Flanagan
+- directory imports to path - (41e5c61) - David Flanagan
+- use dynamic icons for services page - (b32da61) - David Flanagan
+- use savvycal for collaborate page - (6cff4c0) - David Flanagan
+- fixing the hero height and text widths to work with tagline better - (24ecc5f) - Ally Graham
+- updating contact and pricing pages to play nicely with the new template - (706feca) - Ally Graham
+- adopt _'s for all column names - (c303346) - David Flanagan
+- spf gsuite - (6427379) - David Flanagan
+- cache dir for pulumi due to awful plugin acquisition logic - (b840f38) - David Flanagan
+- cleanup dagger code - (519f56c) - David Flanagan
+- ensure dagger works for website - (6eff14a) - David Flanagan
+- add website to workspace - (3eb3a8f) - David Flanagan
+- rename secret vault - (45de1c4) - David Flanagan
+- logging for Dagger - (8d4fd8c) - David Flanagan
+- stop console logging secrets - (568668f) - David Flanagan
+- bundle process for worker - (95eb2a2) - David Flanagan
+- env from temporal operator and worker path - (5758f9d) - David Flanagan
+- temporal cluster updates - (3ae3539) - David Flanagan
+- remove duplicate response_type - (7b1413f) - David Flanagan
+- use correct kind - (b795fb1) - David Flanagan
+- make formatter less aggressive - (4b728db) - David Flanagan
+- avoid svc/env collision - (61965c0) - David Flanagan
+- use supported temporal version - (a2d743d) - David Flanagan
+- use standard creation - (c00a275) - David Flanagan
+- use correct chart version - (f29c2df) - David Flanagan
+- separate dagger command and Pulumi code - (a8cdadc) - David Flanagan
+- ensure dagger dep - (b288831) - David Flanagan
+- recover deleted modules from broken force push - (a39e287) - David Flanagan
+- make show relationship work without name clash on episodes - (5314054) - David Flanagan
+- migrations and allow for ID updates on shows table - (24265f1) - David Flanagan
+- docs for CLI - (86af60c) - David Flanagan
+- don't reassign result - (dc2045b) - David Flanagan
+- handling head_ref on main push - (d9a009d) - David Flanagan
+- try avoiding npx - (fa3decd) - David Flanagan
+- try avoiding npx - (752c2f5) - David Flanagan
+- hide secrets by omitting log viewer - (8b1db2b) - David Flanagan
+- hide secrets by omitting log viewer - (510d558) - David Flanagan
+- ensure uuid is available - (7b35069) - David Flanagan
+- Kubernetes typo - (7c6a217) - David Flanagan
+- use correct package for kubectl helper - (e7cb4fa) - David Flanagan
+- cleanup descriptions: - (ebdd206) - David Flanagan
+- breadcrumbs breaking mobile menu - (0be0e2f) - David Flanagan
+- update rawko.de - (4552084) - David Flanagan
+- paths to project within monorepo - (7a3f15b) - David Flanagan
+- paths to project within monorepo - (f9c7755) - David Flanagan
+- paths to project within monorepo - (2460340) - David Flanagan
+- paths to project within monorepo - (3efb7e8) - David Flanagan
+- dns stuff - (4087e2a) - David Flanagan
+- remove Gateway API support from Contour - (359dba4) - David Flanagan
+- include Contour CRDS - (76fac93) - David Flanagan
+- correct Contour config - (3364fe3) - David Flanagan
+- cdk8s helm rendering can't handle CRDs - (c4c1cb1) - David Flanagan
+- don't call contour redis - (952734e) - David Flanagan
+- ensure unused value isn't declared - (70752e3) - David Flanagan
+- add yarn - (e4abe69) - David Flanagan
+- ash is available through busybox - (f0b13f2) - David Flanagan
+- ensure basic shell available (for now) - (4e333ed) - David Flanagan
+- lift permissions to workflow - (6cd327f) - David Flanagan
+- use less architectures due to bug - (6451b3b) - David Flanagan
+- use less architectures due to bug - (5f1cb26) - David Flanagan
+- use less architectures due to bug - (bd28457) - David Flanagan
+- use correct path for ArgoCDK8s files - (114f172) - David Flanagan
+- ArgoCD isn't multi-ns yet (coming 2.5) - (42936c0) - David Flanagan
+- try setting destination server - (8723ef5) - David Flanagan
+- remove unused declaration - (3fe49f6) - David Flanagan
+- make sure cdk8s renders - (9a17151) - David Flanagan
+- refs to Academy GitHub - (8362dfe) - David Flanagan
+- cleanup deployment name - (b8de5c3) - David Flanagan
+- pass mongoDB name down - (03c7db1) - David Flanagan
+- handle imagePullPolicy and env params for payloadcms - (7649cea) - David Flanagan
+- remove Pulumi run from Dagger (gitops now) - (4e226d2) - David Flanagan
+- monkey patch in latest pulumi version for plugin acqusition fix - (b858512) - David Flanagan
+- ensure in-cluster Pulumi refreshes - (96a3491) - David Flanagan
+- ensure GitHub token exists for Dagger - (0c43029) - David Flanagan
+- add back office-hours link - (a82591a) - David Flanagan
+- css build issues for astro - (1794875) - David Flanagan
+- correctly pass rudderStack secret to worker - (2a0872f) - David Flanagan
+- tidy up - (e6099a6) - David Flanagan
+- call the right script - (15c152d) - David Flanagan
+- ensure we build before deploy - (9124690) - David Flanagan
+- remove academy domain from weblinks - (be5ef41) - David Flanagan
+- commit missing secrets/workflow tweaks - (cecfcac) - David Flanagan
+- use unique project ID to get a unique node_module cache - (be67825) - David Flanagan
+- ensure domainsDns has build - (0cdd3af) - David Flanagan
+- revert refactoring of main build defs - (cbd2ed0) - David Flanagan
+- ensure sops is available - (2a31820) - David Flanagan
+- add maps for table names - (2d91aa6) - David Flanagan
+- handle current URL nicer - (e9b82d2) - David Flanagan
+- resync even if commit match - (82b1fff) - David Flanagan
+- hardcode again - (8194f3e) - David Flanagan
+- remove nginx and environment (for now) - (2696537) - David Flanagan
+- hardcode again - (b1b4828) - David Flanagan
+- expose via contour ingress - (3298017) - David Flanagan
+- add ports to deployment - (927e393) - David Flanagan
+- labels and selector should match - (a7d8c2e) - David Flanagan
+- remove autonaming from stack password - (f65a6df) - David Flanagan
+- use deployment directory for projects - (cd18d8e) - David Flanagan
+- use latest version of blox - (51e2daa) - David Flanagan
+- copy schemata into build - (b2e7eff) - David Flanagan
+- blox path - (8dad3aa) - David Flanagan
+- specify build-args correctly - (e266e68) - David Flanagan
+- specify correct Dockerfile path - (bd9abac) - David Flanagan
+- make email optional and added some more data - (3fefe94) - David Flanagan
+- tidy up cue files - (48c907d) - David Flanagan
+- run data-embassy in correct dir - (db2a9fb) - David Flanagan
+- stuff - (128fba9) - David Flanagan
+- stuff - (a7db986) - David Flanagan
+- stuff - (d053de9) - David Flanagan
+#### Documentation
+- **(shows)** add local development instructions - (67bb329) - David Flanagan
+- **(web)** add notes on Nix - (a61c84f) - David Flanagan
+- style Zulip badge - (5761dad) - David Flanagan
+- add Zulip badge - (aa345d3) - David Flanagan
+#### Features
+- **(api)** grafbase + apollo + fly + deno - (b15a1f8) - David Flanagan
+- **(api)** attempt people federation into shows - (106f4c8) - David Flanagan
+- **(bunny.net)** add caption upload - (720557c) - David Flanagan
+- **(bunny.net)** script to populate bunny with trimmed videos - (18e3e16) - David Flanagan
+- **(casting-credits)** new service 🎉 - (31249cf) - David Flanagan
+- **(content)** introduction of content service - (894e77a) - David Flanagan
+- **(content/shows)** added initial show service - (7596e6b) - David Flanagan
+- **(dagger)** deno module - (d48a262) - David Flanagan
+- **(dagger)** add dagger pipeline for dev - (ff860ae) - David Flanagan
+- **(dagger)** pipelines - (25abfa1) - David Flanagan
+- **(dagger)** terraform-cdk and bun initial modules - (06401cf) - David Flanagan
+- **(dagger)** modules for sqld and cargo-buil - (10b2566) - David Flanagan
+- **(daggerverse/sops)** add sops module - (b775f97) - David Flanagan
+- **(data)** scripts to bring structure to old data - (279a274) - David Flanagan
+- **(data)** first attempt at data as code with typscript (#89) - (dc3747f) - David Flanagan
+- **(data)** initial poc - (3b37f4e) - David Flanagan
+- **(direnv)** remove nix support (#95) - (7c0f244) - David Flanagan
+- **(dmno)** plugin setup - (d538045) - David Flanagan
+- **(dmno)** top level devenv and config - (cdcc5c1) - David Flanagan
+- **(dns)** support workos custom domains - (28737c1) - David Flanagan
+- **(dns)** adding dmno config - (a5768ff) - David Flanagan
+- **(dns)** support resend and add devenv - (8bc8603) - David Flanagan
+- **(dns)** revert back to gmail and proton mail - (2f2d09c) - David Flanagan
+- **(dns)** switching to O365 for a test - (2295c52) - David Flanagan
+- **(dns)** allow cloudflare pages to handle DNS - (9b56629) - David Flanagan
+- **(dns)** add api cname and fix dkim for dev - (5bc8c61) - David Flanagan
+- **(email)** move personal email to proton - (b4be5f2) - David Flanagan
+- **(episodes)** initial draft (#266) - (2c981ab) - David Flanagan
+- **(events)** initial event service - (d563324) - David Flanagan
+- **(flipt)** initial feature flag configuration - (dc0acf7) - flipt-cloud[bot]
+- **(github)** keep templates easy for contributors and add types - (29c8ba6) - David Flanagan
+- **(github)** automate GitHub setup - (ecb4884) - David Flanagan
+- **(github)** new issue templates - (b7a181f) - Stefan Ruzitschka
+- **(github)** add a new template for defects - (a08def9) - Stefan Ruzitschka
+- **(github)** new template for rawkode live proposals - (cdbaa8c) - David Flanagan
+- **(gitlab)** automate group labels - (d2d69f2) - David Flanagan
+- **(gitlab)** start of automation for GitLab - (f47059b) - David Flanagan
+- **(graphql)** generate typed client - (05dd395) - David Flanagan
+- **(image-service)** possibility to add an image to a template - (10494eb) - Stefan Ruzitschka
+- **(image-service)** add an etag as response header - (e234897) - Stefan Ruzitschka
+- **(image-service)** use only one query param for the payload - (05f95e3) - Stefan Ruzitschka
+- **(image-service)** new service to generate images - (0532fe3) - Stefan Ruzitschka
+- **(infrastructure)** setting up Stripe custom domain - (2f93c69) - David Flanagan
+- **(kubernetes)** initial gitops pipeline - (6ef56e3) - David Flanagan
+- **(kubernetes)** initial gitops pipeline - (ec651fc) - David Flanagan
+- **(madr)** add initial markdown architectural decision records - (deba3e1) - David Flanagan
+- **(people)** migrate to Apollo - (220e57f) - David Flanagan
+- **(people)** initial people service - (6c49a0a) - David Flanagan
+- **(people-biographies)** new service 🎉 - (c5380a5) - David Flanagan
+- **(people-links)** new service 🎉 - (a7b5450) - David Flanagan
+- **(people-service)** switch to graphql-yoga + pothos (#294) - (47d93b1) - David Flanagan
+- **(querytube)** ephemeral service to query youtube videos - (2b2fa0d) - David Flanagan
+- **(rawkode-academy)** add sops secrets for platform - (ee353d5) - David Flanagan
+- **(rawkode-academy)** technologies service - (9b21441) - David Flanagan
+- **(rawkode.chat)** add standup bot - (f2c8136) - David Flanagan
+- **(rawkode.chat)** add stack updates service - (ea868bf) - David Flanagan
+- **(rawkode.studio)** Create / list / delete livestreams - (aa352e0) - Stefan Ruzitschka
+- **(rawkode.studio)** distinguish protected and admin routes - (4b49be7) - Stefan Ruzitschka
+- **(rawkode.studio)** show username and email - (72bc51f) - Stefan Ruzitschka
+- **(rawkode.studio)** more ui - (0c5ffed) - Stefan Ruzitschka
+- **(rawkode.studio)** get roles - (e5cb919) - Stefan Ruzitschka
+- **(rawkode.studio)** auth - (eccfbf9) - Stefan Ruzitschka
+- **(readme)** add some rawkode live context - (3be4a90) - David Flanagan
+- **(rpc)** initial rpc prototype with restate and trigger.dev - (91b3e0c) - David Flanagan
+- **(rpc)** hooking up workos webhook for user registered - (8ac9516) - David Flanagan
+- **(rpc)** initial boilerplate - (fbfee6a) - David Flanagan
+- **(rpc)** clerk.dev webhook receiver - (ef3418d) - David Flanagan
+- **(shows)** add write model - (d658440) - David Flanagan
+- **(shows)** apollo with Deno and Deno Deploy - (4120f46) - David Flanagan
+- **(shows)** print schema and deploy to Cloudflare - (251eb79) - David Flanagan
+- **(shows)** apollographql version - (0f04bd4) - David Flanagan
+- **(social)** transcribe YouTube videos - (7e51e56) - David Flanagan
+- **(social)** iniitla marimo notebook - (345749f) - David Flanagan
+- **(sops)** add initial 'secret' - (463f5c4) - David Flanagan
+- **(user-service)** add user registered rpc - (228517e) - David Flanagan
+- **(video-likes)** new service - (25c44b8) - David Flanagan
+- **(videos)** default to `getLatestVideos` - (33984dd) - David Flanagan
+- **(videos)** initial video service - (2700779) - David Flanagan
+- **(wallpaper)** add dark with rawkode logo - (afe5852) - David Flanagan
+- **(web)** fully support blog series - (5a793dd) - Stefan Ruzitschka
+- **(web)** continuous deployment and preview urls - (9b9bfc3) - David Flanagan
+- **(web)** switch to zitadel - (8a67948) - David Flanagan
+- **(web)** user profile bar and logout - (672df12) - David Flanagan
+- **(web)** partnership faq - (5bebc9a) - David Flanagan
+- **(web)** add some sales pitch - (82fda7b) - David Flanagan
+- **(web)** add some sales pitch - (06ad57e) - David Flanagan
+- **(web)** share your project page - (7205fde) - David Flanagan
+- **(web)** initial partnership page - (d6ae6f8) - David Flanagan
+- **(web)** initial partnership page - (88803d5) - David Flanagan
+- **(web)** add custom 404 page - (3bd2b7d) - Stefan Ruzitschka
+- **(web)** pages can set their own opengraph information - (0c781d5) - Stefan Ruzitschka
+- **(web)** sitemap - (cb10de7) - Stefan Ruzitschka
+- **(web)** add biome as dev dependency - (33b326d) - Stefan Ruzitschka
+- **(web)** add /live for live stream player - (fdd7bc6) - David Flanagan
+- **(web)** deployment pipeline - (8505bda) - David Flanagan
+- **(web)** opengraph tags - (4c455e5) - Stefan Ruzitschka
+- **(web)** test ci system - (08f13b0) - David Flanagan
+- **(web)** test ci system - (d701139) - David Flanagan
+- **(web)** test ci system - (563ca24) - David Flanagan
+- **(web)** test ci system - (fdeb6bb) - David Flanagan
+- **(web)** test ci system - (17ed5b5) - David Flanagan
+- **(web)** remove debugging messages - (b52b6b2) - David Flanagan
+- **(web)** auth server island for button - (560ce0a) - David Flanagan
+- **(web)** initial authentication implementation - (b3c9556) - David Flanagan
+- **(web)** dark/light - mode aware images - (afb7f01) - Stefan Ruzitschka
+- **(web)** optional subtitles for blog posts - (6db770b) - Stefan Ruzitschka
+- **(web)** zoomable images \ - (0e74bc2) - Stefan Ruzitschka
+- **(web)** adding partner information - (da64c76) - David Flanagan
+- **(web)** prepare for scaled back website deploy - (a420495) - David Flanagan
+- **(web)** pushing homepage values - (fc4ead3) - David Flanagan
+- **(web)** devenv - (0929682) - David Flanagan
+- **(website)** implement video player page - (cbb431b) - David Flanagan
+- **(website)** add article cover to the opengraph image - (4816559) - Stefan Ruzitschka
+- **(website)** table of contents - (cba10d7) - Stefan Ruzitschka
+- **(website)** cover images - (a6d4711) - Stefan Ruzitschka
+- **(wundergraph)** use wundergraph for GraphQL federation - (0db72fb) - David Flanagan
+- **(zitadel)** now hosted on GKE - (2caf730) - David Flanagan
+- **(zitadel)** self-host Zitadel on fly.io - (6580d53) - David Flanagan
+- **(zitadel)** self-host on fly - (11d5a34) - David Flanagan
+- **(zulip)** enable web public channels - (3ba2668) - David Flanagan
+- expose playlist url - (c0ae1ad) - David Flanagan
+- add chapters service - (b29d880) - David Flanagan
+- new service architecture for Dagger and codewise: read, write, and data models - (2b05aec) - David Flanagan
+- add MIT License - (c393d39) - David Flanagan
+- add dnsimple provider (#99) - (c69b47e) - David Flanagan
+- initial dagger implementation - (c832d52) - David Flanagan
+- split out shows and show hosts - (0fe168c) - David Flanagan
+- extend show with host ids - (faaa0ab) - David Flanagan
+- switch to using drizzle client for resolver - (a252da6) - David Flanagan
+- adopt clerk.dev - (a2e075b) - David Flanagan
+- initial federated API with rsvp service - (d14f8a1) - David Flanagan
+- rsvp micro-service - (4b98ed0) - David Flanagan
+- redirect rawkode.dev to academy/about - (282840f) - David Flanagan
+- blog implementation - (d5949dc) - David Flanagan
+- about us page finished - (e87df0c) - David Flanagan
+- initial about page - (942b736) - David Flanagan
+- refactor supabase dagger module - (e6ed9a7) - David Flanagan
+- lots of vscode improvements for workspace - (dcd039f) - David Flanagan
+- clean up content, particularly video - (bad6c72) - David Flanagan
+- attempt to proxy postgres - (2461c6e) - David Flanagan
+- add posthog - (03f9e64) - David Flanagan
+- event page + channel logos + avatar images - (8195501) - Stefan Ruzitschka
+- all all supabase services - (a3842bb) - David Flanagan
+- add all supabase processes - (1babd6a) - David Flanagan
+- initial Supabase dagger module - (4a8926d) - David Flanagan
+- add initial devenv - (db9ce47) - David Flanagan
+- add mprocs for easier local development - (89687c6) - David Flanagan
+- welcome emails - (e050912) - David Flanagan
+- events - (60cd4ea) - Stefan Ruzitschka
+- nix flake additions - (55f820b) - David Flanagan
+- lets chat integrations - (c378943) - David Flanagan
+- video pages - (32849a4) - David Flanagan
+- initial video work - (df51363) - David Flanagan
+- articles and authors - (cbfdcdc) - David Flanagan
+- adopt nix flakes - (af2c0a8) - David Flanagan
+- authentication - (2c9b2be) - David Flanagan
+- new website build prototype - (027b27c) - David Flanagan
+- openai importing - (3e5ae6b) - David Flanagan
+- youtube scraper - (1703dcf) - David Flanagan
+- more schema support - (57c7b7f) - David Flanagan
+- hide people from anon API if never been a guest or a host - (5b80350) - David Flanagan
+- migrations for db - (6f3328c) - David Flanagan
+- dagger rust build for data - (27257e7) - David Flanagan
+- rough sketch of CUE data format - (ded4912) - David Flanagan
+- auth service - (793160d) - David Flanagan
+- testing - (cde4d08) - David Flanagan
+- bump.email - (fb2a972) - David Flanagan
+- new website live - (eba4b22) - David Flanagan
+- add social links - (c41cb84) - David Flanagan
+- hook up beta to wix - (a75ea70) - David Flanagan
+- migrate back to gmail - (1d271e2) - David Flanagan
+- migrate to fastmail - (13a5262) - David Flanagan
+- support page rules - (4f74b29) - David Flanagan
+- add healthcheck - (64d830f) - David Flanagan
+- write analytics to InfluxDB - (2b81339) - David Flanagan
+- updated rawkode.link - (4298900) - David Flanagan
+- gke cluster - (7da6f02) - David Flanagan
+- cloudflare image support - (d0060e6) - David Flanagan
+- alphabits dns - (8f4bdc9) - David Flanagan
+- ensure we can always get user email from github - (61ff15f) - David Flanagan
+- disable local auth - (facb245) - David Flanagan
+- whole bunch of website and cms changes - (e27eaa2) - David Flanagan
+- bring DNS under management of single CF account - (47b4e74) - David Flanagan
+- terraform-state-backend and rawkode.cloud - (bad60cd) - David Flanagan
+- cloud native 2.0 - (ee00abb) - David Flanagan
+- cluster rebuild - (663e33c) - David Flanagan
+- cloud native 2.0 talk - (730ebf2) - David Flanagan
+- cms - (d131ced) - David Flanagan
+- better github login support - (0fda538) - David Flanagan
+- add plugins: oauth, seo, search - (ded533d) - David Flanagan
+- lets cdktf python - (dba4253) - David Flanagan
+- initial CMS build - (87ae73d) - David Flanagan
+- remove infra/salt rawkode.cloud - (d1795df) - David Flanagan
+- further salt work - (f5447b7) - David Flanagan
+- new rawkode.cloud - (e4bb713) - David Flanagan
+- commit with correct case - (2f49c22) - David Flanagan
+- add vcard - (79f858b) - David Flanagan
+- add SLSA provenance - (84f663c) - David Flanagan
+- add scribe security - (feb1f4c) - David Flanagan
+- switch to static website - (9702d0c) - David Flanagan
+- updating command palette - (2b8da8f) - Ally Graham
+- adding in page styles - (475f12a) - Ally Graham
+- support multiple registrars and multi records per subdomain - (26008dc) - David Flanagan
+- add community link - (736a461) - David Flanagan
+- add typewriter to homepage - (75e72f0) - David Flanagan
+- initial services page - (d6213fb) - David Flanagan
+- add article submission pipeline - (3699468) - David Flanagan
+- crm and learn cnames - (a1f745f) - David Flanagan
+- savvycal for collaborate - (fef41ca) - David Flanagan
+- got the load more button working - (fc91dfd) - Ally Graham
+- progressed the dynamic shows page - (fe36813) - Ally Graham
+- working on infinite scroller - (b6beb90) - Ally Graham
+- updating shows template - (40b8742) - Ally Graham
+- further update sto the dynamic show page template - (16b53b4) - Ally Graham
+- working on getting the data to create the dynamic show pages - (b11dd8b) - Ally Graham
+- started on the show page - (d8ec636) - Ally Graham
+- adding in the shows page - (48b7620) - Ally Graham
+- updating logo in the mobile side menu - (1ad078d) - Ally Graham
+- add rawkode.email - (f609566) - David Flanagan
+- add blog collection - (605fbec) - David Flanagan
+- tasuku for task runner on dagger - (22c8615) - David Flanagan
+- adding domain model service - (1b52bbb) - David Flanagan
+- onboard studio project - (fe1828e) - David Flanagan
+- commented out shows links for now and updated strapline - (2ec2f6c) - Ally Graham
+- further updates to show cards and testimonial section - (40d9eb8) - Ally Graham
+- updating testimonial and partners sections of homepage - (67a042b) - Ally Graham
+- further work on homepage hero, backgrounds and tech list - (24d4a63) - Ally Graham
+- further progress on the homepage - (1698159) - Ally Graham
+- adding all icons for the technologies - (97c7e35) - Ally Graham
+- advancing the homepage - (8ec0534) - Ally Graham
+- further work on homepage. Adding in the trusted companies. Expanding testimonials and show cards. - (df2a9c3) - Ally Graham
+- further updates to homepage. Adding in image to work with us section - (b0444dd) - Ally Graham
+- adding the public files back in - (6da5027) - Ally Graham
+- moving the files to the new structure - (1f25322) - Ally Graham
+- deploy temporal operator CRDs - (3d005d5) - David Flanagan
+- add cloudnative-pg and temporal operator - (09c2cd4) - David Flanagan
+- add temporal operator and cloudnative-pg - (dd8b93f) - David Flanagan
+- community blog on hashnode - (413107f) - David Flanagan
+- template tauri desktop app - (c92d7a9) - David Flanagan
+- add episode to shows query - (d178e2b) - David Flanagan
+- add chappaai for community projects - (f68a45d) - David Flanagan
+- pipeline for project deploy - (a4eb2e0) - David Flanagan
+- add 1password-connect - (688decd) - David Flanagan
+- add bootstrap kustomize - (fa5fa2c) - David Flanagan
+- deploy FluxCD - (feaba41) - David Flanagan
+- simple nginx deploy - (a955a56) - David Flanagan
+- new platform build out on Scaleway - (d8ed52a) - David Flanagan
+- adopt cdktf for DNS - (1809fd4) - David Flanagan
+- aws control plane - (0f9e4b2) - David Flanagan
+- use 1Password secrets provider for website - (1d6b263) - David Flanagan
+- youtube workflows worker - (f04a17c) - David Flanagan
+- add technologies to episodes - (cc67808) - David Flanagan
+- playing with cdktf - (7ac6586) - David Flanagan
+- attach join token via SecretsManager for Teleport - (fcbd74f) - David Flanagan
+- setup YouTube OAuth for Chappaai - (9af8197) - David Flanagan
+- deploy external secrets and add devenv - (9de354a) - David Flanagan
+- deploy external secrets operator - (b912efc) - David Flanagan
+- add OAuth Api and Connection - (88421f5) - David Flanagan
+- update technology information - (ed9da47) - David Flanagan
+- deploy Chappaai CRDs - (d81cdd7) - David Flanagan
+- deploy chappaai - (9c4584c) - David Flanagan
+- support batch inserts for performance benefits - (16c605b) - David Flanagan
+- deployment logic for youtube system - (7d170b0) - David Flanagan
+- example temporal workflow - (bee1265) - David Flanagan
+- allow content to be in draft status - (b0aa8a3) - David Flanagan
+- temporal deploy - (660c61b) - David Flanagan
+- remove content-management - (11b85d0) - David Flanagan
+- add back studio deploy - (ed12859) - David Flanagan
+- deploy cloudnativepg and postgresql for temporal - (9e3b125) - David Flanagan
+- add API and eventing - (5b36e50) - David Flanagan
+- initial eventing for content changes - (c7ad621) - David Flanagan
+- ingress hasura event triggers - (08c416d) - David Flanagan
+- deploy repdanda console - (0a5f52f) - David Flanagan
+- deploy RedPanda - (e8b2f50) - David Flanagan
+- bring rawkode.studio DNS under management - (9a78c2d) - David Flanagan
+- studio added to flow - (192b3c5) - David Flanagan
+- deploy redpanda and cert-manager - (194adcd) - David Flanagan
+- add README - (a2232bb) - David Flanagan
+- initial deploy command for rawkode.cloud - (2b1bb30) - David Flanagan
+- local dagger command for interactive and dynamic tasks - (b9c4d4f) - David Flanagan
+- initial platform docs - (aab8323) - David Flanagan
+- deploy rawkode.cloud - (bf2ff76) - David Flanagan
+- adopting pnpm - (8012854) - David Flanagan
+- upgrade platform with better component logic - (425c896) - David Flanagan
+- add SQL for episodes - (58bf628) - David Flanagan
+- Neon/Hasura/Knex CLI API - (65d8959) - David Flanagan
+- lets keep trying - (1c612c8) - David Flanagan
+- lets keep trying - (b689517) - David Flanagan
+- add pull-request logic - (799c6a9) - David Flanagan
+- add pull-request logic - (4920068) - David Flanagan
+- add pull-request logic - (bdc928a) - David Flanagan
+- build website with Dagger Node SDK - (33a54df) - David Flanagan
+- splitting out navigation from breadcrumbs. (#3) - (05bde08) - Ally Graham
+- updating navigation so desktop is horizontal and mobile is maintained in sidebar - (8f9464c) - Ally Graham
+- splitting out navigation from breadcrumbs. - (7e1a990) - Ally Graham
+- surreldb test - (679d3ac) - David Flanagan
+- sync show hosts - (8a9583f) - David Flanagan
+- sync to postgresql - (41994c4) - David Flanagan
+- simpler Rust approach to data validation - (cb92470) - David Flanagan
+- data cli work in progress - (a7d72f0) - David Flanagan
+- adding in all new favicons with updates to base template to use them all - (4d97b47) - Ally Graham
+- Flux, Pulumi, OCI, and a cleaner platform - (5c5437b) - David Flanagan
+- add pricing and partnership models - (a1dc9dd) - David Flanagan
+- add Google Cloud support to Pulumi action - (97e312f) - David Flanagan
+- add code-server - (befe1e5) - David Flanagan
+- add workshop automation - (8ec1ab2) - David Flanagan
+- build with Dagger's Go SDK - (dbc0953) - David Flanagan
+- build CMS images with buildx/bake - (36c1658) - David Flanagan
+- move rawkode.dev back to fastmail - (0ec2bbb) - David Flanagan
+- add CommitOps - (e1ff76f) - David Flanagan
+- add fbom information - (82a2407) - David Flanagan
+- build with docker for now - (ed3db9b) - David Flanagan
+- build with docker for now - (c96f590) - David Flanagan
+- build PayloadCMS with melange and apko - (ee679e9) - David Flanagan
+- move all domains to new system - (d1eaeda) - David Flanagan
+- move mroe domains to new system - (866d7e5) - David Flanagan
+- switch academy domain to new class based model with provider isolated to function - (8fc20f3) - David Flanagan
+- deploy to firebase - (0498ed5) - David Flanagan
+- add contact us and work together forms - (f3d5ff1) - David Flanagan
+- melange for payload - (a388afc) - David Flanagan
+- switch to Contour Gateway Controller - (b468d9b) - David Flanagan
+- build ArgoCDK8s image - (6a4ce50) - David Flanagan
+- switch to Cloud DNS with Gandi with DNSSec - (6bb3ecb) - David Flanagan
+- try to deploy contour - (e9ff214) - David Flanagan
+- automate more with Pulumi - (bde51a5) - David Flanagan
+- testing ArgoCdk8s - (9d12181) - David Flanagan
+- testing ArgoCdk8s - (38ac917) - David Flanagan
+- testing ArgoCdk8s - (0aa82b5) - David Flanagan
+- playing around with cdktf - (d7935e2) - David Flanagan
+- more CMS tweaks for Doppler - (ca02866) - David Flanagan
+- dynamically create and configure Doppler projects - (1f67342) - David Flanagan
+- platform and CMS improvements - (7f1eec7) - David Flanagan
+- doppler and cms deployments to platform - (19649b1) - David Flanagan
+- spin up vanilla Kubernetes cluster - (dc19208) - David Flanagan
+- dagger and doppler make builds awesome - (ef8fc86) - David Flanagan
+- build CMS image for Kubernetes deployment - (4feda48) - David Flanagan
+- add Klustered scheduling link - (e72987e) - David Flanagan
+- deploy website via Dagger - (edb2a6a) - David Flanagan
+- add RudderStack for tracking web-links usage - (69cfead) - David Flanagan
+- first part of BGP course - (77ceaeb) - David Flanagan
+- add Teleport and Metal vanity links - (87ec21f) - David Flanagan
+- add share-your-project link for rawkode.live - (2daa8c5) - David Flanagan
+- Dagger build for CI - (e7f4658) - David Flanagan
+- Dagger build for CI - (1335453) - David Flanagan
+- Dagger build for CI - (b5e7fbd) - David Flanagan
+- short/vanity web-links project - (4bb5b14) - David Flanagan
+- Prisma schema for data - (14ba4a3) - David Flanagan
+- breadcrumbs working and some very basic styling - (8e6f4f2) - David Flanagan
+- initial spike of Academy website - (e9dff7f) - David Flanagan
+- add nginx - (bfec5f8) - David Flanagan
+- add deployment code - (9dc59da) - David Flanagan
+- add platform Pulumi project - (c5bd41c) - David Flanagan
+- initial data dump of every Rawkode episode - (7d5c612) - David Flanagan
+- add container image building for data-embassy - (9328d45) - David Flanagan
+- switch data-embassy to CueBlox - (232077d) - David Flanagan
+- deploy schema - (1659967) - David Flanagan
+- generate JSON Schema script - (e08b5da) - David Flanagan
+- inject filename/ID into records - (2450492) - David Flanagan
+- hasID support - (9602e1e) - David Flanagan
+- initial spike - (e7690d6) - David Flanagan
+#### Miscellaneous Chores
+- **(bimi)** needs to be delivered from same domain - (837da60) - David Flanagan
+- **(bimi)** add bimi icon and dns record - (f37fedb) - David Flanagan
+- **(branding)** add icon - (a119197) - David Flanagan
+- **(cosmo)** migrate to gke - (9da9380) - David Flanagan
+- **(dagger)** add simple pipeline for debugging - (170fd19) - David Flanagan
+- **(daggerverse/sops)** update module description - (fbfee59) - David Flanagan
+- **(daggerverse/sops)** prepare for publish - (5ed0ce7) - David Flanagan
+- **(dns)** cdn cname for videos - (9e059e4) - David Flanagan
+- **(dns)** hello proton, my old friend - (d5fb068) - David Flanagan
+- **(dns)** rmrf masked email for FastMail - (94679f3) - David Flanagan
+- **(dns)** adopt fastmail - (27cc7cf) - David Flanagan
+- **(email)** google & fastmail - (17de843) - David Flanagan
+- **(episodes)** tidy up and cloud run deployments - (04945ff) - David Flanagan
+- **(flox)** activate in direnv - (c58643d) - David Flanagan
+- **(flux)** spot up postgresql - (03026c8) - David Flanagan
+- **(flux)** tidy up ngrok - (23a3f2c) - David Flanagan
+- **(flux)** tidy up - (9160943) - David Flanagan
+- **(fly.io)** ensure minimum machines - (9b33f8d) - David Flanagan
+- **(github)** add codeowners - (e90fe48) - David Flanagan
+- **(github)** add type to defect template - (56f4fc7) - David Flanagan
+- **(graphql)** refactor and add Sentry integration - (a16c03b) - David Flanagan
+- **(graphql)** tidy up type names - (b900809) - David Flanagan
+- **(graphql)** ensure episodes and people listen on / - (e8bd926) - David Flanagan
+- **(image-service)** move copy wasm to own script - (48f768a) - Stefan Ruzitschka
+- **(image-service)** add license file - (10899d6) - Stefan Ruzitschka
+- **(image-service)** add wrangler for deployment - (334e910) - David Flanagan
+- **(mixed)** zitadel and dns fighting - (4208526) - David Flanagan
+- **(nix)** remove live stream thats passed - (52746ed) - David Flanagan
+- **(people)** tidy up and cloud run deployments - (dac02eb) - David Flanagan
+- **(people)** switch to graphql-yoga - (db28af7) - David Flanagan
+- **(platform)** deploy commands for read models with schema registration - (6a10365) - David Flanagan
+- **(projen)** remove unused templates - (f479c60) - David Flanagan
+- **(rawkode.academy)** bump versions - (fa1cabd) - Stefan Ruzitschka
+- **(rawkode.academy)** docs / remove old files - (64bf592) - David Flanagan
+- **(rawkode.academy)** add wasmer - (45613ad) - David Flanagan
+- **(rawkode.chat)** add extra projects to track - (f181465) - David Flanagan
+- **(rawkode.dev)** switching to fastmail ... - (7c93342) - David Flanagan
+- **(readme)** add discord badge - (d258de2) - David Flanagan
+- **(release)** turso grafbase service template - (b50b0b8) - David Flanagan
+- **(rpc)** removing old rpc, preparing for new - (ce3d009) - David Flanagan
+- **(show-hosts)** switch to pothos and cloud run - (cc5e355) - David Flanagan
+- **(shows)** switch to pothos and cloud run - (4b222af) - David Flanagan
+- **(shows)** migrate to graphql-yoga - (3db4406) - David Flanagan
+- **(shows)** turn on restate auth - (32cbf06) - David Flanagan
+- **(shows)** deno fmt - (20b2598) - David Flanagan
+- **(shows)** deployment steps added - (d8cf397) - David Flanagan
+- **(shows)** use flake-parts - (28fe7cd) - David Flanagan
+- **(shows)** update to nix unstable - (40a78af) - David Flanagan
+- **(sops)** add restate admin token - (417f4d0) - David Flanagan
+- **(videos/graphql)** add simple pagination - (7f2eec9) - David Flanagan
+- **(web)** split envrc out to support env for GitHub actions - (5802679) - David Flanagan
+- **(web)** continuous deployment - (2a2bc85) - David Flanagan
+- **(web)** hide live page for now - (ee99924) - David Flanagan
+- **(web)** enable profile management through Zitadel - (447f3b4) - David Flanagan
+- **(web)** use bun for web (less problems) - (a9a6604) - David Flanagan
+- **(web)** blog overhaul - (66b615e) - Stefan Ruzitschka
+- **(web)** use bun for web (less problems) - (ecb9161) - David Flanagan
+- **(web)** tidy up - (c4a7ec0) - David Flanagan
+- **(web)** update next live stream - (2168187) - David Flanagan
+- **(web)** increase mobile h2 size - (6852681) - David Flanagan
+- **(web)** remove chatwoot - (7645c02) - David Flanagan
+- **(web)** revert pricing to annually - (ba66951) - David Flanagan
+- **(web)** add description for share project opengraph - (0332a33) - David Flanagan
+- **(web)** opengraph tweaks for x - (a87c410) - David Flanagan
+- **(web)** copy tweaks - (3d73db6) - David Flanagan
+- **(web)** pricing tidy ups - (723c9fa) - David Flanagan
+- **(web)** remove biome from bun deps - (39abe31) - David Flanagan
+- **(web)** use vanilla devenv - (dc20e6b) - David Flanagan
+- **(web)** simplify ts-style imports - (162c7bb) - Stefan Ruzitschka
+- **(web)** remove console log - (66985fb) - David Flanagan
+- **(web)** make local development easier - (b783a9b) - David Flanagan
+- **(web)** simplify light/dark logos - (638c5cf) - David Flanagan
+- **(website)** bump dependencies - (1ff67c9) - Stefan Ruzitschka
+- **(write-models)** use Cloud Run PORT env - (15287d7) - David Flanagan
+- **(zulip)** use R2 for uploads - (863fe03) - David Flanagan
+- **(zulip)** bumped version for web public channels - (8887388) - David Flanagan
+- **(zulip)** migrate to Kubernetes - (fcb8e4b) - David Flanagan
+- update project - (5516a72) - Stefan Ruzitschka
+- all playlists are now uniformly stream.m3u8 - (3be24f5) - David Flanagan
+- web -> website - (acd4ff2) - Stefan Ruzitschka
+- deno fmt - (573bbe9) - David Flanagan
+- expose video thumbnail - (1efd9f4) - David Flanagan
+- migrate to Microsoft 365 - (c950f97) - David Flanagan
+- bye fastmail, back to google - (a3e0181) - David Flanagan
+- clean up url and workflow monitor - (7abf000) - David Flanagan
+- add security policy - (a4bdb91) - David Flanagan
+- remove deprecated services - (0cf6ef2) - David Flanagan
+- refactor technologies service + youtube data improvement pipeline - (1c4660b) - David Flanagan
+- further directory structure cleanups - (31b8bcb) - David Flanagan
+- tidy up people and episodes - (458b065) - David Flanagan
+- tidy up - (4a5b2fe) - David Flanagan
+- rename directories to domain names - (9224c1e) - David Flanagan
+- remove useless readme contents - (815909f) - David Flanagan
+- removed supabase and clerk until new API integrated - (baeadb3) - David Flanagan
+- update watch_file paths in .envrc - (71c1da6) - David Flanagan
+- bring back rawkode.vip (#102) - (e358f01) - David Flanagan
+- remove recurrance - (567e05d) - David Flanagan
+- remove old dagger module - (3ff7c73) - David Flanagan
+- remove redundant workspace files - (010bd8a) - David Flanagan
+- remove pkgx - (65faba7) - David Flanagan
+- tidy up migration scripts - (5251e0e) - David Flanagan
+- tidy up service layout - (eb74593) - David Flanagan
+- extract show hosts to own service - (01db917) - David Flanagan
+- experimenting with dagger module paths - (518e292) - David Flanagan
+- remove old infisical in favour of mono repo setup - (77d4eff) - David Flanagan
+- cleanup - (070101a) - David Flanagan
+- massive cleanup - (a77976c) - David Flanagan
+- remove pulumi snide - (eb94323) - David Flanagan
+- fix rawkode.chat - (661bfce) - David Flanagan
+- testing if asciidoc-diagram is available - (bdea6f6) - David Flanagan
+- testing if asciidoc-diagram is available - (4dd6190) - David Flanagan
+- restructure - (aeda1c6) - David Flanagan
+- dns tweaks - (f3c999e) - David Flanagan
+- remove old code - (da5eef2) - David Flanagan
+- tidy up - (2fbad0e) - David Flanagan
+- latest supabase module - (e8638d3) - David Flanagan
+- remove old rust - (58d338a) - David Flanagan
+- remove old www website build - (1496b6f) - David Flanagan
+- ensure .direnv dirs are ignored - (9e98e5d) - David Flanagan
+- asciidoc tests - (81e0905) - David Flanagan
+- clean up old projects - (9b6a25d) - David Flanagan
+- tidy up auth logic for conditional components - (1d65696) - David Flanagan
+- biome lint and check - (93c7f39) - David Flanagan
+- cleanup old code - (3634c70) - David Flanagan
+- remove old api - (a3372c0) - David Flanagan
+- remove old cms - (f6f8f93) - David Flanagan
+- migrate domains to cloudflare registrar - (ab9f357) - David Flanagan
+- restrict access for guest accounts - (254a7ca) - David Flanagan
+- switch to HTTP/CF Worker state - (52d02bc) - David Flanagan
+- add missing domains - (d5c282f) - David Flanagan
+- remove community link - (2ed063c) - Stefan Ruzitschka
+- run on all pushes - (3e1d3f9) - David Flanagan
+- service tweaks - (12bdb66) - David Flanagan
+- styles for services page - (afc22ba) - David Flanagan
+- delete random files - (8228368) - David Flanagan
+- hubspot integrations - (4b484bb) - David Flanagan
+- various work together fixes - (ad1f7f2) - David Flanagan
+- collaborate with hubspot - (d3ef5a2) - David Flanagan
+- switch to HubSpot forms - (e87b4d2) - David Flanagan
+- use klustered summary for article - (074dd8d) - David Flanagan
+- prep for copywriters - (19dd3bd) - David Flanagan
+- move content to top of repository - (9754f23) - David Flanagan
+- integrate tasuku into Dagger CLI - (efc8139) - David Flanagan
+- clean up dagger deploy logic - (9ddb2d4) - David Flanagan
+- couple of cjs/mts fixes - (a4d56cb) - David Flanagan
+- speed up prompt by delayong connect call - (4b16283) - David Flanagan
+- fix deployment pipeline - (7baebd7) - David Flanagan
+- only use pnpm - (140fd85) - David Flanagan
+- allow aggregates and remove uppercase column chars - (b195f3a) - David Flanagan
+- add Discord OAuth and rotate 1password connect credentials (new vault added) - (9f5c6a7) - David Flanagan
+- enable 1password operator autorestarter - (a3ef185) - David Flanagan
+- add Justfile for common tasks - (e1f0750) - David Flanagan
+- migrate dns to core-infrastructure project - (d52fd71) - David Flanagan
+- delete aws-control-plane - (aa3f80c) - David Flanagan
+- improve docs - (b837d45) - David Flanagan
+- enforce required environment variables - (ff91009) - David Flanagan
+- update dagger pipeline for website - (0c2a53f) - David Flanagan
+- pausing Dagger builds - (b420fb8) - David Flanagan
+- switch back to main - (b6ab89a) - David Flanagan
+- pin version of chappaai - (ea63ae2) - David Flanagan
+- tidy up connections and database names - (c561f45) - David Flanagan
+- tidy up - (96c31e7) - David Flanagan
+- use PostgreSQL 15 - (0da8e34) - David Flanagan
+- enable TLS for Redpanda - (aa6e928) - David Flanagan
+- hardcode namespace because of Pulumi bug - (19748ef) - David Flanagan
+- remove content management - (af42e7e) - David Flanagan
+- preparing to push dagger helpers - (a42309d) - David Flanagan
+- cleanup projects into applications with service directory hierarchy - (dcf8a19) - David Flanagan
+- clean up dagger utility command - (68d1e82) - David Flanagan
+- add example draft filter - (46aa9a7) - David Flanagan
+- expose more episode fields on API - (15bb3aa) - David Flanagan
+- empty out readme - (4285d39) - David Flanagan
+- tidy up permissions - (4d9f8f8) - David Flanagan
+- cleanup old build pipelines - (2ded14b) - David Flanagan
+- playing with YAML format - (3c4d7f2) - David Flanagan
+- hacking until PoC works - (829c012) - David Flanagan
+- data cleansing - (5d987c6) - David Flanagan
+- add fbom.live - (d92f7bd) - David Flanagan
+- remove personal domains - (cf0d3a3) - David Flanagan
+- remove unused code - (01cb26f) - David Flanagan
+- tidy up - (b2093e8) - David Flanagan
+- fix form loading - (1ff6e27) - David Flanagan
+- hide command k bar - (9d70f72) - David Flanagan
+- add coming soon message - (38b3ddf) - David Flanagan
+- manual Contour Gateway API deploy - (19c1537) - David Flanagan
+- add backend to Pulumi.yaml to avoid logging in/out - (0215a66) - David Flanagan
+- got the builds the wrong way round - (fa22bd7) - David Flanagan
+- try to support cdk8s and Helm - (0585a86) - David Flanagan
+- disable workflows with Dagger for time being - (8552dbc) - David Flanagan
+- inline argocdk8s with no custom image - (277d1c2) - David Flanagan
+- test 1 replica - (99574c5) - David Flanagan
+- clear cache base by renaming - (07c84c3) - David Flanagan
+- remove unneccessary sops setup - (b6e9f79) - David Flanagan
+- deploy payloadcms with secret propagation - (a2ef6ee) - David Flanagan
+- cleanup naming of operator - (3698000) - David Flanagan
+- add test cm - (054f5ab) - David Flanagan
+- move GHA to Dagger - (558422e) - David Flanagan
+- use rawkode academy team instead - (b43850c) - David Flanagan
+- disable cloudflare workers dev URL - (36b05ee) - David Flanagan
+- remove redundant deployment YAML - (810c5e8) - David Flanagan
+- remove hard coded domain - (2ef12e7) - David Flanagan
+- ensure data passes blox validation - (9ba46e1) - David Flanagan
+- structure videos into directories - (2fc682c) - David Flanagan
+- rename job to appropriate name - (e879de1) - David Flanagan
+#### Refactoring
+- remove RSVP id - (004f958) - Stefan Ruzitschka
+#### Tests
+- **(rawkode.chat)** stack updates service with tests - (72c5ec4) - David Flanagan
+- **(web)** add working middleware tests - (5e10792) - David Flanagan
+- **(web)** add middleware tests - (233ce1c) - David Flanagan
+- environmental auth provider - (99eac2e) - David Flanagan
+- pgtap schema tests - (ba2c7da) - David Flanagan
+
+
