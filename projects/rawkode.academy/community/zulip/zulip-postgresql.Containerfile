@@ -1,4 +1,4 @@
-FROM ghcr.io/cloudnative-pg/postgresql:16-bookworm
+FROM ghcr.io/cloudnative-pg/postgresql:17-bookworm
 
 USER root
 
