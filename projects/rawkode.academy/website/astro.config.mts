@@ -1,5 +1,6 @@
 import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
+import partytown from "@astrojs/partytown";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
@@ -7,16 +8,15 @@ import vue from "@astrojs/vue";
 import expressiveCode from "astro-expressive-code";
 import { defineConfig, envField } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
-import rehypeMermaid from "rehype-mermaid";
 import { vite as vidstack } from 'vidstack/plugins';
 
-import partytown from "@astrojs/partytown";
+import d2 from "astro-d2";
 
 export default defineConfig({
     output: "server",
     integrations: [expressiveCode({
         themes: ["catppuccin-mocha", "catppuccin-latte"],
-		}), mdx(), react({ experimentalReactChildren: true }), sitemap(), tailwind(), vue(), partytown()],
+        }), mdx(), react({ experimentalReactChildren: true }), sitemap(), tailwind(), vue(), partytown(), d2()],
     vite: {
         plugins: [
             vidstack({ include: /components\/video\// }),
@@ -83,10 +83,6 @@ export default defineConfig({
     },
     markdown: {
         rehypePlugins: [
-            [
-                rehypeMermaid,
-                { strategy: "img-svg" },
-            ],
             [
                 rehypeExternalLinks,
                 {
