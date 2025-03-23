@@ -14,9 +14,11 @@ import d2 from "astro-d2";
 
 export default defineConfig({
     output: "server",
-    integrations: [expressiveCode({
+    integrations: [
+d2(),
+expressiveCode({
         themes: ["catppuccin-mocha", "catppuccin-latte"],
-        }), mdx(), react({ experimentalReactChildren: true }), sitemap(), tailwind(), vue(), partytown(), d2()],
+        }), mdx(), react({ experimentalReactChildren: true }), sitemap(), tailwind(), vue(), partytown()],
     vite: {
         plugins: [
             vidstack({ include: /components\/video\// }),
