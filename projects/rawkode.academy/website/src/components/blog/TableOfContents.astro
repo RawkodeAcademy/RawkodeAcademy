@@ -8,61 +8,125 @@ type Props = {
 
 const { headings, class: className = "" } = Astro.props;
 
-// Get h2 and h3 headings
-const filteredHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
-
-// Group headings by their hierarchy
+// Define types for our TOC structure
 type TocHeading = MarkdownHeading & { subheadings: MarkdownHeading[] };
-const tocHeadings: TocHeading[] = [];
-let currentH2: TocHeading | null = null;
 
-filteredHeadings.forEach((heading) => {
-  if (heading.depth === 2) {
-    currentH2 = {
-      ...heading,
-      subheadings: []
-    };
-    tocHeadings.push(currentH2);
-  } else if (heading.depth === 3 && currentH2) {
-    currentH2.subheadings.push(heading);
-  }
-});
+// Filter headings to only include h2 and h3
+const filteredHeadings = headings.filter(
+	(heading) => heading.depth === 2 || heading.depth === 3
+);
+
+// Group headings by their hierarchy using reduce
+const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
+	(acc, heading) => {
+		if (heading.depth === 2) {
+			// Create a new h2 heading with empty subheadings
+			const h2Heading: TocHeading = { ...heading, subheadings: [] };
+			acc.push(h2Heading);
+		} else if (heading.depth === 3 && acc.length > 0) {
+			// Add h3 to the last h2's subheadings
+			const lastH2 = acc[acc.length - 1];
+			if (lastH2) {
+				lastH2.subheadings.push(heading);
+			}
+		}
+		return acc;
+	},
+	[]
+);
 ---
 
 <!-- Toggle button - positioned independently -->
-<button id="toc-mobile-toggle" class="md:hidden fixed top-24 right-0 bg-white/95 dark:bg-gray-800/95 text-gray-600 dark:text-gray-300 p-2 rounded-l-lg shadow-md dark:shadow-lg border border-gray-200 dark:border-gray-700 border-r-0 z-50">
-  <svg id="toc-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-  </svg>
-  <svg id="toc-icon-close" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-  </svg>
+<button
+	id="toc-mobile-toggle"
+	class="md:hidden fixed top-24 right-0 bg-white/95 dark:bg-gray-800/95 text-gray-600 dark:text-gray-300 p-2 rounded-l-lg shadow-md dark:shadow-lg border border-gray-200 dark:border-gray-700 border-r-0 z-50"
+>
+	<svg
+		id="toc-icon-open"
+		xmlns="http://www.w3.org/2000/svg"
+		class="h-6 w-6"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke="currentColor"
+	>
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			stroke-width="2"
+			d="M4 6h16M4 12h16M4 18h7"></path>
+	</svg>
+	<svg
+		id="toc-icon-close"
+		xmlns="http://www.w3.org/2000/svg"
+		class="h-6 w-6 hidden"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke="currentColor"
+	>
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			stroke-width="2"
+			d="M6 18L18 6M6 6l12 12"></path>
+	</svg>
 </button>
 
 <!-- TOC Container - Right gutter that expands on hover -->
-<div id="toc-container" class={`toc-container bg-white/95 dark:bg-gray-800/95 border-l border-gray-200 dark:border-gray-700 max-h-screen overflow-y-auto rounded-lg backdrop-blur-sm shadow-lg dark:shadow-xl transition-all duration-300 ease-in-out ${className}`}>
+<div
+	id="toc-container"
+	class={`toc-container bg-white/95 dark:bg-gray-800/95 border-l border-gray-200 dark:border-gray-700 max-h-screen overflow-y-auto rounded-lg backdrop-blur-sm shadow-lg dark:shadow-xl transition-all duration-300 ease-in-out ${className}`}
+>
 	<div class="p-2 md:p-4 h-full">
 		<div class="mb-3 flex items-center">
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:mr-2 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="h-6 w-6 md:mr-2 text-primary flex-shrink-0"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M4 6h16M4 12h16M4 18h7"></path>
 			</svg>
-			<h2 class="text-lg font-semibold whitespace-nowrap overflow-hidden toc-title">Table of Contents</h2>
+			<h2
+				class="text-lg font-semibold whitespace-nowrap overflow-hidden toc-title"
+			>
+				Table of Contents
+			</h2>
 		</div>
 		<ul class="space-y-2 text-gray-600 dark:text-gray-300 relative list-none">
 			<!-- Fluid highlight line that will move with scroll -->
-			<div id="toc-highlight-line" class="absolute left-0 w-0.5 bg-primary rounded-full transition-all duration-300 ease-in-out opacity-0 shadow-md dark:shadow-lg z-10" style="height: 0; top: 0;"></div>
+			<div
+				id="toc-highlight-line"
+				class="absolute left-0 w-0.5 bg-primary rounded-full transition-all duration-300 ease-in-out opacity-0 shadow-md dark:shadow-lg z-10"
+				style="height: 0; top: 0;"
+			>
+			</div>
 
 			<!-- Trail effect - darkened background for sections above the current one -->
-			<div id="toc-trail" class="absolute left-0 w-0.5 bg-primary/30 dark:bg-primary/30 transition-all duration-300 ease-in-out opacity-0 z-[5]" style="height: 0; top: 0;"></div>
+			<div
+				id="toc-trail"
+				class="absolute left-0 w-0.5 bg-primary/30 dark:bg-primary/30 transition-all duration-300 ease-in-out opacity-0 z-[5]"
+				style="height: 0; top: 0;"
+			>
+			</div>
 
 			{
 				tocHeadings.map((heading) => (
 					<li class="list-none">
 						<div class="toc-item" data-heading-slug={heading.slug}>
-							<a href={`#${heading.slug}`} class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-2 border-transparent pl-2 relative">
-								<div class="toc-dot absolute left-0 w-2 h-2 rounded-full bg-primary"></div>
+							<a
+								href={`#${heading.slug}`}
+								class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-2 border-transparent pl-2 relative"
+							>
+								<div class="toc-dot absolute left-0 w-2 h-2 rounded-full bg-primary" />
 								<div class="toc-content ml-4 flex items-center">
-									<span class="text-sm md:text-base truncate"># {heading.text}</span>
+									<span class="text-sm md:text-base truncate">
+										# {heading.text}
+									</span>
 								</div>
 							</a>
 						</div>
@@ -70,11 +134,19 @@ filteredHeadings.forEach((heading) => {
 						{heading.subheadings.length > 0 && (
 							<ul class="ml-4 mt-1 space-y-1 list-none">
 								{heading.subheadings.map((subheading) => (
-									<li class="toc-subitem list-none" data-heading-slug={subheading.slug}>
-										<a href={`#${subheading.slug}`} class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-0 pl-2 text-sm relative">
-											<div class="toc-dot absolute left-0 w-1.5 h-1.5 rounded-full bg-primary/70"></div>
+									<li
+										class="toc-subitem list-none"
+										data-heading-slug={subheading.slug}
+									>
+										<a
+											href={`#${subheading.slug}`}
+											class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-0 pl-2 text-sm relative"
+										>
+											<div class="toc-dot absolute left-0 w-1.5 h-1.5 rounded-full bg-primary/70" />
 											<div class="toc-content ml-4 flex items-center">
-												<span class="text-xs md:text-sm truncate">› {subheading.text}</span>
+												<span class="text-xs md:text-sm truncate">
+													› {subheading.text}
+												</span>
 											</div>
 										</a>
 									</li>
@@ -89,195 +161,250 @@ filteredHeadings.forEach((heading) => {
 </div>
 
 <style>
-  /* Define primary color RGB values */
-  :root {
-    --color-primary-rgb: 95, 94, 215; /* RGB values for #5F5ED7 */
-  }
+	/* Define primary color RGB values */
+	:root {
+		--color-primary-rgb: 95, 94, 215; /* RGB values for #5F5ED7 */
+	}
 
-  /* Pulsing animation for touch devices to indicate interactivity */
-  @keyframes pulse {
-    0% { transform: scale(1); opacity: 0.7; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.7; }
-  }
+	/* Pulsing animation for touch devices to indicate interactivity */
+	@keyframes pulse {
+		0% {
+			transform: scale(1);
+			opacity: 0.7;
+		}
+		50% {
+			transform: scale(1.2);
+			opacity: 1;
+		}
+		100% {
+			transform: scale(1);
+			opacity: 0.7;
+		}
+	}
 
-  /* Collapsed/expanded state styling */
-  .toc-content, .toc-title {
-    opacity: 0;
-    width: 0;
-    transition: opacity 0.3s ease, width 0.3s ease;
-  }
+	/* Collapsed/expanded state styling */
+	.toc-content,
+	.toc-title {
+		opacity: 0;
+		width: 0;
+		transition:
+			opacity 0.3s ease,
+			width 0.3s ease;
+	}
 
-  /* For non-touch devices (hover) */
-  #toc-container:hover .toc-content,
-  #toc-container:hover .toc-title {
-    opacity: 1;
-    width: auto;
-  }
+	/* For non-touch devices (hover) */
+	#toc-container:hover .toc-content,
+	#toc-container:hover .toc-title {
+		opacity: 1;
+		width: auto;
+	}
 
-  /* For touch devices (click/tap) */
-  #toc-container.touch-device.expanded {
-    width: 16rem !important;
-  }
+	/* For touch devices (click/tap) */
+	#toc-container.touch-device.expanded {
+		width: 16rem !important;
+	}
 
-  #toc-container.touch-device.expanded .toc-content,
-  #toc-container.touch-device.expanded .toc-title {
-    opacity: 1;
-    width: auto;
-  }
+	#toc-container.touch-device.expanded .toc-content,
+	#toc-container.touch-device.expanded .toc-title {
+		opacity: 1;
+		width: auto;
+	}
 
-  #toc-container.touch-device .toc-dot {
-    animation: pulse 2s infinite ease-in-out;
-  }
+	#toc-container.touch-device .toc-dot {
+		animation: pulse 2s infinite ease-in-out;
+	}
 
-  #toc-container.touch-device.expanded .toc-dot {
-    animation: none;
-    transform: scale(1.5);
-    opacity: 1;
-  }
+	#toc-container.touch-device.expanded .toc-dot {
+		animation: none;
+		transform: scale(1.5);
+		opacity: 1;
+	}
 
-  .toc-dot {
-    transition: transform 0.3s ease;
-  }
+	.toc-dot {
+		transition: transform 0.3s ease;
+	}
 
-  #toc-container:hover .toc-dot {
-    transform: scale(1.5);
-  }
+	#toc-container:hover .toc-dot {
+		transform: scale(1.5);
+	}
 
-  /* Mobile-specific styles */
-  @media (max-width: 768px) {
-    #toc-container {
-      transform: translateX(100%);
-      width: calc(100% - 2rem) !important; /* Match content width minus padding */
-      max-width: calc(100vw - 2rem); /* Ensure it doesn't exceed viewport */
-      border-radius: 8px 0 0 8px;
-      z-index: 50;
-      opacity: 0;
-      pointer-events: none;
-      right: 0;
-    }
+	/* Mobile-specific styles */
+	@media (max-width: 768px) {
+		#toc-container {
+			transform: translateX(100%);
+			width: calc(
+				100% - 2rem
+			) !important; /* Match content width minus padding */
+			max-width: calc(100vw - 2rem); /* Ensure it doesn't exceed viewport */
+			border-radius: 8px 0 0 8px;
+			z-index: 50;
+			opacity: 0;
+			pointer-events: none;
+			right: 0;
+		}
 
-    #toc-container.mobile-visible {
-      transform: translateX(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
+		#toc-container.mobile-visible {
+			transform: translateX(0);
+			opacity: 1;
+			pointer-events: auto;
+		}
 
-    #toc-container .toc-content,
-    #toc-container .toc-title {
-      opacity: 1;
-      width: auto;
-    }
+		#toc-container .toc-content,
+		#toc-container .toc-title {
+			opacity: 1;
+			width: auto;
+		}
 
-    /* Override parent hover behavior on mobile */
-    #toc-container:hover {
-      width: calc(100% - 2rem) !important;
-    }
-  }
+		/* Override parent hover behavior on mobile */
+		#toc-container:hover {
+			width: calc(100% - 2rem) !important;
+		}
+	}
 
-  /* Medium screens and up */
-  @media (min-width: 769px) {
-    #toc-container {
-      width: 3rem !important; /* Collapsed width */
-      max-width: 3rem;
-      transition: all 0.3s ease;
-    }
+	/* Medium screens and up */
+	@media (min-width: 769px) {
+		#toc-container {
+			width: 3rem !important; /* Collapsed width */
+			max-width: 3rem;
+			transition: all 0.3s ease;
+		}
 
-    #toc-container.mobile-visible,
-    #toc-container:hover {
-      width: min(24rem, calc(100% - 2rem)) !important; /* Responsive width that doesn't exceed content */
-      max-width: min(24rem, calc(100% - 2rem));
-    }
-  }
+		#toc-container.mobile-visible,
+		#toc-container:hover {
+			width: min(
+				24rem,
+				calc(100% - 2rem)
+			) !important; /* Responsive width that doesn't exceed content */
+			max-width: min(24rem, calc(100% - 2rem));
+		}
+	}
 </style>
 
 <script>
-	// Function to toggle TOC
-	function setupTOC() {
-		const tocContainer = document.getElementById('toc-container');
-		const mobileToggle = document.getElementById('toc-mobile-toggle');
-		const iconOpen = document.getElementById('toc-icon-open');
-		const iconClose = document.getElementById('toc-icon-close');
+	// Helper function to get DOM elements with null checks
+	const getElement = (id: string): HTMLElement | null =>
+		document.getElementById(id);
 
+	// Helper function to toggle icon visibility
+	const toggleIcons = (
+		iconOpen: HTMLElement | null,
+		iconClose: HTMLElement | null,
+		showClose = false
+	): void => {
+		if (!iconOpen || !iconClose) return;
+
+		iconOpen.classList.toggle("hidden", showClose);
+		iconClose.classList.toggle("hidden", !showClose);
+	};
+
+	// Setup touch device behavior
+	const setupTouchDevice = (tocContainer: HTMLElement): void => {
+		if (!tocContainer) return;
+
+		const isTouchDevice =
+			"ontouchstart" in window || navigator.maxTouchPoints > 0;
+		if (!isTouchDevice) return;
+
+		// Add a class to identify touch devices
+		tocContainer.classList.add("touch-device");
+
+		// Add click event to toggle expanded state
+		tocContainer.addEventListener("click", (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			// Only toggle if clicking on the container itself or a dot, not on links
+			if (
+				target === tocContainer ||
+				(target && target.classList.contains("toc-dot"))
+			) {
+				tocContainer.classList.toggle("expanded");
+				// Prevent the click from triggering links
+				e.preventDefault();
+			}
+		});
+	};
+
+	// Setup mobile toggle button
+	const setupMobileToggle = (
+		tocContainer: HTMLElement,
+		mobileToggle: HTMLElement,
+		iconOpen: HTMLElement,
+		iconClose: HTMLElement
+	): void => {
 		if (!tocContainer || !mobileToggle || !iconOpen || !iconClose) return;
 
-		// Check if it's a touch device
-		const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-		if (isTouchDevice) {
-			// Add a class to identify touch devices
-			tocContainer.classList.add('touch-device');
-
-			// Add click event to toggle expanded state
-			tocContainer.addEventListener('click', (e) => {
-				const target = e.target as HTMLElement;
-				// Only toggle if clicking on the container itself or a dot, not on links
-				if (target === tocContainer || (target && target.classList.contains('toc-dot'))) {
-					tocContainer.classList.toggle('expanded');
-					// Prevent the click from triggering links
-					e.preventDefault();
-				}
-			});
-		}
-
 		// Toggle button functionality
-		mobileToggle.addEventListener('click', (e) => {
-			const isVisible = tocContainer.classList.toggle('mobile-visible');
-
-			// Toggle between open and close icons
-			if (isVisible) {
-				iconOpen.classList.add('hidden');
-				iconClose.classList.remove('hidden');
-			} else {
-				iconOpen.classList.remove('hidden');
-				iconClose.classList.add('hidden');
-			}
-
+		mobileToggle.addEventListener("click", (e: MouseEvent) => {
+			const isVisible = tocContainer.classList.toggle("mobile-visible");
+			toggleIcons(iconOpen, iconClose, isVisible);
 			e.stopPropagation();
 		});
 
 		// Close TOC when clicking outside
-		document.addEventListener('click', (e) => {
+		document.addEventListener("click", (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
-			if (tocContainer.classList.contains('mobile-visible') &&
+			if (
+				tocContainer.classList.contains("mobile-visible") &&
 				!tocContainer.contains(target) &&
-				target !== mobileToggle) {
-				tocContainer.classList.remove('mobile-visible');
-
-				// Reset icons
-				iconOpen.classList.remove('hidden');
-				iconClose.classList.add('hidden');
+				target !== mobileToggle
+			) {
+				tocContainer.classList.remove("mobile-visible");
+				toggleIcons(iconOpen, iconClose, false);
 			}
 		});
+	};
 
-		// Handle window resize
-		window.addEventListener('resize', () => {
+	// Handle window resize
+	const setupResizeHandler = (
+		tocContainer: HTMLElement,
+		iconOpen: HTMLElement,
+		iconClose: HTMLElement
+	): void => {
+		if (!tocContainer || !iconOpen || !iconClose) return;
+
+		window.addEventListener("resize", () => {
 			// Check if it's a mobile device now
 			const isMobile = window.innerWidth < 768;
 
 			// If we're on desktop and TOC is in mobile visible state, reset it
-			if (!isMobile && tocContainer.classList.contains('mobile-visible')) {
-				tocContainer.classList.remove('mobile-visible');
-
-				// Reset icons
-				iconOpen.classList.remove('hidden');
-				iconClose.classList.add('hidden');
+			if (!isMobile && tocContainer.classList.contains("mobile-visible")) {
+				tocContainer.classList.remove("mobile-visible");
+				toggleIcons(iconOpen, iconClose, false);
 			}
 		});
-	}
+	};
 
-	// Function to highlight the current heading in the TOC and update the fluid line
-	function updateTOC() {
-		const headings = Array.from(document.querySelectorAll('h2[id], h3[id]'));
-		const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
-		const highlightLine = document.getElementById('toc-highlight-line');
+	// Main setup function for TOC
+	const setupTOC = (): void => {
+		const tocContainer = getElement("toc-container");
+		const mobileToggle = getElement("toc-mobile-toggle");
+		const iconOpen = getElement("toc-icon-open");
+		const iconClose = getElement("toc-icon-close");
 
-		if (headings.length === 0 || tocItems.length === 0 || !highlightLine) return;
+		if (!tocContainer || !mobileToggle || !iconOpen || !iconClose) return;
 
-		// Get the current scroll position with a small offset
-		const scrollPosition = window.scrollY + 100;
+		setupTouchDevice(tocContainer);
+		setupMobileToggle(tocContainer, mobileToggle, iconOpen, iconClose);
+		setupResizeHandler(tocContainer, iconOpen, iconClose);
+	};
 
-		// Find the current heading
+	// Reset all TOC items to inactive state
+	const resetTocItems = (tocItems: NodeListOf<Element>): void => {
+		tocItems.forEach((item) => {
+			const link = item.querySelector("a");
+			if (link) {
+				link.classList.remove("text-primary", "font-medium", "border-primary");
+				if (item.classList.contains("toc-item")) {
+					link.classList.add("border-transparent");
+				}
+			}
+		});
+	};
+
+	// Find current heading based on scroll position
+	const findCurrentHeadingIndex = (
+		headings: HTMLElement[],
+		scrollPosition: number
+	): number => {
 		let currentHeadingIndex = -1;
 
 		for (let i = 0; i < headings.length; i++) {
@@ -288,79 +415,122 @@ filteredHeadings.forEach((heading) => {
 			currentHeadingIndex = i;
 		}
 
-		// Remove active class from all TOC items
-		tocItems.forEach(item => {
-			const link = item.querySelector('a');
-			if (link) {
-				link.classList.remove('text-primary', 'font-medium', 'border-primary');
-				if (item.classList.contains('toc-item')) {
-					link.classList.add('border-transparent');
-				}
-			}
-		});
+		return currentHeadingIndex;
+	};
 
-		// Add active class to the current TOC item and update the highlight line
+	// Update highlight line and trail
+	const updateHighlights = (
+		currentTocItem: HTMLElement,
+		highlightLine: HTMLElement,
+		trail: HTMLElement | null
+	): void => {
+		if (!currentTocItem || !highlightLine) return;
+
+		// Update the highlight line position and height
+		const itemTop = currentTocItem.offsetTop;
+		const itemHeight = currentTocItem.offsetHeight;
+
+		highlightLine.style.top = `${itemTop}px`;
+		highlightLine.style.height = `${itemHeight}px`;
+		highlightLine.style.opacity = "1";
+
+		// Update the trail to fill from the top to the current item
+		if (trail) {
+			trail.style.top = "0";
+			trail.style.height = `${itemTop + itemHeight}px`;
+			trail.style.opacity = "1";
+		}
+	};
+
+	// Hide highlight line and trail when no heading is active
+	const hideHighlights = (
+		highlightLine: HTMLElement | null,
+		trail: HTMLElement | null
+	): void => {
+		if (highlightLine) highlightLine.style.opacity = "0";
+		if (trail) trail.style.opacity = "0";
+	};
+
+	// Activate the current TOC item
+	const activateTocItem = (currentTocItem: HTMLElement): void => {
+		if (!currentTocItem) return;
+
+		const link = currentTocItem.querySelector("a");
+		if (link) {
+			link.classList.add("text-primary", "font-medium");
+			if (currentTocItem.classList.contains("toc-item")) {
+				link.classList.add("border-primary");
+				link.classList.remove("border-transparent");
+			}
+		}
+	};
+
+	// Find TOC item corresponding to a heading
+	const findTocItem = (headingId: string): HTMLElement | null => {
+		// First try to find it as a main item
+		let tocItem = document.querySelector(
+			`.toc-item[data-heading-slug="${headingId}"]`
+		) as HTMLElement;
+
+		// If not found, try as a subitem
+		if (!tocItem) {
+			tocItem = document.querySelector(
+				`.toc-subitem[data-heading-slug="${headingId}"]`
+			) as HTMLElement;
+		}
+
+		return tocItem;
+	};
+
+	// Function to highlight the current heading in the TOC and update the fluid line
+	const updateTOC = (): void => {
+		const headings = Array.from(
+			document.querySelectorAll("h2[id], h3[id]")
+		) as HTMLElement[];
+		const tocItems = document.querySelectorAll(".toc-item, .toc-subitem");
+		const highlightLine = getElement("toc-highlight-line");
+		const trail = getElement("toc-trail");
+
+		if (headings.length === 0 || tocItems.length === 0 || !highlightLine)
+			return;
+
+		// Get the current scroll position with a small offset
+		const scrollPosition = window.scrollY + 100;
+
+		// Find the current heading
+		const currentHeadingIndex = findCurrentHeadingIndex(
+			headings,
+			scrollPosition
+		);
+
+		// Reset all TOC items
+		resetTocItems(tocItems);
+
+		// Handle active heading if found
 		if (currentHeadingIndex >= 0) {
 			const currentHeading = headings[currentHeadingIndex];
 			if (currentHeading && currentHeading.id) {
-				// First try to find it as a main item
-				let currentTocItem = document.querySelector(`.toc-item[data-heading-slug="${currentHeading.id}"]`) as HTMLElement;
-
-				// If not found, try as a subitem
-				if (!currentTocItem) {
-					currentTocItem = document.querySelector(`.toc-subitem[data-heading-slug="${currentHeading.id}"]`) as HTMLElement;
-				}
+				const currentTocItem = findTocItem(currentHeading.id);
 
 				if (currentTocItem) {
-					const link = currentTocItem.querySelector('a');
-					if (link) {
-						link.classList.add('text-primary', 'font-medium');
-						if (currentTocItem.classList.contains('toc-item')) {
-							link.classList.add('border-primary');
-							link.classList.remove('border-transparent');
-						}
-					}
-
-					// Update the highlight line position and height
-					const itemTop = currentTocItem.offsetTop;
-					const itemHeight = currentTocItem.offsetHeight;
-
-					highlightLine.style.top = `${itemTop}px`;
-					highlightLine.style.height = `${itemHeight}px`;
-					highlightLine.style.opacity = '1';
-
-					// Update the trail to fill from the top to the current item
-					const trail = document.getElementById('toc-trail');
-					if (trail) {
-						trail.style.top = '0';
-						trail.style.height = `${itemTop + itemHeight}px`;
-						trail.style.opacity = '1';
-					}
+					activateTocItem(currentTocItem);
+					updateHighlights(currentTocItem, highlightLine, trail);
 				}
 			}
 		} else {
-			// If no heading is active, hide the highlight line and trail
-			highlightLine.style.opacity = '0';
-
-			const trail = document.getElementById('toc-trail');
-			if (trail) {
-				trail.style.opacity = '0';
-			}
+			hideHighlights(highlightLine, trail);
 		}
-	}
+	};
 
 	// Initialize everything when the DOM is ready
-	document.addEventListener('DOMContentLoaded', () => {
-		// Setup TOC
+	document.addEventListener("DOMContentLoaded", () => {
 		setupTOC();
-
-		// Initial TOC update
-		updateTOC();
+		updateTOC(); // Initial TOC update
 	});
 
 	// Update TOC on scroll
-	window.addEventListener('scroll', updateTOC, { passive: true });
+	window.addEventListener("scroll", updateTOC, { passive: true });
 
 	// Update on window resize
-	window.addEventListener('resize', updateTOC, { passive: true });
+	window.addEventListener("resize", updateTOC, { passive: true });
 </script>
