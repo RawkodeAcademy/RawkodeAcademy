@@ -29,8 +29,18 @@ filteredHeadings.forEach((heading) => {
 });
 ---
 
+<!-- Toggle button - positioned independently -->
+<button id="toc-mobile-toggle" class="md:hidden fixed top-24 right-0 bg-white/95 dark:bg-gray-800/95 text-gray-600 dark:text-gray-300 p-2 rounded-l-lg shadow-md dark:shadow-lg border border-gray-200 dark:border-gray-700 border-r-0 z-50">
+  <svg id="toc-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+  </svg>
+  <svg id="toc-icon-close" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+</button>
+
 <!-- TOC Container - Right gutter that expands on hover -->
-<div id="toc-container" class={`toc-container bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 max-h-screen overflow-y-auto ${className}`}>
+<div id="toc-container" class={`toc-container bg-white/95 dark:bg-gray-800/95 border-l border-gray-200 dark:border-gray-700 max-h-screen overflow-y-auto rounded-lg backdrop-blur-sm shadow-lg dark:shadow-xl transition-all duration-300 ease-in-out ${className}`}>
 	<div class="p-2 md:p-4 h-full">
 		<div class="mb-3 flex items-center">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:mr-2 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,39 +48,33 @@ filteredHeadings.forEach((heading) => {
 			</svg>
 			<h2 class="text-lg font-semibold whitespace-nowrap overflow-hidden toc-title">Table of Contents</h2>
 		</div>
-		<ul class="space-y-2 text-gray-600 dark:text-gray-300 relative">
+		<ul class="space-y-2 text-gray-600 dark:text-gray-300 relative list-none">
 			<!-- Fluid highlight line that will move with scroll -->
-			<div id="toc-highlight-line" class="absolute left-0 w-0.5 bg-primary rounded-full transition-all duration-300 ease-in-out opacity-0" style="height: 0; top: 0;"></div>
+			<div id="toc-highlight-line" class="absolute left-0 w-0.5 bg-primary rounded-full transition-all duration-300 ease-in-out opacity-0 shadow-md dark:shadow-lg z-10" style="height: 0; top: 0;"></div>
 
 			<!-- Trail effect - darkened background for sections above the current one -->
-			<div id="toc-trail" class="absolute left-0 w-0.5 bg-primary/30 dark:bg-primary/20 transition-all duration-300 ease-in-out opacity-0" style="height: 0; top: 0;"></div>
+			<div id="toc-trail" class="absolute left-0 w-0.5 bg-primary/30 dark:bg-primary/30 transition-all duration-300 ease-in-out opacity-0 z-[5]" style="height: 0; top: 0;"></div>
 
 			{
 				tocHeadings.map((heading) => (
-					<li>
+					<li class="list-none">
 						<div class="toc-item" data-heading-slug={heading.slug}>
 							<a href={`#${heading.slug}`} class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-2 border-transparent pl-2 relative">
-								<div class="toc-dot absolute left-0 w-3 h-3 rounded-full bg-primary"></div>
+								<div class="toc-dot absolute left-0 w-2 h-2 rounded-full bg-primary"></div>
 								<div class="toc-content ml-4 flex items-center">
-									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-									</svg>
-									<span class="whitespace-nowrap overflow-hidden">{heading.text}</span>
+									<span class="text-sm md:text-base truncate"># {heading.text}</span>
 								</div>
 							</a>
 						</div>
 
 						{heading.subheadings.length > 0 && (
-							<ul class="ml-4 mt-1 space-y-1">
+							<ul class="ml-4 mt-1 space-y-1 list-none">
 								{heading.subheadings.map((subheading) => (
-									<li class="toc-subitem" data-heading-slug={subheading.slug}>
+									<li class="toc-subitem list-none" data-heading-slug={subheading.slug}>
 										<a href={`#${subheading.slug}`} class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-0 pl-2 text-sm relative">
-											<div class="toc-dot absolute left-0 w-2 h-2 rounded-full bg-primary/70"></div>
+											<div class="toc-dot absolute left-0 w-1.5 h-1.5 rounded-full bg-primary/70"></div>
 											<div class="toc-content ml-4 flex items-center">
-												<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-												</svg>
-												<span class="whitespace-nowrap overflow-hidden">{subheading.text}</span>
+												<span class="text-xs md:text-sm truncate">› {subheading.text}</span>
 											</div>
 										</a>
 									</li>
@@ -90,22 +94,12 @@ filteredHeadings.forEach((heading) => {
     --color-primary-rgb: 95, 94, 215; /* RGB values for #5F5ED7 */
   }
 
-  /* No need for article width constraints with grid layout */
-
-  /* TOC styling */
-  #toc-container {
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(5px);
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s ease;
+  /* Pulsing animation for touch devices to indicate interactivity */
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
   }
-
-  :global(.dark) #toc-container {
-    background-color: rgba(31, 41, 55, 0.95);
-  }
-
-  /* No mobile button styling needed */
 
   /* Collapsed/expanded state styling */
   .toc-content, .toc-title {
@@ -132,13 +126,6 @@ filteredHeadings.forEach((heading) => {
     width: auto;
   }
 
-  /* Pulsing animation for touch devices to indicate interactivity */
-  @keyframes pulse {
-    0% { transform: scale(1); opacity: 0.7; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.7; }
-  }
-
   #toc-container.touch-device .toc-dot {
     animation: pulse 2s infinite ease-in-out;
   }
@@ -157,24 +144,62 @@ filteredHeadings.forEach((heading) => {
     transform: scale(1.5);
   }
 
-  /* Fluid highlight line styling */
-  #toc-highlight-line {
-    box-shadow: 0 0 8px rgba(var(--color-primary-rgb), 0.5);
-    z-index: 2;
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+    #toc-container {
+      transform: translateX(100%);
+      width: calc(100% - 2rem) !important; /* Match content width minus padding */
+      max-width: calc(100vw - 2rem); /* Ensure it doesn't exceed viewport */
+      border-radius: 8px 0 0 8px;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      right: 0;
+    }
+
+    #toc-container.mobile-visible {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #toc-container .toc-content,
+    #toc-container .toc-title {
+      opacity: 1;
+      width: auto;
+    }
+
+    /* Override parent hover behavior on mobile */
+    #toc-container:hover {
+      width: calc(100% - 2rem) !important;
+    }
   }
 
-  /* Trail styling */
-  #toc-trail {
-    z-index: 1;
+  /* Medium screens and up */
+  @media (min-width: 769px) {
+    #toc-container {
+      width: 3rem !important; /* Collapsed width */
+      max-width: 3rem;
+      transition: all 0.3s ease;
+    }
+
+    #toc-container.mobile-visible,
+    #toc-container:hover {
+      width: min(24rem, calc(100% - 2rem)) !important; /* Responsive width that doesn't exceed content */
+      max-width: min(24rem, calc(100% - 2rem));
+    }
   }
 </style>
 
 <script>
-	// Function to toggle TOC on mobile
-	function setupMobileTOC() {
+	// Function to toggle TOC
+	function setupTOC() {
 		const tocContainer = document.getElementById('toc-container');
+		const mobileToggle = document.getElementById('toc-mobile-toggle');
+		const iconOpen = document.getElementById('toc-icon-open');
+		const iconClose = document.getElementById('toc-icon-close');
 
-		if (!tocContainer) return;
+		if (!tocContainer || !mobileToggle || !iconOpen || !iconClose) return;
 
 		// Check if it's a touch device
 		const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -194,6 +219,51 @@ filteredHeadings.forEach((heading) => {
 				}
 			});
 		}
+
+		// Toggle button functionality
+		mobileToggle.addEventListener('click', (e) => {
+			const isVisible = tocContainer.classList.toggle('mobile-visible');
+
+			// Toggle between open and close icons
+			if (isVisible) {
+				iconOpen.classList.add('hidden');
+				iconClose.classList.remove('hidden');
+			} else {
+				iconOpen.classList.remove('hidden');
+				iconClose.classList.add('hidden');
+			}
+
+			e.stopPropagation();
+		});
+
+		// Close TOC when clicking outside
+		document.addEventListener('click', (e) => {
+			const target = e.target as HTMLElement;
+			if (tocContainer.classList.contains('mobile-visible') &&
+				!tocContainer.contains(target) &&
+				target !== mobileToggle) {
+				tocContainer.classList.remove('mobile-visible');
+
+				// Reset icons
+				iconOpen.classList.remove('hidden');
+				iconClose.classList.add('hidden');
+			}
+		});
+
+		// Handle window resize
+		window.addEventListener('resize', () => {
+			// Check if it's a mobile device now
+			const isMobile = window.innerWidth < 768;
+
+			// If we're on desktop and TOC is in mobile visible state, reset it
+			if (!isMobile && tocContainer.classList.contains('mobile-visible')) {
+				tocContainer.classList.remove('mobile-visible');
+
+				// Reset icons
+				iconOpen.classList.remove('hidden');
+				iconClose.classList.add('hidden');
+			}
+		});
 	}
 
 	// Function to highlight the current heading in the TOC and update the fluid line
@@ -281,8 +351,8 @@ filteredHeadings.forEach((heading) => {
 
 	// Initialize everything when the DOM is ready
 	document.addEventListener('DOMContentLoaded', () => {
-		// Setup mobile TOC
-		setupMobileTOC();
+		// Setup TOC
+		setupTOC();
 
 		// Initial TOC update
 		updateTOC();

@@ -1,4 +1,4 @@
-import cloudflare from "@astrojs/cloudflare";
+import node from "@astrojs/node";
 import mdx from "@astrojs/mdx";
 import partytown from "@astrojs/partytown";
 import react from "@astrojs/react";
@@ -47,8 +47,8 @@ export default defineConfig({
 				: {},
 		},
 	},
-	adapter: cloudflare({
-		imageService: "cloudflare",
+	adapter: node({
+		mode: "standalone",
 	}),
 	site: import.meta.env.CF_PAGES_URL
 		? import.meta.env.CF_PAGES_URL
