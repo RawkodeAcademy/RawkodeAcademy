@@ -25,7 +25,7 @@ By the end of this article, you'll understand how federated GraphQL APIs work an
 
 ## Why Federated GraphQL?
 
-In a microservice architecture, multiple services are responsible for different domains of an application. Each service typically has its own database and API, which can lead to clients needing to make multiple requests to different services to retrieve all necessary data.
+In a microservice architecture, multiple services are responsible for different domains of an application. Each service has its own database and API, which can lead to clients needing to make multiple requests to different services to retrieve all necessary data.
 
 A federated GraphQL API solves this problem by providing a single, unified interface to multiple services. Clients send a single GraphQL query to the federation layer, which handles fetching data from the appropriate services and aggregating it into a cohesive response.
 
@@ -68,9 +68,34 @@ query {
 
 As you can see from the comments above, this single query is fetching data from multiple services. The `getLatestVideos` field is from the `videos-service`, and it's returning the `id` and `title` of the video. We're also fetching the `creditsForRole` from the `people-service`, the `biography` from the `people-biographies-service`, and the `links` from the `people-links-service`. Finally, we're fetching the `likes` from the `video-likes-service`.
 
+### Adding Columns with a Service?!
+
+Yes! It's pretty common to need to add new fields to an existing entity. Now, you could modify your micro-service and add a new column, but this requires a database migration ... which is usually OK; right? 😅
+
+What if we can avoid modifying a service, writing a database migration, and potentially invalditing all presently existing backups? 🤔
+
+Well, we can. We can write a new service that persists the new column, all on its own and use some GraphQL magic to stitch it all together.
+
+This approach allows you to be more agile, take risks, and be experimental without impacting the stability of your existing services. Added a new column via a service and want to get rid of it? Easy done. Just remove the service and the column is gone.
+
 ## Our Federated GraphQL Stack
 
-Our federated GraphQL API is built using Apollo Federation's specification, but we've chosen to implement it using a fully open-source stack:
+Our federated GraphQL API is built using Apollo Federation's specification, but we've chosen to implement it using a fully open-source stack.
+
+```d2 sketch
+API Client -> WunderGraph Cosmo
+
+WunderGraph Cosmo -> Service A
+WunderGraph Cosmo -> Service B
+Service A -> GraphQL Yoga A
+GraphQL Yoga A -> Drizzle ORM A
+Drizzle ORM A -> libSQL / Turso A
+
+Service B -> GraphQL Yoga B
+GraphQL Yoga B -> Drizzle ORM B
+Drizzle ORM B -> libSQL / Turso B
+
+```
 
 ### GraphQL Yoga
 
@@ -99,6 +124,7 @@ Our federated GraphQL API is built using Apollo Federation's specification, but 
 - **Analytics**: Provides insights into API usage patterns
 - **Distributed tracing**: Helps identify performance bottlenecks across services
 - **Schema registry**: Maintains a history of schema changes and enables rollbacks
+- **Caching**: Implements intelligent caching strategies to improve performance, at the service, row, and even column level.
 
 ## Building Our Federated GraphQL API
 
@@ -115,14 +141,11 @@ import { createId } from '@paralleldrive/cuid2';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const videosTable = sqliteTable('videos', {
-  // Unique identifier for each video
   id: text('id').primaryKey().$default(createId),
-  // Core video metadata
   title: text('title').notNull(),
   subtitle: text('subtitle').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description').notNull(),
-  // Technical details
   duration: integer({ mode: 'number' }).notNull(),
   publishedAt: integer({ mode: 'timestamp' }).notNull(),
 });
@@ -141,11 +164,11 @@ export const thumbnailsTable = sqliteTable('video-thumbnails', {
 });
 ```
 
-This simple schema allows us to store thumbnail URLs associated with video IDs. Drizzle's `drizzle-kit` handles migration generation automatically.
+This simple schema allows us to store thumbnail URLs associated with video IDs. Drizzle's `drizzle-kit` handles migration generation and application for us. Drizzle also has a wonderful plugin ecosystem, allowing us to convert out Drizzle types to many other formats, as well as defining DTOs for other APIs based on the database schema.
 
 ### Defining the GraphQL Schema
 
-Next, we transform our database schema into a GraphQL type using Pothos with its Drizzle plugin. The key to federation is how we reference and extend existing types:
+Next, we transform our database schema into a GraphQL type using Pothos with its Drizzle plugin. The key to federation is how we reference and extend existing types. As our `Video` type is defined in the `videos` service, we need to reference it in our new service to be able to extend it with our new columns / fields.
 
 ```typescript
 import drizzlePlugin from '@pothos/plugin-drizzle';
@@ -249,6 +272,14 @@ This architecture has transformed how we build and expose our services:
 
 **Read-write separation**: By focusing our federation on read operations, we've simplified our architecture while maintaining clear command responsibility in individual services.
 
+## Challenges
+
+We'll be honest, we've not hit any huge problems yet with this architecture; it's allowed us to move fast and make mistakes without compromising the system.
+
+We will admit that the setup of a new service is currently a lot of copy and paste and duplicate code within our repository that could be easily generated. We're actively exploring the [Projen](https://projen.io/) project to help us build out a template for read-layer APIs that are generated when you run `bun` or `deno` install.
+
+This will allow us to remove the duplicated code and each read-layer service would be just the Drizzle objects and the GraphQL extension points; nice, right?
+
 ## Conclusion
 
 Federated GraphQL has proven to be a powerful solution for our microservice architecture, providing a unified API that simplifies client development while preserving service autonomy. By leveraging open-source tools like GraphQL Yoga, Pothos, and WunderGraph Cosmo, we've built a robust, scalable system that supports rapid development across multiple teams.
@@ -258,3 +289,7 @@ If you're facing challenges with API integration in a microservice environment, 
 <Aside variant="tip">
 We're always looking to improve our architecture and share knowledge with the community. If you have questions or want to discuss our approach, reach out on our [Zulip community](https://chat.rawkode.academy).
 </Aside>
+
+Thanks for reading, we promise not to leave it as long next time for the next article.
+
+We'll be back with you right after KubeCon London, 2025.
