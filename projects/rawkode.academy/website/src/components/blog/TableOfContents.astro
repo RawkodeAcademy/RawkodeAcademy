@@ -7,17 +7,257 @@ type Props = {
 
 const { headings } = Astro.props;
 
-// HINT: this is the best for the moment
-const levelTwoHeadings = headings.filter((heading) => heading.depth === 2)
+// Get h2 and h3 headings
+const filteredHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+
+// Group headings by their hierarchy
+type TocHeading = MarkdownHeading & { subheadings: MarkdownHeading[] };
+const tocHeadings: TocHeading[] = [];
+let currentH2: TocHeading | null = null;
+
+filteredHeadings.forEach((heading) => {
+  if (heading.depth === 2) {
+    currentH2 = {
+      ...heading,
+      subheadings: []
+    };
+    tocHeadings.push(currentH2);
+  } else if (heading.depth === 3 && currentH2) {
+    currentH2.subheadings.push(heading);
+  }
+});
 ---
 
-<h2>Table of Contents</h2>
-<ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-	{
-		levelTwoHeadings.map((heading) => (
-			<li>
-				<a href={`#${heading.slug}`}>{heading.text}</a>
-			</li>
-		))
+<!-- Mobile TOC Button -->
+<button id="mobile-toc-button" class="lg:hidden fixed bottom-6 right-6 bg-primary text-white p-3 rounded-full shadow-lg z-20">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+  </svg>
+</button>
+
+<!-- TOC Container - Hidden on mobile by default, shown when toggled -->
+<div id="toc-container" class="toc-container float-right ml-8 mb-8 w-64 hidden lg:block" style="position: fixed; top: 6rem; right: 2rem; max-height: calc(100vh - 8rem); overflow-y: auto; z-index: 10;">
+	<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+		<div class="flex justify-between items-center mb-3">
+			<h2 class="text-lg font-semibold">Table of Contents</h2>
+			<button id="close-toc-button" class="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+				</svg>
+			</button>
+		</div>
+		<ul class="space-y-2 text-gray-600 dark:text-gray-300 relative">
+			<!-- Fluid highlight line that will move with scroll -->
+			<div id="toc-highlight-line" class="absolute left-0 w-0.5 bg-primary rounded-full transition-all duration-300 ease-in-out opacity-0" style="height: 0; top: 0;"></div>
+
+			<!-- Trail effect - darkened background for sections above the current one -->
+			<div id="toc-trail" class="absolute left-0 w-0.5 bg-primary/30 dark:bg-primary/20 transition-all duration-300 ease-in-out opacity-0" style="height: 0; top: 0;"></div>
+
+			{
+				tocHeadings.map((heading) => (
+					<li>
+						<div class="toc-item" data-heading-slug={heading.slug}>
+							<a href={`#${heading.slug}`} class="block hover:text-primary transition-colors duration-200 py-1 border-l-2 border-transparent pl-2">
+								{heading.text}
+							</a>
+						</div>
+
+						{heading.subheadings.length > 0 && (
+							<ul class="ml-4 mt-1 space-y-1">
+								{heading.subheadings.map((subheading) => (
+									<li class="toc-subitem" data-heading-slug={subheading.slug}>
+										<a href={`#${subheading.slug}`} class="block hover:text-primary transition-colors duration-200 py-1 border-l-0 pl-2 text-sm">
+											{subheading.text}
+										</a>
+									</li>
+								))}
+							</ul>
+						)}
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</div>
+
+<style>
+  /* Define primary color RGB values */
+  :root {
+    --color-primary-rgb: 95, 94, 215; /* RGB values for #5F5ED7 */
+  }
+
+  /* Add padding only on large screens where TOC is visible */
+  @media (min-width: 1024px) {
+    :global(article.prose) {
+      padding-right: 20rem !important;
+    }
+  }
+
+  /* Mobile TOC styling */
+  @media (max-width: 1023px) {
+    #toc-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(5px);
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+    }
+
+    :global(.dark) #toc-container {
+      background-color: rgba(31, 41, 55, 0.95);
+    }
+
+    #mobile-toc-button {
+      transition: transform 0.3s ease;
+    }
+
+    #mobile-toc-button:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  /* Fluid highlight line styling */
+  #toc-highlight-line {
+    box-shadow: 0 0 8px rgba(var(--color-primary-rgb), 0.5);
+    z-index: 2;
+  }
+
+  /* Trail styling */
+  #toc-trail {
+    z-index: 1;
+  }
+</style>
+
+<script>
+	// Function to highlight the current heading in the TOC and update the fluid line
+	function updateTOC() {
+		const headings = Array.from(document.querySelectorAll('h2[id], h3[id]'));
+		const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+		const highlightLine = document.getElementById('toc-highlight-line');
+
+		if (headings.length === 0 || tocItems.length === 0 || !highlightLine) return;
+
+		// Get the current scroll position with a small offset
+		const scrollPosition = window.scrollY + 100;
+
+		// Find the current heading
+		let currentHeadingIndex = -1;
+
+		for (let i = 0; i < headings.length; i++) {
+			const heading = headings[i] as HTMLElement;
+			if (heading.offsetTop > scrollPosition) {
+				break;
+			}
+			currentHeadingIndex = i;
+		}
+
+		// Remove active class from all TOC items
+		tocItems.forEach(item => {
+			const link = item.querySelector('a');
+			if (link) {
+				link.classList.remove('text-primary', 'font-medium', 'border-primary');
+				if (item.classList.contains('toc-item')) {
+					link.classList.add('border-transparent');
+				}
+			}
+		});
+
+		// Add active class to the current TOC item and update the highlight line
+		if (currentHeadingIndex >= 0) {
+			const currentHeading = headings[currentHeadingIndex];
+			if (currentHeading && currentHeading.id) {
+				// First try to find it as a main item
+				let currentTocItem = document.querySelector(`.toc-item[data-heading-slug="${currentHeading.id}"]`) as HTMLElement;
+
+				// If not found, try as a subitem
+				if (!currentTocItem) {
+					currentTocItem = document.querySelector(`.toc-subitem[data-heading-slug="${currentHeading.id}"]`) as HTMLElement;
+				}
+
+				if (currentTocItem) {
+					const link = currentTocItem.querySelector('a');
+					if (link) {
+						link.classList.add('text-primary', 'font-medium');
+						if (currentTocItem.classList.contains('toc-item')) {
+							link.classList.add('border-primary');
+							link.classList.remove('border-transparent');
+						}
+					}
+
+					// Update the highlight line position and height
+					const itemTop = currentTocItem.offsetTop;
+					const itemHeight = currentTocItem.offsetHeight;
+
+					highlightLine.style.top = `${itemTop}px`;
+					highlightLine.style.height = `${itemHeight}px`;
+					highlightLine.style.opacity = '1';
+
+					// Update the trail to fill from the top to the current item
+					const trail = document.getElementById('toc-trail');
+					if (trail) {
+						trail.style.top = '0';
+						trail.style.height = `${itemTop + itemHeight}px`;
+						trail.style.opacity = '1';
+					}
+				}
+			}
+		} else {
+			// If no heading is active, hide the highlight line and trail
+			highlightLine.style.opacity = '0';
+
+			const trail = document.getElementById('toc-trail');
+			if (trail) {
+				trail.style.opacity = '0';
+			}
+		}
 	}
-</ul>
+
+	// Mobile TOC toggle functionality
+	document.addEventListener('DOMContentLoaded', () => {
+		const mobileButton = document.getElementById('mobile-toc-button');
+		const closeButton = document.getElementById('close-toc-button');
+		const tocContainer = document.getElementById('toc-container');
+
+		if (mobileButton && closeButton && tocContainer) {
+			// Show TOC when mobile button is clicked
+			mobileButton.addEventListener('click', () => {
+				tocContainer.classList.remove('hidden');
+				// For mobile, position at the bottom
+				if (window.innerWidth < 1024) {
+					tocContainer.style.top = 'auto';
+					tocContainer.style.bottom = '5rem';
+					tocContainer.style.right = '1rem';
+					tocContainer.style.left = '1rem';
+					tocContainer.style.width = 'auto';
+					tocContainer.style.maxHeight = '70vh';
+				}
+			});
+
+			// Hide TOC when close button is clicked
+			closeButton.addEventListener('click', () => {
+				if (window.innerWidth < 1024) {
+					tocContainer.classList.add('hidden');
+				}
+			});
+
+			// Hide TOC when clicking on a link (on mobile)
+			const tocLinks = tocContainer.querySelectorAll('a');
+			tocLinks.forEach(link => {
+				link.addEventListener('click', () => {
+					if (window.innerWidth < 1024) {
+						tocContainer.classList.add('hidden');
+					}
+				});
+			});
+		}
+	});
+
+	// Update TOC on scroll
+	window.addEventListener('scroll', updateTOC, { passive: true });
+
+	// Initial update
+	document.addEventListener('DOMContentLoaded', updateTOC);
+
+	// Update on window resize
+	window.addEventListener('resize', updateTOC, { passive: true });
+</script>
