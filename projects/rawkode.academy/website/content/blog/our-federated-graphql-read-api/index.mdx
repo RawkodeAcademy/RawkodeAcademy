@@ -38,6 +38,37 @@ This approach offers several significant benefits:
 - **Enhanced caching**: The federation layer can implement intelligent caching strategies, reducing load on downstream services and improving response times.
 - **Incremental adoption**: Teams can add services to the federation incrementally, without disrupting existing functionality.
 
+## Example
+
+To understand our API and its federation, it makes sense to first see an example query.
+
+```graphql
+query {
+  getLatestVideos(limit: 2) {
+    id # videos-service
+
+    title # videos-service
+
+    creditsForRole(role: "host") {
+      person {
+        forename # people-service
+        surname # people-service
+
+        biography  # people-biographies-service
+
+        links {
+          url  # people-links-service
+        }
+      }
+    }
+
+    likes  # video-likes-service
+  }
+}
+```
+
+As you can see from the comments above, this single query is fetching data from multiple services. The `getLatestVideos` field is from the `videos-service`, and it's returning the `id` and `title` of the video. We're also fetching the `creditsForRole` from the `people-service`, the `biography` from the `people-biographies-service`, and the `links` from the `people-links-service`. Finally, we're fetching the `likes` from the `video-likes-service`.
+
 ## Our Federated GraphQL Stack
 
 Our federated GraphQL API is built using Apollo Federation's specification, but we've chosen to implement it using a fully open-source stack:
