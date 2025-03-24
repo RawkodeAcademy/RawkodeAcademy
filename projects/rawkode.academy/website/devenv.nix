@@ -1,16 +1,4 @@
 { pkgs, ... }:
-
-let
-  playwright-driver = pkgs.playwright-driver;
-  playwright-driver-browsers = pkgs.playwright-driver.browsers;
-
-  playright-file = builtins.readFile "${playwright-driver}/package/browsers.json";
-  playright-json = builtins.fromJSON playright-file;
-  playwright-chromium-entry = builtins.elemAt (builtins.filter (
-    browser: browser.name == "chromium"
-  ) playright-json.browsers) 0;
-  playwright-chromium-revision = playwright-chromium-entry.revision;
-in
 {
   name = "web.rawkode.academy";
 
@@ -23,11 +11,11 @@ in
 
   packages = with pkgs; [
     bun
-		d2
+    d2
     nixfmt-rfc-style
   ];
 
-  enterShell = ''
+enterShell = ''
     bun install
 
     __patchTarget="./node_modules/@cloudflare/workerd-linux-64/bin/workerd"
