@@ -1,0 +1,183 @@
+---
+title: Our Federated GraphQL Read API
+subtitle: "Providing a Single API in a Microservice Architecture"
+slug: our-federated-graphql-read-api
+cover:
+  image: "./cover.jpg"
+  alt: "A homemade steampunk Stargate"
+publishedAt: 2025-03-23
+updatedAt: 2025-03-23
+isDraft: false
+authors:
+  - rawkode
+---
+
+import Aside from "@/components/Aside.astro";
+
+In this article, we'll explore the design and implementation of our federated GraphQL API. This API is responsible for providing a single, unified interface to our microservice architecture, allowing clients to query and retrieve data from multiple services in a single request.
+
+<Aside variant="info">
+Want to play with our API? No problem! We have a public API available at [https://api.rawkode.academy](https://api.rawkode.academy). You can explore the schema and run queries using the GraphQL Playground.
+</Aside>
+
+
+We'll discuss the benefits of using a federated GraphQL API, the challenges we faced during implementation, and the tools and techniques we used to build and deploy our API. We'll also provide examples of how clients can interact with our API and demonstrate how it simplifies the process of querying data from multiple services.
+
+By the end of this article, you'll have a better understanding of how federated GraphQL APIs work and how they can be used to create a more efficient and flexible API layer in a microservice architecture.
+
+## Why Federated GraphQL?
+
+In a microservice architecture, it's common to have multiple services that are responsible for different parts of an application. Each service may have its own database and exposes its own API for querying data. This can lead to a situation where clients need to make multiple requests to different services in order to retrieve all the data they need.
+
+A federated GraphQL API solves this problem by providing a single, unified interface to multiple services. Clients can send a single GraphQL query to the federated API, and the API will take care of fetching the data from the appropriate services and aggregating it into a single response.
+
+This approach has several benefits:
+  - **Reduced network requests**: Clients only need to make a single request to the federated API, rather than multiple requests to different services.
+  - **Simplified client code**: Clients can write a single GraphQL query to retrieve data from multiple services, rather than having to manage multiple API endpoints and response formats.
+  - **Centralized data fetching logic**: The federated API can handle complex data fetching logic, such as aggregating data from multiple services or caching responses, without the client needing to know about it.
+  - **Caching** - The federated API can cache responses from services, reducing the load on downstream services and improving performance.
+
+## Our Federated GraphQL Stack
+
+Our federated GraphQL API is built using Apollo Federation, an open-source library that makes it easy to build a federated GraphQL API. Apollo Federation allows us to define a schema for our API that is composed of multiple sub-schemas, each representing a different service. Even though we use Apollo Federeation, we don't use the Apollo stack
+to build out our APIs; instead, we use truly open source components:
+
+- [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server)
+- [Pothos](https://pothos-graphql.dev/)
+- [WunderGraph Cosmo](https://wundergraph.com)
+
+### GraphQL Yoga
+
+GraphQL Yoga is a fully-featured GraphQL server designed for effortless setup and optimal developer experience.
+
+We selected this as the server component because it's simple to get started, extensible via plugins, supports Apollo Federation, and can run ANYWHERE; such as Cloudflare Workers and Deno. Deno is important for us, because we utilise Deno over nodejs whenever possible.
+
+### Pothos
+
+Pothos is a plugin based GraphQL schema builder for TypeScript.
+
+We've tried pretty much every approach to building a GraphQL schema with TypeScript and Pothos was the clear winner becausee it has a native integration with Drizzle (the TypeScript ORM we use) that isn't restrictive and allows us to annotate our GraphQL types; which will be important as we progress through this article.
+
+### WunderGraph Cosmo
+
+WunderGraph Cosmo is the Full Lifecycle GraphQL API Management Solution to manage Federated Graphs at scale. Composition checks, routing, analytics, and distributed tracing all in one platform.
+
+We selected Cosmo because it provides us with a single pane of glass to manage our federated GraphQL APIs, and it provides us with a lot of features that we would have to build ourselves, such as composition checks, routing, and distributed tracing.
+
+## Building Our Federated GraphQL API
+
+The best way to understand why this approach to microservices and providing a public API is so powerful is to see it in action. Let's walk through adding a new column to one of our entities ... but we won't modify our existing service; we'll add a new one.
+
+### Defining the Schema
+
+Every new read-layer service starts with defining the schema. We do this with Drizzle, as it provides a type-safe client for interacting with our database and handles the migrations.
+
+Here's the existing schema, from our `videos` service:
+
+```typescript
+import { createId } from '@paralleldrive/cuid2';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
+export const videosTable = sqliteTable('videos', {
+	id: text('id').primaryKey().$default(createId),
+	title: text('title').notNull(),
+	subtitle: text('subtitle').notNull(),
+	slug: text('slug').notNull().unique(),
+	description: text('description').notNull(),
+	duration: integer({ mode: 'number' }).notNull(),
+	publishedAt: integer({ mode: 'timestamp' }).notNull(),
+});
+```
+
+We're going to assume we want to add a `thumbnail` field to our video entity. We'll create a new service, `thumbnails`, to handle this.
+
+```typescript
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
+export const thumbnailsTable = sqliteTable('video-thumbnails', {
+  id: text('id').notNull().unique(),
+  url: text('url').notNull(),
+});
+```
+
+That's it! We're using the video ID as the primary key for the thumbnail, and we're storing the URL of the thumbnail.
+
+I won't bore you with the boring commands for generating the migration, but Drizzle provides `drizzle-kit` that handles it all for us. Nice.
+
+### Defining the GraphQL Schema
+
+Next, we want to take the Drizzle types and use them to build out our GraphQL types. To do this, we use the `@pothos/plugin-drizzle` package.
+
+We use `builder.externalRef` to say that we have some external schema definition and we want to extend it. In this case, we're extending the `Video` type from the `videos` service. It has an external field, `id`, that can be used to fetch the object from the videos service via Apollo's spec for entity resolution.
+
+Then, we add our fields with `fields: ...`. We're adding a `thumbnail` field that resolves to the URL of the thumbnail for the video. We use our Drizzle ORM to fetch the thumbnail from the database.
+
+It really is rather simple but exceedingly powerful.
+
+```typescript
+import drizzlePlugin from '@pothos/plugin-drizzle';
+
+builder.externalRef(
+	'Video',
+	builder.selection<{ id: string }>('id'),
+).implement({
+	externalFields: (t) => ({
+		id: t.string(),
+	}),
+	fields: (t) => ({
+		thumbnail: t.field({
+			type: 'String',
+			nullable: true,
+			resolve: async (video) => {
+				const result = await db.query.videoThumbnails.findFirst({
+					columns: {
+						url: true,
+					},
+					where: eq(dataSchema.videoThumbnails.id, video.id),
+				});
+
+				return result?.url || '';
+			},
+		}),
+	}),
+});
+```
+
+### Publishing the Schema Changes
+
+We now need to inform WunderGraph Cosmo that we've changed the schema. In-order to do that, we need to publish the GraphQL schema to the Cosmo API. So first, we need to write the schema to a file:
+
+```typescript
+import { printSchemaWithDirectives } from '@graphql-tools/utils';
+import { lexicographicSortSchema } from 'graphql';
+import { getSchema } from './schema.ts';
+
+const schemaAsString = printSchemaWithDirectives(
+	lexicographicSortSchema(getSchema()),
+	{
+		pathToDirectivesInExtensions: [''],
+	},
+);
+
+Deno.writeFileSync(
+	`${import.meta.dirname}/schema.gql`,
+	new TextEncoder().encode(schemaAsString),
+);
+```
+
+This provides a `schema.gql` file that we can use with the WunderGraph CLI to publish the schema changes.
+
+```bash
+bunx wgc subgraph publish ${SERVICE_NAME} --namespace production --schema ./read-model/schema.gql --routing-url https://${SERVICE_NAME}-read-458678766461.europe-west2.run.app
+```
+
+
+## Why We Love This Approach
+
+This approach to building out our federated GraphQL API has been a game-changer for us. We can add new services and new fields to existing services without having to modify the existing services. This allows us to iterate quickly and add new features to our API without disrupting the existing services.
+
+We're very lucky that Pothos built their Drizzle plugin, because it gives us type-safety between our database and our GraphQL schema. This is a huge win for us, as it allows us to catch errors at compile time rather than at runtime.
+
+Now, you may be thinking that with this integration we're struct by exposing our database schema to the world; but it couldn't be further from the truth. We're able to control what fields are exposed and how they're exposed. We can even add custom resolvers to handle complex data fetching logic, such as aggregating data from multiple services or caching responses.
+
+Finally, WunderGraph Cosmo provides us with a single pane of glass to manage our federated GraphQL APIs. We can see all of our services in one place, monitor their health, and manage the routing and composition checks. This has made it much easier for us to manage our APIs and ensure they are running smoothly.
