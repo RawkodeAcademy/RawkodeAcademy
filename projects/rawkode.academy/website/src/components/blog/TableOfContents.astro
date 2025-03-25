@@ -74,9 +74,9 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 <!-- TOC Container - Vertically centered when minimized, expands on hover -->
 <div
 	id="toc-container"
-	class={`toc-container bg-white/95 dark:bg-gray-800/95 border-l border-gray-200 dark:border-gray-700 h-[75vh] overflow-y-auto rounded-lg backdrop-blur-sm shadow-lg dark:shadow-xl transition-all duration-300 ease-in-out opacity-50 ${className}`}
+	class={`toc-container bg-white/95 dark:bg-gray-800/95 border-l border-gray-200 dark:border-gray-700 max-h-[50vh] overflow-y-auto rounded-lg backdrop-blur-sm shadow-lg dark:shadow-xl transition-all duration-300 ease-in-out opacity-50 ${className}`}
 >
-	<div class="p-2 md:p-4 h-full">
+	<div class="p-2 md:p-4">
 		<div class="mb-3 flex items-center">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -98,22 +98,6 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 			</h2>
 		</div>
 		<ul class="space-y-2 text-gray-600 dark:text-gray-300 relative list-none">
-			<!-- Fluid highlight line that will move with scroll -->
-			<div
-				id="toc-highlight-line"
-				class="absolute left-0 w-0.5 bg-primary rounded-full transition-all duration-300 ease-in-out opacity-0 shadow-md dark:shadow-lg z-10"
-				style="height: 0; top: 0;"
-			>
-			</div>
-
-			<!-- Trail effect - darkened background for sections above the current one -->
-			<div
-				id="toc-trail"
-				class="absolute left-0 w-0.5 bg-primary/30 dark:bg-primary/30 transition-all duration-300 ease-in-out opacity-0 z-[5]"
-				style="height: 0; top: 0;"
-			>
-			</div>
-
 			{
 				tocHeadings.map((heading) => (
 					<li class="list-none">
@@ -122,9 +106,9 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 								href={`#${heading.slug}`}
 								class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-2 border-transparent pl-2 relative"
 							>
-								<div class="toc-dot absolute left-0 w-2 h-2 rounded-full bg-primary" />
+								<div class="toc-dot absolute w-3 h-3 rounded-full bg-primary" />
 								<div class="toc-content ml-4 flex items-center">
-									<span class="text-sm md:text-base truncate">
+									<span class="text-sm md:text-base break-words">
 										{heading.text}
 									</span>
 								</div>
@@ -142,9 +126,9 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 											href={`#${subheading.slug}`}
 											class="flex items-center hover:text-primary transition-colors duration-200 py-1 border-l-0 pl-2 text-sm relative"
 										>
-											<div class="toc-dot absolute left-0 w-1.5 h-1.5 rounded-full bg-primary/70" />
+											<div class="toc-dot absolute w-2 h-2 rounded-full bg-primary/90" />
 											<div class="toc-content ml-4 flex items-center">
-												<span class="text-xs md:text-sm truncate">
+												<span class="text-xs md:text-sm break-words">
 													{subheading.text}
 												</span>
 											</div>
@@ -208,6 +192,16 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		width: auto;
 	}
 
+	/* Ensure all dots are visible in minimized state */
+	#toc-container .toc-dot {
+		opacity: 1;
+		left: -1rem; /* Original position */
+		background-color: #5f5ed7; /* Primary color */
+		box-shadow: 0 0 6px rgba(95, 94, 215, 0.9);
+		z-index: 20;
+		position: absolute; /* Ensure absolute positioning */
+	}
+
 	/* For touch devices (click/tap) */
 	#toc-container.touch-device.expanded {
 		width: 16rem !important;
@@ -231,12 +225,11 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 	}
 
 	.toc-dot {
-		transition: transform 0.3s ease;
-		left: -2rem;
+		transition: all 0.3s ease;
 	}
 
 	#toc-container:hover .toc-dot {
-		transform: scale(1.5);
+		transform: scale(1.2);
 	}
 
 	/* Mobile-specific styles */
@@ -270,19 +263,26 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		#toc-container:hover {
 			width: calc(100% - 2rem) !important;
 		}
+
+		/* Hide dots container on mobile */
+		.toc-dots-container {
+			display: none !important;
+		}
 	}
 
 	/* Medium screens */
 	@media (min-width: 769px) and (max-width: 1023px) {
 		#toc-container {
-			width: 3rem !important; /* Collapsed width */
-			max-width: 3rem;
+			width: 2rem !important; /* Collapsed width */
+			max-width: 2rem;
 			transition: all 0.3s ease;
 			position: fixed;
 			right: 0;
 			top: 50%;
 			transform: translateY(-50%);
 			z-index: 40;
+			overflow-x: hidden;
+			padding-right: 0.5rem;
 		}
 
 		#toc-container.mobile-visible,
@@ -300,14 +300,16 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 	/* Large screens and up */
 	@media (min-width: 1024px) {
 		#toc-container {
-			width: 3rem !important; /* Collapsed width */
-			max-width: 3rem;
+			width: 2rem !important; /* Collapsed width */
+			max-width: 2rem;
 			transition: all 0.3s ease;
 			position: fixed;
 			right: 0;
 			top: 50%;
 			transform: translateY(-50%);
 			z-index: 40;
+			overflow-x: hidden;
+			padding-right: 0.5rem;
 		}
 
 		#toc-container.mobile-visible,
@@ -416,6 +418,105 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		});
 	};
 
+	// Create a separate container for dots in minimized state
+	const createDotsContainer = (
+		tocContainer: HTMLElement
+	): HTMLElement | null => {
+		if (!tocContainer) return null;
+
+		// Create a container for the dots
+		const dotsContainer = document.createElement("div");
+		dotsContainer.id = "toc-dots-container";
+		dotsContainer.className = "toc-dots-container";
+		dotsContainer.style.position = "absolute";
+		dotsContainer.style.top = "50%";
+		dotsContainer.style.left = "50%";
+		dotsContainer.style.transform = "translate(-50%, -50%)";
+		dotsContainer.style.display = "flex";
+		dotsContainer.style.flexDirection = "column";
+		dotsContainer.style.alignItems = "center";
+		dotsContainer.style.justifyContent = "center";
+		dotsContainer.style.height = "80%"; // Use most of the container height
+		dotsContainer.style.zIndex = "30";
+
+		// Hide on mobile
+		if (window.innerWidth <= 768) {
+			dotsContainer.style.display = "none";
+		}
+
+		// Get only h2 TOC items (toc-item class)
+		const tocItems = tocContainer.querySelectorAll(".toc-item");
+		const itemCount = tocItems.length;
+
+		// Create a dot for each h2 TOC item
+		tocItems.forEach((item, index) => {
+			const dot = document.createElement("div");
+			const slug = item.getAttribute("data-heading-slug");
+			dot.className = "toc-dot-clone";
+			dot.setAttribute("data-heading-slug", slug || "");
+			dot.style.width = "6px";
+			dot.style.height = "6px";
+			dot.style.borderRadius = "50%";
+			dot.style.backgroundColor = "#5f5ed7";
+			dot.style.opacity = "0.7";
+			dot.style.marginBottom = index < itemCount - 1 ? "1.5rem" : "0";
+			dot.style.transition =
+				"transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease";
+			dot.style.cursor = "pointer";
+
+			// Add click event to navigate to the corresponding heading
+			dot.addEventListener("click", (e) => {
+				if (slug) {
+					window.location.hash = slug;
+				}
+				// Stop propagation to prevent interfering with mobile toggle
+				e.stopPropagation();
+			});
+
+			// Add hover effect
+			dot.addEventListener("mouseenter", () => {
+				dot.style.opacity = "1";
+				dot.style.transform = "scale(1.5)";
+			});
+
+			dot.addEventListener("mouseleave", () => {
+				// Only reset if not the active dot
+				if (!dot.classList.contains("active-dot")) {
+					dot.style.opacity = "0.7";
+					dot.style.transform = "scale(1)";
+				}
+			});
+
+			dotsContainer.appendChild(dot);
+		});
+
+		tocContainer.appendChild(dotsContainer);
+
+		// Show/hide dots container based on hover (desktop only)
+		tocContainer.addEventListener("mouseenter", () => {
+			if (window.innerWidth > 768) {
+				dotsContainer.style.display = "none";
+			}
+		});
+
+		tocContainer.addEventListener("mouseleave", () => {
+			if (window.innerWidth > 768) {
+				dotsContainer.style.display = "flex";
+			}
+		});
+
+		// Update dots visibility on window resize
+		window.addEventListener("resize", () => {
+			if (window.innerWidth <= 768) {
+				dotsContainer.style.display = "none";
+			} else if (!tocContainer.matches(":hover")) {
+				dotsContainer.style.display = "flex";
+			}
+		});
+
+		return dotsContainer;
+	};
+
 	// Main setup function for TOC
 	const setupTOC = (): void => {
 		const tocContainer = getElement("toc-container");
@@ -428,6 +529,11 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		setupTouchDevice(tocContainer);
 		setupMobileToggle(tocContainer, mobileToggle, iconOpen, iconClose);
 		setupResizeHandler(tocContainer, iconOpen, iconClose);
+
+		// Only create dots container on desktop
+		if (window.innerWidth > 768) {
+			createDotsContainer(tocContainer);
+		}
 	};
 
 	// Reset all TOC items to inactive state
@@ -461,38 +567,7 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		return currentHeadingIndex;
 	};
 
-	// Update highlight line and trail
-	const updateHighlights = (
-		currentTocItem: HTMLElement,
-		highlightLine: HTMLElement,
-		trail: HTMLElement | null
-	): void => {
-		if (!currentTocItem || !highlightLine) return;
-
-		// Update the highlight line position and height
-		const itemTop = currentTocItem.offsetTop;
-		const itemHeight = currentTocItem.offsetHeight;
-
-		highlightLine.style.top = `${itemTop}px`;
-		highlightLine.style.height = `${itemHeight}px`;
-		highlightLine.style.opacity = "1";
-
-		// Update the trail to fill from the top to the current item
-		if (trail) {
-			trail.style.top = "0";
-			trail.style.height = `${itemTop + itemHeight}px`;
-			trail.style.opacity = "1";
-		}
-	};
-
-	// Hide highlight line and trail when no heading is active
-	const hideHighlights = (
-		highlightLine: HTMLElement | null,
-		trail: HTMLElement | null
-	): void => {
-		if (highlightLine) highlightLine.style.opacity = "0";
-		if (trail) trail.style.opacity = "0";
-	};
+	// No highlight line or trail functions needed
 
 	// Activate the current TOC item
 	const activateTocItem = (currentTocItem: HTMLElement): void => {
@@ -525,17 +600,15 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		return tocItem;
 	};
 
-	// Function to highlight the current heading in the TOC and update the fluid line
+	// Function to highlight the current heading in the TOC
 	const updateTOC = (): void => {
 		const headings = Array.from(
 			document.querySelectorAll("h2[id], h3[id]")
 		) as HTMLElement[];
 		const tocItems = document.querySelectorAll(".toc-item, .toc-subitem");
-		const highlightLine = getElement("toc-highlight-line");
-		const trail = getElement("toc-trail");
+		const dotsContainer = document.getElementById("toc-dots-container");
 
-		if (headings.length === 0 || tocItems.length === 0 || !highlightLine)
-			return;
+		if (headings.length === 0 || tocItems.length === 0) return;
 
 		// Get the current scroll position with a small offset
 		const scrollPosition = window.scrollY + 150;
@@ -549,6 +622,17 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 		// Reset all TOC items
 		resetTocItems(tocItems);
 
+		// Reset all dot clones
+		if (dotsContainer) {
+			const dotClones = dotsContainer.querySelectorAll(".toc-dot-clone");
+			dotClones.forEach((dot) => {
+				dot.classList.remove("active-dot");
+				(dot as HTMLElement).style.opacity = "0.7";
+				(dot as HTMLElement).style.transform = "scale(1)";
+				(dot as HTMLElement).style.backgroundColor = "#5f5ed7";
+			});
+		}
+
 		// Handle active heading if found
 		if (currentHeadingIndex >= 0) {
 			const currentHeading = headings[currentHeadingIndex];
@@ -557,11 +641,36 @@ const tocHeadings: TocHeading[] = filteredHeadings.reduce<TocHeading[]>(
 
 				if (currentTocItem) {
 					activateTocItem(currentTocItem);
-					updateHighlights(currentTocItem, highlightLine, trail);
+
+					// Also highlight the corresponding dot in the dots container
+					if (dotsContainer) {
+						// Find the closest h2 heading if current is h3
+						let h2Slug = currentHeading.id;
+						if (currentHeading.tagName === "H3") {
+							// Find the parent h2 by traversing up the DOM
+							let h2 = currentHeading.previousElementSibling;
+							while (h2 && h2.tagName !== "H2") {
+								h2 = h2.previousElementSibling;
+							}
+							if (h2 && h2.id) {
+								h2Slug = h2.id;
+							}
+						}
+
+						// Find and highlight the dot
+						const activeDot = dotsContainer.querySelector(
+							`.toc-dot-clone[data-heading-slug="${h2Slug}"]`
+						) as HTMLElement;
+
+						if (activeDot) {
+							activeDot.classList.add("active-dot");
+							activeDot.style.opacity = "1";
+							activeDot.style.transform = "scale(1.5)";
+							activeDot.style.backgroundColor = "#7f7ef2"; // Slightly lighter for better visibility
+						}
+					}
 				}
 			}
-		} else {
-			hideHighlights(highlightLine, trail);
 		}
 	};
 
