@@ -1,36 +1,107 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { createClient, webvtt } from "@deepgram/sdk";
 import {
 	type Context,
 	endpoint,
 	service,
 	TerminalError,
-} from '@restatedev/restate-sdk/fetch';
-import { createClient, webvtt } from '@deepgram/sdk';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+} from "@restatedev/restate-sdk-cloudflare-workers/fetch";
+import { gql, request } from "graphql-request";
+import process from "node:process";
 
-// This avoids using polyfilled node APIs
-Deno.env.set('USE_WEB_CRYPTO', 'true');
+// Set environment variable for web crypto
+process.env.USE_WEB_CRYPTO = "true";
 
 interface Config {
 	language: string;
 	videoId: string;
 }
 
+interface Technology {
+	id: string;
+	name: string;
+	terms: { term: string }[];
+}
+
+interface VideoResponse {
+	videoByID: {
+		technologies: Technology[];
+	};
+}
+
+// GraphQL query to fetch video technologies and terms
+const GET_VIDEO_TERMS = gql`
+	query GetVideoTerms($videoId: ID!) {
+		videoByID(id: $videoId) {
+			technologies {
+				id
+				name
+				terms {
+					term
+				}
+			}
+		}
+	}
+`;
+
+/**
+ * Fetches technology terms for a video to improve transcription accuracy
+ */
+const fetchVideoTerms = async (videoId: string): Promise<string[]> => {
+	try {
+		const endpoint =
+			process.env.GRAPHQL_API_ENDPOINT || "https://api.rawkode.academy/graphql";
+
+		const data = await request<VideoResponse>(endpoint, GET_VIDEO_TERMS, {
+			videoId,
+		});
+
+		// Extract all terms from all technologies
+		const terms: string[] = [];
+
+		// Add technology names
+		for (const tech of data.videoByID.technologies) {
+			terms.push(tech.name);
+
+			// Add all terms for this technology
+			for (const termObj of tech.terms) {
+				terms.push(termObj.term);
+			}
+		}
+
+		// Return unique terms
+		return [...new Set(terms)];
+	} catch (error) {
+		console.warn("Failed to fetch video terms:", error);
+		// Return empty array if there's an error, so transcription can still proceed
+		return [];
+	}
+};
+
+interface R2Config {
+	endpoint: string;
+	bucket: string;
+	accessKeyId: string;
+	secretAccessKey: string;
+}
+
 const transcriptionService = service({
-	name: 'transcription',
+	name: "transcription",
 	handlers: {
 		transcribeVideoById: async (ctx: Context, config: Config) => {
-			const deepgram = createClient(Deno.env.get('DEEPGRAM_API_KEY'));
+			const r2Config = JSON.parse(process.env.CLOUDFLARE_R2_CONFIG || "") as R2Config;
 
-			const bucketName = Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME');
+			const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
+
+			const bucketName = r2Config.bucket;
+
 
 			const r2Client = new S3Client({
-				region: 'auto',
-				endpoint: `https://${
-					Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
-				}.eu.r2.cloudflarestorage.com`,
+				region: "auto",
+				endpoint: r2Config.endpoint,
 				credentials: {
-					accessKeyId: Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY') || '',
-					secretAccessKey: Deno.env.get('CLOUDFLARE_R2_SECRET_KEY') || '',
+					accessKeyId: r2Config.accessKeyId,
+					secretAccessKey: r2Config.secretAccessKey,
 				},
 			});
 
@@ -44,31 +115,42 @@ const transcriptionService = service({
 				maxRetryDurationMillis: 259200000,
 			};
 
-			const result = await ctx.run("transcription", async () => {
-				const { result, error } = await deepgram.listen.prerecorded
-					.transcribeUrl(
-						{
-							url:
-								`https://videos.rawkode.academy/${config.videoId}/youtube/video.mkv`,
-						},
-						{
-							model: 'nova-3',
-							language: config.language,
-							keyterm: ['Rawkode', 'Rawkode Academy'],
-						},
-					);
+			// Fetch technology terms for the video
+			console.log(`Fetching technology terms for video: ${config.videoId}`);
+			const videoTerms = await fetchVideoTerms(config.videoId);
 
-				if (error) {
-					throw error;
-				}
+			// Combine default terms with video-specific terms
+			const keyterms = ["Rawkode", "Rawkode Academy", ...videoTerms];
+			console.log(`Using keyterms for transcription: ${keyterms.join(", ")}`);
 
-				return result;
-			}, myRunRetryPolicy);
+			const result = await ctx.run(
+				"transcription",
+				async () => {
+					const { result, error } =
+						await deepgram.listen.prerecorded.transcribeUrl(
+							{
+								url: `https://content.rawkode.academy/videos/${config.videoId}/original.mkv`,
+							},
+							{
+								model: "nova-3",
+								language: config.language,
+								keyterm: keyterms,
+							},
+						);
+
+					if (error) {
+						throw error;
+					}
+
+					return result;
+				},
+				myRunRetryPolicy,
+			);
 
 			const captions = webvtt(result);
 
 			try {
-				const captionsKey = `${config.videoId}/captions/en.vtt`;
+				const captionsKey = `videos/${config.videoId}/captions/en.vtt`;
 
 				const encoder = new TextEncoder();
 				const captionsBytes = encoder.encode(captions);
@@ -79,14 +161,14 @@ const transcriptionService = service({
 						Key: captionsKey,
 						Body: captionsBytes,
 						ContentLength: captionsBytes.byteLength,
-						ContentType: 'text/vtt',
+						ContentType: "text/vtt",
 					}),
 				);
 
 				return `Captions uploaded to R2: ${captionsKey}`;
 			} catch (error) {
-				console.error('Error uploading captions to R2:', error);
-				throw new TerminalError('Failed to upload captions to R2', {
+				console.error("Error uploading captions to R2:", error);
+				throw new TerminalError("Failed to upload captions to R2", {
 					errorCode: 500,
 					cause: error,
 				});
@@ -95,11 +177,12 @@ const transcriptionService = service({
 	},
 });
 
-const handler = endpoint().bind(transcriptionService).withIdentityV1(
-	Deno.env.get('RESTATE_IDENTITY_KEY') || '',
-).bidirectional().handler();
+const handler = endpoint()
+	.bind(transcriptionService)
+	.withIdentityV1(process.env.RESTATE_IDENTITY_KEY || "")
+	.bidirectional()
+	.handler();
 
-Deno.serve(
-	{ port: parseInt(Deno.env.get('PORT') || '9080', 10) },
-	handler.fetch,
-);
+export default {
+	fetch: handler,
+};
