@@ -9,6 +9,9 @@ tasks:
     env:
       LIBSQL_BASE_URL: rawkodeacademy.turso.io
     script: |
-      op run -- bunx wrangler -c ./write-model/wrangler.jsonc deploy --var SERVICE_NAME:${SERVICE_NAME} --var LIBSQL_BASE_URL:${LIBSQL_BASE_URL}
+      set -g OUTPUT $(op run -- bunx wrangler -c ./write-model/wrangler.jsonc deploy)
+      set -g VERSION_ID $(echo "$OUTPUT" | grep -oP 'Current Version ID: \K[0-9a-f]{8}' | head -n 1)
+      echo https://$VERSION_ID-$SERVICE_NAME-write-model.rawkodeacademy.workers.dev
+      op run -- deno run -A --no-config 'npm:@restatedev/restate@1.1.2' deployments register --yes https://$VERSION_ID-$SERVICE_NAME-write-model.rawkodeacademy.workers.dev
     options:
       runInCI: true
