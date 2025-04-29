@@ -37,5 +37,5 @@ gcloud run deploy ${SERVICE_NAME}-write \
       --set-env-vars="SERVICE_NAME=${SERVICE_NAME},CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID},CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}" \
       --set-secrets="DEEPGRAM_API_KEY=deepgram-api-key:latest,RESTATE_IDENTITY_KEY=restate-identity-key:latest,CLOUDFLARE_R2_CONFIG=cloudflare-r2-content:latest"
 
-deno run -A --no-config 'npm:@restatedev/restate@1.1.2' deployments register https://v${epoch}---${SERVICE_NAME}-write-wlnfqm3bkq-nw.a.run.app
+deno run -A --no-config 'npm:@restatedev/restate@1.3.2' deployments register --yes https://v${epoch}---${SERVICE_NAME}-write-wlnfqm3bkq-nw.a.run.app
 ```
