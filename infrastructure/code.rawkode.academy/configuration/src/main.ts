@@ -69,7 +69,6 @@ class MyStack extends TerraformStack {
 		new GroupIssueBoard(gr, "rawkode-academy-issue-board", {
 			name: "Development",
 			group: gr.id,
-			labels: groupLabels.map((label) => label.name),
 			lists: groupLabels.map((label) => ({
 				labelId: label.labelId,
 				position: counter++,
