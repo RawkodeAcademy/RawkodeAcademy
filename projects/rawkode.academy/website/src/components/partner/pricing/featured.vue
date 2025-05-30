@@ -15,28 +15,28 @@ interface PricingPlan {
 const maltPricingPlan: PricingPlan = {
 	title: "Malt",
 	price: "96,000",
-	description: "Premier Partnership - Our highest tier of collaboration, featuring comprehensive support and maximum visibility.",
+	description:
+		"Premier Partnership - Our highest tier of collaboration, featuring comprehensive support and maximum visibility.",
 	ctaText: "Become a Premier Partner",
 	features: [
 		{
 			text: "Everything in Blend",
-			description: "All features from the Blend partnership tier"
+			description: "All features from the Blend partnership tier",
 		},
 		{
 			text: "80 Hours of Consulting or Content Creation",
-			description: "Extensive dedicated time for strategic consulting, product positioning, and premium content development"
-		},
-		{
-			text: "Exclusive 2-Hour Course",
-			description: "Custom-developed educational course on your product, technology, or pattern of choice, professionally produced and promoted to our audience"
+			description:
+				"Extensive dedicated time for strategic consulting, product positioning, and premium content development",
 		},
 		{
 			text: "Executive Advisory Sessions",
-			description: "Direct access to our team for strategic guidance and industry insights"
+			description:
+				"Direct access to our team for strategic guidance and industry insights",
 		},
 		{
 			text: "Co-Marketing Opportunities",
-			description: "Joint marketing initiatives including co-branded content, webinars, and promotional campaigns"
+			description:
+				"Joint marketing initiatives including co-branded content, webinars, and promotional campaigns",
 		},
 	],
 };
@@ -57,7 +57,7 @@ const maltPricingPlan: PricingPlan = {
 				<ul role="list" class="space-y-6 dark:text-white">
 					<li v-for="feature in maltPricingPlan.features" class="flex items-start space-x-3">
 						<!-- Icon -->
-						<svg class="flex-shrink-0 w-5 h-5 mt-1 text-secondary" fill="currentColor" viewBox="0 0 20 20"
+						<svg class="shrink-0 w-5 h-5 mt-1 text-secondary" fill="currentColor" viewBox="0 0 20 20"
 							xmlns="http://www.w3.org/2000/svg">
 							<path fill-rule="evenodd"
 								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"

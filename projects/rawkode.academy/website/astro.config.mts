@@ -3,13 +3,26 @@ import mdx from "@astrojs/mdx";
 import partytown from "@astrojs/partytown";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
-import tailwind from "@astrojs/tailwind";
 import vue from "@astrojs/vue";
 import d2 from "astro-d2";
 import expressiveCode from "astro-expressive-code";
 import { defineConfig, envField } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
 import { vite as vidstackPlugin } from "vidstack/plugins";
+import faroUploader from "@grafana/faro-rollup-plugin";
+import tailwindcss from "@tailwindcss/vite";
+
+const getSiteUrl = () => {
+  if (import.meta.env.DEV === true) {
+    return "http://localhost:4321";
+  }
+
+  if (import.meta.env.CF_PAGES_URL) {
+    return import.meta.env.CF_PAGES_URL;
+  }
+
+  return "https://rawkode.academy";
+};
 
 export default defineConfig({
   output: "server",
@@ -29,7 +42,6 @@ export default defineConfig({
       lastmod: new Date(),
       priority: 0.7,
     }),
-    tailwind(),
     vue(),
     partytown(),
   ],
@@ -43,6 +55,15 @@ export default defineConfig({
           },
         },
       }),
+      faroUploader({
+        appName: "rawkode.academy",
+        endpoint: "https://faro-api-prod-gb-south-0.grafana.net/faro/api/v1",
+        appId: "27",
+        stackId: "711132",
+        apiKey: process.env.GRAFANA_SOURCE_MAPS || "",
+        gzipContents: true,
+      }),
+      tailwindcss(),
     ],
     resolve: {
       // Use react-dom/server.edge instead of react-dom/server.browser for React 19.
@@ -50,29 +71,29 @@ export default defineConfig({
       // https://github.com/withastro/adapters/pull/436
       alias: import.meta.env.PROD
         ? {
-          "react-dom/server": "react-dom/server.edge",
-        }
+            "react-dom/server": "react-dom/server.edge",
+          }
         : {},
     },
   },
-  site: import.meta.env.CF_PAGES_URL
-    ? import.meta.env.CF_PAGES_URL
-    : "https://rawkode.academy",
+  site: getSiteUrl(),
   env: {
     validateSecrets: true,
     schema: {
       ZITADEL_URL: envField.string({
         context: "server",
         access: "public",
+        default: "https://zitadel.rawkode.academy",
       }),
       ZITADEL_CLIENT_ID: envField.string({
         context: "server",
         access: "public",
+        default: "293097955970320066",
       }),
-      INFLUXDB_URL: envField.string({
+      INFLUXDB_HOST: envField.string({
         context: "server",
-        access: "secret",
-        optional: true,
+        access: "public",
+        default: "https://eu-central-1-1.aws.cloud2.influxdata.com",
       }),
       INFLUXDB_TOKEN: envField.string({
         context: "server",
@@ -82,12 +103,27 @@ export default defineConfig({
       INFLUXDB_ORG: envField.string({
         context: "server",
         access: "public",
-        optional: true,
+        default: "Rawkode Academy",
       }),
       INFLUXDB_BUCKET: envField.string({
         context: "server",
         access: "public",
-        default: "video-events",
+        default: "analytics",
+      }),
+      ZULIP_URL: envField.string({
+        context: "server",
+        access: "public",
+        default: "https://chat.rawkode.academy",
+      }),
+      ZULIP_EMAIL: envField.string({
+        context: "server",
+        access: "public",
+        default: "rocko-bot@chat.rawkode.academy",
+      }),
+      ZULIP_API_KEY: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
       }),
     },
   },

@@ -1,31 +1,31 @@
 ---
 import { actions } from "astro:actions";
-import '@/styles/global.css';
-import { roomClientService } from "@/lib/livekit";
+import "@/styles/global.css";
 import { LIVEKIT_URL } from "astro:env/server";
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import LivekitRoom from '@/components/livestreams/livekit-room';
+import LivekitRoom from "@/components/livestreams/livekit-room";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { roomClientService } from "@/lib/livekit";
 
 // Get the roomName from the URL parameter
 const { roomName } = Astro.params;
 
 // Redirect if no room name is provided
 if (!roomName) {
-  return Astro.redirect("/");
+	return Astro.redirect("/");
 }
 
 // Check if the room actually exists
 let roomExists = false;
 try {
-  const rooms = await roomClientService.listRooms();
-  roomExists = rooms.some(room => room.name === roomName);
+	const rooms = await roomClientService.listRooms();
+	roomExists = rooms.some((room) => room.name === roomName);
 } catch (error) {
-  console.error("Error checking if room exists:", error);
+	console.error("Error checking if room exists:", error);
 }
 
 // If room doesn't exist, redirect to home
 if (!roomExists) {
-  return Astro.redirect("/?error=room-not-found");
+	return Astro.redirect("/?error=room-not-found");
 }
 
 // Check if user is authenticated
@@ -33,7 +33,6 @@ const user = Astro.locals.user;
 
 // If no user, we'll check for sessionStorage token client-side
 if (!user) {
-  console.log("No authenticated user - will check for guest token client-side");
 }
 
 // Only generate a server-side token if user is authenticated
@@ -42,29 +41,25 @@ let token = null;
 let tokenError = null;
 
 if (user) {
-  try {
-    const response = await Astro.callAction(actions.generateTokenFromInvite, {
-      roomName,
-      participantName: user?.preferred_username || user?.name,
-    });
+	try {
+		const response = await Astro.callAction(actions.generateTokenFromInvite, {
+			roomName,
+			participantName: user?.preferred_username || user?.name,
+		});
 
-    if (response && response.data && typeof response.data === 'string') {
-      token = response.data;
-    } else if (typeof response === 'string') {
-      token = response;
-    }
-
-    console.log("Generated token for authenticated user", { hasToken: !!token, tokenLength: token?.length });
-  } catch (error) {
-    console.error("Error generating token for user:", error);
-    tokenError = "Failed to generate access token. Please try again.";
-  }
-} else {
-  console.log("Skipping server-side token generation for guest - will use sessionStorage");
+		if (response?.data && typeof response.data === "string") {
+			token = response.data;
+		} else if (typeof response === "string") {
+			token = response;
+		}
+	} catch (error) {
+		console.error("Error generating token for user:", error);
+		tokenError = "Failed to generate access token. Please try again.";
+	}
 }
 
 // Default display name for authenticated users
-const displayName = user?.preferred_username || user?.name || 'Guest';
+const displayName = user?.preferred_username || user?.name || "Guest";
 ---
 
 <BaseLayout title={`Watch: ${roomName} - Live Stream`}>
@@ -95,7 +90,6 @@ const displayName = user?.preferred_username || user?.name || 'Guest';
       client:only="react"
       onLeaveRoom={(roomName: string) => {
         // User manually closed the room - handle redirection
-        console.log("User left room:", roomName);
         // Redirect to the invite page
         window.location.href = `/invite/${roomName}`;
       }}
@@ -106,22 +100,10 @@ const displayName = user?.preferred_username || user?.name || 'Guest';
     // Get token from sessionStorage
     let token = sessionStorage.getItem("livekit-token");
     const storedRoomName = sessionStorage.getItem("livekit-room");
-    const storedDisplayName = sessionStorage.getItem("display-name");
-
-    // Debug what we found
-    console.log("Page load token status:", {
-      hasStoredToken: !!token,
-      storedRoom: storedRoomName,
-      currentRoom: roomName,
-      hasServerToken: !!serverToken,
-      hasUser: hasUser,
-      storedDisplayName
-    });
 
     // Validate the stored room name matches the current room
     if (storedRoomName !== roomName) {
       // Room name mismatch - clear any existing tokens
-      console.warn("Room name mismatch:", { storedRoom: storedRoomName, currentRoom: roomName });
       token = null;
       sessionStorage.removeItem("livekit-token");
       sessionStorage.removeItem("livekit-room");
@@ -134,7 +116,7 @@ const displayName = user?.preferred_username || user?.name || 'Guest';
         token = serverToken;
         sessionStorage.setItem("livekit-token", token);
         sessionStorage.setItem("livekit-room", roomName);
-        console.log("Using server-generated token for authenticated user");
+
       } else {
         // No token in sessionStorage and no fallback token - must go back to invite page
         console.error("No valid token found, redirecting to invite page");
@@ -144,13 +126,9 @@ const displayName = user?.preferred_username || user?.name || 'Guest';
     }
 
     // Always use stored display name if available
-    if (storedDisplayName) {
-      console.log("Using stored display name:", storedDisplayName);
-    }
 
     // If we have no token at all, redirect to invite page
     if (!token || serverTokenError) {
-      console.error("No valid token found, redirecting to invite page");
       window.location.href = `/invite/${roomName}`;
     } else {
       // We have a valid token, show the room

@@ -1,4 +1,4 @@
-import { argument, dag, Directory, func, object } from "@dagger.io/dagger";
+import { argument, dag, type Directory, func, object } from "@dagger.io/dagger";
 
 @object()
 export class Studio {
@@ -15,7 +15,7 @@ export class Studio {
       .withExec([
         "bun",
         "run",
-        "build",
+        "astro:build",
       ]).directory("dist");
   }
 }

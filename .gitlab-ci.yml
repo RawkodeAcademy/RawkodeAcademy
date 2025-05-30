@@ -1,7 +1,8 @@
 .docker:
   image: docker:latest
   services:
-    - docker:${DOCKER_VERSION}-dind
+    - name: docker:${DOCKER_VERSION}-dind
+      command: ["--registry-mirror", "https://mirror.gcr.io"]
   variables:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_DRIVER: overlay2
@@ -19,11 +20,23 @@
     - curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR=/usr/local/bin sh
 
 stages:
+  - bootstrap
   - deploy
+
+bootstrap:
+  stage: bootstrap
+  image: alpine:latest
+  script:
+    - echo "Welcome to CICD"
+    - echo "This pipeline ensures that MRs can be merged when they have no pipeline."
+    - echo "Fun, right?"
 
 website-deploy-production:
   extends: [.dagger]
   stage: deploy
+  environment:
+    name: rawkode-academy-production
+    url: https://rawkode.academy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
@@ -36,9 +49,8 @@ website-deploy-production:
 
         ../../../dagger/cloudflare | deploy \
           ./dist \
-          wrangler.toml \
-          env:CLOUDFLARE_PAGES_TOKEN \
-          env:CICD_COMMENT_TOKEN
+          wrangler.jsonc \
+          env:CLOUDFLARE_WORKERS_TOKEN
       .
 
 website-deploy-merge-request:
@@ -54,17 +66,20 @@ website-deploy-merge-request:
       dagger <<.
         . | build | export dist
 
-        ../../../dagger/cloudflare | deploy \
+        ../../../dagger/cloudflare | preview \
           ./dist \
-          wrangler.toml \
-          env:CLOUDFLARE_PAGES_TOKEN \
+          wrangler.jsonc \
+          env:CLOUDFLARE_WORKERS_TOKEN \
           env:CICD_COMMENT_TOKEN \
-          --merge-request-id=$CI_MERGE_REQUEST_ID
+          $CI_MERGE_REQUEST_ID
       .
 
 studio-deploy-production:
   extends: [.dagger]
   stage: deploy
+  environment:
+    name: rawkode-studio-production
+    url: https://rawkode.studio
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
@@ -77,9 +92,8 @@ studio-deploy-production:
 
         ../../dagger/cloudflare | deploy \
           ./dist \
-          wrangler.toml \
-          env:CLOUDFLARE_PAGES_TOKEN \
-          env:CICD_COMMENT_TOKEN
+          wrangler.jsonc \
+          env:CLOUDFLARE_WORKERS_TOKEN
       .
 
 studio-deploy-merge-request:
@@ -95,10 +109,46 @@ studio-deploy-merge-request:
       dagger <<.
         . | build | export dist
 
-        ../../dagger/cloudflare | deploy \
+        ../../dagger/cloudflare | preview \
           ./dist \
-          wrangler.toml \
-          env:CLOUDFLARE_PAGES_TOKEN \
+          wrangler.jsonc \
+          env:CLOUDFLARE_WORKERS_TOKEN \
           env:CICD_COMMENT_TOKEN \
-          --merge-request-id=$CI_MERGE_REQUEST_ID
+          $CI_MERGE_REQUEST_ID
+      .
+
+infrastructure-dns-merge-request:
+  extends: [.dagger]
+  stage: deploy
+  rules:
+    - if: "$CI_MERGE_REQUEST_ID"
+      changes:
+        - infrastructure/dns/**/*
+  id_tokens:
+    GCP_ID_TOKEN:
+      aud: code.rawkode.academy
+  secrets:
+    CLOUDFLARE_API_TOKEN:
+      gcp_secret_manager:
+        name: projects/458678766461/secrets/clouflare-dns-edit
+      token: $GCP_ID_TOKEN
+    DNSIMPLE_TOKEN:
+      gcp_secret_manager:
+        name: projects/458678766461/secrets/dnsimple-all-access
+      token: $GCP_ID_TOKEN
+  script:
+    - cd infrastructure/dns
+    - |
+      dagger <<.
+        container |
+          from "docker.io/hashicorp/jsii-terraform" |
+          with-mounted-directory /code . |
+          with-workdir /code |
+          with-exec -- npm install |
+          with-exec -- npx cdktf provider get |
+          with-env-variable TF_HTTP_USERNAME gitlab-ci-token |
+          with-secret-variable TF_HTTP_PASSWORD env:CI_JOB_TOKEN |
+          with-secret-variable CLOUDFLARE_API_TOKEN file:$CLOUDFLARE_API_TOKEN |
+          with-secret-variable DNSIMPLE_TOKEN file:$DNSIMPLE_TOKEN |
+          with-exec -- npx cdktf plan
       .

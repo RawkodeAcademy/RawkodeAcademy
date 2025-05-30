@@ -1,71 +1,114 @@
 import {
-  dag,
+	dag,
 	Directory,
 	File,
-  func,
-  object,
-  Secret,
+	func,
+	object,
+	Secret,
 } from "@dagger.io/dagger";
 
 @object()
 export class Cloudflare {
-  /**
-   * Deploy a website to Cloudflare Pages.
-   */
-  @func()
-  async deploy(
+	/**
+	 * Deploy a website to Cloudflare Workers.
+	 */
+	@func()
+	async deploy(
 		dist: Directory,
-		wranglerToml: File,
-    cloudflareApiToken: Secret,
-    gitlabApiToken: Secret,
-    mergeRequestId?: string,
-  ): Promise<string> {
-    const cloudflareAccountId = await dag.config().cloudflareAccountId();
+		wranglerConfig: File,
+		cloudflareApiToken: Secret,
+	): Promise<string> {
+		const cloudflareAccountId = await dag.config().cloudflareAccountId();
 
-    const deploymentResult = await dag.container()
-      .from("node:22")
-      .withWorkdir("/deploy")
-      // Only doing this to cache the wrangler installation
-      .withExec([
-        "npx",
-        "wrangler",
-        "--version",
-      ])
-      .withMountedDirectory("/deploy/dist", dist)
-      .withMountedFile(
-        "/deploy/wrangler.toml",
-        wranglerToml,
-      )
-      .withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
-      .withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
-      .withExec([
-        "npx",
-        "wrangler",
-        "pages",
-        "deploy",
-        `--branch=${mergeRequestId ? `mr${mergeRequestId}` : "main"}`,
-        "/deploy/dist",
-      ]);
+		const wranglerFilename = await wranglerConfig.name();
 
-    if (await deploymentResult.exitCode() !== 0) {
-      throw new Error(
-        "Deployment failed. Error: " + await deploymentResult.stdout() +
-          await deploymentResult.stderr(),
-      );
+		const deploymentResult = await dag.container()
+			.from("node:22")
+			.withWorkdir("/deploy")
+			// Only doing this to cache the wrangler installation
+			.withExec([
+				"npx",
+				"wrangler",
+				"--version",
+			])
+			.withMountedDirectory("/deploy/dist", dist)
+			.withMountedFile(
+				`/deploy/${wranglerFilename}`,
+				wranglerConfig,
+			)
+			.withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
+			.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
+			.withExec([
+				"npx",
+				"wrangler",
+				"deploy",
+			]);
+
+		if (await deploymentResult.exitCode() !== 0) {
+			throw new Error(
+				"Deployment failed. Error: " + await deploymentResult.stdout() +
+				await deploymentResult.stderr(),
+			);
 		}
 
-		// remove any line that doesn't start with ✨
+		return deploymentResult.stdout();
+	}
+
+	/**
+	 * Deploy a preview website to Cloudflare Workers.
+	 */
+	@func()
+	async preview(
+		dist: Directory,
+		wranglerConfig: File,
+		cloudflareApiToken: Secret,
+		gitlabApiToken: Secret,
+		mergeRequestId: string,
+	): Promise<string> {
+		const cloudflareAccountId = await dag.config().cloudflareAccountId();
+
+		const wranglerFilename = await wranglerConfig.name();
+
+		const deploymentResult = await dag.container()
+			.from("node:22")
+			.withWorkdir("/deploy")
+			// Only doing this to cache the wrangler installation
+			.withExec([
+				"npx",
+				"wrangler",
+				"--version",
+			])
+			.withMountedDirectory("/deploy/dist", dist)
+			.withMountedFile(
+				`/deploy/${wranglerFilename}`,
+				wranglerConfig,
+			)
+			.withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
+			.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
+			.withExec([
+				"npx",
+				"wrangler",
+				"versions",
+				"upload",
+			]);
+
+		if (await deploymentResult.exitCode() !== 0) {
+			throw new Error(
+				"Deployment failed. Error: " + await deploymentResult.stdout() +
+				await deploymentResult.stderr(),
+			);
+		}
+
 		const allOutput = await deploymentResult.stdout();
-		const goodOutput = allOutput.split("\n").filter((line) => line.startsWith("✨")).join("\n");
 
-    if (mergeRequestId) {
-      return dag.gitlab().postMergeRequestComment(
-        gitlabApiToken,
-        mergeRequestId,
-        goodOutput,
-      ).stdout();
-    }
+		// Extract the preview URL from the output
+		const urlMatch = allOutput.match(/https:\/\/[^\s]+\.workers\.dev/);
+		const previewUrl = urlMatch ? urlMatch[0] : "Preview URL not found";
 
-    return allOutput;
-  }
+		return dag.gitlab().postMergeRequestComment(
+			gitlabApiToken,
+			mergeRequestId,
+			`Version Preview URL: ${previewUrl}`,
+		).stdout();
+	}
 }

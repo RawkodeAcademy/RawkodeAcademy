@@ -1,10 +1,10 @@
 ---
 import { actions } from "astro:actions";
-import '@/styles/global.css';
+import "@/styles/global.css";
+import Starfield from "@/components/effects/Starfield.astro";
+import InviteForm from "@/components/livestreams/invite-form.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 import { roomClientService } from "@/lib/livekit";
-import Starfield from '@/components/effects/Starfield.astro';
-import InviteForm from '@/components/livestreams/invite-form.astro';
-import BaseLayout from '@/layouts/BaseLayout.astro';
 import TravelIndicator from "../../components/effects/TravelIndicator.astro";
 
 // Get the roomName from the URL parameter
@@ -12,44 +12,33 @@ const { roomName } = Astro.params;
 
 // Redirect if no room name is provided
 if (!roomName) {
-  return Astro.redirect("/");
+	return Astro.redirect("/");
 }
 
 // Check if the room actually exists
 let roomExists = false;
 try {
-  const rooms = await roomClientService.listRooms();
-  roomExists = rooms.some(room => room.name === roomName);
+	const rooms = await roomClientService.listRooms();
+	roomExists = rooms.some((room) => room.name === roomName);
 } catch (error) {
-  console.error("Error checking if room exists:", error);
-  // Continue anyway, to show the "room not available" message
+	console.error("Error checking if room exists:", error);
+	// Continue anyway, to show the "room not available" message
 }
 
 // Check if user is authenticated
 const user = Astro.locals.user;
 
 // Generate a token if the user is authenticated
-let token = null;
+let token: string | undefined = undefined;
 if (user && roomExists) {
-  try {
-    // Generate token
-    const response = await Astro.callAction(actions.generateTokenFromInvite, {
-      roomName,
-      participantName: user?.preferred_username || user?.name || undefined,
-    });
-
-    // Check if the response contains a data property (the token string)
-    if (response && response.data && typeof response.data === 'string') {
-      token = response.data;
-    } else if (typeof response === 'string') {
-      // Sometimes the action returns the token directly
-      token = response;
-    }
-
-    console.log("Generated token for user on invite page", { hasToken: !!token });
-  } catch (error) {
-    console.error("Error generating token on invite page:", error);
-  }
+	try {
+		// Generate token
+		token = await actions
+			.generateTokenFromInvite({ roomName })
+			.then((result) => result.data);
+	} catch (error) {
+		console.error("Error generating token on invite page:", error);
+	}
 }
 
 // No token generation needed here - it will happen on the watch page
@@ -94,10 +83,19 @@ if (user && roomExists) {
     const storedRoomName = sessionStorage.getItem("livekit-room");
 
     if (storedRoomName === roomName) {
-      console.log("Clearing existing tokens for room:", roomName);
       sessionStorage.removeItem("livekit-token");
       sessionStorage.removeItem("livekit-room");
     }
+
+    // Store token in sessionStorage
+    sessionStorage.setItem("livekit-token", token);
+    sessionStorage.setItem("livekit-room", roomName);
+
+    // For debugging and to ensure the values are set correctly
+    // This can be removed in production or when no longer needed
+
+    // Navigate to watch page
+    window.location.href = `/watch/${roomName}`;
   </script>
 
   <TravelIndicator />
