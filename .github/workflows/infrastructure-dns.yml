@@ -1,62 +1,59 @@
-# Commented out for the time being until
-# we decide where Terraform state will be stored.
-# ---
-# name: Infrastructure DNS Plan
+name: "Infrastructure/DNS"
 
-# on:
-#   pull_request:
-#     paths:
-#       - "infrastructure/dns/**"
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/infrastructure-dns.yml"
+      - "infrastructure/dns/**"
 
-# jobs:
-#   plan:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: read
-#       id-token: write
-#       pull-requests: write
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
 
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-#       - name: Install Dagger
-#         run: |
-#           curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR=/usr/local/bin sh
+      - name: Install Dagger
+        run: |
+          curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR=/usr/local/bin sh
 
-#       - name: Authenticate to Google Cloud
-#         uses: google-github-actions/auth@v2
-#         with:
-#           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-#           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-#           audience: "code.rawkode.academy"
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: "rawkode-academy-production"
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
 
-#       - name: Get secrets from GCP Secret Manager
-#         id: secrets
-#         uses: google-github-actions/get-secretmanager-secrets@v2
-#         with:
-#           secrets: |
-#             CLOUDFLARE_API_TOKEN:projects/458678766461/secrets/clouflare-dns-edit
-#             DNSIMPLE_TOKEN:projects/458678766461/secrets/dnsimple-all-access
+      - name: Get secrets from GCP Secret Manager
+        id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v2
+        with:
+          secrets: |
+            CLOUDFLARE_API_TOKEN:projects/458678766461/secrets/clouflare-dns-edit
+            DNSIMPLE_TOKEN:projects/458678766461/secrets/dnsimple-all-access
 
-#       - name: Run Terraform Plan
-#         working-directory: infrastructure/dns
-#         env:
-#           CLOUDFLARE_API_TOKEN: ${{ steps.secrets.outputs.CLOUDFLARE_API_TOKEN }}
-#           DNSIMPLE_TOKEN: ${{ steps.secrets.outputs.DNSIMPLE_TOKEN }}
-#           TF_HTTP_USERNAME: "github-actions"
-#           TF_HTTP_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-#         run: |
-#           dagger <<.
-#             container |
-#               from "docker.io/hashicorp/jsii-terraform" |
-#               with-mounted-directory /code . |
-#               with-workdir /code |
-#               with-exec -- npm install |
-#               with-exec -- npx cdktf provider get |
-#               with-env-variable TF_HTTP_USERNAME github-actions |
-#               with-secret-variable TF_HTTP_PASSWORD env:TF_HTTP_PASSWORD |
-#               with-secret-variable CLOUDFLARE_API_TOKEN env:CLOUDFLARE_API_TOKEN |
-#               with-secret-variable DNSIMPLE_TOKEN env:DNSIMPLE_TOKEN |
-#               with-exec -- npx cdktf plan
-#           .
+      - name: Run Terraform Plan
+        working-directory: infrastructure/dns
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.secrets.outputs.CLOUDFLARE_API_TOKEN }}
+          DNSIMPLE_TOKEN: ${{ steps.secrets.outputs.DNSIMPLE_TOKEN }}
+          TF_HTTP_USERNAME: "github-actions"
+          TF_HTTP_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dagger <<.
+            container |
+              from "docker.io/hashicorp/jsii-terraform" |
+              with-mounted-directory /code . |
+              with-workdir /code |
+              with-exec -- npm install |
+              with-exec -- npx cdktf provider get |
+              with-env-variable TF_HTTP_USERNAME github-actions |
+              with-secret-variable TF_HTTP_PASSWORD env:TF_HTTP_PASSWORD |
+              with-secret-variable CLOUDFLARE_API_TOKEN env:CLOUDFLARE_API_TOKEN |
+              with-secret-variable DNSIMPLE_TOKEN env:DNSIMPLE_TOKEN |
+              with-exec -- npx cdktf plan
+          .
