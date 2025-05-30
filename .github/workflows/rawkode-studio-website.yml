@@ -1,0 +1,67 @@
+name: Deploy Rawkode Studio
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/rawkode-studio-website.yml"
+      - "projects/rawkode.studio/**"
+  pull_request:
+    paths:
+      - ".github/workflows/rawkode-studio-website.yml"
+      - "projects/rawkode.studio/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event_name == 'push' && 'rawkode.studio' || steps.preview.outputs.url }}
+      url: ${{ github.event_name == 'push' && 'https://rawkode.studio' || steps.preview.outputs.url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dagger
+        run: |
+          curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR=/usr/local/bin sh
+
+      - name: Build Studio
+        working-directory: projects/rawkode.studio
+        run: |
+          dagger <<.
+            . | build | export dist
+          .
+
+      - name: Deploy to Production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: projects/rawkode.studio
+        env:
+          CLOUDFLARE_WORKERS_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_TOKEN }}
+        run: |
+          dagger <<.
+            ../../dagger/cloudflare | deploy \
+              ./dist \
+              wrangler.jsonc \
+              env:CLOUDFLARE_WORKERS_TOKEN
+          .
+
+      - name: Deploy Preview
+        id: preview
+        if: github.event_name == 'pull_request'
+        working-directory: projects/rawkode.studio
+        env:
+          CLOUDFLARE_WORKERS_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+
+          dagger <<.
+            ../../dagger/cloudflare | preview \
+              ./dist \
+              wrangler.jsonc \
+              env:CLOUDFLARE_WORKERS_TOKEN \
+              env:GITHUB_TOKEN \
+              $PR_NUMBER
+          .
