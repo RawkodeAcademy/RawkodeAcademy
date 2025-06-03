@@ -1,0 +1,22 @@
+deploy-read-model:
+	#!/usr/bin/env bash
+	bunx wrangler -c ./read-model/wrangler.jsonc deploy --var SERVICE_NAME:${SERVICE_NAME}
+
+	bun run read-model/publish.ts
+	bunx wgc subgraph publish ${SERVICE_NAME} --namespace production --schema ./read-model/schema.gql
+	bunx wgc subgraph update ${SERVICE_NAME} --namespace production --routing-url https://${SERVICE_NAME}-read-model.rawkodeacademy.workers.dev
+
+create-d1-database:
+	bunx wrangler d1 create events-service
+
+generate-migrations:
+	bunx drizzle-kit generate
+
+apply-migrations-local:
+	bunx wrangler d1 migrations apply events-service --local
+
+apply-migrations-remote:
+	bunx wrangler d1 migrations apply events-service --remote
+
+dev:
+	bunx wrangler dev --local

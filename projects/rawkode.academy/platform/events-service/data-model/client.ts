@@ -1,17 +1,28 @@
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
-import * as dataSchema from '../data-model/schema.ts';
+import { drizzle } from "drizzle-orm/d1";
+import * as dataSchema from "./schema";
 
-const serviceName = Deno.env.get('SERVICE_NAME');
-const libSqlUrl = Deno.env.get('LIBSQL_URL');
-const libSqlBaseUrl = Deno.env.get('LIBSQL_BASE_URL');
-const authToken = Deno.env.get('LIBSQL_TOKEN') || '';
+export interface Env {
+	D1_DATABASE: any;
+}
 
-const url = libSqlUrl || `https://${serviceName}-${libSqlBaseUrl}`;
+export const createDb = (env: Env) => {
+	return drizzle(env.D1_DATABASE, { schema: dataSchema });
+};
 
-const client = createClient({
-	url,
-	authToken,
-});
+export const getLocalDb = async () => {
+	const serviceName = process.env.SERVICE_NAME;
+	const libSqlUrl = process.env.LIBSQL_URL;
+	const libSqlBaseUrl = process.env.LIBSQL_BASE_URL;
+	const authToken = process.env.LIBSQL_TOKEN || "";
 
-export const db = drizzle(client, { schema: dataSchema });
+	if (libSqlUrl || libSqlBaseUrl) {
+		const { createClient } = await import("@libsql/client");
+		const { drizzle: libsqlDrizzle } = await import("drizzle-orm/libsql");
+		
+		const url = libSqlUrl || `https://${serviceName}-${libSqlBaseUrl}`;
+		const client = createClient({ url, authToken });
+		return libsqlDrizzle(client, { schema: dataSchema });
+	}
+	
+	throw new Error("No database configuration found for local development");
+};

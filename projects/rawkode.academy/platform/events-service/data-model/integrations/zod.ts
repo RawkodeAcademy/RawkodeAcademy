@@ -1,4 +1,4 @@
-import { eventsTable } from "../schema.ts";
+import { eventsTable } from "../schema";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 

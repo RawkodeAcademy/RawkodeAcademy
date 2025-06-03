@@ -1,12 +1,12 @@
-import schemaBuilder from '@pothos/core';
-import directivesPlugin from '@pothos/plugin-directives';
-import drizzlePlugin from '@pothos/plugin-drizzle';
-import federationPlugin from '@pothos/plugin-federation';
-import { eq, gte } from 'drizzle-orm';
-import { type GraphQLSchema } from 'graphql';
-import { DateResolver } from 'graphql-scalars';
-import { db } from '../data-model/client.ts';
-import * as dataSchema from '../data-model/schema.ts';
+import schemaBuilder from "@pothos/core";
+import directivesPlugin from "@pothos/plugin-directives";
+import drizzlePlugin from "@pothos/plugin-drizzle";
+import federationPlugin from "@pothos/plugin-federation";
+import { eq, gte } from "drizzle-orm";
+import type { GraphQLSchema } from "graphql";
+import { DateResolver } from "graphql-scalars";
+import { createDb } from "../data-model/client";
+import * as dataSchema from "../data-model/schema";
 
 export interface PothosTypes {
 	DrizzleSchema: typeof dataSchema;
@@ -18,43 +18,49 @@ export interface PothosTypes {
 	};
 }
 
-const builder = new schemaBuilder<PothosTypes>({
-	plugins: [directivesPlugin, drizzlePlugin, federationPlugin],
-	drizzle: {
-		client: db,
-	},
-});
+export interface Env {
+	D1_DATABASE: any;
+}
 
-builder.addScalarType('Date', DateResolver);
+export const getSchema = (env: Env): GraphQLSchema => {
+	const db = createDb(env);
+	
+	const builder = new schemaBuilder<PothosTypes>({
+		plugins: [directivesPlugin, drizzlePlugin, federationPlugin],
+		drizzle: {
+			client: db,
+		},
+	});
 
-export const getSchema = (): GraphQLSchema => {
-	const eventRef = builder.drizzleObject('eventsTable', {
-		name: 'Event',
+	builder.addScalarType("Date", DateResolver);
+
+	const eventRef = builder.drizzleObject("eventsTable", {
+		name: "Event",
 		fields: (t) => ({
-			id: t.exposeString('id'),
-			title: t.exposeString('title'),
-			description: t.exposeString('description'),
+			id: t.exposeString("id"),
+			title: t.exposeString("title"),
+			description: t.exposeString("description"),
 			startDate: t.field({
-				type: 'Date',
+				type: "Date",
 				resolve: (event) => event.startDate,
 			}),
 			endDate: t.field({
-				type: 'Date',
+				type: "Date",
 				resolve: (event) => event.endDate,
 			}),
 			createdAt: t.field({
-				type: 'Date',
+				type: "Date",
 				resolve: (event) => event.createdAt,
 			}),
 			updatedAt: t.field({
-				type: 'Date',
+				type: "Date",
 				resolve: (event) => event.updatedAt,
 			}),
 		}),
 	});
 
 	builder.asEntity(eventRef, {
-		key: builder.selection<{ id: string }>('id'),
+		key: builder.selection<{ id: string }>("id"),
 		resolveReference: (event) =>
 			db.query.eventsTable.findFirst({
 				where: eq(dataSchema.eventsTable.id, event.id),
@@ -67,7 +73,7 @@ export const getSchema = (): GraphQLSchema => {
 				type: eventRef,
 				args: {
 					id: t.arg({
-						type: 'String',
+						type: "String",
 						required: true,
 					}),
 				},
@@ -85,7 +91,7 @@ export const getSchema = (): GraphQLSchema => {
 				type: [eventRef],
 				args: {
 					limit: t.arg({
-						type: 'Int',
+						type: "Int",
 						required: false,
 					}),
 				},
@@ -100,7 +106,7 @@ export const getSchema = (): GraphQLSchema => {
 	});
 
 	return builder.toSubGraphSchema({
-		linkUrl: 'https://specs.apollo.dev/federation/v2.6',
-		federationDirectives: ['@key'],
+		linkUrl: "https://specs.apollo.dev/federation/v2.6",
+		federationDirectives: ["@key"],
 	});
 };
