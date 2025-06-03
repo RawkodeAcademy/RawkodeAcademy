@@ -1,0 +1,78 @@
+---
+interface Props {
+	title: string;
+	description: string;
+	limit?: number;
+}
+
+const { title, description, limit = 10 } = Astro.props;
+
+interface Event {
+	id: string;
+	title: string;
+	description: string;
+	startDate: string;
+	endDate: string;
+}
+
+const query = `
+	query GetUpcomingEvents($limit: Int) {
+		upcomingEvents(limit: $limit) {
+			id
+			title
+			description
+			startDate
+			endDate
+		}
+	}
+`;
+
+const response = await fetch("https://api.rawkode.academy/graphql", {
+	method: "POST",
+	headers: {
+		"Content-Type": "application/json",
+	},
+	body: JSON.stringify({
+		query,
+		variables: { limit },
+	}),
+});
+
+const { data } = await response.json();
+const events = (data?.upcomingEvents ?? []) as Event[];
+
+function formatDate(dateString: string) {
+	return new Date(dateString).toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+}
+---
+
+<section class="py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center">
+      <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">{title}</h2>
+      <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">{description}</p>
+    </div>
+    <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {events.map((event: Event) => (
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            {event.title}
+          </h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">
+            {event.description}
+          </p>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            <p>Starts: {formatDate(event.startDate)}</p>
+            <p>Ends: {formatDate(event.endDate)}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
