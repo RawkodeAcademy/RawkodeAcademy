@@ -52,10 +52,6 @@ export const getSchema = (env: Env): GraphQLSchema => {
 				type: "Date",
 				resolve: (event) => event.createdAt,
 			}),
-			updatedAt: t.field({
-				type: "Date",
-				resolve: (event) => event.updatedAt,
-			}),
 		}),
 	});
 

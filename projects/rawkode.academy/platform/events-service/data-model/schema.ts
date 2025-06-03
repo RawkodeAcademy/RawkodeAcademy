@@ -10,7 +10,4 @@ export const eventsTable = sqliteTable("events", {
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`current_timestamp`),
-	updatedAt: integer("updated_at", { mode: "timestamp" })
-		.notNull()
-		.default(sql`current_timestamp`),
 });
