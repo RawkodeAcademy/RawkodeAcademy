@@ -1,5 +1,9 @@
 import type { APIContext } from "astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
+import { experimental_AstroContainer as AstroContainer } from "astro/container";
+import { loadRenderers } from "astro:container";
+import { getContainerRenderer as getMDXRenderer } from "@astrojs/mdx";
+import sanitizeHtml from "sanitize-html";
 
 interface AtomEntry {
 	title: string;
@@ -12,6 +16,7 @@ interface AtomEntry {
 	thumbnail?: string;
 	duration?: number;
 	type: "article" | "video";
+	content?: string;
 }
 
 export async function GET(context: APIContext) {
@@ -23,10 +28,37 @@ export async function GET(context: APIContext) {
 	const site = context.site?.toString() || "https://rawkode.academy";
 	const feedUrl = `${site}/api/feeds/all.atom`;
 
+	// Setup Container API for rendering MDX
+	const renderers = await loadRenderers([getMDXRenderer()]);
+	const container = await AstroContainer.create({ renderers });
+
 	const entries: AtomEntry[] = [];
 
-	// Add articles
-	articles.forEach((article) => {
+	// Add articles with rendered content
+	for (const article of articles) {
+		let content: string | undefined;
+		try {
+			// Render the article to get the Content component
+			const { Content } = await render(article);
+			
+			// Use the container to render the Content component to HTML string
+			const renderedContent = await container.renderToString(Content);
+			
+			// Sanitize the HTML for safety
+			content = sanitizeHtml(renderedContent, {
+				allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'video', 'audio']),
+				allowedAttributes: {
+					...sanitizeHtml.defaults.allowedAttributes,
+					img: ['src', 'alt', 'width', 'height', 'loading'],
+					video: ['src', 'controls', 'width', 'height'],
+					audio: ['src', 'controls']
+				},
+				allowedSchemes: ['http', 'https', 'data']
+			});
+		} catch (error) {
+			console.error(`Failed to render content for article ${article.id}:`, error);
+		}
+
 		entries.push({
 			title: article.data.title,
 			description: article.data.description,
@@ -38,8 +70,9 @@ export async function GET(context: APIContext) {
 			categories: article.data.series ? [article.data.series.id] : [],
 			author: article.data.authors.map((author) => author.id).join(", "),
 			type: "article",
+			...(content && { content }),
 		});
-	});
+	}
 
 	// Add videos
 	videos.forEach((video) => {
@@ -79,7 +112,9 @@ export async function GET(context: APIContext) {
 ${entries
 	.map((entry) => {
 		const contentHtml =
-			entry.type === "video" && entry.thumbnail
+			entry.type === "article" && entry.content
+				? entry.content
+				: entry.type === "video" && entry.thumbnail
 				? `<img src="${entry.thumbnail}" alt="${entry.title}" /><p>${entry.description}</p><p>Duration: ${Math.floor(
 						entry.duration! / 60,
 					)}:${(entry.duration! % 60).toString().padStart(2, "0")}</p>`
