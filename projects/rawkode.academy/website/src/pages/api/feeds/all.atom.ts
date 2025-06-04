@@ -1,5 +1,5 @@
 import type { APIContext } from "astro";
-import { getCollection } from "astro:content";
+import { getCollection, getEntries } from "astro:content";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
 interface AtomEntry {
@@ -31,23 +31,26 @@ export async function GET(context: APIContext) {
 	const entries: AtomEntry[] = [];
 
 	// Add articles with rendered content
-	articles.forEach((article) => {
-		const renderResult = renderedContent.get(article.id);
+	await Promise.all(
+		articles.map(async (article) => {
+			const renderResult = renderedContent.get(article.id);
+			const authors = await getEntries(article.data.authors);
 
-		entries.push({
-			title: article.data.title,
-			description: article.data.description,
-			url: `${site}/read/${article.id}/`,
-			published: new Date(article.data.publishedAt).toISOString(),
-			updated: article.data.updatedAt
-				? new Date(article.data.updatedAt).toISOString()
-				: new Date(article.data.publishedAt).toISOString(),
-			categories: article.data.series ? [article.data.series.id] : [],
-			author: article.data.authors.map((author) => author.id).join(", "),
-			type: "article",
-			...(renderResult?.content && { content: renderResult.content }),
-		});
-	});
+			entries.push({
+				title: article.data.title,
+				description: article.data.description,
+				url: `${site}/read/${article.id}/`,
+				published: new Date(article.data.publishedAt).toISOString(),
+				updated: article.data.updatedAt
+					? new Date(article.data.updatedAt).toISOString()
+					: new Date(article.data.publishedAt).toISOString(),
+				categories: article.data.series ? [article.data.series.id] : [],
+				author: authors.map((author) => author.data.name).join(", "),
+				type: "article",
+				...(renderResult?.content && { content: renderResult.content }),
+			});
+		})
+	);
 
 	// Add videos
 	videos.forEach((video) => {

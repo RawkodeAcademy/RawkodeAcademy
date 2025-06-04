@@ -1,5 +1,5 @@
 import type { APIContext } from "astro";
-import { getCollection } from "astro:content";
+import { getCollection, getEntries, getEntry } from "astro:content";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
 export async function GET(context: APIContext) {
@@ -29,17 +29,22 @@ export async function GET(context: APIContext) {
 	const renderedContent = await renderAndSanitizeArticles(sortedArticles);
 
 	// Process each article to include full content
-	const entries = sortedArticles.map((article) => {
-		const articleUrl = `${site}/read/${article.id}/`;
-		const published = new Date(article.data.publishedAt).toISOString();
-		const updated = article.data.updatedAt
-			? new Date(article.data.updatedAt).toISOString()
-			: published;
+	const entries = await Promise.all(
+		sortedArticles.map(async (article) => {
+			const articleUrl = `${site}/read/${article.id}/`;
+			const published = new Date(article.data.publishedAt).toISOString();
+			const updated = article.data.updatedAt
+				? new Date(article.data.updatedAt).toISOString()
+				: published;
 
-		const renderResult = renderedContent.get(article.id);
-		const contentHtml = renderResult?.content || article.data.description;
+			const renderResult = renderedContent.get(article.id);
+			const contentHtml = renderResult?.content || article.data.description;
 
-		return `	<entry>
+			// Resolve author and series references
+			const authors = await getEntries(article.data.authors);
+			const series = article.data.series ? await getEntry("series", article.data.series.id) : null;
+
+			return `	<entry>
 		<title><![CDATA[${article.data.title}]]></title>
 		<link href="${articleUrl}" rel="alternate" type="text/html"/>
 		<id>${articleUrl}</id>
@@ -47,12 +52,12 @@ export async function GET(context: APIContext) {
 		<updated>${updated}</updated>
 		<summary><![CDATA[${article.data.description}]]></summary>
 		<content type="html"><![CDATA[${contentHtml}]]></content>
-		${article.data.authors
-			.map((author) => `<author><name>${author.id}</name></author>`)
+		${authors
+			.map((author) => `<author><name>${author.data.name}</name></author>`)
 			.join("\n\t\t")}
 		${
-			article.data.series
-				? `<category term="${article.data.series.id}" label="${article.data.series.id}"/>`
+			series
+				? `<category term="${series.id}" label="${series.data.title}"/>`
 				: ""
 		}
 	</entry>`;
@@ -75,5 +80,6 @@ ${entries.join("\n")}
 			"Content-Type": "application/atom+xml; charset=utf-8",
 			"Cache-Control": "max-age=3600",
 		},
-	});
+	})
+	);
 }
