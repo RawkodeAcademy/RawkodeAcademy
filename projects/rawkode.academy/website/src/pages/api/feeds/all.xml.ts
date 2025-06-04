@@ -25,7 +25,7 @@ export async function GET(context: APIContext) {
 		items.push({
 			title: article.data.title,
 			description: article.data.description,
-			pubDate: article.data.publishedAt,
+			pubDate: new Date(article.data.publishedAt),
 			link: `/read/${article.id}/`,
 			author: article.data.authors.map((author) => author.id).join(", "),
 			categories: article.data.series ? [article.data.series.id] : [],
