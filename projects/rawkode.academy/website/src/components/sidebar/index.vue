@@ -144,28 +144,33 @@ function isCurrentPath(itemPath: string) {
 				</ul>
 			</div>
 			
-			<!-- Community - Collapsible -->
+			<!-- Community - Accordion -->
 			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
 				<button 
 					@click="toggleSection('community')"
-					class="flex items-center justify-between w-full px-2 mb-2 text-xs font-semibold leading-6 
-					       text-left cursor-pointer hover:opacity-80 transition-opacity">
+					class="flex items-center justify-between w-full px-2 py-2 mb-2 text-xs font-semibold leading-6 
+					       text-left cursor-pointer transition-all duration-200 rounded-lg
+					       hover:bg-gray-100 dark:hover:bg-gray-800 
+					       focus:outline-none focus:ring-2 focus:ring-primary/50
+					       border border-transparent hover:border-gray-200 dark:hover:border-gray-700">
 					<span class="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">Community</span>
-					<component 
-						:is="sectionsExpanded.community ? ChevronDownIcon : ChevronRightIcon" 
-						class="w-3 h-3 text-gray-500 dark:text-gray-400"
+					<ChevronRightIcon 
+						class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+						:class="{ 'rotate-90': sectionsExpanded.community }"
 					/>
 				</button>
 				<Transition
-					enter-active-class="transition duration-200 ease-out"
-					enter-from-class="transform scale-95 opacity-0"
-					enter-to-class="transform scale-100 opacity-100"
-					leave-active-class="transition duration-150 ease-in"
-					leave-from-class="transform scale-100 opacity-100"
-					leave-to-class="transform scale-95 opacity-0">
-					<ul v-show="sectionsExpanded.community" class="space-y-1.5">
-						<MenuItems :menuItems="menuItemsCommunity" />
-					</ul>
+					enter-active-class="transition-all duration-300 ease-out"
+					enter-from-class="transform -translate-y-2 opacity-0 max-h-0"
+					enter-to-class="transform translate-y-0 opacity-100 max-h-32"
+					leave-active-class="transition-all duration-200 ease-in"
+					leave-from-class="transform translate-y-0 opacity-100 max-h-32"
+					leave-to-class="transform -translate-y-2 opacity-0 max-h-0">
+					<div v-show="sectionsExpanded.community" class="overflow-hidden">
+						<ul class="space-y-1.5 pb-2">
+							<MenuItems :menuItems="menuItemsCommunity" />
+						</ul>
+					</div>
 				</Transition>
 			</div>
 			
