@@ -3,10 +3,8 @@ import { initFlowbite } from "flowbite";
 import { onMounted, ref, computed } from "vue";
 import MenuItems from "./items.vue";
 import {
-	HomeIcon,
 	InformationCircleIcon,
 	NewspaperIcon,
-	// QuestionMarkCircleIcon,
 	RocketLaunchIcon,
 	VideoCameraIcon,
 	CalendarIcon,
@@ -15,77 +13,52 @@ import {
 	CubeIcon,
 	DocumentTextIcon,
 	ClockIcon,
+	ChevronDownIcon,
+	ChevronRightIcon,
 } from "@heroicons/vue/24/outline";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/vue/20/solid";
 
 // Get the current path from the window location
 const currentPath = ref("");
 
+// Collapsible section states
+const sectionsExpanded = ref({
+	community: false,
+});
+
 onMounted(() => {
 	currentPath.value = window.location.pathname;
 	initFlowbite();
+	
+	// Auto-expand sections if they contain the current page
+	if (currentPath.value.startsWith('/community-day') || currentPath.value.includes('chat.rawkode')) {
+		sectionsExpanded.value.community = true;
+	}
 });
 
-// Create menu items array without the current property
-const baseMenuItems = [
-	{ name: "Home", href: "/", icon: HomeIcon },
-	// {
-	// 	name: "Live",
-	// 	href: "/live",
-	// 	icon: FilmIcon,
-	// },
+// Toggle section expansion
+const toggleSection = (section: keyof typeof sectionsExpanded.value) => {
+	sectionsExpanded.value[section] = !sectionsExpanded.value[section];
+};
+
+// Main navigation - core learning content
+const baseMenuItemsMain = [
 	{ name: "Articles", href: "/read", icon: NewspaperIcon },
+	{ name: "Videos", href: "/watch", icon: VideoCameraIcon },
 	{ name: "Courses", href: "/courses", icon: AcademicCapIcon },
-	// { name: 'Events', href: '/events', icon: CalendarDaysIcon },
-	// { name: 'Shows', href: '#', icon: FilmIcon },
-	{
-		name: "Videos",
-		href: "/watch",
-		icon: VideoCameraIcon,
-	},
-	{
-		name: "Technologies",
-		href: "/technology",
-		icon: CubeIcon,
-	},
-	{
-		name: "Community Day",
-		href: "/community-day",
-		icon: CalendarIcon,
-	},
-	{
-		name: "Zulip Chat",
-		href: "https://chat.rawkode.academy",
-		icon: ChatBubbleLeftEllipsisIcon,
-		target: "_blank",
-	},
-	{
-		name: "About",
-		href: "/about",
-		icon: InformationCircleIcon,
-	},
-	{
-		name: "Changelog",
-		href: "/changelog",
-		icon: ClockIcon,
-	},
-	// { name: 'Help', href: '/help', icon: QuestionMarkCircleIcon },
+	{ name: "Technologies", href: "/technology", icon: CubeIcon },
 ];
 
-const baseMenuItemsContributors = [
-	{
-		name: "ADRs",
-		href: "/adrs",
-		icon: DocumentTextIcon,
-	},
+// Community items
+const baseMenuItemsCommunity = [
+	{ name: "Community Day", href: "/community-day", icon: CalendarIcon },
+	{ name: "Zulip Chat", href: "https://chat.rawkode.academy", icon: ChatBubbleLeftEllipsisIcon, target: "_blank" },
 ];
 
-const baseMenuItemsMaintainers = [
-	{
-		name: "Share Your Project",
-		href: "/maintainers/share-your-project",
-		icon: RocketLaunchIcon,
-	},
+// Footer items - always visible at bottom
+const baseMenuItemsFooter = [
+	{ name: "About", href: "/about", icon: InformationCircleIcon },
+	{ name: "Changelog", href: "/changelog", icon: ClockIcon },
 ];
 
 const baseMenuItemsOrgs = [
@@ -107,22 +80,22 @@ const baseMenuItemsOrgs = [
 ];
 
 // Compute the menu items with the current property based on the current path
-const menuItems = computed(() => {
-	return baseMenuItems.map((item) => ({
+const menuItemsMain = computed(() => {
+	return baseMenuItemsMain.map((item) => ({
 		...item,
 		current: isCurrentPath(item.href),
 	}));
 });
 
-const menuItemsContributors = computed(() => {
-	return baseMenuItemsContributors.map((item) => ({
+const menuItemsCommunity = computed(() => {
+	return baseMenuItemsCommunity.map((item) => ({
 		...item,
 		current: isCurrentPath(item.href),
 	}));
 });
 
-const menuItemsMaintainers = computed(() => {
-	return baseMenuItemsMaintainers.map((item) => ({
+const menuItemsFooter = computed(() => {
+	return baseMenuItemsFooter.map((item) => ({
 		...item,
 		current: isCurrentPath(item.href),
 	}));
@@ -153,29 +126,14 @@ function isCurrentPath(itemPath: string) {
 		bg-linear-to-br from-white to-gray-50 dark:from-black dark:to-gray-900
 		border-r border-gray-200 dark:border-gray-700 shadow-lg shadow-gray-100/10 dark:shadow-black/20" aria-label="Sidenav"
 		id="drawer-navigation">
-		<div class="overflow-y-auto py-5 px-4 h-full">
+		<div class="overflow-y-auto py-5 px-4 h-full flex flex-col">
 
+			<!-- Main navigation - always visible -->
 			<ul class="space-y-1.5">
-				<MenuItems :menuItems="menuItems" />
+				<MenuItems :menuItems="menuItemsMain" />
 			</ul>
-			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
-				<div
-					class="text-xs font-semibold leading-6 px-2 mb-2 bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-					For Contributors
-				</div>
-				<ul class="space-y-1.5">
-					<MenuItems :menuItems="menuItemsContributors" />
-				</ul>
-			</div>
-			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
-				<div
-					class="text-xs font-semibold leading-6 px-2 mb-2 bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-					For OSS Maintainers
-				</div>
-				<ul class="space-y-1.5">
-					<MenuItems :menuItems="menuItemsMaintainers" />
-				</ul>
-			</div>
+			
+			<!-- For Organizations - promoted and always visible -->
 			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
 				<div
 					class="text-xs font-semibold leading-6 px-2 mb-2 bg-clip-text text-transparent bg-linear-to-r from-primary to-tertiary">
@@ -183,6 +141,41 @@ function isCurrentPath(itemPath: string) {
 				</div>
 				<ul class="space-y-1.5">
 					<MenuItems :menuItems="menuItemsOrgs" />
+				</ul>
+			</div>
+			
+			<!-- Community - Collapsible -->
+			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
+				<button 
+					@click="toggleSection('community')"
+					class="flex items-center justify-between w-full px-2 mb-2 text-xs font-semibold leading-6 
+					       text-left cursor-pointer hover:opacity-80 transition-opacity">
+					<span class="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">Community</span>
+					<component 
+						:is="sectionsExpanded.community ? ChevronDownIcon : ChevronRightIcon" 
+						class="w-3 h-3 text-gray-500 dark:text-gray-400"
+					/>
+				</button>
+				<Transition
+					enter-active-class="transition duration-200 ease-out"
+					enter-from-class="transform scale-95 opacity-0"
+					enter-to-class="transform scale-100 opacity-100"
+					leave-active-class="transition duration-150 ease-in"
+					leave-from-class="transform scale-100 opacity-100"
+					leave-to-class="transform scale-95 opacity-0">
+					<ul v-show="sectionsExpanded.community" class="space-y-1.5">
+						<MenuItems :menuItems="menuItemsCommunity" />
+					</ul>
+				</Transition>
+			</div>
+			
+			<!-- Spacer to push footer items to bottom -->
+			<div class="flex-1"></div>
+			
+			<!-- Footer items - always visible at bottom -->
+			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
+				<ul class="space-y-1.5">
+					<MenuItems :menuItems="menuItemsFooter" />
 				</ul>
 			</div>
 		</div>
