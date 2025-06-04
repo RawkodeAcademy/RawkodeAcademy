@@ -80,6 +80,5 @@ ${entries.join("\n")}
 			"Content-Type": "application/atom+xml; charset=utf-8",
 			"Cache-Control": "max-age=3600",
 		},
-	})
-	);
+	});
 }
