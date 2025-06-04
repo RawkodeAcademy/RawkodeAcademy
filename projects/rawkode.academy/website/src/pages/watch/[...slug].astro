@@ -44,11 +44,10 @@ export const getStaticPaths = (async () => {
 
 const { video } = Astro.props as { video: { data: VideoData } };
 
-// Configure Marked to handle single newlines as breaks and sanitize HTML
+// Configure Marked to handle single newlines as breaks
 const marked = new Marked({ 
 	breaks: true, 
-	gfm: true,
-	sanitize: true // Prevent XSS by sanitizing HTML
+	gfm: true
 });
 // No longer need to replaceAll \n
 const renderedDescriptionHtml = marked.parse(video.data.description);
@@ -360,14 +359,18 @@ const formatDate = (dateString: string) => {
 		// Coming soon banner functionality
 		const comingSoonButtons = document.querySelectorAll('.coming-soon-btn');
 		const banner = document.getElementById('coming-soon-banner');
-		let bannerTimeout;
+		let bannerTimeout: number | undefined;
 		
 		comingSoonButtons.forEach(button => {
 			button.addEventListener('click', (e) => {
 				e.preventDefault();
 				
+				if (!banner) return;
+				
 				// Clear any existing timeout
-				clearTimeout(bannerTimeout);
+				if (bannerTimeout) {
+					clearTimeout(bannerTimeout);
+				}
 				
 				// Show banner with animation
 				banner.classList.remove('hidden');
@@ -381,8 +384,10 @@ const formatDate = (dateString: string) => {
 				
 				// Hide after 3 seconds
 				bannerTimeout = setTimeout(() => {
+					if (!banner) return;
 					banner.classList.add('opacity-0', 'translate-y-2');
 					setTimeout(() => {
+						if (!banner) return;
 						banner.classList.add('hidden');
 					}, 300);
 				}, 3000);
