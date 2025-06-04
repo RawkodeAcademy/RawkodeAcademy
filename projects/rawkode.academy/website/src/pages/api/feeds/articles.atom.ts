@@ -1,9 +1,6 @@
 import type { APIContext } from "astro";
-import { getCollection, render } from "astro:content";
-import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { loadRenderers } from "astro:container";
-import { getContainerRenderer as getMDXRenderer } from "@astrojs/mdx";
-import sanitizeHtml from "sanitize-html";
+import { getCollection } from "astro:content";
+import { renderAndSanitizeArticles } from "../../../lib/feed-utils.js";
 
 export async function GET(context: APIContext) {
 	const articles = await getCollection("articles", ({ data }) => !data.isDraft);
@@ -28,45 +25,21 @@ export async function GET(context: APIContext) {
 				).toISOString()
 			: new Date().toISOString();
 
-	// Setup Container API for rendering MDX
-	const renderers = await loadRenderers([getMDXRenderer()]);
-	const container = await AstroContainer.create({ renderers });
+	// Render all articles in parallel for better performance
+	const renderedContent = await renderAndSanitizeArticles(sortedArticles);
 
 	// Process each article to include full content
-	const entries = [];
-	for (const article of sortedArticles) {
+	const entries = sortedArticles.map((article) => {
 		const articleUrl = `${site}/read/${article.id}/`;
 		const published = new Date(article.data.publishedAt).toISOString();
 		const updated = article.data.updatedAt
 			? new Date(article.data.updatedAt).toISOString()
 			: published;
 
-		let contentHtml = "";
-		try {
-			// Render the article to get the Content component
-			const { Content } = await render(article);
-			
-			// Use the container to render the Content component to HTML string
-			const renderedContent = await container.renderToString(Content);
-			
-			// Sanitize the HTML for safety
-			contentHtml = sanitizeHtml(renderedContent, {
-				allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'video', 'audio']),
-				allowedAttributes: {
-					...sanitizeHtml.defaults.allowedAttributes,
-					img: ['src', 'alt', 'width', 'height', 'loading'],
-					video: ['src', 'controls', 'width', 'height'],
-					audio: ['src', 'controls']
-				},
-				allowedSchemes: ['http', 'https', 'data']
-			});
-		} catch (error) {
-			console.error(`Failed to render content for article ${article.id}:`, error);
-			// Fallback to description if rendering fails
-			contentHtml = article.data.description;
-		}
+		const renderResult = renderedContent.get(article.id);
+		const contentHtml = renderResult?.content || article.data.description;
 
-		entries.push(`	<entry>
+		return `	<entry>
 		<title><![CDATA[${article.data.title}]]></title>
 		<link href="${articleUrl}" rel="alternate" type="text/html"/>
 		<id>${articleUrl}</id>
@@ -82,8 +55,8 @@ export async function GET(context: APIContext) {
 				? `<category term="${article.data.series.id}" label="${article.data.series.id}"/>`
 				: ""
 		}
-	</entry>`);
-	}
+	</entry>`;
+});
 
 	const atomFeed = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
