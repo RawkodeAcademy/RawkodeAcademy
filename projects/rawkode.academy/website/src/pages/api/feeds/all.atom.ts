@@ -93,9 +93,13 @@ ${entries
 			entry.type === "article" && entry.content
 				? entry.content
 				: entry.type === "video" && entry.thumbnail
-				? `<img src="${entry.thumbnail}" alt="${entry.title}" /><p>${entry.description}</p><p>Duration: ${Math.floor(
-						entry.duration! / 60,
-					)}:${(entry.duration! % 60).toString().padStart(2, "0")}</p>`
+				? `<img src="${entry.thumbnail}" alt="${entry.title}" /><p>${entry.description}</p>${
+						entry.duration
+							? `<p>Duration: ${Math.floor(entry.duration / 60)}:${(
+									entry.duration % 60
+								).toString().padStart(2, "0")}</p>`
+							: ""
+					}`
 				: entry.description;
 
 		return `	<entry>
