@@ -1,6 +1,6 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
-import { getCollection } from "astro:content";
+import { getCollection, getEntries } from "astro:content";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
 interface FeedItem {
@@ -26,19 +26,22 @@ export async function GET(context: APIContext) {
 	const items: FeedItem[] = [];
 
 	// Add articles with rendered content
-	articles.forEach((article) => {
-		const renderResult = renderedContent.get(article.id);
+	await Promise.all(
+		articles.map(async (article) => {
+			const renderResult = renderedContent.get(article.id);
+			const authors = await getEntries(article.data.authors);
 
-		items.push({
-			title: article.data.title,
-			description: article.data.description,
-			pubDate: new Date(article.data.publishedAt),
-			link: `/read/${article.id}/`,
-			author: article.data.authors.map((author) => author.id).join(", "),
-			categories: article.data.series ? [article.data.series.id] : [],
-			...(renderResult?.content && { content: renderResult.content }),
-		});
-	});
+			items.push({
+				title: article.data.title,
+				description: article.data.description,
+				pubDate: new Date(article.data.publishedAt),
+				link: `/read/${article.id}/`,
+				author: authors.map((author) => author.data.name).join(", "),
+				categories: article.data.series ? [article.data.series.id] : [],
+				...(renderResult?.content && { content: renderResult.content }),
+			});
+		})
+	);
 
 	// Add videos (no content rendering needed for videos)
 	videos.forEach((video) => {
@@ -49,11 +52,15 @@ export async function GET(context: APIContext) {
 			link: `/watch/${video.data.slug}/`,
 			customData: `
 				<enclosure url="${video.data.thumbnailUrl}" type="image/jpeg" />
-				<itunes:duration>${Math.floor(video.data.duration / 60)}:${(
-					video.data.duration % 60
-				)
-					.toString()
-					.padStart(2, "0")}</itunes:duration>
+				${
+					video.data.duration
+						? `<itunes:duration>${Math.floor(video.data.duration / 60)}:${(
+								video.data.duration % 60
+							)
+								.toString()
+								.padStart(2, "0")}</itunes:duration>`
+						: ""
+				}
 				<itunes:image href="${video.data.thumbnailUrl}" />
 			`,
 			categories: video.data.technologies.map((tech) => tech.name),

@@ -1,6 +1,6 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
-import { getCollection } from "astro:content";
+import { getCollection, getEntries } from "astro:content";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
 export async function GET(context: APIContext) {
@@ -17,19 +17,22 @@ export async function GET(context: APIContext) {
 	const renderedContent = await renderAndSanitizeArticles(sortedArticles);
 
 	// Process each article to include full content
-	const items = sortedArticles.map((article) => {
-		const renderResult = renderedContent.get(article.id);
-		
-		return {
-			title: article.data.title,
-			description: article.data.description,
-			pubDate: new Date(article.data.publishedAt),
-			link: `/read/${article.id}/`,
-			author: article.data.authors.map((author) => author.id).join(", "),
-			categories: article.data.series ? [article.data.series.id] : [],
-			...(renderResult?.content && { content: renderResult.content })
-		};
-	});
+	const items = await Promise.all(
+		sortedArticles.map(async (article) => {
+			const renderResult = renderedContent.get(article.id);
+			const authors = await getEntries(article.data.authors);
+			
+			return {
+				title: article.data.title,
+				description: article.data.description,
+				pubDate: new Date(article.data.publishedAt),
+				link: `/read/${article.id}/`,
+				author: authors.map((author) => author.data.name).join(", "),
+				categories: article.data.series ? [article.data.series.id] : [],
+				...(renderResult?.content && { content: renderResult.content })
+			};
+		})
+	);
 
 	return rss({
 		title: "Rawkode Academy - Articles",
