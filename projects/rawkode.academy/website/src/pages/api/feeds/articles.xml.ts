@@ -16,7 +16,7 @@ export async function GET(context: APIContext) {
 		title: "Rawkode Academy - Articles",
 		description:
 			"Latest articles and tutorials from Rawkode Academy covering Cloud Native, DevOps, and Modern Software Development",
-		site: context.site || "https://rawkode.academy",
+		site: context.site?.toString() || "https://rawkode.academy",
 		items: sortedArticles.map((article) => ({
 			title: article.data.title,
 			description: article.data.description,
