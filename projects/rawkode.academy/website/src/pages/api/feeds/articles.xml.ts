@@ -1,7 +1,7 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
 import { getCollection } from "astro:content";
-import { renderAndSanitizeArticles } from "../../../lib/feed-utils.js";
+import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
 export async function GET(context: APIContext) {
 	const articles = await getCollection("articles", ({ data }) => !data.isDraft);

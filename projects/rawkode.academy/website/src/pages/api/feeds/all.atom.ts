@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
 import { getCollection } from "astro:content";
-import { renderAndSanitizeArticles } from "../../../lib/feed-utils.js";
+import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
 interface AtomEntry {
 	title: string;
