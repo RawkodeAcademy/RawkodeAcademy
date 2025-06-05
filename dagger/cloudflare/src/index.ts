@@ -64,7 +64,7 @@ export class Cloudflare {
 			.withMountedFile(`/deploy/${wranglerFilename}`, wranglerConfig)
 			.withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
 			.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
-			.withExec(["npx", "wrangler", "versions", "upload", "--assets", "./dist"]);
+			.withExec(["npx", "wrangler", "versions", "upload", "--config", wranglerFilename, "--assets", "./dist"]);
 
 		if ((await deploymentResult.exitCode()) !== 0) {
 			throw new Error(
