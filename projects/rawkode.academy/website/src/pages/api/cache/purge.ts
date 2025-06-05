@@ -1,5 +1,11 @@
 import type { APIRoute } from "astro";
 
+// Define the structure of the purge request
+interface PurgeBody {
+  tags?: string[];
+  files?: string[];
+}
+
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Validate the request has proper authorization
@@ -30,7 +36,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Prepare purge request
-    const purgeBody: any = {};
+    const purgeBody: PurgeBody = {};
     
     if (tags && Array.isArray(tags) && tags.length > 0) {
       purgeBody.tags = tags;
