@@ -20,51 +20,61 @@ The video pages use Cloudflare's edge caching with time-based revalidation to se
 - **Stale While Revalidate**: 48 hours (`stale-while-revalidate=172800`)
 - **Cache Tags**: `video-{slug}, videos-page, video-detail`
 
-## Environment Variables
+## Cache Purging
 
-Add these to your environment:
+### Manual Purge via Justfile
+
+The project includes a Justfile target for cache invalidation:
+
+```bash
+# Purge videos-latest cache tag
+just invalidate-videos-cache
+
+# With environment variables (non-interactive)
+CF_API_TOKEN=your-token CF_ZONE_ID=your-zone-id just invalidate-videos-cache
+```
+
+The command will prompt for Cloudflare credentials if not provided via environment variables.
+
+### Direct Cloudflare API
+
+You can also purge cache directly using Cloudflare's API:
+
+```bash
+# Purge by cache tags
+curl -X POST "https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache" \
+  -H "Authorization: Bearer {api_token}" \
+  -H "Content-Type: application/json" \
+  -d '{"tags": ["videos-latest", "videos-page"]}'
+
+# Purge specific video
+curl -X POST "https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache" \
+  -H "Authorization: Bearer {api_token}" \
+  -H "Content-Type: application/json" \
+  -d '{"tags": ["video-kubernetes-basics"]}'
+
+# Purge specific URLs
+curl -X POST "https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache" \
+  -H "Authorization: Bearer {api_token}" \
+  -H "Content-Type: application/json" \
+  -d '{"files": ["https://rawkode.academy/watch"]}'
+```
+
+### Environment Variables (Optional)
+
+For convenience, you can set these in your shell or `.env` file:
 
 ```env
 CF_ZONE_ID=your-cloudflare-zone-id
 CF_API_TOKEN=your-cloudflare-api-token
-CACHE_PURGE_SECRET=your-webhook-secret
 ```
 
-## Cache Purging
+### When to Purge
 
-### Manual Purge via API
-
-```bash
-# Purge all video pages
-curl -X POST https://rawkode.academy/api/cache/purge \
-  -H "Authorization: Bearer YOUR_CACHE_PURGE_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tags": ["videos-page"]
-  }'
-
-# Purge specific video
-curl -X POST https://rawkode.academy/api/cache/purge \
-  -H "Authorization: Bearer YOUR_CACHE_PURGE_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tags": ["video-kubernetes-basics"]
-  }'
-```
-
-### Webhook Integration
-
-Configure your video publishing system to call the purge endpoint when:
-- A new video is published
-- Video metadata is updated
-- A video is unpublished
-
-Example webhook payload:
-```json
-{
-  "tags": ["videos-latest", "video-new-video-slug"]
-}
-```
+Purge cache when:
+- New videos are published
+- Video metadata is updated  
+- Videos are unpublished or made private
 
 ## How It Works
 
