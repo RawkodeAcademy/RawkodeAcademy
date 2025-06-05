@@ -69,6 +69,10 @@ export const Info: Story = {
 };
 
 export const AllVariants: Story = {
+  args: {
+    variant: 'info',
+    children: null,
+  },
   render: () => (
     <div className="space-y-4">
       <AsideWrapper variant="tip">
