@@ -125,6 +125,21 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      CF_ZONE_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      CF_API_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      CACHE_PURGE_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
     },
   },
   security: {
