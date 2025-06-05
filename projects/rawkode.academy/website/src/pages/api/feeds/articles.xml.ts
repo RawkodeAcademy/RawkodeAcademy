@@ -28,7 +28,7 @@ export async function GET(context: APIContext) {
 				pubDate: new Date(article.data.publishedAt),
 				link: `/read/${article.id}/`,
 				author: authors.map((author) => author.data.name).join(", "),
-				categories: article.data.series ? [article.data.series.id] : [],
+				categories: article.data.series?.id ? [article.data.series.id] : [],
 				...(renderResult?.content && { content: renderResult.content })
 			};
 		})

@@ -37,7 +37,7 @@ export async function GET(context: APIContext) {
 				pubDate: new Date(article.data.publishedAt),
 				link: `/read/${article.id}/`,
 				author: authors.map((author) => author.data.name).join(", "),
-				categories: article.data.series ? [article.data.series.id] : [],
+				categories: article.data.series?.id ? [article.data.series.id] : [],
 				...(renderResult?.content && { content: renderResult.content }),
 			});
 		})
@@ -74,7 +74,7 @@ export async function GET(context: APIContext) {
 		title: "Rawkode Academy - All Content",
 		description:
 			"Latest articles and videos from Rawkode Academy covering Cloud Native, DevOps, and Modern Software Development",
-		site: context.site || "https://rawkode.academy",
+		site: context.site?.toString() || "https://rawkode.academy",
 		items,
 		customData: `<language>en-us</language>`,
 		stylesheet: false,

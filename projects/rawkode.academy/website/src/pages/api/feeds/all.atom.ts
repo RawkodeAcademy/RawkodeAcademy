@@ -44,7 +44,7 @@ export async function GET(context: APIContext) {
 				updated: article.data.updatedAt
 					? new Date(article.data.updatedAt).toISOString()
 					: new Date(article.data.publishedAt).toISOString(),
-				categories: article.data.series ? [article.data.series.id] : [],
+				categories: article.data.series?.id ? [article.data.series.id] : [],
 				author: authors.map((author) => author.data.name).join(", "),
 				type: "article",
 				...(renderResult?.content && { content: renderResult.content }),
