@@ -457,11 +457,17 @@ const formatDate = (dateString: string) => {
 	// Transcript functionality
 	let transcriptLoaded = false;
 	
+	interface TranscriptCue {
+		start: string;
+		end: string;
+		text: string;
+	}
+	
 	// Function to parse WebVTT format
-	function parseWebVTT(vttText: string) {
+	function parseWebVTT(vttText: string): TranscriptCue[] {
 		const lines = vttText.split('\n');
-		const cues = [];
-		let currentCue = null;
+		const cues: TranscriptCue[] = [];
+		let currentCue: TranscriptCue | null = null;
 		
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].trim();
@@ -509,6 +515,11 @@ const formatDate = (dateString: string) => {
 		const errorEl = document.getElementById('transcript-error');
 		const contentEl = document.getElementById('transcript-content');
 		
+		if (!contentEl) {
+			console.error('Transcript content element not found');
+			return;
+		}
+		
 		try {
 			loadingEl?.classList.remove('hidden');
 			errorEl?.classList.add('hidden');
@@ -537,12 +548,10 @@ const formatDate = (dateString: string) => {
 				`;
 			}).join('');
 			
-			if (contentEl) {
-				contentEl.innerHTML = transcriptHTML;
-			}
+			contentEl.innerHTML = transcriptHTML;
 			
 			loadingEl?.classList.add('hidden');
-			contentEl?.classList.remove('hidden');
+			contentEl.classList.remove('hidden');
 			
 			transcriptLoaded = true;
 		} catch (error) {
