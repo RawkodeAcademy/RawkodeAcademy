@@ -53,6 +53,7 @@ export class Cloudflare {
 		const cloudflareAccountId = await dag.config().cloudflareAccountId();
 
 		const wranglerFilename = await wranglerConfig.name();
+		const previewName = `pr-${pullRequestNumber}`;
 
 		const deploymentResult = await dag
 			.container()
@@ -64,7 +65,7 @@ export class Cloudflare {
 			.withMountedFile(`/deploy/${wranglerFilename}`, wranglerConfig)
 			.withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
 			.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
-			.withExec(["npx", "wrangler", "versions", "upload", "--assets", "./dist"]);
+			.withExec(["npx", "wrangler", "deploy", "--name", previewName]);
 
 		if ((await deploymentResult.exitCode()) !== 0) {
 			throw new Error(
@@ -76,9 +77,9 @@ export class Cloudflare {
 
 		const allOutput = await deploymentResult.stdout();
 
-		// Extract the preview URL from the output
+		// Extract the preview URL from the output - look for the deployed URL
 		const urlMatch = allOutput.match(/https:\/\/[^\s]+\.workers\.dev/);
-		const previewUrl = urlMatch ? urlMatch[0] : "Preview URL not found";
+		const previewUrl = urlMatch ? urlMatch[0] : `https://${previewName}.${cloudflareAccountId}.workers.dev`;
 
 		await dag
 			.github()
@@ -86,7 +87,7 @@ export class Cloudflare {
 				githubApiToken,
 				repository,
 				pullRequestNumber,
-				`Version Preview URL: ${previewUrl}`,
+				`🎨 Storybook Preview: ${previewUrl}`,
 			)
 			.exitCode();
 
