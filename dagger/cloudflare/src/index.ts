@@ -64,7 +64,16 @@ export class Cloudflare {
 			.withMountedFile(`/deploy/${wranglerFilename}`, wranglerConfig)
 			.withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
 			.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
-			.withExec(["npx", "wrangler", "versions", "upload", "--config", wranglerFilename, "--assets", "./dist"]);
+			.withExec([
+				"npx",
+				"wrangler",
+				"versions",
+				"upload",
+				"--config",
+				wranglerFilename,
+				"--assets",
+				"./dist",
+			]);
 
 		if ((await deploymentResult.exitCode()) !== 0) {
 			throw new Error(
@@ -79,9 +88,12 @@ export class Cloudflare {
 		// Extract the preview URL from the output
 		// wrangler versions upload outputs a preview URL in the format:
 		// "Version preview URL: https://version-hash.worker-name.subdomain.workers.dev"
-		const urlMatch = allOutput.match(/Version preview URL:\s*(https:\/\/[^\s]+)/i) || 
-		                 allOutput.match(/https:\/\/[^\s]+\.workers\.dev/);
-		const previewUrl = urlMatch ? (urlMatch[1] || urlMatch[0]) : "Preview URL not found";
+		const urlMatch =
+			allOutput.match(/Version preview URL:\s*(https:\/\/[^\s]+)/i) ||
+			allOutput.match(/https:\/\/[^\s]+\.workers\.dev/);
+		const previewUrl = urlMatch
+			? urlMatch[1] || urlMatch[0]
+			: "Preview URL not found";
 
 		// Post the comment but don't fail if it doesn't work
 		try {
@@ -91,7 +103,7 @@ export class Cloudflare {
 					githubApiToken,
 					repository,
 					pullRequestNumber,
-					`🎨 Storybook Preview: ${previewUrl}`,
+					`Deployment Preview: ${previewUrl}`,
 				)
 				.exitCode();
 		} catch (error) {
