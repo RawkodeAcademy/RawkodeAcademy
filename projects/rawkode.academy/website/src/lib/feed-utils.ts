@@ -23,7 +23,7 @@ function preprocessMDXForRSS(mdxContent: string): string {
 	// Replace Aside components with styled divs
 	processed = processed.replace(
 		/<Aside\s+variant="(\w+)"\s*>([\s\S]*?)<\/Aside>/g,
-		(match, variant, content) => {
+		(_, variant, content) => {
 			const styles = {
 				tip: 'background-color: #e0f2e9; border-left: 4px solid #2db83d;',
 				caution: 'background-color: #fff4e0; border-left: 4px solid #ff9800;',
