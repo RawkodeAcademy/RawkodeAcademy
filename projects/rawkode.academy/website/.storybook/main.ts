@@ -2,6 +2,7 @@ import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
@@ -29,7 +30,7 @@ const config: StorybookConfig = {
       ],
       resolve: {
         alias: {
-          "@": "/src",
+          "@": resolve(__dirname, "../src"),
         },
       },
       optimizeDeps: {

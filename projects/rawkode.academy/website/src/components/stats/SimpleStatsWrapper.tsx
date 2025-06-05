@@ -10,19 +10,19 @@ interface SimpleStatsWrapperProps {
   }>;
 }
 
-export const SimpleStatsWrapper: React.FC<SimpleStatsWrapperProps> = (props) => {
+export const SimpleStatsWrapper: React.FC<SimpleStatsWrapperProps> = ({ title, stats }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const app = createApp(SimpleStats, props);
+    const app = createApp(SimpleStats, { title, stats });
     app.mount(containerRef.current);
 
     return () => {
       app.unmount();
     };
-  }, [props]);
+  }, [title, stats]);
 
   return <div ref={containerRef} />;
 };
