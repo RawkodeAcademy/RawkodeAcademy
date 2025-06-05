@@ -2,11 +2,12 @@ import type { TranscribeWorkflow } from "./workflow";
 export * from "./workflow";
 
 export interface Env {
-		AI: Ai;
-		DEEPGRAM_API_TOKEN: SecretsStoreSecret;
-		TRANSCRIPTIONS_BUCKET: R2Bucket;
-		TRANSCRIPTION_WORKFLOW: Workflow<TranscribeWorkflow>;
-	}
+	AI: Ai;
+	DEEPGRAM_API_TOKEN: SecretsStoreSecret;
+	HTTP_TRANSCRIPTION_TOKEN: SecretsStoreSecret;
+	TRANSCRIPTIONS_BUCKET: R2Bucket;
+	TRANSCRIPTION_WORKFLOW: Workflow<TranscribeWorkflow>;
+}
 
 type Payload = {
 	videoId: string;
@@ -19,11 +20,20 @@ export default {
 		env: Env,
 		_ctx: ExecutionContext,
 	): Promise<Response> {
-		console.log("We have a request");
-
 		if (request.method !== "POST") {
 			console.log("Method not allowed");
 			return new Response("Method Not Allowed", { status: 405 });
+		}
+
+		// Check for API key authentication
+		const authHeader = request.headers.get("Authorization");
+		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+			return new Response("Unauthorized: Missing API key", { status: 401 });
+		}
+
+		const providedApiKey = authHeader.substring(7); // Remove "Bearer " prefix
+		if (providedApiKey !== await env.HTTP_TRANSCRIPTION_TOKEN.get()) {
+			return new Response("Unauthorized: Invalid API key", { status: 401 });
 		}
 
 		let params: Payload;

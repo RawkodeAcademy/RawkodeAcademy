@@ -1,5 +1,5 @@
 const GRAPHQL_ENDPOINT = "https://api.rawkode.academy/graphql";
-const LIMIT = 5;
+const LIMIT = 100;
 
 interface Technology {
 	id: string;
@@ -98,6 +98,7 @@ async function triggerTranscription(videoId: string): Promise<void> {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				"Authorization": `Bearer ${process.env.HTTP_TRANSCRIPTION_TOKEN}`,
 			},
 			body: JSON.stringify({ videoId: videoId, language: "en" }),
 		});
