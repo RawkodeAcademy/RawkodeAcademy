@@ -3,46 +3,22 @@ import Page from "@/wrappers/page.astro";
 import VideoPlayer from "@/components/video/player.vue";
 import VideoComments from "@/components/video/comments.vue";
 import VideoMetadata from "@/components/html/video-metadata.astro";
-import type { GetStaticPaths } from "astro";
 import { getCollection } from "astro:content";
 import { Marked } from "marked";
 
 export const prerender = false;
 
-// Define the video data type explicitly
-interface VideoData {
-	id: string;
-	slug: string;
-	title: string;
-	subtitle?: string;
-	description: string;
-	streamUrl: string;
-	publishedAt: string;
-	thumbnailUrl: string;
-	duration: number;
-	technologies: TechnologyData[];
+// Get the slug from URL params
+const { slug } = Astro.params;
+
+// Fetch video data dynamically for SSR
+const videos = await getCollection("videos");
+const video = videos.find(v => v.data.slug === slug);
+
+// Handle 404 case
+if (!video) {
+	return Astro.redirect("/404");
 }
-interface TechnologyData {
-	id: string;
-	name: string;
-	logo: string;
-}
-
-export const getStaticPaths = (async () => {
-	try {
-		const videos = await getCollection("videos");
-
-		return videos.map((video) => ({
-			params: { slug: video.data.slug },
-			props: { video },
-		}));
-	} catch (error) {
-		console.error("Error fetching videos:", error);
-		return [];
-	}
-}) satisfies GetStaticPaths;
-
-const { video } = Astro.props as { video: { data: VideoData } };
 
 // Set cache headers for ISR
 // Individual video pages can cache longer since they change less frequently
