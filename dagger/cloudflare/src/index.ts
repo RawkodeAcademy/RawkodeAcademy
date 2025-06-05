@@ -53,7 +53,6 @@ export class Cloudflare {
 		const cloudflareAccountId = await dag.config().cloudflareAccountId();
 
 		const wranglerFilename = await wranglerConfig.name();
-		const previewName = `pr-${pullRequestNumber}`;
 
 		const deploymentResult = await dag
 			.container()
@@ -65,7 +64,7 @@ export class Cloudflare {
 			.withMountedFile(`/deploy/${wranglerFilename}`, wranglerConfig)
 			.withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
 			.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
-			.withExec(["npx", "wrangler", "deploy", "--name", previewName]);
+			.withExec(["npx", "wrangler", "versions", "upload"]);
 
 		if ((await deploymentResult.exitCode()) !== 0) {
 			throw new Error(
@@ -77,19 +76,27 @@ export class Cloudflare {
 
 		const allOutput = await deploymentResult.stdout();
 
-		// Extract the preview URL from the output - look for the deployed URL
-		const urlMatch = allOutput.match(/https:\/\/[^\s]+\.workers\.dev/);
-		const previewUrl = urlMatch ? urlMatch[0] : `https://${previewName}.${cloudflareAccountId}.workers.dev`;
+		// Extract the preview URL from the output
+		// wrangler versions upload outputs a preview URL in the format:
+		// "Version preview URL: https://version-hash.worker-name.subdomain.workers.dev"
+		const urlMatch = allOutput.match(/Version preview URL:\s*(https:\/\/[^\s]+)/i) || 
+		                 allOutput.match(/https:\/\/[^\s]+\.workers\.dev/);
+		const previewUrl = urlMatch ? (urlMatch[1] || urlMatch[0]) : "Preview URL not found";
 
-		await dag
-			.github()
-			.postPullRequestComment(
-				githubApiToken,
-				repository,
-				pullRequestNumber,
-				`🎨 Storybook Preview: ${previewUrl}`,
-			)
-			.exitCode();
+		// Post the comment but don't fail if it doesn't work
+		try {
+			await dag
+				.github()
+				.postPullRequestComment(
+					githubApiToken,
+					repository,
+					pullRequestNumber,
+					`🎨 Storybook Preview: ${previewUrl}`,
+				)
+				.exitCode();
+		} catch (error) {
+			console.log("Failed to post PR comment:", error);
+		}
 
 		return allOutput;
 	}
