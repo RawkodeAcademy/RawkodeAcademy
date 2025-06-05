@@ -6,7 +6,7 @@ interface PurgeBody {
   files?: string[];
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request }) => {
   try {
     // Validate the request has proper authorization
     const authHeader = request.headers.get("Authorization");
