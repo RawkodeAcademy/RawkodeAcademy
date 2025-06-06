@@ -159,7 +159,7 @@ nav {
 }
 
 .dark .prose {
-  color: rgb(209 213 219);
+  color: rgb(243 244 246);
 }
 
 .prose :deep(p) {
