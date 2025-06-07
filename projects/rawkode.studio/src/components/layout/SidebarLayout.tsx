@@ -1,5 +1,6 @@
 import { version } from "@/../package.json";
 import { ModeToggle } from "@/components/common/ModeToggle";
+import LivestreamCounter from "@/components/layout/LivestreamCounter";
 import {
 	Avatar,
 	AvatarFallback,
@@ -29,7 +30,6 @@ import {
 	SidebarTrigger,
 	useSidebar,
 } from "@/components/shadcn/sidebar";
-import LivestreamCounter from "@/components/sidebar/livestream-counter";
 import type { OidcStandardClaimsWithRoles } from "@/lib/security";
 import { queryClient } from "@/store";
 import { QueryClientProvider } from "@tanstack/react-query";

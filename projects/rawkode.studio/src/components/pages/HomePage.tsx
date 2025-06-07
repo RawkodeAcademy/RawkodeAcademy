@@ -1,7 +1,6 @@
-import { actions } from "astro:actions";
 import { Spinner } from "@/components/common/Spinner";
-import CreateLivestreamsDialog from "@/components/livestreams/active/create-livestreams-dialog";
-import type { CreateLivestreamsDialogRef } from "@/components/livestreams/active/create-livestreams-dialog";
+import CreateLivestreamsDialog from "@/components/livestreams/dialogs/CreateLivestreamDialog";
+import type { CreateLivestreamsDialogRef } from "@/components/livestreams/dialogs/CreateLivestreamDialog";
 import { Button } from "@/components/shadcn/button";
 import {
 	Dialog,
@@ -11,137 +10,29 @@ import {
 	DialogTitle,
 } from "@/components/shadcn/dialog";
 import { Input } from "@/components/shadcn/input";
-import { useQuery } from "@tanstack/react-query";
+import { useRoomCreation } from "@/hooks/useRoomCreation";
 import { Copy, ExternalLink, Rocket, Video } from "lucide-react";
 import { motion } from "motion/react";
-import * as randomWords from "random-words";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 function generateInviteLink(roomName: string) {
 	return `${window.location.origin}/invite/${roomName}`;
 }
 
 export default function HomePage() {
-	const [isCreating, setIsCreating] = useState(false);
-	const [creationStatus, setCreationStatus] = useState<
-		"idle" | "creating" | "verifying" | "complete"
-	>("idle");
-	const [createError, setCreateError] = useState<string | null>(null);
-	const [roomName, setRoomName] = useState<string | null>(null);
-	const [showDialog, setShowDialog] = useState(false);
-	const [copied, setCopied] = useState(false);
+	const {
+		isCreating,
+		creationStatus,
+		createError,
+		roomName,
+		createRoom,
+		showDialog,
+		setShowDialog,
+		copied,
+		copyToClipboard,
+	} = useRoomCreation();
+
 	const createDialogRef = useRef<CreateLivestreamsDialogRef>(null);
-	const createdRoomNameRef = useRef<string | null>(null);
-
-	// Room verification query
-	const verificationQuery = useQuery({
-		queryKey: ["roomCreationVerification", createdRoomNameRef.current],
-		queryFn: async () => {
-			if (!createdRoomNameRef.current) {
-				throw new Error("No room name to verify");
-			}
-
-			// Get fresh list of rooms from API
-			const { data: freshRooms, error } = await actions.listRooms();
-
-			if (error) throw error;
-			if (!freshRooms) throw new Error("No data received");
-
-			// Check if room exists in the list
-			const roomExists = freshRooms.some(
-				(room) => room.name === createdRoomNameRef.current,
-			);
-
-			// If room doesn't exist yet, throw error to trigger retry
-			if (!roomExists) {
-				throw new Error("Room not found yet");
-			}
-
-			// Return the room name that was verified
-			return createdRoomNameRef.current;
-		},
-		enabled:
-			creationStatus === "verifying" && createdRoomNameRef.current !== null,
-		refetchInterval: 1000,
-		refetchOnWindowFocus: false,
-		staleTime: 0,
-		retry: 10,
-		retryDelay: 1000,
-	});
-
-	// Handle successful room verification
-	useEffect(() => {
-		if (verificationQuery.isSuccess && creationStatus === "verifying") {
-			setIsCreating(false);
-			setCreationStatus("complete");
-			// Set room name from verification to ensure we have the latest
-			setRoomName(verificationQuery.data);
-			setShowDialog(true);
-			createdRoomNameRef.current = null;
-		}
-	}, [verificationQuery.isSuccess, creationStatus, verificationQuery.data]);
-
-	// Handle max retries reached
-	useEffect(() => {
-		if (
-			verificationQuery.failureCount >= 10 &&
-			creationStatus === "verifying"
-		) {
-			setCreateError(
-				"Room creation took longer than expected. The room may still be creating.",
-			);
-			setIsCreating(false);
-			setCreationStatus("idle");
-		}
-	}, [verificationQuery.failureCount, creationStatus]);
-
-	const copyToClipboard = async () => {
-		if (!roomName) return;
-
-		try {
-			await navigator.clipboard.writeText(generateInviteLink(roomName));
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		} catch (err) {
-			console.error("Failed to copy: ", err);
-		}
-	};
-
-	const createRoom = async () => {
-		setIsCreating(true);
-		setCreationStatus("creating");
-		setCreateError(null);
-
-		try {
-			// Generate 4 random words and join them with dashes
-			const words = randomWords.generate({ exactly: 4 }) as string[];
-			const newRoomName = words.join("-");
-
-			// Store the created room name for verification
-			createdRoomNameRef.current = newRoomName;
-
-			const response = await actions.createRoom({
-				name: newRoomName,
-				maxParticipants: 10,
-				emptyTimeout: 120, // 2 minutes timeout
-			});
-
-			if (response.error) {
-				throw new Error(response.error.message || "Failed to create room");
-			}
-
-			// Move to verification stage
-			setCreationStatus("verifying");
-		} catch (err) {
-			console.error("Error creating room:", err);
-			setCreateError(
-				err instanceof Error ? err.message : "Failed to create room",
-			);
-			setIsCreating(false);
-			setCreationStatus("idle");
-			createdRoomNameRef.current = null;
-		}
-	};
 
 	const handleJoinAsDirector = () => {
 		if (!roomName) return;

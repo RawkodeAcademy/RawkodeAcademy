@@ -1,3 +1,4 @@
+import { DeviceSettingsDialog } from "@/components/livestreams/dialogs/DeviceSettingsDialog";
 import { BackstageToggle } from "@/components/livestreams/room/BackstageToggle";
 import { RaiseHandButton } from "@/components/livestreams/room/RaiseHandButton";
 import { Button } from "@/components/shadcn/button";
@@ -193,12 +194,14 @@ export function RoomControls({ token }: RoomControlsProps) {
 			</div>
 
 			{/* Show additional controls below the grid */}
-			{permissions.canPublish &&
-				localParticipant?.attributes?.role === "director" && (
-					<div className="mt-2">
+			{permissions.canPublish && (
+				<div className="mt-2 space-y-2">
+					<DeviceSettingsDialog className="w-full" />
+					{localParticipant?.attributes?.role === "director" && (
 						<BackstageToggle />
-					</div>
-				)}
+					)}
+				</div>
+			)}
 		</div>
 	);
 }

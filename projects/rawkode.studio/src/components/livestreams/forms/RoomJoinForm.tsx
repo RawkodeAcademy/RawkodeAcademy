@@ -32,14 +32,14 @@ export default function RoomJoinForm({ roomName }: Props) {
 			// Create success message
 			const successMessage = document.createElement("div");
 			successMessage.className =
-				"p-4 border border-green-300 bg-green-50 text-green-700 rounded-lg flex items-center gap-3";
+				"p-4 border border-gray-700 bg-gray-800 text-white rounded-lg flex items-center gap-3";
 			successMessage.innerHTML = `
-				<div class="shrink-0 size-10 rounded-full bg-green-100 flex items-center justify-center">
+				<div class="shrink-0 size-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12l5 5 5-5"/><path d="M12 2v15"/></svg>
 				</div>
 				<div>
 					<p class="font-medium">Joining Stream</p>
-					<p class="text-sm text-green-600">
+					<p class="text-sm text-gray-400">
 						${name.trim() ? `Connecting as ${name.trim()}...` : "Connecting with a random guest name..."}
 					</p>
 				</div>

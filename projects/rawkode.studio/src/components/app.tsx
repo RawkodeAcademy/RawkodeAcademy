@@ -1,9 +1,9 @@
-import HomePage from "@/components/index/index-page";
-import ActiveLivestreamPage from "@/components/livestreams/active/active-livestreams-page";
-import PastLivestreamDetailsPage from "@/components/livestreams/past/past-livestream-details-page";
-import PastLivestreamsPage from "@/components/livestreams/past/past-livestreams-page";
-import ProfilePage from "@/components/profile/profile-page";
-import SidebarLayout from "@/components/sidebar/sidebar-layout";
+import SidebarLayout from "@/components/layout/SidebarLayout";
+import HomePage from "@/components/pages/HomePage";
+import ProfilePage from "@/components/pages/ProfilePage";
+import ActiveLivestreamPage from "@/components/pages/livestreams/ActiveLivestreamsPage";
+import PastLivestreamDetailsPage from "@/components/pages/livestreams/PastLivestreamDetailsPage";
+import PastLivestreamsPage from "@/components/pages/livestreams/PastLivestreamsPage";
 import type { OidcStandardClaimsWithRoles } from "@/lib/security";
 import { StrictMode } from "react";
 import { BrowserRouter, Route, Routes } from "react-router";

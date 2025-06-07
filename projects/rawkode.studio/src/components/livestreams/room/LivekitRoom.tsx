@@ -46,6 +46,21 @@ export default function LivekitRoomWrapper({
 		getInitialParticipantName,
 	);
 
+	// Get initial media settings from prejoin preferences
+	const getInitialMediaSettings = () => {
+		if (typeof window !== "undefined") {
+			const audioEnabled = sessionStorage.getItem("prejoin-audio-enabled");
+			const videoEnabled = sessionStorage.getItem("prejoin-video-enabled");
+			return {
+				audio: audioEnabled === "true",
+				video: videoEnabled === "true",
+			};
+		}
+		return { audio: false, video: false };
+	};
+
+	const [initialMediaSettings] = useState(getInitialMediaSettings);
+
 	const {
 		token,
 		isLoading,
@@ -163,8 +178,8 @@ export default function LivekitRoomWrapper({
 			token={token}
 			serverUrl={serverUrl}
 			connect={true}
-			video={false}
-			audio={false}
+			video={initialMediaSettings.video}
+			audio={initialMediaSettings.audio}
 			onDisconnected={() => {
 				setConnectionStatus("disconnected");
 				if (roomName) handleLeaveRoom(roomName);
@@ -196,7 +211,61 @@ export default function LivekitRoomWrapper({
 				}
 			}}
 			className={cn("relative fixed inset-0 bg-background z-20", className)}
+			data-lk-theme="default"
 		>
+			<style>{`
+				/* Override LiveKit default styles to ensure our component styles take precedence */
+				[data-lk-theme="default"] {
+					/* Reset LiveKit button styles */
+					--lk-control-font-size: 0.875rem;
+					--lk-control-line-height: 1.25rem;
+				}
+				
+				/* Ensure our shadcn buttons maintain their styles */
+				[data-lk-theme="default"] button:not(.lk-button):not(.lk-control-bar-item) {
+					font-size: inherit !important;
+					line-height: inherit !important;
+				}
+				
+				/* Specific overrides for shadcn button sizes */
+				[data-lk-theme="default"] button[class*="h-10"] {
+					font-size: 0.875rem !important;
+					line-height: 1.25rem !important;
+				}
+				
+				[data-lk-theme="default"] button[class*="text-sm"] {
+					font-size: 0.875rem !important;
+				}
+				
+				/* Ensure text sizes are controlled by our Tailwind classes */
+				[data-lk-theme="default"] .text-sm {
+					font-size: 0.875rem !important;
+					line-height: 1.25rem !important;
+				}
+				
+				[data-lk-theme="default"] .text-xs {
+					font-size: 0.75rem !important;
+					line-height: 1rem !important;
+				}
+				
+				[data-lk-theme="default"] .text-base {
+					font-size: 1rem !important;
+					line-height: 1.5rem !important;
+				}
+				
+				/* Ensure our button component sizes are respected */
+				[data-lk-theme="default"] .h-10 {
+					height: 2.5rem !important;
+				}
+				
+				[data-lk-theme="default"] .h-9 {
+					height: 2.25rem !important;
+				}
+				
+				[data-lk-theme="default"] .h-8 {
+					height: 2rem !important;
+				}
+			`}</style>
 			<LayoutContextProvider>
 				<div className="fixed inset-0 flex">
 					{/* Main video grid area */}

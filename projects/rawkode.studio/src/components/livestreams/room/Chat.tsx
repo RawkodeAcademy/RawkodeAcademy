@@ -9,7 +9,7 @@ import {
 	EmojiPickerContent,
 	EmojiPickerFooter,
 	EmojiPickerSearch,
-} from "@/components/ui/emoji-picker";
+} from "@/components/ui/EmojiPicker";
 import { useChat, useRoomContext } from "@livekit/components-react";
 import { MessageSquare, Smile } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
