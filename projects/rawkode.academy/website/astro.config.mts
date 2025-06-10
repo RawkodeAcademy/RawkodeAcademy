@@ -37,10 +37,16 @@ export default defineConfig({
     mdx(),
     react({ experimentalReactChildren: true }),
     sitemap({
-      filter: (page) => !page.includes("api/"),
+      filter: (page) => 
+        !page.includes("api/") && 
+        !page.includes("sitemap-") && 
+        !page.includes("/watch/"),
       changefreq: "weekly",
       lastmod: new Date(),
       priority: 0.7,
+      // Disable sitemap index generation
+      // We'll create our own that includes video sitemap
+      sitemapIndex: false,
     }),
     vue(),
     partytown(),
