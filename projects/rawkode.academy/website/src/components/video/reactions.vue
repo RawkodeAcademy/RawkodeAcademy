@@ -56,7 +56,7 @@
 			leave-active-class="transition-all duration-200 ease-in"
 			leave-from-class="opacity-100 translate-y-0 max-h-[200px]" leave-to-class="opacity-0 -translate-y-2 max-h-0">
 			<div v-if="showShareOptions" class="mt-4 overflow-hidden connected">
-				<ShareButton :videoTitle="videoTitle" :videoSlug="videoSlug" />
+				<ShareButton :videoId="videoId" :videoTitle="videoTitle" :videoSlug="videoSlug" />
 			</div>
 		</transition>
 

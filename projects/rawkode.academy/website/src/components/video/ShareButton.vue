@@ -30,6 +30,7 @@ import { actions } from "astro:actions";
 library.add(faCopy, faShare, faLinkedin, faReddit, faBluesky);
 
 const props = defineProps<{
+	videoId: string;
   videoTitle: string;
   videoSlug: string;
 }>();
@@ -43,13 +44,13 @@ const linkedinShareUrl = computed(() => {
   return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
 });
 
-async function trackShare(platform: "clipboard" | "bluesky" | "linkedin" | "reddit", action: "copy_link" | "share" = "share") {
+async function trackShare(platform: "clipboard" | "bluesky" | "linkedin" | "reddit", action: "share" = "share") {
   try {
     await actions.trackShareEvent({
       action,
       platform,
       content_type: "video",
-      content_id: props.videoSlug,
+			content_id: props.videoId,
       success: true,
     });
   } catch (error) {
