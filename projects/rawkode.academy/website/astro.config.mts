@@ -11,6 +11,7 @@ import rehypeExternalLinks from "rehype-external-links";
 import { vite as vidstackPlugin } from "vidstack/plugins";
 import faroUploader from "@grafana/faro-rollup-plugin";
 import tailwindcss from "@tailwindcss/vite";
+import { fetchVideosFromGraphQL } from "./src/lib/fetch-videos";
 
 const getSiteUrl = () => {
   if (import.meta.env.DEV === true) {
@@ -39,14 +40,15 @@ export default defineConfig({
     sitemap({
       filter: (page) => 
         !page.includes("api/") && 
-        !page.includes("sitemap-") && 
-        !page.includes("/watch/"),
+        !page.includes("sitemap-"),
       changefreq: "weekly",
       lastmod: new Date(),
       priority: 0.7,
-      // Disable sitemap index generation
-      // We'll create our own that includes video sitemap
-      sitemapIndex: false,
+      customPages: await (async () => {
+        const siteUrl = getSiteUrl();
+        const videos = await fetchVideosFromGraphQL();
+        return videos.map(video => `${siteUrl}/watch/${video.slug}/`);
+      })(),
     }),
     vue(),
     partytown(),
