@@ -12,23 +12,6 @@ interface NavigationItem {
 	keywords?: string[];
 }
 
-// External links that aren't in the sitemap
-const externalNavigationItems: NavigationItem[] = [
-	{
-		id: "github",
-		title: "GitHub",
-		href: "https://github.com/RawkodeAcademy/RawkodeAcademy",
-		category: "External",
-		description: "Visit our GitHub",
-	},
-	{
-		id: "github-issues",
-		title: "Report Issue",
-		href: "https://github.com/RawkodeAcademy/RawkodeAcademy/issues",
-		category: "External",
-		description: "Report a bug or request a feature",
-	},
-];
 
 interface CommandPaletteProps {
 	isOpen: boolean;
@@ -40,9 +23,7 @@ export default function CommandPalette({
 	onClose,
 }: CommandPaletteProps) {
 	const [search, setSearch] = useState("");
-	const [navigationItems, setNavigationItems] = useState<NavigationItem[]>(
-		externalNavigationItems,
-	);
+	const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -62,11 +43,10 @@ export default function CommandPalette({
 				const response = await fetch("/api/sitemap-pages.json");
 				if (response.ok) {
 					const sitemapItems = await response.json();
-					setNavigationItems([...sitemapItems, ...externalNavigationItems]);
+					setNavigationItems(sitemapItems);
 				}
 			} catch (error) {
 				console.error("Failed to fetch navigation items:", error);
-				// Keep external items as fallback
 			} finally {
 				setIsLoading(false);
 			}
