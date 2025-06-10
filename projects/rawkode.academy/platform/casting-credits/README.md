@@ -6,6 +6,8 @@ shell: bash
 
 # Casting Credits Service
 
+The Casting Credits service manages the relationship between people, their roles (host, guest, etc.), and videos. It provides a GraphQL API that integrates with the federated graph.
+
 ## Local Development
 
 ### Database
@@ -30,6 +32,19 @@ deno fmt --check
 deno lint
 ```
 
+### Testing
+
+```sh {"name":"test"}
+# Run all tests
+bun test
+
+# Run tests in watch mode
+bun test --watch
+
+# Run tests with coverage
+bun test --coverage
+```
+
 ## Deploy
 
 ### Data Model
@@ -49,3 +64,22 @@ export LIBSQL_TOKEN="op://sa.rawkode.academy/turso/platform-group/api-token"
 bun run read-model/publish.ts
 bunx wgc subgraph publish ${SERVICE_NAME} --namespace production --schema ./read-model/schema.gql --routing-url https://${SERVICE_NAME}.api.rawkode.academy
 ```
+
+## Architecture
+
+The service consists of two main components:
+
+1. **Data Model**: Defines the database schema and provides migration utilities.
+2. **Read Model**: Exposes the data through a GraphQL API that integrates with the federated graph.
+
+### Data Model
+
+The data model uses Drizzle ORM with a SQLite database (Turso). It defines a `casting-credits` table that links people, roles, and videos.
+
+### Read Model
+
+The read model uses Pothos GraphQL to define a federated GraphQL schema. It extends the `Video` type to add a `creditsForRole` field that returns casting credits for a specific role.
+
+## Testing
+
+The service includes comprehensive tests for both the data model and GraphQL API. See the [tests/README.md](./tests/README.md) for more details.
