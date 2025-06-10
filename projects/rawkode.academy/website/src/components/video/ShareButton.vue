@@ -4,15 +4,15 @@
       <font-awesome-icon icon="copy" class="icon" />
       {{ copyButtonText }}
     </button>
-    <a :href="blueskyShareUrl" target="_blank" rel="noopener noreferrer" class="share-button social-button bluesky-button">
+    <a :href="blueskyShareUrl" target="_blank" rel="noopener noreferrer" class="share-button social-button bluesky-button" @click="() => trackShare('bluesky')">
       <font-awesome-icon :icon="['fab', 'bluesky']" class="icon" />
       Share on BlueSky
     </a>
-    <a :href="linkedinShareUrl" target="_blank" rel="noopener noreferrer" class="share-button social-button linkedin-button">
+    <a :href="linkedinShareUrl" target="_blank" rel="noopener noreferrer" class="share-button social-button linkedin-button" @click="() => trackShare('linkedin')">
       <font-awesome-icon :icon="['fab', 'linkedin']" class="icon" />
       Share on LinkedIn
     </a>
-    <a :href="redditShareUrl" target="_blank" rel="noopener noreferrer" class="share-button social-button reddit-button">
+    <a :href="redditShareUrl" target="_blank" rel="noopener noreferrer" class="share-button social-button reddit-button" @click="() => trackShare('reddit')">
       <font-awesome-icon :icon="['fab', 'reddit']" class="icon" />
       Share on Reddit
     </a>
@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faCopy, faShare } from '@fortawesome/free-solid-svg-icons';
 import { faLinkedin, faReddit, faBluesky } from '@fortawesome/free-brands-svg-icons';
+import { actions } from "astro:actions";
 
 library.add(faCopy, faShare, faLinkedin, faReddit, faBluesky);
 
@@ -42,10 +43,25 @@ const linkedinShareUrl = computed(() => {
   return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
 });
 
+async function trackShare(platform: "clipboard" | "bluesky" | "linkedin" | "reddit", action: "copy_link" | "share" = "share") {
+  try {
+    await actions.trackShareEvent({
+      action,
+      platform,
+      content_type: "video",
+      content_id: props.videoSlug,
+      success: true,
+    });
+  } catch (error) {
+    console.error(`Failed to track ${platform} share:`, error);
+  }
+}
+
 const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(shareUrl.value);
     copyButtonText.value = 'Link Copied!';
+    await trackShare('clipboard', 'share');
     setTimeout(() => {
       copyButtonText.value = 'Copy Link';
     }, 2000);
