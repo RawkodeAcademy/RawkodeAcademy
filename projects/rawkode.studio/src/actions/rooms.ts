@@ -194,7 +194,7 @@ export type PastLiveStream = {
   displayName: string;
   startedAt: Date | null;
   finishedAt: Date;
-  participantsJoined: number | null;
+  participantsCount: number | null;
 };
 
 export const rooms = {
@@ -252,13 +252,13 @@ export const rooms = {
         // Get participant counts for each room
         const roomsWithCounts = await Promise.all(
           pastRoomsData.map(async (room) => {
-            const participantCount = await database
-              .select({ count: participantsTable.id })
+            const participants = await database
+              .select()
               .from(participantsTable)
               .where(eq(participantsTable.roomId, room.id));
             return {
               ...room,
-              participantsJoined: participantCount.length,
+              participantsCount: participants.length,
             };
           }),
         );
@@ -267,7 +267,7 @@ export const rooms = {
           .filter((room) => room.finishedAt != null)
           .map((room) => ({
             ...room,
-            participantsJoined: room.participantsJoined ?? 0,
+            participantsCount: room.participantsCount ?? 0,
           })) as PastLiveStream[];
       } catch (error) {
         throw new ActionError({
