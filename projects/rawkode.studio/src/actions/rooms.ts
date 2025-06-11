@@ -228,6 +228,44 @@ export const rooms = {
     },
   }),
 
+  listRunningRooms: defineAction({
+    handler: async (_input, context) => {
+      if (!context.locals.user) {
+        throw new ActionError({ code: "UNAUTHORIZED" });
+      }
+
+      // Get running rooms from database
+      const runningRooms = await database
+        .select({
+          id: livestreamsTable.id,
+          displayName: livestreamsTable.displayName,
+          startedAt: livestreamsTable.startedAt,
+        })
+        .from(livestreamsTable)
+        .where(eq(livestreamsTable.status, "running"))
+        .orderBy(desc(livestreamsTable.startedAt));
+
+      // Get participant counts for each room
+      const roomsWithCounts = await Promise.all(
+        runningRooms.map(async (room) => {
+          const participants = await database
+            .select()
+            .from(participantsTable)
+            .where(eq(participantsTable.roomId, room.id));
+
+          return {
+            id: room.id,
+            displayName: room.displayName,
+            participantCount: participants.length,
+            startedAt: room.startedAt,
+          };
+        }),
+      );
+
+      return roomsWithCounts;
+    },
+  }),
+
   listPastRooms: defineAction({
     handler: async (_input, context) => {
       if (!context.locals) {
