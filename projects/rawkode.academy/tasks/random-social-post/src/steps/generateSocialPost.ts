@@ -49,13 +49,18 @@ export async function generateSocialPost(
 		);
 		const prompt = promptTemplate.default;
 
-		const response = await ai.run("@cf/meta/llama-3.1-8b-instruct", {
+		// @cf/google/gemma-3-12b-it doesn't support
+		// structured responses, yet. It was the best model
+		// during tests; so loop back and try to adopt soon.
+		const response = await ai.run("@cf/deepseek-ai/deepseek-r1-distill-qwen-32b", {
 			prompt: `
 				This video was in the past. It is not coming soon. We're merely resharing this.
 
 				David McKay changed his name, he is now David Flanagan.
 
-				Replace any mention of David Flanagan with @rawkode.dev
+				Replace any mention of David Flanagan with @rawkode.dev.
+
+				David / rawkode is the host, not the project owner or maintainer
 
 				Do not include the link in the post.
 
@@ -73,7 +78,6 @@ export async function generateSocialPost(
 				Video publishedAt: ${video.publishedAt}
 				Video Description: ${video.description}
 				Video Duration (Seconds): ${video.duration}
-				Video is about the following technologies: ${video.technologies.join(", ")}
 			`,
 			stream: false,
 			response_format: {
