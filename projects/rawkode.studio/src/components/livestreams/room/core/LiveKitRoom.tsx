@@ -33,6 +33,7 @@ import { useContext, useEffect } from "react";
 export interface LiveKitRoomProps {
   serverUrl: string;
   roomName: string;
+  roomDisplayName: string;
   participantName?: string;
   onLeaveRoom?: (roomName: string) => void;
   className?: string;
@@ -41,6 +42,7 @@ export interface LiveKitRoomProps {
 export default function LiveKitRoom({
   serverUrl,
   roomName,
+  roomDisplayName,
   participantName: propParticipantName,
   onLeaveRoom,
   className,
@@ -193,7 +195,7 @@ export default function LiveKitRoom({
             <LayoutProvider>
               <DataMessageHandler />
               <RoomContent
-                roomName={roomName}
+                roomDisplayName={roomDisplayName}
                 token={token}
                 connectionState={connectionState}
               />
@@ -209,12 +211,16 @@ export default function LiveKitRoom({
 
 // Room content component
 interface RoomContentProps {
-  roomName: string;
+  roomDisplayName: string;
   token: string;
   connectionState: ConnectionState;
 }
 
-function RoomContent({ roomName, token, connectionState }: RoomContentProps) {
+function RoomContent({
+  roomDisplayName,
+  token,
+  connectionState,
+}: RoomContentProps) {
   return (
     <div className="fixed inset-0 flex">
       {/* Main video grid area */}
@@ -234,7 +240,7 @@ function RoomContent({ roomName, token, connectionState }: RoomContentProps) {
         <div className="p-3 border-b border-sidebar-border/50">
           <div className="flex items-center justify-center gap-2">
             <span className="font-bold text-sidebar-foreground">
-              {roomName}
+              {roomDisplayName}
             </span>
             <ConnectionIndicator
               status={

@@ -19,17 +19,17 @@ export const POST: APIRoute = async ({ request, callAction, locals }) => {
   }
 
   const body = await request.json();
-  const { roomSid, message } = body;
+  const { roomName, message } = body;
 
   // Validate required fields
-  if (!roomSid || !message) {
-    return new Response("Room SID and message are required", {
+  if (!roomName || !message) {
+    return new Response("Room name and message are required", {
       status: 400,
     });
   }
 
   const result = await callAction(actions.chat.addChatMessage, {
-    roomSid,
+    roomId: roomName, // roomName is our custom ID
     message,
     participantIdentity: auth.identity,
   });

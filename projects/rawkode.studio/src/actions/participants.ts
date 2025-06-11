@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 
 export type Participant = {
   id: number;
-  roomSid: string;
+  roomId: string;
   identity: string;
   name: string;
 };
@@ -25,7 +25,7 @@ export const participants = {
         const participants = await database
           .select()
           .from(participantsTable)
-          .where(eq(participantsTable.roomSid, input.roomId));
+          .where(eq(participantsTable.roomId, input.roomId));
 
         return participants as Participant[];
       } catch (error) {

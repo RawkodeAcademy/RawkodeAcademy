@@ -1,4 +1,5 @@
 import { actions } from "astro:actions";
+import { generateRoomId } from "@/lib/generateRoomId";
 import { useQuery } from "@tanstack/react-query";
 import * as randomWords from "random-words";
 import { useEffect, useRef, useState } from "react";
@@ -52,7 +53,7 @@ export function useRoomCreation(
 
       // Check if room exists in the list
       const roomExists = freshRooms.some(
-        (room) => room.name === createdRoomNameRef.current,
+        (room) => room.id === createdRoomNameRef.current,
       );
 
       // If room doesn't exist yet, throw error to trigger retry
@@ -130,15 +131,18 @@ export function useRoomCreation(
     setCreateError(null);
 
     try {
-      // Generate 4 random words and join them with dashes
+      // Generate 4 random words and join them with spaces for display name
       const words = randomWords.generate({ exactly: 4 }) as string[];
-      const newRoomName = words.join("-");
+      const displayName = words
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
 
-      // Store the created room name for verification
-      createdRoomNameRef.current = newRoomName;
+      // Generate a unique room ID
+      const roomId = generateRoomId();
 
       const response = await actions.rooms.createRoom({
-        name: newRoomName,
+        displayName: displayName,
+        roomId: roomId,
         maxParticipants: 10,
         emptyTimeout: 120, // 2 minutes timeout
       });
@@ -147,8 +151,12 @@ export function useRoomCreation(
         throw new Error(response.error.message || "Failed to create room");
       }
 
-      // Move to verification stage
-      setCreationStatus("verifying");
+      if (response.data) {
+        // Store the created room ID for verification
+        createdRoomNameRef.current = response.data.id;
+        // Move to verification stage
+        setCreationStatus("verifying");
+      }
     } catch (err) {
       console.error("Error creating room:", err);
       setCreateError(

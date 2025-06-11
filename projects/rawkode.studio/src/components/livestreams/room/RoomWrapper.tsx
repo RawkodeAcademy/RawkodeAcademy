@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 interface RoomWrapperProps {
   serverUrl: string;
   roomName: string;
+  roomDisplayName: string;
   roomExists: boolean;
   isDirector: boolean;
   username?: string;
@@ -15,6 +16,7 @@ interface RoomWrapperProps {
 export function RoomWrapper({
   serverUrl,
   roomName,
+  roomDisplayName,
   roomExists,
   isDirector,
   username,
@@ -91,6 +93,7 @@ export function RoomWrapper({
     return (
       <PrejoinScreen
         roomName={roomName}
+        roomDisplayName={roomDisplayName}
         roomExists={roomExists}
         isDirector={isDirector}
         username={username}
@@ -104,6 +107,7 @@ export function RoomWrapper({
     <LiveKitRoom
       serverUrl={serverUrl}
       roomName={roomName}
+      roomDisplayName={roomDisplayName}
       participantName={participantName}
       onLeaveRoom={handleLeaveRoom}
     />

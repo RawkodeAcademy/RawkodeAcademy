@@ -24,18 +24,19 @@ import { useRef } from "react";
 
 type Room = {
   id: string;
-  name: string;
+  livekitSid: string;
+  displayName: string;
   numParticipants: number;
 };
 
 const columns: ColumnDef<Room>[] = [
   {
-    header: "ID",
+    header: "Room ID",
     accessorFn: (row) => row.id,
   },
   {
     header: "Name",
-    accessorFn: (row) => row.name,
+    accessorFn: (row) => row.displayName,
   },
   {
     header: "Participants",
@@ -46,8 +47,14 @@ const columns: ColumnDef<Room>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex space-x-2">
-          <InviteLivestreamDialog roomName={row.original.name} />
-          <DeleteLivestreamDialog name={row.original.name} />
+          <InviteLivestreamDialog
+            roomId={row.original.id}
+            displayName={row.original.displayName}
+          />
+          <DeleteLivestreamDialog
+            id={row.original.id}
+            displayName={row.original.displayName}
+          />
         </div>
       );
     },

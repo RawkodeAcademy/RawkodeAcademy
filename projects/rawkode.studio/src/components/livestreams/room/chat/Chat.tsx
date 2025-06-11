@@ -46,10 +46,8 @@ export function Chat({ token }: ChatProps) {
         // Send LiveKit message
         await send(processedMessage);
 
-        const roomSid = await room.getSid();
-
         // Call the API endpoint
-        if (token && roomSid) {
+        if (token) {
           await fetch("/api/livestream/chat", {
             method: "POST",
             headers: {
@@ -58,7 +56,6 @@ export function Chat({ token }: ChatProps) {
             },
             body: JSON.stringify({
               roomName: room.name,
-              roomSid,
               participantName:
                 room.localParticipant?.name ||
                 room.localParticipant?.identity ||

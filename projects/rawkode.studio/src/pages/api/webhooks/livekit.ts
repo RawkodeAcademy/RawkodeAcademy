@@ -3,6 +3,7 @@ import { webhookReceiver } from "@/lib/livekit";
 import { livestreamsTable, participantsTable } from "@/schema";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
+import type { Room } from "livekit-server-sdk";
 
 export const POST: APIRoute = async ({ request }) => {
   const body = await request.text();
@@ -14,7 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const event = await webhookReceiver.receive(body, authorization);
 
-  const room = event.room;
+  const room: Room | undefined = event.room;
 
   if (!room) {
     return new Response("Room not found", { status: 404 });
@@ -22,23 +23,14 @@ export const POST: APIRoute = async ({ request }) => {
 
   switch (event.event) {
     case "room_started":
-      // Upsert room to handle race condition with backend room creation
+      // Update room status to running (room should already exist from creation)
       await database
-        .insert(livestreamsTable)
-        .values({
-          sid: room.sid,
-          name: room.name,
+        .update(livestreamsTable)
+        .set({
           status: "running",
           startedAt: new Date(),
         })
-        .onConflictDoUpdate({
-          target: livestreamsTable.sid,
-          set: {
-            status: "running",
-            startedAt: new Date(),
-          },
-          where: eq(livestreamsTable.status, "created"),
-        });
+        .where(eq(livestreamsTable.id, room.name)); // room.name is our custom ID
       break;
 
     case "room_finished":
@@ -49,7 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
           status: "ended",
           endedAt: new Date(),
         })
-        .where(eq(livestreamsTable.sid, room.sid));
+        .where(eq(livestreamsTable.id, room.name)); // room.name is our custom ID
       break;
 
     case "participant_joined": {
@@ -63,7 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
       await database
         .insert(participantsTable)
         .values({
-          roomSid: room.sid,
+          roomId: room.name, // room.name is our custom ID
           identity: participant.identity,
           name: participant.name || participant.identity,
         })

@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 
 export type ChatMessage = {
   id: number;
-  roomSid: string;
+  roomId: string;
   participantIdentity: string;
   participantName: string;
   message: string;
@@ -16,7 +16,7 @@ export type ChatMessage = {
 export const chat = {
   addChatMessage: defineAction({
     input: z.object({
-      roomSid: z.string(),
+      roomId: z.string(),
       participantIdentity: z.string(),
       message: z.string(),
     }),
@@ -26,7 +26,7 @@ export const chat = {
       const participantName = input.participantIdentity;
 
       await database.insert(chatMessagesTable).values({
-        roomSid: input.roomSid,
+        roomId: input.roomId,
         participantIdentity: input.participantIdentity,
         participantName: participantName,
         message: input.message,
@@ -47,14 +47,14 @@ export const chat = {
         const messages = await database
           .select({
             id: chatMessagesTable.id,
-            roomSid: chatMessagesTable.roomSid,
+            roomId: chatMessagesTable.roomId,
             participantIdentity: chatMessagesTable.participantIdentity,
             participantName: chatMessagesTable.participantName,
             message: chatMessagesTable.message,
             createdAt: chatMessagesTable.createdAt,
           })
           .from(chatMessagesTable)
-          .where(eq(chatMessagesTable.roomSid, input.roomId))
+          .where(eq(chatMessagesTable.roomId, input.roomId))
           .orderBy(chatMessagesTable.createdAt); // Order by creation time
 
         return messages as ChatMessage[];

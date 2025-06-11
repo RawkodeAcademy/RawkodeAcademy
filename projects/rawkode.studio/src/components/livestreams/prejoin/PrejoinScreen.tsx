@@ -33,6 +33,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface PrejoinScreenProps {
   roomName: string;
+  roomDisplayName: string;
   roomExists: boolean;
   isDirector: boolean;
   username?: string;
@@ -41,7 +42,8 @@ interface PrejoinScreenProps {
 }
 
 export function PrejoinScreen({
-  roomName,
+  roomName: _roomName,
+  roomDisplayName,
   roomExists,
   isDirector,
   username: providedUsername,
@@ -481,7 +483,8 @@ export function PrejoinScreen({
               Room Not Available
             </CardTitle>
             <CardDescription>
-              The livestream "{roomName}" may have ended or doesn't exist.
+              The livestream "{roomDisplayName}" may have ended or doesn't
+              exist.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -510,7 +513,7 @@ export function PrejoinScreen({
               <Video className="size-5 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-xl">Join {roomName}</CardTitle>
+          <CardTitle className="text-xl">Join {roomDisplayName}</CardTitle>
           <CardDescription className="text-sm">
             {isDirector
               ? "Configure your camera and microphone"

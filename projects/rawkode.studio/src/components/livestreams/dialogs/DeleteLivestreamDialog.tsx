@@ -22,10 +22,11 @@ import { useEffect, useState } from "react";
 import { useRef } from "react";
 
 interface Props {
-  name: string;
+  id: string;
+  displayName: string;
 }
 
-export default function DeleteLivestreamDialog({ name }: Props) {
+export default function DeleteLivestreamDialog({ id, displayName }: Props) {
   // Dialog state
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,7 +52,7 @@ export default function DeleteLivestreamDialog({ name }: Props) {
 
       // Check if the room still exists
       const stillExists = rooms.some(
-        (room) => room.name === roomToDeleteRef.current,
+        (room) => room.id === roomToDeleteRef.current,
       );
 
       // If room still exists, throw error to trigger retry
@@ -95,10 +96,10 @@ export default function DeleteLivestreamDialog({ name }: Props) {
       // Start deleting
       setIsDeleting(true);
       setIsError(false);
-      roomToDeleteRef.current = name;
+      roomToDeleteRef.current = id;
 
       // Call API to delete room
-      await actions.rooms.deleteRoom({ name });
+      await actions.rooms.deleteRoom({ id });
 
       // API call success, verification will happen automatically
       // through the enabled query
@@ -133,7 +134,7 @@ export default function DeleteLivestreamDialog({ name }: Props) {
             </Button>
           </div>
         </TooltipTrigger>
-        <TooltipContent>Delete Live Stream "{name}"</TooltipContent>
+        <TooltipContent>Delete Live Stream "{displayName}"</TooltipContent>
       </Tooltip>
 
       {/* Delete Dialog */}
@@ -169,7 +170,7 @@ export default function DeleteLivestreamDialog({ name }: Props) {
           </DialogClose>
 
           <DialogHeader>
-            <DialogTitle>Delete Live Stream "{name}"?</DialogTitle>
+            <DialogTitle>Delete Live Stream "{displayName}"?</DialogTitle>
             <DialogDescription>This action cannot be undone.</DialogDescription>
           </DialogHeader>
 

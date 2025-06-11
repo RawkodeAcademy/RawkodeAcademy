@@ -16,14 +16,15 @@ import { Copy, Link2 } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
-  roomName: string;
+  roomId: string;
+  displayName: string;
 }
 
-export default function InviteLivestreamDialog({ roomName }: Props) {
+export default function InviteLivestreamDialog({ roomId, displayName }: Props) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const inviteLink = `${window.location.origin}/watch/${roomName}`;
+  const inviteLink = `${window.location.origin}/watch/${roomId}`;
 
   const copyToClipboard = async () => {
     try {
@@ -45,7 +46,7 @@ export default function InviteLivestreamDialog({ roomName }: Props) {
             </Button>
           </div>
         </TooltipTrigger>
-        <TooltipContent>Invite to Live Stream "{roomName}"</TooltipContent>
+        <TooltipContent>Invite to Live Stream "{displayName}"</TooltipContent>
       </Tooltip>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -54,7 +55,7 @@ export default function InviteLivestreamDialog({ roomName }: Props) {
             <DialogHeader>
               <DialogTitle>Invite to Live Stream</DialogTitle>
               <DialogDescription>
-                Share this link to invite someone to the "{roomName}" live
+                Share this link to invite someone to the "{displayName}" live
                 stream
               </DialogDescription>
             </DialogHeader>

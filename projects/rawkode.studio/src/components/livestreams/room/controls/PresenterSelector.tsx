@@ -78,7 +78,7 @@ export function PresenterSelector() {
         };
 
         const result = await actions.rooms.updateRoomLayout({
-          roomName: roomInfo.name,
+          roomId: roomInfo.name,
           metadata: stringifyRoomMetadata(metadata),
         });
 
