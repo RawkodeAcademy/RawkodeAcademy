@@ -18,9 +18,10 @@ import { useEffect, useRef, useState } from "react";
 // Chat Section Component using LiveKit's useChat hook
 interface ChatProps {
   token: string | null;
+  onNewMessage?: () => void;
 }
 
-export function Chat({ token }: ChatProps) {
+export function Chat({ token, onNewMessage }: ChatProps) {
   const { chatMessages, send } = useChat();
   const [messageText, setMessageText] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -28,6 +29,7 @@ export function Chat({ token }: ChatProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const room = useRoomContext();
   const permissions = useRoomPermissions();
+  const previousMessageCountRef = useRef(chatMessages.length);
 
   // Auto-scroll to top when new messages arrive
   useEffect(() => {
@@ -35,7 +37,13 @@ export function Chat({ token }: ChatProps) {
     if (messagesContainerRef.current && chatMessages.length > 0) {
       messagesContainerRef.current.scrollTop = 0;
     }
-  }, [chatMessages.length]);
+
+    // Call onNewMessage when a new message is received
+    if (chatMessages.length > previousMessageCountRef.current && onNewMessage) {
+      onNewMessage();
+    }
+    previousMessageCountRef.current = chatMessages.length;
+  }, [chatMessages.length, onNewMessage]);
 
   const handleSendMessage = async () => {
     if (messageText.trim() && send && permissions.canSendChatMessages) {
