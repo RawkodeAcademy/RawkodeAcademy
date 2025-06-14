@@ -1,11 +1,12 @@
 import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { castingCreditsTable } from "./schema";
 
 /**
  * Shared migration utility that can work with different database types
  */
 export function getMigrationsFolder() {
-  return `${dirname(import.meta.path)}/migrations`;
+  return `${dirname(fileURLToPath(import.meta.url))}/migrations`;
 }
 
 /**
