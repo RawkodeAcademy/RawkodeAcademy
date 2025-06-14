@@ -8,7 +8,7 @@ describe("Casting Credits Resolvers", () => {
     
     // Get the CastingCredit type's person resolver
     const castingCreditType = schema.getType("CastingCredit");
-    const fields = (castingCreditType as any)._fields;
+    const fields = (castingCreditType as any).getFields();
     const personField = fields.person;
     const resolver = personField.resolve;
     

@@ -18,11 +18,11 @@ describe("Casting Credits GraphQL Schema Structure", () => {
     expect(personType).toBeDefined();
     
     // Check that the Video type has the creditsForRole field
-    const videoTypeFields = (videoType as any)._fields;
+    const videoTypeFields = (videoType as any).getFields();
     expect(videoTypeFields.creditsForRole).toBeDefined();
     
     // Check that the CastingCredit type has the person field
-    const castingCreditTypeFields = (castingCreditType as any)._fields;
+    const castingCreditTypeFields = (castingCreditType as any).getFields();
     expect(castingCreditTypeFields.person).toBeDefined();
   });
 });

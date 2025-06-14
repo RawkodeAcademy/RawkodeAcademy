@@ -1,16 +1,8 @@
 import { db } from "./client";
-import { castingCreditsTable } from "./schema";
+import { seedDatabase } from "./database-utils";
 
 const seed = async () => {
-	await db
-		.insert(castingCreditsTable)
-		.values({
-			personId: "rawkode",
-			role: "Host",
-			videoId: "abc123",
-		})
-		.returning()
-		.all();
+	await seedDatabase(db);
 	process.exit(0);
 };
 
