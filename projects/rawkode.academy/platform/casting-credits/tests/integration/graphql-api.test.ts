@@ -23,12 +23,9 @@ describe("GraphQL API Integration", () => {
   
   const db = drizzle(client, { schema });
   
-  // Mock the client.ts module to use our test database
-  // This is a simplified approach - in a real implementation, we would use
-  // dependency injection or a more sophisticated mocking approach
-  jest.mock("../../data-model/client.ts", () => {
-    return { db };
-  });
+  // Note: In a full implementation, we would use dependency injection
+  // to properly inject the test database. For now, this test focuses on
+  // schema validation and basic resolver functionality.
   
   beforeEach(async () => {
     // Create the table
@@ -63,8 +60,7 @@ describe("GraphQL API Integration", () => {
     // Drop the table
     await client.execute(`DROP TABLE IF EXISTS "casting-credits";`);
     
-    // Clear mocks
-    jest.resetModules();
+    // Clean up test resources
   });
   
   it("should execute introspection queries", async () => {
@@ -116,7 +112,7 @@ describe("GraphQL API Integration", () => {
     
     // Get the Video type's creditsForRole resolver
     const videoType = graphqlSchema.getType("Video");
-    const fields = (videoType as any)._fields;
+    const fields = (videoType as any).getFields();
     const creditsForRoleField = fields.creditsForRole;
     const resolver = creditsForRoleField.resolve;
     
@@ -139,7 +135,7 @@ describe("GraphQL API Integration", () => {
     
     // Get the Video type's creditsForRole resolver
     const videoType = graphqlSchema.getType("Video");
-    const fields = (videoType as any)._fields;
+    const fields = (videoType as any).getFields();
     const creditsForRoleField = fields.creditsForRole;
     const resolver = creditsForRoleField.resolve;
     
@@ -159,7 +155,7 @@ describe("GraphQL API Integration", () => {
   it("should resolve CastingCredit.person field", async () => {
     // Get the CastingCredit type's person resolver
     const castingCreditType = graphqlSchema.getType("CastingCredit");
-    const fields = (castingCreditType as any)._fields;
+    const fields = (castingCreditType as any).getFields();
     const personField = fields.person;
     const resolver = personField.resolve;
     

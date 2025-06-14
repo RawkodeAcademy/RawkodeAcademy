@@ -4,8 +4,8 @@ import drizzlePlugin from "@pothos/plugin-drizzle";
 import federationPlugin from "@pothos/plugin-federation";
 import { and, eq } from "drizzle-orm";
 import type { GraphQLSchema } from "graphql";
-import { db } from "../data-model/client.ts";
-import * as dataSchema from "../data-model/schema.ts";
+import { db } from "../data-model/client";
+import * as dataSchema from "../data-model/schema";
 
 export interface PothosTypes {
 	DrizzleSchema: typeof dataSchema;
