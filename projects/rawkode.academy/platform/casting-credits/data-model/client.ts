@@ -1,6 +1,6 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import * as dataSchema from "../data-model/schema";
+import * as dataSchema from "./schema";
 
 const serviceName = process.env.SERVICE_NAME;
 const libSqlUrl = process.env.LIBSQL_URL;

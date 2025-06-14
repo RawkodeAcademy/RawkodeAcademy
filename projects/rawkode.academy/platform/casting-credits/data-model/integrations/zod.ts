@@ -1,4 +1,4 @@
-import { castingCreditsTable } from "../schema.ts";
+import { castingCreditsTable } from "../schema";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
