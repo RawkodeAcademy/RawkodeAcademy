@@ -5,6 +5,9 @@
 
 export const RkGlobalColorPink500 = "#FF5C8D";
 export const RkGlobalColorPink600 = "#E04878";
+export const RkGlobalColorBlue400 = "#00ceff";
+export const RkGlobalColorTeal500 = "#04b59c";
+export const RkGlobalColorGreen400 = "#85ff95";
 export const RkGlobalColorGray50 = "#F9FAFB";
 export const RkGlobalColorGray900 = "#0F172A";
 export const RkGlobalColorAccentBlue = "#37BDF8";
@@ -30,6 +33,9 @@ export const RkGlobalDurationFast = "150ms";
 export const RkGlobalDurationBase = "250ms";
 export const RkSemanticColorPrimary = "#FF5C8D";
 export const RkSemanticColorPrimaryHover = "#E04878";
+export const RkSemanticColorSecondary = "#00ceff";
+export const RkSemanticColorTertiary = "#04b59c";
+export const RkSemanticColorQuaternary = "#85ff95";
 export const RkSemanticColorBgSurface = "#F9FAFB";
 export const RkSemanticColorTextBody = "#0F172A";
 export const RkSemanticRadiusCard = "8";

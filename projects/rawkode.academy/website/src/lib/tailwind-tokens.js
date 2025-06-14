@@ -5,6 +5,9 @@ export default {
       "colors": {
         "pink-500": "#FF5C8D",
         "pink-600": "#E04878",
+        "blue-400": "#00ceff",
+        "teal-500": "#04b59c",
+        "green-400": "#85ff95",
         "gray-50": "#F9FAFB",
         "gray-900": "#0F172A",
         "accent-blue": "#37BDF8",
@@ -12,6 +15,9 @@ export default {
         "black": "#000000",
         "primary": "#FF5C8D",
         "primary-hover": "#E04878",
+        "secondary": "#00ceff",
+        "tertiary": "#04b59c",
+        "quaternary": "#85ff95",
         "bg-surface": "#F9FAFB",
         "text-body": "#0F172A"
       },
