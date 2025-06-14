@@ -1,0 +1,86 @@
+---
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  target?: '_blank' | '_self';
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+  id?: string;
+  ariaLabel?: string;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  target = '_self',
+  disabled = false,
+  type = 'button',
+  class: className = '',
+  id,
+  ariaLabel,
+  ...rest
+} = Astro.props;
+
+// Base styles using design tokens
+const baseStyles = [
+  'inline-flex items-center justify-center font-medium rounded-lg',
+  'transition-all duration-[--duration-fast]',
+  'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2',
+  'disabled:opacity-50 disabled:cursor-not-allowed',
+].join(' ');
+
+// Variant styles
+const variantStyles = {
+  primary: [
+    'text-white bg-primary hover:bg-primary-hover',
+    'shadow-sm hover:shadow-md',
+  ].join(' '),
+  secondary: [
+    'text-white bg-gradient-to-br from-primary to-secondary',
+    'hover:from-secondary hover:to-primary',
+    'shadow-sm hover:shadow-md',
+  ].join(' '),
+  outline: [
+    'text-gray-900 bg-white border border-gray-200',
+    'hover:bg-gray-50 hover:text-primary',
+    'dark:text-white dark:bg-gray-700 dark:border-gray-600',
+    'dark:hover:bg-gray-600 dark:hover:text-white',
+  ].join(' '),
+  ghost: [
+    'text-gray-600 hover:text-primary hover:bg-gray-50',
+    'dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700',
+  ].join(' '),
+};
+
+// Size styles using design tokens
+const sizeStyles = {
+  sm: 'px-3 py-1.5 text-sm gap-1.5',
+  md: 'px-4 py-2 text-base gap-2',
+  lg: 'px-6 py-3 text-lg gap-2.5',
+};
+
+const buttonClasses = [
+  baseStyles,
+  variantStyles[variant],
+  sizeStyles[size],
+  className,
+].filter(Boolean).join(' ');
+
+const Element = href ? 'a' : 'button';
+const elementProps = href 
+  ? { href, target, rel: target === '_blank' ? 'noopener noreferrer' : undefined }
+  : { type, disabled };
+---
+
+<Element
+  class={buttonClasses}
+  id={id}
+  aria-label={ariaLabel}
+  {...elementProps}
+  {...rest}
+>
+  <slot />
+</Element>
