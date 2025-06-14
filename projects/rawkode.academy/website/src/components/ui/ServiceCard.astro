@@ -1,0 +1,97 @@
+---
+interface Feature {
+  text: string;
+  icon?: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  icon?: string;
+  iconColor?: 'primary' | 'secondary' | 'tertiary' | 'quaternary';
+  features?: Feature[];
+  href?: string;
+  buttonText?: string;
+  variant?: 'default' | 'bordered' | 'elevated';
+  class?: string;
+}
+
+const {
+  title,
+  description,
+  icon,
+  iconColor = 'primary',
+  features = [],
+  href,
+  buttonText,
+  variant = 'default',
+  class: className = '',
+} = Astro.props;
+
+const iconColorClasses = {
+  primary: 'bg-primary/10 text-primary',
+  secondary: 'bg-secondary/10 text-secondary',
+  tertiary: 'bg-tertiary/10 text-tertiary',
+  quaternary: 'bg-quaternary/10 text-quaternary',
+};
+
+const variantClasses = {
+  default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
+  bordered: 'bg-white dark:bg-gray-800 border-2 border-primary/20 dark:border-primary/30',
+  elevated: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg',
+};
+
+const cardClasses = `
+  ${variantClasses[variant]}
+  p-6 rounded-lg
+  hover:shadow-md transition-all duration-300
+  ${className}
+`.trim();
+---
+
+<div class={cardClasses}>
+  {(icon || title) && (
+    <div class="flex items-center mb-4">
+      {icon && (
+        <div class={`${iconColorClasses[iconColor]} shrink-0 p-3 rounded-full mr-4`}>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icon}></path>
+          </svg>
+        </div>
+      )}
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+        {title}
+      </h3>
+    </div>
+  )}
+  
+  <p class="text-gray-600 dark:text-gray-300 mb-4">
+    {description}
+  </p>
+  
+  {features.length > 0 && (
+    <ul class="space-y-2 mb-6">
+      {features.map((feature) => (
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <span class="text-gray-700 dark:text-gray-300">{feature.text}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+  
+  {href && buttonText && (
+    <div class="mt-auto">
+      <a 
+        href={href} 
+        class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors duration-200"
+      >
+        {buttonText}
+      </a>
+    </div>
+  )}
+  
+  <slot />
+</div>

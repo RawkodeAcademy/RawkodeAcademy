@@ -1,0 +1,307 @@
+import type { Meta, StoryObj } from '@storybook/react';
+
+const meta: Meta = {
+  title: 'UI/Icon',
+  parameters: {
+    layout: 'padded',
+  },
+  argTypes: {
+    name: {
+      control: 'select',
+      options: [
+        'menu', 'close', 'chevron_down', 'chevron_right', 'chevron_left',
+        'check', 'plus', 'minus', 'edit', 'trash',
+        'mail', 'phone', 'message',
+        'code', 'terminal', 'database', 'cloud', 'server',
+        'users', 'user', 'briefcase', 'building',
+        'play', 'pause', 'video', 'image',
+        'share', 'heart', 'star',
+        'info', 'warning', 'error', 'success',
+        'external_link', 'link'
+      ],
+    },
+    size: {
+      control: 'select',
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    name: 'check',
+    size: 'md',
+  },
+  render: (args) => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="flex items-center space-x-2">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <span>Check icon (medium size)</span>
+        </div>
+      `
+    }} />
+  ),
+};
+
+export const Sizes: Story = {
+  render: () => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="space-y-4">
+          <div class="flex items-center space-x-4">
+            <svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-sm">Extra Small (xs)</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-sm">Small (sm)</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-sm">Medium (md) - Default</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-sm">Large (lg)</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-sm">Extra Large (xl)</span>
+          </div>
+        </div>
+      `
+    }} />
+  ),
+};
+
+export const NavigationIcons: Story = {
+  render: () => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+            <span class="text-xs text-gray-500">menu</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span class="text-xs text-gray-500">close</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+            <span class="text-xs text-gray-500">chevron_down</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            <span class="text-xs text-gray-500">chevron_right</span>
+          </div>
+        </div>
+      `
+    }} />
+  ),
+};
+
+export const ActionIcons: Story = {
+  render: () => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-xs text-gray-500">check</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+            </svg>
+            <span class="text-xs text-gray-500">plus</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            </svg>
+            <span class="text-xs text-gray-500">edit</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"></path>
+            </svg>
+            <span class="text-xs text-gray-500">trash</span>
+          </div>
+        </div>
+      `
+    }} />
+  ),
+};
+
+export const TechnologyIcons: Story = {
+  render: () => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"></path>
+            </svg>
+            <span class="text-xs text-gray-500">code</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 17l6-6-6-6M12 19h8"></path>
+            </svg>
+            <span class="text-xs text-gray-500">terminal</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7M5 12V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7M5 12h14"></path>
+            </svg>
+            <span class="text-xs text-gray-500">database</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+            </svg>
+            <span class="text-xs text-gray-500">cloud</span>
+          </div>
+        </div>
+      `
+    }} />
+  ),
+};
+
+export const WithColors: Story = {
+  render: () => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="flex flex-col items-center space-y-2">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <span class="text-xs text-gray-500">Primary</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <div class="bg-secondary/10 p-3 rounded-full">
+              <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <span class="text-xs text-gray-500">Secondary</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <div class="bg-green-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <span class="text-xs text-gray-500">Success</span>
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            <div class="bg-red-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+            <span class="text-xs text-gray-500">Error</span>
+          </div>
+        </div>
+      `
+    }} />
+  ),
+};
+
+export const AllIcons: Story = {
+  render: () => (
+    <div dangerouslySetInnerHTML={{
+      __html: `
+        <div class="grid grid-cols-4 md:grid-cols-8 gap-4">
+          ${[
+            'menu', 'close', 'chevron_down', 'chevron_right', 'chevron_left',
+            'check', 'plus', 'minus', 'edit', 'trash',
+            'mail', 'phone', 'message',
+            'code', 'terminal', 'database', 'cloud', 'server',
+            'users', 'user', 'briefcase', 'building',
+            'play', 'pause', 'video', 'image',
+            'share', 'heart', 'star',
+            'info', 'warning', 'error', 'success',
+            'external_link', 'link'
+          ].map(iconName => {
+            const iconPaths = {
+              menu: 'M4 6h16M4 12h16M4 18h16',
+              close: 'M6 18L18 6M6 6l12 12',
+              chevron_down: 'M19 9l-7 7-7-7',
+              chevron_right: 'M9 5l7 7-7 7',
+              chevron_left: 'M15 19l-7-7 7-7',
+              check: 'M5 13l4 4L19 7',
+              plus: 'M12 5v14M5 12h14',
+              minus: 'M5 12h14',
+              edit: 'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7',
+              trash: 'M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16',
+              mail: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6',
+              phone: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z',
+              message: 'M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z',
+              code: 'M16 18l6-6-6-6M8 6l-6 6 6 6',
+              terminal: 'M4 17l6-6-6-6M12 19h8',
+              database: 'M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7M5 12V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7M5 12h14',
+              cloud: 'M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z',
+              server: 'M20 8c0 3.31-2.69 6-6 6H8c-3.31 0-6-2.69-6-6s2.69-6 6-6h6c3.31 0 6 2.69 6 6zM6 12h.01M10 12h.01',
+              users: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z',
+              user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+              briefcase: 'M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM14 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2',
+              building: 'M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3',
+              play: 'M8 5v14l11-7z',
+              pause: 'M6 19h4V5H6v14zM14 5v14h4V5h-4z',
+              video: 'M23 7l-7 5 7 5V7zM15 9v6H1V9h14z',
+              image: 'M14.828 14.828a4 4 0 0 1-5.656 0M9 10a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+              share: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13',
+              heart: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
+              star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+              info: 'M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zM12 6a1 1 0 0 1 1 1v6a1 1 0 0 1-2 0V7a1 1 0 0 1 1-1zM12 16a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z',
+              warning: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01',
+              error: 'M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zM12 6a1 1 0 0 1 1 1v6a1 1 0 0 1-2 0V7a1 1 0 0 1 1-1zM12 16a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z',
+              success: 'M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zM12 6a1 1 0 0 1 1 1v6a1 1 0 0 1-2 0V7a1 1 0 0 1 1-1zM12 16a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z',
+              external_link: 'M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14',
+              link: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'
+            };
+            return `
+              <div class="flex flex-col items-center space-y-1">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPaths[iconName]}"></path>
+                </svg>
+                <span class="text-xs text-gray-500">${iconName}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `
+    }} />
+  ),
+};
