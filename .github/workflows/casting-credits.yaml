@@ -1,0 +1,43 @@
+name: casting-credits
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/casting-credits.yaml"
+      - "projects/rawkode.academy/platform/casting-credits/**"
+  pull_request:
+    paths:
+      - ".github/workflows/casting-credits.yaml"
+      - "projects/rawkode.academy/platform/casting-credits/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dagger
+        run: |
+          curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR=/usr/local/bin sh
+
+      - name: Install Dependencies
+        working-directory: projects/rawkode.academy/platform/casting-credits
+        run: |
+          dagger -m . call install --directory=.
+
+      - name: Run Tests
+        working-directory: projects/rawkode.academy/platform/casting-credits
+        run: |
+          dagger -m . call test --directory=.
+
+      - name: Run Tests with Coverage
+        working-directory: projects/rawkode.academy/platform/casting-credits
+        run: |
+          dagger -m . call test-coverage --directory=.
