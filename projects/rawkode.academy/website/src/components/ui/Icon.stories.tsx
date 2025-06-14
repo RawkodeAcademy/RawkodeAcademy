@@ -35,7 +35,7 @@ export const Default: Story = {
     name: 'check',
     size: 'md',
   },
-  render: (args) => (
+  render: () => (
     <div dangerouslySetInnerHTML={{
       __html: `
         <div class="flex items-center space-x-2">
@@ -294,7 +294,7 @@ export const AllIcons: Story = {
             return `
               <div class="flex flex-col items-center space-y-1">
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPaths[iconName]}"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPaths[iconName as keyof typeof iconPaths]}"></path>
                 </svg>
                 <span class="text-xs text-gray-500">${iconName}</span>
               </div>

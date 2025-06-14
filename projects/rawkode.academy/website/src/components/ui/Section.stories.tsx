@@ -25,7 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => (
+  render: () => (
     <div dangerouslySetInnerHTML={{
       __html: `
         <section class="section-separator bg-white dark:bg-gray-900">
