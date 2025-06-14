@@ -70,7 +70,7 @@ const Typewriter = (props: Props) => {
           <a
             href={props.primaryButton.link}
             target={props.primaryButton.newWindow ? "_blank" : "_self"}
-            className="inline-flex items-center justify-center px-5 py-3 mr-3 text-base font-medium text-center rounded-lg text-white bg-linear-to-br from-primary to-secondary hover:from-secondary hover:to-primary"
+            className="inline-flex items-center justify-center px-6 py-3 mr-3 text-base font-medium text-center rounded-lg text-white bg-linear-to-br from-primary to-secondary hover:from-secondary hover:to-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-[--duration-fast] shadow-sm hover:shadow-md"
           >
             {props.primaryButton.text}
             <svg
@@ -91,7 +91,7 @@ const Typewriter = (props: Props) => {
           <a
             href={props.secondaryButton.link}
             target={props.secondaryButton.newWindow ? "_blank" : "_self"}
-            className="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+            className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-center text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white transition-all duration-[--duration-fast]"
           >
             {props.secondaryButton.text}
           </a>
