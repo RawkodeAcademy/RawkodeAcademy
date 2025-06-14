@@ -33,7 +33,7 @@ const config = {
 // Register custom formats
 StyleDictionary.registerFormat({
   name: 'tailwind/js',
-  formatter: function(dictionary) {
+  format: function(dictionary) {
     const tokens = dictionary.allTokens;
     const tailwindConfig = {
       theme: {
