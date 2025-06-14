@@ -74,7 +74,7 @@ StyleDictionary.registerFormat({
         }
       } else if (path[0] === 'semantic') {
         // Handle semantic tokens
-        const tokenName = path[0];
+        const tokenName = path[1];
         if (tokenName.startsWith('color-')) {
           const colorName = tokenName.replace('color-', '');
           tailwindConfig.theme.extend.colors[colorName] = value;
