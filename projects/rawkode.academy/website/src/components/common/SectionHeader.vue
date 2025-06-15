@@ -13,14 +13,14 @@
 
 <script setup lang="ts">
 interface Props {
-  title: string;
-  showSeparator?: boolean;
-  class?: string;
+	title: string;
+	showSeparator?: boolean;
+	class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showSeparator: true,
-  class: '',
+	showSeparator: true,
+	class: "",
 });
 
 const className = props.class;

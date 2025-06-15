@@ -30,7 +30,8 @@ export const Default: Story = {
 			component={args.component}
 			props={{
 				...args.props,
-				default: "This is the default section content with standard padding and container width.",
+				default:
+					"This is the default section content with standard padding and container width.",
 			}}
 		/>
 	),

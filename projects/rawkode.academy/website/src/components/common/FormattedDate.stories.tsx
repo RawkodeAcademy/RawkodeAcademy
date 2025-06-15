@@ -143,7 +143,7 @@ export const DifferentDates: Story = {
 					lastMonth.setMonth(lastMonth.getMonth() - 1);
 					const lastYear = new Date();
 					lastYear.setFullYear(lastYear.getFullYear() - 1);
-					
+
 					return {
 						today,
 						yesterday,

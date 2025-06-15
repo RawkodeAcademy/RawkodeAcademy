@@ -25,42 +25,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
 interface Props {
-  date: Date;
-  format?: 'short' | 'long' | 'full';
-  showIcon?: boolean;
-  class?: string;
+	date: Date;
+	format?: "short" | "long" | "full";
+	showIcon?: boolean;
+	class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  format: 'short',
-  showIcon: false,
-  class: '',
+	format: "short",
+	showIcon: false,
+	class: "",
 });
 
-const formatOptions: Record<'short' | 'long' | 'full', Intl.DateTimeFormatOptions> = {
-  short: {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  },
-  long: {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  },
-  full: {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  },
+const formatOptions: Record<
+	"short" | "long" | "full",
+	Intl.DateTimeFormatOptions
+> = {
+	short: {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	},
+	long: {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	},
+	full: {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	},
 };
 
 const formattedDate = computed(() => {
-  return new Intl.DateTimeFormat('en-US', formatOptions[props.format]).format(props.date);
+	return new Intl.DateTimeFormat("en-US", formatOptions[props.format]).format(
+		props.date,
+	);
 });
 
 const className = props.class;

@@ -42,7 +42,8 @@ export const LongTitle: Story = {
 	args: {
 		component: SectionHeader,
 		props: {
-			title: "This is a Very Long Section Title That Demonstrates How the Component Handles Extended Text",
+			title:
+				"This is a Very Long Section Title That Demonstrates How the Component Handles Extended Text",
 		},
 	},
 };

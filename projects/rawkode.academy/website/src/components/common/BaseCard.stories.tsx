@@ -260,7 +260,8 @@ export const CardGrid: Story = {
 							id: 1,
 							href: "/item/1",
 							title: "Getting Started with Docker",
-							description: "Learn the fundamentals of containerization with Docker.",
+							description:
+								"Learn the fundamentals of containerization with Docker.",
 							image: "https://via.placeholder.com/400x200",
 							badge: "Beginner",
 							badgeVariant: "success",
@@ -270,7 +271,8 @@ export const CardGrid: Story = {
 							id: 2,
 							href: "/item/2",
 							title: "Kubernetes Security Best Practices",
-							description: "Secure your Kubernetes clusters with these essential practices.",
+							description:
+								"Secure your Kubernetes clusters with these essential practices.",
 							image: "https://via.placeholder.com/400x200",
 							badge: "Advanced",
 							badgeVariant: "warning",
@@ -280,7 +282,8 @@ export const CardGrid: Story = {
 							id: 3,
 							href: "/item/3",
 							title: "CI/CD with GitOps",
-							description: "Implement continuous deployment using GitOps principles.",
+							description:
+								"Implement continuous deployment using GitOps principles.",
 							image: "https://via.placeholder.com/400x200",
 							date: new Date("2024-03-05"),
 						},

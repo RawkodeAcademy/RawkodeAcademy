@@ -25,12 +25,12 @@
 
 <script setup lang="ts">
 interface Props {
-  href: string;
-  class?: string;
+	href: string;
+	class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  class: '',
+	class: "",
 });
 
 const className = props.class;
