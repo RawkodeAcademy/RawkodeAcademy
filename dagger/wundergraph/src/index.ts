@@ -1,4 +1,11 @@
-import { dag, Directory, File, func, object, Secret } from "@dagger.io/dagger";
+import {
+	dag,
+	type Directory,
+	type File,
+	func,
+	object,
+	type Secret,
+} from "@dagger.io/dagger";
 
 @object()
 export class Wundergraph {
@@ -18,7 +25,7 @@ export class Wundergraph {
 			.from("node:22-alpine")
 			.withWorkdir("/publish")
 			.withMountedFile("/publish/schema.gql", schemaFile)
-			.withSecretVariable("WG_COSMO_API_KEY", cosmoApiKey)
+			.withSecretVariable("COSMO_API_KEY", cosmoApiKey)
 			.withExec([
 				"npx",
 				"wgc",
@@ -59,7 +66,10 @@ export class Wundergraph {
 		// Generate schema using bun
 		const generatedSchema = await dag
 			.bun()
-			.withExec(publishScript, serviceDirectory);
+			.container()
+			.withMountedDirectory("/code", serviceDirectory)
+			.withWorkdir("/code")
+			.withExec(["bun", "run", publishScript]);
 
 		// Get the generated schema file
 		const schemaFile = generatedSchema.file("./read-model/schema.gql");

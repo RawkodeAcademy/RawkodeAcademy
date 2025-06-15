@@ -7,10 +7,6 @@ import { and, eq } from "drizzle-orm";
 import type { GraphQLSchema } from "graphql";
 import * as dataSchema from "../data-model/schema";
 
-export interface Env {
-	DB: D1Database;
-}
-
 export interface PothosTypes {
 	DrizzleSchema: typeof dataSchema;
 }

@@ -27,20 +27,10 @@ jobs:
         run: |
           curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR=/usr/local/bin sh
 
-      - name: Install Dependencies
-        working-directory: projects/rawkode.academy/platform/casting-credits
-        run: |
-          dagger -m . call install --directory=.
-
       - name: Run Tests
         working-directory: projects/rawkode.academy/platform/casting-credits
         run: |
           dagger -m . call test --directory=.
-
-      - name: Run Tests with Coverage
-        working-directory: projects/rawkode.academy/platform/casting-credits
-        run: |
-          dagger -m . call test-coverage --directory=.
 
   deploy:
     runs-on: ubuntu-latest
@@ -76,19 +66,28 @@ jobs:
         working-directory: projects/rawkode.academy/platform/casting-credits
         env:
           CLOUDFLARE_WORKERS_TOKEN: ${{ steps.secrets.outputs.CLOUDFLARE_WORKERS_TOKEN }}
-          WG_COSMO_API_KEY: ${{ steps.secrets.outputs.COSMO_API_KEY }}
-          SERVICE_NAME: casting-credits
+          COSMO_API_KEY: ${{ steps.secrets.outputs.COSMO_API_KEY }}
+          SERVICE_NAME: platform-casting-credits
         run: |
           dagger <<.
-            ../../../dagger/cloudflare | deploy \
-              ./read-model \
+            ../../../../dagger/cloudflare | deploy \
+              ./ \
               ./read-model/wrangler.jsonc \
-              env:CLOUDFLARE_WORKERS_TOKEN | \
-            ../../../dagger/wundergraph | generateAndPublishSubgraph \
+              env:CLOUDFLARE_API_TOKEN
+          .
+          dagger <<.
+            ../../../../dagger/cloudflare | applyMigrations \
+              ./ \
+              ./read-model/wrangler.jsonc \
+              env:CLOUDFLARE_API_TOKEN \
+              platform-casting-credits
+          .
+          dagger <<.
+            ../../../../dagger/wundergraph | generateAndPublishSubgraph \
               ${SERVICE_NAME} \
               production \
               . \
               ./read-model/publish.ts \
               https://${SERVICE_NAME}-read-model.rawkode-academy.workers.dev \
-              env:WG_COSMO_API_KEY
+              env:COSMO_API_KEY
           .
