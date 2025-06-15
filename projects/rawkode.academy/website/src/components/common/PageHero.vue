@@ -18,9 +18,7 @@
         
         <!-- Badge/Category -->
         <div v-if="badge" class="mb-4">
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary dark:bg-primary/20">
-            {{ badge }}
-          </span>
+          <Badge variant="primary" size="md">{{ badge }}</Badge>
         </div>
         
         <!-- Title -->
@@ -79,6 +77,7 @@
 
 <script setup lang="ts">
 import Heading from './Heading.vue';
+import Badge from './Badge.vue';
 
 interface Stat {
   icon?: any;
