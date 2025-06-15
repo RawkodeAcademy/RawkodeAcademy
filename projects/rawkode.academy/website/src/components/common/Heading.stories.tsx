@@ -13,26 +13,6 @@ const meta = {
 		component: {
 			table: { disable: true },
 		},
-		as: {
-			control: "select",
-			options: ["h1", "h2", "h3", "h4", "h5", "h6"],
-			description: "HTML tag to render",
-		},
-		size: {
-			control: "select",
-			options: ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"],
-			description: "Text size",
-		},
-		align: {
-			control: "select",
-			options: ["left", "center", "right"],
-			description: "Text alignment",
-		},
-		weight: {
-			control: "select",
-			options: ["normal", "medium", "semibold", "bold", "extrabold"],
-			description: "Font weight",
-		},
 	},
 } satisfies Meta<typeof VueInReact>;
 
@@ -44,23 +24,24 @@ export const Default: Story = {
 		component: Heading,
 		props: {},
 	},
-	render: (args) => ({
-		component: VueInReact,
-		props: {
-			component: args.component,
-			props: {
+	render: (args) => (
+		<VueInReact
+			component={args.component}
+			props={{
 				...args.props,
 				default: "Default Heading",
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const AllSizes: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: Heading,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <div class="space-y-4">
             <Heading size="xs">Extra Small Heading</Heading>
@@ -74,16 +55,18 @@ export const AllSizes: Story = {
           </div>
         `,
 				components: { Heading },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const AllTags: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: Heading,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <div class="space-y-4">
             <Heading as="h1">H1: Page Title</Heading>
@@ -95,16 +78,18 @@ export const AllTags: Story = {
           </div>
         `,
 				components: { Heading },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const Alignments: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: Heading,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <div class="space-y-4">
             <Heading align="left">Left Aligned Heading</Heading>
@@ -113,16 +98,18 @@ export const Alignments: Story = {
           </div>
         `,
 				components: { Heading },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const Weights: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: Heading,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <div class="space-y-4">
             <Heading weight="normal">Normal Weight Heading</Heading>
@@ -133,16 +120,18 @@ export const Weights: Story = {
           </div>
         `,
 				components: { Heading },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const PageExample: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: Heading,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <div class="space-y-8">
             <Heading as="h1" size="4xl" align="center">Welcome to Rawkode Academy</Heading>
@@ -154,7 +143,7 @@ export const PageExample: Story = {
           </div>
         `,
 				components: { Heading },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };

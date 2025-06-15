@@ -14,18 +14,6 @@ const meta = {
 		component: {
 			table: { disable: true },
 		},
-		title: {
-			control: "text",
-			description: "Hero title",
-		},
-		subtitle: {
-			control: "text",
-			description: "Hero subtitle",
-		},
-		badge: {
-			control: "text",
-			description: "Badge text",
-		},
 	},
 } satisfies Meta<typeof VueInReact>;
 
@@ -70,10 +58,12 @@ export const WithStats: Story = {
 };
 
 export const WithActions: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: PageHero,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <PageHero
             title="Start Your Learning Journey"
@@ -87,16 +77,18 @@ export const WithActions: Story = {
           </PageHero>
         `,
 				components: { PageHero, Button },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const ArticlesPage: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: PageHero,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <PageHero
             title="Articles & Tutorials"
@@ -114,16 +106,18 @@ export const ArticlesPage: Story = {
           </PageHero>
         `,
 				components: { PageHero, Button },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const CoursesPage: Story = {
-	render: () => ({
-		component: VueInReact,
-		props: {
-			component: {
+	args: {
+		component: PageHero,
+	},
+	render: () => (
+		<VueInReact
+			component={{
 				template: `
           <PageHero
             title="Professional Cloud Native Courses"
@@ -142,9 +136,9 @@ export const CoursesPage: Story = {
           </PageHero>
         `,
 				components: { PageHero, Button },
-			},
-		},
-	}),
+			}}
+		/>
+	),
 };
 
 export const MinimalHero: Story = {
