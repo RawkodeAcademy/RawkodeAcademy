@@ -1,33 +1,32 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { VueInReact } from '../vue-wrapper';
-import GridLayout from './GridLayout.vue';
+import type { Meta, StoryObj } from "@storybook/react";
+import { VueInReact } from "../vue-wrapper";
+import GridLayout from "./GridLayout.vue";
 
 const meta = {
-  title: 'Components/Common/GridLayout',
-  component: VueInReact,
-  parameters: {
-    layout: 'padded',
-  },
-  tags: ['autodocs'],
-  argTypes: {
-    component: {
-      table: { disable: true }
-    }
-  }
+	title: "Components/Common/GridLayout",
+	component: VueInReact,
+	parameters: {
+		layout: "padded",
+	},
+	tags: ["autodocs"],
+	argTypes: {
+		component: {
+			table: { disable: true },
+		},
+	},
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-
 export const Default: Story = {
-  args: {
-    component: GridLayout,
-  },
-  render: () => (
-    <VueInReact
-      component={{
-        template: `
+	args: {
+		component: GridLayout,
+	},
+	render: () => (
+		<VueInReact
+			component={{
+				template: `
           <GridLayout :cols="{ default: 1, md: 2, lg: 3 }" :gap="6">
             <div class="bg-primary/10 p-6 rounded-lg">Item 1</div>
             <div class="bg-secondary/10 p-6 rounded-lg">Item 2</div>
@@ -37,20 +36,20 @@ export const Default: Story = {
             <div class="bg-tertiary/10 p-6 rounded-lg">Item 6</div>
           </GridLayout>
         `,
-        components: { GridLayout },
-      }}
-    />
-  )
+				components: { GridLayout },
+			}}
+		/>
+	),
 };
 
 export const ResponsiveColumns: Story = {
-  args: {
-    component: GridLayout,
-  },
-  render: () => (
-    <VueInReact
-      component={{
-        template: `
+	args: {
+		component: GridLayout,
+	},
+	render: () => (
+		<VueInReact
+			component={{
+				template: `
           <div class="space-y-8">
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">1 column on mobile, 2 on tablet, 4 on desktop</h3>
@@ -71,20 +70,20 @@ export const ResponsiveColumns: Story = {
             </div>
           </div>
         `,
-        components: { GridLayout },
-      }}
-    />
-  )
+				components: { GridLayout },
+			}}
+		/>
+	),
 };
 
 export const DifferentGaps: Story = {
-  args: {
-    component: GridLayout,
-  },
-  render: () => (
-    <VueInReact
-      component={{
-        template: `
+	args: {
+		component: GridLayout,
+	},
+	render: () => (
+		<VueInReact
+			component={{
+				template: `
           <div class="space-y-8">
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Gap: 2</h3>
@@ -108,20 +107,20 @@ export const DifferentGaps: Story = {
             </div>
           </div>
         `,
-        components: { GridLayout },
-      }}
-    />
-  )
+				components: { GridLayout },
+			}}
+		/>
+	),
 };
 
 export const CardGrid: Story = {
-  args: {
-    component: GridLayout,
-  },
-  render: () => (
-    <VueInReact
-      component={{
-        template: `
+	args: {
+		component: GridLayout,
+	},
+	render: () => (
+		<VueInReact
+			component={{
+				template: `
           <GridLayout :cols="{ default: 1, md: 2, lg: 3 }" :gap="6">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Feature 1</h3>
@@ -149,20 +148,20 @@ export const CardGrid: Story = {
             </div>
           </GridLayout>
         `,
-        components: { GridLayout },
-      }}
-    />
-  )
+				components: { GridLayout },
+			}}
+		/>
+	),
 };
 
 export const AlignmentOptions: Story = {
-  args: {
-    component: GridLayout,
-  },
-  render: () => (
-    <VueInReact
-      component={{
-        template: `
+	args: {
+		component: GridLayout,
+	},
+	render: () => (
+		<VueInReact
+			component={{
+				template: `
           <div class="space-y-8">
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Align: start</h3>
@@ -192,8 +191,8 @@ export const AlignmentOptions: Story = {
             </div>
           </div>
         `,
-        components: { GridLayout },
-      }}
-    />
-  )
+				components: { GridLayout },
+			}}
+		/>
+	),
 };
