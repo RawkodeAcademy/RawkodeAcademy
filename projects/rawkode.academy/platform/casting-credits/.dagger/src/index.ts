@@ -1,4 +1,4 @@
-import { type Container, dag, type Directory, func, object } from "@dagger.io/dagger";
+import { argument, type Container, dag, type Directory, func, object } from "@dagger.io/dagger";
 
 @object()
 export class CastingCredits {
@@ -6,30 +6,26 @@ export class CastingCredits {
 	 * Install dependencies and validate the setup for casting-credits service
 	 */
 	@func()
-	async install(directory: Directory): Promise<Container> {
+	async install(@argument({defaultPath: "."}) directory: Directory): Promise<Container> {
 		const bun = dag.bun();
-		return await bun.withCache().then((b) => b.install(directory));
+		return await bun.withCache().install(directory);
 	}
 
 	/**
 	 * Run tests for the casting-credits service
 	 */
 	@func()
-	async test(directory: Directory): Promise<Container> {
-		const bun = dag.bun();
-		const container = await bun.withCache().then((b) => b.install(directory));
-
-		return container.withExec(["bun", "test"]);
+	async test(@argument({defaultPath: "."})directory: Directory): Promise<Container> {
+		const app = await this.install(directory);
+		return app.withExec(["bun", "test"]);
 	}
 
 	/**
 	 * Run tests with coverage for the casting-credits service
 	 */
 	@func()
-	async testCoverage(directory: Directory): Promise<Container> {
-		const bun = dag.bun();
-		const container = await bun.withCache().then((b) => b.install(directory));
-
-		return container.withExec(["bun", "test", "--coverage"]);
+	async testCoverage(@argument({defaultPath: "."})directory: Directory): Promise<Container> {
+		const app = await this.install(directory);
+		return app.withExec(["bun", "test", "--coverage"]);
 	}
 }

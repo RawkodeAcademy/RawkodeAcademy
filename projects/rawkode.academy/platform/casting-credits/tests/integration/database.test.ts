@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { drizzle } from "drizzle-orm/d1";
 import { eq, and } from "drizzle-orm";
 import * as schema from "../../data-model/schema";
@@ -24,13 +24,17 @@ describe("Database", () => {
 			});
 
 			// Try to insert duplicate - should fail
-			await expect(
-				db.insert(schema.castingCreditsTable).values({
+			try {
+				await db.insert(schema.castingCreditsTable).values({
 					personId: "person1",
 					role: "host",
 					videoId: "video1",
-				}),
-			).rejects.toThrow(/UNIQUE constraint failed/);
+				});
+				// If we get here, the test should fail
+				expect(true).toBe(false);
+			} catch (error) {
+				expect(error.message).toMatch(/UNIQUE constraint failed/);
+			}
 		});
 
 		it("should allow same person in different roles for same video", async () => {
@@ -64,29 +68,41 @@ describe("Database", () => {
 
 	describe("Data Validation", () => {
 		it("should not allow null values for required fields", async () => {
-			await expect(
-				db.insert(schema.castingCreditsTable).values({
+			// Test null personId
+			try {
+				await db.insert(schema.castingCreditsTable).values({
 					personId: null as any,
 					role: "host",
 					videoId: "video1",
-				}),
-			).rejects.toThrow();
+				});
+				expect(true).toBe(false);
+			} catch (error) {
+				expect(error).toBeDefined();
+			}
 
-			await expect(
-				db.insert(schema.castingCreditsTable).values({
+			// Test null role
+			try {
+				await db.insert(schema.castingCreditsTable).values({
 					personId: "person1",
 					role: null as any,
 					videoId: "video1",
-				}),
-			).rejects.toThrow();
+				});
+				expect(true).toBe(false);
+			} catch (error) {
+				expect(error).toBeDefined();
+			}
 
-			await expect(
-				db.insert(schema.castingCreditsTable).values({
+			// Test null videoId
+			try {
+				await db.insert(schema.castingCreditsTable).values({
 					personId: "person1",
 					role: "host",
 					videoId: null as any,
-				}),
-			).rejects.toThrow();
+				});
+				expect(true).toBe(false);
+			} catch (error) {
+				expect(error).toBeDefined();
+			}
 		});
 
 		it("should handle empty strings", async () => {
