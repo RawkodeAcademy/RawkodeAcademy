@@ -76,11 +76,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from "vue";
 import Badge from "./Badge.vue";
 import Heading from "./Heading.vue";
 
 interface Stat {
-	icon?: any;
+	icon?: Component;
 	label: string;
 }
 
@@ -89,7 +90,7 @@ interface Props {
 	subtitle?: string;
 	badge?: string;
 	stats?: Stat[];
-	children?: any;
+	children?: unknown;
 }
 
 defineProps<Props>();
