@@ -5,8 +5,13 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getSchema } from "./schema";
 
+// Create a mock environment for schema generation
+const mockEnv: Env = {
+	DB: {} as D1Database,
+};
+
 const schemaAsString = printSchemaWithDirectives(
-	lexicographicSortSchema(getSchema()),
+	lexicographicSortSchema(getSchema(mockEnv)),
 	{
 		// This is needed to print the directives properly,
 		// no idea why.
