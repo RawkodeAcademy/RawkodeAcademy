@@ -42,7 +42,7 @@ function escapeXml(unsafe: string): string {
 
 export const GET: APIRoute = async ({ site }) => {
 	const videos = await getCollection("videos");
-	
+
 	// Sort videos by publishedAt date (newest first)
 	const sortedVideos = videos.sort((a, b) => {
 		const dateA = new Date(a.data.publishedAt);
@@ -60,12 +60,13 @@ ${sortedVideos
 		const contentUrl = video.data.streamUrl;
 		const duration = formatDuration(video.data.duration || 0);
 		const publishedDate = new Date(video.data.publishedAt).toISOString();
-		
+
 		// Create tags from technologies
-		const tags = video.data.technologies
-			?.map((tech) => tech.name)
-			.slice(0, 32) // Google recommends max 32 tags
-			.join(", ") || "";
+		const tags =
+			video.data.technologies
+				?.map((tech) => tech.name)
+				.slice(0, 32) // Google recommends max 32 tags
+				.join(", ") || "";
 
 		return `  <url>
     <loc>${videoUrl}</loc>

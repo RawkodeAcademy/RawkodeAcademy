@@ -1,8 +1,8 @@
 import {
+	getSecret,
 	INFLUXDB_BUCKET,
 	INFLUXDB_HOST,
 	INFLUXDB_ORG,
-	getSecret,
 } from "astro:env/server";
 import { InfluxDBClient, Point } from "@influxdata/influxdb3-client";
 import type { APIRoute } from "astro";

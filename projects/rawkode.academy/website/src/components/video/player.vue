@@ -32,7 +32,7 @@ async function trackVideoEvent(event: VideoAnalyticsEvent) {
 
 onMounted(() => {
 	// Get the media player element
-	const playerEl = document.querySelector('media-player');
+	const playerEl = document.querySelector("media-player");
 	if (!playerEl) return;
 
 	// Handle media events

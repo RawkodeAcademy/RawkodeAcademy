@@ -17,27 +17,34 @@ const allVideos = await getCollection("videos");
 const relatedVideos: CollectionEntry<"videos">[] = [];
 
 // First, add videos with overlapping technologies
-if (currentVideo.data.technologies && currentVideo.data.technologies.length > 0) {
+if (
+	currentVideo.data.technologies &&
+	currentVideo.data.technologies.length > 0
+) {
 	const currentTechIds = currentVideo.data.technologies.map((tech) => tech.id);
-	
+
 	const techVideos = allVideos.filter((video) => {
 		if (video.id === currentVideo.id) return false;
-		
+
 		const videoTechIds = video.data.technologies?.map((tech) => tech.id) || [];
 		return videoTechIds.some((techId) => currentTechIds.includes(techId));
 	});
-	
+
 	// Sort by number of matching technologies
 	techVideos.sort((a, b) => {
 		const aTechIds = a.data.technologies?.map((tech) => tech.id) || [];
 		const bTechIds = b.data.technologies?.map((tech) => tech.id) || [];
-		
-		const aMatches = aTechIds.filter((id) => currentTechIds.includes(id)).length;
-		const bMatches = bTechIds.filter((id) => currentTechIds.includes(id)).length;
-		
+
+		const aMatches = aTechIds.filter((id) =>
+			currentTechIds.includes(id),
+		).length;
+		const bMatches = bTechIds.filter((id) =>
+			currentTechIds.includes(id),
+		).length;
+
 		return bMatches - aMatches;
 	});
-	
+
 	relatedVideos.push(...techVideos);
 }
 
@@ -47,15 +54,15 @@ if (relatedVideos.length < limit) {
 		.filter(
 			(video) =>
 				video.id !== currentVideo.id &&
-				!relatedVideos.find((r) => r.id === video.id)
+				!relatedVideos.find((r) => r.id === video.id),
 		)
 		.sort(
 			(a, b) =>
 				new Date(b.data.publishedAt).getTime() -
-				new Date(a.data.publishedAt).getTime()
+				new Date(a.data.publishedAt).getTime(),
 		)
 		.slice(0, limit - relatedVideos.length);
-	
+
 	relatedVideos.push(...recentVideos);
 }
 
@@ -67,7 +74,7 @@ const formatDuration = (seconds: number) => {
 	const hours = Math.floor(seconds / 3600);
 	const minutes = Math.floor((seconds % 3600) / 60);
 	const secs = seconds % 60;
-	
+
 	if (hours > 0) {
 		return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
 			.toString()

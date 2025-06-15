@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { GraphQLClient, gql } from "graphql-request";
+import { gql, GraphQLClient } from "graphql-request";
 
 // Define types for the GraphQL response
 interface Chapter {
