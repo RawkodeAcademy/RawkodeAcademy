@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { getSchema } from "../read-model/schema";
 
 declare const env: { DB: D1Database };

@@ -1,4 +1,4 @@
-import { beforeAll, afterAll } from "vitest";
+import { beforeAll, afterAll } from "bun:test";
 import { Miniflare, Log, LogLevel } from "miniflare";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -46,6 +46,7 @@ beforeAll(async () => {
 				try {
 					await globalThis.env.DB.prepare(sanitizedStatement).run();
 				} catch (error) {
+					/* v8 ignore next 2 */
 					console.error(`Failed to execute: ${sanitizedStatement}`);
 					throw error;
 				}

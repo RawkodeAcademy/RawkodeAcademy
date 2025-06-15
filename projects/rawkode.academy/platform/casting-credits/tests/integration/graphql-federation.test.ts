@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { createYoga } from "graphql-yoga";
 import * as schema from "../../data-model/schema";
 import { getSchema } from "../../read-model/schema";
