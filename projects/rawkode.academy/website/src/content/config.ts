@@ -1,7 +1,7 @@
 import { defineCollection, reference, z } from "astro:content";
 import { glob } from "astro/loaders";
 
-import { gql, GraphQLClient } from "graphql-request";
+import { GraphQLClient, gql } from "graphql-request";
 
 const graphQLClient = new GraphQLClient("https://api.rawkode.academy/graphql");
 

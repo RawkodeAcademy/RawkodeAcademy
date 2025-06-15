@@ -1,28 +1,33 @@
 # Video SEO Implementation Guide
 
-This document outlines the video SEO optimizations implemented to ensure videos appear in Google Video Search results.
+This document outlines the video SEO optimizations implemented to ensure videos
+appear in Google Video Search results.
 
 ## What's Been Implemented
 
 ### 1. Enhanced VideoObject Schema (✅ Completed)
+
 - Added all required Google Video Search properties to `video-metadata.astro`
 - Includes: embedUrl, publisher, creator, videoQuality, videoFrameSize
 - Proper duration formatting (ISO 8601)
 - Language and accessibility information
 
 ### 2. Video Sitemap (✅ Completed)
+
 - Created dedicated `video-sitemap.xml` with Google's video sitemap schema
 - Includes all required video metadata
 - Automatically generated from video collection
 - Added to robots.txt for discovery
 
 ### 3. Video Player Markup (✅ Existing)
+
 - Semantic HTML5 video player with proper source elements
 - Includes captions/subtitles for accessibility
 - Chapter markers for better navigation
 - Poster images for preview
 
 ### 4. Related Videos (✅ Completed)
+
 - Implemented related videos section to increase engagement
 - Smart matching based on technologies
 - Improves internal linking between videos
@@ -30,6 +35,7 @@ This document outlines the video SEO optimizations implemented to ensure videos 
 ## Google Video Search Requirements
 
 ### Required Properties:
+
 - ✅ **name** - Video title
 - ✅ **description** - Video description
 - ✅ **thumbnailUrl** - Preview image
@@ -38,6 +44,7 @@ This document outlines the video SEO optimizations implemented to ensure videos 
 - ✅ **contentUrl** or **embedUrl** - Video file location
 
 ### Recommended Properties:
+
 - ✅ **publisher** - Organization info
 - ✅ **creator** - Person who created the video
 - ✅ **interactionStatistic** - View count (placeholder)
@@ -90,6 +97,7 @@ This document outlines the video SEO optimizations implemented to ensure videos 
 ## Monitoring Performance
 
 Track these metrics in Google Search Console:
+
 - Video impressions in search results
 - Click-through rate for video results
 - Video enhancement status
@@ -117,16 +125,19 @@ Track these metrics in Google Search Console:
 ## Common Issues & Solutions
 
 **Videos not appearing in search:**
+
 - Wait 2-4 weeks for initial indexing
 - Ensure video sitemap is submitted
 - Check for crawl errors in Search Console
 
 **Structured data errors:**
+
 - Validate JSON-LD syntax
 - Ensure all required fields are present
 - Check date formats (ISO 8601)
 
 **Thumbnail issues:**
+
 - Use high-quality images (1280x720 minimum)
 - Ensure thumbnails are publicly accessible
 - Use descriptive alt text

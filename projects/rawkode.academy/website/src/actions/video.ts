@@ -1,9 +1,9 @@
 import { ActionError, defineAction } from "astro:actions";
 import {
-	getSecret,
 	INFLUXDB_BUCKET,
 	INFLUXDB_HOST,
 	INFLUXDB_ORG,
+	getSecret,
 } from "astro:env/server";
 import { z } from "astro:schema";
 import { InfluxDBClient, Point } from "@influxdata/influxdb3-client";

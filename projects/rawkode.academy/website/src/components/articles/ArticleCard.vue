@@ -37,7 +37,7 @@ defineProps<Props>();
           v-else
           class="w-full h-52 object-cover"
           src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/blog/office-laptops.png"
-          alt="office laptop working"
+          alt="Default placeholder image for article without custom cover"
           loading="lazy"
         />
         <div class="absolute top-3 left-3 z-20">

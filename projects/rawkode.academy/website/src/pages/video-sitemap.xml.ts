@@ -1,5 +1,5 @@
-import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
 
 // Format duration from seconds to ISO 8601
 function formatDuration(seconds: number): string {
@@ -73,7 +73,9 @@ ${sortedVideos
     <video:video>
       <video:thumbnail_loc>${escapeXml(thumbnailUrl)}</video:thumbnail_loc>
       <video:title>${escapeXml(video.data.title)}</video:title>
-      <video:description>${escapeXml(video.data.description)}</video:description>
+      <video:description>${escapeXml(
+				video.data.description,
+			)}</video:description>
       <video:content_loc>${escapeXml(contentUrl)}</video:content_loc>
       <video:player_loc>${escapeXml(contentUrl)}</video:player_loc>
       <video:duration>${duration}</video:duration>

@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import type { CollectionEntry } from "astro:content";
+import { computed } from "vue";
 
 interface Props {
 	authors: CollectionEntry<"people">[];

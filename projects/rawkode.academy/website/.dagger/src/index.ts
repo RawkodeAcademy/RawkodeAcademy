@@ -1,4 +1,4 @@
-import { argument, dag, type Directory, func, object } from "@dagger.io/dagger";
+import { type Directory, argument, dag, func, object } from "@dagger.io/dagger";
 
 @object()
 export class Website {
