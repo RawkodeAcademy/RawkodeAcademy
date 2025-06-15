@@ -1,7 +1,6 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { glob } from "glob";
-import { readFile } from "fs/promises";
-import { join } from "path";
+import { readFile } from "node:fs/promises";
 import matter from "gray-matter";
 
 interface ValidationError {

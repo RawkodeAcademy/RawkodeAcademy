@@ -24,7 +24,7 @@ export function calculateReadingTime(
 	const minutes = Math.ceil(words / wordsPerMinute);
 	
 	// Format text
-	const text = minutes === 1 ? '1 min read' : `${minutes} min read`;
+	const readingText = minutes === 1 ? '1 min read' : `${minutes} min read`;
 	
-	return { minutes, text };
+	return { minutes, text: readingText };
 }

@@ -16,7 +16,7 @@ export async function renderAndSanitizeArticle(
 ): Promise<RenderResult> {
 	try {
 		// Try to render the article content
-		const { Content } = await render(article);
+		await render(article);
 
 		// Convert the rendered content to HTML string
 		// Note: This is a simplified approach. In production, you might need
