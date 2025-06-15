@@ -31,12 +31,14 @@ defineProps<Props>();
           class="w-full h-52 object-cover"
           :src="cover.image"
           :alt="cover.alt"
+          loading="lazy"
         />
         <img
           v-else
           class="w-full h-52 object-cover"
           src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/blog/office-laptops.png"
           alt="office laptop working"
+          loading="lazy"
         />
         <div class="absolute top-3 left-3 z-20">
           <span
@@ -69,6 +71,7 @@ defineProps<Props>();
                     class="w-10 h-10 rounded-full object-cover border-2 border-purple-500 p-0.5 bg-white"
                     :src="`https://github.com/${author.handle}.png`"
                     :alt="`Profile picture of ${author.name}`"
+                    loading="lazy"
                   />
                   <span 
                     v-if="index === 0" 
