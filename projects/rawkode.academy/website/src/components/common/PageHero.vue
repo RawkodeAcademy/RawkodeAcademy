@@ -90,7 +90,6 @@ interface Props {
 	subtitle?: string;
 	badge?: string;
 	stats?: Stat[];
-	children?: unknown;
 }
 
 defineProps<Props>();
