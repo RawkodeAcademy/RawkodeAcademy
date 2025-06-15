@@ -12,40 +12,21 @@ const meta = {
   argTypes: {
     component: {
       table: { disable: true }
-    },
-    gap: {
-      control: 'select',
-      options: [1, 2, 3, 4, 5, 6, 8, 10, 12],
-      description: 'Gap between grid items',
-    },
-    align: {
-      control: 'select',
-      options: ['start', 'center', 'end', 'stretch'],
-      description: 'Vertical alignment of grid items',
-    },
-    justify: {
-      control: 'select',
-      options: ['start', 'center', 'end', 'between', 'around', 'evenly'],
-      description: 'Horizontal justification of grid',
-    },
+    }
   }
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const Card = ({ title, content }: { title: string; content: string }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{title}</h3>
-    <p className="text-gray-600 dark:text-gray-300">{content}</p>
-  </div>
-);
 
 export const Default: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
+  args: {
+    component: GridLayout,
+  },
+  render: () => (
+    <VueInReact
+      component={{
         template: `
           <GridLayout :cols="{ default: 1, md: 2, lg: 3 }" :gap="6">
             <div class="bg-primary/10 p-6 rounded-lg">Item 1</div>
@@ -57,16 +38,18 @@ export const Default: Story = {
           </GridLayout>
         `,
         components: { GridLayout },
-      }
-    }
-  })
+      }}
+    />
+  )
 };
 
 export const ResponsiveColumns: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
+  args: {
+    component: GridLayout,
+  },
+  render: () => (
+    <VueInReact
+      component={{
         template: `
           <div class="space-y-8">
             <div>
@@ -89,16 +72,18 @@ export const ResponsiveColumns: Story = {
           </div>
         `,
         components: { GridLayout },
-      }
-    }
-  })
+      }}
+    />
+  )
 };
 
 export const DifferentGaps: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
+  args: {
+    component: GridLayout,
+  },
+  render: () => (
+    <VueInReact
+      component={{
         template: `
           <div class="space-y-8">
             <div>
@@ -124,16 +109,18 @@ export const DifferentGaps: Story = {
           </div>
         `,
         components: { GridLayout },
-      }
-    }
-  })
+      }}
+    />
+  )
 };
 
 export const CardGrid: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
+  args: {
+    component: GridLayout,
+  },
+  render: () => (
+    <VueInReact
+      component={{
         template: `
           <GridLayout :cols="{ default: 1, md: 2, lg: 3 }" :gap="6">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
@@ -163,16 +150,18 @@ export const CardGrid: Story = {
           </GridLayout>
         `,
         components: { GridLayout },
-      }
-    }
-  })
+      }}
+    />
+  )
 };
 
 export const AlignmentOptions: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
+  args: {
+    component: GridLayout,
+  },
+  render: () => (
+    <VueInReact
+      component={{
         template: `
           <div class="space-y-8">
             <div>
@@ -204,7 +193,7 @@ export const AlignmentOptions: Story = {
           </div>
         `,
         components: { GridLayout },
-      }
-    }
-  })
+      }}
+    />
+  )
 };

@@ -1,29 +1,29 @@
-import { useEffect, useRef } from 'react';
-import { createApp, h } from 'vue';
+import { useEffect, useRef } from "react";
+import { createApp, h } from "vue";
 
 interface VueInReactProps {
-  component: any;
-  props?: Record<string, any>;
+	component: any;
+	props?: Record<string, any>;
 }
 
 export const VueInReact = ({ component, props = {} }: VueInReactProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+	useEffect(() => {
+		if (!containerRef.current) return;
 
-    const app = createApp({
-      render() {
-        return h(component, props);
-      },
-    });
+		const app = createApp({
+			render() {
+				return h(component, props);
+			},
+		});
 
-    app.mount(containerRef.current);
+		app.mount(containerRef.current);
 
-    return () => {
-      app.unmount();
-    };
-  }, [component, JSON.stringify(props)]);
+		return () => {
+			app.unmount();
+		};
+	}, [component, JSON.stringify(props)]);
 
-  return <div ref={containerRef} />;
+	return <div ref={containerRef} />;
 };

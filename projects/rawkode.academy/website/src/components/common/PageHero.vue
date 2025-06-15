@@ -76,19 +76,19 @@
 </template>
 
 <script setup lang="ts">
-import Heading from './Heading.vue';
-import Badge from './Badge.vue';
+import Badge from "./Badge.vue";
+import Heading from "./Heading.vue";
 
 interface Stat {
-  icon?: any;
-  label: string;
+	icon?: any;
+	label: string;
 }
 
 interface Props {
-  title: string;
-  subtitle?: string;
-  badge?: string;
-  stats?: Stat[];
+	title: string;
+	subtitle?: string;
+	badge?: string;
+	stats?: Stat[];
 }
 
 defineProps<Props>();

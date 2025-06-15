@@ -1,19 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { VueInReact } from '../vue-wrapper';
-import Sidebar from './index.vue';
+import type { Meta, StoryObj } from "@storybook/react";
+import { VueInReact } from "../vue-wrapper";
+import Sidebar from "./index.vue";
 
 const meta = {
-  title: 'Components/Sidebar/Index',
-  component: VueInReact,
-  parameters: {
-    layout: 'fullscreen',
-  },
-  tags: ['autodocs'],
-  argTypes: {
-    component: {
-      table: { disable: true }
-    }
-  }
+	title: "Components/Sidebar/Index",
+	component: VueInReact,
+	parameters: {
+		layout: "fullscreen",
+	},
+	tags: ["autodocs"],
+	argTypes: {
+		component: {
+			table: { disable: true },
+		},
+	},
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
@@ -22,8 +22,8 @@ type Story = StoryObj<typeof meta>;
 // Since the original stories used custom render functions with templates,
 // we'll create wrapper components for proper layout
 const SidebarWithContent = {
-  components: { Sidebar },
-  template: `
+	components: { Sidebar },
+	template: `
     <div class="relative h-screen">
       <Sidebar />
       <div class="ml-64 p-8 bg-gray-50 dark:bg-gray-900 h-full">
@@ -35,8 +35,8 @@ const SidebarWithContent = {
 };
 
 const SidebarWithContentDark = {
-  components: { Sidebar },
-  template: `
+	components: { Sidebar },
+	template: `
     <div class="relative h-screen dark">
       <Sidebar />
       <div class="ml-64 p-8 bg-gray-50 dark:bg-gray-900 h-full">
@@ -48,15 +48,15 @@ const SidebarWithContentDark = {
 };
 
 export const Default: Story = {
-  args: {
-    component: SidebarWithContent,
-    props: {}
-  }
+	args: {
+		component: SidebarWithContent,
+		props: {},
+	},
 };
 
 export const DarkMode: Story = {
-  args: {
-    component: SidebarWithContentDark,
-    props: {}
-  }
+	args: {
+		component: SidebarWithContentDark,
+		props: {},
+	},
 };

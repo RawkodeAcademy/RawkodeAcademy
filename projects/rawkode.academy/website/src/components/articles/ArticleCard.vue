@@ -1,19 +1,19 @@
 <script setup lang="ts">
 interface Author {
-  name: string;
-  handle: string;
+	name: string;
+	handle: string;
 }
 
 interface Props {
-  id: string;
-  title: string;
-  subtitle?: string;
-  cover?: {
-    image: string;
-    alt: string;
-  };
-  authors: Author[];
-  publishedAt: Date;
+	id: string;
+	title: string;
+	subtitle?: string;
+	cover?: {
+		image: string;
+		alt: string;
+	};
+	authors: Author[];
+	publishedAt: Date;
 }
 
 defineProps<Props>();

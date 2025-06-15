@@ -1,67 +1,67 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { VueInReact } from '../vue-wrapper';
-import Heading from './Heading.vue';
+import type { Meta, StoryObj } from "@storybook/react";
+import { VueInReact } from "../vue-wrapper";
+import Heading from "./Heading.vue";
 
 const meta = {
-  title: 'Components/Common/Heading',
-  component: VueInReact,
-  parameters: {
-    layout: 'padded',
-  },
-  tags: ['autodocs'],
-  argTypes: {
-    component: {
-      table: { disable: true }
-    },
-    as: {
-      control: 'select',
-      options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-      description: 'HTML tag to render',
-    },
-    size: {
-      control: 'select',
-      options: ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'],
-      description: 'Text size',
-    },
-    align: {
-      control: 'select',
-      options: ['left', 'center', 'right'],
-      description: 'Text alignment',
-    },
-    weight: {
-      control: 'select',
-      options: ['normal', 'medium', 'semibold', 'bold', 'extrabold'],
-      description: 'Font weight',
-    },
-  }
+	title: "Components/Common/Heading",
+	component: VueInReact,
+	parameters: {
+		layout: "padded",
+	},
+	tags: ["autodocs"],
+	argTypes: {
+		component: {
+			table: { disable: true },
+		},
+		as: {
+			control: "select",
+			options: ["h1", "h2", "h3", "h4", "h5", "h6"],
+			description: "HTML tag to render",
+		},
+		size: {
+			control: "select",
+			options: ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"],
+			description: "Text size",
+		},
+		align: {
+			control: "select",
+			options: ["left", "center", "right"],
+			description: "Text alignment",
+		},
+		weight: {
+			control: "select",
+			options: ["normal", "medium", "semibold", "bold", "extrabold"],
+			description: "Font weight",
+		},
+	},
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    component: Heading,
-    props: {}
-  },
-  render: (args) => ({
-    component: VueInReact,
-    props: {
-      component: args.component,
-      props: {
-        ...args.props,
-        default: 'Default Heading',
-      }
-    }
-  })
+	args: {
+		component: Heading,
+		props: {},
+	},
+	render: (args) => ({
+		component: VueInReact,
+		props: {
+			component: args.component,
+			props: {
+				...args.props,
+				default: "Default Heading",
+			},
+		},
+	}),
 };
 
 export const AllSizes: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <div class="space-y-4">
             <Heading size="xs">Extra Small Heading</Heading>
             <Heading size="sm">Small Heading</Heading>
@@ -73,18 +73,18 @@ export const AllSizes: Story = {
             <Heading size="4xl">4XL Heading</Heading>
           </div>
         `,
-        components: { Heading },
-      }
-    }
-  })
+				components: { Heading },
+			},
+		},
+	}),
 };
 
 export const AllTags: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <div class="space-y-4">
             <Heading as="h1">H1: Page Title</Heading>
             <Heading as="h2">H2: Section Title</Heading>
@@ -94,36 +94,36 @@ export const AllTags: Story = {
             <Heading as="h6">H6: Tiny Title</Heading>
           </div>
         `,
-        components: { Heading },
-      }
-    }
-  })
+				components: { Heading },
+			},
+		},
+	}),
 };
 
 export const Alignments: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <div class="space-y-4">
             <Heading align="left">Left Aligned Heading</Heading>
             <Heading align="center">Center Aligned Heading</Heading>
             <Heading align="right">Right Aligned Heading</Heading>
           </div>
         `,
-        components: { Heading },
-      }
-    }
-  })
+				components: { Heading },
+			},
+		},
+	}),
 };
 
 export const Weights: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <div class="space-y-4">
             <Heading weight="normal">Normal Weight Heading</Heading>
             <Heading weight="medium">Medium Weight Heading</Heading>
@@ -132,18 +132,18 @@ export const Weights: Story = {
             <Heading weight="extrabold">Extrabold Weight Heading</Heading>
           </div>
         `,
-        components: { Heading },
-      }
-    }
-  })
+				components: { Heading },
+			},
+		},
+	}),
 };
 
 export const PageExample: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <div class="space-y-8">
             <Heading as="h1" size="4xl" align="center">Welcome to Rawkode Academy</Heading>
             <Heading as="h2" size="xl" weight="medium" align="center">Learn Cloud Native Technologies</Heading>
@@ -153,8 +153,8 @@ export const PageExample: Story = {
             </div>
           </div>
         `,
-        components: { Heading },
-      }
-    }
-  })
+				components: { Heading },
+			},
+		},
+	}),
 };

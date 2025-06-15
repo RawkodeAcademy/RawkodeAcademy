@@ -1,79 +1,80 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { VueInReact } from '../vue-wrapper';
-import PageHero from './PageHero.vue';
-import Button from './Button.vue';
+import type { Meta, StoryObj } from "@storybook/react";
+import { VueInReact } from "../vue-wrapper";
+import Button from "./Button.vue";
+import PageHero from "./PageHero.vue";
 
 const meta = {
-  title: 'Components/Common/PageHero',
-  component: VueInReact,
-  parameters: {
-    layout: 'fullscreen',
-  },
-  tags: ['autodocs'],
-  argTypes: {
-    component: {
-      table: { disable: true }
-    },
-    title: {
-      control: 'text',
-      description: 'Hero title',
-    },
-    subtitle: {
-      control: 'text',
-      description: 'Hero subtitle',
-    },
-    badge: {
-      control: 'text',
-      description: 'Badge text',
-    },
-  }
+	title: "Components/Common/PageHero",
+	component: VueInReact,
+	parameters: {
+		layout: "fullscreen",
+	},
+	tags: ["autodocs"],
+	argTypes: {
+		component: {
+			table: { disable: true },
+		},
+		title: {
+			control: "text",
+			description: "Hero title",
+		},
+		subtitle: {
+			control: "text",
+			description: "Hero subtitle",
+		},
+		badge: {
+			control: "text",
+			description: "Badge text",
+		},
+	},
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    component: PageHero,
-    props: {
-      title: 'Welcome to Rawkode Academy',
-      subtitle: 'Learn cloud native technologies through hands-on courses and real-world examples',
-    }
-  },
+	args: {
+		component: PageHero,
+		props: {
+			title: "Welcome to Rawkode Academy",
+			subtitle:
+				"Learn cloud native technologies through hands-on courses and real-world examples",
+		},
+	},
 };
 
 export const WithBadge: Story = {
-  args: {
-    component: PageHero,
-    props: {
-      title: 'Cloud Native Courses',
-      subtitle: 'Master Kubernetes, GitOps, and modern infrastructure',
-      badge: 'Featured',
-    }
-  },
+	args: {
+		component: PageHero,
+		props: {
+			title: "Cloud Native Courses",
+			subtitle: "Master Kubernetes, GitOps, and modern infrastructure",
+			badge: "Featured",
+		},
+	},
 };
 
 export const WithStats: Story = {
-  args: {
-    component: PageHero,
-    props: {
-      title: 'Technical Articles',
-      subtitle: 'Deep dives into cloud native technologies',
-      stats: [
-        { label: '150+ Articles' },
-        { label: '50K+ Readers' },
-        { label: 'Updated Weekly' },
-      ]
-    }
-  },
+	args: {
+		component: PageHero,
+		props: {
+			title: "Technical Articles",
+			subtitle: "Deep dives into cloud native technologies",
+			stats: [
+				{ label: "150+ Articles" },
+				{ label: "50K+ Readers" },
+				{ label: "Updated Weekly" },
+			],
+		},
+	},
 };
 
 export const WithActions: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <PageHero
             title="Start Your Learning Journey"
             subtitle="Join thousands of developers learning cloud native technologies"
@@ -85,18 +86,18 @@ export const WithActions: Story = {
             </template>
           </PageHero>
         `,
-        components: { PageHero, Button },
-      }
-    }
-  })
+				components: { PageHero, Button },
+			},
+		},
+	}),
 };
 
 export const ArticlesPage: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <PageHero
             title="Articles & Tutorials"
             subtitle="In-depth technical content on cloud native technologies, DevOps practices, and platform engineering"
@@ -112,18 +113,18 @@ export const ArticlesPage: Story = {
             </template>
           </PageHero>
         `,
-        components: { PageHero, Button },
-      }
-    }
-  })
+				components: { PageHero, Button },
+			},
+		},
+	}),
 };
 
 export const CoursesPage: Story = {
-  render: () => ({
-    component: VueInReact,
-    props: {
-      component: {
-        template: `
+	render: () => ({
+		component: VueInReact,
+		props: {
+			component: {
+				template: `
           <PageHero
             title="Professional Cloud Native Courses"
             subtitle="Comprehensive, hands-on courses designed to take you from beginner to expert"
@@ -140,17 +141,17 @@ export const CoursesPage: Story = {
             </template>
           </PageHero>
         `,
-        components: { PageHero, Button },
-      }
-    }
-  })
+				components: { PageHero, Button },
+			},
+		},
+	}),
 };
 
 export const MinimalHero: Story = {
-  args: {
-    component: PageHero,
-    props: {
-      title: 'About Rawkode Academy',
-    }
-  },
+	args: {
+		component: PageHero,
+		props: {
+			title: "About Rawkode Academy",
+		},
+	},
 };
