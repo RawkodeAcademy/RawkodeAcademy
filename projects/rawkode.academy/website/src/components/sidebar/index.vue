@@ -10,9 +10,10 @@ import {
 	DocumentTextIcon,
 	InformationCircleIcon,
 	NewspaperIcon,
-	RocketLaunchIcon,
-	VideoCameraIcon,
-	WrenchScrewdriverIcon,
+        RocketLaunchIcon,
+        SparklesIcon,
+        VideoCameraIcon,
+        WrenchScrewdriverIcon,
 } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
 import MenuItems from "./items.vue";
@@ -60,12 +61,13 @@ const baseMenuItemsMain = [
 
 // Community items
 const baseMenuItemsCommunity = [
-	{ name: "Community Day", href: "/community-day", icon: CalendarIcon },
-	{
-		name: "Zulip Chat",
-		href: "https://chat.rawkode.academy",
-		icon: ChatBubbleLeftEllipsisIcon,
-		target: "_blank",
+        { name: "Community Day", href: "/community-day", icon: CalendarIcon },
+        { name: "Klustered", href: "/klustered", icon: SparklesIcon },
+        {
+                name: "Zulip Chat",
+                href: "https://chat.rawkode.academy",
+                icon: ChatBubbleLeftEllipsisIcon,
+                target: "_blank",
 	},
 ];
 
