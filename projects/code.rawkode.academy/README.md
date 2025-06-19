@@ -1,58 +1,148 @@
 # Forgejo Production Deployment
 
-This repository contains production-ready Podman Quadlet configurations for Forgejo with PostgreSQL.
+This repository contains production-ready Podman Quadlet configurations for Forgejo with PostgreSQL, automated setup via Justfile, and comprehensive backup solutions.
 
 ## Features
 
 - Forgejo Git service with PostgreSQL database
 - OIDC authentication via Zitadel
-- Automated backups to Cloudflare R2
-- Secret management using Quadlet secrets
+- ngrok integration for secure external access
+- Automated backups to Cloudflare R2 with retention policies
+- Secret management using Podman Quadlet secrets
 - SSH access disabled (HTTPS only)
+- Fully automated setup and management via Justfile
 
-## Setup Instructions
+## Prerequisites
 
-1. **Configure Secrets**
-   Edit `/home/rawkode/forgejo/forgejo-secrets.secret` and set:
-   - `POSTGRES_PASSWORD` and `FORGEJO_DATABASE_PASSWD` (use the same secure password)
-   - `FORGEJO_SECRET_KEY` (generate with `openssl rand -hex 32`)
-   - `FORGEJO_INTERNAL_TOKEN` (generate with `openssl rand -hex 32`)
-   - Cloudflare R2 credentials for backups
+- Ubuntu system (required)
+- `just` command runner installed
+- Root or sudo access
 
-2. **Copy Quadlet Files**
-   ```bash
-   sudo cp *.container *.kube *.volume *.secret /etc/containers/systemd/
-   sudo systemctl daemon-reload
-   ```
+## Quick Setup
 
-3. **Start Services**
-   ```bash
-   sudo systemctl start forgejo-pod.service
-   ```
+```bash
+# Install dependencies (if not already installed)
+just install-deps
 
-4. **Configure OIDC**
-   After initial setup, add the OIDC provider in Forgejo admin panel:
-   - Provider: OpenID Connect
-   - Client ID: 303319482200293448
-   - Discovery URL: https://zitadel.rawkode.academy/.well-known/openid-configuration
-   - Enable PKCE
+# Configure secrets interactively
+just configure-secrets
 
-5. **Enable Backups**
-   ```bash
-   sudo cp forgejo-backup.* /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now forgejo-backup.timer
-   ```
+# Install and start all services
+just deploy
+```
+
+## Detailed Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+just install-deps
+```
+
+This will install:
+- Podman (with Quadlet support)
+- rclone (for R2 backups)
+- OpenSSL (for token generation)
+- curl
+
+### 2. Configure Secrets
+
+```bash
+just configure-secrets
+```
+
+This interactive command will:
+- Generate secure passwords for PostgreSQL
+- Create Forgejo security tokens
+- Configure Cloudflare R2 credentials for backups
+- Set up the public URL for Forgejo
+- Create `forgejo-secrets` file containing all necessary secrets
+
+### 3. Deploy Services
+
+```bash
+just deploy
+```
+
+This will:
+- Install all Quadlet files to `/etc/containers/systemd/`
+- Set up the backup service and timer
+- Start all services (PostgreSQL, Forgejo, ngrok)
+
+## Service Management
+
+```bash
+# Start all services
+just start
+
+# Stop all services
+just stop
+
+# Check service status
+just status
+
+# View logs
+just logs
+
+# Clean up (stop services and remove data)
+just cleanup
+```
+
+## Backup Management
+
+Backups are automatically scheduled daily at 2 AM.
+
+```bash
+# Run manual backup
+just backup
+
+# Restore from backup
+just restore <backup-file>
+
+# List available backups
+just list-backups
+```
+
+## OIDC Configuration
+
+After deployment, configure OIDC in the Forgejo admin panel:
+- Provider: OpenID Connect
+- Client ID: 303319482200293448
+- Discovery URL: https://zitadel.rawkode.academy/.well-known/openid-configuration
+- Enable PKCE
 
 ## Access
 
-- URL: Configured during installation
+- URL: Configured during `just configure-secrets`
+- External access: Via ngrok (requires auth token in secrets)
 - Authentication: Via Zitadel OIDC
 
-## Backup Restoration
+## Security Notes
 
-To restore from R2 backup:
+- All sensitive credentials are stored in Podman secrets
+- Database passwords are never exposed in environment variables
+- Backup service runs as root to access container data
+- Secrets files have restricted permissions (600)
+
+## Troubleshooting
+
 ```bash
-rclone copy r2:YOUR_BUCKET/forgejo-backups/forgejo-backup-TIMESTAMP.zip /tmp/
-podman exec forgejo forgejo restore -c /etc/forgejo/app.ini -f /tmp/forgejo-backup-TIMESTAMP.zip
+# Check Quadlet generation
+just check-quadlets
+
+# Debug service issues
+sudo journalctl -u forgejo.service
+sudo journalctl -u postgres.service
+sudo journalctl -u ngrok.service
+
+# Verify secrets
+sudo podman secret ls
 ```
+
+## Architecture
+
+- **PostgreSQL**: Stores Forgejo data
+- **Forgejo**: Git service
+- **ngrok**: Provides secure external access
+- **Backup Service**: Daily automated backups to Cloudflare R2
+- **Podman Quadlets**: Systemd integration for container management

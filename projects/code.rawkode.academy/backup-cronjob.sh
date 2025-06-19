@@ -4,8 +4,15 @@
 
 set -euo pipefail
 
-# Load environment variables from secrets
-source /run/secrets/forgejo-secrets
+# Environment variables are loaded via EnvironmentFile in the systemd service
+# Verify required variables are present
+required_vars=("R2_ACCESS_KEY_ID" "R2_SECRET_ACCESS_KEY" "R2_ENDPOINT" "R2_BUCKET_NAME")
+for var in "${required_vars[@]}"; do
+    if [[ -z "${!var}" ]]; then
+        echo "Error: Required environment variable $var is not set" >&2
+        exit 1
+    fi
+done
 
 # Configuration
 BACKUP_DIR="/tmp/forgejo-backup"

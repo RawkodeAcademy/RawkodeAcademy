@@ -62,8 +62,8 @@ generate-token:
 # Prompt for secrets and create secret file
 configure-secrets:
     #!/usr/bin/env bash
-    if [ -f "forgejo-secrets.secret" ]; then
-        echo "✓ Secrets file 'forgejo-secrets.secret' already exists. Skipping configuration."
+    if [ -f "forgejo-secrets" ]; then
+        echo "✓ Secrets file 'forgejo-secrets' already exists. Skipping configuration."
         exit 0
     fi
     echo "=== Forgejo Secret Configuration ==="
@@ -109,29 +109,29 @@ configure-secrets:
     echo "=== Forgejo URL Configuration ==="
     read -p "Enter the public URL for Forgejo (e.g., code.rawkode.academy): " forgejo_url
 
-    # Create secrets file using echo commands instead of heredoc to avoid Justfile syntax issues
-    echo "# Forgejo Secrets - Generated on $(date)" > forgejo-secrets.secret
-    echo "" >> forgejo-secrets.secret
-    echo "# Database credentials" >> forgejo-secrets.secret
-    echo "POSTGRES_PASSWORD=$db_pass" >> forgejo-secrets.secret
-    echo "FORGEJO_DATABASE_PASSWD=$db_pass" >> forgejo-secrets.secret
-    echo "" >> forgejo-secrets.secret
-    echo "# Forgejo security keys" >> forgejo-secrets.secret
-    echo "FORGEJO_SECRET_KEY=$secret_key" >> forgejo-secrets.secret
-    echo "FORGEJO_INTERNAL_TOKEN=$internal_token" >> forgejo-secrets.secret
-    echo "" >> forgejo-secrets.secret
-    echo "# Cloudflare R2 credentials for backups" >> forgejo-secrets.secret
-    echo "R2_ACCESS_KEY_ID=$r2_access_key" >> forgejo-secrets.secret
-    echo "R2_SECRET_ACCESS_KEY=$r2_secret_key" >> forgejo-secrets.secret
-    echo "R2_ENDPOINT=$r2_endpoint" >> forgejo-secrets.secret
-    echo "R2_BUCKET_NAME=$r2_bucket" >> forgejo-secrets.secret
-    echo "" >> forgejo-secrets.secret
-    echo "# Forgejo URL" >> forgejo-secrets.secret
-    echo "FORGEJO_URL=https://$forgejo_url" >> forgejo-secrets.secret
+    # Create forgejo secrets file (content file, no .secret extension)
+    echo "# Forgejo Secrets - Generated on $(date)" > forgejo-secrets
+    echo "" >> forgejo-secrets
+    echo "# Database credentials" >> forgejo-secrets
+    echo "POSTGRES_PASSWORD=$db_pass" >> forgejo-secrets
+    echo "FORGEJO__database__PASSWD=$db_pass" >> forgejo-secrets
+    echo "" >> forgejo-secrets
+    echo "# Forgejo security keys" >> forgejo-secrets
+    echo "FORGEJO__security__SECRET_KEY=$secret_key" >> forgejo-secrets
+    echo "FORGEJO__security__INTERNAL_TOKEN=$internal_token" >> forgejo-secrets
+    echo "" >> forgejo-secrets
+    echo "# Cloudflare R2 credentials for backups" >> forgejo-secrets
+    echo "R2_ACCESS_KEY_ID=$r2_access_key" >> forgejo-secrets
+    echo "R2_SECRET_ACCESS_KEY=$r2_secret_key" >> forgejo-secrets
+    echo "R2_ENDPOINT=$r2_endpoint" >> forgejo-secrets
+    echo "R2_BUCKET_NAME=$r2_bucket" >> forgejo-secrets
+    echo "" >> forgejo-secrets
+    echo "# Forgejo URL" >> forgejo-secrets
+    echo "FORGEJO_URL=https://$forgejo_url" >> forgejo-secrets
 
-    chmod 600 forgejo-secrets.secret
+    chmod 600 forgejo-secrets
     echo
-    echo "✓ Secrets file created successfully"
+    echo "✓ Secrets files created successfully"
 
 # Install quadlet files to system
 install-quadlets:
@@ -141,11 +141,21 @@ install-quadlets:
     # Create directory if it doesn't exist
     sudo mkdir -p /etc/containers/systemd/
 
-    # Copy all quadlet files
+    # Copy all quadlet definition files
     sudo cp *.container *.volume *.secret *.network /etc/containers/systemd/
 
+    # Copy secret value files (assuming they are now named e.g. 'forgejo-secrets', 'ngrok-secrets' without .secret extension)
+    # Ensure these files exist before attempting to copy, or handle errors.
+    if [ -f "forgejo-secrets" ]; then sudo cp forgejo-secrets /etc/containers/systemd/; fi
+    if [ -f "ngrok-secrets" ]; then sudo cp ngrok-secrets /etc/containers/systemd/; fi
+
     # Set proper permissions
-    sudo chmod 600 /etc/containers/systemd/*.secret
+    # Secret value files (no extension)
+    if [ -f "/etc/containers/systemd/forgejo-secrets" ]; then sudo chmod 600 /etc/containers/systemd/forgejo-secrets; fi
+    if [ -f "/etc/containers/systemd/ngrok-secrets" ]; then sudo chmod 600 /etc/containers/systemd/ngrok-secrets; fi
+    
+    # Quadlet definition files
+    sudo chmod 644 /etc/containers/systemd/*.secret
     sudo chmod 644 /etc/containers/systemd/*.container
     sudo chmod 644 /etc/containers/systemd/*.volume
     sudo chmod 644 /etc/containers/systemd/*.network
@@ -203,7 +213,7 @@ configure-rclone:
     echo "Configuring rclone for R2..."
 
     # Load secrets
-    source forgejo-secrets.secret
+    source forgejo-secrets
 
     # Create rclone config for root user, as backup service runs as root
     RCLONE_CONFIG_DIR="/root/.config/rclone"
@@ -268,13 +278,54 @@ start:
     echo "✓ Services started"
     echo
     echo "Waiting for services to be ready..."
-    echo "This may take a minute for the database to initialize..."
-    sleep 30
-    echo "PostgreSQL status:"
-    sudo systemctl status postgres.service --no-pager
+    
+    # Wait for PostgreSQL to be ready
+    echo -n "Waiting for PostgreSQL..."
+    timeout=60
+    elapsed=0
+    while ! sudo systemctl is-active --quiet postgres.service; do
+        if [ $elapsed -ge $timeout ]; then
+            echo " ✗ Timeout waiting for PostgreSQL"
+            sudo systemctl status postgres.service --no-pager
+            exit 1
+        fi
+        echo -n "."
+        sleep 2
+        elapsed=$((elapsed + 2))
+    done
+    echo " ✓ Ready"
+    
+    # Wait for Forgejo to be ready by checking if it's active and can connect to database
+    echo -n "Waiting for Forgejo..."
+    timeout=120
+    elapsed=0
+    while ! sudo systemctl is-active --quiet forgejo.service; do
+        if [ $elapsed -ge $timeout ]; then
+            echo " ✗ Timeout waiting for Forgejo"
+            sudo systemctl status forgejo.service --no-pager
+            exit 1
+        fi
+        echo -n "."
+        sleep 2
+        elapsed=$((elapsed + 2))
+    done
+    
+    # Additional check: wait for Forgejo to be fully initialized by checking logs
+    echo -n " (initializing)"
+    while ! sudo journalctl -u forgejo.service --since "5 minutes ago" | grep -q "Starting new Web server"; do
+        if [ $elapsed -ge $timeout ]; then
+            echo " ✗ Timeout waiting for Forgejo initialization"
+            sudo journalctl -u forgejo.service --lines=50 --no-pager
+            exit 1
+        fi
+        echo -n "."
+        sleep 2
+        elapsed=$((elapsed + 2))
+    done
+    echo " ✓ Ready"
+    
     echo
-    echo "Forgejo status:"
-    sudo systemctl status forgejo.service --no-pager
+    echo "All services are ready!"
 
 # Stop Forgejo services
 stop:
@@ -371,7 +422,7 @@ test-backup:
 # Configure ngrok with auth token
 configure-ngrok:
     #!/usr/bin/env bash
-    if [ -f "ngrok-secrets.secret" ]; then
+    if [ -f "ngrok-secrets" ]; then
         echo "✓ Ngrok secrets file already exists. Skipping configuration."
         exit 0
     fi
@@ -386,13 +437,9 @@ configure-ngrok:
         exit 1
     fi
 
-    # Create ngrok secrets file
-    echo "[Secret]" > ngrok-secrets.secret
-    echo "SecretName=ngrok-secrets" >> ngrok-secrets.secret
-    echo "" >> ngrok-secrets.secret
-    echo "NGROK_AUTHTOKEN=$ngrok_token" >> ngrok-secrets.secret
-    
-    chmod 600 ngrok-secrets.secret
+    # Create ngrok secrets content file (no .secret extension)
+    echo "NGROK_AUTHTOKEN=$ngrok_token" > ngrok-secrets
+    chmod 600 ngrok-secrets
 
     echo "✓ Ngrok configured successfully"
 
@@ -400,7 +447,7 @@ configure-ngrok:
 install: dependencies install-deps configure-secrets configure-ngrok install-quadlets configure-rclone install-backup enable
     #!/usr/bin/env bash
     # Load secrets to display the URL
-    source forgejo-secrets.secret
+    source forgejo-secrets
 
     echo
     echo "=== Installation Complete ==="
@@ -440,15 +487,64 @@ uninstall:
     sudo systemctl disable forgejo-backup.timer || true
 
     echo "Removing systemd files..."
-    sudo rm -f /etc/containers/systemd/forgejo*.{container,kube,volume,secret}
+    # Remove all Quadlet files
+    sudo rm -f /etc/containers/systemd/forgejo*.{container,volume,secret,network}
     sudo rm -f /etc/containers/systemd/postgres.container
     sudo rm -f /etc/containers/systemd/ngrok*.{container,volume,secret}
+    sudo rm -f /etc/containers/systemd/forgejo-postgres-data.volume
+    
+    # Remove secret content files (no extension)
+    sudo rm -f /etc/containers/systemd/forgejo-secrets
+    sudo rm -f /etc/containers/systemd/ngrok-secrets
+    
+    # Remove backup service files
     sudo rm -f /etc/systemd/system/forgejo-backup.{service,timer}
     sudo rm -rf {{backup_path}}
 
     sudo systemctl daemon-reload
 
     echo "✓ Forgejo uninstalled (data volumes preserved)"
+    echo
+    echo "Note: Local secret files (forgejo-secrets, ngrok-secrets) were not removed."
+    echo "Remove them manually if you want to reconfigure from scratch."
+
+# Purge everything including data volumes (DANGEROUS!)
+purge:
+    #!/usr/bin/env bash
+    echo "WARNING: This will remove ALL Forgejo data including:"
+    echo "  - All repositories"
+    echo "  - All user accounts"
+    echo "  - All configuration"
+    echo "  - Database data"
+    echo ""
+    read -p "Are you ABSOLUTELY SURE you want to purge everything? Type 'PURGE' to confirm: " confirm
+    if [ "$confirm" != "PURGE" ]; then
+        echo "Purge cancelled"
+        exit 1
+    fi
+    
+    # First run regular uninstall
+    just uninstall
+    
+    echo ""
+    echo "Removing data volumes..."
+    
+    # Remove Podman volumes
+    sudo podman volume rm forgejo-data || true
+    sudo podman volume rm forgejo-config || true
+    sudo podman volume rm forgejo-postgres-data || true
+    sudo podman volume rm ngrok-config || true
+    
+    # Remove any remaining container data
+    sudo podman system prune -a -f --volumes || true
+    
+    echo ""
+    echo "Removing local secret files..."
+    rm -f forgejo-secrets ngrok-secrets
+    
+    echo ""
+    echo "✓ Complete purge finished. All Forgejo data has been removed."
+    echo "You can now run 'just install' to start fresh."
 
 # Backup data volumes
 backup-volumes:
