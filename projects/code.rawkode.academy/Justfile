@@ -257,7 +257,17 @@ start:
         exit 1
     fi
 
-    # Start PostgreSQL first
+    # Start the network first
+    echo "Starting network..."
+    if ! sudo systemctl start forgejo-network.service; then
+        echo "✗ Failed to start forgejo-network service."
+        echo "Please check the output of 'sudo systemctl status forgejo-network.service'."
+        echo "Try running 'sudo podman network ls' to see existing networks."
+        exit 1
+    fi
+    
+    # Start PostgreSQL
+    echo "Starting PostgreSQL..."
     if ! sudo systemctl start postgres.service; then
         echo "✗ Failed to start PostgreSQL service."
         echo "Please check the output of 'sudo systemctl status postgres.service'."
@@ -351,6 +361,12 @@ stop:
         echo "✗ Failed to stop PostgreSQL service."
     else
         echo "✓ PostgreSQL service stopped"
+    fi
+    
+    if ! sudo systemctl stop forgejo-network.service; then
+        echo "✗ Failed to stop network service."
+    else
+        echo "✓ Network service stopped"
     fi
 
     echo "✓ All services stopped"
@@ -486,9 +502,11 @@ uninstall:
     sudo systemctl stop ngrok.service || true
     sudo systemctl stop forgejo.service || true
     sudo systemctl stop postgres.service || true
+    sudo systemctl stop forgejo-network.service || true
     sudo systemctl disable ngrok.service || true
     sudo systemctl disable forgejo.service || true
     sudo systemctl disable postgres.service || true
+    sudo systemctl disable forgejo-network.service || true
     sudo systemctl disable forgejo-backup.timer || true
 
     echo "Removing systemd files..."
