@@ -1,0 +1,493 @@
+#!/usr/bin/env just --justfile
+
+# Variables
+backup_path := "/opt/forgejo-backup"
+
+# Default recipe - show available commands
+default:
+    @just --list
+
+# Check if running on Ubuntu
+check-ubuntu:
+    #!/usr/bin/env bash
+    if ! grep -q "Ubuntu" /etc/os-release; then
+        echo "Error: This script is designed for Ubuntu systems only"
+        exit 1
+    fi
+    echo "✓ Ubuntu system detected"
+
+# Check dependencies
+dependencies: check-ubuntu
+    #!/usr/bin/env bash
+    echo "Checking dependencies..."
+    for dep in podman rclone openssl curl; do
+        if ! command -v $dep &> /dev/null; then
+            echo "✗ Dependency missing: $dep. Please run 'just install-deps'."
+            exit 1
+        fi
+    done
+
+    # Check for the quadlet generator, which is critical
+    if [ ! -f "/usr/lib/systemd/system-generators/podman-system-generator" ]; then
+        echo "✗ Critical dependency missing: /usr/lib/systemd/system-generators/podman-system-generator."
+        echo "This is part of Podman's systemd integration. Please run 'just install-deps'."
+        exit 1
+    fi
+    echo "✓ All dependencies installed."
+
+# Install dependencies
+install-deps: check-ubuntu
+    #!/usr/bin/env bash
+    echo "Installing dependencies..."
+    sudo apt-get clean
+    sudo apt-get update
+    if ! sudo apt-get install -y podman rclone openssl curl; then
+        echo "✗ Failed to install dependencies. Please check the apt output for errors."
+        exit 1
+    fi
+
+    # Verify that the quadlet generator was installed, as it's critical
+    if [ ! -f "/usr/lib/systemd/system-generators/podman-system-generator" ]; then
+        echo "✗ ERROR: '/usr/lib/systemd/system-generators/podman-system-generator' was not found after installing Podman."
+        echo "Your 'podman' package seems to be incomplete or broken."
+        echo "Please try to reinstall it, or check your distribution's repositories for a 'podman-plugins' package."
+        exit 1
+    fi
+    echo "✓ Dependencies installed"
+
+# Generate secure tokens
+generate-token:
+    @openssl rand -hex 32
+
+# Prompt for secrets and create secret file
+configure-secrets:
+    #!/usr/bin/env bash
+    if [ -f "forgejo-secrets.secret" ]; then
+        echo "✓ Secrets file 'forgejo-secrets.secret' already exists. Skipping configuration."
+        exit 0
+    fi
+    echo "=== Forgejo Secret Configuration ==="
+    echo
+
+    # Database password
+    read -sp "Enter PostgreSQL password (press Enter to auto-generate): " db_pass
+    echo
+    if [ -z "$db_pass" ]; then
+        db_pass=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+        echo "Generated PostgreSQL password: $db_pass"
+    fi
+
+    # Forgejo secret key
+    echo
+    read -sp "Enter Forgejo SECRET_KEY (press Enter to auto-generate): " secret_key
+    echo
+    if [ -z "$secret_key" ]; then
+        secret_key=$(openssl rand -hex 32)
+        echo "Generated SECRET_KEY"
+    fi
+
+    # Forgejo internal token
+    echo
+    read -sp "Enter Forgejo INTERNAL_TOKEN (press Enter to auto-generate): " internal_token
+    echo
+    if [ -z "$internal_token" ]; then
+        internal_token=$(openssl rand -hex 32)
+        echo "Generated INTERNAL_TOKEN"
+    fi
+
+    # R2 credentials
+    echo
+    echo "=== Cloudflare R2 Configuration ==="
+    read -p "Enter R2 Access Key ID: " r2_access_key
+    read -sp "Enter R2 Secret Access Key: " r2_secret_key
+    echo
+    read -p "Enter R2 Endpoint (e.g., https://ACCOUNT_ID.r2.cloudflarestorage.com): " r2_endpoint
+    read -p "Enter R2 Bucket Name: " r2_bucket
+
+    # Forgejo URL
+    echo
+    echo "=== Forgejo URL Configuration ==="
+    read -p "Enter the public URL for Forgejo (e.g., code.rawkode.academy): " forgejo_url
+
+    # Create secrets file using echo commands instead of heredoc to avoid Justfile syntax issues
+    echo "# Forgejo Secrets - Generated on $(date)" > forgejo-secrets.secret
+    echo "" >> forgejo-secrets.secret
+    echo "# Database credentials" >> forgejo-secrets.secret
+    echo "POSTGRES_PASSWORD=$db_pass" >> forgejo-secrets.secret
+    echo "FORGEJO_DATABASE_PASSWD=$db_pass" >> forgejo-secrets.secret
+    echo "" >> forgejo-secrets.secret
+    echo "# Forgejo security keys" >> forgejo-secrets.secret
+    echo "FORGEJO_SECRET_KEY=$secret_key" >> forgejo-secrets.secret
+    echo "FORGEJO_INTERNAL_TOKEN=$internal_token" >> forgejo-secrets.secret
+    echo "" >> forgejo-secrets.secret
+    echo "# Cloudflare R2 credentials for backups" >> forgejo-secrets.secret
+    echo "R2_ACCESS_KEY_ID=$r2_access_key" >> forgejo-secrets.secret
+    echo "R2_SECRET_ACCESS_KEY=$r2_secret_key" >> forgejo-secrets.secret
+    echo "R2_ENDPOINT=$r2_endpoint" >> forgejo-secrets.secret
+    echo "R2_BUCKET_NAME=$r2_bucket" >> forgejo-secrets.secret
+    echo "" >> forgejo-secrets.secret
+    echo "# Forgejo URL" >> forgejo-secrets.secret
+    echo "FORGEJO_URL=https://$forgejo_url" >> forgejo-secrets.secret
+
+    chmod 600 forgejo-secrets.secret
+    echo
+    echo "✓ Secrets file created successfully"
+
+# Install quadlet files to system
+install-quadlets:
+    #!/usr/bin/env bash
+    echo "Installing Quadlet files..."
+
+    # Create directory if it doesn't exist
+    sudo mkdir -p /etc/containers/systemd/
+
+    # Copy all quadlet files
+    sudo cp *.container *.volume *.secret *.network /etc/containers/systemd/
+
+    # Set proper permissions
+    sudo chmod 600 /etc/containers/systemd/*.secret
+    sudo chmod 644 /etc/containers/systemd/*.container
+    sudo chmod 644 /etc/containers/systemd/*.volume
+    sudo chmod 644 /etc/containers/systemd/*.network
+
+    # Reload systemd to trigger quadlet generator
+    echo "Reloading systemd daemon..."
+    sudo systemctl daemon-reload
+
+    # Debugging: List the files to ensure they were copied correctly
+    echo "Debugging: Contents of /etc/containers/systemd/"
+    sudo ls -la /etc/containers/systemd/
+
+    # Verify that the main service file was generated
+    echo "Verifying service generation..."
+    for service in postgres.service forgejo.service ngrok.service; do
+        if ! sudo systemctl list-unit-files | grep -q $service; then
+            echo "✗ ERROR: podman-system-generator failed to create '$service'."
+            echo "This is almost always caused by a syntax error in one of the .container, .kube, .volume, or .secret files."
+        echo
+        echo "To get the real error message, run the generator manually with this command:"
+        echo "  mkdir -p /tmp/quadlet-debug"
+        echo "  sudo /usr/lib/systemd/system-generators/podman-system-generator /tmp/quadlet-debug"
+        echo
+        echo "Inspect the command's output for the exact file and line causing the error."
+        exit 1
+        fi
+    done
+
+    echo "✓ Quadlet files installed and service generated successfully."
+
+# Install backup service
+install-backup:
+    #!/usr/bin/env bash
+    echo "Installing backup service..."
+
+    # Create backup directory
+    sudo mkdir -p {{backup_path}}
+
+    # Copy backup script
+    sudo cp backup-cronjob.sh {{backup_path}}/
+    sudo chmod +x {{backup_path}}/backup-cronjob.sh
+
+    # Update script path in service file
+    sed -i 's|/home/rawkode/forgejo/backup-cronjob.sh|{{backup_path}}/backup-cronjob.sh|' forgejo-backup.service
+
+    # Install systemd files
+    sudo cp forgejo-backup.service forgejo-backup.timer /etc/systemd/system/
+    sudo systemctl daemon-reload
+
+    echo "✓ Backup service installed"
+
+# Configure rclone for R2
+configure-rclone:
+    #!/usr/bin/env bash
+    echo "Configuring rclone for R2..."
+
+    # Load secrets
+    source forgejo-secrets.secret
+
+    # Create rclone config for root user, as backup service runs as root
+    RCLONE_CONFIG_DIR="/root/.config/rclone"
+    RCLONE_CONFIG_FILE="$RCLONE_CONFIG_DIR/rclone.conf"
+
+    sudo mkdir -p "$RCLONE_CONFIG_DIR"
+
+    CONFIG_CONTENT="[r2]\ntype = s3\nprovider = Cloudflare\naccess_key_id = $R2_ACCESS_KEY_ID\nsecret_access_key = $R2_SECRET_ACCESS_KEY\nendpoint = $R2_ENDPOINT\nacl = private\nno_check_bucket = true"
+
+    echo -e "$CONFIG_CONTENT" | sudo tee "$RCLONE_CONFIG_FILE" > /dev/null
+
+    sudo chmod 600 "$RCLONE_CONFIG_FILE"
+    echo "✓ rclone configured for root user"
+
+# Start Forgejo services
+start:
+    #!/usr/bin/env bash
+    echo "Starting Forgejo services..."
+
+    # Check if the service units exist
+    if ! sudo systemctl list-unit-files | grep -q postgres.service; then
+        echo "✗ postgres.service not found."
+        echo "Have you run 'just install' yet?"
+        echo "If you have, check for errors with 'sudo journalctl -u podman-system-generator'."
+        exit 1
+    fi
+
+    if ! sudo systemctl list-unit-files | grep -q forgejo.service; then
+        echo "✗ forgejo.service not found."
+        echo "Have you run 'just install' yet?"
+        echo "If you have, check for errors with 'sudo journalctl -u podman-system-generator'."
+        exit 1
+    fi
+
+    if ! sudo systemctl list-unit-files | grep -q ngrok.service; then
+        echo "✗ ngrok.service not found."
+        echo "Have you run 'just install' yet?"
+        echo "If you have, check for errors with 'sudo journalctl -u podman-system-generator'."
+        exit 1
+    fi
+
+    # Start PostgreSQL first
+    if ! sudo systemctl start postgres.service; then
+        echo "✗ Failed to start PostgreSQL service."
+        echo "Please check the output of 'sudo systemctl status postgres.service'."
+        exit 1
+    fi
+
+    # Finally start Forgejo
+    if ! sudo systemctl start forgejo.service; then
+        echo "✗ Failed to start Forgejo service."
+        echo "Please check the output of 'sudo systemctl status forgejo.service'."
+        exit 1
+    fi
+
+    # Finally start Ngrok for external access
+    if ! sudo systemctl start ngrok.service; then
+        echo "✗ Failed to start Ngrok service."
+        echo "Please check the output of 'sudo systemctl status ngrok.service'."
+        exit 1
+    fi
+    echo "✓ Services started"
+    echo
+    echo "Waiting for services to be ready..."
+    echo "This may take a minute for the database to initialize..."
+    sleep 30
+    echo "PostgreSQL status:"
+    sudo systemctl status postgres.service --no-pager
+    echo
+    echo "Forgejo status:"
+    sudo systemctl status forgejo.service --no-pager
+
+# Stop Forgejo services
+stop:
+    #!/usr/bin/env bash
+    echo "Stopping Forgejo services..."
+
+    # Stop in reverse order: Ngrok, Forgejo, PostgreSQL
+    if ! sudo systemctl stop ngrok.service; then
+        echo "✗ Failed to stop Ngrok service."
+    else
+        echo "✓ Ngrok service stopped"
+    fi
+
+    if ! sudo systemctl stop forgejo.service; then
+        echo "✗ Failed to stop Forgejo service."
+    else
+        echo "✓ Forgejo service stopped"
+    fi
+
+    if ! sudo systemctl stop postgres.service; then
+        echo "✗ Failed to stop PostgreSQL service."
+    else
+        echo "✓ PostgreSQL service stopped"
+    fi
+
+    echo "✓ All services stopped"
+
+# Enable services to start on boot
+enable:
+    #!/usr/bin/env bash
+    echo "Enabling Forgejo services..."
+
+    # For quadlet-generated services, we need a different approach
+    # Create systemd drop-in directories
+    echo "Creating persistent unit files for generated services..."
+    sudo mkdir -p /etc/systemd/system/postgres.service.d
+    sudo mkdir -p /etc/systemd/system/forgejo.service.d
+    sudo mkdir -p /etc/systemd/system/ngrok.service.d
+
+    # Create drop-in files that ensure they start on boot
+    echo '[Install]' | sudo tee /etc/systemd/system/postgres.service.d/override.conf > /dev/null
+    echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/postgres.service.d/override.conf > /dev/null
+
+    echo '[Install]' | sudo tee /etc/systemd/system/forgejo.service.d/override.conf > /dev/null
+    echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/forgejo.service.d/override.conf > /dev/null
+
+    echo '[Install]' | sudo tee /etc/systemd/system/ngrok.service.d/override.conf > /dev/null
+    echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/ngrok.service.d/override.conf > /dev/null
+
+    # Reload systemd to pick up the changes
+    sudo systemctl daemon-reload
+
+    # We don't try to enable the services directly since they're transient/generated
+    # The override.conf files we created above will ensure they start on boot
+    echo "✓ Container services configured to start on boot via override files"
+
+    if ! sudo systemctl enable forgejo-backup.timer; then
+        echo "✗ Failed to enable forgejo-backup.timer."
+        exit 1
+    fi
+    echo "✓ Services enabled"
+
+# Show service status
+status:
+    #!/usr/bin/env bash
+    echo "=== PostgreSQL Status ==="
+    sudo systemctl status postgres.service --no-pager
+    echo
+    echo "=== Forgejo Status ==="
+    sudo systemctl status forgejo.service --no-pager
+    echo
+    echo "=== Ngrok Status ==="
+    sudo systemctl status ngrok.service --no-pager
+    echo
+    echo "=== Container Status ==="
+    sudo podman ps -a
+    echo
+    echo "=== Backup Timer Status ==="
+    sudo systemctl status forgejo-backup.timer --no-pager
+
+# View logs
+logs:
+    #!/usr/bin/env bash
+    echo "Viewing Forgejo logs. Press Ctrl+C to exit."
+    sudo journalctl -u forgejo.service -f
+
+# Test backup
+test-backup:
+    #!/usr/bin/env bash
+    echo "Testing backup configuration..."
+    sudo systemctl start forgejo-backup.service
+    sudo journalctl -u forgejo-backup.service -n 50 --no-pager
+
+# Configure ngrok with auth token
+configure-ngrok:
+    #!/usr/bin/env bash
+    if [ -f "ngrok-secrets.secret" ]; then
+        echo "✓ Ngrok secrets file already exists. Skipping configuration."
+        exit 0
+    fi
+    
+    echo "=== Ngrok Configuration ==="
+
+    # Prompt for ngrok auth token
+    read -p "Enter your ngrok auth token: " ngrok_token
+
+    if [ -z "$ngrok_token" ]; then
+        echo "Error: ngrok auth token is required for external access"
+        exit 1
+    fi
+
+    # Create ngrok secrets file
+    echo "[Secret]" > ngrok-secrets.secret
+    echo "SecretName=ngrok-secrets" >> ngrok-secrets.secret
+    echo "" >> ngrok-secrets.secret
+    echo "NGROK_AUTHTOKEN=$ngrok_token" >> ngrok-secrets.secret
+    
+    chmod 600 ngrok-secrets.secret
+
+    echo "✓ Ngrok configured successfully"
+
+# Full installation process
+install: dependencies install-deps configure-secrets configure-ngrok install-quadlets configure-rclone install-backup enable
+    #!/usr/bin/env bash
+    # Load secrets to display the URL
+    source forgejo-secrets.secret
+
+    echo
+    echo "=== Installation Complete ==="
+    echo
+    echo "Forgejo has been installed and configured!"
+    echo
+    echo "Next steps:"
+    echo "1. Run 'just start' to start the services"
+    echo "2. Visit $FORGEJO_URL to complete setup"
+    echo "3. Configure OIDC in the Forgejo admin panel"
+    echo "4. After starting the services, check the ngrok status for external URL:"
+    echo "   just status"
+    echo "   The ngrok public URL will be visible in the ngrok service logs"
+    echo
+    echo "Useful commands:"
+    echo "  just status  - Check service status"
+    echo "  just logs    - View service logs"
+    echo "  just stop    - Stop services"
+    echo "  just start   - Start services"
+
+# Uninstall everything
+uninstall:
+    #!/usr/bin/env bash
+    read -p "Are you sure you want to uninstall Forgejo? This will remove all configuration but preserve data volumes. (yes/no): " confirm
+    if [ "$confirm" != "yes" ]; then
+        echo "Uninstall cancelled"
+        exit 1
+    fi
+
+    echo "Stopping services..."
+    sudo systemctl stop ngrok.service || true
+    sudo systemctl stop forgejo.service || true
+    sudo systemctl stop postgres.service || true
+    sudo systemctl disable ngrok.service || true
+    sudo systemctl disable forgejo.service || true
+    sudo systemctl disable postgres.service || true
+    sudo systemctl disable forgejo-backup.timer || true
+
+    echo "Removing systemd files..."
+    sudo rm -f /etc/containers/systemd/forgejo*.{container,kube,volume,secret}
+    sudo rm -f /etc/containers/systemd/postgres.container
+    sudo rm -f /etc/containers/systemd/ngrok*.{container,volume,secret}
+    sudo rm -f /etc/systemd/system/forgejo-backup.{service,timer}
+    sudo rm -rf {{backup_path}}
+
+    sudo systemctl daemon-reload
+
+    echo "✓ Forgejo uninstalled (data volumes preserved)"
+
+# Backup data volumes
+backup-volumes:
+    #!/usr/bin/env bash
+    echo "Backing up Forgejo volumes..."
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    backup_dir="forgejo-volumes-backup-$timestamp"
+
+    mkdir -p "$backup_dir"
+
+    # Export volumes
+    sudo podman volume export forgejo-data > "$backup_dir/forgejo-data.tar"
+    sudo podman volume export forgejo-config > "$backup_dir/forgejo-config.tar"
+    sudo podman volume export forgejo-postgres-data > "$backup_dir/forgejo-postgres-data.tar"
+
+    tar czf "$backup_dir.tar.gz" "$backup_dir"
+    rm -rf "$backup_dir"
+
+    echo "✓ Volumes backed up to $backup_dir.tar.gz"
+
+# Restore data volumes
+restore-volumes backup_file:
+    #!/usr/bin/env bash
+    if [ ! -f "{{backup_file}}" ]; then
+        echo "Error: Backup file not found: {{backup_file}}"
+        exit 1
+    fi
+
+    echo "Restoring volumes from {{backup_file}}..."
+
+    # Extract backup
+    tar xzf "{{backup_file}}"
+    backup_dir=$(basename "{{backup_file}}" .tar.gz)
+
+    # Import volumes
+    sudo podman volume import forgejo-data < "$backup_dir/forgejo-data.tar"
+    sudo podman volume import forgejo-config < "$backup_dir/forgejo-config.tar"
+    sudo podman volume import forgejo-postgres-data < "$backup_dir/forgejo-postgres-data.tar"
+
+    rm -rf "$backup_dir"
+
+    echo "✓ Volumes restored successfully"
