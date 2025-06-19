@@ -142,20 +142,22 @@ install-quadlets:
     sudo mkdir -p /etc/containers/systemd/
 
     # Copy all quadlet definition files
-    sudo cp *.container *.volume *.secret *.network /etc/containers/systemd/
+    sudo cp *.container *.volume *.network /etc/containers/systemd/
 
-    # Copy secret value files (assuming they are now named e.g. 'forgejo-secrets', 'ngrok-secrets' without .secret extension)
-    # Ensure these files exist before attempting to copy, or handle errors.
-    if [ -f "forgejo-secrets" ]; then sudo cp forgejo-secrets /etc/containers/systemd/; fi
-    if [ -f "ngrok-secrets" ]; then sudo cp ngrok-secrets /etc/containers/systemd/; fi
-
-    # Set proper permissions
-    # Secret value files (no extension)
-    if [ -f "/etc/containers/systemd/forgejo-secrets" ]; then sudo chmod 600 /etc/containers/systemd/forgejo-secrets; fi
-    if [ -f "/etc/containers/systemd/ngrok-secrets" ]; then sudo chmod 600 /etc/containers/systemd/ngrok-secrets; fi
+    # Create Podman secrets from the secret files
+    if [ -f "forgejo-secrets" ]; then
+        echo "Creating forgejo-secrets in Podman..."
+        sudo podman secret rm forgejo-secrets 2>/dev/null || true
+        sudo podman secret create forgejo-secrets ./forgejo-secrets
+    fi
     
-    # Quadlet definition files
-    sudo chmod 644 /etc/containers/systemd/*.secret
+    if [ -f "ngrok-secrets" ]; then
+        echo "Creating ngrok-secrets in Podman..."
+        sudo podman secret rm ngrok-secrets 2>/dev/null || true
+        sudo podman secret create ngrok-secrets ./ngrok-secrets
+    fi
+    
+    # Set proper permissions for quadlet definition files
     sudo chmod 644 /etc/containers/systemd/*.container
     sudo chmod 644 /etc/containers/systemd/*.volume
     sudo chmod 644 /etc/containers/systemd/*.network
@@ -400,6 +402,9 @@ status:
     echo "=== Ngrok Status ==="
     sudo systemctl status ngrok.service --no-pager
     echo
+    echo "=== Podman Secrets ==="
+    sudo podman secret ls
+    echo
     echo "=== Container Status ==="
     sudo podman ps -a
     echo
@@ -488,14 +493,15 @@ uninstall:
 
     echo "Removing systemd files..."
     # Remove all Quadlet files
-    sudo rm -f /etc/containers/systemd/forgejo*.{container,volume,secret,network}
+    sudo rm -f /etc/containers/systemd/forgejo*.{container,volume,network}
     sudo rm -f /etc/containers/systemd/postgres.container
-    sudo rm -f /etc/containers/systemd/ngrok*.{container,volume,secret}
+    sudo rm -f /etc/containers/systemd/ngrok*.{container,volume}
     sudo rm -f /etc/containers/systemd/forgejo-postgres-data.volume
     
-    # Remove secret content files (no extension)
-    sudo rm -f /etc/containers/systemd/forgejo-secrets
-    sudo rm -f /etc/containers/systemd/ngrok-secrets
+    # Remove Podman secrets
+    echo "Removing Podman secrets..."
+    sudo podman secret rm forgejo-secrets 2>/dev/null || true
+    sudo podman secret rm ngrok-secrets 2>/dev/null || true
     
     # Remove backup service files
     sudo rm -f /etc/systemd/system/forgejo-backup.{service,timer}
