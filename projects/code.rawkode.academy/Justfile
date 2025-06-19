@@ -172,7 +172,7 @@ install-quadlets:
 
     # Verify that the main service file was generated
     echo "Verifying service generation..."
-    for service in postgres.service forgejo.service ngrok.service; do
+    for service in postgres.service forgejo.service ngrok.service forgejo-network.service; do
         if ! sudo systemctl list-unit-files | grep -q $service; then
             echo "✗ ERROR: podman-system-generator failed to create '$service'."
             echo "This is almost always caused by a syntax error in one of the .container, .kube, .volume, or .secret files."
@@ -188,12 +188,18 @@ install-quadlets:
 
     echo "✓ Quadlet files installed and service generated successfully."
     
-    # Check if the network exists
-    echo "Checking for forgejo-network..."
-    if sudo podman network exists forgejo-network; then
-        echo "✓ Network 'forgejo-network' already exists"
+    # Start the network service to ensure network exists
+    echo "Starting network service..."
+    if sudo systemctl start forgejo-network.service; then
+        echo "✓ Network service started"
     else
-        echo "Note: Network 'forgejo-network' will be created when containers start"
+        echo "✗ Failed to start network service"
+        echo "Creating network manually as fallback..."
+        sudo podman network create \
+            --driver bridge \
+            --subnet 10.89.10.0/24 \
+            --gateway 10.89.10.1 \
+            forgejo-network || true
     fi
 
 # Install backup service
@@ -402,6 +408,9 @@ enable:
 # Show service status
 status:
     #!/usr/bin/env bash
+    echo "=== Network Status ==="
+    sudo systemctl status forgejo-network.service --no-pager || true
+    echo
     echo "=== PostgreSQL Status ==="
     sudo systemctl status postgres.service --no-pager
     echo
@@ -514,6 +523,10 @@ uninstall:
     echo "Removing Podman secrets..."
     sudo podman secret rm forgejo-secrets 2>/dev/null || true
     sudo podman secret rm ngrok-secrets 2>/dev/null || true
+    
+    # Remove Podman network
+    echo "Removing Podman network..."
+    sudo podman network rm forgejo-network 2>/dev/null || true
     
     # Remove backup service files
     sudo rm -f /etc/systemd/system/forgejo-backup.{service,timer}
