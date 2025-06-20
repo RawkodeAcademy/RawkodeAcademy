@@ -143,6 +143,25 @@ install-quadlets:
         echo "Creating forgejo-secrets in Podman..."
         sudo podman secret rm forgejo-secrets 2>/dev/null || true
         sudo podman secret create forgejo-secrets ./forgejo-secrets
+        
+        # Create individual secrets due to type=env limitations in Podman 5.x
+        echo "Creating individual secrets..."
+        
+        # PostgreSQL password
+        sudo podman secret rm postgres-password 2>/dev/null || true
+        grep "^POSTGRES_PASSWORD=" forgejo-secrets | cut -d= -f2- | sudo podman secret create postgres-password -
+        
+        # Forgejo database password (same as postgres)
+        sudo podman secret rm forgejo-db-password 2>/dev/null || true
+        grep "^FORGEJO__database__PASSWD=" forgejo-secrets | cut -d= -f2- | sudo podman secret create forgejo-db-password -
+        
+        # Forgejo secret key
+        sudo podman secret rm forgejo-secret-key 2>/dev/null || true
+        grep "^FORGEJO__security__SECRET_KEY=" forgejo-secrets | cut -d= -f2- | sudo podman secret create forgejo-secret-key -
+        
+        # Forgejo internal token
+        sudo podman secret rm forgejo-internal-token 2>/dev/null || true
+        grep "^FORGEJO__security__INTERNAL_TOKEN=" forgejo-secrets | cut -d= -f2- | sudo podman secret create forgejo-internal-token -
     fi
     
     if [ -f "ngrok-secrets" ]; then
@@ -516,6 +535,10 @@ uninstall:
     # Remove Podman secrets
     echo "Removing Podman secrets..."
     sudo podman secret rm forgejo-secrets 2>/dev/null || true
+    sudo podman secret rm postgres-password 2>/dev/null || true
+    sudo podman secret rm forgejo-db-password 2>/dev/null || true
+    sudo podman secret rm forgejo-secret-key 2>/dev/null || true
+    sudo podman secret rm forgejo-internal-token 2>/dev/null || true
     sudo podman secret rm ngrok-secrets 2>/dev/null || true
     
     # Remove Podman network
