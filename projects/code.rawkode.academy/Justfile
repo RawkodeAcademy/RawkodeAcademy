@@ -168,7 +168,8 @@ install-quadlets:
     if [ -f "ngrok-secrets" ]; then
         echo "Creating ngrok-secrets in Podman..."
         sudo podman secret rm ngrok-secrets 2>/dev/null || true
-        sudo podman secret create ngrok-secrets ./ngrok-secrets
+        # For single-value secrets, just pass the value itself, not KEY=VALUE
+        grep "^NGROK_AUTHTOKEN=" ngrok-secrets | cut -d= -f2- | sudo podman secret create ngrok-secrets -
     fi
     
     # Set proper permissions for quadlet definition files
@@ -474,6 +475,7 @@ configure-ngrok:
     fi
 
     # Create ngrok secrets content file (no .secret extension)
+    # Keep the KEY=VALUE format for consistency, will extract value when creating secret
     echo "NGROK_AUTHTOKEN=$ngrok_token" > ngrok-secrets
     chmod 600 ngrok-secrets
 
