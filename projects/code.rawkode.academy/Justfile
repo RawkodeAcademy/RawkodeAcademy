@@ -136,7 +136,8 @@ install-quadlets:
     sudo mkdir -p /etc/containers/systemd/
 
     # Copy all quadlet definition files
-    sudo cp *.container *.volume *.network /etc/containers/systemd/
+    sudo cp *.container *.volume /etc/containers/systemd/
+    # Note: Not copying *.network as we create the network manually
 
     # Create Podman secrets from the secret files
     if [ -f "forgejo-secrets" ]; then
@@ -185,7 +186,7 @@ install-quadlets:
 
     # Verify that the main service file was generated
     echo "Verifying service generation..."
-    for service in postgres.service forgejo.service ngrok.service forgejo-network.service; do
+    for service in postgres.service forgejo.service ngrok.service; do
         if ! sudo systemctl list-unit-files | grep -q $service; then
             echo "✗ ERROR: podman-system-generator failed to create '$service'."
             echo "This is almost always caused by a syntax error in one of the .container, .kube, .volume, or .secret files."
@@ -201,18 +202,17 @@ install-quadlets:
 
     echo "✓ Quadlet files installed and service generated successfully."
     
-    # Start the network service to ensure network exists
-    echo "Starting network service..."
-    if sudo systemctl start forgejo-network.service; then
-        echo "✓ Network service started"
+    # Create the network manually (Quadlet network service doesn't seem to work reliably)
+    echo "Creating forgejo-network..."
+    if sudo podman network exists forgejo-network; then
+        echo "✓ Network already exists"
     else
-        echo "✗ Failed to start network service"
-        echo "Creating network manually as fallback..."
         sudo podman network create \
             --driver bridge \
             --subnet 10.89.10.0/24 \
             --gateway 10.89.10.1 \
-            forgejo-network || true
+            forgejo-network
+        echo "✓ Network created"
     fi
 
 # Install backup service
@@ -421,9 +421,6 @@ enable:
 # Show service status
 status:
     #!/usr/bin/env bash
-    echo "=== Network Status ==="
-    sudo systemctl status forgejo-network.service --no-pager || true
-    echo
     echo "=== PostgreSQL Status ==="
     sudo systemctl status postgres.service --no-pager
     echo
