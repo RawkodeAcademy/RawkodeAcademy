@@ -1,0 +1,317 @@
+---
+title: "Building a Cost-Effective Analytics Pipeline"
+description: "A deep dive into building a serverless analytics platform that costs 10x less than traditional solutions while handling millions of events"
+openGraph:
+  title: "Building a Cost-Effective Analytics Pipeline"
+  subtitle: "Serverless Analytics on Cloudflare's Edge"
+slug: building-analytics-pipeline
+publishedAt: 2025-06-20
+isDraft: false
+authors:
+  - rawkode
+tags: ["analytics", "cloudflare", "serverless", "duckdb", "parquet"]
+---
+
+# How I Built a Cost-Effective Analytics Pipeline on Cloudflare's Edge
+
+When I set out to build an analytics pipeline for Rawkode Academy, I had a few non-negotiable requirements: it had to be cost-effective, scalable, and leverage modern cloud-native technologies. What I ended up building is a serverless analytics platform that runs entirely on Cloudflare's edge infrastructure, costs about 10x less than traditional solutions, and can handle millions of events without breaking a sweat.
+
+Let me walk you through how I built it, the technical decisions I made, and what it might cost you to run something similar.
+
+## The Problem with Traditional Analytics
+
+Most analytics solutions fall into two camps: expensive SaaS platforms that charge by the event, or self-hosted solutions that require significant infrastructure investment. I wanted something different - a solution that could scale with Rawkode Academy without eating into our budget, while still providing the flexibility to run arbitrary SQL queries on our data.
+
+After evaluating various options, I realized that the combination of Cloudflare's edge infrastructure, Parquet files, and DuckDB could give us everything we needed at a fraction of the cost.
+
+## Architecture Overview
+
+The analytics pipeline I built consists of four main components:
+
+```d2
+direction: down
+
+title: Analytics Pipeline Architecture {
+  near: top-center
+  shape: text
+  style.font-size: 28
+}
+
+# Event Sources
+sources: Event Sources {
+  shape: cloud
+  style.multiple: true
+  web: Web Apps
+  api: APIs
+  services: Services
+}
+
+# Collection Layer
+collection: Collection Layer {
+  shape: rectangle
+  style.fill: "#f0f9ff"
+
+  worker: Event Collector Worker {
+    shape: hexagon
+    style.fill: "#3b82f6"
+    label: Event Collector\n(Rust Worker)
+  }
+
+  durables: Durable Objects {
+    shape: cylinder
+    style.multiple: true
+    style.fill: "#8b5cf6"
+    label: Event Buffers\n(By Type)
+  }
+
+  worker -> durables: buffer events
+}
+
+# Storage Layer
+storage: Storage Layer {
+  shape: rectangle
+  style.fill: "#fef3c7"
+
+  r2_source: R2 Source Bucket {
+    shape: cylinder
+    style.fill: "#f59e0b"
+    label: analytics-source\n(Raw Parquet Files)
+  }
+
+  r2_processed: R2 Processed Bucket {
+    shape: cylinder
+    style.fill: "#f59e0b"
+    label: analytics-processed\n(dbt Output)
+  }
+
+  r2_catalog: R2 Catalog Bucket {
+    shape: cylinder
+    style.fill: "#f59e0b"
+    label: analytics-catalog\n(Metadata)
+  }
+}
+
+# Processing Layer
+processing: Processing Layer {
+  shape: rectangle
+  style.fill: "#dcfce7"
+
+  compaction: Compaction Worker {
+    shape: hexagon
+    style.fill: "#10b981"
+    label: File Compaction\n(10MB → 100MB)
+  }
+
+  catalog: Catalog Worker {
+    shape: hexagon
+    style.fill: "#10b981"
+    label: Metadata Manager\n(Tables & Costs)
+  }
+
+  dbt: dbt Runner {
+    shape: hexagon
+    style.fill: "#10b981"
+    label: Transformations\n(SQL Models)
+  }
+}
+
+# Query Layer
+query: Query Layer {
+  shape: rectangle
+  style.fill: "#fce7f3"
+
+  api: GraphQL API {
+    shape: hexagon
+    style.fill: "#ec4899"
+    label: Analytics API\n(TypeScript Worker)
+  }
+
+  duckdb: DuckDB WASM {
+    shape: rectangle
+    style.fill: "#db2777"
+    label: SQL Engine\n(In Browser)
+  }
+
+  api -> duckdb: execute SQL
+}
+
+# Client
+client: Client Applications {
+  shape: cloud
+  style.multiple: true
+  dashboard: Dashboards
+  reports: Reports
+  analysis: Analysis Tools
+}
+
+# Connections
+sources -> collection.worker: CloudEvents
+
+collection.durables -> storage.r2_source: batch write\n(Parquet)
+
+storage.r2_source -> processing.compaction: merge small files
+processing.compaction -> storage.r2_source: write larger files
+
+storage.r2_source -> processing.catalog: scan metadata
+processing.catalog -> storage.r2_catalog: update catalog
+
+storage.r2_source -> processing.dbt: read raw data
+processing.dbt -> storage.r2_processed: write transformed
+
+storage.r2_source -> query.duckdb: query Parquet
+storage.r2_processed -> query.duckdb: query Parquet
+storage.r2_catalog -> query.api: read metadata
+
+client -> query.api: GraphQL queries
+query.duckdb -> client: results
+
+# Annotations
+partition: Data Partitioning {
+  near: storage.r2_source
+  shape: text
+  style.font-size: 14
+  label: |md
+    /events/{type}/
+    year={YYYY}/
+    month={MM}/
+    day={DD}/
+    hour={HH}/
+  |
+}
+
+costs: Cost Optimization {
+  near: processing.compaction
+  shape: text
+  style.font-size: 14
+  label: |md
+    • Batch writes reduce ops
+    • Compaction minimizes files
+    • Parquet compression
+    • 90-day retention
+  |
+}
+```
+
+### 1. Event Collection Layer
+
+Events flow into our system through a Cloudflare Worker written in Rust. I chose the CloudEvents format for standardization - it's an open specification that makes our events portable and interoperable.
+
+The clever bit here is how I handle buffering. Instead of writing each event individually to storage (which would be expensive), I use Cloudflare's Durable Objects to buffer events by type. Each event type gets its own Durable Object instance that:
+
+- Collects events in memory
+- Automatically flushes to R2 storage when it hits 1000 events or 60 seconds
+- Writes data in Parquet format for efficient analytics
+
+Here's why this matters: by batching writes, we dramatically reduce the number of storage operations, which directly translates to cost savings.
+
+### 2. Storage Layer
+
+I use three R2 buckets with different purposes and retention policies:
+
+- **analytics-source**: Raw event data stored as Parquet files (kept indefinitely)
+- **analytics-processed**: Transformed data from dbt (90-day retention)
+- **analytics-catalog**: Metadata about our tables and partitions
+
+The data is organized in a time-based hierarchy:
+```
+/events/{type}/year=2025/month=01/day=20/hour=14/
+```
+
+This partitioning scheme enables efficient queries - DuckDB can skip entire partitions that don't match your time range, making queries faster and cheaper.
+
+### 3. Processing Layer
+
+Two additional workers handle data optimization:
+
+**Compaction Worker**: Small files are inefficient for analytics. This worker merges small Parquet files (under 10MB) into larger ones (targeting 100MB). This reduces the number of files DuckDB needs to scan during queries.
+
+**Catalog Worker**: Maintains metadata about all our tables, partitions, and even tracks storage costs. It exposes endpoints like `/catalog/costs` so I can monitor spending in real-time.
+
+### 4. Query Layer
+
+This is where the magic happens. Instead of a traditional database, I use DuckDB WASM to query Parquet files directly from the browser. The GraphQL API translates queries into SQL, DuckDB executes them against files in R2, and results are returned to the client.
+
+No database to manage. No indexes to maintain. Just pure SQL on files.
+
+## Technical Decisions and Trade-offs
+
+### Why Parquet?
+
+Parquet is a columnar storage format that's perfect for analytics. It compresses well, supports efficient querying, and is an open standard. Most importantly, it allows us to run SQL queries without loading data into a database first.
+
+### Why DuckDB?
+
+DuckDB is an embedded analytics database that runs in-process. The WASM version runs directly in the browser, which means:
+- No server-side query infrastructure needed
+- Queries scale with your users (each runs in their browser)
+- Direct access to R2 files without intermediaries
+
+The trade-off? The WASM bundle is about 45MB, which users need to download. For an analytics dashboard that's accessed occasionally, this is acceptable.
+
+### Why Cloudflare?
+
+Cloudflare's edge infrastructure gives us:
+- Global distribution without deployment complexity
+- Integrated storage (R2) that's 10x cheaper than traditional object storage
+- Durable Objects for stateful coordination
+- Workers for compute at the edge
+
+## Cost Breakdown
+
+Let's talk numbers. Here's what I expect this to cost for moderate usage:
+
+### Storage Costs
+- R2 storage: $0.015/GB/month
+- For 100GB of data: $1.50/month
+- Compare this to a managed analytics database: easily $100-500/month
+
+### Operation Costs
+- Class A operations (writes): $4.50 per million
+- Class B operations (reads): $0.36 per 10 million
+- With compaction, we minimize operations
+
+### Real-world estimate
+For a platform processing 10 million events/month:
+- Storage: ~$5/month (assuming 50GB after compression)
+- Operations: ~$10/month
+- Workers: Free tier or ~$5/month on paid plan
+
+**Total: ~$20/month** for what would cost $200-500/month with traditional solutions.
+
+## Challenges and Lessons Learned
+
+Building this wasn't without challenges:
+
+1. **Security**: I discovered some SQL injection vulnerabilities during testing. Always sanitize inputs, even in internal tools!
+
+2. **Testing**: Testing distributed systems is hard. I'm still working on comprehensive test coverage.
+
+3. **Monitoring**: Without proper observability, debugging edge workers is challenging. I'm adding OpenTelemetry support.
+
+4. **Schema Evolution**: Parquet files are immutable. Handling schema changes requires careful planning.
+
+## What's Next?
+
+The foundation is solid, but there's more work to do:
+
+- Implement caching to reduce query costs
+- Add materialized views for common queries
+- Build a proper dbt pipeline for transformations
+- Add GDPR compliance features for data deletion
+
+## Should You Build This?
+
+If you're looking for a cost-effective analytics solution and:
+- You're comfortable with SQL and modern data engineering
+- You want full control over your data
+- You're willing to trade some convenience for massive cost savings
+
+Then yes, this approach could work for you.
+
+The code is part of the Rawkode Academy monorepo if you want to explore further. It's not perfect, but it's production-ready enough for our needs and costs a fraction of what we'd pay elsewhere.
+
+Sometimes the best solution isn't the most feature-rich or convenient - it's the one that solves your problem within your constraints. For Rawkode Academy, this analytics pipeline does exactly that.
+
+---
+
+*Want to learn more about building cost-effective infrastructure? Check out our courses on cloud-native development and data engineering at Rawkode Academy.*
