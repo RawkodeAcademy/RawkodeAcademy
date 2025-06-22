@@ -1,7 +1,8 @@
-import { useChat, useRoomContext } from "@livekit/components-react";
-import { MessageSquare, Send, Smile } from "lucide-react";
+import { useChat, useDataChannel, useRoomContext } from "@livekit/components-react"; // Added useDataChannel
+import { actions } from "astro:actions";
+import { MessageSquare, Send, Smile, Star } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ChatMessage } from "@/actions/chat";
+import type { ChatMessage as APIChatMessage } from "@/actions/chat"; // Renamed to avoid conflict
 import { useRoomPermissions } from "@/components/livestreams/room/hooks/useRoomPermissions";
 import { Button } from "@/components/shadcn/button";
 import {
@@ -26,9 +27,9 @@ export function Chat({ token, onNewMessage }: ChatProps) {
   const { chatMessages, send } = useChat();
   const [messageText, setMessageText] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-  const [historicalMessages, setHistoricalMessages] = useState<ChatMessage[]>(
-    [],
-  );
+  const [historicalMessages, setHistoricalMessages] = useState<
+    APIChatMessage[]
+  >([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,11 +54,11 @@ export function Chat({ token, onNewMessage }: ChatProps) {
       );
 
       if (response.ok) {
-        const messages: ChatMessage[] = await response.json();
+        const messages: APIChatMessage[] = await response.json();
         setHistoricalMessages(messages);
         // Mark all historical messages as loaded to avoid duplicates
         for (const msg of messages) {
-          loadedMessageIdsRef.current.add(`hist-${msg.id}`);
+          loadedMessageIdsRef.current.add(`hist-${msg.id}`); // Keep internal ID for UI keys
         }
       }
     } catch (error) {
@@ -152,6 +153,30 @@ export function Chat({ token, onNewMessage }: ChatProps) {
     setEmojiPickerOpen(false);
   };
 
+  // Listen for LiveKit data messages for real-time promotion updates in the chat list
+  useDataChannel("chat:promoted", (message) => {
+    try {
+      const decoder = new TextDecoder();
+      const receivedData = JSON.parse(decoder.decode(message.payload));
+
+      if (receivedData.type === "message_promoted" && receivedData.message) {
+        const promotedMsg = receivedData.message as APIChatMessage;
+        setHistoricalMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === promotedMsg.id
+              ? { ...msg, isPromoted: true }
+              : msg,
+          ),
+        );
+        // Also, if the promoted message is a new one not yet in historical,
+        // this won't update it. The main promoted display handles new ones.
+        // This listener primarily ensures existing messages in the chat list reflect their promoted state.
+      }
+    } catch (e) {
+      console.error("Error processing data channel message in Chat.tsx:", e);
+    }
+  });
+
   // Function to render message with clickable links
   const renderMessageWithLinks = (text: string) => {
     // More robust URL regex that handles:
@@ -240,15 +265,20 @@ export function Chat({ token, onNewMessage }: ChatProps) {
     // Add historical messages
     for (const msg of historicalMessages) {
       allMessages.push({
-        id: `hist-${msg.id}`,
+        dbId: msg.id, // Store original DB ID
+        uiId: `hist-${msg.id}`, // Unique ID for React key prop
         message: msg.message,
         participantName: msg.participantName,
         participantIdentity: msg.participantIdentity,
         timestamp: new Date(msg.createdAt).getTime(),
+        isPromoted: msg.isPromoted, // Make sure this is included
       });
     }
 
     // Add LiveKit messages (these are real-time)
+    // These won't have a dbId or isPromoted status initially
+    // and thus won't show a promote button until they are persisted
+    // and re-fetched as part of historical messages.
     for (const msg of chatMessages) {
       // Skip if this message might be a duplicate of a historical message
       // We check by matching participant identity and message content within a small time window
@@ -263,7 +293,8 @@ export function Chat({ token, onNewMessage }: ChatProps) {
 
       if (!isDuplicate) {
         allMessages.push({
-          id: msg.id,
+          uiId: msg.id, // LiveKit message ID for React key
+          dbId: undefined, // No DB ID for real-time messages yet
           message: msg.message,
           participantName:
             msg.from?.attributes?.displayName ||
@@ -271,6 +302,7 @@ export function Chat({ token, onNewMessage }: ChatProps) {
             "Anonymous",
           participantIdentity: msg.from?.identity || "anonymous",
           timestamp: msg.timestamp || Date.now(),
+          isPromoted: false, // Real-time messages are not promoted by default
         });
       }
     }
@@ -278,6 +310,30 @@ export function Chat({ token, onNewMessage }: ChatProps) {
     // Sort by timestamp (newest first for reverse display)
     return allMessages.sort((a, b) => b.timestamp - a.timestamp);
   })();
+
+  const handlePromoteMessage = async (messageId: number | undefined) => {
+    if (messageId === undefined) {
+      console.error("Cannot promote message without a database ID");
+      return;
+    }
+    if (permissions.role !== "director") {
+      console.error("User does not have permission to promote messages.");
+      return;
+    }
+    try {
+      const result = await actions.chat.promoteChatMessage({ messageId });
+      if (result.error) {
+        console.error("Failed to promote message:", result.error.message);
+        // Optionally: show a toast notification to the user
+      } else {
+        console.log("Message promoted successfully:", result.data);
+        // Optionally: Update local state to reflect promotion immediately
+        // or wait for LiveKit data message to update UI (preferred for consistency)
+      }
+    } catch (e) {
+      console.error("Error calling promoteChatMessage action:", e);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -299,11 +355,27 @@ export function Chat({ token, onNewMessage }: ChatProps) {
             <div>
               {mergedMessages.map((msg) => (
                 <div
-                  key={msg.id}
-                  className="mb-3 last:mb-1 p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                  key={msg.uiId} // Use uiId for React key
+                  className={`mb-3 last:mb-1 p-2 rounded-lg hover:bg-accent/50 transition-colors group relative ${
+                    msg.isPromoted ? "bg-primary/10" : ""
+                  }`}
                 >
-                  <div className="text-xs font-medium text-primary">
-                    {msg.participantName}
+                  <div className="text-xs font-medium text-primary flex justify-between items-center">
+                    <span>{msg.participantName}</span>
+                    {permissions.role === "director" && msg.dbId !== undefined && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity ${
+                          msg.isPromoted ? "text-primary" : "text-muted-foreground"
+                        }`}
+                        onClick={() => handlePromoteMessage(msg.dbId)}
+                        title={msg.isPromoted ? "Promoted" : "Promote message"}
+                        disabled={msg.isPromoted} // Disable if already promoted
+                      >
+                        <Star className={`h-3 w-3 ${msg.isPromoted ? "fill-current" : ""}`} />
+                      </Button>
+                    )}
                   </div>
                   <div className="text-sm mt-0.5 text-foreground break-words">
                     {renderMessageWithLinks(msg.message)}

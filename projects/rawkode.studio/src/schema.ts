@@ -38,6 +38,9 @@ export const chatMessagesTable = sqliteTable("chat_messages", {
   participantIdentity: text("participant_identity").notNull(),
   participantName: text("participant_name").notNull(),
   message: text("message").notNull(),
+  isPromoted: integer("is_promoted", { mode: "boolean" })
+    .notNull()
+    .default(false),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
