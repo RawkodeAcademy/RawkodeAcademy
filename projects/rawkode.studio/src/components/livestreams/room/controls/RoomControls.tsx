@@ -1,6 +1,8 @@
 import { useLocalParticipant, useRoomInfo } from "@livekit/components-react";
 import { VideoPresets } from "livekit-client";
 import {
+  Eye,
+  EyeOff,
   LogOut,
   Mic,
   MicOff,
@@ -12,9 +14,11 @@ import {
 import { useEffect, useRef } from "react";
 import { SettingsDialog } from "@/components/livestreams/dialogs/SettingsDialog";
 import { BackstageToggle } from "@/components/livestreams/room/controls/BackstageToggle";
+import { EmojiControls } from "@/components/livestreams/room/controls/EmojiControls";
 import { LayoutSelector } from "@/components/livestreams/room/controls/LayoutSelector";
 import { PresenterSelector } from "@/components/livestreams/room/controls/PresenterSelector";
 import { RaiseHandButton } from "@/components/livestreams/room/controls/RaiseHandButton";
+import { useEmojiReactions } from "@/components/livestreams/room/EmojiReactionContext"; // Import the hook
 import { useMediaPermissions } from "@/components/livestreams/room/hooks/useMediaPermissions";
 import {
   getUserRole,
@@ -37,6 +41,7 @@ interface RoomControlsProps {
 export function RoomControls({ token }: RoomControlsProps) {
   const { localParticipant } = useLocalParticipant();
   const roomInfo = useRoomInfo();
+  const { reactionsVisible, toggleReactionsVisibility } = useEmojiReactions(); // Use the context
   const { canPublish, isDirector, buttonStates, currentLayout } =
     useMediaPermissions();
   const previousScreenShareAllowed = useRef(buttonStates.screenShare.enabled);
@@ -426,6 +431,37 @@ export function RoomControls({ token }: RoomControlsProps) {
 
         {/* Raise hand button - based on permissions */}
         {permissions.canRaiseHand && <RaiseHandButton token={token} />}
+
+        {/* Emoji Reactions Button */}
+        <EmojiControls />
+
+        {/* Toggle Emoji Reactions Visibility Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={reactionsVisible ? "outline" : "secondary"}
+              size="icon"
+              onClick={toggleReactionsVisibility}
+              className="h-9 w-full rounded-md transition-all hover:scale-105"
+              aria-label={
+                reactionsVisible ? "Hide Reactions" : "Show Reactions"
+              }
+            >
+              {reactionsVisible ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {reactionsVisible
+                ? "Hide Emoji Reactions"
+                : "Show Emoji Reactions"}
+            </p>
+          </TooltipContent>
+        </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
