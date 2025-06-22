@@ -1,0 +1,122 @@
+import {
+	argument,
+	type Container,
+	dag,
+	type Directory,
+	func,
+	object,
+	File,
+} from "@dagger.io/dagger";
+
+@object()
+export class <%= serviceClassName %> {
+	// Helper to load the shared Deno Dagger module
+	private getDenoModule() {
+		const denoModulePath = "<%= offsetFromRoot %>dagger/deno";
+		// Ensure inclusion of necessary files for the Deno module itself
+		return dag.moduleImport(dag.host().directory(denoModulePath, {include: ["dagger.json", "src/", "package.json"]}));
+	}
+
+	// Base Deno container setup
+	private async baseContainer(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const denoMod = this.getDenoModule();
+		// This usage depends on the API of your shared 'dagger/deno' module.
+		// It might provide a pre-configured container, or functions to run commands.
+		// Assuming it provides a 'container()' method that gives a Deno environment.
+		let base = await denoMod.container(); // Example call
+
+		return base
+			.withMountedCache("/deno-dir", dag.cacheVolume("deno-cache-<%= name %>"))
+			.withEnvVariable("DENO_DIR", "/deno-dir")
+			.withDirectory("/app", directory)
+			.withWorkdir("/app");
+	}
+
+	/**
+	 * Run the main application (expects 'start' task in deno.jsonc)
+	 */
+	@func()
+	async start(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.baseContainer(directory);
+		return app.withExec(["deno", "task", "start"]);
+	}
+
+	/**
+	 * Run the main application in development mode (expects 'dev' task in deno.jsonc)
+	 */
+	@func()
+	async dev(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.baseContainer(directory);
+		return app.withExec(["deno", "task", "dev"]);
+	}
+
+	/**
+	 * Cache Deno dependencies (expects 'cache-deps' task in deno.jsonc)
+	 */
+	@func()
+	async cacheDeps(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.baseContainer(directory);
+		return app.withExec(["deno", "task", "cache-deps"]);
+	}
+
+	/**
+	 * Run tests (expects 'test' task in deno.jsonc)
+	 */
+	@func()
+	async test(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.baseContainer(directory);
+		return app.withExec(["deno", "task", "test"]);
+	}
+
+	/**
+	 * Lint source files (expects 'lint' task in deno.jsonc)
+	 */
+	@func()
+	async lint(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.baseContainer(directory);
+		return app.withExec(["deno", "task", "lint"]);
+	}
+
+	/**
+	 * Format source files (expects 'format' task in deno.jsonc)
+	 */
+	@func()
+	async format(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.baseContainer(directory);
+		return app.withExec(["deno", "task", "format"]);
+	}
+
+	// Example: Deploy function for Deno Deploy
+	// @func()
+	// async deploy(
+	//   @argument({ defaultPath: "." }) directory: Directory,
+	//   @argument() denoDeployProjectName: string,
+	//   @argument() denoDeployToken: Secret, // Use Secret type for tokens
+	//   @argument({defaultValue: "src/main.ts"}) entrypoint: string
+	// ): Promise<Container> {
+	//   // Use a container that has deployctl or install it
+	//   const deployer = dag.container().from("denoland/deno:alpine")
+	//     .withExec(["deno", "install", "-A", "-r", "https://deno.land/x/deploy/deployctl.ts"])
+	//     .withEntrypoint(["deployctl"]); // So next execs are deployctl subcommands
+
+	//   return deployer
+	//     .withDirectory("/app", directory) // Mount the project source
+	//     .withWorkdir("/app")
+	//     .withSecretVariable("DENO_DEPLOY_TOKEN", denoDeployToken)
+	//     .withExec(["deploy", `--project=${denoDeployProjectName}`, entrypoint]);
+	// }
+}

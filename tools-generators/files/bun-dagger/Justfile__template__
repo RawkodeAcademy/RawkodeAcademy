@@ -1,0 +1,35 @@
+# Justfile for <%= name %>
+
+default:
+    just --list
+
+## Run tests via Dagger
+test:
+    dagger call test --directory .
+
+## Deploy the service via Dagger
+# Usage: just deploy [service_name] [libsql_base_url] [cloudflare_api_token_secret_name] [cloudflare_account_id]
+# Example: just deploy <%= name %> my-libsql-db-url CLOUDFLARE_TOKEN_SECRET MY_CF_ACCOUNT_ID
+deploy service_name="<%= name %>" libsql_base_url="YOUR_LIBSQL_URL" cloudflare_api_token="YOUR_CF_API_TOKEN_SECRET" cloudflare_account_id="YOUR_CF_ACCOUNT_ID":
+    dagger call deploy \
+        --directory . \
+        --service-name {{service_name}} \
+        # --libsql-base-url {{libsql_base_url}} # Add if your Dagger deploy fn takes it
+        --cloudflare-api-token env:{{cloudflare_api_token}} \
+        --cloudflare-account-id {{cloudflare_account_id}}
+
+## Lint the project (if a lint script is in package.json)
+lint:
+    bun run lint
+
+## Format the project (if a format script is in package.json)
+format:
+    bun run format
+
+## Run database migrations (if a db:migrate script is in package.json)
+db-migrate:
+    bun run db:migrate
+
+## Generate database schema (if a db:generate script is in package.json)
+db-generate:
+    bun run db:generate

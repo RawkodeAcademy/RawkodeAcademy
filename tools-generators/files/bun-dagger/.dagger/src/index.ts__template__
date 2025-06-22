@@ -1,0 +1,71 @@
+import {
+	argument,
+	type Container,
+	dag,
+	type Directory,
+	func,
+	object,
+} from "@dagger.io/dagger";
+
+@object()
+export class <%= serviceClassName %> {
+	// Helper to load the shared Bun Dagger module
+	private getBunModule() {
+		// Construct path to shared bun module relative to this Dagger module's location
+		const bunModulePath = "<%= offsetFromRoot %>dagger/bun";
+		return dag.moduleImport(dag.host().directory(bunModulePath, {include: ["dagger.json", "src", "package.json", "bun.lockb"]}));
+	}
+
+	async install(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const bun = this.getBunModule();
+		// Assuming the shared bun module has an 'install' function
+		// This might need to be called like: await bun.bun().install(directory)
+		// or similar, depending on the shared module's API.
+		// For now, let's assume a simple direct call if 'install' is directly exported or part of default object.
+		// A common pattern is `bun.withSource(directory).install()`.
+		// Let's assume the shared bun module provides a container that can run bun commands.
+		return (await bun.container()) // Gets a Bun container
+			.withDirectory("/app", directory)
+			.withWorkdir("/app")
+			.withExec(["bun", "install", "--frozen-lockfile"]);
+	}
+
+	/**
+	 * Run tests for the <%= name %> service
+	 */
+	@func()
+	async test(
+		@argument({ defaultPath: "." }) directory: Directory,
+	): Promise<Container> {
+		const app = await this.install(directory);
+		return app.withExec(["bun", "test"]);
+	}
+
+	/**
+	 * Deploy the <%= name %> service (placeholder)
+	 * This often involves running wrangler for Cloudflare workers or similar deployment tools.
+	 */
+	@func()
+	async deploy(
+		@argument({ defaultPath: "." }) directory: Directory,
+		@argument() serviceName: string,
+		@argument() cloudflareApiToken: string, // Example secret
+		@argument() cloudflareAccountId: string // Example env var
+		// Add other necessary args like LIBSQL_BASE_URL, etc.
+	): Promise<Container> {
+		const app = await this.install(directory);
+		// Placeholder: Actual deployment logic needs to be implemented here.
+		// This would typically use 'wrangler' CLI within the container.
+		// Example: app.withSecretVariable("CLOUDFLARE_API_TOKEN", cloudflareApiToken)
+		//            .withEnvVariable("CLOUDFLARE_ACCOUNT_ID", cloudflareAccountId)
+		//            .withExec(["bunx", "wrangler", "deploy", "--var", `SERVICE_NAME:${serviceName}` ...])
+		return app.withExec([
+			"echo",
+			"Deploying service:",
+			serviceName,
+			"(Dagger deployment logic not yet implemented for this generator)",
+		]);
+	}
+}
