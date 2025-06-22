@@ -25,9 +25,17 @@ import {
 import { ControlsSection } from "@/components/livestreams/room/core/ControlsSection";
 import { LayoutProvider } from "@/components/livestreams/room/core/LayoutContext";
 import { PermissionHandler } from "@/components/livestreams/room/core/PermissionHandler";
+import {
+  EmojiReactionProvider,
+  useEmojiReactions,
+} from "@/components/livestreams/room/EmojiReactionContext";
+import EmojiReactionOverlay from "@/components/livestreams/room/EmojiReactionOverlay";
+import { useMediaPermissions } from "@/components/livestreams/room/hooks/useMediaPermissions"; // For director check
 import { ConnectionIndicator } from "@/components/livestreams/room/media/ConnectionIndicator";
 import { VideoGrid } from "@/components/livestreams/room/media/VideoGrid";
+import { PollProvider, usePolls } from "@/components/livestreams/room/PollContext"; // Import Poll context
 import { ParticipantsList } from "@/components/livestreams/room/participants/ParticipantsList";
+import { PollsManagementTab } from "@/components/livestreams/room/polls/PollsManagementTab"; // Import Polls Management Tab
 import { Alert, AlertDescription, AlertTitle } from "@/components/shadcn/alert";
 import { Button } from "@/components/shadcn/button";
 import { Card } from "@/components/shadcn/card";
@@ -204,22 +212,37 @@ export default function LiveKitRoom({
         data-lk-theme="default"
       >
         <RaiseHandProvider>
-          <LayoutContextProvider>
-            <LayoutProvider>
-              <DataMessageHandler />
-              <RoomContent
-                roomDisplayName={roomDisplayName}
-                token={token}
-                connectionState={connectionState}
-              />
-              <RoomAudioRenderer />
-              <PermissionHandler />
-            </LayoutProvider>
-          </LayoutContextProvider>
+          <EmojiReactionProvider>
+            <PollProvider> {/* Wrap with PollProvider */}
+              <LayoutContextProvider>
+                <LayoutProvider>
+                  <DataMessageHandler />
+                  <RoomContent
+                    roomDisplayName={roomDisplayName}
+                    token={token}
+                    connectionState={connectionState}
+                  />
+                  <RoomAudioRenderer />
+                  <PermissionHandler />
+                  <EmojiReactionDisplay />
+                  <ViewerPollsUI /> {/* Add Viewer Polls UI */}
+                </LayoutProvider>
+              </LayoutContextProvider>
+            </PollProvider>
+          </EmojiReactionProvider>
         </RaiseHandProvider>
       </LiveKitRoomComponent>
     </>
   );
+}
+
+// Helper component to use the context for reactions
+function EmojiReactionDisplay() {
+  const { reactions, reactionsVisible } = useEmojiReactions();
+  if (!reactionsVisible) {
+    return null;
+  }
+  return <EmojiReactionOverlay reactions={reactions} />;
 }
 
 // Sidebar content component - extracted to avoid nested component definition
@@ -227,9 +250,9 @@ interface SidebarContentProps {
   roomDisplayName: string;
   token: string;
   connectionState: ConnectionState;
-  activeTab: "participants" | "chat";
-  setActiveTab: React.Dispatch<React.SetStateAction<"participants" | "chat">>;
-  unreadMessages: number;
+  activeTab: "participants" | "chat" | "polls"; // Added "polls"
+  setActiveTab: React.Dispatch<React.SetStateAction<"participants" | "chat" | "polls">>;
+  unreadMessages: number; // Could be enhanced for poll notifications too
   setUnreadMessages: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -241,7 +264,10 @@ const SidebarContentComponent: React.FC<SidebarContentProps> = ({
   setActiveTab,
   unreadMessages,
   setUnreadMessages,
-}) => (
+}) => {
+  const { isDirector } = useMediaPermissions(); // Get director status
+
+  return (
   <>
     {/* Header */}
     <div className="p-3 border-b border-sidebar-border bg-sidebar">
@@ -272,8 +298,9 @@ const SidebarContentComponent: React.FC<SidebarContentProps> = ({
 
           {/* Mobile tabs for participants/chat */}
           <div className="xl:hidden flex gap-2 mb-3">
+            {/* Mobile Tabs */}
             <Button
-              variant={activeTab === "participants" ? "default" : "outline"}
+              variant={activeTab === "participants" ? "default": "outline"}
               size="sm"
               className="flex-1"
               onClick={() => {
@@ -285,7 +312,7 @@ const SidebarContentComponent: React.FC<SidebarContentProps> = ({
               Participants
             </Button>
             <Button
-              variant={activeTab === "chat" ? "default" : "outline"}
+              variant={activeTab === "chat" ? "default": "outline"}
               size="sm"
               className="flex-1 relative"
               onClick={() => {
@@ -301,32 +328,47 @@ const SidebarContentComponent: React.FC<SidebarContentProps> = ({
                 </span>
               )}
             </Button>
+            {isDirector && (
+              <Button
+                variant={activeTab === "polls" ? "default" : "outline"}
+                size="sm"
+                className="flex-1"
+                onClick={() => setActiveTab("polls")}
+              >
+                Polls
+              </Button>
+            )}
           </div>
 
-          {/* Desktop: Split view for participants and chat */}
-          <div className="hidden xl:flex flex-col flex-1 gap-3">
-            {/* Participants section - 50% height */}
+          {/* Desktop: Split view for participants and chat, or full view for polls */}
+          {isDirector && activeTab === "polls" ? (
             <div className="flex-1 flex flex-col min-h-0">
-              <ScrollArea className="h-full">
-                <ParticipantsList token={token} />
-              </ScrollArea>
+              <PollsManagementTab />
             </div>
-
-            <Separator />
-
-            {/* Chat section - 50% height */}
-            <div className="flex-1 flex min-h-0">
-              <Chat token={token} />
+          ) : (
+            <div className="hidden xl:flex flex-col flex-1 gap-3">
+              {/* Participants section - 50% height */}
+              <div className="flex-1 flex flex-col min-h-0">
+                <ScrollArea className="h-full">
+                  <ParticipantsList token={token} />
+                </ScrollArea>
+              </div>
+              <Separator />
+              {/* Chat section - 50% height */}
+              <div className="flex-1 flex min-h-0">
+                <Chat token={token} />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Mobile: Show active tab content */}
           <div className="flex-1 xl:hidden overflow-hidden">
-            {activeTab === "participants" ? (
+            {activeTab === "participants" && (
               <ScrollArea className="h-full">
                 <ParticipantsList token={token} />
               </ScrollArea>
-            ) : (
+            )}
+            {activeTab === "chat" && (
               <Chat
                 token={token}
                 onNewMessage={() => {
@@ -335,6 +377,9 @@ const SidebarContentComponent: React.FC<SidebarContentProps> = ({
                   }
                 }}
               />
+            )}
+            {isDirector && activeTab === "polls" && (
+              <PollsManagementTab />
             )}
           </div>
         </div>
@@ -362,9 +407,10 @@ function RoomContent({
   token,
   connectionState,
 }: RoomContentProps) {
-  const [activeTab, setActiveTab] = useState<"participants" | "chat">("chat");
+  const [activeTab, setActiveTab] = useState<"participants" | "chat" | "polls">("chat");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isDirector } = useMediaPermissions(); // Also needed here for mobile menu button
 
   // Close mobile menu on escape key
   useEffect(() => {
@@ -395,7 +441,7 @@ function RoomContent({
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="h-5 w-5 text-foreground" />
-              {unreadMessages > 0 && (
+              {(unreadMessages > 0 && (activeTab !== "chat" || !isDirector || activeTab !== "polls")) && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {unreadMessages}
                 </span>
@@ -471,6 +517,8 @@ function DataMessageHandler() {
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
   const { setRaisedHand } = useContext(RaiseHandContext);
+  const { addReaction } = useEmojiReactions();
+  const { setActivePoll, setLatestResults, clearPollState } = usePolls(); // Get poll context functions
 
   useEffect(() => {
     if (!room || !localParticipant) return;
@@ -486,18 +534,67 @@ function DataMessageHandler() {
 
         switch (message.type) {
           case "raise_hand_request": {
-            // Handle raise hand requests (all participants see these)
             setRaisedHand(message.identity, message.raised, message.timestamp);
             break;
           }
-
-          case "raise_hand_response":
-            // Handle responses to raise hand requests (all participants see these)
-            // Always clear the raised hand regardless of approval status
+          case "raise_hand_response": {
             setRaisedHand(message.targetIdentity, false, message.timestamp);
             break;
+          }
+          case "emoji_reaction": {
+            if (message.emoji && message.senderParticipantId && message.timestamp) {
+              addReaction({
+                emoji: message.emoji,
+                senderParticipantId: message.senderParticipantId,
+                timestamp: message.timestamp,
+              });
+            } else {
+              console.warn("Received malformed emoji_reaction message:", message);
+            }
+            break;
+          }
+          case "poll_open": {
+            if (message.poll?.id && message.poll.question && message.poll.options) { // Applied optional chaining
+              setActivePoll({
+                id: message.poll.id,
+                question: message.poll.question,
+                options: message.poll.options,
+                status: "open",
+                openedAt: message.poll.openedAt || new Date().toISOString(),
+              });
+              setLatestResults(null);
+            } else {
+              console.warn("Received malformed poll_open message:", message);
+            }
+            break;
+          }
+          case "poll_closed": {
+            if (message.pollId) {
+              setActivePoll((prevPoll) => {
+                if (prevPoll?.id === message.pollId) { // Applied optional chaining
+                  return { ...prevPoll, status: "closed", closedAt: message.closedAt || new Date().toISOString() };
+                }
+                return null;
+              });
+            } else {
+              console.warn("Received malformed poll_closed message:", message);
+            }
+            break;
+          }
+          case "poll_update": {
+            console.log("[LiveKitRoom] Received poll_update:", message);
+            break;
+          }
+          case "poll_results": {
+            if (message.data?.pollId && message.data.results) { // Applied optional chaining
+              setLatestResults(message.data);
+            } else {
+              console.warn("Received malformed poll_results message:", message);
+            }
+            break;
+          }
         }
-      } catch (error) {
+      } catch (error) { // Added curly brace for catch block
         console.error("Error parsing data message:", error);
       }
     };
@@ -507,7 +604,7 @@ function DataMessageHandler() {
     return () => {
       room.off(RoomEvent.DataReceived, handleDataReceived);
     };
-  }, [room, localParticipant, setRaisedHand]);
+  }, [room, localParticipant, setRaisedHand, addReaction, setActivePoll, setLatestResults, clearPollState]);
 
   return null;
 }
