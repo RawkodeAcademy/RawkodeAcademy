@@ -191,10 +191,12 @@ if (!hasDirectorRole(user)) {
 ```
 
 ### 7. Real-time Features
-- **Video/Audio**: LiveKit WebRTC handles streaming
-- **Chat**: Server-sent events via Astro Actions
-- **Updates**: LiveKit webhooks for room lifecycle
-- **Layouts**: Multiple video layouts available
+- **Video/Audio**: LiveKit WebRTC handles streaming.
+- **Chat Persistence**: Chat messages are persisted via Astro Actions (`src/actions/chat.ts`) called by API endpoints (`src/pages/api/livestream/chat.ts`).
+- **Chat Real-time Display**: Basic chat messages appear in real-time leveraging LiveKit's default data channels used by `useChat()`.
+- **Promoted Message Notifications**: When a chat message is promoted by a director, a LiveKit data message is sent on the "chat:promoted" topic by the `promoteChatMessage` Astro Action. Client components (`PromotedMessagesDisplay.tsx` and `Chat.tsx`) listen on this topic to update their UIs in real-time.
+- **Other Real-time Updates**: LiveKit webhooks are used for room lifecycle events.
+- **Layouts**: Multiple video layouts available, managed via client-side state and LiveKit participant metadata.
 
 ### 8. Error Handling
 - Fix all TypeScript and linting errors properly

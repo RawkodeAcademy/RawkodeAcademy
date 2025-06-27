@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { PromotedMessagesDisplay } from "@/components/livestreams/room/PromotedMessagesDisplay"; // Added import
 import { Chat } from "@/components/livestreams/room/chat/Chat";
 import {
   RaiseHandContext,
@@ -384,6 +385,7 @@ function RoomContent({
       {/* Main video grid area */}
       <div className="flex-1 h-full overflow-hidden relative bg-gray-100 dark:bg-background">
         <VideoGrid />
+        <PromotedMessagesDisplay /> {/* Added PromotedMessagesDisplay component */}
 
         {/* Mobile menu button - shown on sm and md breakpoints */}
         <div className="xl:hidden absolute top-2 right-2 z-10">
