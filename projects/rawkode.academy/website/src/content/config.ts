@@ -58,6 +58,7 @@ const videos = defineCollection({
 		} catch (error) {
 			console.error('Error fetching videos:', error);
 			return [];
+		}
 	},
 	schema: z.object({
 		id: z.string(),
