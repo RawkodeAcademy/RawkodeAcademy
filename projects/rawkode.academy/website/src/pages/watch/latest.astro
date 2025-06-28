@@ -19,6 +19,11 @@ Astro.response.headers.set("Cache-Tag", "videos-latest");
 // Add build timestamp for debugging
 Astro.response.headers.set("X-Build-Time", new Date().toISOString());
 
+// Get page number from URL parameters (default to 1)
+const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1"));
+const videosPerPage = 16;
+const offset = (currentPage - 1) * videosPerPage;
+
 const query = `
   query GetLatestVideos($limit: Int!, $offset: Int!) {
     getLatestVideos(limit: $limit, offset: $offset) {
@@ -41,13 +46,11 @@ interface Video {
 	streamUrl: string;
 }
 
-// Fetch all videos in batches of 16 to avoid SQL variable limits
-const batchSize = 16;
-const allVideos: Video[] = [];
-let offset = 0;
-let hasMoreVideos = true;
+// Fetch videos for current page
+let videos: Video[] = [];
+let hasNextPage = false;
 
-while (hasMoreVideos && GRAPHQL_ENDPOINT) {
+if (GRAPHQL_ENDPOINT) {
 	try {
 		const response = await fetch(GRAPHQL_ENDPOINT, {
 			method: "POST",
@@ -56,33 +59,24 @@ while (hasMoreVideos && GRAPHQL_ENDPOINT) {
 			},
 			body: JSON.stringify({
 				query,
-				variables: { limit: batchSize, offset },
+				variables: { limit: videosPerPage + 1, offset }, // Fetch one extra to check if there's a next page
 			}),
 		});
 
-		if (!response.ok) {
-			console.error(`Failed to fetch videos batch at offset ${offset}:`, response.status);
-			break;
-		}
-
-		const result: any = await response.json();
-		const batchVideos = result.data?.getLatestVideos || [];
-		
-		if (batchVideos.length === 0) {
-			hasMoreVideos = false;
-		} else {
-			allVideos.push(...batchVideos);
-			offset += batchSize;
+		if (response.ok) {
+			const result: any = await response.json();
+			const fetchedVideos = result.data?.getLatestVideos || [];
 			
-			// Safety check to prevent infinite loops
-			if (offset > 1000) {
-				console.warn('Reached maximum offset limit of 1000 videos');
-				break;
-			}
+			// If we got more than videosPerPage, there's a next page
+			hasNextPage = fetchedVideos.length > videosPerPage;
+			
+			// Take only the videos for this page
+			videos = fetchedVideos.slice(0, videosPerPage);
+		} else {
+			console.error(`Failed to fetch videos for page ${currentPage}:`, response.status);
 		}
 	} catch (error) {
-		console.error(`Error fetching videos batch at offset ${offset}:`, error);
-		break;
+		console.error(`Error fetching videos for page ${currentPage}:`, error);
 	}
 }
 
@@ -106,24 +100,25 @@ function formatDate(dateString: string) {
 }
 ---
 
-<Page title="All Videos">
+<Page title={`Latest Videos - Page ${currentPage}`}>
   <VideoMetadata
     slot="extra-head"
-    title="Rawkode Academy Videos"
-    description="Browse our full collection of videos."
+    title={`Rawkode Academy Latest Videos - Page ${currentPage}`}
+    description={`Browse the latest videos from Rawkode Academy, page ${currentPage}.`}
     isVideoList={true}
   />
 
   <section class="py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center">
-        <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">All Videos</h2>
+        <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">Latest Videos</h2>
         <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
-          Explore every video we've published ({allVideos.length} videos)
+          {currentPage > 1 ? `Page ${currentPage} of our latest videos` : "Our most recent video content"}
         </p>
       </div>
+      
       <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-        {allVideos.map((video: Video) => (
+        {videos.map((video: Video) => (
           <a href={`/watch/${video.slug}`} class="group">
             <div class="relative aspect-video">
               <img
@@ -148,11 +143,48 @@ function formatDate(dateString: string) {
         ))}
       </div>
       
-      {allVideos.length === 0 && (
+      {videos.length === 0 && (
         <div class="text-center mt-12">
-          <p class="text-gray-500 dark:text-gray-400">No videos available at the moment.</p>
+          <p class="text-gray-500 dark:text-gray-400">No videos found for this page.</p>
         </div>
       )}
+
+      <!-- Pagination Controls -->
+      {(currentPage > 1 || hasNextPage) && (
+        <div class="mt-12 flex justify-center items-center space-x-4">
+          {currentPage > 1 && (
+            <a
+              href={currentPage === 2 ? "/watch/latest" : `/watch/latest?page=${currentPage - 1}`}
+              class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              ← Previous
+            </a>
+          )}
+          
+          <span class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Page {currentPage}
+          </span>
+          
+          {hasNextPage && (
+            <a
+              href={`/watch/latest?page=${currentPage + 1}`}
+              class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Next →
+            </a>
+          )}
+        </div>
+      )}
+      
+      {/* Link to browse all videos */}
+      <div class="mt-8 text-center">
+        <a
+          href="/watch"
+          class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+        >
+          Browse All Videos
+        </a>
+      </div>
     </div>
   </section>
 </Page>
