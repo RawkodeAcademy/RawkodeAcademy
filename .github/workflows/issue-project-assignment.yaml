@@ -1,0 +1,49 @@
+name: Assign Issues to Projects
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assign-to-project:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Assign Activity and Action issues to Product Planning
+        if: contains(github.event.issue.labels.*.name, 'activity') || contains(github.event.issue.labels.*.name, 'action')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Add issue to Product Planning project
+          # Note: This requires the organization project ID - will need to be configured
+          echo "Issue #${{ github.event.issue.number }} with labels: ${{ join(github.event.issue.labels.*.name, ', ') }}"
+          echo "This issue should be assigned to Product Planning project"
+          
+          # Using GitHub CLI to add to project (requires project ID/number)
+          # gh project item-add [PROJECT_ID] --url ${{ github.event.issue.html_url }}
+
+      - name: Assign Feature, Defect, and Task issues to Ship Happens  
+        if: contains(github.event.issue.labels.*.name, 'feature') || contains(github.event.issue.labels.*.name, 'defect') || contains(github.event.issue.labels.*.name, 'task')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Add issue to Ship Happens project  
+          # Note: This requires the organization project ID - will need to be configured
+          echo "Issue #${{ github.event.issue.number }} with labels: ${{ join(github.event.issue.labels.*.name, ', ') }}"
+          echo "This issue should be assigned to Ship Happens project"
+          
+          # Using GitHub CLI to add to project (requires project ID/number)
+          # gh project item-add [PROJECT_ID] --url ${{ github.event.issue.html_url }}
+
+      - name: Log unhandled issue types
+        if: |
+          !contains(github.event.issue.labels.*.name, 'activity') && 
+          !contains(github.event.issue.labels.*.name, 'action') &&
+          !contains(github.event.issue.labels.*.name, 'feature') && 
+          !contains(github.event.issue.labels.*.name, 'defect') && 
+          !contains(github.event.issue.labels.*.name, 'task')
+        run: |
+          echo "Issue #${{ github.event.issue.number }} does not match expected issue types"
+          echo "Labels: ${{ join(github.event.issue.labels.*.name, ', ') }}"
