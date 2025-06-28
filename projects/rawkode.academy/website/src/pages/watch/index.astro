@@ -2,10 +2,10 @@
 export const prerender = false;
 
 import Button from "@/components/common/Button.vue";
-import PageHero from "@/components/common/PageHero.vue";
 import VideoMetadata from "@/components/html/video-metadata.astro";
 import VideoFeed from "@/components/video/video-feed.astro";
 import Page from "@/wrappers/page.astro";
+import { GRAPHQL_ENDPOINT } from "astro:env/server";
 
 // Set cache headers for ISR
 // Client cache: 5 minutes, Edge cache: 1 hour, Serve stale content for 24 hours during revalidation
@@ -49,6 +49,53 @@ const randomVideosQuery = `
     }
   }
 `;
+
+// Fetch latest video for hero section
+interface Video {
+	title: string;
+	thumbnailUrl: string;
+	duration: number;
+	slug: string;
+	publishedAt: string;
+	streamUrl: string;
+}
+
+let latestVideo: Video | null = null;
+try {
+	const response = await fetch(GRAPHQL_ENDPOINT, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			query: latestVideosQuery,
+			variables: { limit: 1 },
+		}),
+	});
+	const { data }: { data: Record<string, Video[]> } = await response.json();
+	latestVideo = data.getLatestVideos?.[0] || null;
+} catch (error) {
+	console.error('Failed to fetch latest video:', error);
+}
+
+function formatDuration(seconds: number) {
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const remainingSeconds = Math.floor(seconds % 60);
+
+	if (hours > 0) {
+		return `${hours}:${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+	}
+	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
+function formatDate(dateString: string) {
+	return new Date(dateString).toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	});
+}
 ---
 
 <Page title="Videos">
@@ -59,21 +106,101 @@ const randomVideosQuery = `
 		isVideoList={true}
 	/>
 
-	<!-- Hero Section -->
-	<PageHero
-		title="Live Streams & Video Content"
-		subtitle="Watch and learn from our extensive collection of cloud native tutorials, live coding sessions, and technical deep dives."
-		badge="Video Library"
-		stats={[
-			{ label: '500+ Hours' },
-			{ label: 'Weekly Streams' },
-			{ label: 'HD Quality' }
-		]}
-	>
-		<Fragment slot="actions">
-			<Button href="#latest-videos" variant="primary" size="lg">Watch Latest</Button>
-		</Fragment>
-	</PageHero>
+	<!-- Compact Hero Section with Featured Video -->
+	<section class="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+		<!-- Background decoration -->
+		<div class="absolute inset-0 pointer-events-none">
+			<div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-200 dark:bg-purple-900 rounded-full opacity-20 blur-3xl"></div>
+			<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-200 dark:bg-blue-900 rounded-full opacity-20 blur-3xl"></div>
+		</div>
+		
+		<div class="relative z-10 container mx-auto px-4 py-12">
+			<div class="max-w-6xl mx-auto">
+				<!-- Header Content -->
+				<div class="text-center mb-12">
+					<div class="mb-4">
+						<span class="px-3 py-1 text-sm font-semibold rounded-full bg-primary text-white shadow-lg">Video Library</span>
+					</div>
+					
+					<h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6">
+						Live Streams & Video Content
+					</h1>
+					
+					<p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+						Watch and learn from our extensive collection of cloud native tutorials, live coding sessions, and technical deep dives.
+					</p>
+					
+					<div class="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400 mb-8">
+						<span>500+ Hours</span>
+						<span>Weekly Streams</span>
+						<span>HD Quality</span>
+					</div>
+				</div>
+
+				<!-- Featured Latest Video -->
+				{latestVideo && (
+					<div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+						<div class="flex flex-col lg:flex-row">
+							<!-- Video Thumbnail -->
+							<div class="lg:w-1/2 relative">
+								<div class="absolute inset-0 bg-black bg-opacity-30 z-10 flex items-center justify-center group-hover:bg-opacity-50 transition-all">
+									<div class="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
+										<svg class="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 20 20">
+											<path d="M8 5v10l8-5-8-5z"/>
+										</svg>
+									</div>
+								</div>
+								
+								<img
+									src={latestVideo.thumbnailUrl}
+									alt={latestVideo.title}
+									class="w-full h-64 lg:h-full object-cover"
+								/>
+
+								<div class="absolute top-4 left-4 z-20">
+									<span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-600 text-white shadow-lg">
+										Latest Video
+									</span>
+								</div>
+
+								<div class="absolute bottom-4 right-4 z-20">
+									<span class="px-2 py-1 text-xs font-semibold rounded bg-black bg-opacity-75 text-white">
+										{formatDuration(latestVideo.duration)}
+									</span>
+								</div>
+							</div>
+
+							<!-- Video Content -->
+							<div class="lg:w-1/2 p-8 flex flex-col justify-center">
+								<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+									{latestVideo.title}
+								</h2>
+
+								<div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-6">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									Published {formatDate(latestVideo.publishedAt)}
+								</div>
+
+								<div class="flex gap-4">
+									<Button href={`/watch/${latestVideo.slug}`} variant="primary" size="lg">
+										<svg slot="icon-left" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+											<path d="M8 5v10l8-5-8-5z"/>
+										</svg>
+										Watch Now
+									</Button>
+									<Button href="#latest-videos" variant="secondary" size="lg">
+										Browse All
+									</Button>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	</section>
 
 	<div id="latest-videos" class="flex flex-col gap-12 video-feeds">
 		<style>
