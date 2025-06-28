@@ -3,7 +3,6 @@ export const prerender = false;
 
 import Button from "@/components/common/Button.vue";
 import VideoMetadata from "@/components/html/video-metadata.astro";
-import VideoFeed from "@/components/video/video-feed.astro";
 import Page from "@/wrappers/page.astro";
 import { GRAPHQL_ENDPOINT } from "astro:env/server";
 
@@ -24,22 +23,14 @@ Astro.response.headers.set(
 // Add build timestamp for debugging
 Astro.response.headers.set("X-Build-Time", new Date().toISOString());
 
-const allVideosQuery = `
-  query GetAllVideos {
-    getAllVideos {
-      title
-      thumbnailUrl
-      duration
-      slug
-      publishedAt
-      streamUrl
-    }
-  }
-`;
+// Get page number from URL parameters (default to 1)
+const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1"));
+const videosPerPage = 16;
+const offset = (currentPage - 1) * videosPerPage;
 
-const randomVideosQuery = `
-  query GetRandomVideos($limit: Int!) {
-    getRandomVideos(limit: $limit) {
+const latestVideosQuery = `
+  query GetLatestVideos($limit: Int!, $offset: Int!) {
+    getLatestVideos(limit: $limit, offset: $offset) {
       title
       thumbnailUrl
       duration
@@ -61,6 +52,8 @@ interface Video {
 }
 
 let latestVideo: Video | null = null;
+let videos: Video[] = [];
+let hasNextPage = false;
 
 // Only fetch if GRAPHQL_ENDPOINT is available
 if (GRAPHQL_ENDPOINT) {
@@ -68,40 +61,68 @@ if (GRAPHQL_ENDPOINT) {
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 		
-		const response = await fetch(GRAPHQL_ENDPOINT, {
+		// Fetch latest video for hero (only on page 1)
+		if (currentPage === 1) {
+			const heroResponse = await fetch(GRAPHQL_ENDPOINT, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					query: `
+					  query GetLatestVideo {
+					    getLatestVideos(limit: 1) {
+					      title
+					      thumbnailUrl
+					      duration
+					      slug
+					      publishedAt
+					      streamUrl
+					    }
+					  }
+					`,
+				}),
+				signal: controller.signal,
+			});
+
+			if (heroResponse.ok) {
+				const heroResult: any = await heroResponse.json();
+				if (heroResult.data?.getLatestVideos?.length > 0) {
+					latestVideo = heroResult.data.getLatestVideos[0];
+				}
+			}
+		}
+
+		// Fetch videos for pagination
+		const videosResponse = await fetch(GRAPHQL_ENDPOINT, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				query: `
-				  query GetLatestVideo {
-				    getLatestVideos(limit: 1) {
-				      title
-				      thumbnailUrl
-				      duration
-				      slug
-				      publishedAt
-				      streamUrl
-				    }
-				  }
-				`,
+				query: latestVideosQuery,
+				variables: { limit: videosPerPage + 1, offset }, // Fetch one extra to check if there's a next page
 			}),
 			signal: controller.signal,
 		});
 
 		clearTimeout(timeoutId);
 
-		if (response.ok) {
-			const result: any = await response.json();
-			if (result.data?.getLatestVideos?.length > 0) {
-				latestVideo = result.data.getLatestVideos[0];
-			}
+		if (videosResponse.ok) {
+			const videosResult: any = await videosResponse.json();
+			const fetchedVideos = videosResult.data?.getLatestVideos || [];
+			
+			// If we got more than videosPerPage, there's a next page
+			hasNextPage = fetchedVideos.length > videosPerPage;
+			
+			// Take only the videos for this page
+			videos = fetchedVideos.slice(0, videosPerPage);
 		}
 	} catch (error) {
 		// Fail silently - hero will just show without featured video
-		console.error('Failed to fetch latest video for hero:', error);
+		console.error('Failed to fetch videos:', error);
 		latestVideo = null;
+		videos = [];
 	}
 }
 
@@ -125,15 +146,16 @@ function formatDate(dateString: string) {
 }
 ---
 
-<Page title="Videos">
+<Page title={currentPage > 1 ? `Videos - Page ${currentPage}` : "Videos"}>
 	<VideoMetadata
 		slot="extra-head"
-		title="Rawkode Academy Videos"
-		description="Explore our collection of educational videos about cloud native technologies, development practices, and more."
+		title={currentPage > 1 ? `Rawkode Academy Videos - Page ${currentPage}` : "Rawkode Academy Videos"}
+		description={currentPage > 1 ? `Browse videos from Rawkode Academy, page ${currentPage}.` : "Explore our collection of educational videos about cloud native technologies, development practices, and more."}
 		isVideoList={true}
 	/>
 
-	<!-- Compact Hero Section with Featured Video -->
+	<!-- Compact Hero Section with Featured Video (only on page 1) -->
+	{currentPage === 1 && (
 	<section class="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
 		<!-- Background decoration -->
 		<div class="absolute inset-0 pointer-events-none">
@@ -235,95 +257,78 @@ function formatDate(dateString: string) {
 			</div>
 		</div>
 	</section>
+	)}
 
-	<div id="latest-videos" class="flex flex-col gap-12 video-feeds">
-		<style>
-			:root {
-				--primary: #5f5ed7;
-				--secondary: #00ceff;
-			}
+	<!-- Latest Videos Section with Pagination -->
+	<section class="py-12">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center">
+				<h2 class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
+					{currentPage > 1 ? `Latest Videos - Page ${currentPage}` : "Latest Videos"}
+				</h2>
+				<p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
+					{currentPage > 1 ? `Page ${currentPage} of our latest videos` : "Stay up to date with our newest content"}
+				</p>
+			</div>
+			
+			<div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+				{videos.map((video: Video) => (
+					<a href={`/watch/${video.slug}`} class="group">
+						<div class="relative aspect-video">
+							<img
+								src={video.thumbnailUrl}
+								alt={video.title}
+								class="w-full h-full object-cover rounded-lg shadow-md transition-transform group-hover:scale-105"
+								loading="lazy"
+							/>
+							<div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
+								{formatDuration(video.duration)}
+							</div>
+						</div>
+						<div class="mt-4">
+							<h3 class="text-lg font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2">
+								{video.title}
+							</h3>
+							<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+								{formatDate(video.publishedAt)}
+							</p>
+						</div>
+					</a>
+				))}
+			</div>
+			
+			{videos.length === 0 && (
+				<div class="text-center mt-12">
+					<p class="text-gray-500 dark:text-gray-400">No videos found for this page.</p>
+				</div>
+			)}
 
-			.video-feeds {
-				display: flex;
-				flex-direction: column;
-				gap: 3rem;
-			}
-
-			.video-feeds > :global(*:not(:last-child)) {
-				position: relative;
-				padding-bottom: 3rem;
-			}
-
-			@keyframes expandFromCenter {
-				0% {
-					transform: scaleX(0);
-					opacity: 0;
-				}
-				100% {
-					transform: scaleX(1);
-					opacity: 1;
-				}
-			}
-
-			@keyframes separatorScroll {
-				0% {
-					transform: scaleX(0);
-					opacity: 0;
-				}
-				25%,
-				75% {
-					transform: scaleX(1);
-					opacity: 1;
-				}
-				100% {
-					transform: scaleX(0);
-					opacity: 0;
-				}
-			}
-
-			.video-feeds > :global(*:not(:last-child))::after {
-				content: "";
-				position: absolute;
-				bottom: 0;
-				left: 0;
-				width: 100%;
-				height: 4px;
-				transform-origin: center;
-
-				/* Fallback animation */
-				animation: expandFromCenter 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-
-				/* Scroll-linked animation */
-				animation-timeline: view();
-				animation-name: separatorScroll;
-				animation-range: entry-crossing exit-crossing; /* More fluid range */
-				animation-timing-function: ease; /* Smooth easing */
-			}
-		</style>
-
-		<VideoFeed
-			title="Latest Videos"
-			description="Stay up to date with our newest content"
-			operation="getAllVideos"
-			query={allVideosQuery}
-			limit={12}
-		/>
-
-		<div class="text-center mt-8">
-			<a
-				href="/watch/latest"
-				class="inline-block px-6 py-3 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-				>View All</a
-			>
+			<!-- Pagination Controls -->
+			{(currentPage > 1 || hasNextPage) && (
+				<div class="mt-12 flex justify-center items-center space-x-4">
+					{currentPage > 1 && (
+						<a
+							href={currentPage === 2 ? "/watch" : `/watch?page=${currentPage - 1}`}
+							class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+						>
+							← Previous
+						</a>
+					)}
+					
+					<span class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+						Page {currentPage}
+					</span>
+					
+					{hasNextPage && (
+						<a
+							href={`/watch?page=${currentPage + 1}`}
+							class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+						>
+							Next →
+						</a>
+					)}
+				</div>
+			)}
 		</div>
-
-		<VideoFeed
-			server:defer
-			title="Random Videos"
-			description="Discover something new from our collection"
-			operation="getRandomVideos"
-			query={randomVideosQuery}
-			limit={12}
-		/>
-	</div>
+	</section>
 </Page>
