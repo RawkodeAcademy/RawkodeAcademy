@@ -6,11 +6,10 @@ import { GRAPHQL_ENDPOINT } from "astro:env/server";
 
 const graphQLClient = new GraphQLClient(GRAPHQL_ENDPOINT);
 
-// We'll get the latest 400, which should be all or almost all
-// Anything else can be fetched dynamically
+// Fetch videos in smaller batches to avoid SQL variable limits
 const graphQLQuery = gql`
-  query {
-    videos: getLatestVideos(limit: 400) {
+  query GetVideos($limit: Int!, $offset: Int!) {
+    videos: getLatestVideos(limit: $limit, offset: $offset) {
       id
       slug
       title
@@ -53,10 +52,38 @@ interface GraphQLResponse {
 
 const videos = defineCollection({
 	loader: async () => {
-		const { videos }: GraphQLResponse =
-			await graphQLClient.request(graphQLQuery);
+		const allVideos: Video[] = [];
+		const batchSize = 16; // Use smaller batches to avoid SQL variable limits
+		let offset = 0;
+		let hasMoreVideos = true;
 
-		return videos;
+		while (hasMoreVideos) {
+			try {
+				const { videos: batchVideos }: GraphQLResponse =
+					await graphQLClient.request(graphQLQuery, { 
+						limit: batchSize, 
+						offset 
+					});
+
+				if (batchVideos.length === 0) {
+					hasMoreVideos = false;
+				} else {
+					allVideos.push(...batchVideos);
+					offset += batchSize;
+					
+					// Safety check to prevent infinite loops
+					if (offset > 1000) {
+						console.warn('Reached maximum offset limit of 1000 videos');
+						break;
+					}
+				}
+			} catch (error) {
+				console.error(`Error fetching videos batch at offset ${offset}:`, error);
+				break;
+			}
+		}
+
+		return allVideos;
 	},
 	schema: z.object({
 		id: z.string(),
