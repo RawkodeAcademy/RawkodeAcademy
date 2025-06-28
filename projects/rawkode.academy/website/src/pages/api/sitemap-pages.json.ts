@@ -31,7 +31,7 @@ interface Video {
 }
 
 interface GetVideosResponse {
-	getLatestVideos: Video[];
+	getAllVideos: Video[];
 }
 
 // External links that aren't in the sitemap
@@ -206,8 +206,8 @@ async function generateNavigationItems(
 
 		// Add technologies
 		const getTechnologiesQuery = /* GraphQL */ `
-      query GetTechnologies($limit: Int) {
-        getTechnologies(limit: $limit) {
+      query GetTechnologies {
+        getTechnologies {
           id
           name
           description
@@ -219,7 +219,6 @@ async function generateNavigationItems(
 		const techData = await request<GetTechnologiesResponse>(
 			endpoint,
 			getTechnologiesQuery,
-			{ limit: 32 }, // Fetch up to 32 technologies to avoid SQL variable limits
 		);
 
 		techData.getTechnologies.forEach((tech) => {
@@ -235,8 +234,8 @@ async function generateNavigationItems(
 
 		// Add videos
 		const getVideosQuery = /* GraphQL */ `
-      query GetVideos($limit: Int) {
-        getLatestVideos(limit: $limit) {
+      query GetVideos {
+        getAllVideos {
           id
           slug
           title
@@ -248,10 +247,9 @@ async function generateNavigationItems(
 		const videoData = await request<GetVideosResponse>(
 			endpoint,
 			getVideosQuery,
-			{ limit: 32 }, // Fetch up to 32 videos to avoid SQL variable limits
 		);
 
-		videoData.getLatestVideos.forEach((video) => {
+		videoData.getAllVideos.forEach((video) => {
 			navigationItems.push({
 				id: `/watch/${video.slug}`,
 				title: video.title,

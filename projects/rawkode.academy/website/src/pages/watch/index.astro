@@ -24,9 +24,9 @@ Astro.response.headers.set(
 // Add build timestamp for debugging
 Astro.response.headers.set("X-Build-Time", new Date().toISOString());
 
-const latestVideosQuery = `
-  query GetLatestVideos($limit: Int!) {
-    getLatestVideos(limit: $limit) {
+const allVideosQuery = `
+  query GetAllVideos {
+    getAllVideos {
       title
       thumbnailUrl
       duration
@@ -74,8 +74,18 @@ if (GRAPHQL_ENDPOINT) {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				query: latestVideosQuery,
-				variables: { limit: 1 }, // Only fetch 1 video
+				query: `
+				  query GetLatestVideo {
+				    getLatestVideos(limit: 1) {
+				      title
+				      thumbnailUrl
+				      duration
+				      slug
+				      publishedAt
+				      streamUrl
+				    }
+				  }
+				`,
 			}),
 			signal: controller.signal,
 		});
@@ -294,8 +304,8 @@ function formatDate(dateString: string) {
 		<VideoFeed
 			title="Latest Videos"
 			description="Stay up to date with our newest content"
-			operation="getLatestVideos"
-			query={latestVideosQuery}
+			operation="getAllVideos"
+			query={allVideosQuery}
 			limit={12}
 		/>
 
