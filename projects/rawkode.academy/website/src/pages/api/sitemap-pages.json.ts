@@ -219,7 +219,7 @@ async function generateNavigationItems(
 		const techData = await request<GetTechnologiesResponse>(
 			endpoint,
 			getTechnologiesQuery,
-			{ limit: 100 }, // Fetch up to 100 technologies for command palette
+			{ limit: 32 }, // Fetch up to 32 technologies to avoid SQL variable limits
 		);
 
 		techData.getTechnologies.forEach((tech) => {
@@ -248,7 +248,7 @@ async function generateNavigationItems(
 		const videoData = await request<GetVideosResponse>(
 			endpoint,
 			getVideosQuery,
-			{ limit: 50 }, // Fetch up to 50 videos for command palette
+			{ limit: 32 }, // Fetch up to 32 videos to avoid SQL variable limits
 		);
 
 		videoData.getLatestVideos.forEach((video) => {
