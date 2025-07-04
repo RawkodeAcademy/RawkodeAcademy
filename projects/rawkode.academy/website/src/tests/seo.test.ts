@@ -170,14 +170,15 @@ describe("Structured Data Validation", () => {
 			},
 		];
 
-		const mockAuthors = [
-			{
-				data: {
-					name: "Test Author",
-					handle: "testauthor",
-				},
-			},
-		];
+		// Note: mockAuthors would be used if we were testing author-related JSON-LD
+		// const mockAuthors = [
+		// 	{
+		// 		data: {
+		// 			name: "Test Author",
+		// 			handle: "testauthor",
+		// 		},
+		// 	},
+		// ];
 
 		// Simulate the courseJsonLd creation logic
 		const courseJsonLd = {
