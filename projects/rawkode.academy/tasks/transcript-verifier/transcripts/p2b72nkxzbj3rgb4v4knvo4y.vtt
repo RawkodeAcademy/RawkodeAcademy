@@ -1,0 +1,5144 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: f983739c-93a8-467c-aa98-c7a10f730e9e
+Created: 2025-04-29T21:26:18.141Z
+Duration: 4145.031
+Channels: 1
+
+00:01:26.230 --> 00:01:27.030
+<v Speaker 0>Hello,
+
+00:01:27.110 --> 00:01:30.230
+<v Speaker 0>and welcome to today's episode of Rawkode Live.
+
+00:01:30.855 --> 00:01:32.455
+<v Speaker 0>I'm your host Rawkode,
+
+00:01:32.455 --> 00:01:34.215
+<v Speaker 0>and I am very pleased today
+
+00:01:34.455 --> 00:01:37.655
+<v Speaker 0>to be covering the Cortex project, a time
+
+00:01:37.655 --> 00:01:40.775
+<v Speaker 0>series horizontally scalable time series database, which is
+
+00:01:40.775 --> 00:01:42.695
+<v Speaker 0>part of the cloud native foundation as an
+
+00:01:42.695 --> 00:01:43.575
+<v Speaker 0>incubating project.
+
+00:01:44.820 --> 00:01:48.500
+<v Speaker 0>I wanna first thank my employer, Equinix metal.
+
+00:01:48.500 --> 00:01:51.060
+<v Speaker 0>They give me the time to invest in
+
+00:01:51.060 --> 00:01:53.140
+<v Speaker 0>making this show and producing content that we
+
+00:01:53.140 --> 00:01:55.220
+<v Speaker 0>can all learn together with. So thank you
+
+00:01:55.220 --> 00:01:56.420
+<v Speaker 0>very much to Equinix metal.
+
+00:01:56.935 --> 00:01:59.095
+<v Speaker 0>They have given me a code, Rawkode dash
+
+00:01:59.095 --> 00:02:01.335
+<v Speaker 0>live. You can use this to sign up
+
+00:02:01.335 --> 00:02:04.135
+<v Speaker 0>for the bare metal cloud and get $50
+
+00:02:04.135 --> 00:02:06.215
+<v Speaker 0>of compute time. Now you can use that
+
+00:02:06.215 --> 00:02:09.495
+<v Speaker 0>$50 you know wisely and use smaller boxes
+
+00:02:09.495 --> 00:02:11.920
+<v Speaker 0>and have lots of compute time Or you
+
+00:02:11.920 --> 00:02:13.520
+<v Speaker 0>can splurge it really really quickly in a
+
+00:02:13.520 --> 00:02:16.000
+<v Speaker 0>few hours with some massive bare metal machines.
+
+00:02:16.000 --> 00:02:17.920
+<v Speaker 0>So you know, pick your poison.
+
+00:02:18.800 --> 00:02:21.840
+<v Speaker 0>We have a Discord community where we allow
+
+00:02:21.840 --> 00:02:24.319
+<v Speaker 0>people to chat about these episodes afterwards. So
+
+00:02:24.319 --> 00:02:25.680
+<v Speaker 0>if you're not watching live and you have
+
+00:02:25.680 --> 00:02:27.495
+<v Speaker 0>questions, feel free to drop in and chat
+
+00:02:27.495 --> 00:02:29.175
+<v Speaker 0>to us there. Of course, if you are
+
+00:02:29.175 --> 00:02:32.215
+<v Speaker 0>watching live, please get involved. Leave us comments
+
+00:02:32.215 --> 00:02:35.015
+<v Speaker 0>in the YouTube section, the YouTube comment section
+
+00:02:35.015 --> 00:02:36.775
+<v Speaker 0>and we'll be happy to tackle them as
+
+00:02:36.775 --> 00:02:37.415
+<v Speaker 0>we go.
+
+00:02:38.055 --> 00:02:39.735
+<v Speaker 0>As I said, we're gonna cover Cortex today
+
+00:02:39.735 --> 00:02:42.055
+<v Speaker 0>and I have a fantastic guest with me.
+
+00:02:42.055 --> 00:02:43.720
+<v Speaker 0>So let's bring in
+
+00:02:44.360 --> 00:02:46.680
+<v Speaker 0>Ganesh Vernikar. How are you Ganesh?
+
+00:02:47.000 --> 00:02:49.640
+<v Speaker 1>I'm good. How are you, David? Yeah. I'm
+
+00:02:49.640 --> 00:02:52.360
+<v Speaker 0>very well. Thank you very much. So you
+
+00:02:52.360 --> 00:02:54.280
+<v Speaker 0>are an engineer at Grafana,
+
+00:02:54.520 --> 00:02:57.055
+<v Speaker 0>a maintainer on a Prometheus project and a
+
+00:02:57.055 --> 00:02:59.055
+<v Speaker 0>contributor to Cortex.
+
+00:02:59.055 --> 00:03:00.255
+<v Speaker 0>Can you just
+
+00:03:00.495 --> 00:03:02.094
+<v Speaker 0>but maybe add a little bit of flavor
+
+00:03:02.094 --> 00:03:03.135
+<v Speaker 0>to that. Tell us a little bit more
+
+00:03:03.135 --> 00:03:04.175
+<v Speaker 0>about Grafana, please.
+
+00:03:04.495 --> 00:03:06.734
+<v Speaker 1>Yeah. So I'm a software engineer at Grafana
+
+00:03:06.734 --> 00:03:09.480
+<v Speaker 1>Labs, as David said, and I have been
+
+00:03:09.480 --> 00:03:11.720
+<v Speaker 1>a maintainer of Prometheus project since one and
+
+00:03:11.720 --> 00:03:14.440
+<v Speaker 1>a half years. And I maintain the TSDB
+
+00:03:14.440 --> 00:03:16.520
+<v Speaker 1>part of the Prometheus and sometimes work on
+
+00:03:16.520 --> 00:03:19.880
+<v Speaker 1>the PromQL part. And since I joined Grafana,
+
+00:03:19.880 --> 00:03:21.560
+<v Speaker 1>because we have Cortex as our
+
+00:03:22.385 --> 00:03:24.225
+<v Speaker 1>back end for the hosted solutions,
+
+00:03:24.305 --> 00:03:27.585
+<v Speaker 1>I also contribute to Cortex regularly.
+
+00:03:28.145 --> 00:03:30.305
+<v Speaker 1>So that's about the background that I could
+
+00:03:30.305 --> 00:03:33.345
+<v Speaker 1>say. Nice. I mean, not just a maintainer
+
+00:03:33.345 --> 00:03:36.065
+<v Speaker 0>or Premiere, but the actual TSDB section as
+
+00:03:36.065 --> 00:03:37.750
+<v Speaker 0>well. I mean, it takes a very special
+
+00:03:37.750 --> 00:03:39.350
+<v Speaker 0>kind of person to build a database and
+
+00:03:39.350 --> 00:03:41.270
+<v Speaker 0>work on a database. So let's say, I'm
+
+00:03:41.270 --> 00:03:42.630
+<v Speaker 0>glad it's you and not me. That's for
+
+00:03:42.630 --> 00:03:43.110
+<v Speaker 0>sure.
+
+00:03:43.990 --> 00:03:44.710
+<v Speaker 0>So
+
+00:03:45.030 --> 00:03:46.150
+<v Speaker 0>can you tell me
+
+00:03:46.790 --> 00:03:47.510
+<v Speaker 0>just,
+
+00:03:47.830 --> 00:03:49.110
+<v Speaker 0>you know, when it when it comes to
+
+00:03:49.110 --> 00:03:51.030
+<v Speaker 0>Cortex, right, there there are many flavors of
+
+00:03:51.030 --> 00:03:51.750
+<v Speaker 0>Prometheus
+
+00:03:52.185 --> 00:03:53.065
+<v Speaker 0>kind of,
+
+00:03:53.705 --> 00:03:55.625
+<v Speaker 0>I don't know, evolutions, I guess. You know,
+
+00:03:55.625 --> 00:03:57.545
+<v Speaker 0>other projects that are using Prometheus as a
+
+00:03:57.545 --> 00:03:59.944
+<v Speaker 0>core and API and and adopting some of
+
+00:03:59.944 --> 00:04:02.105
+<v Speaker 0>those best practices that Prometheus has kinda brought
+
+00:04:02.105 --> 00:04:02.665
+<v Speaker 0>forward
+
+00:04:02.905 --> 00:04:04.745
+<v Speaker 0>as we all adopted cloud native and and
+
+00:04:04.745 --> 00:04:06.905
+<v Speaker 0>Kubernetes. So can you just tell us why
+
+00:04:06.905 --> 00:04:07.625
+<v Speaker 0>Cortex
+
+00:04:08.300 --> 00:04:10.300
+<v Speaker 0>exists? What what space is it trying to
+
+00:04:10.300 --> 00:04:12.780
+<v Speaker 0>fill inside of here? Yeah. Definitely.
+
+00:04:13.099 --> 00:04:13.660
+<v Speaker 1>So,
+
+00:04:14.459 --> 00:04:17.100
+<v Speaker 1>this Cortex or any other project like Thanos,
+
+00:04:17.100 --> 00:04:19.899
+<v Speaker 1>m three, Victorimetrics, etcetera, they don't aim to
+
+00:04:19.899 --> 00:04:23.020
+<v Speaker 1>replace Prometheus as is, but they extend what
+
+00:04:23.020 --> 00:04:24.060
+<v Speaker 1>we
+
+00:04:23.855 --> 00:04:25.535
+<v Speaker 1>do with the Prometheus data.
+
+00:04:25.855 --> 00:04:27.695
+<v Speaker 1>Before we can talk about why we need
+
+00:04:27.695 --> 00:04:29.855
+<v Speaker 1>Cortex, we let's
+
+00:04:29.855 --> 00:04:31.375
+<v Speaker 1>talk about what's
+
+00:04:32.015 --> 00:04:34.815
+<v Speaker 1>lacking in Prometheus and what this gap is
+
+00:04:34.815 --> 00:04:37.480
+<v Speaker 1>in. Actually, made some notes so that I
+
+00:04:37.480 --> 00:04:40.760
+<v Speaker 1>don't forget telling something in this. Yeah. So
+
+00:04:40.760 --> 00:04:43.080
+<v Speaker 1>first, talking about the global view. Let's say
+
+00:04:43.080 --> 00:04:46.120
+<v Speaker 1>you have Prometheus in multiple Kubernetes cluster,
+
+00:04:46.520 --> 00:04:48.680
+<v Speaker 1>and you want to have a global view
+
+00:04:48.680 --> 00:04:50.840
+<v Speaker 1>of all the Prometheus that you have installed
+
+00:04:50.840 --> 00:04:53.935
+<v Speaker 1>in multiple clusters that you have. That's
+
+00:04:53.935 --> 00:04:56.895
+<v Speaker 1>actually doable in Prometheus, but there is something
+
+00:04:56.895 --> 00:04:58.495
+<v Speaker 1>called Prometheus Federation
+
+00:04:58.575 --> 00:05:01.775
+<v Speaker 1>where you run another prem Prometheus which scrapes
+
+00:05:01.855 --> 00:05:04.175
+<v Speaker 1>the existing Prometheus and you scrape out of
+
+00:05:04.175 --> 00:05:07.470
+<v Speaker 1>Prometheus. But still, are limited by what Prometheus
+
+00:05:07.470 --> 00:05:09.470
+<v Speaker 1>can do in a single machine, which is
+
+00:05:09.710 --> 00:05:12.670
+<v Speaker 1>super high, but still there's some lacking. But
+
+00:05:12.670 --> 00:05:15.070
+<v Speaker 1>let's say you want to do So
+
+00:05:15.630 --> 00:05:18.110
+<v Speaker 1>you have two Prometheus scraping the same stuff,
+
+00:05:18.110 --> 00:05:19.230
+<v Speaker 1>and you have a federation
+
+00:05:20.115 --> 00:05:22.355
+<v Speaker 1>on those two Prometheus to have a global
+
+00:05:22.355 --> 00:05:25.315
+<v Speaker 1>view and multiple other Prometheus.
+
+00:05:25.475 --> 00:05:27.795
+<v Speaker 1>But, again, if you have a single Prometheus
+
+00:05:27.795 --> 00:05:30.195
+<v Speaker 1>for federation, that's single point of failure, and
+
+00:05:30.195 --> 00:05:31.475
+<v Speaker 1>you don't have So
+
+00:05:31.475 --> 00:05:33.555
+<v Speaker 1>we'll have for Prometheus. So you can see
+
+00:05:33.555 --> 00:05:35.750
+<v Speaker 1>where it's going. It's getting kind of messy
+
+00:05:35.750 --> 00:05:36.630
+<v Speaker 1>handling
+
+00:05:36.630 --> 00:05:38.150
+<v Speaker 1>multiple Prometheus.
+
+00:05:38.390 --> 00:05:40.550
+<v Speaker 1>So that's one of them. Cortex
+
+00:05:40.550 --> 00:05:44.230
+<v Speaker 1>acts as a centralized database where you have
+
+00:05:44.230 --> 00:05:45.910
+<v Speaker 1>all the data of all the Prometheus of
+
+00:05:45.910 --> 00:05:47.750
+<v Speaker 1>your cluster, and you have a centralized view.
+
+00:05:48.575 --> 00:05:50.655
+<v Speaker 1>Another thing, multitenancy.
+
+00:05:50.735 --> 00:05:53.375
+<v Speaker 1>So when you are a large large organization,
+
+00:05:53.375 --> 00:05:56.015
+<v Speaker 1>you would like to have diff you like,
+
+00:05:56.015 --> 00:05:57.855
+<v Speaker 1>you have different teams, and sometimes you might
+
+00:05:57.855 --> 00:06:01.150
+<v Speaker 1>want to give access to a team for
+
+00:06:01.150 --> 00:06:03.389
+<v Speaker 1>some part of the return, not everything. And
+
+00:06:03.389 --> 00:06:06.430
+<v Speaker 1>Prometheus is not, multi tenant natively.
+
+00:06:07.230 --> 00:06:10.430
+<v Speaker 1>So Cortex is multi tenant natively where if
+
+00:06:10.510 --> 00:06:13.550
+<v Speaker 1>you've you can say that some part some
+
+00:06:13.550 --> 00:06:16.275
+<v Speaker 1>group of Prometheus servers are of one tenant,
+
+00:06:16.275 --> 00:06:18.675
+<v Speaker 1>some are other tenants, and everything is again
+
+00:06:18.675 --> 00:06:20.355
+<v Speaker 1>in a centralized store.
+
+00:06:21.315 --> 00:06:25.155
+<v Speaker 1>And, yeah, Prometheus scales very well vertically.
+
+00:06:26.195 --> 00:06:26.755
+<v Speaker 1>And
+
+00:06:27.330 --> 00:06:28.850
+<v Speaker 1>but there is a limit
+
+00:06:29.330 --> 00:06:31.490
+<v Speaker 1>of how much memory or how much CPU
+
+00:06:31.490 --> 00:06:32.530
+<v Speaker 1>that you can have.
+
+00:06:32.850 --> 00:06:34.130
+<v Speaker 1>So Cortex
+
+00:06:34.130 --> 00:06:36.050
+<v Speaker 1>fills that gap by having
+
+00:06:36.290 --> 00:06:39.250
+<v Speaker 1>a horizontally distributed database where it can scale
+
+00:06:39.250 --> 00:06:40.770
+<v Speaker 1>horizontally unlimited
+
+00:06:41.085 --> 00:06:41.965
+<v Speaker 1>metrics.
+
+00:06:42.285 --> 00:06:43.485
+<v Speaker 1>So those are a few things that I
+
+00:06:43.485 --> 00:06:45.885
+<v Speaker 1>can see right now. Yeah. Awesome. Those are
+
+00:06:45.885 --> 00:06:48.285
+<v Speaker 0>things that I think, you know, as, you
+
+00:06:48.285 --> 00:06:50.685
+<v Speaker 0>know, as so many people are adopting Kubernetes,
+
+00:06:50.685 --> 00:06:53.565
+<v Speaker 0>horizontal scalability is now almost just something that
+
+00:06:53.565 --> 00:06:55.405
+<v Speaker 0>we we we take for granted.
+
+00:06:55.880 --> 00:06:58.120
+<v Speaker 0>Yeah. And well, at least in some applications.
+
+00:06:58.120 --> 00:06:59.560
+<v Speaker 0>But when it comes to databases, this is
+
+00:06:59.560 --> 00:07:01.720
+<v Speaker 0>a completely different domain, a completely different problem
+
+00:07:01.720 --> 00:07:03.960
+<v Speaker 0>and a really good space that Cortex is
+
+00:07:03.960 --> 00:07:05.960
+<v Speaker 0>trying to kind of fill a void
+
+00:07:06.200 --> 00:07:07.880
+<v Speaker 0>and and solve some challenges. So I'm really
+
+00:07:07.880 --> 00:07:08.760
+<v Speaker 0>excited to see
+
+00:07:09.815 --> 00:07:11.895
+<v Speaker 0>how we can get started with Cortex and
+
+00:07:11.895 --> 00:07:13.095
+<v Speaker 0>how we can use it for all of
+
+00:07:13.095 --> 00:07:14.455
+<v Speaker 0>our our metrics. Yeah.
+
+00:07:14.935 --> 00:07:16.055
+<v Speaker 0>Okay. So
+
+00:07:18.135 --> 00:07:19.415
+<v Speaker 0>we're going to
+
+00:07:20.295 --> 00:07:22.135
+<v Speaker 0>I think today's a little bit different from
+
+00:07:22.135 --> 00:07:24.055
+<v Speaker 0>normal. We're gonna split this into multiple sections.
+
+00:07:24.055 --> 00:07:26.430
+<v Speaker 0>So we're we're gonna cover the installation of
+
+00:07:26.430 --> 00:07:28.669
+<v Speaker 0>of Cortex and some hardware that I preconfigured.
+
+00:07:28.669 --> 00:07:30.750
+<v Speaker 0>So Let me get my screen on.
+
+00:07:31.229 --> 00:07:33.789
+<v Speaker 0>So this is Equinix's little console. I have
+
+00:07:33.789 --> 00:07:35.949
+<v Speaker 0>spun up two bare metal machines, Cortex one
+
+00:07:35.949 --> 00:07:37.229
+<v Speaker 0>and Cortex two. I don't know if we
+
+00:07:37.229 --> 00:07:38.830
+<v Speaker 0>need them, but that's alright. I'd like to
+
+00:07:38.830 --> 00:07:39.710
+<v Speaker 0>have them available.
+
+00:07:41.044 --> 00:07:42.805
+<v Speaker 0>Now I believe we're gonna run through getting
+
+00:07:42.805 --> 00:07:44.725
+<v Speaker 0>started on one of these machines.
+
+00:07:45.044 --> 00:07:47.365
+<v Speaker 0>Yes. And then you wanna cover a little
+
+00:07:47.365 --> 00:07:49.285
+<v Speaker 0>bit of the architecture, which I'm super excited
+
+00:07:49.285 --> 00:07:51.365
+<v Speaker 0>for. And you think you've got a demo
+
+00:07:51.365 --> 00:07:53.685
+<v Speaker 0>and then we're gonna try and
+
+00:07:53.845 --> 00:07:57.840
+<v Speaker 0>rebuild that demo ourselves on this computer. That's
+
+00:07:57.840 --> 00:07:58.480
+<v Speaker 0>an array. Okay.
+
+00:07:58.960 --> 00:07:59.600
+<v Speaker 0>Awesome.
+
+00:08:00.160 --> 00:08:02.000
+<v Speaker 0>So should we Or maybe we could we
+
+00:08:02.000 --> 00:08:03.759
+<v Speaker 1>could be bold and just do all the
+
+00:08:03.759 --> 00:08:05.680
+<v Speaker 1>demo in your machine itself. It should be
+
+00:08:05.680 --> 00:08:06.320
+<v Speaker 1>simple.
+
+00:08:07.840 --> 00:08:09.199
+<v Speaker 0>I mean, I I do like to be
+
+00:08:09.199 --> 00:08:10.695
+<v Speaker 0>bold. Yeah. Definitely.
+
+00:08:10.695 --> 00:08:12.215
+<v Speaker 0>I've broken a few things on this show
+
+00:08:12.215 --> 00:08:13.975
+<v Speaker 0>before. I'm not I'm not scared of doing
+
+00:08:13.975 --> 00:08:16.055
+<v Speaker 0>that again. So Yeah. Shall
+
+00:08:16.535 --> 00:08:17.975
+<v Speaker 0>what do wanna do first? Shall we get
+
+00:08:17.975 --> 00:08:19.735
+<v Speaker 0>Cortex installed on one of these machines and
+
+00:08:19.735 --> 00:08:21.015
+<v Speaker 0>go through the Yeah. Let's,
+
+00:08:21.175 --> 00:08:23.735
+<v Speaker 1>yeah, let's get started with the doc. So
+
+00:08:24.700 --> 00:08:27.660
+<v Speaker 1>in the document, you can click on documentation
+
+00:08:27.660 --> 00:08:29.260
+<v Speaker 1>and and
+
+00:08:29.260 --> 00:08:31.419
+<v Speaker 1>click on getting started. We have all the
+
+00:08:31.419 --> 00:08:33.179
+<v Speaker 1>steps that we can do. And click on
+
+00:08:33.179 --> 00:08:35.419
+<v Speaker 1>block storage, which is going to be the
+
+00:08:35.820 --> 00:08:38.539
+<v Speaker 1>next default storage, which does not involve an
+
+00:08:38.539 --> 00:08:39.100
+<v Speaker 1>index tool.
+
+00:08:42.085 --> 00:08:44.485
+<v Speaker 0>Okay. So First thing, yeah, first thing is
+
+00:08:44.485 --> 00:08:45.765
+<v Speaker 1>to clone the repo.
+
+00:08:48.245 --> 00:08:49.765
+<v Speaker 0>The RubyFace repository?
+
+00:08:50.085 --> 00:08:52.725
+<v Speaker 1>No. Cortex. Cortex. Got you. Got you. Yeah.
+
+00:08:52.725 --> 00:08:54.885
+<v Speaker 1>Yeah. You can clone both of them. Like,
+
+00:08:57.180 --> 00:08:59.899
+<v Speaker 1>Cortex is a long term storage solution for
+
+00:08:59.899 --> 00:09:02.860
+<v Speaker 1>Prometheus. So Prometheus has to push data to
+
+00:09:02.860 --> 00:09:03.740
+<v Speaker 1>Cortex.
+
+00:09:04.779 --> 00:09:06.940
+<v Speaker 1>So we will have both Prometheus and Cortex
+
+00:09:06.940 --> 00:09:07.339
+<v Speaker 1>running.
+
+00:09:08.245 --> 00:09:09.125
+<v Speaker 0>Alright.
+
+00:09:09.365 --> 00:09:11.845
+<v Speaker 0>Perfect. So let's get this clone done.
+
+00:09:19.525 --> 00:09:20.565
+<v Speaker 0>Good. It's fast.
+
+00:09:22.090 --> 00:09:23.850
+<v Speaker 0>There's always that doubt in your head. You're
+
+00:09:23.850 --> 00:09:25.770
+<v Speaker 0>like, oh crap. How big is this? What's
+
+00:09:25.770 --> 00:09:27.850
+<v Speaker 0>the connection gonna be like? But when things
+
+00:09:27.850 --> 00:09:29.450
+<v Speaker 0>just work, I'm a happy man. So
+
+00:09:30.170 --> 00:09:32.890
+<v Speaker 0>Yeah. Alright. So this is the Cortex cloned
+
+00:09:33.770 --> 00:09:36.015
+<v Speaker 0>based on we've just seen here. I'm assuming
+
+00:09:36.015 --> 00:09:37.375
+<v Speaker 0>you just want me to go ahead and
+
+00:09:37.375 --> 00:09:39.055
+<v Speaker 0>just try and and build this. Yes.
+
+00:09:40.015 --> 00:09:42.655
+<v Speaker 1>That's all. It's it's simple. It's just a
+
+00:09:42.655 --> 00:09:45.455
+<v Speaker 1>single binary. Whether it's scaled horizontally or want
+
+00:09:45.455 --> 00:09:46.975
+<v Speaker 1>to run on a single node, it's always
+
+00:09:46.975 --> 00:09:48.735
+<v Speaker 1>a single binary. Nice.
+
+00:09:51.670 --> 00:09:53.910
+<v Speaker 0>And how long does the build take?
+
+00:09:54.709 --> 00:09:57.269
+<v Speaker 1>It should be pretty quick. Like, the first
+
+00:09:57.269 --> 00:09:59.589
+<v Speaker 1>build is going to be slow. Yeah. It's
+
+00:09:59.589 --> 00:10:01.190
+<v Speaker 1>done. It's alright. I think I should do
+
+00:10:01.190 --> 00:10:01.990
+<v Speaker 0>a fair bit of a
+
+00:10:02.790 --> 00:10:04.334
+<v Speaker 0>blah blah blah blah blah. Words. I think
+
+00:10:04.334 --> 00:10:05.615
+<v Speaker 0>I should do a fair bit a fair
+
+00:10:05.615 --> 00:10:07.135
+<v Speaker 0>amount of hardware on this. Yeah. We've got
+
+00:10:07.135 --> 00:10:09.774
+<v Speaker 0>64 cores and, you know, 400 gig of
+
+00:10:09.774 --> 00:10:11.455
+<v Speaker 0>RAM. So it should be snappy.
+
+00:10:11.935 --> 00:10:13.454
+<v Speaker 0>So I'm assuming now I have a Cortex
+
+00:10:13.454 --> 00:10:15.214
+<v Speaker 0>binary, which I do. Yes.
+
+00:10:16.500 --> 00:10:18.980
+<v Speaker 1>And you need to pass some flags, like
+
+00:10:18.980 --> 00:10:20.340
+<v Speaker 1>you need the config
+
+00:10:20.820 --> 00:10:22.660
+<v Speaker 1>that's there in the getting started.
+
+00:10:23.860 --> 00:10:25.700
+<v Speaker 0>Ah. Yeah. So that was You have a
+
+00:10:25.940 --> 00:10:26.980
+<v Speaker 0>That's years ago. You
+
+00:10:27.620 --> 00:10:30.020
+<v Speaker 1>have a config already given to you to
+
+00:10:30.020 --> 00:10:31.885
+<v Speaker 1>get started. Alright. Do you mind if I
+
+00:10:31.885 --> 00:10:33.165
+<v Speaker 0>just pop that open and we'll take a
+
+00:10:33.165 --> 00:10:34.845
+<v Speaker 0>quick look? Yeah. Sure.
+
+00:10:37.325 --> 00:10:39.885
+<v Speaker 0>Okay. This has few stuff which are not
+
+00:10:39.885 --> 00:10:40.685
+<v Speaker 1>required
+
+00:10:40.765 --> 00:10:42.365
+<v Speaker 1>right now, but still it's there in the
+
+00:10:42.365 --> 00:10:42.925
+<v Speaker 1>getting started.
+
+00:10:45.170 --> 00:10:47.890
+<v Speaker 0>Yeah. Just always nosy, curious. I like to
+
+00:10:47.890 --> 00:10:50.610
+<v Speaker 0>kinda see. So Yeah. It's it's
+
+00:10:51.250 --> 00:10:54.610
+<v Speaker 0>alright. Okay. Yeah. Cool. So once we are
+
+00:10:54.610 --> 00:10:56.770
+<v Speaker 1>done with, like, the hands on, I could
+
+00:10:56.770 --> 00:10:59.170
+<v Speaker 1>explain what's in the config and the architecture,
+
+00:10:59.170 --> 00:11:00.130
+<v Speaker 1>what's running inside.
+
+00:11:00.715 --> 00:11:02.555
+<v Speaker 1>That should be useful.
+
+00:11:03.515 --> 00:11:06.155
+<v Speaker 1>I I yeah. I expect this error. So
+
+00:11:06.155 --> 00:11:07.355
+<v Speaker 1>if you if
+
+00:11:08.635 --> 00:11:11.595
+<v Speaker 1>you can see what network interfaces you have
+
+00:11:11.835 --> 00:11:14.235
+<v Speaker 1>with IW config, think we need to change
+
+00:11:14.235 --> 00:11:16.350
+<v Speaker 1>something in the config,
+
+00:11:16.990 --> 00:11:18.990
+<v Speaker 1>or we will hire we can use LO,
+
+00:11:18.990 --> 00:11:20.190
+<v Speaker 1>the local
+
+00:11:20.190 --> 00:11:23.070
+<v Speaker 1>host. If you open the configuration file, we
+
+00:11:23.070 --> 00:11:24.990
+<v Speaker 1>got to change a small thing.
+
+00:11:25.790 --> 00:11:28.510
+<v Speaker 0>Okay. So If you go
+
+00:11:29.150 --> 00:11:29.870
+<v Speaker 1>to the top,
+
+00:11:31.245 --> 00:11:32.765
+<v Speaker 1>yep, there is
+
+00:11:32.925 --> 00:11:35.725
+<v Speaker 1>yeah. In like, bottom of this section, there
+
+00:11:35.725 --> 00:11:37.725
+<v Speaker 1>is ingestion life cycler.
+
+00:11:38.125 --> 00:11:40.445
+<v Speaker 1>Just below the commented out address,
+
+00:11:40.525 --> 00:11:43.005
+<v Speaker 1>you can add us no. You can comment
+
+00:11:43.005 --> 00:11:45.085
+<v Speaker 1>it out. You can add a section called
+
+00:11:45.085 --> 00:11:45.805
+<v Speaker 1>interface
+
+00:11:47.510 --> 00:11:49.590
+<v Speaker 1>and assign it to LO.
+
+00:11:49.830 --> 00:11:51.510
+<v Speaker 1>Just assign it to LO, and it should
+
+00:11:51.510 --> 00:11:53.430
+<v Speaker 1>be all good, I guess.
+
+00:11:53.910 --> 00:11:55.830
+<v Speaker 1>Like, by default, it is in.
+
+00:11:56.550 --> 00:11:57.830
+<v Speaker 1>Yeah. Okay.
+
+00:11:58.070 --> 00:11:59.670
+<v Speaker 1>Yeah. I hope it works right now.
+
+00:12:03.595 --> 00:12:06.475
+<v Speaker 0>Yeah. I probably need to know. It's going
+
+00:12:06.235 --> 00:12:07.515
+<v Speaker 1>make it special.
+
+00:12:07.835 --> 00:12:09.675
+<v Speaker 1>Let's just make sure I have
+
+00:12:12.715 --> 00:12:14.955
+<v Speaker 1>have a workaround for this. Hang on.
+
+00:12:17.320 --> 00:12:18.680
+<v Speaker 0>So what is the
+
+00:12:19.960 --> 00:12:22.200
+<v Speaker 0>why is it what's the problem? I don't
+
+00:12:22.200 --> 00:12:24.680
+<v Speaker 0>think I understand exactly what's going on.
+
+00:12:25.800 --> 00:12:28.520
+<v Speaker 1>It needs a network interface to talk through.
+
+00:12:35.115 --> 00:12:36.315
+<v Speaker 1>Give me a second.
+
+00:12:37.675 --> 00:12:39.835
+<v Speaker 1>Why do I not have that handy?
+
+00:12:40.715 --> 00:12:41.835
+<v Speaker 0>Oh, it's just technically.
+
+00:12:42.880 --> 00:12:45.040
+<v Speaker 0>Yeah. It it I I've often
+
+00:12:45.279 --> 00:12:47.279
+<v Speaker 0>I have I had a comment and oof,
+
+00:12:47.279 --> 00:12:49.279
+<v Speaker 0>big machine. Yeah. I always seem to over
+
+00:12:49.279 --> 00:12:50.720
+<v Speaker 0>provision, but I think that's just one of
+
+00:12:50.720 --> 00:12:52.800
+<v Speaker 0>the joys of working for, like, a cloud
+
+00:12:52.800 --> 00:12:54.639
+<v Speaker 0>company that focuses on bare metal. Like, they
+
+00:12:54.639 --> 00:12:55.920
+<v Speaker 0>thought their smallest machine
+
+00:12:56.325 --> 00:12:58.245
+<v Speaker 0>is is still quite a large machine, and
+
+00:12:58.245 --> 00:13:00.005
+<v Speaker 0>I just I love I know what they
+
+00:13:00.005 --> 00:13:00.725
+<v Speaker 0>can show
+
+00:13:01.285 --> 00:13:02.645
+<v Speaker 0>that off a little bit. Yeah.
+
+00:13:03.925 --> 00:13:06.245
+<v Speaker 1>So I'm just sharing one more
+
+00:13:07.045 --> 00:13:10.230
+<v Speaker 1>small flag that you can add Yeah. Okay.
+
+00:13:10.230 --> 00:13:12.230
+<v Speaker 1>Yeah. Let's see. Along with the config file
+
+00:13:12.230 --> 00:13:14.950
+<v Speaker 1>thing, you can add this following config line.
+
+00:13:16.230 --> 00:13:18.630
+<v Speaker 0>Okay. So we're just gonna add this ingest
+
+00:13:18.630 --> 00:13:20.550
+<v Speaker 0>or dot life cycle dot interface.
+
+00:13:20.950 --> 00:13:23.815
+<v Speaker 0>Yeah. So is that just overriding what's inside
+
+00:13:23.815 --> 00:13:26.695
+<v Speaker 0>the YAML with Yes. Yep. It's just overriding
+
+00:13:26.695 --> 00:13:27.735
+<v Speaker 1>the defaults.
+
+00:13:29.735 --> 00:13:31.575
+<v Speaker 0>So I'm gonna remove that lane from the
+
+00:13:31.575 --> 00:13:34.790
+<v Speaker 0>config then because it seems that that's causing
+
+00:13:35.190 --> 00:13:37.029
+<v Speaker 0>I'm I'm I'm guessing. Feel free to correct
+
+00:13:37.029 --> 00:13:38.470
+<v Speaker 0>me, but it seems like it just doesn't
+
+00:13:38.470 --> 00:13:39.990
+<v Speaker 0>like that. Yeah.
+
+00:13:41.430 --> 00:13:42.790
+<v Speaker 0>Where is that low?
+
+00:13:43.430 --> 00:13:45.910
+<v Speaker 1>I think it's a different file. There are
+
+00:13:45.910 --> 00:13:46.550
+<v Speaker 1>multiple files.
+
+00:13:51.065 --> 00:13:52.105
+<v Speaker 0>Yeah. Sorry.
+
+00:13:52.585 --> 00:13:53.945
+<v Speaker 0>Config blocks.
+
+00:13:56.665 --> 00:13:57.385
+<v Speaker 0>Alright.
+
+00:13:57.705 --> 00:13:59.465
+<v Speaker 0>This time, it's gonna work. Right?
+
+00:14:00.185 --> 00:14:02.825
+<v Speaker 1>Fingers crossed. Ta da. Yay.
+
+00:14:04.265 --> 00:14:06.860
+<v Speaker 1>So I guess if you could verify the
+
+00:14:06.860 --> 00:14:10.060
+<v Speaker 1>first log, I guess, it's exposing the port
+
+00:14:10.460 --> 00:14:13.500
+<v Speaker 1>nine zero zero nine, if I'm right.
+
+00:14:13.980 --> 00:14:15.820
+<v Speaker 1>If you go a little dot up, it
+
+00:14:15.820 --> 00:14:18.220
+<v Speaker 1>will be useful to Yeah. 9009.
+
+00:14:18.220 --> 00:14:20.535
+<v Speaker 0>There we go. Yeah. Yeah. So in the
+
+00:14:20.535 --> 00:14:23.335
+<v Speaker 1>next step, we can start running Prometheus.
+
+00:14:24.775 --> 00:14:26.695
+<v Speaker 0>Okay. No worries. Let me just So that
+
+00:14:26.695 --> 00:14:27.575
+<v Speaker 1>we can push
+
+00:14:27.895 --> 00:14:28.855
+<v Speaker 1>some data.
+
+00:14:29.175 --> 00:14:31.015
+<v Speaker 0>Grab this IP address again
+
+00:14:31.735 --> 00:14:33.175
+<v Speaker 0>so that we don't have to I
+
+00:14:33.895 --> 00:14:35.655
+<v Speaker 0>guess I could adjust the background data, but
+
+00:14:35.655 --> 00:14:37.230
+<v Speaker 0>we'll leave it running so the logs are
+
+00:14:37.230 --> 00:14:38.510
+<v Speaker 0>visible if needed.
+
+00:14:38.750 --> 00:14:41.389
+<v Speaker 0>So the Prometheus now, are we building that
+
+00:14:41.389 --> 00:14:43.949
+<v Speaker 0>from source? Or Yeah. We could do it
+
+00:14:43.949 --> 00:14:45.630
+<v Speaker 1>from source or we could just get the
+
+00:14:45.630 --> 00:14:47.470
+<v Speaker 1>binary. It should be so it should be
+
+00:14:47.470 --> 00:14:48.110
+<v Speaker 1>faster.
+
+00:14:48.430 --> 00:14:51.025
+<v Speaker 0>Yeah. Probably. I mean, don't even know if
+
+00:14:51.025 --> 00:14:55.025
+<v Speaker 0>Prometheus is available on on the Bintu repository.
+
+00:14:56.065 --> 00:14:56.945
+<v Speaker 0>We just It
+
+00:14:57.585 --> 00:14:58.465
+<v Speaker 0>is. Yeah.
+
+00:14:59.265 --> 00:15:00.465
+<v Speaker 0>Then that means I can just start it
+
+00:15:00.465 --> 00:15:02.065
+<v Speaker 0>with system d. Okay. Let's do that.
+
+00:15:03.940 --> 00:15:07.220
+<v Speaker 1>Oh, okay. That might be too outdated hours.
+
+00:15:07.220 --> 00:15:09.300
+<v Speaker 1>Yeah. It should be fine. But
+
+00:15:09.699 --> 00:15:11.459
+<v Speaker 1>it would be simpler if we do why
+
+00:15:11.459 --> 00:15:13.699
+<v Speaker 1>this was because we could change some config
+
+00:15:13.699 --> 00:15:15.699
+<v Speaker 1>and other stuff. Alright. Okay.
+
+00:15:16.755 --> 00:15:18.995
+<v Speaker 0>I'll we'll we'll go with your judgment here.
+
+00:15:18.995 --> 00:15:21.715
+<v Speaker 0>Mine is always wrong. So Yeah. Because I'm
+
+00:15:21.715 --> 00:15:24.115
+<v Speaker 1>familiar with the repository stuff, so let's go
+
+00:15:24.115 --> 00:15:24.675
+<v Speaker 1>with that.
+
+00:15:27.555 --> 00:15:30.515
+<v Speaker 0>Alright. So let's just quickly build that. Hopefully,
+
+00:15:30.515 --> 00:15:32.720
+<v Speaker 0>it won't take too long either. Yes.
+
+00:15:32.880 --> 00:15:35.279
+<v Speaker 1>Until then, we can see the config that
+
+00:15:35.279 --> 00:15:36.240
+<v Speaker 1>we need to
+
+00:15:36.560 --> 00:15:38.880
+<v Speaker 1>change. Like, there is a default config
+
+00:15:39.040 --> 00:15:41.200
+<v Speaker 1>where we need to add few stuff.
+
+00:15:42.240 --> 00:15:44.959
+<v Speaker 0>Okay. So right away, I'm looking at this
+
+00:15:44.959 --> 00:15:46.639
+<v Speaker 0>bit of YAML, and
+
+00:15:47.285 --> 00:15:49.605
+<v Speaker 0>I see something that I'm vaguely familiar with,
+
+00:15:49.605 --> 00:15:50.805
+<v Speaker 0>but it'd be really cool if we could
+
+00:15:50.805 --> 00:15:52.565
+<v Speaker 0>take the opportunity just to kinda
+
+00:15:53.045 --> 00:15:54.965
+<v Speaker 0>make sure my knowledge here isn't wrong.
+
+00:15:55.205 --> 00:15:57.605
+<v Speaker 0>Now I see remote right and this is
+
+00:15:57.605 --> 00:15:59.445
+<v Speaker 0>something that a lot of people in the
+
+00:15:59.445 --> 00:16:02.120
+<v Speaker 0>previous community and users are always talk about
+
+00:16:02.120 --> 00:16:04.120
+<v Speaker 0>premise usability for remote reads and writes. Can
+
+00:16:04.120 --> 00:16:06.520
+<v Speaker 0>we just cover how Cortex is integrating, or
+
+00:16:06.520 --> 00:16:07.960
+<v Speaker 0>is that part of your architecture thing? And
+
+00:16:07.960 --> 00:16:09.560
+<v Speaker 0>I'm just jumping the gun a little bit.
+
+00:16:09.560 --> 00:16:11.960
+<v Speaker 1>Yeah. So when you talk about all these
+
+00:16:11.960 --> 00:16:14.120
+<v Speaker 1>long term storage is it has to get
+
+00:16:14.120 --> 00:16:15.800
+<v Speaker 1>data somehow from the Prometheus.
+
+00:16:16.395 --> 00:16:19.435
+<v Speaker 1>So Cortex uses the remote right where as
+
+00:16:19.435 --> 00:16:21.915
+<v Speaker 1>as and when Prometheus scrapes the samples and
+
+00:16:21.915 --> 00:16:24.635
+<v Speaker 1>store it stores it in its own TSB,
+
+00:16:24.875 --> 00:16:26.875
+<v Speaker 1>it pushes to this URL.
+
+00:16:27.035 --> 00:16:29.435
+<v Speaker 1>So this URL turns out to be Cortex
+
+00:16:29.435 --> 00:16:31.115
+<v Speaker 1>here, so it pushes the samples to the
+
+00:16:31.115 --> 00:16:34.170
+<v Speaker 1>Cortex. That's how Cortex gets all the samples
+
+00:16:34.170 --> 00:16:35.370
+<v Speaker 1>that it stores.
+
+00:16:35.850 --> 00:16:38.410
+<v Speaker 1>So when you have multiple Prometheus instances,
+
+00:16:38.410 --> 00:16:40.170
+<v Speaker 1>all of them point to the same Cortex
+
+00:16:40.170 --> 00:16:42.010
+<v Speaker 1>and all of them just push to the
+
+00:16:42.010 --> 00:16:42.970
+<v Speaker 1>same Cortex.
+
+00:16:43.690 --> 00:16:44.810
+<v Speaker 0>Okay. So
+
+00:16:45.075 --> 00:16:47.075
+<v Speaker 0>does that mean the Cortex is just a
+
+00:16:47.075 --> 00:16:49.075
+<v Speaker 0>backing store? So Prometheus is still doing the
+
+00:16:49.075 --> 00:16:49.955
+<v Speaker 0>scraping
+
+00:16:50.355 --> 00:16:52.675
+<v Speaker 1>Yeah. To build Prometheus. Fetching the metrics. Okay.
+
+00:16:52.675 --> 00:16:54.755
+<v Speaker 1>Yeah. Prometheus is fetching it.
+
+00:16:55.155 --> 00:16:57.155
+<v Speaker 1>Cortex is like a storing
+
+00:16:58.250 --> 00:17:00.570
+<v Speaker 1>thing, and you can also query Cortex.
+
+00:17:02.090 --> 00:17:03.050
+<v Speaker 0>Right.
+
+00:17:03.130 --> 00:17:03.930
+<v Speaker 0>Excellent.
+
+00:17:04.170 --> 00:17:06.490
+<v Speaker 0>K. I think I actually understood that.
+
+00:17:07.450 --> 00:17:09.530
+<v Speaker 0>So prometheus.yaml.
+
+00:17:09.690 --> 00:17:09.930
+<v Speaker 1>Yaml.
+
+00:17:11.524 --> 00:17:14.005
+<v Speaker 1>And Yes. Through You can just add the
+
+00:17:14.005 --> 00:17:16.244
+<v Speaker 1>thing. Just add it. Right. Yeah. Just add
+
+00:17:16.244 --> 00:17:17.124
+<v Speaker 1>it like that.
+
+00:17:17.845 --> 00:17:20.804
+<v Speaker 1>You could make one more addition. Like, in
+
+00:17:20.804 --> 00:17:22.164
+<v Speaker 1>the script config,
+
+00:17:22.244 --> 00:17:23.765
+<v Speaker 1>you can also scrape Cortex.
+
+00:17:24.329 --> 00:17:26.970
+<v Speaker 1>Like, just there, you can see scrape config
+
+00:17:26.970 --> 00:17:28.169
+<v Speaker 1>for Prometheus.
+
+00:17:29.130 --> 00:17:30.730
+<v Speaker 1>Yeah. We could do that under the name
+
+00:17:30.730 --> 00:17:31.609
+<v Speaker 1>of Prometheus.
+
+00:17:34.970 --> 00:17:36.250
+<v Speaker 0>So you were gonna add an you wanted
+
+00:17:36.250 --> 00:17:37.770
+<v Speaker 0>me to add a new job called Cortex
+
+00:17:37.770 --> 00:17:39.370
+<v Speaker 0>rather than adding it as a new endpoint
+
+00:17:39.370 --> 00:17:41.565
+<v Speaker 0>or target to the premier Yeah. Yeah. That
+
+00:17:41.565 --> 00:17:43.805
+<v Speaker 1>would that would be clearer because you
+
+00:17:44.605 --> 00:17:46.045
+<v Speaker 0>Yeah. So you gotta keep me right because
+
+00:17:46.045 --> 00:17:47.405
+<v Speaker 0>I'm I'm a bit of a cowboy when
+
+00:17:47.405 --> 00:17:48.845
+<v Speaker 0>it comes to this stuff. I'll just well,
+
+00:17:49.085 --> 00:17:51.485
+<v Speaker 0>I I just wing it. Alright. Cortex.
+
+00:17:52.270 --> 00:17:54.190
+<v Speaker 1>9009.
+
+00:17:54.190 --> 00:17:55.869
+<v Speaker 0>Copy to one to many.
+
+00:17:56.830 --> 00:17:58.910
+<v Speaker 1>And if you go to the top of
+
+00:17:58.910 --> 00:17:59.710
+<v Speaker 1>the file,
+
+00:18:00.030 --> 00:18:02.350
+<v Speaker 1>just just so that everything is quicker, you
+
+00:18:02.350 --> 00:18:04.590
+<v Speaker 1>can change the scrape interval to two seconds
+
+00:18:04.590 --> 00:18:07.325
+<v Speaker 1>maybe because you don't have wait fifteen seconds
+
+00:18:07.325 --> 00:18:08.445
+<v Speaker 1>for every sample.
+
+00:18:09.005 --> 00:18:10.924
+<v Speaker 1>Yeah. And everything should be fine.
+
+00:18:11.885 --> 00:18:12.604
+<v Speaker 0>Alright.
+
+00:18:12.765 --> 00:18:15.485
+<v Speaker 0>I trust you. So we have cloned Prometheus.
+
+00:18:15.485 --> 00:18:17.005
+<v Speaker 0>We built it from source. We should have
+
+00:18:17.005 --> 00:18:18.205
+<v Speaker 0>the Prometheus binary
+
+00:18:19.005 --> 00:18:20.659
+<v Speaker 1>Yes. Which we
+
+00:18:20.980 --> 00:18:23.059
+<v Speaker 0>do. And then we're gonna run it with
+
+00:18:23.059 --> 00:18:25.139
+<v Speaker 0>the configuration which is modified.
+
+00:18:25.380 --> 00:18:26.100
+<v Speaker 1>Yes.
+
+00:18:27.220 --> 00:18:28.820
+<v Speaker 0>I like it when things work.
+
+00:18:30.900 --> 00:18:32.180
+<v Speaker 1>So Okay. Now
+
+00:18:33.135 --> 00:18:35.855
+<v Speaker 1>now it should be pushing the data to
+
+00:18:36.095 --> 00:18:38.015
+<v Speaker 1>yeah. It's remote writing to
+
+00:18:39.295 --> 00:18:41.615
+<v Speaker 1>what is it? Cortex right now. So if
+
+00:18:41.615 --> 00:18:44.335
+<v Speaker 1>you could open the Prometheus UI or even
+
+00:18:44.335 --> 00:18:46.510
+<v Speaker 1>if you want to spin up Grafana and
+
+00:18:46.510 --> 00:18:48.590
+<v Speaker 1>then we went through that, we can see
+
+00:18:48.590 --> 00:18:50.990
+<v Speaker 1>if it's actually scraping Cortex and see the
+
+00:18:50.990 --> 00:18:53.309
+<v Speaker 1>metrics that are ingested in the Cortex.
+
+00:18:54.270 --> 00:18:55.149
+<v Speaker 0>Yep.
+
+00:18:55.390 --> 00:18:57.870
+<v Speaker 0>So the by default, this Prometheus binds to
+
+00:18:57.870 --> 00:19:00.110
+<v Speaker 0>all interfaces or
+
+00:19:03.285 --> 00:19:04.325
+<v Speaker 0>tried?
+
+00:19:05.684 --> 00:19:07.045
+<v Speaker 0>Or do I have to do some asset
+
+00:19:07.045 --> 00:19:07.845
+<v Speaker 0>compilation?
+
+00:19:08.565 --> 00:19:10.965
+<v Speaker 1>No. It should have been all fine. But
+
+00:19:10.965 --> 00:19:12.725
+<v Speaker 1>maybe we have to do asset compilation. We
+
+00:19:12.725 --> 00:19:13.205
+<v Speaker 1>can do that.
+
+00:19:14.070 --> 00:19:15.750
+<v Speaker 0>Yeah. As I get because all we did
+
+00:19:15.750 --> 00:19:17.510
+<v Speaker 0>was build the Go command. We haven't actually
+
+00:19:17.510 --> 00:19:20.789
+<v Speaker 0>did any of the React stuff. Yeah. You
+
+00:19:20.789 --> 00:19:23.510
+<v Speaker 1>can do a make space assets, and it
+
+00:19:23.510 --> 00:19:25.669
+<v Speaker 1>should be and rebuild the Prometheus.
+
+00:19:29.765 --> 00:19:31.604
+<v Speaker 0>Hold on. This is taking a second.
+
+00:19:33.125 --> 00:19:33.924
+<v Speaker 1>Yep.
+
+00:19:34.005 --> 00:19:36.004
+<v Speaker 0>I think it's trying to exit nicely.
+
+00:19:36.405 --> 00:19:37.124
+<v Speaker 1>Yeah.
+
+00:19:37.365 --> 00:19:39.684
+<v Speaker 1>It's probably trying to end the remote writing
+
+00:19:39.684 --> 00:19:41.924
+<v Speaker 1>and then come back. Oh, I broke Cortex
+
+00:19:41.820 --> 00:19:42.619
+<v Speaker 0>with that.
+
+00:19:43.100 --> 00:19:44.460
+<v Speaker 0>Alright. We'll get it back up in a
+
+00:19:44.460 --> 00:19:44.940
+<v Speaker 0>second.
+
+00:19:45.899 --> 00:19:48.139
+<v Speaker 1>I'm not sure what exactly happened there.
+
+00:19:50.299 --> 00:19:52.539
+<v Speaker 0>Prometheus is ignoring me, so I am gonna
+
+00:19:52.539 --> 00:19:53.419
+<v Speaker 0>just
+
+00:19:53.419 --> 00:19:54.620
+<v Speaker 0>p kill.
+
+00:19:59.865 --> 00:20:01.144
+<v Speaker 0>Yeah.
+
+00:20:01.784 --> 00:20:04.504
+<v Speaker 1>Something has to happen in my file. There
+
+00:20:06.105 --> 00:20:09.144
+<v Speaker 0>we go. Right. So make asset. Asset.
+
+00:20:10.930 --> 00:20:12.130
+<v Speaker 0>App install.
+
+00:20:12.450 --> 00:20:13.090
+<v Speaker 0>Yeah.
+
+00:20:13.810 --> 00:20:15.650
+<v Speaker 0>Yarn won't be available
+
+00:20:16.050 --> 00:20:18.370
+<v Speaker 0>because it adds a special command.
+
+00:20:18.610 --> 00:20:20.690
+<v Speaker 0>It's weird on the I've been to debian
+
+00:20:20.690 --> 00:20:23.090
+<v Speaker 0>packages. Yarn is like this random thing.
+
+00:20:23.490 --> 00:20:25.490
+<v Speaker 0>So I just need to grab the command
+
+00:20:25.945 --> 00:20:27.065
+<v Speaker 0>over here.
+
+00:20:28.425 --> 00:20:30.025
+<v Speaker 0>I guess I should actually probably just do
+
+00:20:30.025 --> 00:20:32.585
+<v Speaker 0>that here so people can see. That's unfortunate.
+
+00:20:33.305 --> 00:20:35.945
+<v Speaker 0>It's alright. It's a nice quick fix. So
+
+00:20:37.385 --> 00:20:38.265
+<v Speaker 0>oh,
+
+00:20:39.305 --> 00:20:41.210
+<v Speaker 0>there is an ABIM two version. Don't don't
+
+00:20:41.210 --> 00:20:43.690
+<v Speaker 0>give me your nonsense. Do you have like,
+
+00:20:43.690 --> 00:20:45.610
+<v Speaker 1>could if you could install NPM, you could
+
+00:20:45.610 --> 00:20:48.169
+<v Speaker 1>install it. Yeah. Yeah. Let's do that. So
+
+00:20:48.730 --> 00:20:50.490
+<v Speaker 0>install NPM.
+
+00:20:51.290 --> 00:20:51.530
+<v Speaker 0>I
+
+00:20:52.170 --> 00:20:54.250
+<v Speaker 0>typing is not my strong suit ever.
+
+00:21:00.225 --> 00:21:01.424
+<v Speaker 1>That was quick.
+
+00:21:03.105 --> 00:21:03.745
+<v Speaker 0>Yeah.
+
+00:21:03.905 --> 00:21:04.624
+<v Speaker 0>Yeah.
+
+00:21:04.865 --> 00:21:07.105
+<v Speaker 0>The the network connections are pretty solid in
+
+00:21:07.105 --> 00:21:08.145
+<v Speaker 0>here on these machines.
+
+00:21:09.160 --> 00:21:11.480
+<v Speaker 0>So it shouldn't take us too long.
+
+00:21:11.880 --> 00:21:13.960
+<v Speaker 0>Once NPM installed, yeah, we'll just do the
+
+00:21:13.960 --> 00:21:15.720
+<v Speaker 0>yarn way of doing this then which was
+
+00:21:15.720 --> 00:21:16.040
+<v Speaker 0>the
+
+00:21:17.160 --> 00:21:19.640
+<v Speaker 0>there hasn't been too packaged though. But I'm
+
+00:21:19.640 --> 00:21:21.639
+<v Speaker 0>not gonna fight with that today.
+
+00:21:23.720 --> 00:21:24.440
+<v Speaker 0>We'll do that.
+
+00:21:25.215 --> 00:21:26.654
+<v Speaker 0>Is that available in my No.
+
+00:21:29.054 --> 00:21:29.774
+<v Speaker 0>No.
+
+00:21:30.975 --> 00:21:32.735
+<v Speaker 0>Let's do x path
+
+00:21:35.375 --> 00:21:36.335
+<v Speaker 0>equals
+
+00:21:36.495 --> 00:21:39.615
+<v Speaker 0>path
+
+00:21:37.320 --> 00:21:40.440
+<v Speaker 0>colon and user local
+
+00:21:40.519 --> 00:21:41.399
+<v Speaker 0>lib
+
+00:21:42.120 --> 00:21:43.959
+<v Speaker 0>modules.
+
+00:21:47.320 --> 00:21:48.200
+<v Speaker 1>Damn it.
+
+00:21:48.519 --> 00:21:49.959
+<v Speaker 0>I got bin.
+
+00:21:50.039 --> 00:21:51.399
+<v Speaker 0>No. That is there. Right?
+
+00:21:53.935 --> 00:21:55.535
+<v Speaker 0>What did I get wrong?
+
+00:21:57.855 --> 00:21:58.415
+<v Speaker 1>L
+
+00:21:58.975 --> 00:22:00.015
+<v Speaker 0>s user.
+
+00:22:03.295 --> 00:22:04.815
+<v Speaker 0>Oh, yarn is a directory
+
+00:22:05.470 --> 00:22:07.790
+<v Speaker 0>with a bin. Alright. Let's just really
+
+00:22:08.830 --> 00:22:10.430
+<v Speaker 0>fudge this for now.
+
+00:22:10.750 --> 00:22:11.470
+<v Speaker 1>Yeah.
+
+00:22:13.390 --> 00:22:14.110
+<v Speaker 0>Good.
+
+00:22:16.670 --> 00:22:18.430
+<v Speaker 0>It doesn't have to be pretty. Right? We
+
+00:22:18.430 --> 00:22:20.350
+<v Speaker 0>just need to get it working. So Yeah.
+
+00:22:21.865 --> 00:22:23.945
+<v Speaker 0>There's definite there isn't a bin to app
+
+00:22:23.945 --> 00:22:26.345
+<v Speaker 0>repository, you know, people shouldn't be expected to
+
+00:22:26.345 --> 00:22:28.825
+<v Speaker 0>follow these horrible steps. But Yeah.
+
+00:22:29.465 --> 00:22:30.984
+<v Speaker 0>Alright.
+
+00:22:32.184 --> 00:22:34.909
+<v Speaker 0>It's not really people after this. Okay. Now
+
+00:22:34.909 --> 00:22:36.830
+<v Speaker 0>one thing I can't make I can't throw
+
+00:22:36.830 --> 00:22:39.230
+<v Speaker 0>hardware and NPM install, unfortunately. I think this
+
+00:22:39.230 --> 00:22:40.509
+<v Speaker 0>might take a few seconds.
+
+00:22:40.830 --> 00:22:41.549
+<v Speaker 1>Yeah.
+
+00:22:41.789 --> 00:22:43.309
+<v Speaker 0>Not too bad, actually.
+
+00:22:45.390 --> 00:22:47.549
+<v Speaker 1>Yeah. We don't need much of UI for
+
+00:22:47.549 --> 00:22:49.549
+<v Speaker 1>Prometheus. It's pretty simple.
+
+00:22:51.345 --> 00:22:52.945
+<v Speaker 0>Ironically, it may have been faster just to
+
+00:22:52.945 --> 00:22:54.385
+<v Speaker 0>app get a Stoker fan and now that
+
+00:22:54.385 --> 00:22:55.505
+<v Speaker 0>I think about it.
+
+00:22:57.345 --> 00:22:58.465
+<v Speaker 0>Oh, well. Right.
+
+00:23:04.830 --> 00:23:07.470
+<v Speaker 0>And that's I mean yeah. Sorry. On you
+
+00:23:07.470 --> 00:23:09.950
+<v Speaker 0>go. Yeah. The getting started has a step
+
+00:23:09.950 --> 00:23:11.389
+<v Speaker 1>for Grafana.
+
+00:23:11.710 --> 00:23:13.789
+<v Speaker 0>Oh, it does. Yeah.
+
+00:23:14.430 --> 00:23:15.870
+<v Speaker 0>Oh, well. We live and we learn.
+
+00:23:17.294 --> 00:23:19.135
+<v Speaker 0>Even though we have all these codes available,
+
+00:23:19.135 --> 00:23:21.294
+<v Speaker 0>I'm not I don't even think that Yarn
+
+00:23:21.294 --> 00:23:24.335
+<v Speaker 0>particularly or NPM or Node particularly uses them.
+
+00:23:24.335 --> 00:23:24.894
+<v Speaker 0>So
+
+00:23:25.375 --> 00:23:27.134
+<v Speaker 0>do I need to do a rebuild?
+
+00:23:27.455 --> 00:23:29.695
+<v Speaker 1>Yeah. Yeah. This is okay. And run the
+
+00:23:29.695 --> 00:23:30.414
+<v Speaker 1>committers again.
+
+00:23:31.290 --> 00:23:33.290
+<v Speaker 0>I'll start Cortex first
+
+00:23:34.810 --> 00:23:36.650
+<v Speaker 0>and then start Prometheus.
+
+00:23:36.810 --> 00:23:38.490
+<v Speaker 0>And then by magic
+
+00:23:40.490 --> 00:23:41.290
+<v Speaker 0>today.
+
+00:23:41.290 --> 00:23:44.675
+<v Speaker 0>Yay. We got there. Okay. Yeah. We can
+
+00:23:44.675 --> 00:23:46.675
+<v Speaker 1>maybe run a quite like, you can say
+
+00:23:46.675 --> 00:23:47.794
+<v Speaker 1>rate of
+
+00:23:49.715 --> 00:23:51.394
+<v Speaker 1>yeah. Cortex
+
+00:23:51.395 --> 00:23:52.434
+<v Speaker 1>underscore
+
+00:23:52.515 --> 00:23:54.835
+<v Speaker 1>On the rhythm. Yeah. Cortex.
+
+00:23:54.915 --> 00:23:55.475
+<v Speaker 1>First.
+
+00:23:56.115 --> 00:23:57.235
+<v Speaker 1>Ingested
+
+00:23:57.795 --> 00:23:59.395
+<v Speaker 1>underscore ingested,
+
+00:24:00.730 --> 00:24:02.649
+<v Speaker 1>yeah, ingested samples total.
+
+00:24:03.530 --> 00:24:05.690
+<v Speaker 0>Ingested samples. Alright.
+
+00:24:06.090 --> 00:24:08.730
+<v Speaker 1>And we want to rate that. Rate or
+
+00:24:08.730 --> 00:24:09.369
+<v Speaker 1>maybe
+
+00:24:09.690 --> 00:24:11.769
+<v Speaker 1>ten seconds. Ten seconds? Yeah. The
+
+00:24:12.490 --> 00:24:14.490
+<v Speaker 1>ten seconds should be for the metric and
+
+00:24:14.490 --> 00:24:15.130
+<v Speaker 1>not the rate.
+
+00:24:15.755 --> 00:24:18.715
+<v Speaker 0>Oh, I'm feeling it from q l. What
+
+00:24:18.715 --> 00:24:19.835
+<v Speaker 0>did I get wrong? Like,
+
+00:24:20.635 --> 00:24:22.715
+<v Speaker 1>the ten seconds and the square bracket should
+
+00:24:22.715 --> 00:24:24.875
+<v Speaker 1>be inside the circular bracket.
+
+00:24:25.195 --> 00:24:27.035
+<v Speaker 1>That's for the metric, and you can see
+
+00:24:27.035 --> 00:24:27.755
+<v Speaker 1>the graph.
+
+00:24:29.755 --> 00:24:31.035
+<v Speaker 1>There's a graph tab. Yeah.
+
+00:24:32.450 --> 00:24:34.610
+<v Speaker 1>You can change this time to five minutes,
+
+00:24:34.690 --> 00:24:36.610
+<v Speaker 1>like, the range of the query for five
+
+00:24:36.610 --> 00:24:39.170
+<v Speaker 1>minutes. And they're not there. Yeah. Yeah. In
+
+00:24:39.330 --> 00:24:40.690
+<v Speaker 1>below that. Yeah.
+
+00:24:41.410 --> 00:24:42.690
+<v Speaker 1>One hour is too much.
+
+00:24:43.250 --> 00:24:44.850
+<v Speaker 0>There we go. You can see some samples
+
+00:24:44.850 --> 00:24:46.715
+<v Speaker 1>ingested. And, yeah, it's it's coming from core
+
+00:24:46.795 --> 00:24:49.595
+<v Speaker 1>it's going to Cortex, and Cortex is storing
+
+00:24:49.595 --> 00:24:50.315
+<v Speaker 1>everything.
+
+00:24:51.355 --> 00:24:52.235
+<v Speaker 1>That's sweet.
+
+00:24:52.555 --> 00:24:53.355
+<v Speaker 0>Excellent.
+
+00:24:53.595 --> 00:24:54.235
+<v Speaker 0>Good.
+
+00:24:54.715 --> 00:24:57.035
+<v Speaker 1>Yeah. It's as simple as running a binetal,
+
+00:24:57.035 --> 00:24:58.795
+<v Speaker 1>like, both Prometheus and Cortex, and you have
+
+00:24:58.795 --> 00:24:59.595
+<v Speaker 1>a Cortex running.
+
+00:25:00.169 --> 00:25:00.970
+<v Speaker 0>Okay.
+
+00:25:01.210 --> 00:25:02.649
+<v Speaker 0>The Cortex runs.
+
+00:25:02.890 --> 00:25:04.809
+<v Speaker 0>Prometheus handles all the scraping.
+
+00:25:04.890 --> 00:25:06.970
+<v Speaker 0>It's remote writing into Cortex.
+
+00:25:07.450 --> 00:25:10.250
+<v Speaker 0>Yes. That's it done. It worked. Right? Yes.
+
+00:25:10.250 --> 00:25:14.365
+<v Speaker 1>It worked. Okay. What's next? Yep. Maybe I
+
+00:25:14.365 --> 00:25:15.965
+<v Speaker 1>can explain
+
+00:25:16.925 --> 00:25:19.085
+<v Speaker 1>a bit of the not exactly the entire
+
+00:25:19.085 --> 00:25:20.044
+<v Speaker 1>architecture.
+
+00:25:20.125 --> 00:25:21.645
+<v Speaker 1>We could go back to the previous plan
+
+00:25:21.645 --> 00:25:22.845
+<v Speaker 1>that we had. I can
+
+00:25:23.165 --> 00:25:25.565
+<v Speaker 1>show a demo of horizontally scaling Cortex with
+
+00:25:25.565 --> 00:25:26.925
+<v Speaker 1>other components involved
+
+00:25:27.510 --> 00:25:29.910
+<v Speaker 1>and then talk about the architecture, and we
+
+00:25:29.910 --> 00:25:30.950
+<v Speaker 1>could replicate
+
+00:25:31.030 --> 00:25:32.950
+<v Speaker 1>the thing on your machine. Let's see if
+
+00:25:33.030 --> 00:25:34.710
+<v Speaker 0>That's good. Yeah. How that works. That's good.
+
+00:25:35.350 --> 00:25:36.390
+<v Speaker 1>That's good.
+
+00:25:37.590 --> 00:25:39.750
+<v Speaker 1>Yep. Now I'm gonna share my screen.
+
+00:25:41.164 --> 00:25:43.405
+<v Speaker 0>If Emma Watson has any questions, feel free
+
+00:25:43.405 --> 00:25:45.484
+<v Speaker 0>to leave them in the comment section.
+
+00:25:47.405 --> 00:25:48.044
+<v Speaker 1>Yeah.
+
+00:25:48.284 --> 00:25:49.484
+<v Speaker 1>There we go. So
+
+00:25:49.725 --> 00:25:52.525
+<v Speaker 1>I'm reusing the slides by Marco who who
+
+00:25:52.525 --> 00:25:54.940
+<v Speaker 1>is also an engineer at Grafana Labs and
+
+00:25:54.940 --> 00:25:57.340
+<v Speaker 1>also Cortex and Thanos maintainer.
+
+00:25:57.660 --> 00:25:59.179
+<v Speaker 1>So I just took his permission to use
+
+00:25:59.179 --> 00:26:01.499
+<v Speaker 1>his slides, so I do repeat the work.
+
+00:26:01.660 --> 00:26:02.220
+<v Speaker 1>So
+
+00:26:02.700 --> 00:26:04.700
+<v Speaker 1>this is the bare bone Prometheus, which is
+
+00:26:04.700 --> 00:26:06.460
+<v Speaker 1>scraping from service, and you can query.
+
+00:26:07.375 --> 00:26:10.255
+<v Speaker 1>And I will jump to what we just
+
+00:26:10.255 --> 00:26:12.254
+<v Speaker 1>did. By the way, here's Marco.
+
+00:26:13.775 --> 00:26:14.414
+<v Speaker 1>Yep.
+
+00:26:14.895 --> 00:26:17.375
+<v Speaker 1>What we just did right now is this
+
+00:26:17.375 --> 00:26:19.294
+<v Speaker 1>thing. We have a Cortex,
+
+00:26:20.090 --> 00:26:22.890
+<v Speaker 1>and we when Prometheus is just pushing samples
+
+00:26:22.890 --> 00:26:23.850
+<v Speaker 1>to Cortex.
+
+00:26:24.010 --> 00:26:26.330
+<v Speaker 1>And when we want to query, like,
+
+00:26:26.810 --> 00:26:29.529
+<v Speaker 1>right now, we queried using Prometheus.
+
+00:26:29.930 --> 00:26:32.490
+<v Speaker 1>You could in the Grafana where you have
+
+00:26:32.490 --> 00:26:34.975
+<v Speaker 1>a Prometheus data source, you could point it
+
+00:26:34.975 --> 00:26:37.855
+<v Speaker 1>to Cortex and insert query that. We skip
+
+00:26:37.855 --> 00:26:39.534
+<v Speaker 1>that step, but I will include that in
+
+00:26:39.534 --> 00:26:41.375
+<v Speaker 1>the horizontal scaling that we're doing. So right
+
+00:26:41.375 --> 00:26:42.975
+<v Speaker 1>now, we just had one Cortex.
+
+00:26:43.695 --> 00:26:45.695
+<v Speaker 1>What we're going to try now is this
+
+00:26:45.695 --> 00:26:50.015
+<v Speaker 1>thing. We will have multiple Cortex and Prometheus
+
+00:26:50.070 --> 00:26:51.429
+<v Speaker 1>pushing to them.
+
+00:26:51.990 --> 00:26:54.070
+<v Speaker 1>And for the object stores, we'll be using
+
+00:26:54.070 --> 00:26:56.149
+<v Speaker 1>MinIO because we don't want to host,
+
+00:26:56.549 --> 00:26:59.829
+<v Speaker 1>use the AWS or GCS anything right now.
+
+00:27:00.549 --> 00:27:01.190
+<v Speaker 1>So
+
+00:27:01.909 --> 00:27:05.110
+<v Speaker 1>I will jump to my terminal for horizontally
+
+00:27:05.110 --> 00:27:05.750
+<v Speaker 1>scaling.
+
+00:27:10.125 --> 00:27:12.045
+<v Speaker 0>Could you just zoom in a little bit
+
+00:27:12.045 --> 00:27:13.565
+<v Speaker 0>on that? Sure.
+
+00:27:15.965 --> 00:27:17.325
+<v Speaker 0>Perfect. Thank you.
+
+00:27:17.645 --> 00:27:18.365
+<v Speaker 1>So
+
+00:27:18.445 --> 00:27:19.885
+<v Speaker 1>I am using
+
+00:27:20.450 --> 00:27:23.970
+<v Speaker 1>like, under my account, I'm using the demo.
+
+00:27:24.770 --> 00:27:27.650
+<v Speaker 1>In the development branch, we already have, like,
+
+00:27:27.650 --> 00:27:28.610
+<v Speaker 1>prebuilt,
+
+00:27:28.770 --> 00:27:32.450
+<v Speaker 1>like, pre specified Docker configs, our Docker Compose
+
+00:27:32.450 --> 00:27:34.770
+<v Speaker 1>config that you can just run a single
+
+00:27:34.770 --> 00:27:38.005
+<v Speaker 1>command to run the single binary and with
+
+00:27:38.005 --> 00:27:39.364
+<v Speaker 1>the horizontal scaling.
+
+00:27:39.605 --> 00:27:42.725
+<v Speaker 1>I just created another demo with a little
+
+00:27:42.725 --> 00:27:45.044
+<v Speaker 1>more simplified stuff with all the things that
+
+00:27:45.044 --> 00:27:45.605
+<v Speaker 1>we don't need.
+
+00:27:47.539 --> 00:27:50.500
+<v Speaker 1>So I'll first run the demo, and we'll
+
+00:27:50.500 --> 00:27:52.099
+<v Speaker 1>go through what's
+
+00:27:52.100 --> 00:27:53.219
+<v Speaker 1>there inside.
+
+00:27:55.860 --> 00:27:57.859
+<v Speaker 1>You have to ignore the
+
+00:27:59.299 --> 00:28:01.460
+<v Speaker 1>all this part thing because it's just a
+
+00:28:01.460 --> 00:28:03.985
+<v Speaker 1>mess that I ended up in my environment.
+
+00:28:05.025 --> 00:28:07.665
+<v Speaker 1>The only thing that's there here is compose
+
+00:28:07.665 --> 00:28:08.385
+<v Speaker 1>up
+
+00:28:09.265 --> 00:28:10.465
+<v Speaker 1>before that.
+
+00:28:11.185 --> 00:28:13.425
+<v Speaker 1>Let's see what all do we have in
+
+00:28:13.425 --> 00:28:14.304
+<v Speaker 1>this directory.
+
+00:28:14.625 --> 00:28:16.830
+<v Speaker 1>We We have a compose up compose down
+
+00:28:16.830 --> 00:28:17.470
+<v Speaker 1>where
+
+00:28:19.550 --> 00:28:20.990
+<v Speaker 1>compose up just
+
+00:28:21.150 --> 00:28:23.630
+<v Speaker 1>brings up the docker compose and spins up
+
+00:28:23.630 --> 00:28:24.830
+<v Speaker 1>multiple stuff.
+
+00:28:26.270 --> 00:28:28.430
+<v Speaker 1>So I'm just gonna run the compose up.
+
+00:28:31.645 --> 00:28:34.685
+<v Speaker 1>Okay. Before while this is happening, we can
+
+00:28:34.685 --> 00:28:35.725
+<v Speaker 1>go through
+
+00:28:36.765 --> 00:28:38.765
+<v Speaker 1>the config that we have here.
+
+00:28:39.645 --> 00:28:41.165
+<v Speaker 0>Can you just amend a a little bit
+
+00:28:41.165 --> 00:28:42.685
+<v Speaker 0>more on that? Yeah.
+
+00:28:44.190 --> 00:28:45.870
+<v Speaker 1>So let's see what all we are running
+
+00:28:45.870 --> 00:28:48.190
+<v Speaker 1>in this particular thing. So this is the
+
+00:28:48.190 --> 00:28:50.749
+<v Speaker 1>Docker Compose config. We are running MinIO
+
+00:28:51.070 --> 00:28:53.629
+<v Speaker 1>to mimic the ES three or GCS,
+
+00:28:54.110 --> 00:28:56.350
+<v Speaker 1>and then we are running the Cortex itself.
+
+00:28:58.155 --> 00:28:58.635
+<v Speaker 1>We are
+
+00:28:59.195 --> 00:29:02.075
+<v Speaker 1>and I said we need console here,
+
+00:29:02.235 --> 00:29:04.155
+<v Speaker 1>but why we will get to that in
+
+00:29:04.155 --> 00:29:05.115
+<v Speaker 1>just a second?
+
+00:29:05.595 --> 00:29:07.035
+<v Speaker 1>We have a load ban, so that will
+
+00:29:07.035 --> 00:29:09.355
+<v Speaker 1>be the ingress, and this will pass on
+
+00:29:09.355 --> 00:29:11.115
+<v Speaker 1>all the things to the Cortex.
+
+00:29:11.840 --> 00:29:14.560
+<v Speaker 1>And we are running two Prometheus just to
+
+00:29:14.560 --> 00:29:16.320
+<v Speaker 1>mimic the stuff,
+
+00:29:16.480 --> 00:29:19.440
+<v Speaker 1>which will be pushing data to Cortex.
+
+00:29:19.520 --> 00:29:21.280
+<v Speaker 1>If I'm going fast, just
+
+00:29:21.680 --> 00:29:24.160
+<v Speaker 1>stop me and tell him to reexplain stuff.
+
+00:29:25.925 --> 00:29:28.245
+<v Speaker 1>We have node exporter so that we can
+
+00:29:28.245 --> 00:29:30.405
+<v Speaker 1>get some more traffic. Like, Prometheus will be
+
+00:29:30.405 --> 00:29:31.205
+<v Speaker 1>scraping
+
+00:29:31.685 --> 00:29:34.165
+<v Speaker 1>Prometheus itself, like meta monitoring. It will be
+
+00:29:34.165 --> 00:29:37.285
+<v Speaker 1>scraping Cortex and node exporter just for some
+
+00:29:37.285 --> 00:29:38.164
+<v Speaker 1>additional
+
+00:29:38.325 --> 00:29:40.245
+<v Speaker 1>data, like, yeah, additional data.
+
+00:29:40.880 --> 00:29:42.639
+<v Speaker 1>And we are running Grafana so that we
+
+00:29:42.639 --> 00:29:43.999
+<v Speaker 1>can query Cortex.
+
+00:29:44.320 --> 00:29:46.159
+<v Speaker 1>And we are running console. Like, we don't
+
+00:29:46.159 --> 00:29:47.679
+<v Speaker 1>need console right now, but we are anyway
+
+00:29:47.679 --> 00:29:48.320
+<v Speaker 1>running.
+
+00:29:49.039 --> 00:29:50.719
+<v Speaker 1>Yeah. And let's
+
+00:29:52.975 --> 00:29:55.135
+<v Speaker 1>and one small detail to know right now
+
+00:29:55.135 --> 00:29:56.335
+<v Speaker 1>is we are running
+
+00:29:56.815 --> 00:29:59.134
+<v Speaker 1>with a replication factor of three,
+
+00:29:59.774 --> 00:30:00.575
+<v Speaker 1>which means
+
+00:30:00.815 --> 00:30:02.734
+<v Speaker 1>in this horizontally
+
+00:30:02.815 --> 00:30:05.215
+<v Speaker 1>scaled stuff, whenever we get a single sample,
+
+00:30:05.580 --> 00:30:08.299
+<v Speaker 1>it doesn't just go to one single cortex.
+
+00:30:08.299 --> 00:30:10.860
+<v Speaker 1>It goes to all three. So when you
+
+00:30:10.860 --> 00:30:13.019
+<v Speaker 1>ran the cortex in your machine, it was
+
+00:30:13.019 --> 00:30:14.940
+<v Speaker 1>running with replication factor one.
+
+00:30:16.059 --> 00:30:17.740
+<v Speaker 1>And when we are running with the replication
+
+00:30:17.740 --> 00:30:18.859
+<v Speaker 1>factor three,
+
+00:30:19.260 --> 00:30:20.940
+<v Speaker 1>we need to have a quorum
+
+00:30:21.205 --> 00:30:24.325
+<v Speaker 1>of two, like, two in two Cortex out
+
+00:30:24.325 --> 00:30:26.005
+<v Speaker 1>of the three should say that I have
+
+00:30:26.005 --> 00:30:27.765
+<v Speaker 1>returned the sample successfully.
+
+00:30:28.005 --> 00:30:29.925
+<v Speaker 1>Only then the request can succeed.
+
+00:30:30.085 --> 00:30:32.005
+<v Speaker 1>So if I move back to my terminal,
+
+00:30:32.005 --> 00:30:34.405
+<v Speaker 1>you'll see lots of errors which say at
+
+00:30:34.405 --> 00:30:36.245
+<v Speaker 1>least two replicas
+
+00:30:36.500 --> 00:30:38.500
+<v Speaker 1>should be required, but it could only find
+
+00:30:38.500 --> 00:30:39.140
+<v Speaker 1>one.
+
+00:30:40.660 --> 00:30:42.020
+<v Speaker 1>So what we will
+
+00:30:47.540 --> 00:30:50.855
+<v Speaker 1>we'll see what's running right now. Yeah. We
+
+00:30:50.855 --> 00:30:53.015
+<v Speaker 1>have a single Cortex running.
+
+00:30:54.695 --> 00:30:56.615
+<v Speaker 1>So let's scale it to three so that
+
+00:30:56.615 --> 00:30:58.855
+<v Speaker 1>these errors go away. Yeah.
+
+00:30:59.895 --> 00:31:01.735
+<v Speaker 1>We have three Cortex running
+
+00:31:02.375 --> 00:31:03.335
+<v Speaker 1>and
+
+00:31:04.350 --> 00:31:05.470
+<v Speaker 1>the logs
+
+00:31:07.630 --> 00:31:10.910
+<v Speaker 1>it's
+
+00:31:10.910 --> 00:31:13.390
+<v Speaker 1>getting to a scene state right now, I
+
+00:31:13.390 --> 00:31:13.870
+<v Speaker 1>guess.
+
+00:31:15.309 --> 00:31:17.950
+<v Speaker 1>So, basically, what's happening right now is let
+
+00:31:17.950 --> 00:31:20.424
+<v Speaker 1>me go to the beginning where Prometheus is
+
+00:31:20.424 --> 00:31:22.984
+<v Speaker 1>scraping and how it's pushing data.
+
+00:31:23.865 --> 00:31:24.584
+<v Speaker 1>Okay.
+
+00:31:26.424 --> 00:31:29.225
+<v Speaker 1>Alright. Before they're doing anything, let's see if
+
+00:31:29.225 --> 00:31:30.585
+<v Speaker 1>it's working properly.
+
+00:31:36.000 --> 00:31:38.640
+<v Speaker 1>So this is the barebone Cortex
+
+00:31:39.200 --> 00:31:41.360
+<v Speaker 1>UI that we have. There is nothing special.
+
+00:31:41.360 --> 00:31:42.960
+<v Speaker 1>If you go to the ingest to ring
+
+00:31:42.960 --> 00:31:43.760
+<v Speaker 1>status,
+
+00:31:43.920 --> 00:31:45.840
+<v Speaker 1>it tells you that there are three Cortex
+
+00:31:45.840 --> 00:31:46.560
+<v Speaker 1>running here,
+
+00:31:47.225 --> 00:31:49.865
+<v Speaker 1>and all of them have almost equal share
+
+00:31:49.865 --> 00:31:51.705
+<v Speaker 1>of data that it's incoming.
+
+00:31:53.785 --> 00:31:55.225
+<v Speaker 1>So that's all we need to know right
+
+00:31:55.225 --> 00:31:56.664
+<v Speaker 1>now. Let's
+
+00:31:56.745 --> 00:32:00.105
+<v Speaker 1>go to a fresh Grafana that's running inside.
+
+00:32:07.840 --> 00:32:10.880
+<v Speaker 1>And we'll add a data source. So Cortex
+
+00:32:10.880 --> 00:32:12.240
+<v Speaker 1>is %
+
+00:32:12.240 --> 00:32:14.160
+<v Speaker 1>Prometheus API compatible
+
+00:32:14.480 --> 00:32:16.755
+<v Speaker 1>even on the read path. Like, read path
+
+00:32:16.755 --> 00:32:19.155
+<v Speaker 1>and the push path, everything is Prometheus compatible.
+
+00:32:19.155 --> 00:32:21.554
+<v Speaker 0>Oh, nice. So we will choose Prometheus
+
+00:32:21.555 --> 00:32:23.075
+<v Speaker 1>as the data source.
+
+00:32:23.955 --> 00:32:26.515
+<v Speaker 1>And because this Grafana is running inside
+
+00:32:26.915 --> 00:32:27.635
+<v Speaker 1>the
+
+00:32:28.115 --> 00:32:31.510
+<v Speaker 1>Docker containers and we have a NGINX load
+
+00:32:31.510 --> 00:32:32.390
+<v Speaker 1>balancer.
+
+00:32:33.190 --> 00:32:36.150
+<v Speaker 1>So we can point to that.
+
+00:32:41.830 --> 00:32:42.550
+<v Speaker 1>And
+
+00:32:42.815 --> 00:32:44.014
+<v Speaker 1>the Cortex
+
+00:32:44.095 --> 00:32:45.215
+<v Speaker 1>the Prometheus
+
+00:32:45.215 --> 00:32:46.735
+<v Speaker 1>API start with
+
+00:32:47.215 --> 00:32:49.615
+<v Speaker 1>this prefix, so we mentioned that here.
+
+00:32:49.855 --> 00:32:51.054
+<v Speaker 1>Let me just see
+
+00:32:51.295 --> 00:32:53.374
+<v Speaker 1>if the data source is working.
+
+00:32:54.255 --> 00:32:56.174
+<v Speaker 1>So I'll run the same query that you
+
+00:32:56.174 --> 00:32:57.615
+<v Speaker 1>ran right now, which is
+
+00:32:58.095 --> 00:32:58.975
+<v Speaker 1>Cortex
+
+00:33:01.669 --> 00:33:02.789
+<v Speaker 1>ingestion.
+
+00:33:03.830 --> 00:33:05.269
+<v Speaker 1>And we
+
+00:33:08.309 --> 00:33:11.509
+<v Speaker 1>we see the samples being ingested here.
+
+00:33:12.309 --> 00:33:14.230
+<v Speaker 1>If I just go to last five minutes,
+
+00:33:15.505 --> 00:33:16.705
+<v Speaker 1>something broke.
+
+00:33:18.385 --> 00:33:19.345
+<v Speaker 1>Where did that?
+
+00:33:23.585 --> 00:33:25.825
+<v Speaker 1>Okay. We have some samples being ingested, like,
+
+00:33:25.825 --> 00:33:26.865
+<v Speaker 1>3,000
+
+00:33:26.945 --> 00:33:29.105
+<v Speaker 1>photon samples
+
+00:33:28.290 --> 00:33:29.090
+<v Speaker 1>per
+
+00:33:29.650 --> 00:33:31.970
+<v Speaker 1>cortex. So this is one cortex. This is
+
+00:33:31.970 --> 00:33:34.049
+<v Speaker 1>second cortex. This is third cortex.
+
+00:33:35.570 --> 00:33:38.049
+<v Speaker 1>So we have some samples incoming. Let's see.
+
+00:33:38.370 --> 00:33:40.210
+<v Speaker 1>Let's try to scale up, and,
+
+00:33:40.770 --> 00:33:42.130
+<v Speaker 1>it'll redistribute
+
+00:33:42.130 --> 00:33:43.010
+<v Speaker 1>the vocation swing.
+
+00:33:46.825 --> 00:33:48.745
+<v Speaker 1>Maybe I'm going too fast, but I'm just
+
+00:33:48.745 --> 00:33:51.385
+<v Speaker 1>going to verify from this scraping everything. It
+
+00:33:51.385 --> 00:33:51.945
+<v Speaker 1>is.
+
+00:33:52.425 --> 00:33:54.025
+<v Speaker 0>No. You're okay. It's all good.
+
+00:34:00.110 --> 00:34:02.350
+<v Speaker 1>Let's scale the Cortex to five.
+
+00:34:02.990 --> 00:34:04.350
+<v Speaker 1>We add two more.
+
+00:34:07.710 --> 00:34:09.150
+<v Speaker 1>We got to wait for a few seconds,
+
+00:34:10.734 --> 00:34:13.855
+<v Speaker 1>and we can check this ring status,
+
+00:34:13.855 --> 00:34:15.375
+<v Speaker 1>which is available here.
+
+00:34:17.935 --> 00:34:19.695
+<v Speaker 1>And we have two more incoming. All of
+
+00:34:19.695 --> 00:34:21.935
+<v Speaker 1>them having almost equal share of 20%.
+
+00:34:29.659 --> 00:34:31.420
+<v Speaker 1>Let's do last Can
+
+00:34:31.420 --> 00:34:33.739
+<v Speaker 0>can we explain some of the vocabulary here
+
+00:34:33.739 --> 00:34:36.219
+<v Speaker 0>then? Like, what is a a context ring?
+
+00:34:36.940 --> 00:34:39.820
+<v Speaker 1>Yeah. Yeah. We will go deep into that.
+
+00:34:39.820 --> 00:34:41.340
+<v Speaker 0>Oh, okay. There are lots of thing to
+
+00:34:41.500 --> 00:34:41.739
+<v Speaker 1>yeah.
+
+00:34:42.324 --> 00:34:44.085
+<v Speaker 1>As in our time permits, we will go
+
+00:34:44.085 --> 00:34:45.525
+<v Speaker 1>deep into that. So
+
+00:34:46.565 --> 00:34:50.085
+<v Speaker 1>we we were writing from two Prometheus replicas,
+
+00:34:50.165 --> 00:34:52.485
+<v Speaker 1>but and we are actually running two Prometheus
+
+00:34:52.485 --> 00:34:55.364
+<v Speaker 1>replicas, which means it's But
+
+00:34:55.765 --> 00:34:56.804
+<v Speaker 1>Cortex also
+
+00:34:57.570 --> 00:34:59.970
+<v Speaker 1>has the support for it where it deduplicate
+
+00:34:59.970 --> 00:35:00.770
+<v Speaker 1>stuff.
+
+00:35:00.850 --> 00:35:03.250
+<v Speaker 1>So if I just quickly go through
+
+00:35:03.890 --> 00:35:05.570
+<v Speaker 1>the config,
+
+00:35:06.050 --> 00:35:08.850
+<v Speaker 1>we are saying that enable
+
+00:35:10.135 --> 00:35:14.295
+<v Speaker 1>and we use console only for the where
+
+00:35:15.335 --> 00:35:18.295
+<v Speaker 1>it elects one of the Prometheus as the
+
+00:35:18.295 --> 00:35:21.655
+<v Speaker 1>leader and only one of them is scraped.
+
+00:35:22.580 --> 00:35:25.940
+<v Speaker 1>And if you go to the Prometheus config,
+
+00:35:26.340 --> 00:35:28.420
+<v Speaker 1>it has a label called replica
+
+00:35:28.500 --> 00:35:29.620
+<v Speaker 1>and a cluster.
+
+00:35:30.180 --> 00:35:33.460
+<v Speaker 1>Replica and a cluster. So for common cluster,
+
+00:35:33.460 --> 00:35:35.380
+<v Speaker 1>it selects one of the replicas. That's how
+
+00:35:35.380 --> 00:35:36.100
+<v Speaker 1>it works.
+
+00:35:37.140 --> 00:35:38.995
+<v Speaker 1>And if you go to the tracking
+
+00:35:39.075 --> 00:35:39.875
+<v Speaker 1>status,
+
+00:35:39.875 --> 00:35:42.915
+<v Speaker 1>you can see which Prometheus was selected among
+
+00:35:42.915 --> 00:35:43.635
+<v Speaker 1>the two.
+
+00:35:44.755 --> 00:35:47.235
+<v Speaker 1>So we are actually demoing
+
+00:35:48.115 --> 00:35:50.195
+<v Speaker 1>like, these are two Promethe
+
+00:35:50.195 --> 00:35:52.170
+<v Speaker 1>I going to the load balancer,
+
+00:35:52.570 --> 00:35:53.770
+<v Speaker 1>getting deduplicated
+
+00:35:53.770 --> 00:35:54.490
+<v Speaker 1>here,
+
+00:35:54.810 --> 00:35:56.010
+<v Speaker 1>and we're just,
+
+00:35:56.970 --> 00:35:58.650
+<v Speaker 1>spreading out the Cortex.
+
+00:35:59.770 --> 00:36:01.850
+<v Speaker 1>Now you said you we will talk about
+
+00:36:01.850 --> 00:36:03.050
+<v Speaker 1>the ring. Why not?
+
+00:36:04.585 --> 00:36:05.945
+<v Speaker 1>Yeah. So
+
+00:36:06.505 --> 00:36:08.585
+<v Speaker 1>you need some kind of logic so that
+
+00:36:08.585 --> 00:36:09.865
+<v Speaker 1>it can spread
+
+00:36:09.865 --> 00:36:10.985
+<v Speaker 1>the rights
+
+00:36:10.985 --> 00:36:12.185
+<v Speaker 1>equally to
+
+00:36:12.505 --> 00:36:15.945
+<v Speaker 1>all the Cortex. We actually have that explained
+
+00:36:15.945 --> 00:36:18.105
+<v Speaker 1>in one of the slides here. Why don't
+
+00:36:18.105 --> 00:36:19.145
+<v Speaker 1>I reuse it?
+
+00:36:19.920 --> 00:36:21.760
+<v Speaker 1>So
+
+00:36:27.839 --> 00:36:30.480
+<v Speaker 1>let's say we have some random ring like
+
+00:36:30.480 --> 00:36:32.079
+<v Speaker 1>this and instead of 10,
+
+00:36:32.945 --> 00:36:35.425
+<v Speaker 1>when we have three court five cortex right
+
+00:36:35.425 --> 00:36:35.905
+<v Speaker 1>now,
+
+00:36:36.385 --> 00:36:37.985
+<v Speaker 1>we will have five
+
+00:36:38.225 --> 00:36:40.865
+<v Speaker 1>entries in the ring saying cortex one to
+
+00:36:40.865 --> 00:36:41.505
+<v Speaker 1>five.
+
+00:36:42.065 --> 00:36:42.705
+<v Speaker 1>And
+
+00:36:43.185 --> 00:36:44.625
+<v Speaker 1>in the config
+
+00:36:46.100 --> 00:36:47.140
+<v Speaker 1>we mentioned,
+
+00:36:47.700 --> 00:36:49.620
+<v Speaker 1>we want to have number of tokens as
+
+00:36:49.620 --> 00:36:50.740
+<v Speaker 1>512.
+
+00:36:50.740 --> 00:36:53.700
+<v Speaker 1>So it'll randomly select some number between,
+
+00:36:54.660 --> 00:36:57.380
+<v Speaker 1>zero to the int max 64.
+
+00:36:58.805 --> 00:36:59.445
+<v Speaker 1>And
+
+00:37:00.404 --> 00:37:03.525
+<v Speaker 1>whenever a series is incoming, we hash the
+
+00:37:03.525 --> 00:37:04.325
+<v Speaker 1>series,
+
+00:37:04.964 --> 00:37:07.684
+<v Speaker 1>and the hash is between zero to int
+
+00:37:07.684 --> 00:37:09.125
+<v Speaker 1>max 64.
+
+00:37:09.924 --> 00:37:11.365
+<v Speaker 1>And based on,
+
+00:37:12.440 --> 00:37:15.079
+<v Speaker 1>like, which ingest through holds a token for
+
+00:37:15.079 --> 00:37:16.520
+<v Speaker 1>this particular hash,
+
+00:37:17.079 --> 00:37:20.200
+<v Speaker 1>that sample goes to that particular ingestors. Did
+
+00:37:20.200 --> 00:37:21.079
+<v Speaker 1>that make sense?
+
+00:37:23.000 --> 00:37:25.799
+<v Speaker 0>Yes. Let me can I try and then
+
+00:37:25.365 --> 00:37:26.885
+<v Speaker 0>repeat that back to you in my really
+
+00:37:26.885 --> 00:37:29.525
+<v Speaker 0>naive understanding and we'll see if Yeah? Sure.
+
+00:37:29.525 --> 00:37:31.445
+<v Speaker 0>Can we go back to the diagram with
+
+00:37:31.445 --> 00:37:33.765
+<v Speaker 0>the load balancer and the Cortex in it?
+
+00:37:34.085 --> 00:37:34.725
+<v Speaker 1>Yeah.
+
+00:37:37.525 --> 00:37:39.925
+<v Speaker 1>I'll go with this one. That one. Yeah.
+
+00:37:39.925 --> 00:37:41.045
+<v Speaker 0>Right. Okay. So
+
+00:37:41.540 --> 00:37:42.260
+<v Speaker 0>we're
+
+00:37:42.900 --> 00:37:44.180
+<v Speaker 0>I I just wanna make sure I got
+
+00:37:44.180 --> 00:37:46.420
+<v Speaker 0>this right. We run multiple Prometheus,
+
+00:37:46.420 --> 00:37:48.260
+<v Speaker 0>each scraped in the same target. Let's assume
+
+00:37:48.260 --> 00:37:50.180
+<v Speaker 0>it's a bit on a Kubernetes cluster so
+
+00:37:50.180 --> 00:37:51.780
+<v Speaker 0>that we have higher Yeah. High availability. If
+
+00:37:51.780 --> 00:37:53.140
+<v Speaker 0>one of those Prometheus goes away, it's still
+
+00:37:53.140 --> 00:37:55.745
+<v Speaker 0>being scraped by at least one. Yes. Those
+
+00:37:55.745 --> 00:37:58.785
+<v Speaker 0>prometheus are being consumed by the Cortex.
+
+00:37:59.185 --> 00:38:01.585
+<v Speaker 0>And the Cortex, it's not actually if if
+
+00:38:01.585 --> 00:38:03.585
+<v Speaker 0>I understand it correctly, it's not actually doing
+
+00:38:03.585 --> 00:38:05.425
+<v Speaker 0>deep duplication explicitly,
+
+00:38:05.425 --> 00:38:07.800
+<v Speaker 0>but it's actually doing deep duplication by hashing
+
+00:38:07.800 --> 00:38:09.960
+<v Speaker 0>the metrics and then it's charting them across
+
+00:38:09.960 --> 00:38:11.960
+<v Speaker 0>the many cortex. Is that right? I think
+
+00:38:11.960 --> 00:38:14.280
+<v Speaker 1>I think I got you confused here.
+
+00:38:14.680 --> 00:38:17.640
+<v Speaker 1>So the when Prometheus is pushing samples to
+
+00:38:17.640 --> 00:38:18.520
+<v Speaker 1>the cortex,
+
+00:38:18.600 --> 00:38:21.560
+<v Speaker 1>it has some labels additional labels which says
+
+00:38:21.560 --> 00:38:24.224
+<v Speaker 1>I am from replica one, I'm from replica
+
+00:38:24.224 --> 00:38:26.705
+<v Speaker 1>two from the same cluster,
+
+00:38:26.944 --> 00:38:28.625
+<v Speaker 1>and we have configured
+
+00:38:28.704 --> 00:38:31.825
+<v Speaker 1>Cortex to enable HAD duplication.
+
+00:38:32.385 --> 00:38:35.265
+<v Speaker 1>So even before we do that hashing thing,
+
+00:38:36.790 --> 00:38:39.670
+<v Speaker 1>Cortex elects one of the Prometheus
+
+00:38:39.829 --> 00:38:42.390
+<v Speaker 1>as the leader among those two, which we
+
+00:38:42.390 --> 00:38:43.750
+<v Speaker 1>see in the tracking
+
+00:38:43.750 --> 00:38:44.630
+<v Speaker 1>status.
+
+00:38:45.030 --> 00:38:46.549
+<v Speaker 1>So it will blindly
+
+00:38:46.549 --> 00:38:47.510
+<v Speaker 1>discard
+
+00:38:47.670 --> 00:38:49.510
+<v Speaker 1>all the sample sets coming from one of
+
+00:38:49.510 --> 00:38:52.235
+<v Speaker 1>the Prometheus and clone the accept samples from
+
+00:38:52.235 --> 00:38:54.875
+<v Speaker 1>second Prometheus and remove the replica labels that
+
+00:38:54.875 --> 00:38:55.515
+<v Speaker 1>we have.
+
+00:38:55.995 --> 00:38:59.115
+<v Speaker 1>So after that step, we do the hashing.
+
+00:39:00.155 --> 00:39:01.515
+<v Speaker 0>Ah, okay. Okay. I gotcha.
+
+00:39:02.420 --> 00:39:04.740
+<v Speaker 1>Okay. Yeah. Now we can go ahead with
+
+00:39:04.740 --> 00:39:07.220
+<v Speaker 1>what you're explaining. Okay. So there is the
+
+00:39:07.220 --> 00:39:08.900
+<v Speaker 0>de duplication based on the labels that has
+
+00:39:08.900 --> 00:39:11.380
+<v Speaker 0>been added by the Prometheus, the it's then
+
+00:39:11.380 --> 00:39:12.980
+<v Speaker 0>hashed and then assigned
+
+00:39:13.060 --> 00:39:15.300
+<v Speaker 0>and then replicated across the Cortex is based
+
+00:39:15.300 --> 00:39:16.820
+<v Speaker 0>on the replication rules that are in the
+
+00:39:16.820 --> 00:39:17.380
+<v Speaker 0>configuration.
+
+00:39:18.265 --> 00:39:18.825
+<v Speaker 1>Yes.
+
+00:39:19.305 --> 00:39:20.025
+<v Speaker 0>Alright.
+
+00:39:20.185 --> 00:39:21.385
+<v Speaker 0>I'm with you now.
+
+00:39:21.865 --> 00:39:22.905
+<v Speaker 1>Nice.
+
+00:39:22.905 --> 00:39:25.545
+<v Speaker 1>So let's say among this five in just
+
+00:39:25.545 --> 00:39:26.185
+<v Speaker 1>us,
+
+00:39:26.825 --> 00:39:28.585
+<v Speaker 1>the hash went to,
+
+00:39:29.145 --> 00:39:31.225
+<v Speaker 1>let's say, the Cortex number three. Let's say
+
+00:39:31.225 --> 00:39:32.745
+<v Speaker 1>we have only five right now because we
+
+00:39:32.745 --> 00:39:33.305
+<v Speaker 1>ran five.
+
+00:39:34.260 --> 00:39:36.580
+<v Speaker 1>Let's say the sample went to the cortex
+
+00:39:36.580 --> 00:39:39.860
+<v Speaker 1>three, so it will be given to cortex
+
+00:39:39.860 --> 00:39:42.260
+<v Speaker 1>three, cortex four, and cortex five.
+
+00:39:43.300 --> 00:39:45.940
+<v Speaker 1>And in case a car in the cortex
+
+00:39:45.940 --> 00:39:48.100
+<v Speaker 1>has to crash, let's say four is crashed,
+
+00:39:48.945 --> 00:39:51.025
+<v Speaker 1>it will still try to write to three
+
+00:39:51.025 --> 00:39:52.705
+<v Speaker 1>of them. But once it writes to two
+
+00:39:52.705 --> 00:39:54.625
+<v Speaker 1>of the cortex, it will return the request
+
+00:39:54.625 --> 00:39:56.305
+<v Speaker 1>saying that, hey. I have
+
+00:39:57.665 --> 00:39:59.265
+<v Speaker 1>I'm done with the quorum of two out
+
+00:39:59.265 --> 00:40:00.785
+<v Speaker 1>of three, I can return. But it it
+
+00:40:00.785 --> 00:40:03.470
+<v Speaker 1>will still try try to write with try
+
+00:40:03.470 --> 00:40:05.150
+<v Speaker 1>to write to another Cortex, which will be
+
+00:40:05.150 --> 00:40:06.830
+<v Speaker 1>the next Cortex, which is one.
+
+00:40:07.150 --> 00:40:09.550
+<v Speaker 1>So no no matter what, it'll try to
+
+00:40:09.630 --> 00:40:10.910
+<v Speaker 1>write to
+
+00:40:11.869 --> 00:40:14.590
+<v Speaker 1>three Cortex, which is the replication factor, while
+
+00:40:14.590 --> 00:40:16.109
+<v Speaker 1>satisfying at least the Quorum.
+
+00:40:17.085 --> 00:40:19.805
+<v Speaker 1>So that's how the replication works.
+
+00:40:20.285 --> 00:40:22.365
+<v Speaker 1>And when you are querying,
+
+00:40:22.445 --> 00:40:25.244
+<v Speaker 1>it'll actually like, there is something called query
+
+00:40:25.244 --> 00:40:27.724
+<v Speaker 1>component. It'll query all the Cortex for the
+
+00:40:27.724 --> 00:40:30.125
+<v Speaker 1>samples because you don't know where you might
+
+00:40:30.125 --> 00:40:33.340
+<v Speaker 1>have gaps because of maybe cortex rolling out
+
+00:40:33.340 --> 00:40:35.980
+<v Speaker 1>or some cortex is down. So when you
+
+00:40:35.980 --> 00:40:37.820
+<v Speaker 1>hit a query, it goes to all five
+
+00:40:37.820 --> 00:40:38.620
+<v Speaker 1>cortex.
+
+00:40:38.860 --> 00:40:41.020
+<v Speaker 1>All five cortex get like, you hit a
+
+00:40:41.020 --> 00:40:42.940
+<v Speaker 1>query to one of the cortex. It will
+
+00:40:42.940 --> 00:40:44.780
+<v Speaker 1>send a query to all five cortex for
+
+00:40:44.780 --> 00:40:47.895
+<v Speaker 1>the query, and the sample goes to one
+
+00:40:47.895 --> 00:40:50.055
+<v Speaker 1>of the Cortex where it originated.
+
+00:40:50.455 --> 00:40:53.335
+<v Speaker 1>It makes and matches the duplicate sample, and
+
+00:40:53.335 --> 00:40:54.775
+<v Speaker 1>you finally get back
+
+00:40:55.015 --> 00:40:57.575
+<v Speaker 1>the data to your Grafana.
+
+00:40:58.150 --> 00:40:59.750
+<v Speaker 0>Awesome. Very cool.
+
+00:41:00.230 --> 00:41:01.670
+<v Speaker 0>So see the
+
+00:41:02.150 --> 00:41:04.950
+<v Speaker 0>the usage of console here, is that because
+
+00:41:04.950 --> 00:41:06.869
+<v Speaker 0>you're running this in Docker Compose? Like, I'm
+
+00:41:06.869 --> 00:41:08.950
+<v Speaker 0>wondering if if Cortex is running Kubernetes,
+
+00:41:08.950 --> 00:41:11.355
+<v Speaker 0>does it use the least capabilities there for
+
+00:41:11.355 --> 00:41:14.075
+<v Speaker 0>the leader election without console? That's that's a
+
+00:41:14.075 --> 00:41:14.875
+<v Speaker 1>good question.
+
+00:41:15.115 --> 00:41:15.675
+<v Speaker 1>So
+
+00:41:17.435 --> 00:41:18.395
+<v Speaker 1>console
+
+00:41:18.475 --> 00:41:20.235
+<v Speaker 1>yeah. Cortex
+
+00:41:20.235 --> 00:41:23.115
+<v Speaker 1>either needs console or HCD for
+
+00:41:23.515 --> 00:41:24.075
+<v Speaker 1>this
+
+00:41:25.329 --> 00:41:28.690
+<v Speaker 1>d d like, this tracker status, whatever you
+
+00:41:28.690 --> 00:41:31.010
+<v Speaker 1>are seeing here right now is from the
+
+00:41:31.010 --> 00:41:31.730
+<v Speaker 1>console.
+
+00:41:32.210 --> 00:41:34.849
+<v Speaker 1>So for to elect a leader among the
+
+00:41:34.849 --> 00:41:36.290
+<v Speaker 1>H a Prometheus,
+
+00:41:36.290 --> 00:41:38.850
+<v Speaker 1>you need either console or HCD right now.
+
+00:41:39.170 --> 00:41:39.410
+<v Speaker 1>And
+
+00:41:40.644 --> 00:41:42.964
+<v Speaker 1>okay, I'm just hitting wrong tabs.
+
+00:41:43.045 --> 00:41:44.244
+<v Speaker 1>And
+
+00:41:45.924 --> 00:41:48.964
+<v Speaker 1>this ring, initially, we used to store even
+
+00:41:48.964 --> 00:41:51.684
+<v Speaker 1>this ring in console, but now it's it
+
+00:41:51.684 --> 00:41:53.924
+<v Speaker 1>uses you can use gossip. The way we
+
+00:41:53.924 --> 00:41:56.810
+<v Speaker 1>ran right now, the Cortex, it uses gossip
+
+00:41:56.810 --> 00:41:59.530
+<v Speaker 1>to communicate among the Cortex,
+
+00:42:00.810 --> 00:42:03.050
+<v Speaker 1>and the ring data is just propagated
+
+00:42:03.050 --> 00:42:05.450
+<v Speaker 1>lazily to all the Cortex so that
+
+00:42:06.010 --> 00:42:07.770
+<v Speaker 1>you can do the
+
+00:42:08.010 --> 00:42:08.810
+<v Speaker 1>replication
+
+00:42:08.810 --> 00:42:11.255
+<v Speaker 1>properly. Yeah. Console is only required for h
+
+00:42:11.255 --> 00:42:12.455
+<v Speaker 1>a u n. If you are not using
+
+00:42:12.455 --> 00:42:14.135
+<v Speaker 1>h a, you don't need console.
+
+00:42:14.695 --> 00:42:16.135
+<v Speaker 0>Ah, okay. Perfect.
+
+00:42:16.615 --> 00:42:17.415
+<v Speaker 0>Nice.
+
+00:42:17.815 --> 00:42:18.535
+<v Speaker 1>Yeah.
+
+00:42:18.695 --> 00:42:20.695
+<v Speaker 1>Do you want to dive more deeper, or
+
+00:42:20.695 --> 00:42:22.935
+<v Speaker 1>do you want to get hands on first
+
+00:42:23.180 --> 00:42:24.220
+<v Speaker 1>on your machine?
+
+00:42:24.940 --> 00:42:26.140
+<v Speaker 0>Okay. Let's
+
+00:42:27.260 --> 00:42:28.620
+<v Speaker 0>I mean, I think the problem with diving
+
+00:42:28.620 --> 00:42:31.020
+<v Speaker 0>deeper is that we're limited by my knowledge.
+
+00:42:31.180 --> 00:42:33.340
+<v Speaker 0>So why don't we get hands on? And
+
+00:42:33.340 --> 00:42:35.580
+<v Speaker 0>if if anything that people have in the
+
+00:42:35.145 --> 00:42:37.145
+<v Speaker 0>comments, we can try and tackle that. Now
+
+00:42:37.145 --> 00:42:38.505
+<v Speaker 0>we have had a
+
+00:42:38.905 --> 00:42:40.905
+<v Speaker 0>which has been tackled by I'm assuming one
+
+00:42:40.905 --> 00:42:41.865
+<v Speaker 0>of your colleagues.
+
+00:42:42.985 --> 00:42:45.625
+<v Speaker 0>Rick asked, how does the member list ring
+
+00:42:45.625 --> 00:42:48.810
+<v Speaker 0>works with Cortex processes split out? Where should
+
+00:42:48.810 --> 00:42:51.370
+<v Speaker 0>the join members value be set? Contacts using
+
+00:42:51.370 --> 00:42:54.330
+<v Speaker 0>help chart supported there. I mean, I don't
+
+00:42:54.330 --> 00:42:56.330
+<v Speaker 0>understand that question, but if you do, maybe
+
+00:42:56.330 --> 00:42:58.330
+<v Speaker 0>you could try and explain that.
+
+00:42:59.210 --> 00:43:01.130
+<v Speaker 1>So should I point join members to all
+
+00:43:01.130 --> 00:43:01.770
+<v Speaker 1>Cortex or
+
+00:43:02.885 --> 00:43:04.805
+<v Speaker 1>I think there's a
+
+00:43:05.125 --> 00:43:06.165
+<v Speaker 1>config
+
+00:43:06.325 --> 00:43:07.685
+<v Speaker 1>somewhere here. Yes.
+
+00:43:08.325 --> 00:43:10.965
+<v Speaker 1>So in the member list, we are saying
+
+00:43:11.125 --> 00:43:14.085
+<v Speaker 1>get the DNS records of Cortex.
+
+00:43:14.565 --> 00:43:17.204
+<v Speaker 1>So it asked the DNS for all the
+
+00:43:17.204 --> 00:43:18.085
+<v Speaker 1>entries of Cortex.
+
+00:43:19.160 --> 00:43:22.680
+<v Speaker 1>And on the seven nine four six port,
+
+00:43:22.680 --> 00:43:25.560
+<v Speaker 1>like, it is the default port that we
+
+00:43:25.560 --> 00:43:27.480
+<v Speaker 1>use for member list. You can change it
+
+00:43:27.480 --> 00:43:28.920
+<v Speaker 1>in the Cortex config.
+
+00:43:29.960 --> 00:43:31.800
+<v Speaker 1>Okay. I don't think I was sharing my
+
+00:43:31.800 --> 00:43:33.640
+<v Speaker 1>screen. My bad. Let me go through that
+
+00:43:33.640 --> 00:43:36.065
+<v Speaker 1>again. Yeah. I was just about to ask.
+
+00:43:36.545 --> 00:43:38.065
+<v Speaker 1>Yeah. I was just
+
+00:43:38.385 --> 00:43:39.345
+<v Speaker 1>explaining.
+
+00:43:39.505 --> 00:43:41.585
+<v Speaker 0>There you go. Okay. Yeah.
+
+00:43:41.905 --> 00:43:43.825
+<v Speaker 1>So in the config, we have this member
+
+00:43:43.825 --> 00:43:45.745
+<v Speaker 1>list stuff where we are saying,
+
+00:43:46.065 --> 00:43:48.230
+<v Speaker 1>take the records of this Cortex because in
+
+00:43:48.230 --> 00:43:50.630
+<v Speaker 1>Docker Compose, we are running it as Cortex.
+
+00:43:50.710 --> 00:43:52.869
+<v Speaker 1>So the DNS center will be entry will
+
+00:43:52.869 --> 00:43:53.830
+<v Speaker 1>be as Cortex.
+
+00:43:56.470 --> 00:43:57.110
+<v Speaker 1>And
+
+00:43:58.069 --> 00:44:00.390
+<v Speaker 1>in the config, we say, take the DNS
+
+00:44:00.390 --> 00:44:01.670
+<v Speaker 1>records of Cortex
+
+00:44:02.214 --> 00:44:04.375
+<v Speaker 1>and do all the gossip things that you
+
+00:44:04.375 --> 00:44:06.775
+<v Speaker 1>want on the port 9746.
+
+00:44:07.015 --> 00:44:09.735
+<v Speaker 1>If you are wondering why 9746,
+
+00:44:10.934 --> 00:44:13.255
+<v Speaker 1>let me go to the configuration.
+
+00:44:15.490 --> 00:44:17.570
+<v Speaker 1>Let's go to configuration file. I can just
+
+00:44:17.570 --> 00:44:19.330
+<v Speaker 1>search 46,
+
+00:44:19.330 --> 00:44:21.490
+<v Speaker 1>and it just happens to be the default
+
+00:44:21.490 --> 00:44:22.530
+<v Speaker 1>that we used.
+
+00:44:22.930 --> 00:44:24.690
+<v Speaker 1>You can change this
+
+00:44:25.170 --> 00:44:28.530
+<v Speaker 1>member list con config to bind to any
+
+00:44:28.530 --> 00:44:29.250
+<v Speaker 1>port
+
+00:44:29.330 --> 00:44:30.610
+<v Speaker 1>and then use
+
+00:44:31.385 --> 00:44:34.345
+<v Speaker 1>that port here. So that's how you specify.
+
+00:44:34.744 --> 00:44:36.905
+<v Speaker 0>So that DNS plus Cortex, is that doing,
+
+00:44:36.905 --> 00:44:38.744
+<v Speaker 0>like, a a headless lookup fetching all the
+
+00:44:38.744 --> 00:44:41.224
+<v Speaker 0>IP addresses that resolve to Cortex and then
+
+00:44:41.224 --> 00:44:43.865
+<v Speaker 0>discovering them that way. Right? So okay. I'm
+
+00:44:43.865 --> 00:44:44.984
+<v Speaker 1>doing gossip for this port.
+
+00:44:46.110 --> 00:44:48.670
+<v Speaker 0>Okay. Got it. I hope that answers.
+
+00:44:50.510 --> 00:44:52.750
+<v Speaker 0>Yeah. I I I I understand that. I
+
+00:44:52.750 --> 00:44:54.110
+<v Speaker 0>I don't know if it answers the question
+
+00:44:54.110 --> 00:44:55.950
+<v Speaker 0>specifically, but, Rick, feel free to to get
+
+00:44:55.950 --> 00:44:57.710
+<v Speaker 0>back in touch. And I know that has
+
+00:44:57.710 --> 00:45:00.350
+<v Speaker 0>also replied, so hopefully that covers that. Why
+
+00:45:00.350 --> 00:45:02.995
+<v Speaker 0>don't we get a hands on just hands
+
+00:45:02.995 --> 00:45:04.995
+<v Speaker 0>on again, and then we'll we'll take it
+
+00:45:04.995 --> 00:45:06.515
+<v Speaker 0>from there. So I should be able to
+
+00:45:06.515 --> 00:45:07.395
+<v Speaker 0>replicate
+
+00:45:07.955 --> 00:45:08.675
+<v Speaker 0>this.
+
+00:45:09.715 --> 00:45:11.635
+<v Speaker 0>Right? Yes. That's that's what we're gonna do.
+
+00:45:11.635 --> 00:45:14.515
+<v Speaker 0>So Yeah. You might want to now clone
+
+00:45:14.515 --> 00:45:17.040
+<v Speaker 1>my demo because the one in the upstream
+
+00:45:17.040 --> 00:45:18.320
+<v Speaker 1>is little different.
+
+00:45:19.760 --> 00:45:22.480
+<v Speaker 0>Alright. Let me SSH onto the first node
+
+00:45:22.480 --> 00:45:23.600
+<v Speaker 0>again.
+
+00:45:25.280 --> 00:45:27.280
+<v Speaker 0>And we wanna clone
+
+00:45:27.440 --> 00:45:30.045
+<v Speaker 0>h two c s github dot com code
+
+00:45:30.045 --> 00:45:31.805
+<v Speaker 0>sum/Cortex.
+
+00:45:31.805 --> 00:45:32.845
+<v Speaker 1>Cortex.
+
+00:45:32.845 --> 00:45:33.645
+<v Speaker 1>Right.
+
+00:45:34.285 --> 00:45:36.365
+<v Speaker 0>And a Cortex code sum.
+
+00:45:43.820 --> 00:45:45.100
+<v Speaker 0>Alright. Yeah.
+
+00:45:46.220 --> 00:45:48.140
+<v Speaker 1>You go to Cortex.
+
+00:45:48.140 --> 00:45:48.780
+<v Speaker 0>Yeah.
+
+00:45:49.020 --> 00:45:51.100
+<v Speaker 0>Just always my typing that lets me down.
+
+00:45:51.100 --> 00:45:51.500
+<v Speaker 0>Okay.
+
+00:45:51.900 --> 00:45:55.020
+<v Speaker 0>So You can go into development
+
+00:45:56.265 --> 00:45:57.545
+<v Speaker 1>and then
+
+00:45:57.944 --> 00:46:00.585
+<v Speaker 1>oh, why do yeah. You should fetch the
+
+00:46:00.585 --> 00:46:03.464
+<v Speaker 1>demo branch. My bad. The master sync with
+
+00:46:03.464 --> 00:46:04.184
+<v Speaker 1>the upstream.
+
+00:46:10.530 --> 00:46:11.650
+<v Speaker 0>Demo. Right?
+
+00:46:12.130 --> 00:46:12.850
+<v Speaker 0>Yeah.
+
+00:46:13.010 --> 00:46:14.210
+<v Speaker 0>Okay. And
+
+00:46:14.530 --> 00:46:17.250
+<v Speaker 1>you can just do dot slash compose up,
+
+00:46:17.250 --> 00:46:19.250
+<v Speaker 1>and everything should be up and running. But
+
+00:46:19.250 --> 00:46:20.850
+<v Speaker 1>we have to scale up Cortex
+
+00:46:20.850 --> 00:46:21.810
+<v Speaker 1>as we saw before.
+
+00:46:22.475 --> 00:46:24.315
+<v Speaker 0>Okay. And that's just gonna run that's which
+
+00:46:24.315 --> 00:46:25.995
+<v Speaker 0>we've already went over. So it's gonna run
+
+00:46:25.995 --> 00:46:27.755
+<v Speaker 0>many of which gives us an s three
+
+00:46:27.755 --> 00:46:28.635
+<v Speaker 0>compatible
+
+00:46:30.235 --> 00:46:34.715
+<v Speaker 0>blocks blob storage on this. We run Cortex
+
+00:46:34.650 --> 00:46:36.010
+<v Speaker 0>with the configuration.
+
+00:46:36.170 --> 00:46:39.210
+<v Speaker 0>We're running a load balancer for the Cortex.
+
+00:46:39.690 --> 00:46:41.049
+<v Speaker 0>Yes. And then we have our two Prometheus
+
+00:46:41.049 --> 00:46:42.890
+<v Speaker 0>which is our h a scraping. We've got
+
+00:46:42.890 --> 00:46:44.569
+<v Speaker 0>a node export of which I'm assuming we're
+
+00:46:44.569 --> 00:46:46.170
+<v Speaker 0>just grabbing some metrics from. And then we
+
+00:46:46.170 --> 00:46:47.690
+<v Speaker 0>have Grafana and we have Console. So we
+
+00:46:47.690 --> 00:46:50.010
+<v Speaker 0>we covered all this. We can run compose
+
+00:46:50.010 --> 00:46:50.250
+<v Speaker 0>up.
+
+00:46:52.335 --> 00:46:54.335
+<v Speaker 0>And it's just gonna pull down some docker
+
+00:46:54.335 --> 00:46:56.495
+<v Speaker 0>images. But again Yeah. It should be pretty
+
+00:46:56.495 --> 00:46:57.535
+<v Speaker 0>quick, I hope.
+
+00:46:58.175 --> 00:46:58.895
+<v Speaker 1>Yep.
+
+00:47:01.695 --> 00:47:03.935
+<v Speaker 0>And I'll just put that repository back on
+
+00:47:03.935 --> 00:47:05.455
+<v Speaker 0>the screen. So if people wanna play with
+
+00:47:05.455 --> 00:47:08.020
+<v Speaker 0>us own time, you can clone that repository,
+
+00:47:08.020 --> 00:47:09.859
+<v Speaker 0>check out the demo branch, and run this
+
+00:47:09.859 --> 00:47:10.500
+<v Speaker 0>yourself.
+
+00:47:10.980 --> 00:47:13.780
+<v Speaker 1>Yeah. Also, if you want to just run
+
+00:47:13.780 --> 00:47:14.980
+<v Speaker 1>the upstream
+
+00:47:15.859 --> 00:47:18.740
+<v Speaker 1>demos of con Docker Compose, you could also
+
+00:47:18.740 --> 00:47:20.340
+<v Speaker 1>do that. It's straightforward.
+
+00:47:20.500 --> 00:47:22.095
+<v Speaker 1>It It explicitly mentions
+
+00:47:22.255 --> 00:47:24.575
+<v Speaker 1>Cortex replicas, but in this demo, you can
+
+00:47:24.575 --> 00:47:27.135
+<v Speaker 1>dynamically scale up and scale down. That's the
+
+00:47:27.135 --> 00:47:28.015
+<v Speaker 1>only difference.
+
+00:47:28.655 --> 00:47:29.775
+<v Speaker 0>Okay. Cool.
+
+00:47:31.295 --> 00:47:32.895
+<v Speaker 0>So is the
+
+00:47:33.640 --> 00:47:34.520
+<v Speaker 0>there we go.
+
+00:47:35.480 --> 00:47:37.880
+<v Speaker 0>So the ports are being used. So I
+
+00:47:37.880 --> 00:47:40.040
+<v Speaker 0>should probably shut down the other stuff. Yeah.
+
+00:47:40.200 --> 00:47:40.920
+<v Speaker 1>Yeah.
+
+00:47:41.720 --> 00:47:44.520
+<v Speaker 1>Yeah. It's using the Prometheus port nine zero
+
+00:47:44.520 --> 00:47:45.400
+<v Speaker 1>nine zero.
+
+00:47:46.120 --> 00:47:47.320
+<v Speaker 0>Cortex.
+
+00:47:50.655 --> 00:47:53.055
+<v Speaker 1>Yeah. Cortex was already done. This is.
+
+00:47:53.855 --> 00:47:55.215
+<v Speaker 0>Yeah.
+
+00:47:56.255 --> 00:47:59.455
+<v Speaker 0>Okay. Cool. Yeah. So let's just
+
+00:47:59.855 --> 00:48:00.655
+<v Speaker 0>run that again.
+
+00:48:03.500 --> 00:48:05.900
+<v Speaker 0>Alright. And it's up. Yes. So we want
+
+00:48:06.060 --> 00:48:08.780
+<v Speaker 1>should be getting some error message. Yes. We
+
+00:48:08.780 --> 00:48:10.940
+<v Speaker 1>want to scale up the Cortex.
+
+00:48:11.180 --> 00:48:13.900
+<v Speaker 0>The error message here is just saying that
+
+00:48:14.115 --> 00:48:15.875
+<v Speaker 0>could only find one and we need at
+
+00:48:15.875 --> 00:48:17.155
+<v Speaker 0>least two. And that's just so that we
+
+00:48:17.155 --> 00:48:18.995
+<v Speaker 0>have a core among the Cortex cluster. Right?
+
+00:48:18.995 --> 00:48:20.115
+<v Speaker 1>Yes. Yeah.
+
+00:48:20.355 --> 00:48:22.355
+<v Speaker 0>So if I go to the Cortex code
+
+00:48:22.355 --> 00:48:23.715
+<v Speaker 0>some development
+
+00:48:23.715 --> 00:48:24.515
+<v Speaker 0>demo,
+
+00:48:24.595 --> 00:48:26.755
+<v Speaker 0>and then we could do a docker compose
+
+00:48:26.755 --> 00:48:28.275
+<v Speaker 0>scale Cortex
+
+00:48:28.370 --> 00:48:29.570
+<v Speaker 0>five. Right?
+
+00:48:29.890 --> 00:48:31.410
+<v Speaker 1>Yeah. We can do five.
+
+00:48:34.850 --> 00:48:36.690
+<v Speaker 1>It should Cortex equals to five, I guess.
+
+00:48:36.690 --> 00:48:38.130
+<v Speaker 0>Ah, cortex equals five.
+
+00:48:39.570 --> 00:48:41.810
+<v Speaker 0>And then we should see I guess it
+
+00:48:41.810 --> 00:48:43.090
+<v Speaker 0>might just take a few seconds, but the
+
+00:48:43.090 --> 00:48:45.145
+<v Speaker 0>error message has gone away. We can see
+
+00:48:45.145 --> 00:48:45.865
+<v Speaker 0>now
+
+00:48:46.345 --> 00:48:48.905
+<v Speaker 0>other things and stuff happening. So Yeah.
+
+00:48:49.305 --> 00:48:52.424
+<v Speaker 1>Yeah. And to see everything in action, you
+
+00:48:52.424 --> 00:48:53.625
+<v Speaker 1>can open
+
+00:48:53.704 --> 00:48:55.785
+<v Speaker 1>this IP on port a t t on
+
+00:48:55.785 --> 00:48:57.145
+<v Speaker 1>a browser and see
+
+00:48:57.700 --> 00:49:00.580
+<v Speaker 1>all the Cortex running and the status.
+
+00:49:03.700 --> 00:49:05.620
+<v Speaker 1>Oh, why is it back gateway?
+
+00:49:06.420 --> 00:49:07.620
+<v Speaker 1>Can
+
+00:49:07.620 --> 00:49:10.340
+<v Speaker 1>I see the terminal if it said something?
+
+00:49:15.755 --> 00:49:18.715
+<v Speaker 0>We're getting our connection refused upstream.
+
+00:49:20.875 --> 00:49:21.675
+<v Speaker 1>No.
+
+00:49:22.315 --> 00:49:23.275
+<v Speaker 1>That's wrong.
+
+00:49:24.635 --> 00:49:25.755
+<v Speaker 1>I just ran that.
+
+00:49:28.210 --> 00:49:30.210
+<v Speaker 1>You could try again. I'm not sure. Let's
+
+00:49:30.210 --> 00:49:31.570
+<v Speaker 0>let's take a look. Right? So we could
+
+00:49:31.570 --> 00:49:33.250
+<v Speaker 0>do docker compose p s. Let's just make
+
+00:49:33.250 --> 00:49:34.610
+<v Speaker 0>sure everything is running.
+
+00:49:35.410 --> 00:49:37.010
+<v Speaker 1>Yes. Everything is fine.
+
+00:49:38.450 --> 00:49:40.210
+<v Speaker 1>Just see. Load parents search. Yeah.
+
+00:49:43.815 --> 00:49:46.215
+<v Speaker 0>Yeah. It's definite let's see.
+
+00:49:48.215 --> 00:49:50.375
+<v Speaker 0>I'm usually good at fixing broken stuff, so
+
+00:49:50.375 --> 00:49:50.855
+<v Speaker 0>let me see.
+
+00:49:54.380 --> 00:49:56.620
+<v Speaker 0>So is there something to worry about? Should
+
+00:49:56.620 --> 00:49:58.140
+<v Speaker 0>we just is this a red heading? But
+
+00:49:58.140 --> 00:50:00.780
+<v Speaker 0>we have No. That's fine. That's totally fine.
+
+00:50:01.420 --> 00:50:03.180
+<v Speaker 0>K. So the only problem we have right
+
+00:50:03.180 --> 00:50:04.140
+<v Speaker 0>now is
+
+00:50:04.300 --> 00:50:06.060
+<v Speaker 0>engine x. So let's
+
+00:50:06.545 --> 00:50:07.665
+<v Speaker 0>take a look at what's going on with
+
+00:50:07.665 --> 00:50:09.825
+<v Speaker 0>this load balancer setup. So if I do
+
+00:50:09.825 --> 00:50:12.305
+<v Speaker 0>a docker compose e x c
+
+00:50:13.025 --> 00:50:14.625
+<v Speaker 0>load balancer bash.
+
+00:50:16.305 --> 00:50:18.065
+<v Speaker 0>We'll take a look at the engine x
+
+00:50:18.065 --> 00:50:18.545
+<v Speaker 0>config.
+
+00:50:20.010 --> 00:50:23.130
+<v Speaker 0>And let's see. Cortex dot YAML.
+
+00:50:23.530 --> 00:50:25.370
+<v Speaker 0>Of course. Let's just.
+
+00:50:29.050 --> 00:50:30.250
+<v Speaker 1>Yep. NGINX
+
+00:50:30.250 --> 00:50:32.250
+<v Speaker 1>config. Yeah. NGINX config should be.
+
+00:50:35.335 --> 00:50:37.335
+<v Speaker 1>Yeah. It's pointing to Cortex.
+
+00:50:37.415 --> 00:50:39.495
+<v Speaker 0>Okay. So it's just an approximate pass to
+
+00:50:39.495 --> 00:50:42.855
+<v Speaker 0>Cortex as a DNS name. So let's curl
+
+00:50:43.655 --> 00:50:44.615
+<v Speaker 0>Cortex.
+
+00:50:45.975 --> 00:50:47.175
+<v Speaker 0>And that looks okay. Right?
+
+00:50:47.790 --> 00:50:48.510
+<v Speaker 1>Yes.
+
+00:50:48.990 --> 00:50:51.070
+<v Speaker 1>If if you do Cortex eight eighty.
+
+00:50:52.190 --> 00:50:54.190
+<v Speaker 1>No. Cortex should be on port 80, but
+
+00:50:54.430 --> 00:50:55.070
+<v Speaker 0>Yeah.
+
+00:50:56.350 --> 00:50:57.870
+<v Speaker 0>So from the hosts,
+
+00:50:58.510 --> 00:50:59.950
+<v Speaker 0>let's try
+
+00:51:01.175 --> 00:51:03.415
+<v Speaker 0>local host eighty eighty,
+
+00:51:04.535 --> 00:51:05.655
+<v Speaker 0>that gateway.
+
+00:51:06.215 --> 00:51:07.095
+<v Speaker 1>That's interesting.
+
+00:51:09.175 --> 00:51:12.855
+<v Speaker 1>Because we are pointing the load balances 82
+
+00:51:12.855 --> 00:51:14.055
+<v Speaker 1>local host eighty eighty.
+
+00:51:16.359 --> 00:51:19.640
+<v Speaker 0>Yeah. Okay. So why is NGINX unhappy
+
+00:51:19.640 --> 00:51:22.520
+<v Speaker 0>even though it looks like to me it
+
+00:51:22.520 --> 00:51:23.400
+<v Speaker 0>should
+
+00:51:23.880 --> 00:51:25.480
+<v Speaker 0>Yeah. Be working
+
+00:51:26.440 --> 00:51:27.240
+<v Speaker 0>upstream.
+
+00:51:30.385 --> 00:51:31.905
+<v Speaker 0>That is really weird.
+
+00:51:33.505 --> 00:51:36.545
+<v Speaker 0>I'm gonna restart NGINX. I'd I think we
+
+00:51:36.545 --> 00:51:39.345
+<v Speaker 1>want to compose down once because it failed
+
+00:51:39.345 --> 00:51:41.825
+<v Speaker 1>initially or did it not? I don't remember.
+
+00:51:43.665 --> 00:51:44.465
+<v Speaker 0>Yeah. I guess it
+
+00:51:46.070 --> 00:51:47.750
+<v Speaker 0>yeah. Let let's do that then before I
+
+00:51:47.750 --> 00:51:49.990
+<v Speaker 0>start just kicking things. Okay. Yeah. You can
+
+00:51:49.990 --> 00:51:51.270
+<v Speaker 1>do dot
+
+00:51:51.270 --> 00:51:52.710
+<v Speaker 1>slash compose down.
+
+00:51:54.710 --> 00:51:56.150
+<v Speaker 1>Yeah. Dot compose down.
+
+00:51:58.785 --> 00:52:01.265
+<v Speaker 1>Yeah. I'm trying my best. My brain says
+
+00:52:01.265 --> 00:52:03.505
+<v Speaker 0>one thing, my fingers type another. It's
+
+00:52:03.984 --> 00:52:05.265
+<v Speaker 0>a common problem.
+
+00:52:06.545 --> 00:52:08.865
+<v Speaker 0>Alright. Let's run this back up again.
+
+00:52:10.385 --> 00:52:12.385
+<v Speaker 1>And we have to scale up again. Hopefully,
+
+00:52:12.385 --> 00:52:13.345
+<v Speaker 1>everything is fine this time.
+
+00:52:18.160 --> 00:52:20.240
+<v Speaker 1>Yeah. Let's scale this up again.
+
+00:52:20.720 --> 00:52:21.599
+<v Speaker 0>K.
+
+00:52:21.599 --> 00:52:22.720
+<v Speaker 0>Cortex.
+
+00:52:23.839 --> 00:52:26.160
+<v Speaker 0>Quotes on development demo.
+
+00:52:26.319 --> 00:52:27.920
+<v Speaker 0>Oh, let's just scale.
+
+00:52:32.155 --> 00:52:34.235
+<v Speaker 0>Cortex equals five.
+
+00:52:36.155 --> 00:52:38.395
+<v Speaker 0>Alright. So we should see those adders disappear
+
+00:52:38.395 --> 00:52:39.115
+<v Speaker 0>again.
+
+00:52:39.195 --> 00:52:40.155
+<v Speaker 0>This looks good.
+
+00:52:42.950 --> 00:52:44.070
+<v Speaker 1>There. Yay.
+
+00:52:44.630 --> 00:52:45.510
+<v Speaker 0>Transient
+
+00:52:45.510 --> 00:52:46.230
+<v Speaker 0>error.
+
+00:52:46.390 --> 00:52:49.829
+<v Speaker 1>Yeah. Alright. So what we're seeing got ingested
+
+00:52:49.829 --> 00:52:50.950
+<v Speaker 1>ring status,
+
+00:52:51.270 --> 00:52:53.190
+<v Speaker 1>we'll show you that we are running five
+
+00:52:53.190 --> 00:52:53.430
+<v Speaker 1>of them.
+
+00:52:55.945 --> 00:52:57.545
+<v Speaker 0>Alright. I mean, that's
+
+00:52:58.665 --> 00:53:01.785
+<v Speaker 0>pretty simple then to scale horizontally.
+
+00:53:01.785 --> 00:53:03.945
+<v Speaker 0>Like, I mean, can I take any number
+
+00:53:03.945 --> 00:53:05.625
+<v Speaker 0>there? Like, if I'd scale this let's say
+
+00:53:05.625 --> 00:53:07.704
+<v Speaker 0>I do 50. I I that's probably a
+
+00:53:07.704 --> 00:53:09.865
+<v Speaker 0>really stupid number. I'm no instantly regretting that.
+
+00:53:09.890 --> 00:53:10.530
+<v Speaker 0>Yeah.
+
+00:53:11.330 --> 00:53:13.810
+<v Speaker 1>Let's not scale down now because scaling down
+
+00:53:13.810 --> 00:53:15.650
+<v Speaker 1>requires you to scale down one at a
+
+00:53:15.650 --> 00:53:16.050
+<v Speaker 1>time.
+
+00:53:16.530 --> 00:53:17.650
+<v Speaker 1>So that's going to take a lot of
+
+00:53:17.650 --> 00:53:19.490
+<v Speaker 1>time, so let's play with 50 right now.
+
+00:53:21.090 --> 00:53:23.650
+<v Speaker 0>Okay. Sorry. I should've run that past you
+
+00:53:23.650 --> 00:53:26.085
+<v Speaker 0>first, but, I mean, that's pretty cool. We've
+
+00:53:26.085 --> 00:53:28.805
+<v Speaker 0>just scaled up our Cortex to 50 notes.
+
+00:53:28.805 --> 00:53:31.045
+<v Speaker 0>And they're they're slowly coming in active.
+
+00:53:31.205 --> 00:53:32.165
+<v Speaker 1>So Yes.
+
+00:53:33.125 --> 00:53:33.445
+<v Speaker 0>Nice.
+
+00:53:36.930 --> 00:53:37.810
+<v Speaker 0>Okay.
+
+00:53:37.970 --> 00:53:40.210
+<v Speaker 0>So yeah. If we submit a little bit.
+
+00:53:40.210 --> 00:53:41.890
+<v Speaker 0>Alright. Good. So I think
+
+00:53:42.450 --> 00:53:44.210
+<v Speaker 0>still a couple pending, but it's it's getting
+
+00:53:44.210 --> 00:53:47.090
+<v Speaker 0>there. So Yeah. We have 50 Cortex running.
+
+00:53:47.490 --> 00:53:50.195
+<v Speaker 0>So that's pretty cool. Like Yeah. I could
+
+00:53:50.195 --> 00:53:52.195
+<v Speaker 0>just scale that to the and what are
+
+00:53:52.195 --> 00:53:54.595
+<v Speaker 0>the scaling constraints on Cortex then? Like, when
+
+00:53:54.595 --> 00:53:57.075
+<v Speaker 0>do I scale up Cortex? Is is it
+
+00:53:57.315 --> 00:53:58.835
+<v Speaker 0>dependent on how much data I have coming
+
+00:53:58.835 --> 00:54:01.635
+<v Speaker 0>in? Does it ingest control, flow rate, like,
+
+00:54:01.635 --> 00:54:04.550
+<v Speaker 0>cardinality? What are the the constraints there? So
+
+00:54:04.550 --> 00:54:06.150
+<v Speaker 1>there are a few things. Like, one is
+
+00:54:06.150 --> 00:54:07.510
+<v Speaker 1>the right, which
+
+00:54:07.830 --> 00:54:10.150
+<v Speaker 1>the like, I can actually go through the
+
+00:54:10.150 --> 00:54:11.910
+<v Speaker 1>architecture right now and talk
+
+00:54:12.310 --> 00:54:13.830
+<v Speaker 1>why when would you
+
+00:54:14.230 --> 00:54:15.670
+<v Speaker 1>split it into microservices
+
+00:54:15.670 --> 00:54:18.630
+<v Speaker 1>mode and what component is hit by what.
+
+00:54:18.905 --> 00:54:21.065
+<v Speaker 0>Yeah. Go somewhere. That would be great. Yeah.
+
+00:54:21.065 --> 00:54:22.744
+<v Speaker 1>I'll actually share my screen. It will be
+
+00:54:22.744 --> 00:54:23.865
+<v Speaker 1>easier to
+
+00:54:24.744 --> 00:54:26.425
+<v Speaker 1>show the architecture with that.
+
+00:54:29.945 --> 00:54:30.265
+<v Speaker 1>Yeah.
+
+00:54:31.850 --> 00:54:34.170
+<v Speaker 1>Am I is my screen visible now? Yep.
+
+00:54:34.170 --> 00:54:35.930
+<v Speaker 0>It is. We can see the hash string.
+
+00:54:36.730 --> 00:54:37.610
+<v Speaker 1>Yeah.
+
+00:54:38.570 --> 00:54:39.290
+<v Speaker 1>So
+
+00:54:42.250 --> 00:54:44.890
+<v Speaker 1>where is the overall architecture?
+
+00:54:47.425 --> 00:54:48.065
+<v Speaker 1>Sweet.
+
+00:54:48.385 --> 00:54:49.105
+<v Speaker 1>Yeah.
+
+00:54:49.425 --> 00:54:50.065
+<v Speaker 1>So
+
+00:54:50.385 --> 00:54:50.945
+<v Speaker 1>when
+
+00:54:51.265 --> 00:54:53.985
+<v Speaker 1>you've ran a single Cortex binary,
+
+00:54:54.065 --> 00:54:56.945
+<v Speaker 1>it is actually running all these components inside
+
+00:54:56.945 --> 00:54:58.464
+<v Speaker 1>a single processor.
+
+00:54:59.619 --> 00:55:01.780
+<v Speaker 1>So these are all the components that you
+
+00:55:01.780 --> 00:55:04.900
+<v Speaker 1>have. So in the right path, we encounter
+
+00:55:04.900 --> 00:55:06.900
+<v Speaker 1>distributor and ingestor.
+
+00:55:07.619 --> 00:55:10.420
+<v Speaker 1>The ingestor is the final place where their
+
+00:55:10.420 --> 00:55:12.820
+<v Speaker 1>data goes. It stores it in the memory.
+
+00:55:12.820 --> 00:55:13.619
+<v Speaker 1>Ingestors
+
+00:55:14.415 --> 00:55:16.095
+<v Speaker 1>have the tokens, etcetera.
+
+00:55:16.415 --> 00:55:18.575
+<v Speaker 1>And distributor reads the
+
+00:55:19.775 --> 00:55:20.495
+<v Speaker 1>ring,
+
+00:55:20.815 --> 00:55:23.935
+<v Speaker 1>determines which ingest us it has to go
+
+00:55:23.935 --> 00:55:24.575
+<v Speaker 1>to,
+
+00:55:24.895 --> 00:55:26.575
+<v Speaker 1>and then it just sends the data to
+
+00:55:26.575 --> 00:55:27.295
+<v Speaker 1>the ingestor.
+
+00:55:27.560 --> 00:55:30.520
+<v Speaker 1>So if we take the link page when
+
+00:55:30.520 --> 00:55:32.600
+<v Speaker 1>we have five Cortex, or let's say now
+
+00:55:32.600 --> 00:55:34.840
+<v Speaker 1>we have 10 Cortex, when you hit a
+
+00:55:34.840 --> 00:55:37.880
+<v Speaker 1>Cortex for ingesting the sample, you hit the
+
+00:55:37.880 --> 00:55:38.760
+<v Speaker 1>distributor
+
+00:55:39.000 --> 00:55:39.880
+<v Speaker 1>component,
+
+00:55:39.880 --> 00:55:42.565
+<v Speaker 1>and it selects three of the Cortex, and
+
+00:55:42.565 --> 00:55:44.485
+<v Speaker 1>it goes to the ingest component of the
+
+00:55:44.485 --> 00:55:45.205
+<v Speaker 1>Cortex.
+
+00:55:45.525 --> 00:55:46.965
+<v Speaker 1>So that's the right path.
+
+00:55:47.685 --> 00:55:49.525
+<v Speaker 1>And when we go to the read path,
+
+00:55:49.685 --> 00:55:52.805
+<v Speaker 1>the query front end does some query optimization
+
+00:55:52.805 --> 00:55:55.525
+<v Speaker 1>of, like, splitting queries into multiple queries to
+
+00:55:55.900 --> 00:55:58.700
+<v Speaker 1>parallelize the queries and all other stuff.
+
+00:55:59.020 --> 00:56:00.780
+<v Speaker 1>And then sends
+
+00:56:01.020 --> 00:56:03.740
+<v Speaker 1>those parallel queries to a component called
+
+00:56:03.740 --> 00:56:04.540
+<v Speaker 1>Querier.
+
+00:56:05.180 --> 00:56:06.300
+<v Speaker 1>So Querier
+
+00:56:06.940 --> 00:56:10.365
+<v Speaker 1>actually directly uses the PromQL engine that we
+
+00:56:10.365 --> 00:56:12.445
+<v Speaker 1>have in Prometheus, so it's %
+
+00:56:12.445 --> 00:56:13.885
+<v Speaker 1>PromQL compliant.
+
+00:56:14.525 --> 00:56:15.565
+<v Speaker 1>So courier
+
+00:56:15.725 --> 00:56:18.605
+<v Speaker 1>ask for yeah. When ingestor has data which
+
+00:56:18.605 --> 00:56:21.485
+<v Speaker 1>is old, it pushes to the or the
+
+00:56:21.485 --> 00:56:23.930
+<v Speaker 1>objects that they have. So Querier gets the
+
+00:56:23.930 --> 00:56:26.329
+<v Speaker 1>recent data from the ingested old data from
+
+00:56:26.329 --> 00:56:29.210
+<v Speaker 1>the store gateway. Store gateways design the component
+
+00:56:29.369 --> 00:56:31.930
+<v Speaker 1>to interact with the store the
+
+00:56:32.170 --> 00:56:35.369
+<v Speaker 1>object store. Querier gets the data, runs the
+
+00:56:35.369 --> 00:56:38.395
+<v Speaker 1>queries, sends back the data to query front
+
+00:56:38.395 --> 00:56:40.555
+<v Speaker 1>end. And because query front end gets the
+
+00:56:40.555 --> 00:56:43.275
+<v Speaker 1>data back from multiple queries, it, again, merges
+
+00:56:43.275 --> 00:56:45.115
+<v Speaker 1>the data and sends back to the
+
+00:56:46.474 --> 00:56:49.115
+<v Speaker 1>querying tool of your choice. Compactor is just
+
+00:56:49.115 --> 00:56:51.194
+<v Speaker 1>another service which merges all the data here.
+
+00:56:51.650 --> 00:56:53.490
+<v Speaker 1>So now talking about
+
+00:56:53.650 --> 00:56:55.890
+<v Speaker 1>where would you like, all that I explained
+
+00:56:55.890 --> 00:56:57.890
+<v Speaker 1>right now, does that make sense?
+
+00:56:58.610 --> 00:57:00.370
+<v Speaker 0>Yeah. I mean, I have one
+
+00:57:01.010 --> 00:57:03.010
+<v Speaker 0>question looming in my head, and it's that
+
+00:57:03.010 --> 00:57:06.265
+<v Speaker 0>we're scaling Cortex as a single binary. Is
+
+00:57:06.265 --> 00:57:07.705
+<v Speaker 0>that how I scale it? Or can I
+
+00:57:07.705 --> 00:57:09.785
+<v Speaker 0>build those components in isolation? Do I scale
+
+00:57:09.785 --> 00:57:10.745
+<v Speaker 0>them all together?
+
+00:57:11.225 --> 00:57:13.625
+<v Speaker 1>Yes. I was going to get to that
+
+00:57:13.625 --> 00:57:15.865
+<v Speaker 1>thing. So let's say what are the
+
+00:57:16.480 --> 00:57:17.280
+<v Speaker 1>bottlenecks
+
+00:57:17.280 --> 00:57:18.640
+<v Speaker 1>when you scale,
+
+00:57:18.720 --> 00:57:21.200
+<v Speaker 1>like, run Cortex at huge scale, and how
+
+00:57:21.200 --> 00:57:23.520
+<v Speaker 1>do we split this into multiple things.
+
+00:57:24.080 --> 00:57:27.440
+<v Speaker 1>So in the right if you have only
+
+00:57:28.240 --> 00:57:29.680
+<v Speaker 1>a right heavy Cortex,
+
+00:57:30.005 --> 00:57:32.565
+<v Speaker 1>then the distributor and ingestor will be heavily
+
+00:57:32.565 --> 00:57:33.285
+<v Speaker 1>loaded.
+
+00:57:33.685 --> 00:57:36.485
+<v Speaker 1>And if you query anything because it's a
+
+00:57:36.485 --> 00:57:39.525
+<v Speaker 1>single context running, your queries might suffer because
+
+00:57:39.525 --> 00:57:41.045
+<v Speaker 1>of lots of rights.
+
+00:57:41.125 --> 00:57:43.329
+<v Speaker 1>Now let's see the other way around. You
+
+00:57:43.329 --> 00:57:46.369
+<v Speaker 1>have lots of heavy queries running, expanding all
+
+00:57:46.369 --> 00:57:49.090
+<v Speaker 1>days, touching all the Cortex instances.
+
+00:57:49.650 --> 00:57:50.450
+<v Speaker 1>And then
+
+00:57:52.050 --> 00:57:54.210
+<v Speaker 1>because of that, it takes lots of CPU,
+
+00:57:54.210 --> 00:57:55.809
+<v Speaker 1>your rights are suffering here.
+
+00:57:56.645 --> 00:57:59.765
+<v Speaker 1>So you could scale out her Cortex horizontally
+
+00:57:59.765 --> 00:58:01.605
+<v Speaker 1>with the single binary as much as you
+
+00:58:01.605 --> 00:58:03.685
+<v Speaker 1>can as long as both of these are
+
+00:58:03.685 --> 00:58:06.165
+<v Speaker 1>working fine. But when one of the read
+
+00:58:06.165 --> 00:58:08.085
+<v Speaker 1>path or write path is affecting the other,
+
+00:58:08.960 --> 00:58:11.760
+<v Speaker 1>there, she would want to split this into
+
+00:58:11.760 --> 00:58:13.040
+<v Speaker 1>multiple components.
+
+00:58:13.440 --> 00:58:16.320
+<v Speaker 1>So what's beautiful is you use this
+
+00:58:17.680 --> 00:58:21.359
+<v Speaker 1>single binary itself to run multiple components.
+
+00:58:21.760 --> 00:58:22.400
+<v Speaker 1>For example,
+
+00:58:27.935 --> 00:58:30.815
+<v Speaker 1>I have Cortex. By default, it has something
+
+00:58:30.815 --> 00:58:33.375
+<v Speaker 1>called target equals to all,
+
+00:58:33.775 --> 00:58:35.935
+<v Speaker 1>which is the single binary that we ran
+
+00:58:35.935 --> 00:58:39.040
+<v Speaker 1>right now, which runs all the components inside
+
+00:58:39.040 --> 00:58:40.240
+<v Speaker 1>the single process.
+
+00:58:40.640 --> 00:58:42.799
+<v Speaker 1>So you could just say just run the
+
+00:58:42.799 --> 00:58:43.520
+<v Speaker 1>ingest.
+
+00:58:43.680 --> 00:58:46.800
+<v Speaker 0>Ah. And you don't don't want other components.
+
+00:58:49.200 --> 00:58:51.440
+<v Speaker 0>Nice. That that way you can
+
+00:58:51.924 --> 00:58:53.605
+<v Speaker 1>yeah. I think we
+
+00:58:53.924 --> 00:58:54.964
+<v Speaker 1>have yeah.
+
+00:58:55.204 --> 00:58:57.204
+<v Speaker 1>That way, this is, again, a Cortex binary
+
+00:58:57.204 --> 00:58:59.365
+<v Speaker 1>Cortex binary Cortex binary,
+
+00:58:59.444 --> 00:59:00.964
+<v Speaker 1>but you are running distributor
+
+00:59:00.964 --> 00:59:02.724
+<v Speaker 1>in just a separately.
+
+00:59:03.365 --> 00:59:05.285
+<v Speaker 1>And you get to one of the distributor.
+
+00:59:05.285 --> 00:59:07.045
+<v Speaker 1>You have a load balancer in front. Like,
+
+00:59:07.350 --> 00:59:10.870
+<v Speaker 1>you can have this is a multitenant system,
+
+00:59:11.750 --> 00:59:12.550
+<v Speaker 1>but it
+
+00:59:13.190 --> 00:59:14.710
+<v Speaker 1>Cortex does not itself
+
+00:59:14.710 --> 00:59:17.110
+<v Speaker 1>implement any kind of authentication, so you need
+
+00:59:17.110 --> 00:59:18.310
+<v Speaker 1>some kind of authentication
+
+00:59:18.710 --> 00:59:20.390
+<v Speaker 1>in front. You go to one of the
+
+00:59:20.390 --> 00:59:21.190
+<v Speaker 1>distributors,
+
+00:59:21.190 --> 00:59:23.825
+<v Speaker 1>and everything is like before. You can consider
+
+00:59:23.825 --> 00:59:25.665
+<v Speaker 1>this as one of the Cortex, which takes
+
+00:59:25.665 --> 00:59:26.545
+<v Speaker 1>the sample,
+
+00:59:27.025 --> 00:59:28.625
+<v Speaker 1>flushes the blocks, it goes to the main
+
+00:59:28.625 --> 00:59:30.625
+<v Speaker 1>IO. And in the query path, again, this
+
+00:59:30.625 --> 00:59:32.785
+<v Speaker 1>is a Cortex binary, but target as query
+
+00:59:32.785 --> 00:59:33.585
+<v Speaker 1>front end.
+
+00:59:33.825 --> 00:59:35.984
+<v Speaker 1>Another Cortex binary target as courier.
+
+00:59:37.390 --> 00:59:38.030
+<v Speaker 1>So
+
+00:59:38.270 --> 00:59:41.310
+<v Speaker 1>and once you have this architecture up,
+
+00:59:41.550 --> 00:59:43.470
+<v Speaker 1>if you have if you are getting more
+
+00:59:43.470 --> 00:59:45.790
+<v Speaker 1>and more rights and not much reads,
+
+00:59:45.950 --> 00:59:48.190
+<v Speaker 1>you could just scale up these distributors and
+
+00:59:48.190 --> 00:59:49.390
+<v Speaker 1>these ingestors.
+
+00:59:49.470 --> 00:59:49.870
+<v Speaker 1>And
+
+00:59:50.505 --> 00:59:52.825
+<v Speaker 1>one rule of thumb that you could follow
+
+00:59:52.825 --> 00:59:54.984
+<v Speaker 1>is what we follow is you can limit
+
+00:59:54.984 --> 00:59:57.385
+<v Speaker 1>the amount of memory each ingest is taking
+
+00:59:57.385 --> 00:59:58.744
+<v Speaker 1>or the amount of
+
+00:59:59.944 --> 01:00:00.744
+<v Speaker 1>series
+
+01:00:00.744 --> 01:00:02.505
+<v Speaker 1>each ingest is handling
+
+01:00:02.799 --> 01:00:05.359
+<v Speaker 1>based on your machine size. So whenever you
+
+01:00:05.359 --> 01:00:07.599
+<v Speaker 1>are hitting that limit, you scale out the
+
+01:00:07.599 --> 01:00:10.720
+<v Speaker 1>investors. And if distributors are not able to
+
+01:00:10.720 --> 01:00:12.640
+<v Speaker 1>send samples to investors, you scale out the
+
+01:00:12.640 --> 01:00:13.520
+<v Speaker 1>distributors.
+
+01:00:14.079 --> 01:00:15.359
+<v Speaker 1>And query,
+
+01:00:15.440 --> 01:00:18.345
+<v Speaker 1>yeah, query it. The more queries you are
+
+01:00:18.345 --> 01:00:20.665
+<v Speaker 1>getting, you just scale out the quarriers query
+
+01:00:20.665 --> 01:00:22.025
+<v Speaker 1>front end, you can just do it to
+
+01:00:22.025 --> 01:00:23.945
+<v Speaker 1>write on. We cannot scale
+
+01:00:24.585 --> 01:00:26.665
+<v Speaker 1>out query front end right now, but we
+
+01:00:26.665 --> 01:00:28.585
+<v Speaker 1>would be able to do it soon, I
+
+01:00:28.585 --> 01:00:31.180
+<v Speaker 1>guess. But I I guess that's pretty standard
+
+01:00:31.180 --> 01:00:32.700
+<v Speaker 0>practice. Like, if I sync up at all
+
+01:00:32.700 --> 01:00:34.860
+<v Speaker 0>the production systems I've operated over the years,
+
+01:00:34.860 --> 01:00:36.540
+<v Speaker 0>like, the right path is where the traffic
+
+01:00:36.540 --> 01:00:38.060
+<v Speaker 0>is. You know, the queries of the dashboards
+
+01:00:38.060 --> 01:00:40.140
+<v Speaker 0>that we open when things go wrong and
+
+01:00:40.140 --> 01:00:42.620
+<v Speaker 0>not necessarily something we'd we'd have to, you
+
+01:00:42.620 --> 01:00:43.740
+<v Speaker 0>know, scale independently.
+
+01:00:44.454 --> 01:00:47.095
+<v Speaker 1>Yeah. Yeah. But when what happens is when
+
+01:00:47.095 --> 01:00:48.775
+<v Speaker 1>you have this long term storage,
+
+01:00:49.095 --> 01:00:51.015
+<v Speaker 1>a few folks like to
+
+01:00:51.335 --> 01:00:53.734
+<v Speaker 1>have a dashboard open all the time, which
+
+01:00:53.734 --> 01:00:57.095
+<v Speaker 1>might span multiple days. So it's constantly hitting
+
+01:00:57.095 --> 01:00:58.694
+<v Speaker 1>the server with heavy queries.
+
+01:00:59.250 --> 01:01:01.250
+<v Speaker 1>If you are running if you have one
+
+01:01:01.250 --> 01:01:04.050
+<v Speaker 1>of such users, then you could see yourself
+
+01:01:04.050 --> 01:01:07.090
+<v Speaker 1>splitting. Like, you could even have a binary
+
+01:01:07.090 --> 01:01:09.730
+<v Speaker 1>running both distributor and ingest. It's not like
+
+01:01:09.730 --> 01:01:12.130
+<v Speaker 1>you want to run a single where if
+
+01:01:12.130 --> 01:01:13.330
+<v Speaker 1>you want to split, you don't need to
+
+01:01:13.330 --> 01:01:14.690
+<v Speaker 1>run a single component
+
+01:01:14.930 --> 01:01:17.405
+<v Speaker 1>in in a binary. You could have distributor
+
+01:01:17.405 --> 01:01:20.605
+<v Speaker 1>ingest as a single binary and only split
+
+01:01:20.605 --> 01:01:22.205
+<v Speaker 1>out courier outside.
+
+01:01:22.365 --> 01:01:23.645
+<v Speaker 1>You can also do that.
+
+01:01:24.445 --> 01:01:25.085
+<v Speaker 0>Okay.
+
+01:01:25.485 --> 01:01:27.485
+<v Speaker 0>So can we there's there's one thing that
+
+01:01:27.485 --> 01:01:28.685
+<v Speaker 0>we've not really
+
+01:01:29.320 --> 01:01:32.040
+<v Speaker 0>looked at yet, but we are running many.
+
+01:01:32.040 --> 01:01:34.280
+<v Speaker 0>Right? So all of our data right now
+
+01:01:34.280 --> 01:01:37.080
+<v Speaker 0>has been stored on an s three compatible
+
+01:01:37.640 --> 01:01:38.520
+<v Speaker 0>store. Right?
+
+01:01:38.920 --> 01:01:40.760
+<v Speaker 1>Yeah. If I said it stays in the
+
+01:01:40.760 --> 01:01:42.680
+<v Speaker 1>industry, in the memory, and the writer log.
+
+01:01:42.885 --> 01:01:44.725
+<v Speaker 1>After some time, yes, it goes to the
+
+01:01:44.725 --> 01:01:46.485
+<v Speaker 1>s three compatible storage
+
+01:01:46.485 --> 01:01:48.805
+<v Speaker 1>or GCS or anything else. So stays on
+
+01:01:48.805 --> 01:01:51.045
+<v Speaker 0>the right head log until it has to
+
+01:01:51.045 --> 01:01:52.565
+<v Speaker 0>be flushed to disk, and that flush to
+
+01:01:52.565 --> 01:01:54.805
+<v Speaker 0>disk is entered to s three compatible store?
+
+01:01:55.205 --> 01:01:55.845
+<v Speaker 1>Yes.
+
+01:01:56.405 --> 01:01:57.125
+<v Speaker 0>Okay. Cool.
+
+01:01:57.950 --> 01:02:00.910
+<v Speaker 0>I like that. It's very cool. Yeah. And
+
+01:02:00.910 --> 01:02:02.990
+<v Speaker 1>what's beautiful is we are reusing
+
+01:02:02.990 --> 01:02:03.550
+<v Speaker 1>the
+
+01:02:03.950 --> 01:02:07.150
+<v Speaker 1>Prometheus data storage. Like, Prometheus has blocks of
+
+01:02:07.150 --> 01:02:07.790
+<v Speaker 1>data.
+
+01:02:07.950 --> 01:02:10.029
+<v Speaker 1>So we are having a we are recreating
+
+01:02:10.655 --> 01:02:13.295
+<v Speaker 1>the exact same blocks in these ingests, and
+
+01:02:13.295 --> 01:02:16.095
+<v Speaker 1>we are just flushing those blocks in the
+
+01:02:16.335 --> 01:02:18.575
+<v Speaker 1>as compatible stories on GCS.
+
+01:02:19.295 --> 01:02:19.935
+<v Speaker 0>Okay.
+
+01:02:20.895 --> 01:02:21.855
+<v Speaker 0>And as Cortex
+
+01:02:22.175 --> 01:02:24.815
+<v Speaker 0>like, on the query side then, is that
+
+01:02:24.090 --> 01:02:26.410
+<v Speaker 0>doing any sort of cache to avoid lookups
+
+01:02:26.410 --> 01:02:28.410
+<v Speaker 0>on the on the store? Correct? Yeah.
+
+01:02:28.650 --> 01:02:30.890
+<v Speaker 1>So the query front end has cache, which
+
+01:02:30.890 --> 01:02:33.290
+<v Speaker 1>cache cache is based on the time range
+
+01:02:33.290 --> 01:02:35.290
+<v Speaker 1>and the query that you have.
+
+01:02:35.610 --> 01:02:37.930
+<v Speaker 1>So it can also do partial querying, like,
+
+01:02:37.930 --> 01:02:39.610
+<v Speaker 1>for in Grafana dashboards,
+
+01:02:39.610 --> 01:02:40.090
+<v Speaker 1>you can
+
+01:02:40.625 --> 01:02:41.265
+<v Speaker 1>have
+
+01:02:41.744 --> 01:02:44.944
+<v Speaker 1>yeah. You can when you refresh after every
+
+01:02:44.944 --> 01:02:47.105
+<v Speaker 1>five or ten seconds, you don't need to
+
+01:02:47.105 --> 01:02:48.704
+<v Speaker 1>query for the entire range, but you just
+
+01:02:48.704 --> 01:02:50.385
+<v Speaker 1>need to query for the last few data
+
+01:02:50.385 --> 01:02:51.025
+<v Speaker 1>points.
+
+01:02:51.425 --> 01:02:53.950
+<v Speaker 1>So this cache even takes care of that.
+
+01:02:53.950 --> 01:02:55.710
+<v Speaker 1>So we just query the only thing that
+
+01:02:55.710 --> 01:02:56.510
+<v Speaker 1>we require.
+
+01:02:57.070 --> 01:02:59.150
+<v Speaker 0>Nice. That's I like it.
+
+01:02:59.470 --> 01:03:00.350
+<v Speaker 1>Yeah. And
+
+01:03:00.910 --> 01:03:02.510
+<v Speaker 1>you also cache, like
+
+01:03:03.790 --> 01:03:07.184
+<v Speaker 1>like, couriers needs to fetch fetch the data
+
+01:03:07.184 --> 01:03:09.105
+<v Speaker 1>from store gateway and ingestor.
+
+01:03:09.265 --> 01:03:11.265
+<v Speaker 1>So courier also caches
+
+01:03:11.424 --> 01:03:13.585
+<v Speaker 1>all the data that it can fetch from
+
+01:03:13.585 --> 01:03:16.065
+<v Speaker 1>these. It query front end caches the final
+
+01:03:16.065 --> 01:03:19.810
+<v Speaker 1>result. Couriers caches the raw data, so we
+
+01:03:19.810 --> 01:03:21.730
+<v Speaker 1>just cache everything that we can.
+
+01:03:22.609 --> 01:03:23.330
+<v Speaker 0>Cool.
+
+01:03:23.490 --> 01:03:24.290
+<v Speaker 0>Excellent.
+
+01:03:25.250 --> 01:03:26.210
+<v Speaker 0>Is there
+
+01:03:27.250 --> 01:03:29.810
+<v Speaker 0>anything you wanna cover then before we
+
+01:03:30.545 --> 01:03:34.065
+<v Speaker 1>Yeah. I would yeah. For users who want
+
+01:03:34.065 --> 01:03:34.545
+<v Speaker 1>to
+
+01:03:34.945 --> 01:03:37.505
+<v Speaker 1>try out, like, I will just switch to
+
+01:03:37.505 --> 01:03:38.385
+<v Speaker 1>master
+
+01:03:38.465 --> 01:03:40.945
+<v Speaker 1>just to show what's there in upstream. If
+
+01:03:41.745 --> 01:03:42.945
+<v Speaker 1>you want to, like,
+
+01:03:43.520 --> 01:03:46.640
+<v Speaker 1>run these docker comp docker compose stuff in
+
+01:03:46.640 --> 01:03:47.680
+<v Speaker 1>your own machine,
+
+01:03:47.920 --> 01:03:48.720
+<v Speaker 1>in the
+
+01:03:49.200 --> 01:03:50.079
+<v Speaker 1>development,
+
+01:03:50.079 --> 01:03:51.040
+<v Speaker 1>we have
+
+01:03:51.839 --> 01:03:54.240
+<v Speaker 1>three things already set up for you. I'm
+
+01:03:54.240 --> 01:03:55.760
+<v Speaker 1>not really sure about this thing.
+
+01:03:56.424 --> 01:03:59.464
+<v Speaker 1>But the single binary mode will run the
+
+01:03:59.464 --> 01:04:00.505
+<v Speaker 1>individual
+
+01:04:00.505 --> 01:04:01.545
+<v Speaker 1>cortex
+
+01:04:01.625 --> 01:04:03.625
+<v Speaker 1>in a horizontally scaled, which you will have,
+
+01:04:03.625 --> 01:04:05.625
+<v Speaker 1>I guess, two or three cortex running,
+
+01:04:05.865 --> 01:04:07.545
+<v Speaker 1>but in a single binary mode.
+
+01:04:08.025 --> 01:04:10.664
+<v Speaker 1>And if you want to run
+
+01:04:11.310 --> 01:04:13.470
+<v Speaker 1>this setup where you want all the individual
+
+01:04:13.470 --> 01:04:14.910
+<v Speaker 1>components separately,
+
+01:04:15.390 --> 01:04:16.910
+<v Speaker 1>so you choose this.
+
+01:04:17.310 --> 01:04:19.950
+<v Speaker 1>There, if I want to quickly have a
+
+01:04:19.950 --> 01:04:20.430
+<v Speaker 1>peek,
+
+01:04:27.465 --> 01:04:29.865
+<v Speaker 1>Yep. Here, you will be
+
+01:04:30.185 --> 01:04:32.105
+<v Speaker 1>turning the distributor
+
+01:04:32.265 --> 01:04:34.745
+<v Speaker 1>and just everything else separately.
+
+01:04:34.985 --> 01:04:36.425
+<v Speaker 1>So if you want to play around with
+
+01:04:36.425 --> 01:04:37.785
+<v Speaker 1>single binary
+
+01:04:37.560 --> 01:04:40.520
+<v Speaker 1>or even the everything split out version, you
+
+01:04:40.520 --> 01:04:41.560
+<v Speaker 1>have it ready.
+
+01:04:43.320 --> 01:04:45.960
+<v Speaker 1>Yeah. Alright. I guess that's it.
+
+01:04:48.360 --> 01:04:49.080
+<v Speaker 0>Nice.
+
+01:04:49.560 --> 01:04:51.160
+<v Speaker 0>So let's
+
+01:04:52.095 --> 01:04:52.974
+<v Speaker 0>let's
+
+01:04:52.974 --> 01:04:54.095
+<v Speaker 0>let's finish with like a
+
+01:04:54.974 --> 01:04:56.974
+<v Speaker 0>I'm trying to think like a pragmatic approach
+
+01:04:56.974 --> 01:04:59.695
+<v Speaker 0>to people with their their metrics. Right? The
+
+01:05:00.175 --> 01:05:02.415
+<v Speaker 0>vibe I'm getting from the conversation and what
+
+01:05:02.415 --> 01:05:04.494
+<v Speaker 0>we've seen here is that it's probably realistic
+
+01:05:04.494 --> 01:05:06.655
+<v Speaker 0>that people are gonna start with Prometheus in
+
+01:05:06.655 --> 01:05:07.920
+<v Speaker 0>their cluster, And then there's gonna be a
+
+01:05:07.920 --> 01:05:10.080
+<v Speaker 0>certain point where they want to then bring
+
+01:05:10.080 --> 01:05:12.320
+<v Speaker 0>in Cortex for the Yes. The durability, the
+
+01:05:12.320 --> 01:05:13.280
+<v Speaker 0>high availability,
+
+01:05:13.280 --> 01:05:15.359
+<v Speaker 0>the multi tenancy, which is really cool Yes.
+
+01:05:15.760 --> 01:05:17.760
+<v Speaker 0>And all these things. Like, so is that
+
+01:05:17.760 --> 01:05:19.775
+<v Speaker 0>the best approach for people to take is
+
+01:05:19.775 --> 01:05:21.935
+<v Speaker 0>to, you know, run Prometheus and then when
+
+01:05:21.935 --> 01:05:24.175
+<v Speaker 0>x y z happens, that's when you go
+
+01:05:24.175 --> 01:05:25.855
+<v Speaker 0>right. You you need to start bringing in
+
+01:05:25.855 --> 01:05:28.175
+<v Speaker 0>Cortex now. Yeah. If you have small Prometheus
+
+01:05:28.175 --> 01:05:29.535
+<v Speaker 1>installations and
+
+01:05:29.695 --> 01:05:31.295
+<v Speaker 1>like, if you care about
+
+01:05:31.775 --> 01:05:33.935
+<v Speaker 1>centralized view and all the things that we
+
+01:05:33.935 --> 01:05:36.060
+<v Speaker 1>discussed right now, Only at that point, you
+
+01:05:36.060 --> 01:05:38.460
+<v Speaker 1>may want to start looking at Cortex.
+
+01:05:38.700 --> 01:05:40.700
+<v Speaker 1>Until then, if the scale is small, you
+
+01:05:40.700 --> 01:05:41.180
+<v Speaker 1>could
+
+01:05:41.900 --> 01:05:44.220
+<v Speaker 1>be all good with Prometheus because Prometheus scales
+
+01:05:44.220 --> 01:05:45.260
+<v Speaker 1>really good.
+
+01:05:45.980 --> 01:05:48.494
+<v Speaker 0>But but but vertically. Right? That's when we
+
+01:05:48.494 --> 01:05:49.855
+<v Speaker 0>talk about Yeah. We're
+
+01:05:49.855 --> 01:05:50.974
+<v Speaker 0>talking about Yeah. You know, vertical. So if
+
+01:05:50.974 --> 01:05:52.015
+<v Speaker 0>you can pull
+
+01:05:52.174 --> 01:05:54.414
+<v Speaker 0>loads of really strong firmware hardware out, then
+
+01:05:54.414 --> 01:05:56.015
+<v Speaker 0>cool. Right? Exactly. This is gonna get you
+
+01:05:56.015 --> 01:06:00.174
+<v Speaker 0>a long way. Exactly. Nice. Okay. And the
+
+01:06:00.940 --> 01:06:02.620
+<v Speaker 0>does it make sense to just even adopt
+
+01:06:02.620 --> 01:06:05.260
+<v Speaker 0>Cortex purely for the s three compatible back
+
+01:06:05.260 --> 01:06:07.580
+<v Speaker 0>end as well? Like, you know, I'm assuming
+
+01:06:09.340 --> 01:06:11.340
+<v Speaker 0>that just make them enough of a selling
+
+01:06:11.340 --> 01:06:13.340
+<v Speaker 0>point where people wanna be able to rotate
+
+01:06:13.340 --> 01:06:15.340
+<v Speaker 0>the hardware and still have that back end
+
+01:06:15.340 --> 01:06:17.005
+<v Speaker 0>data So s three could be a really
+
+01:06:17.005 --> 01:06:19.005
+<v Speaker 0>good stop gap for that too. Yes. You
+
+01:06:19.005 --> 01:06:21.405
+<v Speaker 1>could just have Cortex just as a,
+
+01:06:21.805 --> 01:06:24.045
+<v Speaker 1>you can say, backup data which takes the
+
+01:06:24.045 --> 01:06:26.445
+<v Speaker 1>data. But you could also have a look
+
+01:06:26.445 --> 01:06:28.925
+<v Speaker 1>at Thanos. Like, if you just want the
+
+01:06:28.925 --> 01:06:31.740
+<v Speaker 1>data to be backed up somewhere, Thanos has
+
+01:06:31.740 --> 01:06:33.100
+<v Speaker 1>more simplified
+
+01:06:33.100 --> 01:06:35.580
+<v Speaker 1>thing where it just shifts the block to
+
+01:06:35.580 --> 01:06:37.500
+<v Speaker 1>your s three compatible storage. And if you
+
+01:06:37.500 --> 01:06:39.100
+<v Speaker 1>want to query later, you can just add
+
+01:06:39.100 --> 01:06:40.140
+<v Speaker 1>one more component.
+
+01:06:40.940 --> 01:06:42.700
+<v Speaker 0>Wow. That's that's
+
+01:06:42.860 --> 01:06:43.820
+<v Speaker 0>completely
+
+01:06:43.980 --> 01:06:44.700
+<v Speaker 0>serendipitous.
+
+01:06:44.915 --> 01:06:47.875
+<v Speaker 0>Yeah. That's a is that I have Thanos
+
+01:06:47.875 --> 01:06:49.635
+<v Speaker 0>one week today on the show. We're taking
+
+01:06:49.635 --> 01:06:51.234
+<v Speaker 0>a look at that there. So, you know
+
+01:06:51.315 --> 01:06:53.075
+<v Speaker 0>Yeah. People can come and take a look
+
+01:06:53.075 --> 01:06:54.995
+<v Speaker 0>at that. Yeah. Both have different
+
+01:06:55.315 --> 01:06:57.875
+<v Speaker 1>slightly different approaches and different goals
+
+01:06:58.160 --> 01:07:00.320
+<v Speaker 1>and you have huge scale and want proper
+
+01:07:00.320 --> 01:07:04.080
+<v Speaker 1>centralize with multitenancy Cortex makes proper sense there.
+
+01:07:04.560 --> 01:07:05.360
+<v Speaker 0>Awesome.
+
+01:07:06.640 --> 01:07:08.560
+<v Speaker 0>Any final thoughts before we finish up for
+
+01:07:08.560 --> 01:07:08.800
+<v Speaker 0>today?
+
+01:07:11.195 --> 01:07:13.275
+<v Speaker 1>Just try it out. It's pretty cool. Like,
+
+01:07:13.275 --> 01:07:15.915
+<v Speaker 1>the initially, when Cortex came, the
+
+01:07:16.155 --> 01:07:19.035
+<v Speaker 1>everyone saw the architecture diagram, they got scared.
+
+01:07:19.035 --> 01:07:22.075
+<v Speaker 1>It's pretty very complex. But if you saw
+
+01:07:22.075 --> 01:07:23.675
+<v Speaker 1>it here, you could just do dot slash
+
+01:07:23.675 --> 01:07:25.435
+<v Speaker 1>Cortex and you have Cortex up and running.
+
+01:07:26.070 --> 01:07:28.710
+<v Speaker 0>Yes. There I mean, I'll personal experience here.
+
+01:07:28.710 --> 01:07:30.310
+<v Speaker 0>There is an intimidation
+
+01:07:30.310 --> 01:07:32.790
+<v Speaker 0>factor when you're so many of the talks
+
+01:07:32.790 --> 01:07:34.390
+<v Speaker 0>are really you know, they go deep into
+
+01:07:34.390 --> 01:07:36.150
+<v Speaker 0>Cortex and all the different components, and it
+
+01:07:36.150 --> 01:07:38.465
+<v Speaker 0>can be a little bit intimidating, especially when
+
+01:07:38.465 --> 01:07:40.545
+<v Speaker 0>you see people talking about the Cassandra components
+
+01:07:40.545 --> 01:07:42.385
+<v Speaker 0>and all this other stuff that can come
+
+01:07:42.385 --> 01:07:44.225
+<v Speaker 0>in. But I think what we've seen today
+
+01:07:44.225 --> 01:07:45.825
+<v Speaker 0>from your demos and from what we did
+
+01:07:45.825 --> 01:07:48.305
+<v Speaker 0>hands on is that that's all optional. Like
+
+01:07:48.305 --> 01:07:50.305
+<v Speaker 0>you can get started by running the single
+
+01:07:50.305 --> 01:07:51.745
+<v Speaker 0>binary and running for me Yeah. Something
+
+01:07:52.490 --> 01:07:54.890
+<v Speaker 0>that we're all comfortable with. And Yeah. You
+
+01:07:54.890 --> 01:07:56.890
+<v Speaker 0>can then layer on those extra components. You
+
+01:07:56.890 --> 01:07:58.650
+<v Speaker 0>can bring in console when you need h
+
+01:07:58.650 --> 01:08:00.329
+<v Speaker 0>a and d duplication. You can bring in
+
+01:08:00.329 --> 01:08:01.850
+<v Speaker 0>s three when you want
+
+01:08:02.089 --> 01:08:04.569
+<v Speaker 0>extra storage options. You can bring in Cassandra
+
+01:08:04.569 --> 01:08:06.625
+<v Speaker 0>when that is available to you. So I
+
+01:08:06.625 --> 01:08:09.025
+<v Speaker 0>think Yeah. You don't even need Cassandra.
+
+01:08:09.105 --> 01:08:11.185
+<v Speaker 1>You don't at all need Cassandra with us.
+
+01:08:11.185 --> 01:08:11.585
+<v Speaker 1>Right?
+
+01:08:12.065 --> 01:08:14.225
+<v Speaker 0>Yeah. I think I'll avoid that whenever possible,
+
+01:08:14.225 --> 01:08:15.345
+<v Speaker 0>to be fair. So
+
+01:08:15.825 --> 01:08:17.265
+<v Speaker 1>Yeah. Alright. That
+
+01:08:17.665 --> 01:08:19.585
+<v Speaker 0>was awesome. I I'm really impressed. I think
+
+01:08:19.585 --> 01:08:22.010
+<v Speaker 0>it's a fantastic project, and I'm really looking
+
+01:08:22.010 --> 01:08:23.770
+<v Speaker 0>forward to to seeing what comes next.
+
+01:08:24.170 --> 01:08:25.850
+<v Speaker 0>Thank you for joining me today, Ganesh. It's
+
+01:08:25.850 --> 01:08:27.609
+<v Speaker 0>been an absolute pleasure. I hope people take
+
+01:08:27.609 --> 01:08:29.689
+<v Speaker 0>a lot of value from this and have
+
+01:08:30.010 --> 01:08:30.809
+<v Speaker 0>a great day.
+
+01:08:31.689 --> 01:08:34.170
+<v Speaker 1>Yep. Thanks for having me. Cheers. Adios.

@@ -1,0 +1,5690 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 86834d5d-ee0c-4267-af30-8fc10d6cbbde
+Created: 2025-04-29T19:47:25.677Z
+Duration: 4580.096
+Channels: 1
+
+00:01:11.745 --> 00:01:14.385
+<v Speaker 0>Hello, and welcome to today's episode of Rawkode
+
+00:01:14.385 --> 00:01:16.145
+<v Speaker 0>live. I am your host, Rawkode.
+
+00:01:16.760 --> 00:01:17.560
+<v Speaker 0>Today,
+
+00:01:17.880 --> 00:01:19.560
+<v Speaker 0>I don't even know what episode number we
+
+00:01:19.560 --> 00:01:21.960
+<v Speaker 0>are on, but we are continuing our exploration
+
+00:01:21.960 --> 00:01:23.480
+<v Speaker 0>of running Laravel
+
+00:01:23.560 --> 00:01:26.280
+<v Speaker 0>in a production fashion on Kubernetes.
+
+00:01:26.760 --> 00:01:29.240
+<v Speaker 0>Last week, I was joined by Alex and
+
+00:01:29.240 --> 00:01:31.800
+<v Speaker 0>Kieran, and we had a little bit of
+
+00:01:31.385 --> 00:01:34.745
+<v Speaker 0>trouble or problems getting a Laravel metaware to
+
+00:01:34.745 --> 00:01:37.545
+<v Speaker 0>expose or export Prometheus metrics to be scraped
+
+00:01:37.545 --> 00:01:40.025
+<v Speaker 0>to allow us to horizontally scale.
+
+00:01:40.585 --> 00:01:41.465
+<v Speaker 0>Fortunately,
+
+00:01:41.705 --> 00:01:42.745
+<v Speaker 0>our friend
+
+00:01:44.100 --> 00:01:45.860
+<v Speaker 0>Leo is here to help us today. Who
+
+00:01:45.860 --> 00:01:48.180
+<v Speaker 0>has? And, funnel, I don't know how sad
+
+00:01:48.180 --> 00:01:49.780
+<v Speaker 0>it is this time it was, but you
+
+00:01:49.780 --> 00:01:52.100
+<v Speaker 0>actually had written this exact bit of middleware
+
+00:01:52.100 --> 00:01:52.979
+<v Speaker 0>that we needed
+
+00:01:53.140 --> 00:01:55.460
+<v Speaker 0>just prior to that episode. Is that right?
+
+00:01:56.340 --> 00:01:58.775
+<v Speaker 1>Yes. So I was talking to you, I
+
+00:01:58.775 --> 00:02:01.175
+<v Speaker 1>think, like, the day before or something, and
+
+00:02:01.175 --> 00:02:02.775
+<v Speaker 1>I was looking into Prometheus.
+
+00:02:03.015 --> 00:02:04.375
+<v Speaker 1>And so I wrote that, and then I
+
+00:02:04.375 --> 00:02:06.375
+<v Speaker 1>completely missed the episode. And I was rewatching
+
+00:02:06.375 --> 00:02:08.294
+<v Speaker 1>it after, and, you know, as soon as
+
+00:02:08.294 --> 00:02:10.215
+<v Speaker 1>I was like, alright. I I just wrote
+
+00:02:10.215 --> 00:02:12.270
+<v Speaker 1>this yesterday. It would have been real good
+
+00:02:12.270 --> 00:02:13.630
+<v Speaker 1>to watch this live and just, you know,
+
+00:02:13.630 --> 00:02:15.230
+<v Speaker 1>link to link to the package.
+
+00:02:16.190 --> 00:02:18.670
+<v Speaker 0>Yeah. That would have been invaluable, I think,
+
+00:02:18.670 --> 00:02:20.830
+<v Speaker 0>that day. We we tried two different packages,
+
+00:02:20.830 --> 00:02:22.110
+<v Speaker 0>Alex and I, and just
+
+00:02:22.670 --> 00:02:24.190
+<v Speaker 0>really just didn't get anything to work.
+
+00:02:24.975 --> 00:02:25.775
+<v Speaker 2>Yeah.
+
+00:02:25.775 --> 00:02:27.775
+<v Speaker 2>Nothing work. We're parkour net, and nothing worked
+
+00:02:27.775 --> 00:02:29.135
+<v Speaker 2>at the end of last episode.
+
+00:02:29.615 --> 00:02:30.175
+<v Speaker 2>But
+
+00:02:31.055 --> 00:02:33.215
+<v Speaker 2>So every taste Yeah. Different stories, though.
+
+00:02:34.175 --> 00:02:35.935
+<v Speaker 0>Yeah. No pressure, Leo. Alright.
+
+00:02:37.200 --> 00:02:39.200
+<v Speaker 0>Okay. Forget my manners. Let's do a quick
+
+00:02:39.200 --> 00:02:40.720
+<v Speaker 0>introduction. So we'll start with you, Alex. We'll
+
+00:02:40.720 --> 00:02:41.920
+<v Speaker 0>move over to Leo, and then we'll get
+
+00:02:41.920 --> 00:02:42.800
+<v Speaker 0>started again.
+
+00:02:44.640 --> 00:02:48.080
+<v Speaker 2>Cool. Yeah. I'm Alex. I'm a PHP Laravel
+
+00:02:48.080 --> 00:02:50.720
+<v Speaker 2>developer that doubles a bit in Kubernetes and
+
+00:02:50.720 --> 00:02:52.560
+<v Speaker 2>then getting a bit closer towards dealing with
+
+00:02:52.560 --> 00:02:55.035
+<v Speaker 2>that more production, hence, doing these streams with
+
+00:02:55.035 --> 00:02:55.595
+<v Speaker 2>David.
+
+00:02:57.355 --> 00:02:59.435
+<v Speaker 1>Yeah. And I'm Leo. I'm the CTO at
+
+00:02:59.435 --> 00:03:01.995
+<v Speaker 1>Jobberle. We build recruitment software. We're a very
+
+00:03:01.995 --> 00:03:03.995
+<v Speaker 1>small team, so I do pretty much all
+
+00:03:03.995 --> 00:03:06.795
+<v Speaker 1>of the DevOps side of things, which is
+
+00:03:06.795 --> 00:03:09.435
+<v Speaker 1>why I've been doing the monitoring and Kubernetes
+
+00:03:09.090 --> 00:03:11.330
+<v Speaker 1>things here, which is why I'm now here
+
+00:03:11.330 --> 00:03:13.330
+<v Speaker 1>to hopefully not break things.
+
+00:03:15.730 --> 00:03:16.769
+<v Speaker 0>Fingers
+
+00:03:16.769 --> 00:03:17.490
+<v Speaker 0>crossed.
+
+00:03:18.610 --> 00:03:19.410
+<v Speaker 0>Alright.
+
+00:03:19.810 --> 00:03:22.050
+<v Speaker 0>I guess what we should just do is
+
+00:03:22.050 --> 00:03:23.330
+<v Speaker 0>get the screen shared,
+
+00:03:24.495 --> 00:03:27.135
+<v Speaker 0>quickly run over in under three minutes where
+
+00:03:27.135 --> 00:03:29.055
+<v Speaker 0>we are again, and then just let's try
+
+00:03:29.055 --> 00:03:31.694
+<v Speaker 0>and get your library imported running,
+
+00:03:31.694 --> 00:03:34.575
+<v Speaker 0>and then we'll tackle the scalability side with
+
+00:03:34.575 --> 00:03:35.535
+<v Speaker 0>Kubernetes.
+
+00:03:36.254 --> 00:03:36.735
+<v Speaker 0>All right.
+
+00:03:38.840 --> 00:03:39.560
+<v Speaker 0>Let's see.
+
+00:03:40.920 --> 00:03:43.959
+<v Speaker 0>So this is the repository,
+
+00:03:43.959 --> 00:03:49.080
+<v Speaker 0>github.com/alexpowers/laravel-example-project.
+
+00:03:50.435 --> 00:03:52.355
+<v Speaker 0>I don't think I even pushed last week's
+
+00:03:52.355 --> 00:03:54.034
+<v Speaker 0>failure to it, but we'll do that after
+
+00:03:54.034 --> 00:03:55.315
+<v Speaker 0>today when it works. I
+
+00:03:57.795 --> 00:04:01.075
+<v Speaker 0>have Versus Code. Leo has kindly joined me.
+
+00:04:01.075 --> 00:04:02.995
+<v Speaker 0>Good. Because you'll be fixing everything that I
+
+00:04:02.995 --> 00:04:03.555
+<v Speaker 0>do.
+
+00:04:04.834 --> 00:04:06.670
+<v Speaker 0>And we have a make file,
+
+00:04:06.990 --> 00:04:08.670
+<v Speaker 0>which has our build targets,
+
+00:04:08.910 --> 00:04:11.950
+<v Speaker 0>which I did this time build ahead.
+
+00:04:12.510 --> 00:04:14.430
+<v Speaker 0>So we do have two container images. We
+
+00:04:14.430 --> 00:04:16.589
+<v Speaker 0>can deploy this to Kubernetes. So let's just
+
+00:04:16.589 --> 00:04:19.264
+<v Speaker 0>do that first, confirm that it works, then
+
+00:04:19.264 --> 00:04:21.264
+<v Speaker 0>integrate Leo's library.
+
+00:04:22.384 --> 00:04:25.345
+<v Speaker 0>So if we open our Kubernetes directory,
+
+00:04:26.224 --> 00:04:28.305
+<v Speaker 0>I think we can probably just reapply all
+
+00:04:28.305 --> 00:04:30.305
+<v Speaker 0>of this. I don't think if we yeah.
+
+00:04:30.305 --> 00:04:31.905
+<v Speaker 0>We did add some Prometheus stuff that I
+
+00:04:31.905 --> 00:04:32.705
+<v Speaker 0>am gonna nuke.
+
+00:04:34.630 --> 00:04:35.910
+<v Speaker 0>And we'll do that clean. Do we not
+
+00:04:35.910 --> 00:04:37.590
+<v Speaker 0>want to keep any of the Prometheus stuff?
+
+00:04:37.990 --> 00:04:39.510
+<v Speaker 0>No. Because
+
+00:04:39.670 --> 00:04:41.670
+<v Speaker 0>the service monitor's weren't working last week, and
+
+00:04:41.670 --> 00:04:43.030
+<v Speaker 0>it looks like it's just a bug in
+
+00:04:43.030 --> 00:04:44.150
+<v Speaker 0>the the
+
+00:04:44.230 --> 00:04:45.830
+<v Speaker 0>operator that we were using.
+
+00:04:46.390 --> 00:04:48.630
+<v Speaker 0>So I have gone ahead and deployed my
+
+00:04:48.630 --> 00:04:49.190
+<v Speaker 0>own
+
+00:04:50.865 --> 00:04:53.264
+<v Speaker 0>Prometheus to the cluster and we're just gonna
+
+00:04:53.264 --> 00:04:55.185
+<v Speaker 0>configure it the old fashioned way. We're not
+
+00:04:55.185 --> 00:04:56.784
+<v Speaker 0>gonna use the service monitors on the operator
+
+00:04:56.784 --> 00:04:57.985
+<v Speaker 0>this time. So
+
+00:04:58.944 --> 00:05:00.625
+<v Speaker 0>that is just, I'm more familiar with it
+
+00:05:00.625 --> 00:05:02.640
+<v Speaker 0>this way. I don't wanna have to try
+
+00:05:02.640 --> 00:05:03.840
+<v Speaker 0>and fix the bug in an open source
+
+00:05:03.840 --> 00:05:05.200
+<v Speaker 0>project in our stream and I don't have
+
+00:05:05.200 --> 00:05:06.560
+<v Speaker 0>time before prior. So,
+
+00:05:07.760 --> 00:05:10.160
+<v Speaker 0>let's apply our operations
+
+00:05:10.400 --> 00:05:11.920
+<v Speaker 0>Kubernetes directory,
+
+00:05:11.920 --> 00:05:14.000
+<v Speaker 0>and this should get our application up and
+
+00:05:14.000 --> 00:05:15.840
+<v Speaker 0>running in just about ten or twenty seconds.
+
+00:05:15.945 --> 00:05:18.185
+<v Speaker 0>So we'll give that a few moments,
+
+00:05:18.985 --> 00:05:21.065
+<v Speaker 0>confirm that it works. I guess what we
+
+00:05:21.065 --> 00:05:22.905
+<v Speaker 0>can do just now is start to pull
+
+00:05:22.905 --> 00:05:24.505
+<v Speaker 0>in your library, Neil.
+
+00:05:25.705 --> 00:05:27.945
+<v Speaker 1>Yes. You can start pulling it in, but
+
+00:05:27.945 --> 00:05:30.105
+<v Speaker 1>that will not work. So what you will
+
+00:05:30.105 --> 00:05:32.850
+<v Speaker 1>have to do is actually install the APCU
+
+00:05:32.850 --> 00:05:34.530
+<v Speaker 1>extension in PHP.
+
+00:05:34.770 --> 00:05:36.850
+<v Speaker 1>So that is a user level cache,
+
+00:05:37.170 --> 00:05:40.770
+<v Speaker 1>which the Prometheus the underlying Prometheus library uses
+
+00:05:40.770 --> 00:05:42.530
+<v Speaker 1>that instead of Redis.
+
+00:05:42.850 --> 00:05:44.130
+<v Speaker 1>That is a choice I made in the
+
+00:05:44.130 --> 00:05:45.410
+<v Speaker 1>library. So instead of Redis,
+
+00:05:45.935 --> 00:05:48.335
+<v Speaker 1>it uses the APC
+
+00:05:48.335 --> 00:05:49.535
+<v Speaker 1>user cache,
+
+00:05:50.815 --> 00:05:52.975
+<v Speaker 1>which allows you to get kind of an
+
+00:05:52.975 --> 00:05:54.335
+<v Speaker 1>in memory store
+
+00:05:54.975 --> 00:05:57.455
+<v Speaker 1>to store between requests, which is how it's
+
+00:05:57.455 --> 00:05:58.415
+<v Speaker 1>storing the
+
+00:05:58.815 --> 00:06:01.460
+<v Speaker 1>request count and stuff like that. Alright. I'm
+
+00:06:01.460 --> 00:06:03.540
+<v Speaker 0>I'm so glad I built all that stuff
+
+00:06:03.540 --> 00:06:04.340
+<v Speaker 0>beforehand.
+
+00:06:06.020 --> 00:06:06.740
+<v Speaker 1>Yes.
+
+00:06:07.140 --> 00:06:09.300
+<v Speaker 1>But it is it should be two lines
+
+00:06:09.300 --> 00:06:11.220
+<v Speaker 1>in the Dockerfile, so I think we're good.
+
+00:06:11.380 --> 00:06:13.140
+<v Speaker 0>Yeah. But I oh, actually, we don't have
+
+00:06:13.140 --> 00:06:14.500
+<v Speaker 0>a working cache if I remember right from
+
+00:06:14.500 --> 00:06:16.755
+<v Speaker 0>last time anyway. Yeah. Okay. So No. The
+
+00:06:16.755 --> 00:06:19.475
+<v Speaker 2>stuff resolved. Yeah. We will fix the cache
+
+00:06:19.475 --> 00:06:21.235
+<v Speaker 0>now then. Right? So we can just do
+
+00:06:21.235 --> 00:06:23.795
+<v Speaker 0>this. We'll see if this builds. Normally, there's
+
+00:06:23.795 --> 00:06:24.435
+<v Speaker 0>a small
+
+00:06:25.795 --> 00:06:27.315
+<v Speaker 0>why is that copying it to such a
+
+00:06:27.315 --> 00:06:29.235
+<v Speaker 0>random place actually? Oh, that's just where we
+
+00:06:29.235 --> 00:06:31.235
+<v Speaker 0>copy everything. Okay. No worries because we're using
+
+00:06:31.235 --> 00:06:31.555
+<v Speaker 0>the Rector.
+
+00:06:32.330 --> 00:06:34.330
+<v Speaker 0>That's where I'm okay at this stuff. Okay.
+
+00:06:34.330 --> 00:06:36.170
+<v Speaker 0>So we have the composer dot JSON. We're
+
+00:06:36.170 --> 00:06:37.690
+<v Speaker 0>gonna do the composer install.
+
+00:06:37.930 --> 00:06:40.490
+<v Speaker 0>Sometimes, I think Laravel does fail with that
+
+00:06:40.490 --> 00:06:41.690
+<v Speaker 0>because of the
+
+00:06:42.810 --> 00:06:44.410
+<v Speaker 0>something, but let's just see what happens.
+
+00:06:46.945 --> 00:06:47.665
+<v Speaker 0>Alright.
+
+00:06:47.825 --> 00:06:49.505
+<v Speaker 0>Can I just do run
+
+00:06:49.505 --> 00:06:51.905
+<v Speaker 0>Docker PHP install
+
+00:06:51.905 --> 00:06:53.025
+<v Speaker 0>a p c go?
+
+00:06:54.065 --> 00:06:56.065
+<v Speaker 1>I am not sure if it'll work with
+
+00:06:56.065 --> 00:06:56.945
+<v Speaker 1>PHP
+
+00:06:56.945 --> 00:06:57.665
+<v Speaker 1>install.
+
+00:06:57.745 --> 00:06:59.025
+<v Speaker 1>I've used
+
+00:06:59.410 --> 00:07:01.890
+<v Speaker 1>peckle, so PHP extension
+
+00:07:01.890 --> 00:07:03.810
+<v Speaker 1>library manager, whatever it's called.
+
+00:07:04.370 --> 00:07:06.690
+<v Speaker 1>We can try it with PHPX install.
+
+00:07:06.770 --> 00:07:09.250
+<v Speaker 1>It may or may not work. Otherwise, there
+
+00:07:09.250 --> 00:07:10.850
+<v Speaker 1>is a simple way to do it, which
+
+00:07:10.850 --> 00:07:12.450
+<v Speaker 1>will just be two lines instead of one.
+
+00:07:14.094 --> 00:07:16.094
+<v Speaker 0>Well, why don't we just do a entry
+
+00:07:16.094 --> 00:07:18.255
+<v Speaker 0>point bash, jump inside this?
+
+00:07:20.655 --> 00:07:22.895
+<v Speaker 0>Surprised that our image doesn't narrow because I've
+
+00:07:22.895 --> 00:07:24.495
+<v Speaker 0>built the image. Yeah. It does. Yeah. It's
+
+00:07:24.495 --> 00:07:26.655
+<v Speaker 0>just this low. And this is all paints.
+
+00:07:26.655 --> 00:07:27.534
+<v Speaker 0>We wanna run ash.
+
+00:07:29.289 --> 00:07:30.650
+<v Speaker 0>Okay. So Docker
+
+00:07:31.449 --> 00:07:32.410
+<v Speaker 0>extension
+
+00:07:32.410 --> 00:07:35.450
+<v Speaker 0>install as a p c u on list.
+
+00:07:35.530 --> 00:07:36.650
+<v Speaker 0>No.
+
+00:07:38.889 --> 00:07:40.729
+<v Speaker 0>Okay. So we're doing the peckle approach.
+
+00:07:41.535 --> 00:07:42.175
+<v Speaker 1>Yes.
+
+00:07:42.335 --> 00:07:44.415
+<v Speaker 0>And you're saying the command is PECL install
+
+00:07:44.415 --> 00:07:45.455
+<v Speaker 0>a p c u?
+
+00:07:46.015 --> 00:07:48.575
+<v Speaker 1>Yep. That's all. And then what you wanna
+
+00:07:48.575 --> 00:07:50.495
+<v Speaker 1>put in the Docker file is also
+
+00:07:50.735 --> 00:07:52.015
+<v Speaker 1>Docker PHP
+
+00:07:52.015 --> 00:07:54.255
+<v Speaker 1>EXT enable a p c u.
+
+00:07:55.990 --> 00:07:58.470
+<v Speaker 0>Alright. Well, we had our first nag installing
+
+00:07:58.470 --> 00:07:59.270
+<v Speaker 0>that.
+
+00:08:00.389 --> 00:08:01.590
+<v Speaker 0>Of course, we did.
+
+00:08:01.990 --> 00:08:03.830
+<v Speaker 2>You need to install auto comps, I guess.
+
+00:08:03.830 --> 00:08:05.750
+<v Speaker 0>So Yeah. We'll need to build
+
+00:08:07.990 --> 00:08:08.550
+<v Speaker 1>There is.
+
+00:08:09.335 --> 00:08:09.975
+<v Speaker 1>Yes.
+
+00:08:10.215 --> 00:08:12.615
+<v Speaker 1>There is actually, if memory serves, a dollar
+
+00:08:12.615 --> 00:08:13.495
+<v Speaker 1>PHPIs
+
+00:08:13.495 --> 00:08:15.735
+<v Speaker 1>underscore depths that you can use in the
+
+00:08:15.735 --> 00:08:16.695
+<v Speaker 1>build step,
+
+00:08:18.295 --> 00:08:20.695
+<v Speaker 1>which has all the PHPIs dependencies.
+
+00:08:20.935 --> 00:08:22.695
+<v Speaker 1>So it's an environment variable that you can
+
+00:08:22.695 --> 00:08:24.295
+<v Speaker 1>use with the Alpine images.
+
+00:08:26.430 --> 00:08:28.430
+<v Speaker 0>Okay. So you're saying if I run the
+
+00:08:28.430 --> 00:08:31.310
+<v Speaker 0>peckle install again, but with an environment variable?
+
+00:08:31.310 --> 00:08:34.750
+<v Speaker 1>No. Sorry. So it's it's
+
+00:08:34.750 --> 00:08:36.510
+<v Speaker 1>just a list of packages that you pass
+
+00:08:36.510 --> 00:08:39.070
+<v Speaker 1>to APK. Alright. Gotcha. Okay. So
+
+00:08:42.805 --> 00:08:44.325
+<v Speaker 2>PHPIs depths.
+
+00:08:44.485 --> 00:08:46.965
+<v Speaker 2>Yeah. Looks good. Third from the bottom.
+
+00:08:47.285 --> 00:08:47.925
+<v Speaker 1>Yes.
+
+00:08:49.205 --> 00:08:51.125
+<v Speaker 0>Alright. How did I not see that? Okay.
+
+00:08:51.950 --> 00:08:54.670
+<v Speaker 1>So it's just APK ad PHPIs deps.
+
+00:08:56.590 --> 00:08:59.070
+<v Speaker 0>Yeah. I don't know why this is three
+
+00:08:59.070 --> 00:09:00.830
+<v Speaker 0>ads, but whatever.
+
+00:09:01.550 --> 00:09:03.230
+<v Speaker 0>I'm gonna say that It was because I
+
+00:09:03.230 --> 00:09:04.670
+<v Speaker 2>I did them one at a time, I
+
+00:09:04.670 --> 00:09:06.110
+<v Speaker 2>didn't wanna have to redo the old ones
+
+00:09:06.110 --> 00:09:08.675
+<v Speaker 2>which you've already done. Yeah. Presumably, the build
+
+00:09:08.675 --> 00:09:09.475
+<v Speaker 1>cache. Right?
+
+00:09:10.435 --> 00:09:12.595
+<v Speaker 2>Yeah. I will need an update. If we
+
+00:09:12.595 --> 00:09:14.675
+<v Speaker 2>have to rebuild anyway, then I guess. Yeah.
+
+00:09:14.675 --> 00:09:15.235
+<v Speaker 0>Okay.
+
+00:09:15.634 --> 00:09:17.475
+<v Speaker 0>So we want to use Leo's library. We
+
+00:09:17.475 --> 00:09:19.475
+<v Speaker 0>need EPC here. We're using that instead of
+
+00:09:19.475 --> 00:09:22.270
+<v Speaker 0>an external Redis. I've added the PHPIs depth.
+
+00:09:22.270 --> 00:09:23.310
+<v Speaker 0>This should
+
+00:09:23.710 --> 00:09:26.190
+<v Speaker 0>allow me now to run a pickle
+
+00:09:26.670 --> 00:09:27.790
+<v Speaker 0>install
+
+00:09:29.470 --> 00:09:30.670
+<v Speaker 0>EPCU.
+
+00:09:31.710 --> 00:09:34.110
+<v Speaker 0>And let's just confirm. Like, I'll run this
+
+00:09:34.270 --> 00:09:35.870
+<v Speaker 2>You need to delete the line nine as
+
+00:09:35.870 --> 00:09:38.255
+<v Speaker 2>well because you've got the pipeline in there
+
+00:09:38.255 --> 00:09:40.095
+<v Speaker 2>still. I will just do that. There we
+
+00:09:40.095 --> 00:09:41.455
+<v Speaker 2>go. Line six. Yeah.
+
+00:09:42.655 --> 00:09:43.455
+<v Speaker 0>Thank you.
+
+00:09:45.295 --> 00:09:46.015
+<v Speaker 0>Okay.
+
+00:09:46.175 --> 00:09:46.735
+<v Speaker 0>Echo.
+
+00:09:47.135 --> 00:09:48.815
+<v Speaker 0>And we expect this to work. Hopefully, it's
+
+00:09:48.815 --> 00:09:50.255
+<v Speaker 0>nice and quick, and then we can rebuild
+
+00:09:50.255 --> 00:09:50.895
+<v Speaker 0>our images.
+
+00:09:54.459 --> 00:09:56.139
+<v Speaker 0>I don't really want a question.
+
+00:09:59.819 --> 00:10:02.220
+<v Speaker 0>I wonder if that's gonna block my build.
+
+00:10:03.180 --> 00:10:05.100
+<v Speaker 1>It will not because it will default when
+
+00:10:05.100 --> 00:10:06.300
+<v Speaker 1>it's non interactive.
+
+00:10:06.459 --> 00:10:06.860
+<v Speaker 0>Good.
+
+00:10:07.845 --> 00:10:09.205
+<v Speaker 0>That's what I like to hear.
+
+00:10:09.845 --> 00:10:11.605
+<v Speaker 1>I know this because this code runs in
+
+00:10:11.605 --> 00:10:12.965
+<v Speaker 1>production for me, so
+
+00:10:13.445 --> 00:10:14.805
+<v Speaker 1>it it should work.
+
+00:10:15.285 --> 00:10:17.845
+<v Speaker 1>And we do use 7.4 FPM Alpine
+
+00:10:18.165 --> 00:10:20.650
+<v Speaker 1>as the base. You're you're already throwing all
+
+00:10:20.650 --> 00:10:22.250
+<v Speaker 0>of your excuses out the window for when
+
+00:10:22.250 --> 00:10:23.930
+<v Speaker 0>this doesn't work. You need to
+
+00:10:24.410 --> 00:10:25.770
+<v Speaker 0>need to save some of these.
+
+00:10:26.170 --> 00:10:28.170
+<v Speaker 0>Okay. I am fully confident.
+
+00:10:29.050 --> 00:10:30.650
+<v Speaker 0>There's no help anyway. So I'm just gonna
+
+00:10:30.650 --> 00:10:32.250
+<v Speaker 0>go with that. And then you said we
+
+00:10:32.250 --> 00:10:34.890
+<v Speaker 0>wanted to run a Docker PHP extension enabled
+
+00:10:34.890 --> 00:10:35.530
+<v Speaker 0>APC.
+
+00:10:35.835 --> 00:10:38.075
+<v Speaker 0>Yeah. Yep. And that is what adds it
+
+00:10:38.075 --> 00:10:39.675
+<v Speaker 1>to the PHP in the file.
+
+00:10:40.635 --> 00:10:43.115
+<v Speaker 0>Okay. So we need one more command.
+
+00:10:43.355 --> 00:10:44.795
+<v Speaker 0>Docker PHP
+
+00:10:44.795 --> 00:10:46.235
+<v Speaker 0>extension enabled
+
+00:10:46.475 --> 00:10:47.595
+<v Speaker 0>APC.
+
+00:10:48.890 --> 00:10:51.290
+<v Speaker 0>Alright. So this modifies our base image. This
+
+00:10:51.290 --> 00:10:53.850
+<v Speaker 0>should mean that anything we build subsequently down
+
+00:10:53.850 --> 00:10:55.050
+<v Speaker 0>will have it.
+
+00:10:56.090 --> 00:10:58.250
+<v Speaker 0>We have moved this composer dot up. This
+
+00:10:58.250 --> 00:11:00.490
+<v Speaker 0>this composer is all up to try
+
+00:11:01.205 --> 00:11:03.205
+<v Speaker 0>and keep our cache here, but we are
+
+00:11:03.205 --> 00:11:04.645
+<v Speaker 0>about to make a change to composer dot
+
+00:11:04.645 --> 00:11:06.005
+<v Speaker 0>JSON. So why don't we do that first
+
+00:11:06.005 --> 00:11:07.285
+<v Speaker 0>so that we don't have to do two
+
+00:11:07.285 --> 00:11:07.925
+<v Speaker 0>builds?
+
+00:11:10.805 --> 00:11:13.445
+<v Speaker 0>Yep. So I'll let Leo do a little
+
+00:11:13.445 --> 00:11:14.165
+<v Speaker 0>bit of typing.
+
+00:11:14.960 --> 00:11:16.640
+<v Speaker 0>You wanna show us how to install your
+
+00:11:16.640 --> 00:11:17.280
+<v Speaker 0>library?
+
+00:11:18.400 --> 00:11:20.480
+<v Speaker 1>Yes. I need to actually remember what it's
+
+00:11:20.480 --> 00:11:21.680
+<v Speaker 1>called. There we go.
+
+00:11:22.560 --> 00:11:24.160
+<v Speaker 2>The the easy way to do it is
+
+00:11:24.160 --> 00:11:26.640
+<v Speaker 1>just going straight into the documentation and and
+
+00:11:26.640 --> 00:11:28.774
+<v Speaker 1>following that. You want me to build up
+
+00:11:28.774 --> 00:11:30.214
+<v Speaker 0>the docs for your library? Where is it,
+
+00:11:30.214 --> 00:11:32.055
+<v Speaker 0>by the way? We should tell people. So
+
+00:11:32.615 --> 00:11:33.735
+<v Speaker 0>github.com.
+
+00:11:34.615 --> 00:11:40.055
+<v Speaker 1>Yes. It's github.com/jovila/laravelcloudnativeutilities.
+
+00:11:40.375 --> 00:11:42.620
+<v Speaker 1>It also has a bit of defaults for,
+
+00:11:42.620 --> 00:11:44.060
+<v Speaker 1>like, logging configuration.
+
+00:11:44.060 --> 00:11:46.220
+<v Speaker 1>I kinda just tossed everything into one place.
+
+00:11:47.020 --> 00:11:47.820
+<v Speaker 0>Alright.
+
+00:11:48.220 --> 00:11:50.780
+<v Speaker 0>So But I have added it now,
+
+00:11:51.180 --> 00:11:53.755
+<v Speaker 1>so that should be good to go. This
+
+00:11:53.755 --> 00:11:55.834
+<v Speaker 1>is the release I just tagged a moment
+
+00:11:55.834 --> 00:11:57.435
+<v Speaker 1>ago with support.
+
+00:11:57.435 --> 00:11:57.995
+<v Speaker 1>So
+
+00:11:58.954 --> 00:12:00.555
+<v Speaker 1>that shouldn't break anything else.
+
+00:12:01.274 --> 00:12:03.915
+<v Speaker 0>Shouldn't is my favorite word on the show.
+
+00:12:04.074 --> 00:12:05.115
+<v Speaker 0>Telling you now. Okay.
+
+00:12:06.500 --> 00:12:09.139
+<v Speaker 0>Let's try and build this then. So we've
+
+00:12:09.139 --> 00:12:11.459
+<v Speaker 0>got two main targets. I'm only gonna build
+
+00:12:11.459 --> 00:12:12.339
+<v Speaker 0>FPM.
+
+00:12:12.339 --> 00:12:14.420
+<v Speaker 0>We don't need to worry about NGINX again.
+
+00:12:15.060 --> 00:12:17.060
+<v Speaker 0>Don't really just wanna check that Docker file.
+
+00:12:18.660 --> 00:12:20.285
+<v Speaker 0>I wanna move artisan up because I know
+
+00:12:20.285 --> 00:12:22.285
+<v Speaker 0>there's weird behavior if that doesn't exist. We
+
+00:12:22.285 --> 00:12:24.445
+<v Speaker 0>had that on a previous episode, but I
+
+00:12:24.445 --> 00:12:26.365
+<v Speaker 0>think we'll Yeah. Save us out the rest.
+
+00:12:26.525 --> 00:12:28.845
+<v Speaker 1>You can get around the artisan problem if
+
+00:12:28.845 --> 00:12:30.125
+<v Speaker 1>if you wanna do that as well.
+
+00:12:31.680 --> 00:12:33.040
+<v Speaker 2>I mean, I'll just talk through it because
+
+00:12:33.040 --> 00:12:34.960
+<v Speaker 1>we're waiting for the build anyway. Yeah. The
+
+00:12:34.960 --> 00:12:37.120
+<v Speaker 1>way you do that is to run dash
+
+00:12:37.120 --> 00:12:39.440
+<v Speaker 1>dash no order loader, which will prevent running
+
+00:12:39.440 --> 00:12:40.320
+<v Speaker 1>the scripts,
+
+00:12:40.560 --> 00:12:42.400
+<v Speaker 1>and then you run dump order load after
+
+00:12:42.400 --> 00:12:43.760
+<v Speaker 1>copying in the app files.
+
+00:12:44.565 --> 00:12:46.325
+<v Speaker 1>That way, we'll be able to run all
+
+00:12:46.325 --> 00:12:48.325
+<v Speaker 1>the scripts and order loader and stuff, and
+
+00:12:48.325 --> 00:12:50.005
+<v Speaker 1>it doesn't need artisan ahead of time.
+
+00:12:50.645 --> 00:12:52.565
+<v Speaker 0>Yeah. There was another weird issue, though, with
+
+00:12:53.525 --> 00:12:56.405
+<v Speaker 2>Yeah. Laravel mix On the assets. Yeah. Requires
+
+00:12:56.805 --> 00:12:59.765
+<v Speaker 2>yeah. The JavaScript's
+
+00:12:58.510 --> 00:13:01.470
+<v Speaker 2>compiling stuff for webpack requires artisan as a
+
+00:13:01.470 --> 00:13:02.510
+<v Speaker 2>file to exist.
+
+00:13:02.990 --> 00:13:04.430
+<v Speaker 2>It uses that to find out the Laravel
+
+00:13:04.430 --> 00:13:05.149
+<v Speaker 2>root,
+
+00:13:05.470 --> 00:13:06.029
+<v Speaker 2>which
+
+00:13:06.750 --> 00:13:08.510
+<v Speaker 2>took a long time for us to find
+
+00:13:08.510 --> 00:13:09.630
+<v Speaker 2>on the stream.
+
+00:13:10.910 --> 00:13:11.550
+<v Speaker 2>But yeah.
+
+00:13:12.715 --> 00:13:15.675
+<v Speaker 0>Alright. Well, well, hopefully, as image builds, so
+
+00:13:16.075 --> 00:13:17.755
+<v Speaker 0>okay. If I remember right from last week,
+
+00:13:17.755 --> 00:13:20.075
+<v Speaker 0>it's the random ninety ninety seconds mark, so
+
+00:13:20.075 --> 00:13:21.595
+<v Speaker 0>it's not not too bad.
+
+00:13:23.595 --> 00:13:25.515
+<v Speaker 0>And then we should be in a position
+
+00:13:25.515 --> 00:13:27.690
+<v Speaker 0>where we can just start instrumenting.
+
+00:13:27.690 --> 00:13:29.529
+<v Speaker 0>Is that is that all auto instrumenting then,
+
+00:13:29.529 --> 00:13:30.570
+<v Speaker 0>this this library?
+
+00:13:31.769 --> 00:13:34.970
+<v Speaker 1>Yes. So there is a configuration file for
+
+00:13:34.970 --> 00:13:35.450
+<v Speaker 1>it.
+
+00:13:36.250 --> 00:13:38.889
+<v Speaker 1>So, yeah, the installation docs do have there
+
+00:13:38.889 --> 00:13:40.329
+<v Speaker 1>is a command you can run to publish
+
+00:13:40.329 --> 00:13:41.209
+<v Speaker 1>a config file.
+
+00:13:41.735 --> 00:13:45.095
+<v Speaker 1>By default, it's gonna expose a slash metrics
+
+00:13:45.095 --> 00:13:45.894
+<v Speaker 1>endpoint
+
+00:13:46.935 --> 00:13:47.654
+<v Speaker 1>that
+
+00:13:47.815 --> 00:13:51.175
+<v Speaker 1>I think it has quite sensible buckets of
+
+00:13:51.255 --> 00:13:52.134
+<v Speaker 1>0.1,
+
+00:13:52.134 --> 00:13:54.454
+<v Speaker 1>zero point two, point three, four, five,
+
+00:13:56.010 --> 00:13:59.050
+<v Speaker 1>point seven five one two and five seconds
+
+00:13:59.050 --> 00:14:00.810
+<v Speaker 1>or something like that. There's a lot of
+
+00:14:00.810 --> 00:14:02.570
+<v Speaker 1>buckets. There's, 10 of them or something.
+
+00:14:03.290 --> 00:14:04.650
+<v Speaker 0>Alright. Well, that should give us a little
+
+00:14:04.650 --> 00:14:06.970
+<v Speaker 0>flexibility then when it comes to adding our
+
+00:14:06.970 --> 00:14:09.930
+<v Speaker 0>horizontal pod autoscaler. So I I did also
+
+00:14:10.365 --> 00:14:12.285
+<v Speaker 1>yeah. Sorry. I I did add
+
+00:14:12.765 --> 00:14:15.084
+<v Speaker 1>just couple days ago the support for changing
+
+00:14:15.084 --> 00:14:16.365
+<v Speaker 1>that in the config. So if you do
+
+00:14:16.365 --> 00:14:17.565
+<v Speaker 1>wanna change the buckets,
+
+00:14:17.805 --> 00:14:19.964
+<v Speaker 1>you can publish that configuration file as well.
+
+00:14:19.964 --> 00:14:21.725
+<v Speaker 0>Well, you know I'm gonna test that now.
+
+00:14:22.445 --> 00:14:24.845
+<v Speaker 1>Yes. Of course. I have not tested it,
+
+00:14:24.950 --> 00:14:27.510
+<v Speaker 1>but that that'll be interesting. We'll see what
+
+00:14:27.510 --> 00:14:30.390
+<v Speaker 0>happens. I'm curious. Like, you're using this in
+
+00:14:30.390 --> 00:14:32.550
+<v Speaker 0>production at at Jobula. Right? So are you
+
+00:14:32.550 --> 00:14:35.029
+<v Speaker 0>using a horizontal pod autoscaler in your Kubernetes
+
+00:14:35.029 --> 00:14:36.150
+<v Speaker 0>setup at the moment?
+
+00:14:36.950 --> 00:14:38.390
+<v Speaker 1>We are not using it at the moment.
+
+00:14:39.865 --> 00:14:42.505
+<v Speaker 1>Largely, we have a very stable load,
+
+00:14:43.705 --> 00:14:46.825
+<v Speaker 1>and we are I mean, we we survive
+
+00:14:46.825 --> 00:14:49.865
+<v Speaker 1>fine on honestly, like, one pod one replica,
+
+00:14:49.865 --> 00:14:50.665
+<v Speaker 1>maybe two.
+
+00:14:52.025 --> 00:14:53.945
+<v Speaker 1>We don't really need to scale up a
+
+00:14:53.945 --> 00:14:54.185
+<v Speaker 1>lot.
+
+00:14:55.040 --> 00:14:56.800
+<v Speaker 1>We do have got a lot of resources
+
+00:14:56.800 --> 00:14:58.880
+<v Speaker 1>for each pod. Yep.
+
+00:14:59.439 --> 00:15:00.959
+<v Speaker 1>So it's running quite fine.
+
+00:15:01.439 --> 00:15:03.600
+<v Speaker 1>Also, I did write this library, like, last
+
+00:15:03.600 --> 00:15:04.560
+<v Speaker 1>week. So,
+
+00:15:05.040 --> 00:15:06.399
+<v Speaker 1>you know, I I just have not had
+
+00:15:06.399 --> 00:15:08.845
+<v Speaker 1>time to do it. But I'm making up
+
+00:15:08.845 --> 00:15:10.524
+<v Speaker 1>the excuse that, you know, we don't need
+
+00:15:10.524 --> 00:15:12.524
+<v Speaker 1>it. Are you again? You just got to
+
+00:15:12.524 --> 00:15:13.725
+<v Speaker 0>get a little done early.
+
+00:15:14.045 --> 00:15:15.644
+<v Speaker 2>So at the moment, are you basically using
+
+00:15:15.644 --> 00:15:17.404
+<v Speaker 2>it in production just to gather the metrics
+
+00:15:17.404 --> 00:15:18.925
+<v Speaker 2>rather than to make use of the metrics?
+
+00:15:20.140 --> 00:15:20.860
+<v Speaker 1>Yes.
+
+00:15:22.780 --> 00:15:25.660
+<v Speaker 1>Literally gathering them because we barely have a
+
+00:15:25.660 --> 00:15:27.820
+<v Speaker 1>functioning Grafana setup as well.
+
+00:15:28.460 --> 00:15:29.980
+<v Speaker 1>I probably shouldn't be saying these kind of
+
+00:15:29.980 --> 00:15:31.260
+<v Speaker 1>things on the stream if when I try
+
+00:15:31.260 --> 00:15:31.740
+<v Speaker 1>to,
+
+00:15:32.140 --> 00:15:32.940
+<v Speaker 1>like, work with me.
+
+00:15:34.595 --> 00:15:35.955
+<v Speaker 1>No. We have a we have a beautiful
+
+00:15:35.955 --> 00:15:36.755
+<v Speaker 1>environment.
+
+00:15:37.075 --> 00:15:38.355
+<v Speaker 1>That doesn't look good.
+
+00:15:39.075 --> 00:15:41.395
+<v Speaker 0>The requirements could not be resolved.
+
+00:15:45.555 --> 00:15:47.635
+<v Speaker 2>It looks like you require a certain guzzle
+
+00:15:47.635 --> 00:15:48.515
+<v Speaker 2>installation
+
+00:15:49.610 --> 00:15:51.130
+<v Speaker 2>in one of your currencies.
+
+00:15:52.410 --> 00:15:54.089
+<v Speaker 1>Yeah. I don't yes.
+
+00:15:56.410 --> 00:15:59.130
+<v Speaker 2>Because we have requested 70.1,
+
+00:15:59.290 --> 00:16:00.490
+<v Speaker 2>and they're saying 6
+
+00:16:01.130 --> 00:16:03.769
+<v Speaker 1>Yes. So that's requested by the Prometheus
+
+00:16:03.769 --> 00:16:04.889
+<v Speaker 1>client library.
+
+00:16:07.475 --> 00:16:09.555
+<v Speaker 0>Alright. If in doubt, six dot star, why
+
+00:16:09.555 --> 00:16:11.075
+<v Speaker 2>not? Is that how you do it? See,
+
+00:16:11.075 --> 00:16:12.435
+<v Speaker 0>I was trying to remember, but it's you
+
+00:16:12.435 --> 00:16:14.115
+<v Speaker 0>know, I haven't read it right You can
+
+00:16:14.115 --> 00:16:16.115
+<v Speaker 1>just do greater than six point o. Yeah.
+
+00:16:16.595 --> 00:16:17.875
+<v Speaker 2>Okay. Yeah.
+
+00:16:18.355 --> 00:16:20.260
+<v Speaker 1>I don't know if does greater than work
+
+00:16:20.260 --> 00:16:21.540
+<v Speaker 1>with the asterisks?
+
+00:16:21.540 --> 00:16:22.339
+<v Speaker 1>I'm not sure.
+
+00:16:22.899 --> 00:16:25.459
+<v Speaker 1>Also, it it is the up caret yep.
+
+00:16:25.459 --> 00:16:26.980
+<v Speaker 1>All good. Alright.
+
+00:16:27.540 --> 00:16:29.540
+<v Speaker 0>But I should start from our composer step
+
+00:16:29.540 --> 00:16:32.134
+<v Speaker 0>anyways. So let's see. Yeah. That's true. Yeah.
+
+00:16:32.134 --> 00:16:33.574
+<v Speaker 0>No. It does not like that. Okay. You
+
+00:16:33.574 --> 00:16:35.735
+<v Speaker 2>can't do it as chevron and the star.
+
+00:16:35.735 --> 00:16:37.334
+<v Speaker 2>Just do chevron Zero.
+
+00:16:37.574 --> 00:16:37.975
+<v Speaker 2>Yeah.
+
+00:16:43.870 --> 00:16:46.190
+<v Speaker 1>We're professionals. We know what we're doing.
+
+00:16:46.670 --> 00:16:48.830
+<v Speaker 0>I'm not. I'm relying on user.
+
+00:16:50.030 --> 00:16:52.510
+<v Speaker 0>There we go. It's happy. Right. That looks
+
+00:16:52.510 --> 00:16:52.830
+<v Speaker 1>better.
+
+00:16:57.735 --> 00:16:59.415
+<v Speaker 2>And I'm pretty sure there was nothing in
+
+00:16:59.415 --> 00:17:01.735
+<v Speaker 2>my code that was using Guzzle at all,
+
+00:17:01.735 --> 00:17:03.175
+<v Speaker 2>so nothing else should break.
+
+00:17:03.815 --> 00:17:05.575
+<v Speaker 2>There's the artisan issue. Okay. You need to
+
+00:17:05.575 --> 00:17:06.615
+<v Speaker 2>copy Bootstrap.
+
+00:17:06.855 --> 00:17:08.214
+<v Speaker 2>It might be worth just putting the computer
+
+00:17:08.214 --> 00:17:10.200
+<v Speaker 2>installed back where it was. Yeah. Let's just
+
+00:17:10.200 --> 00:17:11.960
+<v Speaker 0>do everything. I don't wanna fight with that.
+
+00:17:12.119 --> 00:17:13.799
+<v Speaker 0>I don't wanna fight with that today. I
+
+00:17:13.799 --> 00:17:15.319
+<v Speaker 0>fought with that in the past. I don't
+
+00:17:15.319 --> 00:17:17.480
+<v Speaker 0>have it. I don't remember the solution at
+
+00:17:17.480 --> 00:17:18.599
+<v Speaker 0>the top of my head. We'll deal with
+
+00:17:18.599 --> 00:17:19.319
+<v Speaker 0>that later.
+
+00:17:19.799 --> 00:17:20.359
+<v Speaker 2>Yeah.
+
+00:17:21.319 --> 00:17:23.159
+<v Speaker 2>I think it's probably what Leo said before.
+
+00:17:24.595 --> 00:17:25.794
+<v Speaker 2>Make it so it doesn't do any of
+
+00:17:25.794 --> 00:17:27.875
+<v Speaker 2>the scripts afterwards, and then when them yourself
+
+00:17:27.875 --> 00:17:29.394
+<v Speaker 2>have to copy the rest of the files.
+
+00:17:29.634 --> 00:17:31.794
+<v Speaker 0>Yeah. Let's just get this deployed. I wanna
+
+00:17:31.794 --> 00:17:33.955
+<v Speaker 0>see this metrics endpoint work. I wanna configure
+
+00:17:33.955 --> 00:17:35.955
+<v Speaker 0>the buckets, and then we'll start scaling.
+
+00:17:39.720 --> 00:17:41.480
+<v Speaker 2>Oh, I already did the dump porta load
+
+00:17:41.480 --> 00:17:43.559
+<v Speaker 2>after the fact as well. It's interesting.
+
+00:17:46.200 --> 00:17:47.080
+<v Speaker 2>Oh, well.
+
+00:17:47.559 --> 00:17:49.240
+<v Speaker 0>Okay. We have our images.
+
+00:17:50.235 --> 00:17:52.955
+<v Speaker 0>Now we're just building the same tag. So
+
+00:17:54.075 --> 00:17:56.075
+<v Speaker 0>that means if I do get pods, all
+
+00:17:56.075 --> 00:17:58.475
+<v Speaker 0>I really need to do here is delete
+
+00:17:58.475 --> 00:17:59.355
+<v Speaker 0>our
+
+00:17:59.675 --> 00:18:01.115
+<v Speaker 0>Laravel pod
+
+00:18:01.850 --> 00:18:03.610
+<v Speaker 0>here. And we're only running one.
+
+00:18:03.930 --> 00:18:05.370
+<v Speaker 0>This will trigger it to use the new
+
+00:18:05.370 --> 00:18:08.250
+<v Speaker 0>image. I'm gonna port forward at metrics.
+
+00:18:08.730 --> 00:18:10.250
+<v Speaker 0>In fact, we've not we've only added it
+
+00:18:10.250 --> 00:18:11.770
+<v Speaker 0>to composite dot JSON. Is there any other
+
+00:18:11.770 --> 00:18:12.570
+<v Speaker 0>steps, Leo?
+
+00:18:13.610 --> 00:18:15.554
+<v Speaker 1>No. That should be it, or
+
+00:18:15.715 --> 00:18:17.234
+<v Speaker 1>it should do something.
+
+00:18:18.355 --> 00:18:19.875
+<v Speaker 1>I I guess we'll find out if it
+
+00:18:19.875 --> 00:18:21.554
+<v Speaker 1>does. Right? I mean, I'll need to add
+
+00:18:21.554 --> 00:18:23.315
+<v Speaker 0>it to, like, some configuration
+
+00:18:23.395 --> 00:18:26.434
+<v Speaker 0>or No. Laravel has auto discovery.
+
+00:18:26.755 --> 00:18:28.755
+<v Speaker 2>That's what was mentioned last stream when we
+
+00:18:28.755 --> 00:18:30.770
+<v Speaker 2>had to start finding which file to add
+
+00:18:30.770 --> 00:18:32.130
+<v Speaker 2>the references
+
+00:18:32.130 --> 00:18:34.770
+<v Speaker 2>to when somebody was saying about auto discovery.
+
+00:18:34.770 --> 00:18:36.049
+<v Speaker 2>That's one of the things that came in
+
+00:18:36.049 --> 00:18:38.450
+<v Speaker 2>like Okay. So we have our posts. We
+
+00:18:38.450 --> 00:18:40.690
+<v Speaker 0>have our home page. Do we have metrics?
+
+00:18:42.210 --> 00:18:43.409
+<v Speaker 1>That's the moment of truth.
+
+00:18:43.995 --> 00:18:45.995
+<v Speaker 1>We do. No. We we did hard code
+
+00:18:45.995 --> 00:18:48.235
+<v Speaker 2>some metrics last week, though. Have you removed
+
+00:18:48.235 --> 00:18:49.514
+<v Speaker 2>the hard coded ones?
+
+00:18:52.395 --> 00:18:53.995
+<v Speaker 2>Because I think we put our own No.
+
+00:18:53.995 --> 00:18:56.875
+<v Speaker 1>This the hard coded one. Yeah. So what
+
+00:18:56.875 --> 00:18:59.435
+<v Speaker 1>happens is the library registers its own route.
+
+00:18:59.630 --> 00:19:02.510
+<v Speaker 1>But if you register the same route afterwards,
+
+00:19:02.510 --> 00:19:04.350
+<v Speaker 1>then your route will take precedence.
+
+00:19:04.750 --> 00:19:06.670
+<v Speaker 2>Yeah. Which is going to roots and it'll
+
+00:19:06.670 --> 00:19:09.390
+<v Speaker 2>be in web. Web. Web dot PHP.
+
+00:19:10.110 --> 00:19:12.350
+<v Speaker 0>Oh, yeah. That's my Yeah. Just delete that.
+
+00:19:12.350 --> 00:19:12.830
+<v Speaker 2>Yeah.
+
+00:19:13.390 --> 00:19:13.790
+<v Speaker 1>Right.
+
+00:19:15.155 --> 00:19:17.155
+<v Speaker 1>I was like, oh, it works. My library
+
+00:19:17.155 --> 00:19:17.874
+<v Speaker 1>works.
+
+00:19:18.034 --> 00:19:19.475
+<v Speaker 0>Everything is fine.
+
+00:19:20.515 --> 00:19:22.515
+<v Speaker 0>Does work. I had we're not confirmed it
+
+00:19:22.515 --> 00:19:24.034
+<v Speaker 0>yet. Don't worry. It's coming.
+
+00:19:24.275 --> 00:19:26.355
+<v Speaker 0>Alright. Quick rebuild then. Yeah. And this is
+
+00:19:26.355 --> 00:19:28.275
+<v Speaker 2>where we need to do some more work
+
+00:19:28.275 --> 00:19:30.275
+<v Speaker 2>on the composer on the Dockerfile.
+
+00:19:31.529 --> 00:19:33.450
+<v Speaker 2>Because we haven't changed any of our dependencies.
+
+00:19:33.450 --> 00:19:35.529
+<v Speaker 0>But because we are gonna change this time
+
+00:19:35.529 --> 00:19:38.649
+<v Speaker 0>and time again today. So Yeah. We're only
+
+00:19:38.649 --> 00:19:40.649
+<v Speaker 0>gonna really change app and routes. Right?
+
+00:19:41.690 --> 00:19:42.409
+<v Speaker 2>Yes.
+
+00:19:44.795 --> 00:19:46.715
+<v Speaker 0>I was like, maybe we can get away
+
+00:19:46.715 --> 00:19:47.515
+<v Speaker 0>with that.
+
+00:19:48.955 --> 00:19:50.635
+<v Speaker 2>Mhmm. Probably case.
+
+00:19:51.115 --> 00:19:52.554
+<v Speaker 0>Oh, no. We're dot
+
+00:19:53.515 --> 00:19:55.434
+<v Speaker 0>probably We're gonna configure the
+
+00:19:55.915 --> 00:19:57.675
+<v Speaker 0>the buckets, and I'm assuming that'll be in
+
+00:19:57.675 --> 00:19:59.490
+<v Speaker 0>config. So why don't we try it with
+
+00:19:59.490 --> 00:20:01.170
+<v Speaker 0>these two? Just and if it doesn't work,
+
+00:20:01.170 --> 00:20:02.530
+<v Speaker 0>we'll just have to deal with the rebuild
+
+00:20:02.530 --> 00:20:04.930
+<v Speaker 0>every time, I think. So let's check out
+
+00:20:04.930 --> 00:20:06.930
+<v Speaker 0>the one more. And while that does the
+
+00:20:07.010 --> 00:20:08.450
+<v Speaker 0>I'm gonna color pod.
+
+00:20:10.290 --> 00:20:11.970
+<v Speaker 0>We'll check this metrics endpoint.
+
+00:20:16.705 --> 00:20:18.145
+<v Speaker 0>So that's deleting.
+
+00:20:20.545 --> 00:20:22.544
+<v Speaker 0>We can do a port forward.
+
+00:20:23.025 --> 00:20:24.465
+<v Speaker 0>I really should have checked the name.
+
+00:20:29.560 --> 00:20:31.160
+<v Speaker 0>Oh, that failed again. So I I think
+
+00:20:31.160 --> 00:20:33.559
+<v Speaker 0>we're just gonna have to deal with the
+
+00:20:34.600 --> 00:20:35.320
+<v Speaker 0>thing.
+
+00:20:36.760 --> 00:20:38.039
+<v Speaker 0>I don't think it worked.
+
+00:20:40.920 --> 00:20:41.720
+<v Speaker 0>It worked.
+
+00:20:43.495 --> 00:20:45.255
+<v Speaker 0>I saw that looking at the store. He
+
+00:20:45.255 --> 00:20:45.975
+<v Speaker 0>was worried.
+
+00:20:47.015 --> 00:20:48.934
+<v Speaker 1>I I told you. I I had full
+
+00:20:48.934 --> 00:20:51.335
+<v Speaker 1>confidence in my code here. I think the
+
+00:20:51.335 --> 00:20:53.415
+<v Speaker 0>challenge was maybe the patient on the first
+
+00:20:53.415 --> 00:20:54.134
+<v Speaker 0>load,
+
+00:20:54.375 --> 00:20:55.575
+<v Speaker 0>but I think we're good. Okay.
+
+00:20:57.740 --> 00:21:00.059
+<v Speaker 0>So that worked. We have metrics.
+
+00:21:00.539 --> 00:21:03.019
+<v Speaker 0>Let's jump back over here and we're yeah.
+
+00:21:03.019 --> 00:21:05.339
+<v Speaker 0>We just have to unfortunately deal with that.
+
+00:21:05.740 --> 00:21:07.179
+<v Speaker 0>So let's try not to make too many
+
+00:21:07.179 --> 00:21:08.620
+<v Speaker 0>changes on the PHP side. And if we
+
+00:21:08.620 --> 00:21:10.299
+<v Speaker 0>do need to make some, we should probably
+
+00:21:09.885 --> 00:21:11.245
+<v Speaker 0>just make them know and kick off that
+
+00:21:11.245 --> 00:21:12.765
+<v Speaker 0>rebuild. Yeah. But we do some of the
+
+00:21:12.845 --> 00:21:13.885
+<v Speaker 1>you want, we
+
+00:21:14.445 --> 00:21:16.525
+<v Speaker 1>because we're only dealing with the metrics now,
+
+00:21:16.525 --> 00:21:18.845
+<v Speaker 1>I suppose we could also just do the
+
+00:21:18.845 --> 00:21:21.485
+<v Speaker 1>no auto loader step right away
+
+00:21:22.285 --> 00:21:24.445
+<v Speaker 1>because we're not dealing with any issues related
+
+00:21:24.445 --> 00:21:25.085
+<v Speaker 1>to resources
+
+00:21:25.830 --> 00:21:26.710
+<v Speaker 1>probably.
+
+00:21:27.429 --> 00:21:29.190
+<v Speaker 1>At least there's no build step related to
+
+00:21:29.190 --> 00:21:29.830
+<v Speaker 1>mix.
+
+00:21:30.549 --> 00:21:32.309
+<v Speaker 1>So if you just do dash dash no
+
+00:21:32.309 --> 00:21:33.349
+<v Speaker 1>auto loader,
+
+00:21:34.309 --> 00:21:37.029
+<v Speaker 1>you can have it right after the composer
+
+00:21:37.029 --> 00:21:37.830
+<v Speaker 1>JSON copy.
+
+00:21:43.055 --> 00:21:44.815
+<v Speaker 2>Yeah. That will help us. Yeah.
+
+00:21:45.775 --> 00:21:47.055
+<v Speaker 0>I just wanna make sure we don't spend
+
+00:21:47.055 --> 00:21:49.855
+<v Speaker 0>too much time phasing it this.
+
+00:21:50.895 --> 00:21:51.295
+<v Speaker 1>Yes.
+
+00:21:51.809 --> 00:21:53.009
+<v Speaker 1>I'm
+
+00:21:53.090 --> 00:21:54.849
+<v Speaker 1>hoping this should be quicker, though.
+
+00:21:56.130 --> 00:21:58.049
+<v Speaker 0>Alright. It looks like it's maybe getting a
+
+00:21:58.049 --> 00:21:59.570
+<v Speaker 0>bit further than that.
+
+00:22:00.370 --> 00:22:02.450
+<v Speaker 0>Is that happy? Is that our last ever
+
+00:22:02.450 --> 00:22:03.490
+<v Speaker 0>compulsory install?
+
+00:22:06.995 --> 00:22:09.235
+<v Speaker 0>Oh. There we go. Nice. I think it's
+
+00:22:09.235 --> 00:22:11.235
+<v Speaker 1>very optimistic to call it your last composer
+
+00:22:11.235 --> 00:22:11.954
+<v Speaker 1>install.
+
+00:22:12.355 --> 00:22:12.994
+<v Speaker 0>Ever.
+
+00:22:14.514 --> 00:22:16.595
+<v Speaker 0>And done. Okay.
+
+00:22:16.595 --> 00:22:18.434
+<v Speaker 0>I'm really happy with that. So
+
+00:22:20.250 --> 00:22:22.170
+<v Speaker 0>what do we need to do now?
+
+00:22:23.370 --> 00:22:24.010
+<v Speaker 0>Well,
+
+00:22:25.130 --> 00:22:26.570
+<v Speaker 0>we wanna start
+
+00:22:26.730 --> 00:22:27.690
+<v Speaker 0>scraping
+
+00:22:28.010 --> 00:22:28.809
+<v Speaker 0>the
+
+00:22:29.930 --> 00:22:30.570
+<v Speaker 0>metrics.
+
+00:22:31.945 --> 00:22:33.225
+<v Speaker 0>Let me grab Yes. We need to get
+
+00:22:33.225 --> 00:22:35.465
+<v Speaker 2>a data into Prometheus, I guess, aren't we?
+
+00:22:36.185 --> 00:22:37.305
+<v Speaker 0>Yes.
+
+00:22:37.305 --> 00:22:38.825
+<v Speaker 0>Now the old school way of doing this
+
+00:22:38.825 --> 00:22:40.745
+<v Speaker 0>is to modify the deployment.
+
+00:22:41.705 --> 00:22:43.305
+<v Speaker 0>Oh, we're not using like a d anymore.
+
+00:22:43.305 --> 00:22:44.745
+<v Speaker 0>I don't know. I just prefer that approach.
+
+00:22:45.470 --> 00:22:46.190
+<v Speaker 0>Fine.
+
+00:22:46.270 --> 00:22:48.830
+<v Speaker 0>These are the three annotations that tell Prometheus
+
+00:22:48.830 --> 00:22:50.990
+<v Speaker 0>to scrape within Kubernetes.
+
+00:22:52.190 --> 00:22:54.030
+<v Speaker 0>I think we're running on port 80, so
+
+00:22:54.030 --> 00:22:55.390
+<v Speaker 0>we'll just leave that open.
+
+00:22:55.870 --> 00:22:57.870
+<v Speaker 2>Is that the port inside of the container?
+
+00:22:57.870 --> 00:23:00.465
+<v Speaker 0>It is. Yes. Yeah. Port a t. Yeah.
+
+00:23:00.625 --> 00:23:02.385
+<v Speaker 0>So we just tell previous that we want
+
+00:23:02.385 --> 00:23:04.305
+<v Speaker 0>to scrape by saying this to a string
+
+00:23:04.305 --> 00:23:06.225
+<v Speaker 0>through. We tell the endpoint to scrape in
+
+00:23:06.225 --> 00:23:07.184
+<v Speaker 0>the port number.
+
+00:23:08.385 --> 00:23:10.385
+<v Speaker 0>Most of these are at the fact. I'm
+
+00:23:10.385 --> 00:23:12.065
+<v Speaker 0>pretty sure a t and slash metrics are
+
+00:23:12.065 --> 00:23:13.825
+<v Speaker 0>the defaults and I could remove them, but
+
+00:23:13.825 --> 00:23:14.465
+<v Speaker 0>I'm not going to.
+
+00:23:15.150 --> 00:23:17.550
+<v Speaker 0>Just trust me. That that's always worked out
+
+00:23:17.550 --> 00:23:18.110
+<v Speaker 0>well.
+
+00:23:20.510 --> 00:23:23.390
+<v Speaker 0>We're gonna reapply our Kubernetes manifest.
+
+00:23:24.830 --> 00:23:25.710
+<v Speaker 0>So
+
+00:23:26.110 --> 00:23:28.670
+<v Speaker 0>we're gonna get pods. There's there's still stuff
+
+00:23:28.670 --> 00:23:29.950
+<v Speaker 2>in there about PON.
+
+00:23:31.365 --> 00:23:32.965
+<v Speaker 2>Are they still needed? Because they were put
+
+00:23:32.965 --> 00:23:34.485
+<v Speaker 2>there last week for
+
+00:23:35.125 --> 00:23:36.405
+<v Speaker 2>our attempts.
+
+00:23:38.645 --> 00:23:40.005
+<v Speaker 0>Sorry. Can you say that again? What's in
+
+00:23:40.005 --> 00:23:41.525
+<v Speaker 0>here? Go to the top.
+
+00:23:43.150 --> 00:23:45.309
+<v Speaker 2>Line fourteen nineteen.
+
+00:23:46.590 --> 00:23:48.350
+<v Speaker 2>Are those still necessary? Because we put those
+
+00:23:48.350 --> 00:23:50.190
+<v Speaker 2>in last week. No. That was when we
+
+00:23:50.190 --> 00:23:51.870
+<v Speaker 0>were trying to target the service monitor and
+
+00:23:51.870 --> 00:23:53.870
+<v Speaker 0>it was that bug. Yep. Okay.
+
+00:23:54.590 --> 00:23:56.750
+<v Speaker 0>We can reapply and actually oh,
+
+00:23:57.755 --> 00:24:01.195
+<v Speaker 0>you can't change them. So they're immutable.
+
+00:24:02.554 --> 00:24:04.235
+<v Speaker 0>It's deploy Laravel.
+
+00:24:04.235 --> 00:24:06.394
+<v Speaker 0>Let's just make it and then reapply with
+
+00:24:06.394 --> 00:24:06.874
+<v Speaker 0>it.
+
+00:24:07.995 --> 00:24:09.835
+<v Speaker 0>Alright. Let's see where we are.
+
+00:24:10.635 --> 00:24:10.955
+<v Speaker 0>So
+
+00:24:12.370 --> 00:24:14.929
+<v Speaker 0>give that one more second. Okay. It's running.
+
+00:24:15.330 --> 00:24:17.090
+<v Speaker 0>I wanna make sure we have some metrics
+
+00:24:17.090 --> 00:24:18.769
+<v Speaker 0>that we can scrape with
+
+00:24:19.090 --> 00:24:21.170
+<v Speaker 0>from me, so I'm just gonna put forward
+
+00:24:21.170 --> 00:24:23.490
+<v Speaker 0>one one more time. At least for now,
+
+00:24:23.490 --> 00:24:24.289
+<v Speaker 0>one more time
+
+00:24:24.850 --> 00:24:26.210
+<v Speaker 0>at the metrics endpoint.
+
+00:24:30.255 --> 00:24:32.015
+<v Speaker 2>Do you need to hit a different URL
+
+00:24:32.015 --> 00:24:33.775
+<v Speaker 2>to get metrics first? Yeah. I think that's
+
+00:24:33.775 --> 00:24:34.495
+<v Speaker 0>the issue.
+
+00:24:36.095 --> 00:24:37.534
+<v Speaker 0>There you go. You
+
+00:24:37.615 --> 00:24:39.055
+<v Speaker 1>might be correct? Yeah.
+
+00:24:40.080 --> 00:24:42.720
+<v Speaker 1>Yes. So there's just no metrics upfront. That's
+
+00:24:42.720 --> 00:24:44.559
+<v Speaker 0>all it is. No no nothing's came through
+
+00:24:44.559 --> 00:24:45.839
+<v Speaker 0>and hit.
+
+00:24:46.720 --> 00:24:48.559
+<v Speaker 0>Not a big deal, but we do have
+
+00:24:48.559 --> 00:24:50.240
+<v Speaker 0>some stuff here. So what we really wanna
+
+00:24:50.240 --> 00:24:52.559
+<v Speaker 0>check now is that if I browse to
+
+00:24:52.559 --> 00:24:54.320
+<v Speaker 0>Prometheus, one, we should see that there's a
+
+00:24:54.320 --> 00:24:56.285
+<v Speaker 0>target that wants to be scraped. Two, we
+
+00:24:56.285 --> 00:24:57.484
+<v Speaker 0>should see some metrics
+
+00:24:57.965 --> 00:24:59.484
+<v Speaker 0>and three,
+
+00:25:00.044 --> 00:25:02.205
+<v Speaker 0>maybe that'll all work. So
+
+00:25:02.445 --> 00:25:03.884
+<v Speaker 0>I'm not gonna
+
+00:25:04.605 --> 00:25:07.004
+<v Speaker 0>port forward to that anymore. Instead,
+
+00:25:07.565 --> 00:25:11.280
+<v Speaker 0>we're port forward to our Prometheus server, which
+
+00:25:11.280 --> 00:25:12.880
+<v Speaker 0>runs on port nineteen ninety.
+
+00:25:15.120 --> 00:25:16.399
+<v Speaker 0>Local host
+
+00:25:17.200 --> 00:25:18.960
+<v Speaker 0>1990.
+
+00:25:19.920 --> 00:25:21.919
+<v Speaker 0>We have our Prometheus UI.
+
+00:25:21.920 --> 00:25:23.919
+<v Speaker 0>Now if we come into target
+
+00:25:24.485 --> 00:25:26.085
+<v Speaker 0>oh, come on.
+
+00:25:30.485 --> 00:25:32.805
+<v Speaker 2>Oh, there we go. Is it there? I
+
+00:25:32.805 --> 00:25:34.565
+<v Speaker 2>saw some proof eighty eighty on there.
+
+00:25:35.525 --> 00:25:37.525
+<v Speaker 1>But we're targeting 80. Right?
+
+00:25:38.830 --> 00:25:40.190
+<v Speaker 2>Oh, shit. Yeah. Yeah.
+
+00:25:41.789 --> 00:25:42.269
+<v Speaker 1>That's
+
+00:25:43.549 --> 00:25:44.909
+<v Speaker 1>what is going on there?
+
+00:25:45.710 --> 00:25:47.949
+<v Speaker 1>Yeah. That's a Kubernetes service.
+
+00:25:49.950 --> 00:25:52.065
+<v Speaker 1>This is where my expertise ends because I
+
+00:25:52.065 --> 00:25:53.664
+<v Speaker 1>set this up with a service monitor, and
+
+00:25:53.664 --> 00:25:54.705
+<v Speaker 1>I was all happy.
+
+00:25:55.184 --> 00:25:56.544
+<v Speaker 0>Yeah. Yeah. Yeah. So this this is on
+
+00:25:56.544 --> 00:25:57.825
+<v Speaker 1>David to figure out.
+
+00:26:03.105 --> 00:26:05.024
+<v Speaker 2>There's another tab on the status called service
+
+00:26:05.024 --> 00:26:07.105
+<v Speaker 2>discovery. Would that that have any met bearing
+
+00:26:07.105 --> 00:26:08.040
+<v Speaker 2>on it or not?
+
+00:26:09.880 --> 00:26:11.640
+<v Speaker 2>Because I'd assume that we'd be listed as
+
+00:26:11.640 --> 00:26:12.920
+<v Speaker 2>a service on there. Right?
+
+00:26:15.880 --> 00:26:17.880
+<v Speaker 0>Maybe it's just not picked it up yet,
+
+00:26:17.880 --> 00:26:18.440
+<v Speaker 0>to be fair.
+
+00:26:21.475 --> 00:26:23.715
+<v Speaker 0>Looks like we have anything here. No.
+
+00:26:25.795 --> 00:26:26.755
+<v Speaker 0>Chrome page.
+
+00:26:30.515 --> 00:26:32.275
+<v Speaker 0>Yeah. So we should be showing up here
+
+00:26:32.275 --> 00:26:34.970
+<v Speaker 0>based on those annotations. So let's quickly check
+
+00:26:34.970 --> 00:26:37.529
+<v Speaker 0>we haven't I haven't missed anything up.
+
+00:26:38.649 --> 00:26:39.369
+<v Speaker 0>So
+
+00:26:41.289 --> 00:26:43.370
+<v Speaker 0>we got a question that I'll throw to
+
+00:26:43.370 --> 00:26:44.249
+<v Speaker 0>Leo.
+
+00:26:46.409 --> 00:26:47.450
+<v Speaker 0>William asks,
+
+00:26:48.935 --> 00:26:52.055
+<v Speaker 0>should normal setup health checks generate some initial
+
+00:26:52.055 --> 00:26:54.055
+<v Speaker 0>metrics? So, yeah, the probes if we had
+
+00:26:54.055 --> 00:26:55.735
+<v Speaker 0>probes on our
+
+00:26:56.055 --> 00:26:56.935
+<v Speaker 0>deployment,
+
+00:26:56.935 --> 00:26:59.415
+<v Speaker 0>I can't remember if we do, those should
+
+00:26:59.415 --> 00:27:00.935
+<v Speaker 0>probably populate the first source.
+
+00:27:02.250 --> 00:27:03.770
+<v Speaker 1>First They would.
+
+00:27:04.410 --> 00:27:06.250
+<v Speaker 1>Yeah. They would. And I think a question
+
+00:27:06.250 --> 00:27:07.530
+<v Speaker 1>here as well is,
+
+00:27:07.770 --> 00:27:09.690
+<v Speaker 1>would you really want that? Right now, the
+
+00:27:09.690 --> 00:27:12.090
+<v Speaker 1>way the library works is it excludes
+
+00:27:12.570 --> 00:27:14.970
+<v Speaker 1>all requests that hit the slash metrics route,
+
+00:27:14.970 --> 00:27:15.690
+<v Speaker 1>but nothing else.
+
+00:27:16.525 --> 00:27:18.845
+<v Speaker 1>So it might make sense to
+
+00:27:19.645 --> 00:27:22.125
+<v Speaker 1>add support for excluded routes.
+
+00:27:23.485 --> 00:27:26.285
+<v Speaker 1>I'd imagine you might not want the health
+
+00:27:26.285 --> 00:27:27.005
+<v Speaker 1>check
+
+00:27:27.725 --> 00:27:29.165
+<v Speaker 1>timings necessarily.
+
+00:27:29.165 --> 00:27:30.285
+<v Speaker 1>I don't know if you want that in
+
+00:27:30.285 --> 00:27:31.085
+<v Speaker 1>your metrics or not.
+
+00:27:35.780 --> 00:27:37.299
+<v Speaker 0>Okay. Good question.
+
+00:27:39.860 --> 00:27:41.700
+<v Speaker 0>I don't have any labels here.
+
+00:27:47.054 --> 00:27:48.815
+<v Speaker 0>Did I put them in the wrong place?
+
+00:27:52.414 --> 00:27:54.014
+<v Speaker 0>Why is my old tab not working? There
+
+00:27:54.014 --> 00:27:54.574
+<v Speaker 0>we go.
+
+00:27:55.375 --> 00:27:56.174
+<v Speaker 1>Yes.
+
+00:27:56.335 --> 00:27:57.614
+<v Speaker 1>Yep. You did.
+
+00:27:58.014 --> 00:27:59.614
+<v Speaker 0>It should be on the template.
+
+00:28:01.134 --> 00:28:01.455
+<v Speaker 1>Yes.
+
+00:28:06.930 --> 00:28:08.690
+<v Speaker 1>It's meant to have to one more. Yeah.
+
+00:28:08.690 --> 00:28:09.090
+<v Speaker 1>Okay.
+
+00:28:10.930 --> 00:28:11.649
+<v Speaker 1>Right.
+
+00:28:11.970 --> 00:28:13.250
+<v Speaker 0>Okay.
+
+00:28:13.730 --> 00:28:15.809
+<v Speaker 1>I I'm sure everything will work now.
+
+00:28:17.684 --> 00:28:19.285
+<v Speaker 0>God. Whatever This is your first stream, I
+
+00:28:19.285 --> 00:28:20.245
+<v Speaker 2>guess, then, is it?
+
+00:28:21.765 --> 00:28:24.004
+<v Speaker 1>It's the first stream where I'm participating.
+
+00:28:24.405 --> 00:28:25.924
+<v Speaker 0>It's the first time I
+
+00:28:26.245 --> 00:28:28.805
+<v Speaker 1>collection Everything has worked so far aside from
+
+00:28:28.805 --> 00:28:30.245
+<v Speaker 1>not being able to build the container and
+
+00:28:30.245 --> 00:28:32.610
+<v Speaker 1>a few other things. Except for my stuff,
+
+00:28:32.610 --> 00:28:35.410
+<v Speaker 0>you mean. Thanks for that. Okay. So that's
+
+00:28:35.410 --> 00:28:36.370
+<v Speaker 0>now running.
+
+00:28:38.450 --> 00:28:39.490
+<v Speaker 1>All good.
+
+00:28:39.810 --> 00:28:41.170
+<v Speaker 2>Okay. So we'll need to hit a few
+
+00:28:41.170 --> 00:28:42.610
+<v Speaker 2>routes again to get some data back on
+
+00:28:42.610 --> 00:28:43.810
+<v Speaker 2>it, won't we? So you'll need to port
+
+00:28:43.810 --> 00:28:44.450
+<v Speaker 2>forward it again.
+
+00:28:45.855 --> 00:28:47.455
+<v Speaker 0>That is correct.
+
+00:28:48.575 --> 00:28:49.774
+<v Speaker 0>Port forward
+
+00:28:49.934 --> 00:28:51.215
+<v Speaker 0>this part here.
+
+00:28:52.015 --> 00:28:54.174
+<v Speaker 0>There's
+
+00:28:54.174 --> 00:28:56.735
+<v Speaker 0>a there's something called kubed forward. Terminating.
+
+00:28:56.895 --> 00:28:58.255
+<v Speaker 0>Alright. There is a
+
+00:28:58.820 --> 00:29:01.220
+<v Speaker 0>project called forward that actually exposes all of
+
+00:29:01.220 --> 00:29:03.620
+<v Speaker 0>your services locally. I really should just start
+
+00:29:03.620 --> 00:29:05.380
+<v Speaker 0>running that for these streams, but
+
+00:29:05.860 --> 00:29:07.620
+<v Speaker 0>we'll make do it for today.
+
+00:29:08.100 --> 00:29:10.019
+<v Speaker 0>Alright. So let's have post,
+
+00:29:11.540 --> 00:29:12.340
+<v Speaker 0>home page,
+
+00:29:13.705 --> 00:29:15.625
+<v Speaker 0>and then we should see some nice metrics
+
+00:29:15.625 --> 00:29:16.424
+<v Speaker 0>in here.
+
+00:29:16.745 --> 00:29:17.624
+<v Speaker 0>Perfect.
+
+00:29:18.024 --> 00:29:19.705
+<v Speaker 0>What I wanna see in the targets now
+
+00:29:19.705 --> 00:29:21.784
+<v Speaker 0>is our Laravel application.
+
+00:29:23.225 --> 00:29:24.744
+<v Speaker 0>No. We do need to maybe
+
+00:29:25.384 --> 00:29:26.585
+<v Speaker 0>wait the scrape interval.
+
+00:29:27.550 --> 00:29:29.790
+<v Speaker 2>How long what is the interval? I I
+
+00:29:29.790 --> 00:29:32.190
+<v Speaker 0>believe I have it set to ten seconds.
+
+00:29:32.750 --> 00:29:33.230
+<v Speaker 2>Okay.
+
+00:29:42.414 --> 00:29:45.294
+<v Speaker 0>If that doesn't work, I'll gently nudge Prometheus
+
+00:29:45.294 --> 00:29:46.575
+<v Speaker 0>and we'll see what happens.
+
+00:29:48.975 --> 00:29:51.214
+<v Speaker 0>But we are in the same namespace.
+
+00:29:51.934 --> 00:29:53.534
+<v Speaker 0>Alright. I know I'm getting a bit tab
+
+00:29:53.534 --> 00:29:54.654
+<v Speaker 0>crazy now, but
+
+00:29:55.320 --> 00:29:56.440
+<v Speaker 0>let's see.
+
+00:29:59.480 --> 00:30:01.159
+<v Speaker 0>Everything is in default.
+
+00:30:04.039 --> 00:30:05.960
+<v Speaker 0>So I would expect the previous to be
+
+00:30:05.960 --> 00:30:09.000
+<v Speaker 0>scraping our Laravel application just now, unless I've
+
+00:30:09.000 --> 00:30:09.559
+<v Speaker 0>got
+
+00:30:09.885 --> 00:30:10.845
+<v Speaker 0>anything
+
+00:30:11.085 --> 00:30:11.804
+<v Speaker 0>wrong.
+
+00:30:15.805 --> 00:30:17.804
+<v Speaker 0>I see the labels are on the pod.
+
+00:30:18.685 --> 00:30:20.125
+<v Speaker 0>I have annotation. Sorry.
+
+00:30:26.280 --> 00:30:27.640
+<v Speaker 0>Yeah. Looks alright.
+
+00:30:35.800 --> 00:30:37.080
+<v Speaker 0>When did start
+
+00:30:37.080 --> 00:30:37.720
+<v Speaker 0>hating me?
+
+00:30:44.675 --> 00:30:46.515
+<v Speaker 0>Alright. What have I got wrong? Let's nudge
+
+00:30:46.515 --> 00:30:47.475
+<v Speaker 0>Prometheus.
+
+00:30:48.995 --> 00:30:50.674
+<v Speaker 0>So I get pods.
+
+00:30:51.155 --> 00:30:52.115
+<v Speaker 0>Delete pods.
+
+00:31:01.029 --> 00:31:02.870
+<v Speaker 0>Should be restarting
+
+00:31:02.870 --> 00:31:03.269
+<v Speaker 0>now.
+
+00:31:07.015 --> 00:31:07.654
+<v Speaker 0>Yep.
+
+00:31:07.895 --> 00:31:09.735
+<v Speaker 0>We can forward.
+
+00:31:15.175 --> 00:31:16.534
+<v Speaker 2>You spelled forward wrong.
+
+00:31:17.015 --> 00:31:17.495
+<v Speaker 0>Thank you.
+
+00:31:29.090 --> 00:31:31.170
+<v Speaker 2>I saw something there slash metrics with no
+
+00:31:31.170 --> 00:31:31.730
+<v Speaker 2>port on it,
+
+00:31:35.765 --> 00:31:37.045
+<v Speaker 2>which would imply,
+
+00:31:37.045 --> 00:31:37.765
+<v Speaker 2>I guess, No.
+
+00:31:38.245 --> 00:31:39.765
+<v Speaker 0>It's monitoring itself. So
+
+00:31:40.485 --> 00:31:43.125
+<v Speaker 2>Oh, is that yourself? Oh, okay. Yeah. Our
+
+00:31:43.125 --> 00:31:44.885
+<v Speaker 0>stuff is not showing up.
+
+00:31:45.045 --> 00:31:46.005
+<v Speaker 0>Fabulous.
+
+00:31:46.085 --> 00:31:47.845
+<v Speaker 2>Is it definitely on the same namespace?
+
+00:31:49.110 --> 00:31:51.510
+<v Speaker 0>They are on the same namespace. Yes. They
+
+00:31:51.510 --> 00:31:52.149
+<v Speaker 0>are.
+
+00:31:55.270 --> 00:31:57.430
+<v Speaker 2>Do you need to change anything on Prometheus'
+
+00:31:57.430 --> 00:31:58.950
+<v Speaker 2>side to tell it what
+
+00:32:01.605 --> 00:32:03.125
+<v Speaker 2>labels to look for?
+
+00:32:04.885 --> 00:32:05.525
+<v Speaker 0>No.
+
+00:32:07.765 --> 00:32:09.605
+<v Speaker 0>No. But we do have buckets.
+
+00:32:10.165 --> 00:32:10.804
+<v Speaker 0>So
+
+00:32:12.405 --> 00:32:14.965
+<v Speaker 0>this is my application and these match what
+
+00:32:14.965 --> 00:32:16.085
+<v Speaker 0>we have here.
+
+00:32:17.330 --> 00:32:19.970
+<v Speaker 0>So if I don't retest that just quickly,
+
+00:32:19.970 --> 00:32:22.049
+<v Speaker 0>root equals slash post.
+
+00:32:23.650 --> 00:32:25.250
+<v Speaker 0>Did I get that wrong?
+
+00:32:28.290 --> 00:32:29.890
+<v Speaker 2>There's no slash on it. Oh, it's yeah.
+
+00:32:29.890 --> 00:32:30.290
+<v Speaker 0>Just post.
+
+00:32:32.105 --> 00:32:33.945
+<v Speaker 0>Okay. We are getting our metrics.
+
+00:32:34.265 --> 00:32:37.145
+<v Speaker 0>It's obviously just heading in our target somewhere,
+
+00:32:37.145 --> 00:32:38.585
+<v Speaker 0>and I'm scrolling past there.
+
+00:32:39.305 --> 00:32:40.905
+<v Speaker 0>Oh, no. It's there. It's there. Yeah. Yeah.
+
+00:32:40.905 --> 00:32:42.105
+<v Speaker 2>That's what I was on about. Yeah. Yeah.
+
+00:32:42.105 --> 00:32:44.105
+<v Speaker 2>Yeah. I'm not getting insane. It's all good.
+
+00:32:44.185 --> 00:32:45.065
+<v Speaker 0>Alright.
+
+00:32:45.065 --> 00:32:45.385
+<v Speaker 0>Good.
+
+00:32:46.350 --> 00:32:48.509
+<v Speaker 0>Everything is working. We have our metrics.
+
+00:32:51.309 --> 00:32:53.629
+<v Speaker 0>We can, in theory, apply
+
+00:32:53.870 --> 00:32:55.070
+<v Speaker 0>an HPA
+
+00:32:56.190 --> 00:32:58.510
+<v Speaker 0>and scale this based on
+
+00:33:00.595 --> 00:33:02.995
+<v Speaker 0>the response time rate. And one of the
+
+00:33:02.995 --> 00:33:04.674
+<v Speaker 0>things that I think is really important with
+
+00:33:04.674 --> 00:33:06.595
+<v Speaker 0>pod auto scaling, You know, we talked about
+
+00:33:06.595 --> 00:33:08.434
+<v Speaker 0>this a little bit last week, but scaling
+
+00:33:08.434 --> 00:33:08.994
+<v Speaker 0>on
+
+00:33:09.315 --> 00:33:12.514
+<v Speaker 0>CPU utilization or memory doesn't
+
+00:33:12.514 --> 00:33:15.140
+<v Speaker 0>give you any indication of what an experience
+
+00:33:15.140 --> 00:33:17.940
+<v Speaker 0>your end user or customers are getting. Always
+
+00:33:17.940 --> 00:33:19.859
+<v Speaker 0>always better to scale
+
+00:33:20.179 --> 00:33:20.739
+<v Speaker 0>on
+
+00:33:21.860 --> 00:33:24.419
+<v Speaker 0>the real response time. Like, I'm assuming, Leo,
+
+00:33:24.419 --> 00:33:26.419
+<v Speaker 0>do you have any SLAs or an ideal
+
+00:33:26.419 --> 00:33:28.260
+<v Speaker 0>response time that you expect your customers to
+
+00:33:28.260 --> 00:33:29.140
+<v Speaker 0>get a response from?
+
+00:33:29.755 --> 00:33:32.554
+<v Speaker 1>So we we don't enforce any SLAs,
+
+00:33:32.554 --> 00:33:35.434
+<v Speaker 1>but we are trying to now to keep
+
+00:33:35.434 --> 00:33:37.995
+<v Speaker 1>a 95 p of two hundred milliseconds on
+
+00:33:37.995 --> 00:33:40.475
+<v Speaker 1>the API. I would like to have that
+
+00:33:40.475 --> 00:33:41.995
+<v Speaker 1>down to one fifty ideally.
+
+00:33:43.320 --> 00:33:46.039
+<v Speaker 1>And I would I would agree that especially
+
+00:33:46.039 --> 00:33:48.760
+<v Speaker 1>with PHP applications, it's even more important that
+
+00:33:48.760 --> 00:33:49.879
+<v Speaker 1>you don't scale
+
+00:33:50.200 --> 00:33:51.879
+<v Speaker 1>particularly on memory.
+
+00:33:51.960 --> 00:33:54.120
+<v Speaker 1>Because if you want to optimize your setup,
+
+00:33:54.120 --> 00:33:56.815
+<v Speaker 1>you wanna be running with a static number
+
+00:33:56.815 --> 00:33:59.534
+<v Speaker 1>of FPM processes. So you're basically gonna have
+
+00:33:59.534 --> 00:34:01.054
+<v Speaker 1>static memory consumption.
+
+00:34:01.774 --> 00:34:02.414
+<v Speaker 0>Yep.
+
+00:34:02.654 --> 00:34:03.934
+<v Speaker 0>Alright. And do you wanna tell us what
+
+00:34:03.934 --> 00:34:05.374
+<v Speaker 0>about p 95 is?
+
+00:34:06.335 --> 00:34:08.415
+<v Speaker 1>Yes. So the
+
+00:34:08.974 --> 00:34:10.494
+<v Speaker 1>ninety fifth percentile,
+
+00:34:10.989 --> 00:34:12.190
+<v Speaker 1>so 95%
+
+00:34:12.190 --> 00:34:14.190
+<v Speaker 1>of the request going in under that
+
+00:34:14.510 --> 00:34:17.390
+<v Speaker 1>amount of time, so two hundred milliseconds
+
+00:34:17.550 --> 00:34:18.830
+<v Speaker 1>for 95%
+
+00:34:18.830 --> 00:34:19.870
+<v Speaker 1>of the requests.
+
+00:34:20.110 --> 00:34:20.910
+<v Speaker 0>Exactly.
+
+00:34:21.150 --> 00:34:21.950
+<v Speaker 0>Alright.
+
+00:34:22.510 --> 00:34:22.989
+<v Speaker 0>Now
+
+00:34:23.335 --> 00:34:25.495
+<v Speaker 0>before we go throwing the HP on this
+
+00:34:25.495 --> 00:34:28.614
+<v Speaker 0>then, why don't we run siege against this
+
+00:34:28.614 --> 00:34:30.614
+<v Speaker 0>post endpoint? Like, right now, we can see
+
+00:34:30.614 --> 00:34:32.055
+<v Speaker 0>that our buckets are
+
+00:34:32.375 --> 00:34:34.295
+<v Speaker 0>or nothing is responding in under five hundred
+
+00:34:34.295 --> 00:34:35.175
+<v Speaker 0>milliseconds. So,
+
+00:34:36.549 --> 00:34:38.789
+<v Speaker 0>really, we're gonna start to see hopefully plus
+
+00:34:38.789 --> 00:34:41.829
+<v Speaker 0>five seconds plus infinity buckets really start to
+
+00:34:41.829 --> 00:34:43.109
+<v Speaker 0>fill up over the
+
+00:34:44.309 --> 00:34:46.230
+<v Speaker 0>zero and a half to 0.75.
+
+00:34:46.230 --> 00:34:48.469
+<v Speaker 0>But why don't we try and emulate this
+
+00:34:48.469 --> 00:34:50.549
+<v Speaker 0>in a way that maybe is real world
+
+00:34:50.549 --> 00:34:50.869
+<v Speaker 0>day?
+
+00:34:51.725 --> 00:34:53.325
+<v Speaker 0>Is that a word that is today?
+
+00:34:53.804 --> 00:34:54.445
+<v Speaker 0>So
+
+00:34:56.045 --> 00:34:58.605
+<v Speaker 0>we just see each last time. Right? And
+
+00:34:58.605 --> 00:35:00.205
+<v Speaker 0>we just we don't really tune
+
+00:35:00.365 --> 00:35:01.565
+<v Speaker 0>any parameters.
+
+00:35:02.125 --> 00:35:03.405
+<v Speaker 0>Is there a way we can just throw
+
+00:35:03.565 --> 00:35:04.445
+<v Speaker 2>change.
+
+00:35:06.190 --> 00:35:07.230
+<v Speaker 2>Sorry. Go on.
+
+00:35:07.630 --> 00:35:08.670
+<v Speaker 0>That's alright.
+
+00:35:10.110 --> 00:35:11.470
+<v Speaker 0>How can I just I I just wanna
+
+00:35:11.470 --> 00:35:12.750
+<v Speaker 0>send a couple of hundred requests to this?
+
+00:35:12.750 --> 00:35:14.430
+<v Speaker 0>I don't wanna overwhelm the system. I don't
+
+00:35:14.430 --> 00:35:15.950
+<v Speaker 0>wanna I just wanna see a few buckets
+
+00:35:15.950 --> 00:35:17.230
+<v Speaker 0>fill up with some data. Is there a
+
+00:35:17.230 --> 00:35:17.870
+<v Speaker 0>flag?
+
+00:35:18.670 --> 00:35:21.045
+<v Speaker 2>There's a You can dash c.
+
+00:35:21.925 --> 00:35:24.085
+<v Speaker 1>Right? Dash c is concurrency. Dash t is
+
+00:35:24.085 --> 00:35:25.525
+<v Speaker 2>how long it should run for. I don't
+
+00:35:25.525 --> 00:35:27.125
+<v Speaker 2>know if you can set the specific number
+
+00:35:27.125 --> 00:35:29.205
+<v Speaker 2>of requests. I'm not sure about that one.
+
+00:35:29.365 --> 00:35:30.805
+<v Speaker 0>Well, I mean, I don't make control c
+
+00:35:30.805 --> 00:35:32.724
+<v Speaker 0>in that, I guess. So I know you
+
+00:35:32.724 --> 00:35:34.085
+<v Speaker 1>can in Apache benchmarks.
+
+00:35:34.244 --> 00:35:35.125
+<v Speaker 2>How big are reps?
+
+00:35:35.570 --> 00:35:37.810
+<v Speaker 2>Reps sounds usually. Dash r.
+
+00:35:38.050 --> 00:35:39.570
+<v Speaker 0>Well, I'm gonna add dash p, so I
+
+00:35:39.570 --> 00:35:41.730
+<v Speaker 0>wanna print stuff. Concurrent
+
+00:35:41.730 --> 00:35:43.570
+<v Speaker 0>is only 10. I'm okay with that. Let's
+
+00:35:43.570 --> 00:35:45.010
+<v Speaker 0>just do a concurrency one so we can
+
+00:35:45.010 --> 00:35:45.570
+<v Speaker 0>control
+
+00:35:46.130 --> 00:35:47.010
+<v Speaker 0>what's happening.
+
+00:35:47.664 --> 00:35:48.545
+<v Speaker 0>Let's
+
+00:35:48.545 --> 00:35:49.185
+<v Speaker 0>do
+
+00:35:49.585 --> 00:35:51.025
+<v Speaker 0>reps of
+
+00:35:51.265 --> 00:35:53.345
+<v Speaker 0>let's just do 1,000 request.
+
+00:35:53.505 --> 00:35:55.265
+<v Speaker 0>That's gonna take, like, a thousand seconds. I
+
+00:35:55.265 --> 00:35:57.025
+<v Speaker 0>can currently see one. Let's just do 10
+
+00:35:57.025 --> 00:35:58.704
+<v Speaker 0>here. 20 requests for now.
+
+00:36:01.460 --> 00:36:02.819
+<v Speaker 0>Time, I don't think we need to worry
+
+00:36:02.819 --> 00:36:03.940
+<v Speaker 0>about delay. I don't think we need to
+
+00:36:03.940 --> 00:36:05.460
+<v Speaker 0>worry about I don't think we need to
+
+00:36:05.460 --> 00:36:07.859
+<v Speaker 0>worry about anything else listed here. We happy
+
+00:36:07.859 --> 00:36:08.579
+<v Speaker 0>with that?
+
+00:36:09.539 --> 00:36:10.260
+<v Speaker 0>Mhmm.
+
+00:36:10.579 --> 00:36:11.059
+<v Speaker 0>Alright.
+
+00:36:13.635 --> 00:36:15.635
+<v Speaker 0>Oh, the p is actually printing at HTML.
+
+00:36:15.635 --> 00:36:17.075
+<v Speaker 0>I I just wanted a summary of the
+
+00:36:17.075 --> 00:36:18.595
+<v Speaker 0>request. I don't know I actually want to
+
+00:36:18.595 --> 00:36:20.435
+<v Speaker 0>output. You get you get the summary of
+
+00:36:20.435 --> 00:36:22.275
+<v Speaker 2>the request once you cancel it off normally.
+
+00:36:22.515 --> 00:36:23.955
+<v Speaker 0>I I was hoping I'd get a running
+
+00:36:23.955 --> 00:36:25.875
+<v Speaker 0>count or something. Yeah. Make it a bit
+
+00:36:25.875 --> 00:36:26.755
+<v Speaker 0>more visual.
+
+00:36:27.555 --> 00:36:30.170
+<v Speaker 0>That's not a big deal. Okay. Cool.
+
+00:36:31.450 --> 00:36:33.930
+<v Speaker 2>How big is your history on your terminal?
+
+00:36:34.410 --> 00:36:35.690
+<v Speaker 2>Your scroll history?
+
+00:36:38.650 --> 00:36:40.890
+<v Speaker 2>And because all the oh, okay. Right. Right
+
+00:36:40.890 --> 00:36:42.890
+<v Speaker 2>now. But I'm not fast. We're we're not
+
+00:36:42.890 --> 00:36:44.835
+<v Speaker 0>gonna do another print. And now I'm gonna
+
+00:36:44.835 --> 00:36:46.275
+<v Speaker 0>do this one more time on the correct
+
+00:36:46.275 --> 00:36:46.915
+<v Speaker 0>endpoint.
+
+00:36:49.395 --> 00:36:51.475
+<v Speaker 0>But what's cool there is we can actually
+
+00:36:51.475 --> 00:36:53.155
+<v Speaker 0>see a request. We actually have a a
+
+00:36:53.155 --> 00:36:55.475
+<v Speaker 0>spread, a pretty even distributional spread to be
+
+00:36:55.475 --> 00:36:57.155
+<v Speaker 0>fair, even at a hundred requests. So I
+
+00:36:57.155 --> 00:36:57.715
+<v Speaker 0>don't think
+
+00:36:58.220 --> 00:37:00.619
+<v Speaker 0>triggering a scale is gonna be too difficult.
+
+00:37:00.700 --> 00:37:02.859
+<v Speaker 0>I'm actually really surprised at the currency of
+
+00:37:02.859 --> 00:37:04.700
+<v Speaker 0>one sending 20.
+
+00:37:05.099 --> 00:37:06.780
+<v Speaker 0>That's not right because we've got, like,
+
+00:37:07.579 --> 00:37:09.180
+<v Speaker 0>we've got a lot of requests here.
+
+00:37:09.740 --> 00:37:11.260
+<v Speaker 0>Does it send more than 20
+
+00:37:11.835 --> 00:37:13.595
+<v Speaker 0>or does your code not work, Leo?
+
+00:37:15.115 --> 00:37:16.715
+<v Speaker 1>My code works perfectly.
+
+00:37:19.755 --> 00:37:22.075
+<v Speaker 1>I it's a good question. I'm a little
+
+00:37:22.075 --> 00:37:23.755
+<v Speaker 1>concerned about 21
+
+00:37:23.755 --> 00:37:24.555
+<v Speaker 1>showing up.
+
+00:37:25.390 --> 00:37:27.790
+<v Speaker 2>Exactly the same. We either have it's
+
+00:37:27.790 --> 00:37:30.030
+<v Speaker 1>either a very even distribution
+
+00:37:30.430 --> 00:37:32.350
+<v Speaker 0>Or a bug. Or maybe problem.
+
+00:37:33.790 --> 00:37:35.630
+<v Speaker 0>We only have bugs in here. So we
+
+00:37:35.630 --> 00:37:37.150
+<v Speaker 0>have 20 transactions,
+
+00:37:37.150 --> 00:37:38.750
+<v Speaker 0>all responded correctly,
+
+00:37:39.070 --> 00:37:39.310
+<v Speaker 0>and
+
+00:37:39.954 --> 00:37:43.155
+<v Speaker 0>do we have a average time response time
+
+00:37:43.155 --> 00:37:44.275
+<v Speaker 0>of roughly
+
+00:37:45.075 --> 00:37:46.994
+<v Speaker 0>we think that's three hundred milliseconds.
+
+00:37:47.875 --> 00:37:48.515
+<v Speaker 0>Yeah.
+
+00:37:49.555 --> 00:37:50.435
+<v Speaker 0>Oh,
+
+00:37:51.075 --> 00:37:52.755
+<v Speaker 0>I think there is a bug. Showing
+
+00:37:53.075 --> 00:37:54.275
+<v Speaker 1>yes. So if they're
+
+00:37:54.650 --> 00:37:57.290
+<v Speaker 1>because there's 20 requests. Right? And we have
+
+00:37:57.290 --> 00:37:59.610
+<v Speaker 1>21 on everything. Excellent.
+
+00:38:02.330 --> 00:38:04.090
+<v Speaker 1>I I knew something would happen.
+
+00:38:04.730 --> 00:38:06.570
+<v Speaker 0>It's not a big deal for today. We
+
+00:38:06.570 --> 00:38:09.055
+<v Speaker 0>can still we All we really wanna do
+
+00:38:09.055 --> 00:38:11.055
+<v Speaker 0>is inflate these metrics anyway
+
+00:38:11.055 --> 00:38:13.535
+<v Speaker 0>and we can still do our testing. But
+
+00:38:13.535 --> 00:38:14.975
+<v Speaker 0>yeah, it looks like the library
+
+00:38:15.215 --> 00:38:16.895
+<v Speaker 0>maybe has a wee bug in it.
+
+00:38:18.335 --> 00:38:20.495
+<v Speaker 0>Alright. Yeah. That's Here's the total request down
+
+00:38:20.495 --> 00:38:22.175
+<v Speaker 0>here. We got 21 on each end point.
+
+00:38:23.910 --> 00:38:25.829
+<v Speaker 0>Yeah. And a few 20 one's gonna spread
+
+00:38:25.829 --> 00:38:27.830
+<v Speaker 0>across there. Weird bug.
+
+00:38:28.150 --> 00:38:29.270
+<v Speaker 0>But alright.
+
+00:38:29.589 --> 00:38:31.349
+<v Speaker 0>I thought I actually think the 13 requests
+
+00:38:31.349 --> 00:38:33.590
+<v Speaker 0>that went onto into here are probably correct.
+
+00:38:34.390 --> 00:38:36.310
+<v Speaker 0>Not sure what the other ones are. Maybe
+
+00:38:36.310 --> 00:38:37.109
+<v Speaker 0>it's just a I'm
+
+00:38:38.495 --> 00:38:40.575
+<v Speaker 1>I'm confused about it. I am relying
+
+00:38:41.135 --> 00:38:44.015
+<v Speaker 1>on the Prometheus PHP library, so I'm a
+
+00:38:44.015 --> 00:38:45.535
+<v Speaker 1>little concerned about that.
+
+00:38:47.135 --> 00:38:49.375
+<v Speaker 0>Uh-huh. See how he just delegated that bug
+
+00:38:49.375 --> 00:38:52.170
+<v Speaker 0>channel I'm not sure I'm not sure if
+
+00:38:52.170 --> 00:38:54.010
+<v Speaker 1>I am just misunderstanding how to use the
+
+00:38:54.010 --> 00:38:56.250
+<v Speaker 1>library. That is quite likely.
+
+00:38:57.290 --> 00:38:58.650
+<v Speaker 0>But you know what? I don't right now,
+
+00:38:58.650 --> 00:39:00.330
+<v Speaker 0>I'm just happy we have a metrics standpoint
+
+00:39:00.330 --> 00:39:02.570
+<v Speaker 0>that is somewhat working, and we can work
+
+00:39:02.570 --> 00:39:04.330
+<v Speaker 0>with today. So We actually managed to install
+
+00:39:04.330 --> 00:39:05.530
+<v Speaker 2>it this week, which is a progress over
+
+00:39:05.530 --> 00:39:07.369
+<v Speaker 2>the two that you tried last week. So
+
+00:39:07.185 --> 00:39:07.745
+<v Speaker 2>Alright.
+
+00:39:08.385 --> 00:39:09.985
+<v Speaker 0>So you'll work on that.
+
+00:39:10.785 --> 00:39:12.705
+<v Speaker 0>I'm gonna work on the service monitor bug
+
+00:39:12.705 --> 00:39:14.465
+<v Speaker 0>over the next week or two, but we
+
+00:39:14.465 --> 00:39:15.905
+<v Speaker 0>can get away with that right now by
+
+00:39:15.905 --> 00:39:18.305
+<v Speaker 0>using the old school annotation approach.
+
+00:39:18.385 --> 00:39:19.265
+<v Speaker 0>So we have metrics.
+
+00:39:20.200 --> 00:39:21.560
+<v Speaker 0>Now, if we want to
+
+00:39:22.040 --> 00:39:24.840
+<v Speaker 0>be able to scale based on these. So
+
+00:39:24.840 --> 00:39:26.920
+<v Speaker 0>I'm just gonna recap a few things from
+
+00:39:26.920 --> 00:39:29.320
+<v Speaker 0>last week that I think maybe makes sense.
+
+00:39:30.840 --> 00:39:31.720
+<v Speaker 0>Let's pull this down.
+
+00:39:33.255 --> 00:39:34.775
+<v Speaker 0>So we're running Kubernetes.
+
+00:39:35.255 --> 00:39:37.175
+<v Speaker 0>We installed a metrics server. If you didn't
+
+00:39:37.175 --> 00:39:39.175
+<v Speaker 0>see that, go watch last week's episode. The
+
+00:39:39.175 --> 00:39:41.255
+<v Speaker 0>metrics server is what allows us to actually
+
+00:39:41.255 --> 00:39:43.255
+<v Speaker 0>get metrics out of Kubernetes.
+
+00:39:43.415 --> 00:39:45.815
+<v Speaker 0>It gave us resource utilization metrics on CPU
+
+00:39:45.815 --> 00:39:48.260
+<v Speaker 0>and memory. If you want to augment that,
+
+00:39:48.260 --> 00:39:49.300
+<v Speaker 0>you have to use
+
+00:39:49.940 --> 00:39:51.540
+<v Speaker 0>a metrics adapter.
+
+00:39:52.340 --> 00:39:54.820
+<v Speaker 0>And we don't have that installed yet. That's
+
+00:39:54.820 --> 00:39:55.940
+<v Speaker 0>what we have to do
+
+00:39:56.340 --> 00:39:57.220
+<v Speaker 0>now.
+
+00:39:59.460 --> 00:40:00.500
+<v Speaker 0>We did that last week?
+
+00:40:02.445 --> 00:40:03.565
+<v Speaker 2>Yeah. I think so.
+
+00:40:04.605 --> 00:40:06.605
+<v Speaker 2>Because we put the metrics server on there,
+
+00:40:06.605 --> 00:40:08.125
+<v Speaker 2>and then we tried to get data into
+
+00:40:08.125 --> 00:40:10.125
+<v Speaker 2>it from Prometheus, and that's where we failed.
+
+00:40:11.085 --> 00:40:11.965
+<v Speaker 0>Alright.
+
+00:40:11.965 --> 00:40:12.765
+<v Speaker 0>Okay.
+
+00:40:13.005 --> 00:40:15.085
+<v Speaker 0>So this should just be a case
+
+00:40:16.010 --> 00:40:19.210
+<v Speaker 0>of installing the helm chart version of the
+
+00:40:19.210 --> 00:40:20.410
+<v Speaker 0>Prometheus adapter.
+
+00:40:21.050 --> 00:40:23.210
+<v Speaker 0>I don't think I need to tweak the
+
+00:40:23.210 --> 00:40:25.450
+<v Speaker 0>values in any way, but we'll
+
+00:40:25.450 --> 00:40:26.010
+<v Speaker 0>see what happens.
+
+00:40:27.965 --> 00:40:31.245
+<v Speaker 0>The Prometheus adapter gets installed to the cluster.
+
+00:40:31.645 --> 00:40:33.965
+<v Speaker 0>Actually it gets encapsulated with the metric server
+
+00:40:33.965 --> 00:40:35.805
+<v Speaker 0>and provides extra endpoints so that we can
+
+00:40:35.805 --> 00:40:38.205
+<v Speaker 0>query the metric server for the custom metrics
+
+00:40:38.365 --> 00:40:40.605
+<v Speaker 0>from Prometheus. I know it's a really weird
+
+00:40:41.550 --> 00:40:42.270
+<v Speaker 0>setup,
+
+00:40:43.150 --> 00:40:44.990
+<v Speaker 0>but you kind of get used to it.
+
+00:40:46.030 --> 00:40:47.550
+<v Speaker 0>In fact, we can just
+
+00:40:47.790 --> 00:40:49.950
+<v Speaker 0>see if we have any custom metrics available
+
+00:40:49.950 --> 00:40:50.670
+<v Speaker 0>here.
+
+00:40:53.470 --> 00:40:54.910
+<v Speaker 0>Might not be available yet though.
+
+00:40:59.265 --> 00:41:01.265
+<v Speaker 0>Yeah. Not quite ready yet. So give it
+
+00:41:01.265 --> 00:41:02.385
+<v Speaker 0>a few more seconds.
+
+00:41:03.105 --> 00:41:04.625
+<v Speaker 1>While we wait for this, I can also
+
+00:41:04.625 --> 00:41:05.905
+<v Speaker 1>confirm I am
+
+00:41:06.145 --> 00:41:08.065
+<v Speaker 1>now 97%
+
+00:41:07.620 --> 00:41:10.660
+<v Speaker 1>certain that I am just incompetent at using
+
+00:41:10.660 --> 00:41:11.300
+<v Speaker 1>this
+
+00:41:11.620 --> 00:41:12.900
+<v Speaker 1>latest library,
+
+00:41:13.700 --> 00:41:14.580
+<v Speaker 1>misunderstanding
+
+00:41:14.580 --> 00:41:16.820
+<v Speaker 1>how you think the bucket is. How to
+
+00:41:16.820 --> 00:41:17.940
+<v Speaker 1>report buckets.
+
+00:41:19.220 --> 00:41:21.460
+<v Speaker 1>So I I think that will be an
+
+00:41:21.460 --> 00:41:22.980
+<v Speaker 1>improvement that I will be making
+
+00:41:23.795 --> 00:41:25.075
+<v Speaker 1>after the stream.
+
+00:41:26.835 --> 00:41:29.155
+<v Speaker 0>Alright. You don't wanna fix it right now?
+
+00:41:30.355 --> 00:41:32.835
+<v Speaker 1>I'll I'll try, but but not make any
+
+00:41:32.835 --> 00:41:34.995
+<v Speaker 1>promises. No. I'm make us spend too much
+
+00:41:34.995 --> 00:41:37.475
+<v Speaker 1>time on pulling in version zero point one
+
+00:41:37.475 --> 00:41:40.000
+<v Speaker 1>point five, one point six, seven
+
+00:41:40.240 --> 00:41:41.360
+<v Speaker 0>until it's fixed.
+
+00:41:43.600 --> 00:41:44.800
+<v Speaker 0>Alright. Well,
+
+00:41:45.440 --> 00:41:47.360
+<v Speaker 0>it looks like we're
+
+00:41:47.680 --> 00:41:48.480
+<v Speaker 0>okay
+
+00:41:48.720 --> 00:41:49.520
+<v Speaker 0>now.
+
+00:41:50.000 --> 00:41:52.880
+<v Speaker 0>Our pod is no longer pending any probes.
+
+00:41:52.985 --> 00:41:55.705
+<v Speaker 0>We actually get a response from custom metrics
+
+00:41:55.705 --> 00:41:56.345
+<v Speaker 0>here.
+
+00:41:58.425 --> 00:42:00.825
+<v Speaker 0>There is this really long man
+
+00:42:01.625 --> 00:42:03.465
+<v Speaker 0>that will allow us to create a pod
+
+00:42:03.465 --> 00:42:05.625
+<v Speaker 0>metrics from Prometheus. We'll see if it works.
+
+00:42:09.310 --> 00:42:09.950
+<v Speaker 0>So
+
+00:42:10.270 --> 00:42:11.630
+<v Speaker 0>I thought I should just share the link
+
+00:42:11.630 --> 00:42:13.630
+<v Speaker 0>that I'm getting this from as well. This
+
+00:42:13.630 --> 00:42:15.790
+<v Speaker 0>was a stream I did a month ago
+
+00:42:17.630 --> 00:42:19.470
+<v Speaker 0>with my friend Guy,
+
+00:42:20.109 --> 00:42:22.990
+<v Speaker 0>who is the chair of SIG Auto Scaling
+
+00:42:22.965 --> 00:42:25.365
+<v Speaker 0>or co chair of SIG Auto Scaling Kubernetes.
+
+00:42:25.365 --> 00:42:27.125
+<v Speaker 0>And this is that auto scaling example workshop
+
+00:42:27.125 --> 00:42:28.965
+<v Speaker 0>that we did live on the stream
+
+00:42:29.445 --> 00:42:31.605
+<v Speaker 0>and we're reusing most of these components.
+
+00:42:34.165 --> 00:42:36.325
+<v Speaker 0>And the docs says this command, which allows
+
+00:42:36.325 --> 00:42:38.760
+<v Speaker 0>us to actually query. So I just need
+
+00:42:38.760 --> 00:42:41.240
+<v Speaker 0>to tweak this. Right? So namespace default is
+
+00:42:41.240 --> 00:42:43.640
+<v Speaker 0>fine. I'll pause, and we're looking for h
+
+00:42:43.640 --> 00:42:46.440
+<v Speaker 0>two p request per second, which I believe
+
+00:42:48.120 --> 00:42:51.080
+<v Speaker 0>we don't quite have. Let's copy total.
+
+00:42:52.795 --> 00:42:55.355
+<v Speaker 1>Also, I can confirm
+
+00:42:55.515 --> 00:42:57.355
+<v Speaker 1>I can now tell you exactly how the
+
+00:42:57.355 --> 00:42:59.755
+<v Speaker 1>library works. I just looked at the code,
+
+00:42:59.755 --> 00:43:02.395
+<v Speaker 1>and it is kind of correct, actually. You
+
+00:43:02.395 --> 00:43:04.395
+<v Speaker 1>should be getting 21 in all of them
+
+00:43:04.395 --> 00:43:05.515
+<v Speaker 1>because 0.5
+
+00:43:05.515 --> 00:43:05.995
+<v Speaker 1>is
+
+00:43:06.369 --> 00:43:08.690
+<v Speaker 1>a longer duration than 0.3,
+
+00:43:08.690 --> 00:43:10.530
+<v Speaker 1>and that's why you're seeing 13 at the
+
+00:43:10.530 --> 00:43:11.570
+<v Speaker 1>lower numbers.
+
+00:43:15.089 --> 00:43:16.850
+<v Speaker 0>I wouldn't bucket them that way.
+
+00:43:17.330 --> 00:43:19.010
+<v Speaker 1>No. But as in that is the way
+
+00:43:19.010 --> 00:43:20.849
+<v Speaker 1>the library buckets them, so that's why they
+
+00:43:20.849 --> 00:43:21.490
+<v Speaker 1>appear that way.
+
+00:43:22.505 --> 00:43:23.625
+<v Speaker 0>Alright.
+
+00:43:23.625 --> 00:43:24.905
+<v Speaker 0>I mean, I think that's a bug, but
+
+00:43:24.905 --> 00:43:25.945
+<v Speaker 0>it's not a big deal.
+
+00:43:26.265 --> 00:43:28.345
+<v Speaker 0>Alright. We'll label selected match.
+
+00:43:28.665 --> 00:43:30.745
+<v Speaker 0>Oh, yeah. Okay. So we want
+
+00:43:31.545 --> 00:43:32.425
+<v Speaker 0>app.
+
+00:43:33.065 --> 00:43:35.465
+<v Speaker 0>What was the syntax there? Equal.
+
+00:43:37.260 --> 00:43:39.420
+<v Speaker 2>They had a percent three d, I think.
+
+00:43:39.660 --> 00:43:41.580
+<v Speaker 0>Did it? I think it was, like, a
+
+00:43:41.660 --> 00:43:43.980
+<v Speaker 2>the entity first slash, I think.
+
+00:43:45.980 --> 00:43:47.420
+<v Speaker 0>Yeah. I've got it over here.
+
+00:43:59.675 --> 00:44:00.555
+<v Speaker 0>Interesting.
+
+00:44:00.555 --> 00:44:02.955
+<v Speaker 0>The server could not find the metric HTTP
+
+00:44:02.955 --> 00:44:03.915
+<v Speaker 0>request total.
+
+00:44:04.910 --> 00:44:06.190
+<v Speaker 0>HTTP request
+
+00:44:06.270 --> 00:44:06.990
+<v Speaker 0>total
+
+00:44:08.350 --> 00:44:09.630
+<v Speaker 0>for pods.
+
+00:44:12.110 --> 00:44:14.430
+<v Speaker 0>Alright. We'll move on for now. Hopefully, it's
+
+00:44:14.430 --> 00:44:15.390
+<v Speaker 0>not a problem.
+
+00:44:16.270 --> 00:44:17.150
+<v Speaker 0>It could be,
+
+00:44:17.915 --> 00:44:20.315
+<v Speaker 0>of course, there's always something is that maybe
+
+00:44:20.315 --> 00:44:22.715
+<v Speaker 0>I do need to point this towards our
+
+00:44:22.715 --> 00:44:23.835
+<v Speaker 0>Prometheus.
+
+00:44:24.875 --> 00:44:26.315
+<v Speaker 0>Let's see. Do we have a service?
+
+00:44:30.090 --> 00:44:30.890
+<v Speaker 0>We do.
+
+00:44:31.610 --> 00:44:33.130
+<v Speaker 0>In fact, let's just pull up that chart.
+
+00:44:33.130 --> 00:44:35.370
+<v Speaker 0>Let's take a quick look rather than speculate.
+
+00:44:35.370 --> 00:44:35.930
+<v Speaker 0>So
+
+00:44:36.330 --> 00:44:38.490
+<v Speaker 0>it is the Prometheus
+
+00:44:38.490 --> 00:44:39.210
+<v Speaker 0>adapter.
+
+00:44:43.145 --> 00:44:44.025
+<v Speaker 0>Here.
+
+00:44:45.625 --> 00:44:47.625
+<v Speaker 0>In fact, it was the Prometheus community.
+
+00:44:57.030 --> 00:44:59.030
+<v Speaker 0>This is the chart we installed.
+
+00:44:59.030 --> 00:45:01.270
+<v Speaker 0>We can go to the repository.
+
+00:45:02.310 --> 00:45:03.830
+<v Speaker 0>Nope. This one.
+
+00:45:06.950 --> 00:45:08.230
+<v Speaker 0>Once it's in place. Okay.
+
+00:45:09.855 --> 00:45:11.615
+<v Speaker 0>And do we have the values
+
+00:45:11.615 --> 00:45:13.055
+<v Speaker 0>that we can tweak?
+
+00:45:19.535 --> 00:45:20.655
+<v Speaker 0>Where's the chart?
+
+00:45:24.329 --> 00:45:25.050
+<v Speaker 0>Why?
+
+00:45:27.289 --> 00:45:28.490
+<v Speaker 0>It's just manifest.
+
+00:45:37.065 --> 00:45:38.905
+<v Speaker 0>That's the actual code for the adapter and
+
+00:45:38.905 --> 00:45:40.025
+<v Speaker 0>not the helm chart.
+
+00:45:41.785 --> 00:45:44.265
+<v Speaker 0>Maybe it was this first one. This deprecated
+
+00:45:44.265 --> 00:45:45.865
+<v Speaker 0>one. Maybe it still just lives in there.
+
+00:45:49.470 --> 00:45:50.910
+<v Speaker 0>Let me face adapter.
+
+00:45:55.150 --> 00:45:57.710
+<v Speaker 0>Okay. Oh, there we go. That's it.
+
+00:45:58.910 --> 00:46:00.350
+<v Speaker 0>That was a long way about to get
+
+00:46:00.350 --> 00:46:01.870
+<v Speaker 0>there, wasn't it? Anyway,
+
+00:46:02.910 --> 00:46:04.430
+<v Speaker 0>now we can go into the charts.
+
+00:46:05.445 --> 00:46:07.525
+<v Speaker 0>We installed the adapter.
+
+00:46:07.765 --> 00:46:09.765
+<v Speaker 0>We wanna look at the values fail and
+
+00:46:09.765 --> 00:46:11.605
+<v Speaker 0>just see if there's any configuration that tells
+
+00:46:11.605 --> 00:46:14.085
+<v Speaker 0>us where our Prometheus live. So we can
+
+00:46:14.085 --> 00:46:14.885
+<v Speaker 0>see here,
+
+00:46:15.525 --> 00:46:17.045
+<v Speaker 0>it actually does expect there to be a
+
+00:46:17.045 --> 00:46:18.245
+<v Speaker 0>Prometheus service,
+
+00:46:19.430 --> 00:46:21.109
+<v Speaker 0>which I do not have.
+
+00:46:21.430 --> 00:46:23.750
+<v Speaker 0>So we can redeploy it with a small
+
+00:46:23.750 --> 00:46:25.270
+<v Speaker 0>tweak to this
+
+00:46:27.029 --> 00:46:28.710
+<v Speaker 0>and it should should
+
+00:46:28.950 --> 00:46:29.349
+<v Speaker 0>exit.
+
+00:46:31.455 --> 00:46:32.895
+<v Speaker 0>So let's
+
+00:46:33.055 --> 00:46:34.495
+<v Speaker 0>create a quick
+
+00:46:35.375 --> 00:46:36.175
+<v Speaker 0>Prometheus
+
+00:46:36.175 --> 00:46:36.975
+<v Speaker 0>adapter
+
+00:46:36.975 --> 00:46:38.015
+<v Speaker 0>values.
+
+00:46:38.095 --> 00:46:38.895
+<v Speaker 0>Yml.
+
+00:46:39.695 --> 00:46:41.295
+<v Speaker 0>I know I should probably move that into
+
+00:46:41.295 --> 00:46:43.855
+<v Speaker 0>our ops directory, build it there.
+
+00:46:44.415 --> 00:46:46.895
+<v Speaker 0>And ours is called
+
+00:46:46.250 --> 00:46:47.130
+<v Speaker 0>server.
+
+00:46:48.569 --> 00:46:50.650
+<v Speaker 0>That's right. Yeah? Are you happy with that?
+
+00:46:51.609 --> 00:46:52.570
+<v Speaker 2>Yep.
+
+00:46:53.130 --> 00:46:54.810
+<v Speaker 0>Yeah. Prometheus server.
+
+00:46:55.369 --> 00:46:57.049
+<v Speaker 0>Oh, port 80, the service.
+
+00:47:00.315 --> 00:47:01.675
+<v Speaker 0>Why
+
+00:47:03.675 --> 00:47:05.755
+<v Speaker 2>port 80? Because you were forwarding port ninety
+
+00:47:05.755 --> 00:47:08.715
+<v Speaker 2>ninety before. Yeah. That's a hard port, but
+
+00:47:08.715 --> 00:47:11.595
+<v Speaker 0>this service is mapping it to port 80.
+
+00:47:11.595 --> 00:47:11.835
+<v Speaker 0>So
+
+00:47:12.410 --> 00:47:15.450
+<v Speaker 2>Oh, okay. Right. Okay. So I'm gonna reinstall
+
+00:47:15.450 --> 00:47:18.170
+<v Speaker 0>this using a values file,
+
+00:47:19.130 --> 00:47:20.410
+<v Speaker 0>which is there.
+
+00:47:23.850 --> 00:47:26.330
+<v Speaker 0>Oh, and we already installed it. Upgrade.
+
+00:47:31.995 --> 00:47:32.715
+<v Speaker 0>Okay.
+
+00:47:36.155 --> 00:47:37.995
+<v Speaker 0>Let's wait for that one to get healthy.
+
+00:47:48.840 --> 00:47:50.760
+<v Speaker 0>I guess we'll wait a bit longer then.
+
+00:47:53.400 --> 00:47:54.760
+<v Speaker 0>A lot of waiting
+
+00:47:54.840 --> 00:47:55.560
+<v Speaker 0>in Kubernetes.
+
+00:47:56.685 --> 00:47:58.285
+<v Speaker 1>I was gonna say this is really the
+
+00:47:58.285 --> 00:47:59.805
+<v Speaker 1>Kubernetes experience.
+
+00:48:01.885 --> 00:48:03.885
+<v Speaker 0>Yeah. It is definitely.
+
+00:48:07.165 --> 00:48:08.605
+<v Speaker 0>Now there
+
+00:48:08.925 --> 00:48:09.645
+<v Speaker 0>we go. Okay.
+
+00:48:11.210 --> 00:48:12.730
+<v Speaker 0>So we had
+
+00:48:13.849 --> 00:48:15.690
+<v Speaker 0>curl request that we
+
+00:48:15.930 --> 00:48:18.329
+<v Speaker 0>No, we had a kubectl raw request that
+
+00:48:18.329 --> 00:48:20.329
+<v Speaker 0>we fired away. First one was just to
+
+00:48:20.329 --> 00:48:22.569
+<v Speaker 0>hit this and that's looking a lot better
+
+00:48:22.569 --> 00:48:22.890
+<v Speaker 0>actually.
+
+00:48:24.935 --> 00:48:28.055
+<v Speaker 0>Let's see if we get our request total.
+
+00:48:30.375 --> 00:48:31.015
+<v Speaker 0>No.
+
+00:48:31.655 --> 00:48:33.335
+<v Speaker 0>I'm gonna ask if it's working, though.
+
+00:48:34.775 --> 00:48:36.855
+<v Speaker 2>Yeah. Is this like so definitely up slash
+
+00:48:36.855 --> 00:48:38.695
+<v Speaker 2>and not just Laravel example project?
+
+00:48:42.430 --> 00:48:44.110
+<v Speaker 0>That's okay. Because the selected that we the
+
+00:48:44.110 --> 00:48:46.270
+<v Speaker 2>label we put on the actual deployment doesn't
+
+00:48:46.270 --> 00:48:49.070
+<v Speaker 2>have app slasher, I think. The label itself
+
+00:48:49.070 --> 00:48:50.190
+<v Speaker 1>is app. Right?
+
+00:48:53.805 --> 00:48:54.605
+<v Speaker 0>Let's
+
+00:48:54.605 --> 00:48:55.805
+<v Speaker 0>just work it out. Let's just stay up
+
+00:48:55.805 --> 00:48:57.325
+<v Speaker 0>the old scale. I'll see what happens.
+
+00:48:58.125 --> 00:48:59.405
+<v Speaker 0>I mean, we can always take a look
+
+00:48:59.405 --> 00:49:00.685
+<v Speaker 0>at like, we see quite a lot coming
+
+00:49:00.685 --> 00:49:01.885
+<v Speaker 0>back from here.
+
+00:49:03.325 --> 00:49:05.165
+<v Speaker 0>That wasn't coming back last time. So I'm
+
+00:49:05.165 --> 00:49:06.765
+<v Speaker 0>confident that it's speaking to Prometheus.
+
+00:49:08.339 --> 00:49:10.740
+<v Speaker 0>Now, when we use the raw URL,
+
+00:49:10.819 --> 00:49:12.820
+<v Speaker 0>we can extend that to actually Google
+
+00:49:13.380 --> 00:49:15.220
+<v Speaker 0>deeper into it. And that's just supposed to
+
+00:49:15.220 --> 00:49:17.299
+<v Speaker 0>actually proxy a request on to Prometheus to
+
+00:49:17.299 --> 00:49:18.099
+<v Speaker 0>give us a response.
+
+00:49:19.665 --> 00:49:21.905
+<v Speaker 0>That's HTTP request. Total is a metric name
+
+00:49:21.905 --> 00:49:23.665
+<v Speaker 0>passing in the selector
+
+00:49:24.385 --> 00:49:25.745
+<v Speaker 0>of app Laravel.
+
+00:49:26.305 --> 00:49:27.665
+<v Speaker 0>I mean, I would expect that to work,
+
+00:49:27.665 --> 00:49:28.705
+<v Speaker 0>but I'm not gonna let it hold me
+
+00:49:28.705 --> 00:49:30.145
+<v Speaker 0>up just now. So why don't we create
+
+00:49:30.145 --> 00:49:30.865
+<v Speaker 0>our HPA?
+
+00:49:32.079 --> 00:49:34.160
+<v Speaker 0>We're the same page? That all makes sense.
+
+00:49:34.160 --> 00:49:34.960
+<v Speaker 0>I don't wanna
+
+00:49:35.200 --> 00:49:36.480
+<v Speaker 0>jump ahead here.
+
+00:49:39.440 --> 00:49:41.360
+<v Speaker 2>I think it makes sense. Well,
+
+00:49:42.000 --> 00:49:43.120
+<v Speaker 2>we'll come back to that
+
+00:49:44.000 --> 00:49:45.440
+<v Speaker 2>if it doesn't matter.
+
+00:49:46.525 --> 00:49:47.805
+<v Speaker 0>Okay. So
+
+00:49:48.365 --> 00:49:51.325
+<v Speaker 0>here is our standard HPA.
+
+00:49:53.805 --> 00:49:55.565
+<v Speaker 0>Now what do we need to tweak here?
+
+00:49:55.565 --> 00:49:56.365
+<v Speaker 0>We'll
+
+00:49:56.365 --> 00:49:58.845
+<v Speaker 0>just keep continue calling this Laravel example.
+
+00:49:58.845 --> 00:50:00.830
+<v Speaker 0>We have to tell it what target. We
+
+00:50:00.830 --> 00:50:02.510
+<v Speaker 0>are targeting an employment.
+
+00:50:02.990 --> 00:50:04.910
+<v Speaker 0>Ours is called Laravel
+
+00:50:05.710 --> 00:50:06.990
+<v Speaker 0>example project,
+
+00:50:07.310 --> 00:50:08.190
+<v Speaker 0>I think.
+
+00:50:09.310 --> 00:50:10.030
+<v Speaker 0>Mhmm.
+
+00:50:10.990 --> 00:50:11.390
+<v Speaker 0>Yep.
+
+00:50:13.955 --> 00:50:16.515
+<v Speaker 0>We're gonna go from one to 10 depending
+
+00:50:16.515 --> 00:50:18.755
+<v Speaker 0>on how we need to scale.
+
+00:50:18.995 --> 00:50:21.315
+<v Speaker 0>Metrics are gonna come from pods and then
+
+00:50:21.315 --> 00:50:23.555
+<v Speaker 0>our metric name. So we can copy this.
+
+00:50:23.955 --> 00:50:25.475
+<v Speaker 0>I mean, we can do it from I'm
+
+00:50:25.475 --> 00:50:28.275
+<v Speaker 0>not put forwarding anymore so we can't. But
+
+00:50:27.450 --> 00:50:29.370
+<v Speaker 0>let's copy it from
+
+00:50:33.210 --> 00:50:35.530
+<v Speaker 0>just because there's a bit of unknown around
+
+00:50:35.530 --> 00:50:38.410
+<v Speaker 0>how these function, I'll use request total and
+
+00:50:38.410 --> 00:50:39.450
+<v Speaker 0>we'll just scale
+
+00:50:39.895 --> 00:50:42.775
+<v Speaker 0>depending on our aggregate account of the number
+
+00:50:42.775 --> 00:50:45.575
+<v Speaker 0>of requests because that's a really smart idea.
+
+00:50:47.975 --> 00:50:50.135
+<v Speaker 0>And what we wanna say is that oh,
+
+00:50:50.135 --> 00:50:51.655
+<v Speaker 0>no. It's not really gonna work because of
+
+00:50:51.655 --> 00:50:53.255
+<v Speaker 0>the target value. Alright. Let's
+
+00:50:57.450 --> 00:50:59.610
+<v Speaker 0>let's go with the So what's
+
+00:51:00.010 --> 00:51:02.970
+<v Speaker 2>what's the time frame on the request total?
+
+00:51:02.970 --> 00:51:05.050
+<v Speaker 2>Is that always increasing,
+
+00:51:05.050 --> 00:51:07.050
+<v Speaker 2>or does it reset back to zero, like,
+
+00:51:07.050 --> 00:51:09.695
+<v Speaker 2>daily, hourly? Like, what's the deal on that?
+
+00:51:09.695 --> 00:51:11.935
+<v Speaker 0>When the pod is restarted because we're using
+
+00:51:11.935 --> 00:51:14.255
+<v Speaker 0>APC here, then the total will be reset
+
+00:51:14.255 --> 00:51:14.975
+<v Speaker 0>with it.
+
+00:51:16.735 --> 00:51:19.295
+<v Speaker 2>Right. Okay. So That total will actually reset.
+
+00:51:19.855 --> 00:51:21.695
+<v Speaker 0>Well, yeah. We're actually gonna be collecting that
+
+00:51:21.695 --> 00:51:23.375
+<v Speaker 0>from all of the pods. They're all gonna
+
+00:51:23.375 --> 00:51:24.335
+<v Speaker 0>have different values.
+
+00:51:26.069 --> 00:51:26.790
+<v Speaker 0>So
+
+00:51:27.029 --> 00:51:28.790
+<v Speaker 0>be a little interesting,
+
+00:51:29.349 --> 00:51:30.630
+<v Speaker 0>but we should get an aggregate We only
+
+00:51:30.630 --> 00:51:33.109
+<v Speaker 0>have of it. We do only have one
+
+00:51:33.109 --> 00:51:34.070
+<v Speaker 0>just now. Yes.
+
+00:51:34.710 --> 00:51:35.349
+<v Speaker 0>K.
+
+00:51:35.910 --> 00:51:37.430
+<v Speaker 0>Let's just see what happens. We'll set it
+
+00:51:37.430 --> 00:51:37.670
+<v Speaker 0>to
+
+00:51:38.390 --> 00:51:40.150
+<v Speaker 0>we expect it to be
+
+00:51:41.405 --> 00:51:42.205
+<v Speaker 0>five.
+
+00:51:43.965 --> 00:51:46.205
+<v Speaker 0>We'll tweak it as we we play.
+
+00:51:46.525 --> 00:51:47.165
+<v Speaker 0>Okay.
+
+00:51:48.125 --> 00:51:50.685
+<v Speaker 0>Let's reapply all of our Kubernetes resources. We
+
+00:51:50.685 --> 00:51:53.565
+<v Speaker 0>should see that we have a created HPA.
+
+00:51:53.565 --> 00:51:55.805
+<v Speaker 0>We can create this
+
+00:51:57.030 --> 00:51:58.550
+<v Speaker 0>and we can describe
+
+00:51:58.550 --> 00:51:59.190
+<v Speaker 0>it.
+
+00:51:59.910 --> 00:52:00.950
+<v Speaker 0>HPA
+
+00:52:01.030 --> 00:52:02.070
+<v Speaker 0>Laravel.
+
+00:52:04.150 --> 00:52:04.630
+<v Speaker 0>I
+
+00:52:08.310 --> 00:52:09.910
+<v Speaker 0>think our selector
+
+00:52:09.910 --> 00:52:10.950
+<v Speaker 0>is maybe wrong.
+
+00:52:13.235 --> 00:52:15.395
+<v Speaker 0>It seems to think we have nothing. What
+
+00:52:15.395 --> 00:52:16.515
+<v Speaker 0>did I get wrong?
+
+00:52:17.155 --> 00:52:18.275
+<v Speaker 0>Employment.
+
+00:52:20.595 --> 00:52:21.315
+<v Speaker 0>Laravel.
+
+00:52:31.360 --> 00:52:33.360
+<v Speaker 2>Is it worth checking our deployment to see
+
+00:52:33.360 --> 00:52:34.720
+<v Speaker 2>what the label is on that?
+
+00:52:39.475 --> 00:52:40.595
+<v Speaker 2>Yeah.
+
+00:52:45.395 --> 00:52:47.075
+<v Speaker 0>Yeah. It does match up.
+
+00:52:48.515 --> 00:52:50.995
+<v Speaker 1>I'm looking at it and It's it's right.
+
+00:52:51.590 --> 00:52:53.270
+<v Speaker 1>It it should work.
+
+00:52:54.550 --> 00:52:56.710
+<v Speaker 0>Well, that's the story of my life with
+
+00:52:56.710 --> 00:52:58.710
+<v Speaker 0>this Laravel stuff to be fair.
+
+00:52:58.950 --> 00:52:59.750
+<v Speaker 0>Alright.
+
+00:53:00.310 --> 00:53:01.030
+<v Speaker 0>Let's see.
+
+00:53:07.954 --> 00:53:09.714
+<v Speaker 0>Unable to fetch the metrics in the custom
+
+00:53:09.714 --> 00:53:12.195
+<v Speaker 0>metrics API, the server. Okay. So
+
+00:53:12.755 --> 00:53:14.835
+<v Speaker 0>it's trying to request these metrics.
+
+00:53:14.914 --> 00:53:17.315
+<v Speaker 0>Okay. So it's not yeah. That makes sense.
+
+00:53:17.950 --> 00:53:19.550
+<v Speaker 0>So why is it unable to get those
+
+00:53:19.550 --> 00:53:20.270
+<v Speaker 0>metrics?
+
+00:53:20.350 --> 00:53:22.190
+<v Speaker 0>We were unable to get them too
+
+00:53:22.750 --> 00:53:23.470
+<v Speaker 0>with
+
+00:53:23.630 --> 00:53:25.630
+<v Speaker 0>Rawk. That's not
+
+00:53:27.630 --> 00:53:28.270
+<v Speaker 0>good.
+
+00:53:30.030 --> 00:53:32.110
+<v Speaker 0>Maybe we just got something wrong.
+
+00:53:33.525 --> 00:53:36.325
+<v Speaker 0>But we can always clear the big messy
+
+00:53:36.325 --> 00:53:38.405
+<v Speaker 0>one. Type it to jq and try and
+
+00:53:38.405 --> 00:53:40.005
+<v Speaker 0>understand what we're getting back.
+
+00:53:44.805 --> 00:53:46.484
+<v Speaker 0>I think we're gonna need to go through
+
+00:53:46.484 --> 00:53:46.885
+<v Speaker 0>less.
+
+00:53:49.390 --> 00:53:50.910
+<v Speaker 0>And
+
+00:53:51.950 --> 00:53:54.270
+<v Speaker 0>then I lose my colors. That's annoying. Okay.
+
+00:53:56.750 --> 00:53:57.470
+<v Speaker 0>So
+
+00:53:57.550 --> 00:53:58.750
+<v Speaker 0>not interesting.
+
+00:53:58.750 --> 00:54:00.750
+<v Speaker 0>Not interesting. I wonder if I should just
+
+00:54:00.750 --> 00:54:02.030
+<v Speaker 0>filter it on
+
+00:54:04.855 --> 00:54:05.734
+<v Speaker 0>Laravel.
+
+00:54:08.375 --> 00:54:10.535
+<v Speaker 0>Oh, we're not getting any metrics here.
+
+00:54:11.174 --> 00:54:13.095
+<v Speaker 1>So I think that's a problem.
+
+00:54:18.180 --> 00:54:21.220
+<v Speaker 0>Let's just quickly do dash a
+
+00:54:21.380 --> 00:54:22.020
+<v Speaker 0>pod.
+
+00:54:32.305 --> 00:54:34.625
+<v Speaker 1>Because they were coming into Prometheus.
+
+00:54:34.625 --> 00:54:35.185
+<v Speaker 1>Right?
+
+00:54:36.225 --> 00:54:38.545
+<v Speaker 0>Well, let's just double check that's still working.
+
+00:54:38.545 --> 00:54:39.425
+<v Speaker 0>That's for sure.
+
+00:54:39.665 --> 00:54:40.785
+<v Speaker 0>Port forward
+
+00:54:41.905 --> 00:54:42.705
+<v Speaker 0>Prometheus
+
+00:54:42.705 --> 00:54:43.585
+<v Speaker 0>server.
+
+00:54:43.665 --> 00:54:45.890
+<v Speaker 0>Yeah. It's still the same, which means I
+
+00:54:45.890 --> 00:54:47.330
+<v Speaker 0>should be able to refresh this.
+
+00:54:47.650 --> 00:54:49.010
+<v Speaker 0>And we come to graph,
+
+00:54:49.330 --> 00:54:51.570
+<v Speaker 0>then we can do HTTP request
+
+00:54:51.570 --> 00:54:52.530
+<v Speaker 0>total.
+
+00:54:53.810 --> 00:54:56.210
+<v Speaker 0>And we have our 21 requests.
+
+00:54:57.090 --> 00:54:59.170
+<v Speaker 0>If we take a look at our buckets
+
+00:54:59.170 --> 00:55:00.130
+<v Speaker 0>over
+
+00:55:00.695 --> 00:55:01.815
+<v Speaker 0>twenty minutes,
+
+00:55:02.775 --> 00:55:03.655
+<v Speaker 0>graph.
+
+00:55:04.295 --> 00:55:06.375
+<v Speaker 0>Oh, I guess we don't have enough data.
+
+00:55:07.735 --> 00:55:10.215
+<v Speaker 0>But we do we do have a value.
+
+00:55:10.215 --> 00:55:10.775
+<v Speaker 0>Yes.
+
+00:55:12.135 --> 00:55:12.855
+<v Speaker 0>This
+
+00:55:14.900 --> 00:55:15.700
+<v Speaker 0>here,
+
+00:55:15.779 --> 00:55:19.220
+<v Speaker 0>we got app equals Laravel example project. I
+
+00:55:19.220 --> 00:55:21.859
+<v Speaker 0>mean, in theory, we can use the raw
+
+00:55:22.180 --> 00:55:22.980
+<v Speaker 0>here
+
+00:55:23.380 --> 00:55:25.380
+<v Speaker 0>and just use a metric name without the
+
+00:55:25.380 --> 00:55:26.980
+<v Speaker 0>selector to try and see everything.
+
+00:55:28.145 --> 00:55:29.425
+<v Speaker 0>In fact, if we do
+
+00:55:30.065 --> 00:55:31.185
+<v Speaker 0>that doesn't work.
+
+00:55:31.505 --> 00:55:32.465
+<v Speaker 0>Like that.
+
+00:55:32.865 --> 00:55:34.705
+<v Speaker 0>Yeah. We're not getting anything here.
+
+00:55:35.345 --> 00:55:36.225
+<v Speaker 0>So
+
+00:55:39.984 --> 00:55:41.905
+<v Speaker 1>how are those being exposed
+
+00:55:43.539 --> 00:55:45.460
+<v Speaker 1>in the metrics API?
+
+00:55:45.539 --> 00:55:46.740
+<v Speaker 1>Is there some
+
+00:55:47.539 --> 00:55:48.420
+<v Speaker 1>additional
+
+00:55:48.420 --> 00:55:50.099
+<v Speaker 1>mapping you need to configure?
+
+00:55:51.220 --> 00:55:52.500
+<v Speaker 0>You're asking me?
+
+00:55:53.059 --> 00:55:54.819
+<v Speaker 1>Yes. Is I'm asking you.
+
+00:55:56.325 --> 00:55:58.645
+<v Speaker 2>Is it worth killing and re redeploying the
+
+00:55:58.645 --> 00:56:00.325
+<v Speaker 2>metric service so to make sure it picks
+
+00:56:00.325 --> 00:56:01.365
+<v Speaker 2>up Prometheus?
+
+00:56:02.085 --> 00:56:04.484
+<v Speaker 2>Could I don't know. Turn off and on
+
+00:56:04.484 --> 00:56:05.925
+<v Speaker 2>again. I thought we did.
+
+00:56:06.885 --> 00:56:08.964
+<v Speaker 2>No. You killed Prometheus. You didn't kill metric
+
+00:56:08.964 --> 00:56:09.285
+<v Speaker 2>server.
+
+00:56:12.910 --> 00:56:13.710
+<v Speaker 0>But then
+
+00:56:14.350 --> 00:56:16.430
+<v Speaker 0>didn't I do a Metric server's eighty three
+
+00:56:16.430 --> 00:56:18.430
+<v Speaker 2>minutes. Upgrade the adapter.
+
+00:56:20.750 --> 00:56:22.430
+<v Speaker 0>Yeah. I'll try it. I think. Why not?
+
+00:56:24.965 --> 00:56:26.805
+<v Speaker 0>Where is our metrics there for
+
+00:56:27.765 --> 00:56:29.285
+<v Speaker 2>Oh, down.
+
+00:56:29.605 --> 00:56:30.165
+<v Speaker 2>Yeah.
+
+00:56:32.325 --> 00:56:34.645
+<v Speaker 0>Let's just we restart both of those.
+
+00:56:51.835 --> 00:56:53.595
+<v Speaker 0>Oh, we didn't add the rules. There we
+
+00:56:53.595 --> 00:56:54.075
+<v Speaker 0>go.
+
+00:56:54.635 --> 00:56:55.515
+<v Speaker 0>My fault.
+
+00:57:00.635 --> 00:57:01.915
+<v Speaker 2>Leo, your
+
+00:57:02.875 --> 00:57:05.870
+<v Speaker 2>your Prometheus package, does that handle CLI stuff
+
+00:57:05.870 --> 00:57:07.310
+<v Speaker 2>in the queue as well, or is it
+
+00:57:07.310 --> 00:57:08.350
+<v Speaker 2>just HTTP
+
+00:57:08.350 --> 00:57:09.070
+<v Speaker 2>requests?
+
+00:57:10.190 --> 00:57:10.990
+<v Speaker 1>Right now,
+
+00:57:11.630 --> 00:57:13.870
+<v Speaker 1>those metrics come from a middleware, so that
+
+00:57:13.870 --> 00:57:15.470
+<v Speaker 1>would only be HTTP requests.
+
+00:57:16.845 --> 00:57:18.605
+<v Speaker 1>I'm not entirely sure
+
+00:57:18.925 --> 00:57:21.485
+<v Speaker 1>what you would want to get from the
+
+00:57:21.485 --> 00:57:22.445
+<v Speaker 1>CLI.
+
+00:57:24.925 --> 00:57:27.645
+<v Speaker 1>Like, what what metrics we're expecting to get?
+
+00:57:28.445 --> 00:57:30.445
+<v Speaker 2>Yeah. From from a queue, I guess, you
+
+00:57:30.445 --> 00:57:31.485
+<v Speaker 2>would expect
+
+00:57:31.920 --> 00:57:33.599
+<v Speaker 2>how long each queue job took and how
+
+00:57:33.599 --> 00:57:34.560
+<v Speaker 2>often it ran.
+
+00:57:34.960 --> 00:57:36.559
+<v Speaker 1>Yeah. Adding it for the queue makes sense.
+
+00:57:36.559 --> 00:57:37.760
+<v Speaker 1>So Yeah.
+
+00:57:37.920 --> 00:57:38.560
+<v Speaker 2>Yeah.
+
+00:57:38.960 --> 00:57:39.839
+<v Speaker 2>CLI
+
+00:57:39.839 --> 00:57:41.760
+<v Speaker 2>depends whether you've got parts of your system
+
+00:57:41.760 --> 00:57:42.320
+<v Speaker 2>that
+
+00:57:42.799 --> 00:57:45.605
+<v Speaker 2>invoke the CLI, I guess. But then
+
+00:57:47.445 --> 00:57:49.925
+<v Speaker 2>yeah. Less common than other stuff.
+
+00:57:51.125 --> 00:57:53.205
+<v Speaker 1>Yeah. Queue support would make sense.
+
+00:57:55.605 --> 00:57:56.885
+<v Speaker 0>Alright. You
+
+00:57:56.885 --> 00:57:58.244
+<v Speaker 2>can put middleware on that as well, can't
+
+00:57:58.244 --> 00:57:58.405
+<v Speaker 2>you?
+
+00:58:00.810 --> 00:58:01.610
+<v Speaker 1>Can you?
+
+00:58:02.810 --> 00:58:05.370
+<v Speaker 2>Pretty sure that this middleware for
+
+00:58:05.610 --> 00:58:08.650
+<v Speaker 2>queues, because you can there's the queue, like,
+
+00:58:08.650 --> 00:58:10.570
+<v Speaker 2>facade thing has a before and after, which
+
+00:58:10.570 --> 00:58:12.170
+<v Speaker 2>you can hook into.
+
+00:58:12.650 --> 00:58:13.930
+<v Speaker 2>So Yeah. I know I know you can
+
+00:58:13.930 --> 00:58:16.145
+<v Speaker 1>hook into it. So yeah. Maybe I'll put
+
+00:58:16.145 --> 00:58:17.905
+<v Speaker 1>that on the feature list
+
+00:58:19.185 --> 00:58:21.025
+<v Speaker 1>after I fix the bug of Put that
+
+00:58:21.025 --> 00:58:22.385
+<v Speaker 2>after fixing. Yeah.
+
+00:58:23.025 --> 00:58:24.465
+<v Speaker 2>So what are these bold things for you
+
+00:58:24.465 --> 00:58:26.385
+<v Speaker 2>to put in then, David? Sorry. Yeah. I
+
+00:58:26.385 --> 00:58:29.345
+<v Speaker 0>forgot a step. So when you configure the
+
+00:58:29.345 --> 00:58:32.190
+<v Speaker 0>custom metrics, it doesn't actually consume all of
+
+00:58:32.190 --> 00:58:34.350
+<v Speaker 0>your metrics within Prometheus. What you actually have
+
+00:58:34.350 --> 00:58:35.710
+<v Speaker 0>to do is tell it which metrics to
+
+00:58:35.710 --> 00:58:37.550
+<v Speaker 0>pull out Prometheus and then to expose them
+
+00:58:37.550 --> 00:58:38.590
+<v Speaker 0>in a way that can be used in
+
+00:58:38.590 --> 00:58:40.990
+<v Speaker 0>auto scaling. So what we're actually saying is
+
+00:58:40.990 --> 00:58:42.590
+<v Speaker 0>the series queries that we want to use,
+
+00:58:45.525 --> 00:58:47.365
+<v Speaker 0>Let's just pull out all of the HTTP
+
+00:58:47.365 --> 00:58:48.485
+<v Speaker 0>request total.
+
+00:58:49.445 --> 00:58:51.445
+<v Speaker 0>Probably don't even need that. I probably get
+
+00:58:51.445 --> 00:58:52.485
+<v Speaker 0>away with just that.
+
+00:58:53.365 --> 00:58:55.365
+<v Speaker 0>We can take off this and then we
+
+00:58:55.365 --> 00:58:56.805
+<v Speaker 0>make this available as a name.
+
+00:58:57.530 --> 00:58:59.369
+<v Speaker 0>So we're just gonna say that we want
+
+00:58:59.369 --> 00:59:01.130
+<v Speaker 0>to work this out as a rate per
+
+00:59:01.130 --> 00:59:02.650
+<v Speaker 0>second. So we do a sum and a
+
+00:59:02.650 --> 00:59:04.650
+<v Speaker 0>rate over the series, etcetera.
+
+00:59:06.250 --> 00:59:08.650
+<v Speaker 2>Right. So if you had, for example, request
+
+00:59:08.650 --> 00:59:09.530
+<v Speaker 2>per second,
+
+00:59:10.410 --> 00:59:11.930
+<v Speaker 2>request total,
+
+00:59:12.730 --> 00:59:14.195
+<v Speaker 2>a few other things you'd need to expose
+
+00:59:14.195 --> 00:59:15.875
+<v Speaker 2>multiple different series queries.
+
+00:59:16.835 --> 00:59:18.275
+<v Speaker 0>Well, yeah. You would just put in your
+
+00:59:18.275 --> 00:59:20.355
+<v Speaker 0>Prometheus. You can match on the labels. I
+
+00:59:20.355 --> 00:59:20.755
+<v Speaker 0>mean, we could
+
+00:59:21.555 --> 00:59:22.995
+<v Speaker 0>I don't know if we have these labels
+
+00:59:22.995 --> 00:59:24.035
+<v Speaker 0>Kubernetes namespace.
+
+00:59:26.020 --> 00:59:27.860
+<v Speaker 0>But we can just see. Yeah, we do.
+
+00:59:27.860 --> 00:59:28.980
+<v Speaker 0>Okay. Namespace
+
+00:59:29.060 --> 00:59:31.860
+<v Speaker 0>and pod name. So, those are available. We
+
+00:59:31.860 --> 00:59:33.620
+<v Speaker 0>can query on that. That means that the
+
+00:59:33.620 --> 00:59:35.060
+<v Speaker 0>metrics server will pass in.
+
+00:59:35.540 --> 00:59:36.900
+<v Speaker 0>And then we actually don't want to query
+
+00:59:36.900 --> 00:59:38.675
+<v Speaker 0>on the request total.
+
+00:59:38.995 --> 00:59:40.835
+<v Speaker 0>That's actually saying that we want to use
+
+00:59:40.835 --> 00:59:42.835
+<v Speaker 0>that value, but what we actually want to
+
+00:59:42.835 --> 00:59:43.715
+<v Speaker 0>do is
+
+00:59:44.035 --> 00:59:46.195
+<v Speaker 0>calculate the rate of change over a two
+
+00:59:46.195 --> 00:59:48.195
+<v Speaker 0>minute interval. So, we're gonna calculate how many
+
+00:59:48.195 --> 00:59:49.795
+<v Speaker 0>requests are made every two minutes
+
+00:59:50.510 --> 00:59:52.829
+<v Speaker 0>and then sum them together across the label
+
+00:59:52.829 --> 00:59:54.670
+<v Speaker 0>matchers, and that gives us a total value
+
+00:59:54.670 --> 00:59:56.109
+<v Speaker 0>of how many requests we get every two
+
+00:59:56.109 --> 00:59:58.430
+<v Speaker 0>minutes, which means we can say if we
+
+00:59:58.430 --> 01:00:00.270
+<v Speaker 0>get more than 10 requests in a two
+
+01:00:00.270 --> 01:00:01.790
+<v Speaker 0>minute period, we wanna scale it or we
+
+01:00:01.790 --> 01:00:03.070
+<v Speaker 0>can do a thousand requests in a two
+
+01:00:03.070 --> 01:00:05.355
+<v Speaker 0>minute period. And that's actually gonna work out
+
+01:00:05.355 --> 01:00:07.755
+<v Speaker 0>really well because we can control those number
+
+01:00:07.755 --> 01:00:09.835
+<v Speaker 0>of requests, so we can we can actually
+
+01:00:09.835 --> 01:00:12.235
+<v Speaker 0>force that scale up on that. That makes
+
+01:00:12.235 --> 01:00:12.715
+<v Speaker 0>sense?
+
+01:00:13.515 --> 01:00:14.155
+<v Speaker 2>Yeah.
+
+01:00:14.715 --> 01:00:17.275
+<v Speaker 2>That metric that metric's query, is that a
+
+01:00:17.275 --> 01:00:18.155
+<v Speaker 2>Prometheus,
+
+01:00:18.155 --> 01:00:20.540
+<v Speaker 2>like, query language, I think, that's So
+
+01:00:20.860 --> 01:00:23.100
+<v Speaker 0>this here is a Prometheus query. So it
+
+01:00:23.100 --> 01:00:24.540
+<v Speaker 0>might still put forward in.
+
+01:00:25.660 --> 01:00:27.180
+<v Speaker 0>Let me just show you in the Prometheus
+
+01:00:27.180 --> 01:00:29.180
+<v Speaker 0>side of things. I think that'll help, hopefully,
+
+01:00:29.180 --> 01:00:30.220
+<v Speaker 0>cement it. So
+
+01:00:31.135 --> 01:00:33.775
+<v Speaker 0>although we don't really have requests coming in,
+
+01:00:33.775 --> 01:00:35.215
+<v Speaker 0>so let me get one
+
+01:00:35.615 --> 01:00:38.175
+<v Speaker 0>more tab. Let me get some requests coming
+
+01:00:38.175 --> 01:00:39.535
+<v Speaker 0>in with siege again.
+
+01:00:41.295 --> 01:00:42.575
+<v Speaker 0>Okay. So
+
+01:00:43.500 --> 01:00:46.540
+<v Speaker 0>we can use HTTP request total. We had
+
+01:00:46.540 --> 01:00:48.940
+<v Speaker 0>go, and then this tells us the request
+
+01:00:48.940 --> 01:00:49.740
+<v Speaker 0>that we have.
+
+01:00:50.060 --> 01:00:51.900
+<v Speaker 0>We can see we actually have multiple series
+
+01:00:51.900 --> 01:00:53.340
+<v Speaker 0>here. Why is that?
+
+01:00:53.980 --> 01:00:55.180
+<v Speaker 2>Different routes.
+
+01:00:55.340 --> 01:00:57.740
+<v Speaker 0>Yes. Okay. Thank you. And one's on post
+
+01:00:57.740 --> 01:01:00.335
+<v Speaker 0>and one is on slash. So what we
+
+01:01:00.335 --> 01:01:01.935
+<v Speaker 0>can say here is okay.
+
+01:01:02.734 --> 01:01:04.095
+<v Speaker 0>We actually want,
+
+01:01:04.494 --> 01:01:06.655
+<v Speaker 0>you know, this is gonna claim what we
+
+01:01:06.655 --> 01:01:07.695
+<v Speaker 0>have 41
+
+01:01:08.335 --> 01:01:10.015
+<v Speaker 0>and it's finished, hasn't it?
+
+01:01:11.055 --> 01:01:12.734
+<v Speaker 0>So we got 21, 40 one,
+
+01:01:14.300 --> 01:01:17.580
+<v Speaker 0>50 five. So that's gonna continue to claim,
+
+01:01:17.580 --> 01:01:20.380
+<v Speaker 0>but that's not what we want to scale
+
+01:01:20.380 --> 01:01:22.380
+<v Speaker 0>on. Like, we don't actually care about the
+
+01:01:22.380 --> 01:01:24.220
+<v Speaker 0>big number. We scale about the value over
+
+01:01:24.220 --> 01:01:24.780
+<v Speaker 0>time.
+
+01:01:25.340 --> 01:01:27.740
+<v Speaker 0>So we can do a rate
+
+01:01:27.900 --> 01:01:28.460
+<v Speaker 0>like so.
+
+01:01:29.175 --> 01:01:29.895
+<v Speaker 0>Oh,
+
+01:01:33.015 --> 01:01:34.055
+<v Speaker 0>what did I get? Oh, it might be
+
+01:01:34.055 --> 01:01:36.455
+<v Speaker 2>worth mentioning actually. The numbers that you're mentioning
+
+01:01:36.455 --> 01:01:37.815
+<v Speaker 2>go, like, the 55 and stuff. I think
+
+01:01:37.815 --> 01:01:39.415
+<v Speaker 2>our faces are covering because there's no visit
+
+01:01:39.415 --> 01:01:41.335
+<v Speaker 2>on the stream. Are they?
+
+01:01:41.735 --> 01:01:42.295
+<v Speaker 0>Oh, yeah.
+
+01:01:48.670 --> 01:01:50.590
+<v Speaker 2>Just to throw that curveball at you. Sorry.
+
+01:01:52.750 --> 01:01:53.790
+<v Speaker 0>Oh,
+
+01:01:53.950 --> 01:01:56.109
+<v Speaker 0>I'm doing it right now. Okay. Let's go
+
+01:01:56.109 --> 01:01:58.270
+<v Speaker 0>back to the start. So request total
+
+01:01:58.895 --> 01:02:01.214
+<v Speaker 0>gives me how many requests were made on
+
+01:02:01.214 --> 01:02:03.615
+<v Speaker 0>each endpoint and we can see the 61
+
+01:02:03.615 --> 01:02:05.135
+<v Speaker 0>there. I couldn't
+
+01:02:05.375 --> 01:02:06.735
+<v Speaker 0>put this off for a minute.
+
+01:02:07.135 --> 01:02:07.615
+<v Speaker 0>On.
+
+01:02:09.455 --> 01:02:11.740
+<v Speaker 0>Bye bye. Bye bye. Okay.
+
+01:02:12.700 --> 01:02:14.859
+<v Speaker 0>That's better anyway. I'm sure everyone will agree.
+
+01:02:14.859 --> 01:02:15.339
+<v Speaker 0>So
+
+01:02:17.500 --> 01:02:19.819
+<v Speaker 0>this is just the request total on each
+
+01:02:19.819 --> 01:02:21.660
+<v Speaker 0>endpoint. We can see we have 21 requests
+
+01:02:21.660 --> 01:02:24.380
+<v Speaker 0>on the homepage, 61 requests on posts. Now
+
+01:02:24.954 --> 01:02:26.475
+<v Speaker 0>because that is a
+
+01:02:27.115 --> 01:02:29.755
+<v Speaker 0>eternally incrementing number, at least for the lifetime
+
+01:02:29.755 --> 01:02:30.795
+<v Speaker 0>of a pod,
+
+01:02:31.194 --> 01:02:32.395
+<v Speaker 0>is that you don't want to scale on
+
+01:02:32.395 --> 01:02:34.075
+<v Speaker 0>61 or you don't want to scale on
+
+01:02:34.075 --> 01:02:35.994
+<v Speaker 0>7,000 or 80,000.
+
+01:02:35.994 --> 01:02:37.755
+<v Speaker 0>What we actually care about is the change
+
+01:02:37.755 --> 01:02:38.635
+<v Speaker 0>across the interval.
+
+01:02:39.520 --> 01:02:41.840
+<v Speaker 0>So that's where the rate function comes in,
+
+01:02:42.160 --> 01:02:44.080
+<v Speaker 0>where we can say, okay, let's work out
+
+01:02:44.080 --> 01:02:46.720
+<v Speaker 0>the rate of change on a five. We
+
+01:02:46.720 --> 01:02:48.400
+<v Speaker 0>don't have a scrape at the full five
+
+01:02:48.480 --> 01:02:50.000
+<v Speaker 0>of 30 seconds.
+
+01:02:50.480 --> 01:02:52.640
+<v Speaker 0>We can see zero. Well, that's right. We're
+
+01:02:52.640 --> 01:02:54.845
+<v Speaker 0>actually probably not pulling in any metrics right
+
+01:02:54.845 --> 01:02:55.645
+<v Speaker 0>now. So
+
+01:02:56.525 --> 01:02:58.685
+<v Speaker 0>let's do 200 requests.
+
+01:02:59.645 --> 01:03:01.724
+<v Speaker 0>And hopefully if we get this enough time
+
+01:03:01.724 --> 01:03:04.125
+<v Speaker 0>for it to first scrape multiple intervals, which
+
+01:03:04.125 --> 01:03:05.885
+<v Speaker 0>is ten seconds or twenty seconds, then we
+
+01:03:05.885 --> 01:03:06.445
+<v Speaker 0>should
+
+01:03:06.845 --> 01:03:08.380
+<v Speaker 0>be able see a rate of change over
+
+01:03:08.380 --> 01:03:10.380
+<v Speaker 0>thirty seconds as a positive value. There we
+
+01:03:10.380 --> 01:03:10.860
+<v Speaker 0>go.
+
+01:03:12.380 --> 01:03:14.700
+<v Speaker 0>So we can see that we had 1.4
+
+01:03:14.700 --> 01:03:16.940
+<v Speaker 0>revive requests every thirty seconds. Now it's a
+
+01:03:16.940 --> 01:03:18.860
+<v Speaker 0>four requests every thirty seconds and that will
+
+01:03:18.860 --> 01:03:20.620
+<v Speaker 0>probably continue to change for as long as
+
+01:03:20.620 --> 01:03:21.740
+<v Speaker 0>that siege command runs.
+
+01:03:22.415 --> 01:03:25.295
+<v Speaker 0>Because we have multiple endpoints, multiple pods, etcetera,
+
+01:03:25.295 --> 01:03:26.895
+<v Speaker 0>we can also wrap that in a sum
+
+01:03:26.895 --> 01:03:28.895
+<v Speaker 0>to get a single value, which tells us
+
+01:03:28.895 --> 01:03:31.455
+<v Speaker 0>the number of requests across
+
+01:03:31.455 --> 01:03:32.735
+<v Speaker 0>the thirty second
+
+01:03:32.815 --> 01:03:33.535
+<v Speaker 0>window.
+
+01:03:33.935 --> 01:03:35.775
+<v Speaker 0>And we get to say that that triggers
+
+01:03:35.775 --> 01:03:36.255
+<v Speaker 0>enough,
+
+01:03:38.040 --> 01:03:40.440
+<v Speaker 0>enough anything to scale.
+
+01:03:40.840 --> 01:03:42.040
+<v Speaker 0>Does that all make sense? Yeah.
+
+01:03:42.840 --> 01:03:44.040
+<v Speaker 2>That does make sense. Yeah.
+
+01:03:44.440 --> 01:03:46.920
+<v Speaker 0>Sure. Now, of course, we're using request tool
+
+01:03:46.920 --> 01:03:49.400
+<v Speaker 0>right now because the buckets don't quite
+
+01:03:49.745 --> 01:03:51.265
+<v Speaker 0>add up to what we want. Let's see
+
+01:03:51.265 --> 01:03:52.145
+<v Speaker 0>what we've got.
+
+01:03:52.705 --> 01:03:54.545
+<v Speaker 0>You know, we probably could get away with
+
+01:03:54.545 --> 01:03:55.825
+<v Speaker 0>using that. We can talk about that in
+
+01:03:55.825 --> 01:03:56.625
+<v Speaker 0>a second though.
+
+01:03:56.945 --> 01:03:58.705
+<v Speaker 0>But right now we can say, right, we
+
+01:03:58.705 --> 01:04:00.465
+<v Speaker 0>know if we send 200 requests to this,
+
+01:04:00.465 --> 01:04:01.825
+<v Speaker 0>we're gonna hit roughly five
+
+01:04:02.630 --> 01:04:04.790
+<v Speaker 0>before it starts dropping down. So we can
+
+01:04:04.790 --> 01:04:06.230
+<v Speaker 0>actually say, well, if we get more than
+
+01:04:06.230 --> 01:04:08.390
+<v Speaker 0>two requests on a thirty second interval, that
+
+01:04:08.390 --> 01:04:10.150
+<v Speaker 0>is enough for us to want to be
+
+01:04:10.150 --> 01:04:12.630
+<v Speaker 0>able to scale the number of pods up.
+
+01:04:13.590 --> 01:04:14.310
+<v Speaker 0>Cool.
+
+01:04:15.670 --> 01:04:17.190
+<v Speaker 0>Okay. So
+
+01:04:17.775 --> 01:04:18.575
+<v Speaker 0>we're
+
+01:04:18.575 --> 01:04:20.575
+<v Speaker 0>happy with this. We've seen this clearly run
+
+01:04:20.575 --> 01:04:22.095
+<v Speaker 0>on the Prometheus side.
+
+01:04:22.415 --> 01:04:24.974
+<v Speaker 0>Now what we can do is apply the,
+
+01:04:24.974 --> 01:04:27.055
+<v Speaker 0>redeploy the metrics adapter
+
+01:04:27.535 --> 01:04:30.015
+<v Speaker 0>with that value that has our custom rule.
+
+01:04:30.819 --> 01:04:32.660
+<v Speaker 0>We should be able to query that using
+
+01:04:32.660 --> 01:04:34.180
+<v Speaker 0>the raw API again.
+
+01:04:34.740 --> 01:04:35.619
+<v Speaker 0>It says
+
+01:04:36.099 --> 01:04:36.820
+<v Speaker 0>hoping
+
+01:04:39.220 --> 01:04:40.819
+<v Speaker 0>and we do do a rename on this
+
+01:04:40.819 --> 01:04:42.020
+<v Speaker 0>actually. So
+
+01:04:43.539 --> 01:04:44.740
+<v Speaker 0>what do we rename it to?
+
+01:04:46.005 --> 01:04:47.845
+<v Speaker 0>Request per second.
+
+01:04:52.885 --> 01:04:53.605
+<v Speaker 0>Yeah.
+
+01:04:54.645 --> 01:04:56.885
+<v Speaker 0>Issue to be request per second.
+
+01:04:58.160 --> 01:05:00.320
+<v Speaker 0>Request per second.
+
+01:05:00.960 --> 01:05:01.920
+<v Speaker 0>You
+
+01:05:02.000 --> 01:05:03.600
+<v Speaker 0>hit me so much computer.
+
+01:05:07.920 --> 01:05:10.400
+<v Speaker 0>JQ grep dash I
+
+01:05:10.560 --> 01:05:11.840
+<v Speaker 0>HTTP.
+
+01:05:12.160 --> 01:05:13.440
+<v Speaker 0>It is there. Okay.
+
+01:05:13.680 --> 01:05:15.085
+<v Speaker 0>What did I get wrong? Was this just
+
+01:05:15.085 --> 01:05:15.965
+<v Speaker 0>not there yet?
+
+01:05:16.925 --> 01:05:18.365
+<v Speaker 0>Too impatient. Okay.
+
+01:05:19.565 --> 01:05:21.325
+<v Speaker 0>So now we have
+
+01:05:21.565 --> 01:05:23.725
+<v Speaker 0>best custom metric available
+
+01:05:23.805 --> 01:05:25.805
+<v Speaker 0>for the HPA to use.
+
+01:05:26.525 --> 01:05:27.405
+<v Speaker 0>The last step.
+
+01:05:28.930 --> 01:05:31.650
+<v Speaker 0>Not that easy scaling horizontally in Kubernetes, is
+
+01:05:31.650 --> 01:05:32.130
+<v Speaker 0>it?
+
+01:05:33.890 --> 01:05:35.650
+<v Speaker 0>That will lead me into something I'd like
+
+01:05:35.650 --> 01:05:37.410
+<v Speaker 0>to talk about next and we'll maybe do
+
+01:05:37.410 --> 01:05:38.930
+<v Speaker 0>an episode on that down the line, but
+
+01:05:38.930 --> 01:05:41.650
+<v Speaker 0>for now it's okay. And that's the project.
+
+01:05:50.285 --> 01:05:51.485
+<v Speaker 0>This simplifies
+
+01:05:51.485 --> 01:05:54.445
+<v Speaker 0>scaling by adding more custom resources that you
+
+01:05:54.445 --> 01:05:56.365
+<v Speaker 0>can use, but that's
+
+01:05:56.365 --> 01:05:57.245
+<v Speaker 0>not for now. Okay.
+
+01:05:58.320 --> 01:06:00.320
+<v Speaker 0>So now we look at our HPA. We
+
+01:06:00.320 --> 01:06:02.480
+<v Speaker 0>have this value and no we don't. We
+
+01:06:02.480 --> 01:06:05.200
+<v Speaker 0>have HTTP requests per second
+
+01:06:07.680 --> 01:06:08.640
+<v Speaker 0>and
+
+01:06:09.280 --> 01:06:11.520
+<v Speaker 0>we know we can definitely trigger a five.
+
+01:06:11.520 --> 01:06:12.640
+<v Speaker 0>So I'm gonna say if we had a
+
+01:06:12.640 --> 01:06:12.880
+<v Speaker 0>three,
+
+01:06:13.815 --> 01:06:15.255
+<v Speaker 0>we'll
+
+01:06:15.255 --> 01:06:16.375
+<v Speaker 0>say 2.5
+
+01:06:16.375 --> 01:06:18.214
+<v Speaker 0>is good. So if it goes above that,
+
+01:06:18.214 --> 01:06:19.974
+<v Speaker 0>it should trigger a scaling event. And when
+
+01:06:19.974 --> 01:06:21.895
+<v Speaker 0>it falls below that, it should scale it
+
+01:06:21.895 --> 01:06:23.735
+<v Speaker 0>back down. Does that make sense as well?
+
+01:06:24.135 --> 01:06:24.855
+<v Speaker 2>Yeah.
+
+01:06:24.935 --> 01:06:26.935
+<v Speaker 2>Is there some kind of, like, cool down
+
+01:06:26.935 --> 01:06:27.734
+<v Speaker 2>period where,
+
+01:06:28.310 --> 01:06:29.670
+<v Speaker 2>like, it doesn't
+
+01:06:30.630 --> 01:06:32.790
+<v Speaker 2>so if it's hovering around 2.52
+
+01:06:32.790 --> 01:06:35.190
+<v Speaker 2>to three, it won't just, like, create, delete,
+
+01:06:35.190 --> 01:06:36.869
+<v Speaker 2>create, delete, create, delete, or does it just
+
+01:06:36.869 --> 01:06:38.070
+<v Speaker 2>do that and it's fine?
+
+01:06:39.030 --> 01:06:39.750
+<v Speaker 0>Yes.
+
+01:06:40.070 --> 01:06:43.235
+<v Speaker 0>There is ways to configure that. So what's
+
+01:06:43.235 --> 01:06:44.755
+<v Speaker 0>the best way to check that? Because I
+
+01:06:44.755 --> 01:06:45.795
+<v Speaker 0>can never remember.
+
+01:06:48.355 --> 01:06:50.115
+<v Speaker 0>But I do have all If memory
+
+01:06:51.795 --> 01:06:55.075
+<v Speaker 1>that is configured on the cluster level. Right?
+
+01:06:55.315 --> 01:06:56.035
+<v Speaker 1>I
+
+01:06:56.420 --> 01:06:57.460
+<v Speaker 1>don't think
+
+01:06:57.700 --> 01:06:59.380
+<v Speaker 1>like, if you run-in a
+
+01:06:59.860 --> 01:07:01.060
+<v Speaker 1>public cloud,
+
+01:07:01.140 --> 01:07:02.980
+<v Speaker 1>you I don't think you have access to
+
+01:07:02.980 --> 01:07:05.060
+<v Speaker 1>change that. There are defaults for it, which
+
+01:07:05.060 --> 01:07:05.780
+<v Speaker 0>is, like,
+
+01:07:06.180 --> 01:07:08.580
+<v Speaker 0>three minutes to scroll down or something. I
+
+01:07:08.580 --> 01:07:10.580
+<v Speaker 0>don't remember the numbers off the top of
+
+01:07:10.580 --> 01:07:10.900
+<v Speaker 1>my head.
+
+01:07:12.174 --> 01:07:14.654
+<v Speaker 2>Yeah. Do well, just to prevent people from
+
+01:07:14.654 --> 01:07:16.335
+<v Speaker 2>hammering their systems, I guess.
+
+01:07:18.335 --> 01:07:21.454
+<v Speaker 0>I was hoping cube control explain would show
+
+01:07:21.454 --> 01:07:22.815
+<v Speaker 0>me it, but it only has the standard
+
+01:07:22.815 --> 01:07:25.214
+<v Speaker 0>spec and not the custom spec. Oh, that's
+
+01:07:25.214 --> 01:07:26.494
+<v Speaker 0>because that's all scaling v one.
+
+01:07:28.540 --> 01:07:30.540
+<v Speaker 0>V2 beta one. Okay.
+
+01:07:34.619 --> 01:07:38.140
+<v Speaker 0>Auto scaling V2 beta one. Is that gonna
+
+01:07:38.140 --> 01:07:39.260
+<v Speaker 0>work? I have no idea.
+
+01:07:41.825 --> 01:07:43.744
+<v Speaker 0>There must be a way to provide dev
+
+01:07:43.744 --> 01:07:46.385
+<v Speaker 0>API version. Okay. So if we specify the
+
+01:07:46.385 --> 01:07:48.145
+<v Speaker 0>version on the right one,
+
+01:07:49.825 --> 01:07:53.505
+<v Speaker 0>what we want is auto scaling b
+
+01:07:52.740 --> 01:07:54.260
+<v Speaker 0>two beta one.
+
+01:07:57.380 --> 01:07:59.780
+<v Speaker 0>We can now see that we have this.
+
+01:07:59.940 --> 01:08:01.940
+<v Speaker 0>I I don't know. Maybe that isn't configurable
+
+01:08:01.940 --> 01:08:02.660
+<v Speaker 0>then.
+
+01:08:03.860 --> 01:08:05.220
+<v Speaker 2>I assume it's not very much of an
+
+01:08:05.220 --> 01:08:07.545
+<v Speaker 2>issue because Kubernetes handles the scaling side of
+
+01:08:07.545 --> 01:08:08.505
+<v Speaker 2>it for you anyway. So
+
+01:08:09.785 --> 01:08:12.665
+<v Speaker 0>Yeah. It's definitely something that that KADA offers.
+
+01:08:12.665 --> 01:08:14.105
+<v Speaker 0>I thought you could do it through custom
+
+01:08:14.105 --> 01:08:16.425
+<v Speaker 0>metrics, but I guess I'm wrong. Anyway,
+
+01:08:16.825 --> 01:08:18.825
+<v Speaker 0>let's let's let's see at scale. Right? That's
+
+01:08:18.825 --> 01:08:19.785
+<v Speaker 0>why we're here. So
+
+01:08:20.200 --> 01:08:23.479
+<v Speaker 0>we have a single Laravel thingy running here.
+
+01:08:23.880 --> 01:08:25.560
+<v Speaker 0>What I'm gonna do is I'm gonna just
+
+01:08:25.560 --> 01:08:26.439
+<v Speaker 0>pop open
+
+01:08:26.920 --> 01:08:28.199
+<v Speaker 0>some new split
+
+01:08:30.280 --> 01:08:32.040
+<v Speaker 0>so that we can run a watch command.
+
+01:08:34.895 --> 01:08:37.375
+<v Speaker 0>I recently changed this alias from g h,
+
+01:08:37.375 --> 01:08:39.375
+<v Speaker 0>which I know and understand to g h
+
+01:08:39.375 --> 01:08:40.655
+<v Speaker 0>b because I wanna use the g h
+
+01:08:40.655 --> 01:08:42.734
+<v Speaker 0>c l I, which is g h. I
+
+01:08:42.734 --> 01:08:44.895
+<v Speaker 0>know that's completely irrelevant, but it's been frustrating
+
+01:08:44.895 --> 01:08:46.575
+<v Speaker 0>the hell at me all week. Okay. And
+
+01:08:46.575 --> 01:08:47.295
+<v Speaker 0>it's only Tuesday.
+
+01:08:48.170 --> 01:08:48.890
+<v Speaker 0>Okay.
+
+01:08:50.410 --> 01:08:51.130
+<v Speaker 0>So
+
+01:08:51.290 --> 01:08:54.010
+<v Speaker 0>we can continue to scrape. I
+
+01:08:54.810 --> 01:08:57.050
+<v Speaker 0>reapplied you. Is that old? Old or new?
+
+01:08:57.050 --> 01:08:58.170
+<v Speaker 0>I think they're old.
+
+01:08:59.210 --> 01:09:01.850
+<v Speaker 0>Age, twelve minutes, three minutes. Yeah. Hopefully, those
+
+01:09:01.850 --> 01:09:02.410
+<v Speaker 0>are just
+
+01:09:03.094 --> 01:09:05.015
+<v Speaker 0>old. That's not even the name of the
+
+01:09:05.015 --> 01:09:06.854
+<v Speaker 0>metric I use anymore. So
+
+01:09:07.975 --> 01:09:09.814
+<v Speaker 0>for a second. Yeah, I think we're good.
+
+01:09:10.295 --> 01:09:11.975
+<v Speaker 0>So we can tell you to describe that.
+
+01:09:11.975 --> 01:09:14.054
+<v Speaker 0>We should see the scale and events happen.
+
+01:09:14.375 --> 01:09:16.295
+<v Speaker 0>Now what we wanna do is run siege
+
+01:09:16.295 --> 01:09:16.614
+<v Speaker 0>again.
+
+01:09:17.300 --> 01:09:19.939
+<v Speaker 0>And we also want I'm gonna do one
+
+01:09:19.939 --> 01:09:20.819
+<v Speaker 0>more split
+
+01:09:21.779 --> 01:09:24.100
+<v Speaker 0>as we wanna track the pods as they
+
+01:09:24.100 --> 01:09:25.939
+<v Speaker 0>change over time. So we're on a watch
+
+01:09:25.939 --> 01:09:29.140
+<v Speaker 0>on that. We're gonna run siege here and
+
+01:09:29.140 --> 01:09:32.094
+<v Speaker 0>I'm going to describe this every couple of
+
+01:09:32.094 --> 01:09:34.415
+<v Speaker 0>seconds and see if we can see the
+
+01:09:34.415 --> 01:09:35.854
+<v Speaker 0>scaling in real time.
+
+01:09:36.574 --> 01:09:38.574
+<v Speaker 0>Assuming I've not fucked any of that up.
+
+01:09:39.774 --> 01:09:42.175
+<v Speaker 1>By the way, the default downscale
+
+01:09:42.895 --> 01:09:46.510
+<v Speaker 1>window is five minutes. It's in the documentation
+
+01:09:46.510 --> 01:09:47.229
+<v Speaker 1>about
+
+01:09:47.390 --> 01:09:49.950
+<v Speaker 1>horizontal port auto scaling under support for cool
+
+01:09:49.950 --> 01:09:50.989
+<v Speaker 1>down and delay.
+
+01:09:51.790 --> 01:09:53.870
+<v Speaker 1>It's an argument you it's a flag on
+
+01:09:53.870 --> 01:09:56.110
+<v Speaker 1>the cube controller manager, so you do need
+
+01:09:56.110 --> 01:09:58.590
+<v Speaker 1>to have control plane access to change that.
+
+01:10:00.695 --> 01:10:03.015
+<v Speaker 1>And you can only specify the duration of
+
+01:10:03.015 --> 01:10:05.495
+<v Speaker 1>what they call the downscale stabilization
+
+01:10:05.495 --> 01:10:06.534
+<v Speaker 1>time window.
+
+01:10:06.615 --> 01:10:08.775
+<v Speaker 1>So I think upscaling is instant, but it
+
+01:10:08.775 --> 01:10:11.255
+<v Speaker 1>will wait five minutes before scaling down.
+
+01:10:13.969 --> 01:10:15.489
+<v Speaker 2>Okay. Yeah. That makes sense.
+
+01:10:15.810 --> 01:10:18.449
+<v Speaker 2>So it's it's, the public cloud, like,
+
+01:10:18.929 --> 01:10:21.969
+<v Speaker 2>manager will be what handles that unless you
+
+01:10:21.969 --> 01:10:24.530
+<v Speaker 2>roll your own Kubernetes clusters.
+
+01:10:25.330 --> 01:10:26.530
+<v Speaker 1>Yeah. I
+
+01:10:26.965 --> 01:10:29.445
+<v Speaker 1>am not entirely sure off the top of
+
+01:10:29.445 --> 01:10:32.324
+<v Speaker 1>my head. Some providers might allow you to
+
+01:10:32.324 --> 01:10:33.445
+<v Speaker 1>pass arguments
+
+01:10:33.445 --> 01:10:34.724
+<v Speaker 1>to the different
+
+01:10:35.364 --> 01:10:36.804
+<v Speaker 1>control plane components,
+
+01:10:37.685 --> 01:10:39.285
+<v Speaker 1>and that would be how you'd configure it
+
+01:10:39.285 --> 01:10:39.844
+<v Speaker 1>in that case.
+
+01:10:40.830 --> 01:10:42.750
+<v Speaker 2>Yeah. But that's per provider, so it's down
+
+01:10:42.750 --> 01:10:44.749
+<v Speaker 2>to who we use, I guess.
+
+01:10:45.389 --> 01:10:47.389
+<v Speaker 2>Okay. Fair enough. But I assume that whoever
+
+01:10:47.389 --> 01:10:49.230
+<v Speaker 2>you use will have whatever they consider reasonable
+
+01:10:49.230 --> 01:10:51.389
+<v Speaker 2>defaults, so it should be fine.
+
+01:10:51.790 --> 01:10:52.429
+<v Speaker 0>Okay.
+
+01:10:52.670 --> 01:10:54.590
+<v Speaker 0>I think our c is finished before we
+
+01:10:54.590 --> 01:10:56.485
+<v Speaker 0>try and use trigger that. I'm running it
+
+01:10:56.485 --> 01:10:58.085
+<v Speaker 0>again. We can see
+
+01:10:58.485 --> 01:11:00.005
+<v Speaker 0>we're about 17
+
+01:11:00.005 --> 01:11:01.045
+<v Speaker 0>here now.
+
+01:11:02.645 --> 01:11:04.965
+<v Speaker 0>We oh, good time in there. We have
+
+01:11:04.965 --> 01:11:05.764
+<v Speaker 0>a week.
+
+01:11:06.325 --> 01:11:07.845
+<v Speaker 0>As soon as I ran that describe, we
+
+01:11:07.845 --> 01:11:10.005
+<v Speaker 0>got a rescale event based on our
+
+01:11:10.849 --> 01:11:13.010
+<v Speaker 0>that value going above the 2.5 that we
+
+01:11:13.010 --> 01:11:14.610
+<v Speaker 0>are trying to hit. We can see that
+
+01:11:14.610 --> 01:11:16.369
+<v Speaker 0>it's worked out that we probably won another
+
+01:11:16.369 --> 01:11:17.010
+<v Speaker 0>four.
+
+01:11:19.409 --> 01:11:20.210
+<v Speaker 0>Unlucky
+
+01:11:20.210 --> 01:11:21.969
+<v Speaker 0>for it, it's gonna continue to keep scaling
+
+01:11:21.969 --> 01:11:24.530
+<v Speaker 0>up, but still, it's added four new instances.
+
+01:11:24.530 --> 01:11:26.050
+<v Speaker 0>And if we run and get pods, we'll
+
+01:11:26.025 --> 01:11:26.585
+<v Speaker 0>see
+
+01:11:27.945 --> 01:11:30.185
+<v Speaker 0>we now have all the Laravels run. Oh,
+
+01:11:30.185 --> 01:11:31.784
+<v Speaker 0>wait. That's the completed ones. All the Laravel
+
+01:11:31.784 --> 01:11:34.264
+<v Speaker 0>projects running. I'm gonna quit siege.
+
+01:11:35.225 --> 01:11:37.225
+<v Speaker 0>We'll run a watch on this again and
+
+01:11:37.225 --> 01:11:39.540
+<v Speaker 0>we should see within about a minute or
+
+01:11:39.540 --> 01:11:41.380
+<v Speaker 0>two. Well, it's gonna be five minutes based
+
+01:11:41.380 --> 01:11:42.820
+<v Speaker 0>on what you just told us.
+
+01:11:43.060 --> 01:11:45.619
+<v Speaker 0>That'll scale then. So you've got five minutes
+
+01:11:45.619 --> 01:11:47.300
+<v Speaker 0>of dead air to fill. Go.
+
+01:11:49.219 --> 01:11:50.900
+<v Speaker 1>Now the first thing I wanna say there
+
+01:11:50.900 --> 01:11:53.505
+<v Speaker 1>is it's five minutes by default. We are
+
+01:11:53.505 --> 01:11:55.905
+<v Speaker 1>now assuming that Docker desktop actually relies on
+
+01:11:55.905 --> 01:11:56.784
+<v Speaker 1>that default.
+
+01:11:58.145 --> 01:12:00.625
+<v Speaker 0>I have no idea. We we will we
+
+01:12:00.625 --> 01:12:02.145
+<v Speaker 1>will find out if it's five minutes.
+
+01:12:04.400 --> 01:12:06.160
+<v Speaker 0>Well, we're gonna finish up. I can't believe
+
+01:12:06.160 --> 01:12:07.520
+<v Speaker 0>that has been an hour and a half
+
+01:12:07.520 --> 01:12:09.920
+<v Speaker 0>almost already. That has So, Benko, what's that
+
+01:12:09.920 --> 01:12:12.080
+<v Speaker 2>doing there now that started new ones, has
+
+01:12:12.080 --> 01:12:15.280
+<v Speaker 2>it? Well, the value, I think, on aggregate
+
+01:12:15.280 --> 01:12:17.360
+<v Speaker 0>over time is still above the 2.5.
+
+01:12:17.945 --> 01:12:19.785
+<v Speaker 0>It's just fallen, but you'll probably find it's
+
+01:12:19.785 --> 01:12:20.985
+<v Speaker 0>actually scaling more up.
+
+01:12:22.345 --> 01:12:24.265
+<v Speaker 0>And if we describe the HPA,
+
+01:12:24.505 --> 01:12:26.345
+<v Speaker 0>it has done another rescale. Oh, no. That's
+
+01:12:26.345 --> 01:12:29.065
+<v Speaker 0>the first rescale. I think maybe some pods
+
+01:12:29.065 --> 01:12:29.945
+<v Speaker 0>just died.
+
+01:12:30.505 --> 01:12:32.825
+<v Speaker 2>I saw that we're terminating there. Yeah.
+
+01:12:34.360 --> 01:12:37.079
+<v Speaker 0>Then we get pods, grab, Laravel.
+
+01:12:40.600 --> 01:12:42.520
+<v Speaker 0>Yeah. We still got the five. It just
+
+01:12:42.520 --> 01:12:43.480
+<v Speaker 0>looks like we
+
+01:12:44.120 --> 01:12:46.120
+<v Speaker 0>lost a few for whatever reason.
+
+01:12:50.185 --> 01:12:52.425
+<v Speaker 0>Oh, I know why that's gonna be. The
+
+01:12:52.425 --> 01:12:54.505
+<v Speaker 0>probes on it are gonna be failing because
+
+01:12:54.505 --> 01:12:57.225
+<v Speaker 0>we've not got any metrics, probably. It's probably
+
+01:12:57.225 --> 01:12:59.625
+<v Speaker 0>given a client error or something.
+
+01:13:00.105 --> 01:13:03.145
+<v Speaker 2>Oh, because there's no actual requests hitting anymore.
+
+01:13:03.820 --> 01:13:06.140
+<v Speaker 0>Yeah. Maybe. I mean, that's complete speculation at
+
+01:13:06.140 --> 01:13:08.219
+<v Speaker 0>this point in time, but it's possible.
+
+01:13:10.219 --> 01:13:11.980
+<v Speaker 0>Alright. I mean, I think we've
+
+01:13:12.219 --> 01:13:14.219
+<v Speaker 0>we've shown everything we want to show. I
+
+01:13:14.219 --> 01:13:16.300
+<v Speaker 0>think it's great that Leo has, you know,
+
+01:13:16.795 --> 01:13:19.195
+<v Speaker 0>packed up this project and providing people with
+
+01:13:19.195 --> 01:13:20.954
+<v Speaker 0>a working almost.
+
+01:13:21.594 --> 01:13:22.474
+<v Speaker 0>It
+
+01:13:22.715 --> 01:13:25.594
+<v Speaker 1>will be working. I I'm debugging it.
+
+01:13:26.315 --> 01:13:28.074
+<v Speaker 1>I'm I'm not gonna delay the stream with
+
+01:13:28.074 --> 01:13:28.875
+<v Speaker 1>the debugging.
+
+01:13:29.900 --> 01:13:31.900
+<v Speaker 1>Instead, I'll just make it work, and then,
+
+01:13:31.900 --> 01:13:34.860
+<v Speaker 1>you know, by the time someone rewatches this
+
+01:13:34.860 --> 01:13:36.780
+<v Speaker 1>in a week, it's just magically gonna work
+
+01:13:36.780 --> 01:13:38.219
+<v Speaker 1>when they pull the latest tag.
+
+01:13:39.099 --> 01:13:41.500
+<v Speaker 0>Yeah. No. I think you're doing great work.
+
+01:13:41.500 --> 01:13:43.739
+<v Speaker 0>I'm really glad to see that there's Prometheus
+
+01:13:43.785 --> 01:13:46.745
+<v Speaker 0>auto wiring super Laravel component that has exposed
+
+01:13:46.745 --> 01:13:48.345
+<v Speaker 0>in the metrics that we need. And I
+
+01:13:48.345 --> 01:13:50.665
+<v Speaker 0>think it's it's still enough there. You can
+
+01:13:50.665 --> 01:13:52.585
+<v Speaker 0>still calculate the number of requests over a
+
+01:13:52.585 --> 01:13:54.265
+<v Speaker 0>given interval and scale just as we have
+
+01:13:54.265 --> 01:13:55.065
+<v Speaker 0>done today.
+
+01:13:55.385 --> 01:13:56.825
+<v Speaker 0>And, of course, I would actually like to
+
+01:13:56.825 --> 01:13:59.810
+<v Speaker 0>monitor and keep my plus five plus infinity
+
+01:13:59.810 --> 01:14:00.690
+<v Speaker 0>below
+
+01:14:01.330 --> 01:14:03.409
+<v Speaker 0>10% or whatever, but
+
+01:14:04.210 --> 01:14:05.570
+<v Speaker 0>that could be something we do in the
+
+01:14:05.570 --> 01:14:07.090
+<v Speaker 0>future. Maybe I can help contribute to the
+
+01:14:07.090 --> 01:14:08.610
+<v Speaker 0>library that you're working on too.
+
+01:14:10.050 --> 01:14:12.415
+<v Speaker 0>Then we got the metrics, we hooked up
+
+01:14:12.415 --> 01:14:15.054
+<v Speaker 0>Prometheus, we added the annotations to the deployment,
+
+01:14:15.054 --> 01:14:17.215
+<v Speaker 0>we scraped the metrics, we deployed the metrics
+
+01:14:17.215 --> 01:14:20.255
+<v Speaker 0>server, we deployed the metrics, the Prometheus adapter,
+
+01:14:20.255 --> 01:14:21.614
+<v Speaker 0>and we deployed
+
+01:14:22.015 --> 01:14:24.574
+<v Speaker 0>the rules that expose the custom metric, configure
+
+01:14:24.574 --> 01:14:25.455
+<v Speaker 0>in the HPA,
+
+01:14:26.310 --> 01:14:27.829
+<v Speaker 0>and that's all it took to get all
+
+01:14:27.829 --> 01:14:29.110
+<v Speaker 0>scaling on Kubernetes for
+
+01:14:30.230 --> 01:14:32.630
+<v Speaker 1>Yeah. You you make it sound so easy.
+
+01:14:33.349 --> 01:14:33.989
+<v Speaker 0>I
+
+01:14:34.150 --> 01:14:35.989
+<v Speaker 0>think it would be awesome to take a
+
+01:14:35.989 --> 01:14:37.429
+<v Speaker 0>look at the Keter project and then a
+
+01:14:37.429 --> 01:14:38.949
+<v Speaker 0>future stream. If you both wanna join me
+
+01:14:38.949 --> 01:14:39.270
+<v Speaker 0>for that,
+
+01:14:40.025 --> 01:14:42.105
+<v Speaker 0>it's not something I'm overly familiar with. I've
+
+01:14:42.105 --> 01:14:44.025
+<v Speaker 0>used it. I like that. I haven't got
+
+01:14:44.025 --> 01:14:46.264
+<v Speaker 0>it in production, but maybe a little bit
+
+01:14:46.264 --> 01:14:47.945
+<v Speaker 0>of an exploration episode where we see if
+
+01:14:47.945 --> 01:14:50.824
+<v Speaker 0>we can simplify this at all and take
+
+01:14:51.145 --> 01:14:53.280
+<v Speaker 0>another look at the configure of the buckets
+
+01:14:53.280 --> 01:14:54.480
+<v Speaker 0>and stuff. I think there's a lot more
+
+01:14:54.480 --> 01:14:56.000
+<v Speaker 0>we can do here to make this easier
+
+01:14:56.000 --> 01:14:58.239
+<v Speaker 0>for people, so I'm excited to to do
+
+01:14:58.239 --> 01:14:59.519
+<v Speaker 0>that in future episodes.
+
+01:15:00.239 --> 01:15:03.360
+<v Speaker 0>And for that. Sounds good. Awesome. Well, thank
+
+01:15:03.360 --> 01:15:05.840
+<v Speaker 0>you both for joining me today, working through
+
+01:15:05.840 --> 01:15:08.125
+<v Speaker 0>that. I hope the people watching got something
+
+01:15:08.125 --> 01:15:09.485
+<v Speaker 0>of value from at this time. I know
+
+01:15:09.485 --> 01:15:11.325
+<v Speaker 0>last week was very frustrating for the people
+
+01:15:11.325 --> 01:15:12.845
+<v Speaker 0>that watched two hours only to be like,
+
+01:15:12.845 --> 01:15:14.045
+<v Speaker 0>what the fuck was that?
+
+01:15:14.605 --> 01:15:16.125
+<v Speaker 0>Hopefully, it was fixed at this time, and
+
+01:15:16.125 --> 01:15:18.125
+<v Speaker 0>that library was very helpful. Is there anything
+
+01:15:18.125 --> 01:15:19.405
+<v Speaker 0>either of you would like to say before
+
+01:15:19.405 --> 01:15:20.285
+<v Speaker 0>we wrap up for today?
+
+01:15:22.830 --> 01:15:25.390
+<v Speaker 1>The library will work correctly eventually.
+
+01:15:25.550 --> 01:15:26.750
+<v Speaker 1>That's all I have to say.
+
+01:15:27.070 --> 01:15:29.630
+<v Speaker 0>And it's open source, accepting contributions.
+
+01:15:29.630 --> 01:15:31.470
+<v Speaker 0>Go check it out. Try it out. Let's
+
+01:15:31.470 --> 01:15:34.510
+<v Speaker 0>help, Leo, by working out where the cracks
+
+01:15:34.510 --> 01:15:35.790
+<v Speaker 0>are and failing issues.
+
+01:15:36.625 --> 01:15:38.145
+<v Speaker 1>Accepting pull requests.
+
+01:15:39.825 --> 01:15:41.985
+<v Speaker 0>Alright. You too have a great day. I'll
+
+01:15:41.985 --> 01:15:43.185
+<v Speaker 0>speak to you both soon, and thanks everyone
+
+01:15:43.185 --> 01:15:44.385
+<v Speaker 0>for watching. I'll see you later.
+
+01:15:44.785 --> 01:15:47.025
+<v Speaker 2>Thanks. Bye. Thanks a lot. See you.

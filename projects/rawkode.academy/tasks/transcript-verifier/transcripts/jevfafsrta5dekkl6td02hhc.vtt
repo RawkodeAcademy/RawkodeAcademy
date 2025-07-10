@@ -1,0 +1,7568 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: d88f2ba9-778d-4436-9a2c-7d610026e3bd
+Created: 2025-04-29T19:01:48.170Z
+Duration: 5626.689
+Channels: 1
+
+00:00:51.719 --> 00:00:54.760
+<v Speaker 0>Hello, and welcome to today's episode of Rawkode
+
+00:00:54.760 --> 00:00:55.399
+<v Speaker 0>Live.
+
+00:00:55.640 --> 00:00:57.239
+<v Speaker 0>I'm your host, Rawkode.
+
+00:00:57.320 --> 00:00:59.239
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:00:59.239 --> 00:01:00.120
+<v Speaker 0>Loki,
+
+00:01:00.440 --> 00:01:02.440
+<v Speaker 0>a tool for collecting logs
+
+00:01:02.920 --> 00:01:04.759
+<v Speaker 0>on bare metal Kubernetes and a whole bunch
+
+00:01:04.759 --> 00:01:06.600
+<v Speaker 0>of other things from the team at Grafana.
+
+00:01:06.735 --> 00:01:08.735
+<v Speaker 0>Now before we get started and dive into
+
+00:01:08.735 --> 00:01:10.575
+<v Speaker 0>Loki in a little bit more detail and
+
+00:01:10.575 --> 00:01:13.055
+<v Speaker 0>get hands on, we just got a little
+
+00:01:13.055 --> 00:01:13.935
+<v Speaker 0>bit of housekeeping.
+
+00:01:14.095 --> 00:01:16.415
+<v Speaker 0>First and foremost, please, if you're not already
+
+00:01:16.415 --> 00:01:19.215
+<v Speaker 0>subscribed to the YouTube channel, do that now.
+
+00:01:19.215 --> 00:01:21.695
+<v Speaker 0>Use the bell to get notifications for all
+
+00:01:21.695 --> 00:01:22.495
+<v Speaker 0>future episodes.
+
+00:01:23.350 --> 00:01:24.869
+<v Speaker 0>If you're not watching live, but you wanna
+
+00:01:24.869 --> 00:01:26.470
+<v Speaker 0>have a little bit of a conversation about
+
+00:01:26.470 --> 00:01:28.150
+<v Speaker 0>what you see in today's episode or any
+
+00:01:28.150 --> 00:01:29.909
+<v Speaker 0>other episode, then you can join the Discord
+
+00:01:29.909 --> 00:01:30.630
+<v Speaker 0>server.
+
+00:01:31.110 --> 00:01:33.350
+<v Speaker 0>We've got a couple of hundred cloud native
+
+00:01:33.350 --> 00:01:36.390
+<v Speaker 0>enthusiasts and Kubernetes people all talking about cloud
+
+00:01:36.390 --> 00:01:39.225
+<v Speaker 0>native technologies and general technologies. Come and join
+
+00:01:39.225 --> 00:01:40.265
+<v Speaker 0>us, get involved.
+
+00:01:40.665 --> 00:01:42.745
+<v Speaker 0>And lastly, I wanna thank Equinix Metal. They
+
+00:01:42.745 --> 00:01:44.425
+<v Speaker 0>are my employer, but they allow me to
+
+00:01:44.425 --> 00:01:46.745
+<v Speaker 0>spend time during my working day producing this
+
+00:01:46.745 --> 00:01:48.585
+<v Speaker 0>channel and these episodes so that we can
+
+00:01:48.585 --> 00:01:50.905
+<v Speaker 0>all learn the vast cloud native landscape together.
+
+00:01:50.905 --> 00:01:53.049
+<v Speaker 0>So thank you Equinix Metal. You can use
+
+00:01:53.049 --> 00:01:55.450
+<v Speaker 0>the code Rawkode for $200 off compute.
+
+00:01:55.610 --> 00:01:57.369
+<v Speaker 0>You can spend that on just fifty hours
+
+00:01:57.369 --> 00:01:59.369
+<v Speaker 0>or four hundred hours. That is entirely up
+
+00:01:59.369 --> 00:02:00.729
+<v Speaker 0>to you. Have some fun.
+
+00:02:01.210 --> 00:02:02.570
+<v Speaker 0>Right. Now
+
+00:02:03.049 --> 00:02:05.770
+<v Speaker 0>today, I am joined by from
+
+00:02:05.770 --> 00:02:08.705
+<v Speaker 0>the Grafana team, maintainer of the Loki project.
+
+00:02:08.705 --> 00:02:10.065
+<v Speaker 0>Hi there. How are you?
+
+00:02:11.025 --> 00:02:13.745
+<v Speaker 1>Hello. Hello, David. Hi. I'm good. Thank you.
+
+00:02:13.745 --> 00:02:15.985
+<v Speaker 1>And you? Yeah. I'm doing really well. Thank
+
+00:02:15.985 --> 00:02:17.825
+<v Speaker 0>you. Actually, I mean, I'm excited to dive
+
+00:02:17.825 --> 00:02:19.505
+<v Speaker 0>into Loki and and see how it can
+
+00:02:19.505 --> 00:02:21.185
+<v Speaker 0>improve my logging pipelines.
+
+00:02:21.540 --> 00:02:24.100
+<v Speaker 0>So very excited to take this session. Nice.
+
+00:02:24.260 --> 00:02:25.939
+<v Speaker 0>Do you want to give us a brief
+
+00:02:25.939 --> 00:02:28.260
+<v Speaker 0>introduction about yourself? And then we'll kind of
+
+00:02:28.260 --> 00:02:30.020
+<v Speaker 0>talk about Loki and what it is.
+
+00:02:30.659 --> 00:02:33.379
+<v Speaker 1>Yeah. Sure. So I've been working at Grafana
+
+00:02:33.379 --> 00:02:35.459
+<v Speaker 1>for two years now, and I'm a software
+
+00:02:35.459 --> 00:02:38.885
+<v Speaker 1>engineer there. And I've mostly been involved with
+
+00:02:38.885 --> 00:02:39.765
+<v Speaker 1>Loki,
+
+00:02:39.765 --> 00:02:42.565
+<v Speaker 1>a bit of Cortex, but mostly Loki. So
+
+00:02:43.285 --> 00:02:45.685
+<v Speaker 1>I'm Loki expert, so don't hesitate to ask
+
+00:02:45.685 --> 00:02:47.205
+<v Speaker 1>any question regarding
+
+00:02:47.205 --> 00:02:48.084
+<v Speaker 1>Loki.
+
+00:02:50.340 --> 00:02:51.460
+<v Speaker 0>Nice. Awesome.
+
+00:02:51.620 --> 00:02:53.460
+<v Speaker 0>So why don't we kinda just
+
+00:02:53.700 --> 00:02:54.900
+<v Speaker 0>talk about, like,
+
+00:02:55.140 --> 00:02:56.819
+<v Speaker 0>what is Loki?
+
+00:02:56.819 --> 00:02:58.819
+<v Speaker 0>Like, what what what give me the, like,
+
+00:02:58.819 --> 00:03:00.340
+<v Speaker 0>the the three word patch if there is
+
+00:03:00.340 --> 00:03:01.380
+<v Speaker 0>one. What does Loki do?
+
+00:03:02.285 --> 00:03:04.364
+<v Speaker 1>Oh, three three word. That's I'm gonna need
+
+00:03:04.364 --> 00:03:06.525
+<v Speaker 1>a little bit more. But Alright. Alright. I'll
+
+00:03:06.525 --> 00:03:07.805
+<v Speaker 1>give It's
+
+00:03:08.045 --> 00:03:09.245
+<v Speaker 1>actually, it's
+
+00:03:09.485 --> 00:03:11.565
+<v Speaker 1>five words. Five words. Good. It's like properties
+
+00:03:11.565 --> 00:03:13.965
+<v Speaker 1>it's like properties, but for the dogs.
+
+00:03:16.530 --> 00:03:19.890
+<v Speaker 1>That's that's the idea. But, no, more seriously,
+
+00:03:20.209 --> 00:03:22.050
+<v Speaker 1>it's a log aggregation system
+
+00:03:22.370 --> 00:03:24.769
+<v Speaker 1>where you can send all your application logs
+
+00:03:24.769 --> 00:03:26.849
+<v Speaker 1>to, and it will aggregate all of them
+
+00:03:26.849 --> 00:03:28.690
+<v Speaker 1>in a central place where you can, you
+
+00:03:28.690 --> 00:03:31.534
+<v Speaker 1>know, query them back. And it's heavily inspired
+
+00:03:31.534 --> 00:03:32.735
+<v Speaker 1>by Promotus.
+
+00:03:33.295 --> 00:03:35.375
+<v Speaker 1>One of the big difference that
+
+00:03:36.655 --> 00:03:38.575
+<v Speaker 1>it takes compared to other
+
+00:03:38.974 --> 00:03:41.775
+<v Speaker 1>system out there is that it doesn't really
+
+00:03:42.254 --> 00:03:43.055
+<v Speaker 1>index
+
+00:03:43.295 --> 00:03:43.694
+<v Speaker 1>the
+
+00:03:44.790 --> 00:03:47.590
+<v Speaker 1>content itself, just the metadata. A bit like
+
+00:03:47.590 --> 00:03:49.829
+<v Speaker 1>Prometheus, you know, the the the labels, how
+
+00:03:49.829 --> 00:03:50.550
+<v Speaker 1>they work.
+
+00:03:50.790 --> 00:03:52.390
+<v Speaker 1>In Loki, the idea is a bit the
+
+00:03:52.390 --> 00:03:55.189
+<v Speaker 1>same. You index only the labels itself of
+
+00:03:55.189 --> 00:03:57.269
+<v Speaker 1>the of the of the workload, so not
+
+00:03:57.269 --> 00:03:59.225
+<v Speaker 1>the content. And that makes it, you know,
+
+00:03:59.225 --> 00:04:01.065
+<v Speaker 1>very, inexpensive
+
+00:04:01.145 --> 00:04:02.025
+<v Speaker 1>to run,
+
+00:04:02.425 --> 00:04:04.585
+<v Speaker 1>because the index is very small at the
+
+00:04:04.585 --> 00:04:05.385
+<v Speaker 1>end of the day.
+
+00:04:06.025 --> 00:04:07.865
+<v Speaker 1>In some system, you can end up with
+
+00:04:07.865 --> 00:04:10.025
+<v Speaker 1>an index that is actually bigger than the
+
+00:04:10.025 --> 00:04:11.225
+<v Speaker 1>than the content itself.
+
+00:04:12.190 --> 00:04:14.270
+<v Speaker 1>And so in that in that case, that
+
+00:04:14.270 --> 00:04:16.670
+<v Speaker 1>makes the operational workload very,
+
+00:04:17.310 --> 00:04:18.270
+<v Speaker 1>very difficult.
+
+00:04:18.430 --> 00:04:21.389
+<v Speaker 1>And I think, Loki, that's that's what it's
+
+00:04:21.389 --> 00:04:23.310
+<v Speaker 1>nice with Loki. It's bit easier to run.
+
+00:04:25.150 --> 00:04:26.669
+<v Speaker 1>Is it is it easier to run and
+
+00:04:26.669 --> 00:04:28.485
+<v Speaker 1>is it is it to scale too? Is
+
+00:04:28.485 --> 00:04:30.165
+<v Speaker 0>it is it fair to say that Loki
+
+00:04:30.165 --> 00:04:31.605
+<v Speaker 0>then is a database?
+
+00:04:32.405 --> 00:04:34.325
+<v Speaker 0>Is that the correct way to look at
+
+00:04:34.325 --> 00:04:35.285
+<v Speaker 0>it? So
+
+00:04:35.365 --> 00:04:38.165
+<v Speaker 1>yeah. I mean, we since it has its
+
+00:04:38.165 --> 00:04:39.925
+<v Speaker 1>own Loki language, I guess we could say
+
+00:04:39.925 --> 00:04:40.725
+<v Speaker 1>that it's a database.
+
+00:04:41.330 --> 00:04:42.210
+<v Speaker 1>The
+
+00:04:42.210 --> 00:04:44.050
+<v Speaker 1>thing to note, though, is we rely on
+
+00:04:44.050 --> 00:04:44.530
+<v Speaker 1>on
+
+00:04:45.810 --> 00:04:47.010
+<v Speaker 1>giants.
+
+00:04:47.170 --> 00:04:49.090
+<v Speaker 1>We we mostly
+
+00:04:49.090 --> 00:04:51.330
+<v Speaker 1>allow people to save data
+
+00:04:51.730 --> 00:04:53.650
+<v Speaker 1>in in object storage, like
+
+00:04:54.495 --> 00:04:57.695
+<v Speaker 1>Google Cloud Storage or s Amazon s three.
+
+00:04:58.175 --> 00:04:59.455
+<v Speaker 1>So we're not, like,
+
+00:05:00.335 --> 00:05:00.975
+<v Speaker 1>really
+
+00:05:01.295 --> 00:05:02.495
+<v Speaker 1>storing the data
+
+00:05:03.135 --> 00:05:05.055
+<v Speaker 1>ourselves, but we do replication to make sure
+
+00:05:05.055 --> 00:05:06.735
+<v Speaker 1>that, you know, when you ingest the data,
+
+00:05:07.520 --> 00:05:10.000
+<v Speaker 1>we don't lose if the data if there's
+
+00:05:10.000 --> 00:05:12.080
+<v Speaker 1>any any node that is going down.
+
+00:05:12.400 --> 00:05:12.960
+<v Speaker 1>We
+
+00:05:14.000 --> 00:05:15.840
+<v Speaker 1>so that's, yeah, that's the that's the idea.
+
+00:05:15.840 --> 00:05:16.720
+<v Speaker 1>You can also
+
+00:05:16.960 --> 00:05:19.280
+<v Speaker 1>store the data on disk if you're in
+
+00:05:19.360 --> 00:05:21.760
+<v Speaker 1>running the single binary, and I believe that's
+
+00:05:21.760 --> 00:05:22.640
+<v Speaker 1>what we're gonna do today.
+
+00:05:24.125 --> 00:05:25.165
+<v Speaker 1>In that case,
+
+00:05:25.725 --> 00:05:28.444
+<v Speaker 1>you know, it's it's it's more for a
+
+00:05:28.444 --> 00:05:29.405
+<v Speaker 1>single cluster.
+
+00:05:29.805 --> 00:05:31.884
+<v Speaker 1>So if you need to scale above that,
+
+00:05:31.884 --> 00:05:33.245
+<v Speaker 1>like you have a lot of cluster, you're
+
+00:05:33.245 --> 00:05:34.685
+<v Speaker 1>probably gonna want to look at using an
+
+00:05:34.685 --> 00:05:37.645
+<v Speaker 1>object store. It's gonna be easier anyway to
+
+00:05:38.250 --> 00:05:40.810
+<v Speaker 1>to operate. Right? It's it's it's easier than
+
+00:05:40.810 --> 00:05:41.770
+<v Speaker 1>PVCs.
+
+00:05:41.770 --> 00:05:44.009
+<v Speaker 1>I'm pretty sure, like, everyone out there knows,
+
+00:05:44.009 --> 00:05:45.690
+<v Speaker 1>you know, how difficult it can be
+
+00:05:46.490 --> 00:05:49.129
+<v Speaker 1>to operate a stateful set and PVCs.
+
+00:05:50.044 --> 00:05:52.205
+<v Speaker 0>Yeah. I'm I'm sure anyone watching who's run
+
+00:05:52.205 --> 00:05:54.845
+<v Speaker 0>stateful workloads in Kubernetes knows exactly how easy
+
+00:05:54.845 --> 00:05:56.765
+<v Speaker 0>all of that stuff is these days. Right?
+
+00:05:57.324 --> 00:05:57.965
+<v Speaker 0>Yeah.
+
+00:05:58.205 --> 00:06:00.685
+<v Speaker 0>Hopefully, the sarcasm can clear loud and clear
+
+00:06:00.685 --> 00:06:03.324
+<v Speaker 0>there. Stateful workloads are are as much as
+
+00:06:03.324 --> 00:06:04.925
+<v Speaker 0>I encourage it in Kubernetes, still a pain
+
+00:06:04.925 --> 00:06:07.270
+<v Speaker 0>in the ass. But let's
+
+00:06:07.270 --> 00:06:09.910
+<v Speaker 0>get my screen shared. We have here the
+
+00:06:09.910 --> 00:06:13.430
+<v Speaker 0>Grafana Loki webpage and documentation.
+
+00:06:14.710 --> 00:06:16.789
+<v Speaker 0>Yeah. There's the, like, Prometheus but for logs
+
+00:06:16.789 --> 00:06:18.070
+<v Speaker 0>line that you gave me with the file.
+
+00:06:18.070 --> 00:06:18.310
+<v Speaker 0>Exactly.
+
+00:06:20.675 --> 00:06:22.435
+<v Speaker 0>So I I mean, I kind of compared
+
+00:06:22.435 --> 00:06:24.275
+<v Speaker 0>it to database, but even in the the
+
+00:06:24.275 --> 00:06:25.555
+<v Speaker 0>first line here and I know it's a
+
+00:06:25.555 --> 00:06:27.315
+<v Speaker 0>little bit small, so let's just zoom in.
+
+00:06:27.315 --> 00:06:29.315
+<v Speaker 0>But it says Loki is actually a set
+
+00:06:29.315 --> 00:06:30.354
+<v Speaker 0>of components
+
+00:06:30.435 --> 00:06:32.595
+<v Speaker 0>that can be composed in the fully featured
+
+00:06:32.595 --> 00:06:34.514
+<v Speaker 0>logging stack. So do you wanna break that
+
+00:06:34.514 --> 00:06:36.590
+<v Speaker 0>down us? What are the what are the
+
+00:06:36.590 --> 00:06:37.949
+<v Speaker 0>components of Loki?
+
+00:06:38.669 --> 00:06:39.949
+<v Speaker 1>Yeah. So the
+
+00:06:40.509 --> 00:06:42.509
+<v Speaker 1>so there's no super way to run Loki.
+
+00:06:42.509 --> 00:06:44.750
+<v Speaker 1>Today, we're just gonna do a single binary,
+
+00:06:44.750 --> 00:06:47.389
+<v Speaker 1>a bit like Promotus, which only scale
+
+00:06:47.550 --> 00:06:48.110
+<v Speaker 1>vertically.
+
+00:06:49.195 --> 00:06:51.115
+<v Speaker 1>And that's already good enough for a single
+
+00:06:51.115 --> 00:06:51.835
+<v Speaker 1>cluster.
+
+00:06:52.475 --> 00:06:55.035
+<v Speaker 1>But in fact, we created Loki for our
+
+00:06:55.035 --> 00:06:57.275
+<v Speaker 1>own usage on Grafana so that we can
+
+00:06:57.275 --> 00:07:00.235
+<v Speaker 1>receive terabytes of data from customer
+
+00:07:00.235 --> 00:07:02.875
+<v Speaker 1>around the world. So Loki can also scale
+
+00:07:02.875 --> 00:07:03.595
+<v Speaker 1>using
+
+00:07:03.870 --> 00:07:04.990
+<v Speaker 1>a distributed
+
+00:07:05.710 --> 00:07:06.590
+<v Speaker 1>version,
+
+00:07:06.590 --> 00:07:09.870
+<v Speaker 1>which is splitted into multiple components.
+
+00:07:10.350 --> 00:07:12.430
+<v Speaker 1>So there's you know, there there there's a
+
+00:07:12.430 --> 00:07:14.590
+<v Speaker 1>lot of different component in in the system.
+
+00:07:14.590 --> 00:07:16.910
+<v Speaker 1>But the idea is there's a distributors that
+
+00:07:16.910 --> 00:07:18.270
+<v Speaker 1>will receive the data
+
+00:07:18.669 --> 00:07:21.035
+<v Speaker 1>and validate the data, then it will pass
+
+00:07:21.035 --> 00:07:22.715
+<v Speaker 1>it down to ingestors.
+
+00:07:22.875 --> 00:07:25.995
+<v Speaker 1>Ingestors are are basically compressing the data
+
+00:07:26.395 --> 00:07:26.955
+<v Speaker 1>and
+
+00:07:27.515 --> 00:07:30.395
+<v Speaker 1>saving that in the object store.
+
+00:07:30.635 --> 00:07:32.315
+<v Speaker 1>And then after, you
+
+00:07:33.115 --> 00:07:35.030
+<v Speaker 1>know, you have the quarries that will query
+
+00:07:35.030 --> 00:07:35.990
+<v Speaker 1>back the data.
+
+00:07:36.390 --> 00:07:38.630
+<v Speaker 1>Yeah. So this schema here that we're looking
+
+00:07:38.630 --> 00:07:39.350
+<v Speaker 1>at is
+
+00:07:40.310 --> 00:07:41.750
+<v Speaker 1>a bit summarizing
+
+00:07:41.750 --> 00:07:44.390
+<v Speaker 1>what I'm saying. There's two ways to unlock
+
+00:07:44.390 --> 00:07:46.070
+<v Speaker 1>it. Today, we're just going go with the
+
+00:07:46.070 --> 00:07:48.230
+<v Speaker 1>simple one. There's a more complex one.
+
+00:07:48.945 --> 00:07:50.865
+<v Speaker 1>If you're really into it, you have time,
+
+00:07:50.865 --> 00:07:51.825
+<v Speaker 1>you you know,
+
+00:07:52.385 --> 00:07:54.385
+<v Speaker 1>wanna you wanna run Rookie with
+
+00:07:56.065 --> 00:07:57.665
+<v Speaker 1>at very large scale,
+
+00:07:58.065 --> 00:08:00.225
+<v Speaker 1>then then you can use that. Is that
+
+00:08:00.225 --> 00:08:02.930
+<v Speaker 0>these these are the components you mentioned. Right?
+
+00:08:02.930 --> 00:08:05.490
+<v Speaker 0>Distributor and JS, query front end and and
+
+00:08:05.490 --> 00:08:08.050
+<v Speaker 0>query. And this is all documented
+
+00:08:08.050 --> 00:08:08.930
+<v Speaker 0>in there.
+
+00:08:09.650 --> 00:08:11.410
+<v Speaker 0>Well, quite easy to find it through the
+
+00:08:11.410 --> 00:08:12.130
+<v Speaker 0>documentation.
+
+00:08:13.490 --> 00:08:15.169
+<v Speaker 1>Exactly. Yeah. If you wanna know more, I
+
+00:08:15.169 --> 00:08:16.930
+<v Speaker 1>guess we we're not gonna go through too
+
+00:08:16.930 --> 00:08:18.975
+<v Speaker 1>much into this because, you know, like every
+
+00:08:18.975 --> 00:08:20.255
+<v Speaker 1>distributed system,
+
+00:08:20.495 --> 00:08:22.335
+<v Speaker 1>it's kind of complex. We could talk for
+
+00:08:22.335 --> 00:08:23.535
+<v Speaker 1>hours about this.
+
+00:08:24.014 --> 00:08:24.575
+<v Speaker 0>Yeah.
+
+00:08:25.055 --> 00:08:27.695
+<v Speaker 0>But that's that's the idea. It's nice to
+
+00:08:27.695 --> 00:08:28.815
+<v Speaker 0>talk about it and to have a nice
+
+00:08:28.815 --> 00:08:32.140
+<v Speaker 0>overview of the different components, the potential architectures.
+
+00:08:32.140 --> 00:08:33.580
+<v Speaker 0>But, you know, we we really just wanna
+
+00:08:33.580 --> 00:08:34.780
+<v Speaker 0>get a hands on with this, don't we?
+
+00:08:34.780 --> 00:08:36.299
+<v Speaker 0>We wanna kick the tires. We wanna play
+
+00:08:36.299 --> 00:08:37.580
+<v Speaker 0>with it. We wanna see how cool it
+
+00:08:37.580 --> 00:08:40.380
+<v Speaker 0>is. And people can, in your own time,
+
+00:08:40.380 --> 00:08:41.900
+<v Speaker 0>feel free to jump into the docs and
+
+00:08:41.900 --> 00:08:43.260
+<v Speaker 0>do a bit of a deeper dive there.
+
+00:08:44.384 --> 00:08:46.704
+<v Speaker 0>Yep. Yeah. There's there's lots going on here.
+
+00:08:46.704 --> 00:08:48.625
+<v Speaker 0>So There is a lot of documentation about
+
+00:08:48.625 --> 00:08:50.704
+<v Speaker 1>it. We try to be very transparent about
+
+00:08:50.704 --> 00:08:53.665
+<v Speaker 1>what we're we're building here. Yeah. Good documentation
+
+00:08:53.665 --> 00:08:55.264
+<v Speaker 0>is something that I love to see on
+
+00:08:55.264 --> 00:08:57.345
+<v Speaker 0>this show. I wish it was, like, the
+
+00:08:58.060 --> 00:08:58.860
+<v Speaker 0>the standard
+
+00:08:58.940 --> 00:09:00.699
+<v Speaker 0>for all open source projects, but that's not
+
+00:09:00.699 --> 00:09:02.300
+<v Speaker 0>the case. And I'll include my own in
+
+00:09:02.300 --> 00:09:04.220
+<v Speaker 0>that. My documentation for all of my projects
+
+00:09:04.220 --> 00:09:05.899
+<v Speaker 0>is the worst documentation in the world. So
+
+00:09:05.899 --> 00:09:07.819
+<v Speaker 0>I really appreciate it when I find other
+
+00:09:07.819 --> 00:09:08.380
+<v Speaker 0>projects.
+
+00:09:09.740 --> 00:09:12.965
+<v Speaker 1>It's a it's a team effort, and we
+
+00:09:12.965 --> 00:09:15.445
+<v Speaker 1>recently got a new hire in the team
+
+00:09:15.445 --> 00:09:18.165
+<v Speaker 1>who's gonna who's actually a technical writer. So
+
+00:09:18.165 --> 00:09:20.965
+<v Speaker 1>he's gonna spend a lot of time improving
+
+00:09:20.965 --> 00:09:22.565
+<v Speaker 1>this documentation. So all of this has been
+
+00:09:22.565 --> 00:09:24.325
+<v Speaker 1>written so far by developers.
+
+00:09:24.325 --> 00:09:24.565
+<v Speaker 1>You know
+
+00:09:25.590 --> 00:09:27.110
+<v Speaker 1>Nice. It is how it is.
+
+00:09:28.550 --> 00:09:31.750
+<v Speaker 0>Okay. So we are gonna I have prepared
+
+00:09:31.990 --> 00:09:33.990
+<v Speaker 0>let's do the what have I done upfront
+
+00:09:33.990 --> 00:09:36.790
+<v Speaker 0>component of the show? I have a Kubernetes
+
+00:09:36.790 --> 00:09:38.790
+<v Speaker 0>cluster running on Equinix metal.
+
+00:09:39.555 --> 00:09:42.675
+<v Speaker 0>It has nothing on the default namespace, but
+
+00:09:42.675 --> 00:09:44.755
+<v Speaker 0>we do have the weave works.
+
+00:09:45.075 --> 00:09:47.075
+<v Speaker 0>Oh, where's my Why is it not all
+
+00:09:47.075 --> 00:09:48.995
+<v Speaker 0>complete? Oh, there we go. We do have
+
+00:09:48.995 --> 00:09:52.195
+<v Speaker 0>the weave works sock shop microservice demo deployed
+
+00:09:52.195 --> 00:09:52.915
+<v Speaker 0>to the cluster.
+
+00:09:53.580 --> 00:09:55.980
+<v Speaker 0>I just did that to create some arbitrary
+
+00:09:55.980 --> 00:09:58.940
+<v Speaker 0>noise, hopefully get some logs into Yeah. Into
+
+00:09:58.940 --> 00:10:01.180
+<v Speaker 0>Loki. We made it say to deploy something
+
+00:10:01.180 --> 00:10:02.860
+<v Speaker 0>else, that's perfectly alright, but I just thought
+
+00:10:02.860 --> 00:10:04.220
+<v Speaker 0>I'd give us maybe a little bit of
+
+00:10:04.220 --> 00:10:05.500
+<v Speaker 0>a head start with some of the boring
+
+00:10:05.500 --> 00:10:07.464
+<v Speaker 0>stuff there. And of course, we do have
+
+00:10:07.464 --> 00:10:09.865
+<v Speaker 0>the control plane if we wanna get the
+
+00:10:09.865 --> 00:10:11.144
+<v Speaker 0>logs out of that too.
+
+00:10:11.625 --> 00:10:13.385
+<v Speaker 0>And something you mentioned as we were chatting
+
+00:10:13.385 --> 00:10:15.065
+<v Speaker 0>just before we went live is that you
+
+00:10:15.065 --> 00:10:16.904
+<v Speaker 0>can get quite meta with this. Loki can
+
+00:10:16.904 --> 00:10:18.265
+<v Speaker 0>read its own logs.
+
+00:10:19.065 --> 00:10:20.745
+<v Speaker 0>Yeah. I'll have a a little bit of
+
+00:10:20.745 --> 00:10:21.464
+<v Speaker 0>fun with that as well.
+
+00:10:22.720 --> 00:10:25.360
+<v Speaker 0>There's various installation methods. We can go with
+
+00:10:25.360 --> 00:10:26.480
+<v Speaker 0>with Tanka.
+
+00:10:26.800 --> 00:10:28.720
+<v Speaker 0>I think I'm gonna avoid that today. I
+
+00:10:28.720 --> 00:10:30.720
+<v Speaker 0>think the whole Tanka thing is something we
+
+00:10:30.720 --> 00:10:33.280
+<v Speaker 0>could do an entirely own episode on. Yeah.
+
+00:10:33.280 --> 00:10:34.640
+<v Speaker 0>What Tanka is and how to do it.
+
+00:10:34.640 --> 00:10:36.880
+<v Speaker 0>Do you wanna share anything about Tanka before
+
+00:10:36.880 --> 00:10:38.000
+<v Speaker 0>we jump into helm though?
+
+00:10:38.774 --> 00:10:39.895
+<v Speaker 0>Do you want to give us, like, more
+
+00:10:40.055 --> 00:10:40.775
+<v Speaker 1>Yeah. That's
+
+00:10:41.495 --> 00:10:43.655
+<v Speaker 1>mhmm. Yeah. TANCA is is
+
+00:10:43.975 --> 00:10:44.775
+<v Speaker 1>it's
+
+00:10:45.175 --> 00:10:47.095
+<v Speaker 1>really the same purpose as Helm as, you
+
+00:10:47.095 --> 00:10:47.975
+<v Speaker 1>know, deploying,
+
+00:10:48.455 --> 00:10:50.775
+<v Speaker 1>you know, describing your infrastructure
+
+00:10:50.855 --> 00:10:53.495
+<v Speaker 1>and and your workload with code,
+
+00:10:53.870 --> 00:10:56.350
+<v Speaker 1>except that we use Gsonnet and not
+
+00:10:56.829 --> 00:10:59.389
+<v Speaker 1>I think it's what's the the template the
+
+00:10:59.389 --> 00:11:01.470
+<v Speaker 1>Go template, I think. Go template. Yeah. But
+
+00:11:02.029 --> 00:11:04.589
+<v Speaker 1>yeah. And so with Tinker, we use Gsonnet,
+
+00:11:04.589 --> 00:11:06.269
+<v Speaker 1>which is a language that is a bit
+
+00:11:06.269 --> 00:11:06.910
+<v Speaker 1>more flexible.
+
+00:11:08.185 --> 00:11:09.465
+<v Speaker 1>But it's also
+
+00:11:09.705 --> 00:11:12.105
+<v Speaker 1>less well known and a bit more difficult
+
+00:11:12.105 --> 00:11:15.385
+<v Speaker 1>to learn. But it has this nice flexibility.
+
+00:11:16.024 --> 00:11:17.705
+<v Speaker 1>And that's what we use at Gafana Labs
+
+00:11:17.705 --> 00:11:18.745
+<v Speaker 1>to deploy
+
+00:11:19.785 --> 00:11:21.820
+<v Speaker 1>all the workload that we have. So that's
+
+00:11:21.820 --> 00:11:23.980
+<v Speaker 1>why the we we recommend Tenka because, you
+
+00:11:23.980 --> 00:11:26.540
+<v Speaker 1>know, there's more chance that you're gonna have,
+
+00:11:27.100 --> 00:11:29.420
+<v Speaker 1>you know, the latest version because we we
+
+00:11:29.420 --> 00:11:30.220
+<v Speaker 1>try to
+
+00:11:30.700 --> 00:11:33.260
+<v Speaker 1>always make Tenka up to date. But Elm
+
+00:11:33.260 --> 00:11:35.395
+<v Speaker 1>is more like a community, so we don't
+
+00:11:35.395 --> 00:11:37.075
+<v Speaker 1>we don't, you know, we don't we don't
+
+00:11:37.075 --> 00:11:38.595
+<v Speaker 1>ourselves look
+
+00:11:38.595 --> 00:11:40.995
+<v Speaker 1>at Elm that much, and we don't run
+
+00:11:40.995 --> 00:11:43.235
+<v Speaker 1>it with Elm on our side. So it's
+
+00:11:43.235 --> 00:11:44.755
+<v Speaker 1>easier for us to help you if you're
+
+00:11:44.755 --> 00:11:47.075
+<v Speaker 1>using Thinker. But Elm, you know, I've I've
+
+00:11:47.075 --> 00:11:49.075
+<v Speaker 1>been using it too for
+
+00:11:49.395 --> 00:11:49.875
+<v Speaker 1>deploying
+
+00:11:50.519 --> 00:11:52.759
+<v Speaker 1>Loki for testing, and it's it's it's working,
+
+00:11:52.759 --> 00:11:54.040
+<v Speaker 1>you know, like a charm too.
+
+00:11:54.360 --> 00:11:55.000
+<v Speaker 0>Nice.
+
+00:11:55.720 --> 00:11:57.720
+<v Speaker 0>Yeah. I mean, I'll I'll kind of add
+
+00:11:57.720 --> 00:11:59.639
+<v Speaker 0>one thing here. I I I think Helm
+
+00:11:59.639 --> 00:12:00.519
+<v Speaker 0>is great,
+
+00:12:00.759 --> 00:12:03.160
+<v Speaker 0>but I really dislike Go templates. And I
+
+00:12:03.160 --> 00:12:05.079
+<v Speaker 0>find it really difficult to maintain my Helm
+
+00:12:05.079 --> 00:12:07.085
+<v Speaker 0>charts with the amount of options that users
+
+00:12:07.085 --> 00:12:07.725
+<v Speaker 0>want
+
+00:12:08.285 --> 00:12:10.525
+<v Speaker 0>while trying to make it still legible, readable,
+
+00:12:10.525 --> 00:12:12.365
+<v Speaker 0>understandable, all these things. It can be really
+
+00:12:12.365 --> 00:12:14.045
+<v Speaker 0>difficult and I I love seeing your tooling
+
+00:12:14.045 --> 00:12:15.405
+<v Speaker 0>in this space come up to try and
+
+00:12:15.405 --> 00:12:16.285
+<v Speaker 0>hopefully
+
+00:12:16.285 --> 00:12:17.085
+<v Speaker 0>solve
+
+00:12:17.165 --> 00:12:18.765
+<v Speaker 0>some of those challenges. Yeah, I'd love to
+
+00:12:18.765 --> 00:12:20.205
+<v Speaker 0>do a Tanker episode one day for sure.
+
+00:12:21.030 --> 00:12:23.350
+<v Speaker 1>Yeah. One of the one of the big
+
+00:12:23.350 --> 00:12:25.590
+<v Speaker 1>win that I like with Tanker, this is
+
+00:12:25.590 --> 00:12:27.510
+<v Speaker 1>something that happened to me a lot in
+
+00:12:27.510 --> 00:12:29.270
+<v Speaker 1>in my previous experience,
+
+00:12:29.590 --> 00:12:31.910
+<v Speaker 1>is how many times have you deployed
+
+00:12:32.070 --> 00:12:34.310
+<v Speaker 1>an application in the wrong cluster, like in
+
+00:12:34.310 --> 00:12:37.030
+<v Speaker 1>production? Or you applied applied the change
+
+00:12:37.325 --> 00:12:39.565
+<v Speaker 1>because the context your context was not the
+
+00:12:39.565 --> 00:12:40.285
+<v Speaker 1>right one.
+
+00:12:41.165 --> 00:12:43.885
+<v Speaker 1>Tenkara doesn't really rely on on your current
+
+00:12:43.885 --> 00:12:46.285
+<v Speaker 1>context. It relies on the
+
+00:12:46.845 --> 00:12:49.085
+<v Speaker 1>context that is set in the folder. So
+
+00:12:49.085 --> 00:12:49.725
+<v Speaker 1>of you know?
+
+00:12:50.500 --> 00:12:52.660
+<v Speaker 1>There's a gist there's a JSON file that
+
+00:12:52.660 --> 00:12:54.579
+<v Speaker 1>describes the the cluster that you should be
+
+00:12:54.579 --> 00:12:57.380
+<v Speaker 1>targeting for that folder. And it will always,
+
+00:12:57.380 --> 00:12:59.620
+<v Speaker 1>you know, target that one. So there's less
+
+00:12:59.620 --> 00:13:01.380
+<v Speaker 1>chance to make a mistake, like deploying an
+
+00:13:01.380 --> 00:13:03.620
+<v Speaker 1>update in pod or removing a pod in
+
+00:13:03.620 --> 00:13:04.660
+<v Speaker 1>pod or anything like that.
+
+00:13:05.834 --> 00:13:07.915
+<v Speaker 0>Yeah. I I do that all the time.
+
+00:13:07.915 --> 00:13:10.075
+<v Speaker 0>I am juggling so many clusters
+
+00:13:10.235 --> 00:13:12.395
+<v Speaker 0>for these episodes, for my day job, for
+
+00:13:12.395 --> 00:13:13.835
+<v Speaker 0>my open source projects,
+
+00:13:14.154 --> 00:13:16.235
+<v Speaker 0>and I should get better at using Dart
+
+00:13:16.235 --> 00:13:18.875
+<v Speaker 0>End and having KubeConfigs thrown around or even
+
+00:13:18.875 --> 00:13:20.820
+<v Speaker 0>just better tooling my context. But I I
+
+00:13:20.820 --> 00:13:22.339
+<v Speaker 0>do it all the time. I'm always deploying
+
+00:13:22.339 --> 00:13:23.860
+<v Speaker 0>stuff to Docker for Mac because I mean
+
+00:13:23.860 --> 00:13:25.380
+<v Speaker 0>to put somewhere else or to the wrong
+
+00:13:25.540 --> 00:13:27.780
+<v Speaker 0>yeah. I feel that. Yeah. Okay.
+
+00:13:28.020 --> 00:13:30.339
+<v Speaker 0>Let's jump to the You to do Docker
+
+00:13:30.339 --> 00:13:32.980
+<v Speaker 1>format and Docker format and instead you deployed
+
+00:13:32.980 --> 00:13:35.685
+<v Speaker 1>prod. That's too awesome. Take care of it.
+
+00:13:35.685 --> 00:13:37.365
+<v Speaker 0>See, because I also have a show called
+
+00:13:37.365 --> 00:13:38.565
+<v Speaker 0>Clustered where I have to spend up to
+
+00:13:38.565 --> 00:13:40.405
+<v Speaker 0>multiple clusters every week, and one of the
+
+00:13:40.405 --> 00:13:42.485
+<v Speaker 0>things I keep doing is deploying Cluster API
+
+00:13:42.485 --> 00:13:44.325
+<v Speaker 0>to my production cluster instead of Docker for
+
+00:13:44.325 --> 00:13:46.165
+<v Speaker 0>Mac, and it's it's it's a pain in
+
+00:13:46.165 --> 00:13:47.845
+<v Speaker 0>the ass. Anyway, I'm gonna rant about that
+
+00:13:47.845 --> 00:13:49.709
+<v Speaker 0>another day, not today. What we'll do today
+
+00:13:49.709 --> 00:13:50.110
+<v Speaker 0>is
+
+00:13:50.589 --> 00:13:52.670
+<v Speaker 0>add our helm repository.
+
+00:13:52.990 --> 00:13:53.470
+<v Speaker 1>Yeah.
+
+00:13:55.630 --> 00:13:57.070
+<v Speaker 0>Don't have to check my context because I
+
+00:13:57.070 --> 00:13:58.830
+<v Speaker 0>already ran get nodes and get pods. I'm
+
+00:13:58.830 --> 00:13:59.710
+<v Speaker 0>good. Okay.
+
+00:13:59.950 --> 00:14:01.230
+<v Speaker 0>You you gave me the fear now.
+
+00:14:02.355 --> 00:14:04.995
+<v Speaker 0>Run our repository update, which I don't think
+
+00:14:04.995 --> 00:14:06.995
+<v Speaker 0>I probably needed with the repo ad, but
+
+00:14:06.995 --> 00:14:08.835
+<v Speaker 0>it's all good. And what I see here
+
+00:14:08.835 --> 00:14:10.275
+<v Speaker 0>is we have a couple of options for
+
+00:14:10.275 --> 00:14:12.675
+<v Speaker 0>deploying locator or cluster. Mhmm.
+
+00:14:13.635 --> 00:14:15.480
+<v Speaker 0>We've got something called a Loki stack. We've
+
+00:14:15.480 --> 00:14:17.480
+<v Speaker 0>got a Loki stack over PVC. We've got
+
+00:14:17.480 --> 00:14:19.880
+<v Speaker 0>a slightly different Loki stack.
+
+00:14:20.360 --> 00:14:22.279
+<v Speaker 0>Yep. You wanna run us through these options
+
+00:14:22.279 --> 00:14:23.160
+<v Speaker 0>if you don't mind?
+
+00:14:23.880 --> 00:14:26.520
+<v Speaker 1>Yeah. They're they're just so Loki stack is
+
+00:14:26.520 --> 00:14:28.200
+<v Speaker 1>really an umbrella chart,
+
+00:14:28.904 --> 00:14:30.425
+<v Speaker 1>And a lot of people are using it
+
+00:14:30.425 --> 00:14:32.185
+<v Speaker 1>just to get started and and play with
+
+00:14:32.185 --> 00:14:34.665
+<v Speaker 1>the the whole stack of Loki, Ponte plus
+
+00:14:34.665 --> 00:14:35.465
+<v Speaker 1>Grafana
+
+00:14:35.785 --> 00:14:38.025
+<v Speaker 1>and and added bonus parameters too.
+
+00:14:38.265 --> 00:14:38.825
+<v Speaker 1>So
+
+00:14:39.785 --> 00:14:42.265
+<v Speaker 1>all of those different type of installation just,
+
+00:14:42.265 --> 00:14:43.705
+<v Speaker 1>you know, activate, deactivate
+
+00:14:43.839 --> 00:14:46.240
+<v Speaker 1>one of the component or or or persistent
+
+00:14:46.240 --> 00:14:48.000
+<v Speaker 1>volume or depending on what you're looking for.
+
+00:14:48.000 --> 00:14:49.839
+<v Speaker 1>You can even just use if you want
+
+00:14:49.839 --> 00:14:51.280
+<v Speaker 1>to instead of.
+
+00:14:51.920 --> 00:14:53.839
+<v Speaker 1>So this is just Viya's. It's it's the
+
+00:14:53.839 --> 00:14:55.680
+<v Speaker 1>same stack, but with Viya's,
+
+00:14:56.080 --> 00:14:58.285
+<v Speaker 1>you know, configuration enable and disable. I would
+
+00:14:58.285 --> 00:15:00.045
+<v Speaker 1>suggest that we go with the, yeah, the
+
+00:15:00.045 --> 00:15:02.125
+<v Speaker 1>one you have your mouse on, the one
+
+00:15:02.125 --> 00:15:04.765
+<v Speaker 1>that's deployed in Skafana and Prometheus.
+
+00:15:05.245 --> 00:15:08.605
+<v Speaker 1>Yeah. Let's go with this one. So for
+
+00:15:08.765 --> 00:15:10.940
+<v Speaker 0>I know what FluteBit is. I I know
+
+00:15:10.940 --> 00:15:12.540
+<v Speaker 0>I've I've used that a fair bit in
+
+00:15:12.540 --> 00:15:14.780
+<v Speaker 0>my career. I have never used Promptail. Can
+
+00:15:14.780 --> 00:15:17.020
+<v Speaker 0>you give me the what what is is
+
+00:15:17.020 --> 00:15:17.500
+<v Speaker 0>that just a
+
+00:15:18.460 --> 00:15:20.700
+<v Speaker 1>Yep. No. That's a very good very good
+
+00:15:20.700 --> 00:15:24.125
+<v Speaker 1>question, David. The the the idea of of
+
+00:15:24.685 --> 00:15:25.565
+<v Speaker 1>is,
+
+00:15:25.565 --> 00:15:27.084
+<v Speaker 1>you know, there's already a lot of client
+
+00:15:27.084 --> 00:15:29.404
+<v Speaker 1>for fetching logs, but there's none of them
+
+00:15:29.404 --> 00:15:30.285
+<v Speaker 1>that really
+
+00:15:31.245 --> 00:15:34.125
+<v Speaker 1>mimic the service discovery from Prometheus.
+
+00:15:34.445 --> 00:15:36.365
+<v Speaker 1>Right. And that's all the reason why we
+
+00:15:36.365 --> 00:15:38.270
+<v Speaker 1>have Prometheus. We wanted to have the same
+
+00:15:38.270 --> 00:15:40.670
+<v Speaker 1>experience as you will install Prometheus,
+
+00:15:40.910 --> 00:15:42.030
+<v Speaker 1>configure your
+
+00:15:42.430 --> 00:15:45.390
+<v Speaker 1>labels to be extracted and fetched with the
+
+00:15:45.390 --> 00:15:47.470
+<v Speaker 1>Kubernetes service discovery.
+
+00:15:47.710 --> 00:15:50.190
+<v Speaker 1>And Prometheus is exactly the same configuration.
+
+00:15:50.555 --> 00:15:52.074
+<v Speaker 1>So you have more chance to have the
+
+00:15:52.074 --> 00:15:53.274
+<v Speaker 1>same label set
+
+00:15:53.435 --> 00:15:55.915
+<v Speaker 1>for the workload for your logs and your
+
+00:15:55.915 --> 00:15:58.315
+<v Speaker 1>metrics if you're using Pontail than using Finbit.
+
+00:15:58.315 --> 00:15:59.915
+<v Speaker 1>It's a bit more difficult. I'm not saying
+
+00:15:59.915 --> 00:16:02.074
+<v Speaker 1>it's impossible, but it's going to be more
+
+00:16:02.074 --> 00:16:05.089
+<v Speaker 1>difficult. If you're coming from Prometheus world, Prometheus
+
+00:16:05.089 --> 00:16:07.730
+<v Speaker 1>will be much more easier to configure. Alright.
+
+00:16:07.730 --> 00:16:10.209
+<v Speaker 0>Awesome. Thank you for that. Okay. So we're
+
+00:16:10.209 --> 00:16:13.890
+<v Speaker 0>gonna deploy Loki Loki stack with Prometheus.
+
+00:16:14.610 --> 00:16:16.825
+<v Speaker 0>Now I'm curious. One last thing and we'll
+
+00:16:16.825 --> 00:16:18.345
+<v Speaker 0>get on to something a bit more interesting,
+
+00:16:18.345 --> 00:16:18.745
+<v Speaker 0>but
+
+00:16:19.225 --> 00:16:20.825
+<v Speaker 0>we have an option for web and without
+
+00:16:20.825 --> 00:16:21.865
+<v Speaker 0>a PVC.
+
+00:16:22.425 --> 00:16:23.865
+<v Speaker 0>I'm going to deploy the one without even
+
+00:16:23.865 --> 00:16:25.225
+<v Speaker 0>though we do have the ability to have
+
+00:16:25.225 --> 00:16:27.305
+<v Speaker 0>persistent volumes on our cluster, but I'm just
+
+00:16:27.305 --> 00:16:29.465
+<v Speaker 0>curious if I do it without the PVC,
+
+00:16:29.465 --> 00:16:31.460
+<v Speaker 0>does that mean if Loki restarts,
+
+00:16:31.460 --> 00:16:33.700
+<v Speaker 0>we lose our data, or is it using
+
+00:16:33.700 --> 00:16:35.300
+<v Speaker 0>host path or something else?
+
+00:16:36.339 --> 00:16:37.300
+<v Speaker 1>Yeah. No.
+
+00:16:38.100 --> 00:16:39.860
+<v Speaker 1>I I don't think it by default, it
+
+00:16:39.860 --> 00:16:41.860
+<v Speaker 1>uses all sparse, so you will lose the
+
+00:16:41.860 --> 00:16:44.025
+<v Speaker 1>data if you restart. Yeah. And we're okay
+
+00:16:44.025 --> 00:16:46.105
+<v Speaker 1>with that for today. Right? So Yeah. We're
+
+00:16:46.105 --> 00:16:47.465
+<v Speaker 1>okay with that. Yeah. Definitely.
+
+00:16:48.745 --> 00:16:50.665
+<v Speaker 0>I never told you. We're deploying this into
+
+00:16:50.665 --> 00:16:52.825
+<v Speaker 0>prod today for my real work cluster. So
+
+00:16:52.825 --> 00:16:54.345
+<v Speaker 0>I should probably use PVC.
+
+00:16:55.865 --> 00:16:56.425
+<v Speaker 0>Exactly.
+
+00:16:56.825 --> 00:16:58.985
+<v Speaker 1>You want to use PVC if you're, yeah,
+
+00:16:59.120 --> 00:17:01.199
+<v Speaker 1>if you're deploying on a production cluster or
+
+00:17:01.199 --> 00:17:02.160
+<v Speaker 1>anything like that.
+
+00:17:02.800 --> 00:17:04.559
+<v Speaker 0>Alright. So does this create
+
+00:17:04.799 --> 00:17:06.799
+<v Speaker 0>no namespace? I'm assuming we've got some stuff
+
+00:17:06.799 --> 00:17:09.440
+<v Speaker 0>in our default. There we go. Nice. Yeah.
+
+00:17:09.440 --> 00:17:11.865
+<v Speaker 1>Everything is starting. Yeah. So I see Loki
+
+00:17:11.865 --> 00:17:13.625
+<v Speaker 0>zero. That means we've got a stateful set
+
+00:17:13.625 --> 00:17:15.785
+<v Speaker 0>running here with with one pod. I'm gonna
+
+00:17:15.785 --> 00:17:16.664
+<v Speaker 0>assume
+
+00:17:16.984 --> 00:17:19.464
+<v Speaker 0>we've got Grafana. Yeah. KubeStateMetrics.
+
+00:17:19.464 --> 00:17:21.065
+<v Speaker 0>Nice. We don't have to deploy that. That
+
+00:17:21.065 --> 00:17:22.105
+<v Speaker 0>is always a win.
+
+00:17:22.585 --> 00:17:24.665
+<v Speaker 0>We've got the Prometheus stack that we're all
+
+00:17:24.665 --> 00:17:27.310
+<v Speaker 0>know and comfortable with. And then we have
+
+00:17:27.390 --> 00:17:28.510
+<v Speaker 0>Yep. Promptail,
+
+00:17:28.510 --> 00:17:30.190
+<v Speaker 0>four of them. I'm assuming that is a
+
+00:17:30.190 --> 00:17:32.670
+<v Speaker 0>daemon set based on the It is. Yep.
+
+00:17:33.310 --> 00:17:34.110
+<v Speaker 1>Correct.
+
+00:17:35.230 --> 00:17:37.310
+<v Speaker 0>Yeah. I know some stuff. I'm not, you
+
+00:17:37.310 --> 00:17:37.790
+<v Speaker 0>know,
+
+00:17:38.270 --> 00:17:39.470
+<v Speaker 0>not really rubbish.
+
+00:17:40.595 --> 00:17:42.835
+<v Speaker 1>No. So the idea is Pontail is going
+
+00:17:42.835 --> 00:17:44.434
+<v Speaker 1>to run on each of the nodes.
+
+00:17:44.755 --> 00:17:46.115
+<v Speaker 1>And it's going to need so by the
+
+00:17:46.115 --> 00:17:47.475
+<v Speaker 1>way, I hope that this is going to
+
+00:17:47.475 --> 00:17:48.675
+<v Speaker 1>be fine. But it's going to need to
+
+00:17:48.675 --> 00:17:51.155
+<v Speaker 1>access the host path of the nodes so
+
+00:17:51.155 --> 00:17:53.875
+<v Speaker 1>that it can get the Docker logs
+
+00:17:53.955 --> 00:17:55.155
+<v Speaker 1>from the daemon itself.
+
+00:17:56.280 --> 00:17:59.400
+<v Speaker 1>And then it's gonna tail those files. And
+
+00:17:59.400 --> 00:18:01.240
+<v Speaker 1>with the service discovery, you're gonna be able
+
+00:18:01.240 --> 00:18:03.720
+<v Speaker 1>to attach Kubernetes metadata
+
+00:18:04.280 --> 00:18:06.360
+<v Speaker 1>to the logs and send them to Loki.
+
+00:18:06.920 --> 00:18:09.325
+<v Speaker 0>Awesome. Well, let's give that just a a
+
+00:18:09.325 --> 00:18:11.805
+<v Speaker 0>moment to kinda get healthy, get happy. We
+
+00:18:11.805 --> 00:18:13.565
+<v Speaker 0>do have a question from our audience. I'm
+
+00:18:13.565 --> 00:18:15.005
+<v Speaker 0>gonna pop that on the screen.
+
+00:18:16.285 --> 00:18:18.605
+<v Speaker 0>But Raja Sulent has asked
+
+00:18:19.005 --> 00:18:21.405
+<v Speaker 0>there's not read the manual pages yet, but
+
+00:18:21.405 --> 00:18:22.765
+<v Speaker 0>I do love the use of RTFN by
+
+00:18:22.765 --> 00:18:24.870
+<v Speaker 0>the way. Props to that. I cannot use
+
+00:18:24.870 --> 00:18:26.629
+<v Speaker 0>this to create a dynamic oh, no. See,
+
+00:18:26.629 --> 00:18:28.709
+<v Speaker 0>I was too busy enjoying the RTFM.
+
+00:18:28.789 --> 00:18:30.070
+<v Speaker 0>But can I use this to create a
+
+00:18:30.070 --> 00:18:32.149
+<v Speaker 0>dynamic dashboard with logs that I put into
+
+00:18:32.149 --> 00:18:33.990
+<v Speaker 0>the system so I can get a dashboard
+
+00:18:33.990 --> 00:18:34.870
+<v Speaker 0>to view the logs? So
+
+00:18:36.164 --> 00:18:37.604
+<v Speaker 0>does that make sense to you?
+
+00:18:38.245 --> 00:18:39.044
+<v Speaker 1>Can I
+
+00:18:40.884 --> 00:18:42.325
+<v Speaker 0>Hold on? I'll pull it back up one
+
+00:18:42.325 --> 00:18:43.924
+<v Speaker 0>more time. I think what they're asking is
+
+00:18:43.924 --> 00:18:45.365
+<v Speaker 0>is can I use this to create a
+
+00:18:45.365 --> 00:18:47.205
+<v Speaker 0>dashboard that just shows me the logs that
+
+00:18:47.205 --> 00:18:49.445
+<v Speaker 0>I'm putting into the system? I think that
+
+00:18:49.445 --> 00:18:49.924
+<v Speaker 0>is
+
+00:18:50.429 --> 00:18:52.190
+<v Speaker 1>You yeah. You can create a dash yeah.
+
+00:18:52.190 --> 00:18:53.950
+<v Speaker 1>You can create a dashboard. So, yeah, Grafana
+
+00:18:53.950 --> 00:18:55.949
+<v Speaker 1>now supports a log panel.
+
+00:18:56.350 --> 00:18:58.669
+<v Speaker 1>So not only you can use explore to
+
+00:18:58.669 --> 00:18:59.469
+<v Speaker 1>directly
+
+00:18:59.549 --> 00:19:01.629
+<v Speaker 1>explore the logs of your workload, but you
+
+00:19:01.629 --> 00:19:04.205
+<v Speaker 1>can also build the metric dash dashboard that
+
+00:19:04.205 --> 00:19:06.445
+<v Speaker 1>you you were before and then add the
+
+00:19:06.445 --> 00:19:08.524
+<v Speaker 1>logs within well, we're we're gonna be able
+
+00:19:08.524 --> 00:19:09.725
+<v Speaker 1>to do that today, I think. That's gonna
+
+00:19:09.725 --> 00:19:11.404
+<v Speaker 1>be fun. That sounds like a great idea.
+
+00:19:11.485 --> 00:19:12.204
+<v Speaker 0>I guess
+
+00:19:13.164 --> 00:19:14.845
+<v Speaker 0>alright. Let me throw it. Okay. We've deployed
+
+00:19:14.845 --> 00:19:16.125
+<v Speaker 0>this. And I know I should go back
+
+00:19:16.125 --> 00:19:17.485
+<v Speaker 0>to the docs, but I've got you right
+
+00:19:17.485 --> 00:19:18.764
+<v Speaker 0>in front of me, so I'm just gonna
+
+00:19:18.420 --> 00:19:20.500
+<v Speaker 0>throw at you anyway. Yeah. Because
+
+00:19:21.060 --> 00:19:22.660
+<v Speaker 0>we have the Promptail running as a daemon
+
+00:19:22.660 --> 00:19:24.820
+<v Speaker 0>set, because we have deployed this altogether,
+
+00:19:25.220 --> 00:19:26.260
+<v Speaker 0>I'm assuming
+
+00:19:26.660 --> 00:19:29.060
+<v Speaker 0>if I just browse to Grafana, I would
+
+00:19:29.060 --> 00:19:31.140
+<v Speaker 0>expect Promptail to already be shipping all of
+
+00:19:31.140 --> 00:19:33.225
+<v Speaker 0>my containers logs to Loki, and that we
+
+00:19:33.225 --> 00:19:34.985
+<v Speaker 0>can probably start to query that right away.
+
+00:19:34.985 --> 00:19:36.265
+<v Speaker 0>Is is that where we Yeah.
+
+00:19:36.985 --> 00:19:39.225
+<v Speaker 1>I expect the same thing, but, you know,
+
+00:19:39.305 --> 00:19:41.305
+<v Speaker 1>how it is live. So let's see. Yeah.
+
+00:19:41.305 --> 00:19:42.745
+<v Speaker 1>I expect that normally
+
+00:19:42.745 --> 00:19:44.585
+<v Speaker 1>when you when you get the the stack
+
+00:19:44.585 --> 00:19:45.304
+<v Speaker 1>working,
+
+00:19:45.705 --> 00:19:48.240
+<v Speaker 1>you should be able to to directly start
+
+00:19:48.240 --> 00:19:50.400
+<v Speaker 1>looking at the logs. Okay. I'm I'm gonna
+
+00:19:50.400 --> 00:19:52.880
+<v Speaker 0>assume, like, you know, Prometheus does ship really
+
+00:19:52.880 --> 00:19:54.800
+<v Speaker 0>basic UI out of the box. Does Loki
+
+00:19:54.800 --> 00:19:56.560
+<v Speaker 0>do anything like that, or does it really
+
+00:19:56.560 --> 00:19:59.040
+<v Speaker 0>rely on Grafana? Okay. It does it does
+
+00:19:59.040 --> 00:20:01.680
+<v Speaker 1>it does expose some sort of UI, but
+
+00:20:01.680 --> 00:20:02.640
+<v Speaker 1>nothing really
+
+00:20:04.055 --> 00:20:06.455
+<v Speaker 1>nothing really useful for us here. It's more
+
+00:20:06.455 --> 00:20:08.375
+<v Speaker 1>from an operator perspective.
+
+00:20:08.375 --> 00:20:09.975
+<v Speaker 1>So it's better that we look at Grafana.
+
+00:20:09.975 --> 00:20:11.894
+<v Speaker 1>Grafana is more the UI for this.
+
+00:20:12.855 --> 00:20:13.575
+<v Speaker 0>All right.
+
+00:20:13.895 --> 00:20:15.575
+<v Speaker 0>Is it going to be admin, admin? Or
+
+00:20:15.575 --> 00:20:16.455
+<v Speaker 0>am I going to have to find the
+
+00:20:16.455 --> 00:20:18.290
+<v Speaker 0>secret in the cluster? I
+
+00:20:18.290 --> 00:20:21.090
+<v Speaker 1>think it is admin. Oh, it's not. Yeah.
+
+00:20:21.170 --> 00:20:22.929
+<v Speaker 0>Alright. Let's export
+
+00:20:24.530 --> 00:20:25.890
+<v Speaker 0>my kube config.
+
+00:20:25.890 --> 00:20:26.769
+<v Speaker 0>Let's get
+
+00:20:27.010 --> 00:20:27.970
+<v Speaker 0>secret.
+
+00:20:28.850 --> 00:20:30.370
+<v Speaker 1>I I think I think there is one
+
+00:20:30.370 --> 00:20:32.804
+<v Speaker 1>already. I'm wondering what it is. It's not
+
+00:20:32.965 --> 00:20:34.565
+<v Speaker 1>so you tried admin admin.
+
+00:20:35.365 --> 00:20:37.365
+<v Speaker 0>I did. Yeah. There is a there is
+
+00:20:37.365 --> 00:20:39.284
+<v Speaker 0>a Loki Grafana secret here. I'm gonna assume
+
+00:20:39.284 --> 00:20:41.044
+<v Speaker 0>it's there. What I'll do is I'll just
+
+00:20:41.044 --> 00:20:42.644
+<v Speaker 0>pop up a follow-up question
+
+00:20:42.885 --> 00:20:44.804
+<v Speaker 0>which you can tackle while I do the
+
+00:20:44.804 --> 00:20:46.565
+<v Speaker 0>boarding bit for use case.
+
+00:20:47.500 --> 00:20:49.179
+<v Speaker 0>I get a bunch of syslogs from different
+
+00:20:49.179 --> 00:20:51.820
+<v Speaker 0>hosts, put them into Loki, use Grafana to
+
+00:20:51.820 --> 00:20:52.700
+<v Speaker 0>view and expect.
+
+00:20:53.420 --> 00:20:54.860
+<v Speaker 0>I think that's it. Yes. I think that's
+
+00:20:54.860 --> 00:20:56.940
+<v Speaker 0>what we're we're hopefully just about to do.
+
+00:20:57.100 --> 00:20:59.499
+<v Speaker 0>Sorry. I answered your question. Yeah. No.
+
+00:20:59.900 --> 00:21:01.815
+<v Speaker 1>No. No. You're you're right. I think the
+
+00:21:01.815 --> 00:21:04.054
+<v Speaker 1>question is really towards Syslog, which is less
+
+00:21:04.054 --> 00:21:04.854
+<v Speaker 1>Kubernetes.
+
+00:21:05.255 --> 00:21:07.734
+<v Speaker 1>But, yeah, you can do that. The the
+
+00:21:07.895 --> 00:21:09.895
+<v Speaker 1>the Pontail supports Syslog
+
+00:21:09.895 --> 00:21:10.614
+<v Speaker 1>receiver.
+
+00:21:10.775 --> 00:21:12.455
+<v Speaker 1>So you can stop Pontail.
+
+00:21:12.615 --> 00:21:14.934
+<v Speaker 1>It will run as a as a Syslog
+
+00:21:14.934 --> 00:21:17.919
+<v Speaker 1>server. You can send the log to Promptel
+
+00:21:17.919 --> 00:21:20.480
+<v Speaker 1>directly from all your different devices that you
+
+00:21:20.480 --> 00:21:22.639
+<v Speaker 1>have and it will ship them to to
+
+00:21:22.639 --> 00:21:23.359
+<v Speaker 1>Loki.
+
+00:21:24.080 --> 00:21:24.959
+<v Speaker 0>Alright.
+
+00:21:24.960 --> 00:21:27.440
+<v Speaker 0>I'm not gonna decode the username. I'm just
+
+00:21:27.440 --> 00:21:30.080
+<v Speaker 0>gonna hope that's the basic before hash for
+
+00:21:30.080 --> 00:21:30.879
+<v Speaker 0>admin.
+
+00:21:31.759 --> 00:21:32.000
+<v Speaker 1>Yeah.
+
+00:21:33.335 --> 00:21:35.575
+<v Speaker 0>Maybe not. Oh, no. That's just copied them
+
+00:21:35.575 --> 00:21:36.695
+<v Speaker 0>when I highlighted it.
+
+00:21:37.415 --> 00:21:38.455
+<v Speaker 0>Silly me.
+
+00:21:39.575 --> 00:21:41.335
+<v Speaker 0>There we go. Nice. Yeah. Cool.
+
+00:21:44.535 --> 00:21:46.679
+<v Speaker 1>Although otherwise, we could have just it and
+
+00:21:46.679 --> 00:21:47.799
+<v Speaker 1>changed the password.
+
+00:21:48.760 --> 00:21:50.919
+<v Speaker 0>No. No. No. No. We do. That's the
+
+00:21:50.919 --> 00:21:52.600
+<v Speaker 0>that's the installable
+
+00:21:52.600 --> 00:21:55.399
+<v Speaker 0>way. So it looks like we don't have
+
+00:21:55.399 --> 00:21:57.960
+<v Speaker 0>any starred dashboards at least, but has it
+
+00:21:57.960 --> 00:21:58.679
+<v Speaker 0>created
+
+00:21:59.225 --> 00:22:01.145
+<v Speaker 0>And it No. But we we do have
+
+00:22:01.145 --> 00:22:03.545
+<v Speaker 1>a no. There's no dashboard when you start.
+
+00:22:03.545 --> 00:22:05.544
+<v Speaker 1>But there is a there's a data source,
+
+00:22:05.545 --> 00:22:07.545
+<v Speaker 1>I think. If you look at it's in
+
+00:22:07.705 --> 00:22:10.505
+<v Speaker 1>yeah. This one, data sources. Yeah. Yeah. We
+
+00:22:10.505 --> 00:22:13.225
+<v Speaker 1>can see already Loki and Prometheus are connected.
+
+00:22:16.049 --> 00:22:18.450
+<v Speaker 0>Yeah. We'll try. Yeah. Okay. So we do
+
+00:22:18.450 --> 00:22:20.370
+<v Speaker 0>have them connected. That's great. I guess in
+
+00:22:20.370 --> 00:22:21.009
+<v Speaker 0>theory,
+
+00:22:21.490 --> 00:22:23.730
+<v Speaker 0>we can jump straight into explore and begin
+
+00:22:23.730 --> 00:22:26.529
+<v Speaker 0>to see what we have available to us.
+
+00:22:27.170 --> 00:22:29.010
+<v Speaker 1>Yeah. So you need to select a data
+
+00:22:29.010 --> 00:22:31.144
+<v Speaker 1>source at the top, I believe. Yeah.
+
+00:22:35.304 --> 00:22:36.184
+<v Speaker 0>Hi.
+
+00:22:36.265 --> 00:22:36.904
+<v Speaker 0>Yeah.
+
+00:22:38.265 --> 00:22:39.544
+<v Speaker 0>So
+
+00:22:39.544 --> 00:22:42.184
+<v Speaker 0>my first question then is
+
+00:22:42.690 --> 00:22:45.169
+<v Speaker 0>how do we interact with Loki?
+
+00:22:45.649 --> 00:22:47.889
+<v Speaker 0>I'm assuming it's not used in PromQL. I'm
+
+00:22:47.889 --> 00:22:49.970
+<v Speaker 0>assuming there's a Loki query language. Do you
+
+00:22:49.970 --> 00:22:51.330
+<v Speaker 0>want to walk us through this?
+
+00:22:52.049 --> 00:22:54.849
+<v Speaker 1>Yeah. So we call it LogQL,
+
+00:22:55.090 --> 00:22:56.210
+<v Speaker 1>Log Query Language.
+
+00:22:56.924 --> 00:22:59.485
+<v Speaker 1>And so there's a documentation on Grafana that
+
+00:22:59.485 --> 00:23:01.804
+<v Speaker 1>is very extensive on on everything
+
+00:23:01.804 --> 00:23:03.725
+<v Speaker 1>that you can do with LogQL. But the
+
+00:23:03.725 --> 00:23:05.164
+<v Speaker 1>idea is is really
+
+00:23:05.884 --> 00:23:09.499
+<v Speaker 1>inspired by Prometheus again. So the label selector
+
+00:23:09.580 --> 00:23:12.140
+<v Speaker 1>to select a metric, but for us, there's
+
+00:23:12.140 --> 00:23:15.100
+<v Speaker 1>no metrics. So it's just this label set
+
+00:23:15.100 --> 00:23:17.019
+<v Speaker 1>selector and the label matches
+
+00:23:17.260 --> 00:23:19.020
+<v Speaker 1>will be the same. So you can, you
+
+00:23:19.020 --> 00:23:20.859
+<v Speaker 1>know, choose one of them, and it will
+
+00:23:21.020 --> 00:23:22.779
+<v Speaker 1>write the query for you. So let's let's
+
+00:23:22.779 --> 00:23:23.980
+<v Speaker 1>go to app and select one.
+
+00:23:25.235 --> 00:23:26.835
+<v Speaker 0>Will we start with the meta query of
+
+00:23:26.835 --> 00:23:27.874
+<v Speaker 0>app Loki?
+
+00:23:28.434 --> 00:23:30.594
+<v Speaker 1>Yeah. Let's let's start with that. Yeah.
+
+00:23:31.554 --> 00:23:33.714
+<v Speaker 0>Oh, it it kinda does look like
+
+00:23:34.914 --> 00:23:35.715
+<v Speaker 0>PromQL,
+
+00:23:35.715 --> 00:23:38.115
+<v Speaker 0>at least the label selector syntax. Right? Yeah.
+
+00:23:38.299 --> 00:23:41.019
+<v Speaker 1>We're on a old version of Grafana. So
+
+00:23:41.740 --> 00:23:42.779
+<v Speaker 1>it needs to
+
+00:23:43.100 --> 00:23:45.179
+<v Speaker 1>it needs to you need to manually set
+
+00:23:45.179 --> 00:23:47.179
+<v Speaker 1>metric or logs at the top, as you
+
+00:23:47.179 --> 00:23:49.260
+<v Speaker 1>can see. There's a bit a switch button.
+
+00:23:49.260 --> 00:23:51.019
+<v Speaker 1>Yeah. If you click on logs. Yeah.
+
+00:23:51.340 --> 00:23:52.620
+<v Speaker 1>You can rerun the query now.
+
+00:23:53.635 --> 00:23:54.355
+<v Speaker 0>Alright.
+
+00:23:54.835 --> 00:23:56.435
+<v Speaker 1>Yeah. Should we should we try to update
+
+00:23:56.435 --> 00:23:59.155
+<v Speaker 1>it before going further, maybe? Do you think
+
+00:23:59.155 --> 00:24:01.475
+<v Speaker 1>that's You wanna upgrade Grafana? Yeah. Sure. Let's
+
+00:24:01.475 --> 00:24:02.514
+<v Speaker 0>do it. Yeah.
+
+00:24:02.835 --> 00:24:05.395
+<v Speaker 1>So it's just a default format called Loki
+
+00:24:05.400 --> 00:24:07.160
+<v Speaker 0>Grafana. And then she just wanna pop the
+
+00:24:07.160 --> 00:24:08.440
+<v Speaker 0>image to the latest. Right?
+
+00:24:09.160 --> 00:24:10.600
+<v Speaker 1>Yeah. That's it. Yeah.
+
+00:24:10.920 --> 00:24:13.400
+<v Speaker 1>Yeah. Let's do that. Good. Alright. So do
+
+00:24:13.400 --> 00:24:14.680
+<v Speaker 0>you know the version or should I go
+
+00:24:14.680 --> 00:24:16.840
+<v Speaker 0>to Docker Hub? I was about to look
+
+00:24:16.840 --> 00:24:18.840
+<v Speaker 1>at Docker Hub. What's the latest one?
+
+00:24:20.975 --> 00:24:22.655
+<v Speaker 0>R Grafana.
+
+00:24:23.295 --> 00:24:24.655
+<v Speaker 1>7.5,
+
+00:24:24.655 --> 00:24:25.695
+<v Speaker 1>I think. Yeah.
+
+00:24:26.095 --> 00:24:27.695
+<v Speaker 1>Yeah. Let's go with it. Even if it's
+
+00:24:27.695 --> 00:24:29.055
+<v Speaker 1>an experimental one,
+
+00:24:29.535 --> 00:24:31.455
+<v Speaker 1>it's gonna be better. It's gonna be better.
+
+00:24:31.455 --> 00:24:33.775
+<v Speaker 1>This is like a YOGO version that we're
+
+00:24:33.775 --> 00:24:36.130
+<v Speaker 1>looking at right now. Alright. Let's see what
+
+00:24:36.130 --> 00:24:39.010
+<v Speaker 0>was updated recently. Let's let's see. Should we
+
+00:24:39.010 --> 00:24:39.890
+<v Speaker 0>go nightly?
+
+00:24:40.850 --> 00:24:41.730
+<v Speaker 0>Nightly.
+
+00:24:42.690 --> 00:24:43.490
+<v Speaker 0>Whiskey.
+
+00:24:43.730 --> 00:24:46.050
+<v Speaker 0>755. Is a good one. Yeah. Yeah. Let's
+
+00:24:46.050 --> 00:24:48.610
+<v Speaker 1>go with this. I believe Grafana eight currently
+
+00:24:48.610 --> 00:24:49.410
+<v Speaker 0>in progress. Right?
+
+00:24:50.145 --> 00:24:52.145
+<v Speaker 0>Is is that Sorry? Is Grafana eight being
+
+00:24:52.145 --> 00:24:53.265
+<v Speaker 0>worked on at the moment?
+
+00:24:53.665 --> 00:24:55.665
+<v Speaker 1>Yep. Yeah. Because I'm pretty sure I've seen
+
+00:24:55.665 --> 00:24:58.305
+<v Speaker 0>something on Twitter recently about some big changes
+
+00:24:58.305 --> 00:24:59.905
+<v Speaker 0>to like the the I think all the
+
+00:24:59.905 --> 00:25:02.225
+<v Speaker 0>graphing panels are being redone and and stuff
+
+00:25:02.225 --> 00:25:05.019
+<v Speaker 0>like that. Yeah. Yeah. The the graph file.
+
+00:25:05.019 --> 00:25:05.579
+<v Speaker 1>Yeah.
+
+00:25:06.059 --> 00:25:08.619
+<v Speaker 1>Every every major version is once a year.
+
+00:25:09.019 --> 00:25:09.739
+<v Speaker 0>Nice.
+
+00:25:10.379 --> 00:25:12.299
+<v Speaker 0>So let's just see if
+
+00:25:12.539 --> 00:25:13.740
+<v Speaker 0>just initializing.
+
+00:25:13.740 --> 00:25:15.740
+<v Speaker 0>Let's assume the port forward is gonna.
+
+00:25:16.785 --> 00:25:18.705
+<v Speaker 1>Yeah. Think the password is gonna be on
+
+00:25:18.705 --> 00:25:19.585
+<v Speaker 1>the same too.
+
+00:25:19.905 --> 00:25:22.145
+<v Speaker 0>You think? Oh, come on. Yeah.
+
+00:25:23.505 --> 00:25:25.585
+<v Speaker 1>You know, don't forget I work on Loki.
+
+00:25:25.825 --> 00:25:26.305
+<v Speaker 1>I'm
+
+00:25:26.865 --> 00:25:28.385
+<v Speaker 1>I'm good with Grafana, but I'm not an
+
+00:25:28.385 --> 00:25:30.785
+<v Speaker 1>expert on Grafana. Great. Okay. I'll cut you
+
+00:25:30.785 --> 00:25:31.585
+<v Speaker 0>some slack then.
+
+00:25:34.669 --> 00:25:36.429
+<v Speaker 0>Okay. That port forward.
+
+00:25:36.750 --> 00:25:38.749
+<v Speaker 0>Maybe it's just not ready yet.
+
+00:25:39.149 --> 00:25:40.590
+<v Speaker 1>Yeah. It wasn't there.
+
+00:25:41.230 --> 00:25:42.429
+<v Speaker 0>Okay. Pods.
+
+00:25:46.385 --> 00:25:48.225
+<v Speaker 0>Yeah. Looks better now. Yep.
+
+00:25:53.185 --> 00:25:54.465
+<v Speaker 0>Should've saved it.
+
+00:25:55.345 --> 00:25:56.705
+<v Speaker 1>Should've saved the password.
+
+00:26:04.340 --> 00:26:06.899
+<v Speaker 0>Alright. Base sixty four d.
+
+00:26:07.140 --> 00:26:08.100
+<v Speaker 0>There we go.
+
+00:26:11.620 --> 00:26:13.860
+<v Speaker 0>Alright. Password's the same. We're back in.
+
+00:26:14.855 --> 00:26:16.935
+<v Speaker 0>Nice. We're on the Loki stores, and we
+
+00:26:16.935 --> 00:26:18.775
+<v Speaker 0>no longer have the logs and metrics.
+
+00:26:18.935 --> 00:26:21.095
+<v Speaker 0>Does that mean it's just working out?
+
+00:26:21.735 --> 00:26:23.815
+<v Speaker 1>Yep. That that this is all great. This
+
+00:26:23.815 --> 00:26:25.495
+<v Speaker 1>is gonna be way much easier for us
+
+00:26:25.495 --> 00:26:27.815
+<v Speaker 1>to write queries and and play with this.
+
+00:26:28.775 --> 00:26:29.735
+<v Speaker 0>Alright. Awesome.
+
+00:26:30.670 --> 00:26:32.830
+<v Speaker 0>So, what do we have here? Like, this
+
+00:26:32.830 --> 00:26:33.390
+<v Speaker 0>is
+
+00:26:33.710 --> 00:26:35.790
+<v Speaker 0>I mean, I'm trying guess what we've got
+
+00:26:35.790 --> 00:26:37.150
+<v Speaker 0>and I think we kind of briefly covered
+
+00:26:37.150 --> 00:26:39.150
+<v Speaker 0>it, but we're using LogQL.
+
+00:26:39.150 --> 00:26:41.310
+<v Speaker 0>We're looking for all of our container logs
+
+00:26:41.310 --> 00:26:42.510
+<v Speaker 0>from Kubernetes
+
+00:26:42.590 --> 00:26:44.590
+<v Speaker 0>where there was a label that existed called
+
+00:26:44.590 --> 00:26:46.925
+<v Speaker 0>app, where the value is locating the logs
+
+00:26:46.925 --> 00:26:47.725
+<v Speaker 0>of ourselves.
+
+00:26:48.205 --> 00:26:49.885
+<v Speaker 0>What we have here appears to be some
+
+00:26:49.885 --> 00:26:52.125
+<v Speaker 0>sort of times very sharp to show the
+
+00:26:52.125 --> 00:26:53.965
+<v Speaker 0>occurrence of logs over time and then we
+
+00:26:54.205 --> 00:26:55.725
+<v Speaker 0>is this just raw logs that we have
+
+00:26:55.725 --> 00:26:58.205
+<v Speaker 0>below? That's yeah. That's the whole logs.
+
+00:26:58.909 --> 00:27:00.830
+<v Speaker 1>You I think you have a a version
+
+00:27:00.830 --> 00:27:02.029
+<v Speaker 1>of Kubernetes
+
+00:27:02.029 --> 00:27:02.989
+<v Speaker 1>that
+
+00:27:03.230 --> 00:27:05.789
+<v Speaker 1>is using Creo logs.
+
+00:27:06.510 --> 00:27:09.230
+<v Speaker 1>So you can see, like, the SDRF.
+
+00:27:09.230 --> 00:27:10.830
+<v Speaker 1>This is the Creo format.
+
+00:27:12.350 --> 00:27:14.465
+<v Speaker 1>And we can we can configure Promptel to
+
+00:27:14.465 --> 00:27:16.144
+<v Speaker 1>get rid of that if we want
+
+00:27:17.105 --> 00:27:18.544
+<v Speaker 1>because that's gonna be
+
+00:27:19.184 --> 00:27:21.105
+<v Speaker 1>a bit difficult to pass after if we
+
+00:27:21.105 --> 00:27:22.065
+<v Speaker 1>need to pass it.
+
+00:27:22.865 --> 00:27:25.424
+<v Speaker 1>But, yeah, that's that's the whole log, actually,
+
+00:27:25.424 --> 00:27:28.145
+<v Speaker 1>from from the Docker daemon of each node.
+
+00:27:28.679 --> 00:27:30.360
+<v Speaker 1>Okay. Yeah. We can see the we can
+
+00:27:30.360 --> 00:27:31.879
+<v Speaker 1>see the the labels here. They're they're looking
+
+00:27:31.879 --> 00:27:33.960
+<v Speaker 1>good so far. So this is the this
+
+00:27:33.960 --> 00:27:35.399
+<v Speaker 0>top right here is just the labels from
+
+00:27:35.399 --> 00:27:38.120
+<v Speaker 0>the Kubernetes resource. And then the detected fields,
+
+00:27:38.120 --> 00:27:39.320
+<v Speaker 0>is this analyzing
+
+00:27:39.320 --> 00:27:41.159
+<v Speaker 0>the log line itself and trying to work
+
+00:27:41.159 --> 00:27:42.844
+<v Speaker 0>out what exists? Mhmm.
+
+00:27:43.485 --> 00:27:46.445
+<v Speaker 1>Yeah. That's directly from Grafana itself. It's not
+
+00:27:46.445 --> 00:27:49.245
+<v Speaker 1>from Loki. So Grafana, when it's showing those
+
+00:27:49.245 --> 00:27:51.725
+<v Speaker 1>line, it tried to detect some sort of
+
+00:27:51.725 --> 00:27:52.364
+<v Speaker 1>fields
+
+00:27:52.764 --> 00:27:54.204
+<v Speaker 1>and and does some
+
+00:27:54.845 --> 00:27:55.725
+<v Speaker 1>analysis on it.
+
+00:27:56.630 --> 00:27:57.590
+<v Speaker 0>Alright.
+
+00:27:57.590 --> 00:27:58.230
+<v Speaker 0>Nice.
+
+00:27:58.630 --> 00:28:00.230
+<v Speaker 1>Same goes for the the color. You see
+
+00:28:00.230 --> 00:28:02.150
+<v Speaker 1>that the the color, it's all green so
+
+00:28:02.150 --> 00:28:04.150
+<v Speaker 1>far. It's because it hasn't
+
+00:28:04.230 --> 00:28:07.430
+<v Speaker 1>found any errors. So Grafana will try automatically
+
+00:28:07.430 --> 00:28:09.990
+<v Speaker 1>to spot the errors in red for you.
+
+00:28:11.105 --> 00:28:12.225
+<v Speaker 0>Okay. Nice.
+
+00:28:13.025 --> 00:28:14.865
+<v Speaker 0>Alright. Looks like we have a couple of
+
+00:28:14.865 --> 00:28:17.185
+<v Speaker 0>questions that I'll drop up just now. So
+
+00:28:17.345 --> 00:28:19.905
+<v Speaker 0>Mozz is asking, does Loki support other log
+
+00:28:19.905 --> 00:28:21.745
+<v Speaker 0>shipping tools like Fluent Bit, Fluent D, File
+
+00:28:21.745 --> 00:28:24.385
+<v Speaker 0>Beats, or is it exclusive to Promptail?
+
+00:28:24.865 --> 00:28:26.390
+<v Speaker 0>We have kind of answered that, but I'll
+
+00:28:26.390 --> 00:28:27.590
+<v Speaker 0>let you I'll let you go for it
+
+00:28:27.590 --> 00:28:28.070
+<v Speaker 0>again.
+
+00:28:28.790 --> 00:28:30.950
+<v Speaker 1>Yeah. We we support all of them, the
+
+00:28:31.270 --> 00:28:34.309
+<v Speaker 1>except Filebit, because Filebit doesn't really have a
+
+00:28:34.309 --> 00:28:36.710
+<v Speaker 1>way to plug in an in an an
+
+00:28:36.710 --> 00:28:37.750
+<v Speaker 1>output
+
+00:28:39.205 --> 00:28:39.844
+<v Speaker 1>clients.
+
+00:28:40.245 --> 00:28:41.764
+<v Speaker 1>But we do have a lockstash, so you
+
+00:28:41.764 --> 00:28:43.924
+<v Speaker 1>can do file bit to lockstash to Loki
+
+00:28:43.924 --> 00:28:44.804
+<v Speaker 1>if you want.
+
+00:28:45.125 --> 00:28:47.764
+<v Speaker 1>But, yeah, we support FlinBits in the
+
+00:28:48.804 --> 00:28:50.884
+<v Speaker 1>I think we also support vector, which is
+
+00:28:50.884 --> 00:28:51.764
+<v Speaker 1>in REST.
+
+00:28:51.924 --> 00:28:54.660
+<v Speaker 1>We like, we have a docker driver also.
+
+00:28:54.660 --> 00:28:57.220
+<v Speaker 1>So there's, like there's no reason to to
+
+00:28:57.220 --> 00:28:59.380
+<v Speaker 1>not send the data to Loki. Like, we
+
+00:28:59.380 --> 00:29:00.179
+<v Speaker 1>have we
+
+00:29:00.260 --> 00:29:02.500
+<v Speaker 0>have all of them. There's a a follow-up
+
+00:29:02.500 --> 00:29:04.420
+<v Speaker 0>comment as well from Frank who's actually just
+
+00:29:04.420 --> 00:29:06.500
+<v Speaker 0>suggesting, hey. Loki has a REST API. So,
+
+00:29:06.500 --> 00:29:08.435
+<v Speaker 0>really, you could use anything to send the
+
+00:29:08.435 --> 00:29:10.355
+<v Speaker 0>logs. Yeah. Which is cool.
+
+00:29:10.755 --> 00:29:12.435
+<v Speaker 0>Alright. One more question and then we'll we'll
+
+00:29:12.435 --> 00:29:14.195
+<v Speaker 0>get back to our demo. Ad so I
+
+00:29:14.195 --> 00:29:14.914
+<v Speaker 0>was saying
+
+00:29:15.475 --> 00:29:17.715
+<v Speaker 0>they're looking to adopt Loki, they want to
+
+00:29:17.715 --> 00:29:20.275
+<v Speaker 0>adopt Loki, but they're curious to put handling
+
+00:29:20.790 --> 00:29:23.350
+<v Speaker 0>high throughput or high scale. An example I've
+
+00:29:23.350 --> 00:29:25.670
+<v Speaker 0>got there is roughly seven terabytes per day.
+
+00:29:27.110 --> 00:29:30.230
+<v Speaker 0>Yeah. Is within the realm of Loki? Is
+
+00:29:30.230 --> 00:29:32.470
+<v Speaker 0>is that good numbers, bad numbers? What's your
+
+00:29:32.470 --> 00:29:32.710
+<v Speaker 0>thoughts?
+
+00:29:33.555 --> 00:29:35.315
+<v Speaker 1>Yeah. It is. It is in the realm
+
+00:29:35.315 --> 00:29:36.515
+<v Speaker 1>of Loki.
+
+00:29:36.835 --> 00:29:39.235
+<v Speaker 1>It's difficult for me to think about this
+
+00:29:39.235 --> 00:29:41.475
+<v Speaker 1>per day because I'm usually thinking about this
+
+00:29:41.475 --> 00:29:42.595
+<v Speaker 1>per minute.
+
+00:29:43.315 --> 00:29:44.835
+<v Speaker 1>But it it would there there won't be
+
+00:29:44.835 --> 00:29:45.635
+<v Speaker 1>an issue
+
+00:29:45.795 --> 00:29:46.515
+<v Speaker 1>for
+
+00:29:46.675 --> 00:29:48.515
+<v Speaker 1>ingesting that amount of data. It's gonna be
+
+00:29:48.515 --> 00:29:49.555
+<v Speaker 1>actually very
+
+00:29:49.770 --> 00:29:52.170
+<v Speaker 1>very easy. Now if you want to query
+
+00:29:52.170 --> 00:29:54.650
+<v Speaker 1>over this huge amount of data, you may
+
+00:29:54.650 --> 00:29:57.049
+<v Speaker 1>have to go into the distributed setup.
+
+00:29:57.770 --> 00:30:00.330
+<v Speaker 1>But I will start always with starting with
+
+00:30:00.330 --> 00:30:02.410
+<v Speaker 1>a small Loki instance, see how it goes.
+
+00:30:02.914 --> 00:30:05.315
+<v Speaker 1>And if you need to scale up, then
+
+00:30:05.315 --> 00:30:07.315
+<v Speaker 1>at that time, start to look at the
+
+00:30:07.315 --> 00:30:08.835
+<v Speaker 1>more difficult scenario.
+
+00:30:09.635 --> 00:30:11.315
+<v Speaker 0>Yeah. I think that's great advice for all
+
+00:30:11.315 --> 00:30:13.635
+<v Speaker 0>software. Start with easy mode and when the
+
+00:30:13.635 --> 00:30:15.235
+<v Speaker 0>the car starts to shake at high speed,
+
+00:30:15.990 --> 00:30:17.830
+<v Speaker 0>maybe do some upgrades. Okay.
+
+00:30:19.750 --> 00:30:23.190
+<v Speaker 0>So this was cool. We created some logs.
+
+00:30:24.470 --> 00:30:25.990
+<v Speaker 0>What do you wanna what what should we
+
+00:30:25.990 --> 00:30:27.270
+<v Speaker 0>try and do next with this then?
+
+00:30:28.245 --> 00:30:29.205
+<v Speaker 1>So
+
+00:30:29.205 --> 00:30:30.325
+<v Speaker 1>there's multiple
+
+00:30:30.965 --> 00:30:32.485
+<v Speaker 1>option that we could do. I think we
+
+00:30:32.485 --> 00:30:33.684
+<v Speaker 1>need to fix this
+
+00:30:35.845 --> 00:30:37.605
+<v Speaker 1>logline format here.
+
+00:30:37.765 --> 00:30:40.965
+<v Speaker 1>Because you know that this F and STDR
+
+00:30:41.870 --> 00:30:43.469
+<v Speaker 1>is really about the,
+
+00:30:43.710 --> 00:30:45.709
+<v Speaker 1>and it doesn't really help us.
+
+00:30:46.190 --> 00:30:48.349
+<v Speaker 1>So we can try to fix this. It's
+
+00:30:48.590 --> 00:30:50.749
+<v Speaker 1>we need to look at the configuration
+
+00:30:50.909 --> 00:30:51.549
+<v Speaker 1>of
+
+00:30:51.950 --> 00:30:52.990
+<v Speaker 1>to do that.
+
+00:30:53.915 --> 00:30:56.315
+<v Speaker 1>And then after, I guess, we can maybe
+
+00:30:56.475 --> 00:30:58.874
+<v Speaker 1>show how the dashboarding works with Loki.
+
+00:30:59.115 --> 00:31:00.955
+<v Speaker 0>Yeah. That would be cool. Yeah.
+
+00:31:01.995 --> 00:31:02.554
+<v Speaker 1>So
+
+00:31:02.795 --> 00:31:04.475
+<v Speaker 1>we need to look at the m chart,
+
+00:31:04.475 --> 00:31:06.155
+<v Speaker 1>how we can change the configuration. It's very
+
+00:31:06.155 --> 00:31:07.835
+<v Speaker 1>easy. We just need to actually add a
+
+00:31:07.835 --> 00:31:08.475
+<v Speaker 1>single line.
+
+00:31:09.470 --> 00:31:11.150
+<v Speaker 1>But I I'm not sure we can do
+
+00:31:11.150 --> 00:31:11.710
+<v Speaker 1>it
+
+00:31:12.670 --> 00:31:15.390
+<v Speaker 1>without creating a value file. So let me
+
+00:31:15.550 --> 00:31:17.230
+<v Speaker 0>Oh, we can just modify the config map
+
+00:31:17.230 --> 00:31:18.350
+<v Speaker 0>in lane, though. Right?
+
+00:31:18.830 --> 00:31:20.590
+<v Speaker 0>I don't need to redeploy this with Helm
+
+00:31:20.590 --> 00:31:22.270
+<v Speaker 0>anymore, so I'm quite happy just to modify
+
+00:31:22.270 --> 00:31:24.030
+<v Speaker 0>the config map in the cluster. Yeah.
+
+00:31:24.705 --> 00:31:27.265
+<v Speaker 1>Yeah. That sounds good. So let's go down.
+
+00:31:27.265 --> 00:31:29.744
+<v Speaker 1>I'm looking for pipeline stages,
+
+00:31:30.945 --> 00:31:32.225
+<v Speaker 1>which basically
+
+00:31:32.465 --> 00:31:34.385
+<v Speaker 1>yep. That's it. So we're we're set up
+
+00:31:34.385 --> 00:31:36.625
+<v Speaker 1>for Docker. That's not what we have here.
+
+00:31:36.625 --> 00:31:37.665
+<v Speaker 0>We have container. So, basically,
+
+00:31:38.350 --> 00:31:40.190
+<v Speaker 1>yeah, we have yeah. Exactly. So we need
+
+00:31:40.190 --> 00:31:41.949
+<v Speaker 1>to change. And it's CRI.
+
+00:31:42.029 --> 00:31:44.109
+<v Speaker 1>You just need to change that to CRI.
+
+00:31:44.669 --> 00:31:45.229
+<v Speaker 1>Yeah.
+
+00:31:46.429 --> 00:31:47.629
+<v Speaker 1>And that should do it.
+
+00:31:48.429 --> 00:31:50.190
+<v Speaker 1>And maybe that's the case also if you
+
+00:31:50.190 --> 00:31:52.110
+<v Speaker 1>try this at home. I know that Kubernetes,
+
+00:31:52.110 --> 00:31:55.024
+<v Speaker 1>the latest version, is going to our CI.
+
+00:31:55.345 --> 00:31:57.345
+<v Speaker 1>Before, it was Docker format.
+
+00:31:57.345 --> 00:31:59.265
+<v Speaker 1>And the Docker format is kind of like
+
+00:31:59.265 --> 00:32:00.304
+<v Speaker 1>a JSON log.
+
+00:32:00.545 --> 00:32:02.385
+<v Speaker 1>So you can quickly identify which one you
+
+00:32:02.385 --> 00:32:04.065
+<v Speaker 1>have. If you have the one we have
+
+00:32:04.065 --> 00:32:05.585
+<v Speaker 1>today, like a STDR,
+
+00:32:05.585 --> 00:32:07.905
+<v Speaker 1>it means it's a CI. If you have
+
+00:32:07.905 --> 00:32:10.220
+<v Speaker 1>a JSON and you are not logging in
+
+00:32:10.220 --> 00:32:10.940
+<v Speaker 1>JSON,
+
+00:32:11.020 --> 00:32:13.260
+<v Speaker 1>it's most likely because you are using the
+
+00:32:13.260 --> 00:32:14.619
+<v Speaker 1>Docker format.
+
+00:32:15.980 --> 00:32:18.539
+<v Speaker 0>Alright. Well, I've triggered a rollout of that
+
+00:32:18.539 --> 00:32:20.220
+<v Speaker 0>daemon set. Let's just give that,
+
+00:32:21.345 --> 00:32:23.025
+<v Speaker 0>Hopefully, not too long. I guess maybe about
+
+00:32:23.025 --> 00:32:24.625
+<v Speaker 0>a minute for it to to run through
+
+00:32:24.625 --> 00:32:25.264
+<v Speaker 0>them all.
+
+00:32:25.745 --> 00:32:27.105
+<v Speaker 1>Yeah. It should be no. It should be
+
+00:32:27.105 --> 00:32:27.745
+<v Speaker 1>quick.
+
+00:32:30.145 --> 00:32:32.865
+<v Speaker 1>Nice nice Cube Cattola skills that you have.
+
+00:32:34.880 --> 00:32:35.600
+<v Speaker 0>Yeah.
+
+00:32:35.760 --> 00:32:38.000
+<v Speaker 0>I like to learn things the hard way,
+
+00:32:38.000 --> 00:32:38.480
+<v Speaker 0>so
+
+00:32:40.080 --> 00:32:42.400
+<v Speaker 0>live debugging is getting easier for me these
+
+00:32:42.400 --> 00:32:42.960
+<v Speaker 0>days.
+
+00:32:43.360 --> 00:32:45.679
+<v Speaker 0>Okay. Yeah. I can see that. We have
+
+00:32:45.679 --> 00:32:48.385
+<v Speaker 0>another question. So let's answer this question. Hopefully,
+
+00:32:48.385 --> 00:32:50.465
+<v Speaker 0>the the rollout has has done its job
+
+00:32:50.465 --> 00:32:51.024
+<v Speaker 0>and
+
+00:32:51.345 --> 00:32:53.665
+<v Speaker 0>we'll do some dashboarding and take it hopefully,
+
+00:32:53.665 --> 00:32:55.265
+<v Speaker 0>we can take into log QL bit more
+
+00:32:55.265 --> 00:32:57.985
+<v Speaker 0>and and see. Yeah. And of course, like,
+
+00:32:58.545 --> 00:33:00.145
+<v Speaker 0>well, I'm sure we'll we'll get to this
+
+00:33:00.145 --> 00:33:02.080
+<v Speaker 0>naturally, but how do we turn on index
+
+00:33:02.080 --> 00:33:04.240
+<v Speaker 0>and for specific fields and and the process
+
+00:33:04.240 --> 00:33:06.479
+<v Speaker 0>of doing that? Anyway, question. Yep.
+
+00:33:07.039 --> 00:33:08.320
+<v Speaker 0>So is
+
+00:33:08.320 --> 00:33:11.120
+<v Speaker 0>asking, okay, there's fluidity, fluid bit, telegraph, Loki.
+
+00:33:11.120 --> 00:33:14.240
+<v Speaker 0>Can you briefly position those components which are
+
+00:33:14.240 --> 00:33:16.000
+<v Speaker 0>overlapping more or less? Second question.
+
+00:33:17.275 --> 00:33:19.595
+<v Speaker 0>Well, let's start with the first. So fluent
+
+00:33:19.595 --> 00:33:21.674
+<v Speaker 0>d, fluent bit, telegraph, Loki,
+
+00:33:21.915 --> 00:33:23.195
+<v Speaker 0>I think you're gonna think they're all in
+
+00:33:23.195 --> 00:33:24.955
+<v Speaker 0>the same space. You wanna elaborate on that
+
+00:33:24.955 --> 00:33:25.674
+<v Speaker 0>at all?
+
+00:33:27.835 --> 00:33:29.515
+<v Speaker 1>Yeah. I think they are overlapping,
+
+00:33:29.995 --> 00:33:31.570
+<v Speaker 1>and it's it's a bit like free and
+
+00:33:31.570 --> 00:33:34.129
+<v Speaker 1>d. I guess, you know, it's in Ruby.
+
+00:33:34.129 --> 00:33:35.970
+<v Speaker 1>So the the the the people that created
+
+00:33:35.970 --> 00:33:38.529
+<v Speaker 1>free and d realized, oh, maybe we need
+
+00:33:38.529 --> 00:33:40.610
+<v Speaker 1>to move away from Ruby and and write
+
+00:33:40.610 --> 00:33:42.529
+<v Speaker 1>a a c plus plus client. So that's
+
+00:33:42.529 --> 00:33:44.690
+<v Speaker 1>how, I guess, free and bit came to
+
+00:33:44.690 --> 00:33:44.929
+<v Speaker 1>life.
+
+00:33:46.225 --> 00:33:48.625
+<v Speaker 1>Telegraph, I don't think Telegraph has a has
+
+00:33:48.625 --> 00:33:50.065
+<v Speaker 1>a low key output.
+
+00:33:51.184 --> 00:33:52.785
+<v Speaker 1>And I don't think that's the case. I
+
+00:33:52.785 --> 00:33:55.025
+<v Speaker 1>think it can only only send to Influx
+
+00:33:55.025 --> 00:33:57.745
+<v Speaker 1>from what I know. Telegraph can write to
+
+00:33:57.745 --> 00:33:59.424
+<v Speaker 0>Influx Elasticsearch,
+
+00:33:59.424 --> 00:34:00.304
+<v Speaker 0>HTTP
+
+00:34:00.304 --> 00:34:00.865
+<v Speaker 0>endpoints,
+
+00:34:02.010 --> 00:34:04.410
+<v Speaker 0>and gRPC. It's a personal bunch of things.
+
+00:34:04.410 --> 00:34:06.170
+<v Speaker 0>I don't think there is a native Loki
+
+00:34:06.170 --> 00:34:07.930
+<v Speaker 0>output Yeah. Yet.
+
+00:34:08.250 --> 00:34:09.449
+<v Speaker 0>But you could probably do it with the
+
+00:34:09.449 --> 00:34:12.090
+<v Speaker 0>HTTP output, I would have thought. I'll I'll
+
+00:34:12.090 --> 00:34:13.210
+<v Speaker 0>hack on that one day.
+
+00:34:14.010 --> 00:34:14.330
+<v Speaker 1>Yeah.
+
+00:34:15.385 --> 00:34:18.665
+<v Speaker 1>So, yeah, definitely. I mean, Loki is really
+
+00:34:18.665 --> 00:34:19.705
+<v Speaker 1>the database.
+
+00:34:20.265 --> 00:34:21.864
+<v Speaker 1>Three and d, three and bit telegraph are
+
+00:34:21.864 --> 00:34:24.745
+<v Speaker 1>more agent, right, for collecting data. That's that's
+
+00:34:24.745 --> 00:34:25.945
+<v Speaker 1>the biggest difference.
+
+00:34:26.425 --> 00:34:28.825
+<v Speaker 1>So Loki doesn't really overlap all of those.
+
+00:34:28.825 --> 00:34:30.905
+<v Speaker 1>You just need someone to send the logs
+
+00:34:30.630 --> 00:34:31.989
+<v Speaker 1>to to to
+
+00:34:32.230 --> 00:34:33.030
+<v Speaker 1>to itself.
+
+00:34:33.429 --> 00:34:35.109
+<v Speaker 0>Alright. And then the second part of that
+
+00:34:35.109 --> 00:34:37.269
+<v Speaker 0>question was with regards to the recent license
+
+00:34:37.269 --> 00:34:39.589
+<v Speaker 0>change on the Grafana products. Is Loki a
+
+00:34:39.589 --> 00:34:41.670
+<v Speaker 0>part of that? I guess, is Loki now
+
+00:34:41.750 --> 00:34:42.469
+<v Speaker 0>a GPL?
+
+00:34:43.355 --> 00:34:46.155
+<v Speaker 1>Yeah. That's a good question. Yeah. So I
+
+00:34:46.155 --> 00:34:47.915
+<v Speaker 1>don't remember. I think it was last week
+
+00:34:47.994 --> 00:34:49.435
+<v Speaker 1>this change happened,
+
+00:34:49.835 --> 00:34:52.715
+<v Speaker 1>which was before we we talked together, David.
+
+00:34:52.954 --> 00:34:55.835
+<v Speaker 1>And, yeah, not everything is AGPL
+
+00:34:55.835 --> 00:34:57.434
+<v Speaker 1>in in in Loki.
+
+00:34:59.120 --> 00:35:02.240
+<v Speaker 1>Mostly everything that is clients, so Pontel,
+
+00:35:02.800 --> 00:35:04.240
+<v Speaker 1>everything
+
+00:35:04.240 --> 00:35:05.440
+<v Speaker 1>that the user,
+
+00:35:05.760 --> 00:35:06.320
+<v Speaker 1>you know,
+
+00:35:07.040 --> 00:35:10.400
+<v Speaker 1>will use to send data, but also to
+
+00:35:10.995 --> 00:35:13.955
+<v Speaker 1>process the logline itself is not AGPL. It's
+
+00:35:13.955 --> 00:35:16.035
+<v Speaker 1>still Apache two. So you can all you
+
+00:35:16.035 --> 00:35:17.475
+<v Speaker 1>know, you can you can you
+
+00:35:17.795 --> 00:35:20.355
+<v Speaker 1>can use that in your open source project
+
+00:35:20.355 --> 00:35:22.355
+<v Speaker 1>if you need to without having
+
+00:35:22.515 --> 00:35:23.235
+<v Speaker 1>to
+
+00:35:23.635 --> 00:35:25.075
+<v Speaker 1>license AGPL,
+
+00:35:25.075 --> 00:35:26.115
+<v Speaker 1>your own project.
+
+00:35:26.750 --> 00:35:29.390
+<v Speaker 1>Now for most people, they they usually don't
+
+00:35:29.390 --> 00:35:31.790
+<v Speaker 1>integrate Loki itself, but more the client, so
+
+00:35:31.790 --> 00:35:33.550
+<v Speaker 1>it shouldn't really affect anyone.
+
+00:35:34.430 --> 00:35:37.230
+<v Speaker 0>Alright. Nice. Thanks for clearing that up. Okay.
+
+00:35:37.950 --> 00:35:40.190
+<v Speaker 0>We have now rotated our Promptail.
+
+00:35:40.605 --> 00:35:43.565
+<v Speaker 0>We have switched the pipeline stage from Docker
+
+00:35:43.565 --> 00:35:45.485
+<v Speaker 0>to container runtime interface.
+
+00:35:45.965 --> 00:35:47.965
+<v Speaker 1>Yeah. It's running, so that's a good sign.
+
+00:35:48.525 --> 00:35:50.285
+<v Speaker 0>Well, yeah, we didn't break it. That's great.
+
+00:35:50.285 --> 00:35:52.285
+<v Speaker 0>So let's do the last five minutes. This
+
+00:35:52.285 --> 00:35:53.405
+<v Speaker 0>is already refreshing,
+
+00:35:54.309 --> 00:35:56.309
+<v Speaker 0>and we have much cleaner log lanes sitting
+
+00:35:56.309 --> 00:35:57.750
+<v Speaker 0>here now. Right? Yes. This is what you're
+
+00:35:57.750 --> 00:35:58.150
+<v Speaker 0>working.
+
+00:35:59.190 --> 00:36:01.029
+<v Speaker 1>Yeah. That's what I was expecting. This is
+
+00:36:01.029 --> 00:36:01.750
+<v Speaker 1>exactly,
+
+00:36:02.150 --> 00:36:04.150
+<v Speaker 1>like, what what you would expect from your
+
+00:36:04.150 --> 00:36:04.869
+<v Speaker 1>application,
+
+00:36:05.190 --> 00:36:08.069
+<v Speaker 1>nothing else from the infrastructure behind. So that's
+
+00:36:08.069 --> 00:36:11.425
+<v Speaker 1>much better. Alright. We got confirmation from Stanislav
+
+00:36:11.425 --> 00:36:13.345
+<v Speaker 0>there that Telegraph does now have a Loki
+
+00:36:13.345 --> 00:36:15.025
+<v Speaker 0>output. So that's great. Awesome.
+
+00:36:15.505 --> 00:36:17.905
+<v Speaker 1>Yeah. I didn't know about this. Nice. I
+
+00:36:17.905 --> 00:36:19.425
+<v Speaker 0>worked for Influx for two years, and I
+
+00:36:19.425 --> 00:36:21.025
+<v Speaker 0>didn't know about it. So I
+
+00:36:21.345 --> 00:36:22.465
+<v Speaker 0>wouldn't judge you for missing it.
+
+00:36:24.520 --> 00:36:26.599
+<v Speaker 1>Alright. Yeah. I mean, we can play with
+
+00:36:26.599 --> 00:36:28.359
+<v Speaker 1>the log browser. The log browser is a
+
+00:36:28.359 --> 00:36:30.359
+<v Speaker 1>new feature. I really like it. So you
+
+00:36:30.359 --> 00:36:31.880
+<v Speaker 1>can click on that and see and see
+
+00:36:31.880 --> 00:36:32.760
+<v Speaker 1>how that goes.
+
+00:36:33.799 --> 00:36:35.160
+<v Speaker 0>Okay. So what do you want me to
+
+00:36:35.160 --> 00:36:36.040
+<v Speaker 0>click on? Sorry.
+
+00:36:36.359 --> 00:36:38.280
+<v Speaker 1>Next to the next to the query,
+
+00:36:40.015 --> 00:36:42.815
+<v Speaker 1>there's a there's a button named log
+
+00:36:42.895 --> 00:36:43.615
+<v Speaker 1>browser
+
+00:36:44.415 --> 00:36:46.255
+<v Speaker 1>with a little shovel. Yeah.
+
+00:36:47.455 --> 00:36:48.495
+<v Speaker 0>We have a shovel?
+
+00:36:49.055 --> 00:36:50.655
+<v Speaker 1>Yeah. No. Yeah.
+
+00:36:51.630 --> 00:36:52.349
+<v Speaker 1>It's
+
+00:36:53.150 --> 00:36:54.990
+<v Speaker 1>on the left. Oh, right. Got you. Got
+
+00:36:54.990 --> 00:36:57.390
+<v Speaker 1>you. Yeah. Yeah, this one. Yeah. So this
+
+00:36:57.549 --> 00:37:00.430
+<v Speaker 1>if you're a bit scared of LokiL at
+
+00:37:00.430 --> 00:37:02.190
+<v Speaker 1>first, this is a nice way to get
+
+00:37:02.190 --> 00:37:03.309
+<v Speaker 1>started. So at the top,
+
+00:37:04.355 --> 00:37:06.435
+<v Speaker 1>see all the other label
+
+00:37:07.155 --> 00:37:07.955
+<v Speaker 1>names.
+
+00:37:08.915 --> 00:37:10.755
+<v Speaker 1>And also, that's a good way to see
+
+00:37:10.755 --> 00:37:12.994
+<v Speaker 1>if you're wasting or using things that you
+
+00:37:12.994 --> 00:37:13.955
+<v Speaker 1>shouldn't be using.
+
+00:37:15.315 --> 00:37:17.420
+<v Speaker 1>But you can click on, for instance, on
+
+00:37:17.420 --> 00:37:19.500
+<v Speaker 1>job one. The job the job is an
+
+00:37:19.500 --> 00:37:20.540
+<v Speaker 1>interesting one.
+
+00:37:22.460 --> 00:37:24.220
+<v Speaker 1>And once you do that, you see all
+
+00:37:24.220 --> 00:37:24.940
+<v Speaker 1>the
+
+00:37:25.820 --> 00:37:27.660
+<v Speaker 1>all the the values
+
+00:37:28.620 --> 00:37:29.740
+<v Speaker 1>that exist for this one.
+
+00:37:31.075 --> 00:37:32.755
+<v Speaker 1>And that's kind of a nice way to
+
+00:37:32.755 --> 00:37:36.115
+<v Speaker 1>browse your data without being an expert in
+
+00:37:36.115 --> 00:37:37.235
+<v Speaker 1>or
+
+00:37:37.395 --> 00:37:39.475
+<v Speaker 1>knowing how to use that language.
+
+00:37:40.435 --> 00:37:43.075
+<v Speaker 1>So yeah, you can select one that you
+
+00:37:43.795 --> 00:37:46.120
+<v Speaker 1>want, maybe Grafana, Loki Grafana if you want
+
+00:37:46.120 --> 00:37:48.440
+<v Speaker 1>the default one. So job is basically a
+
+00:37:48.440 --> 00:37:49.720
+<v Speaker 1>namespace plus
+
+00:37:50.680 --> 00:37:53.880
+<v Speaker 1>contained name. That's what it is. Okay.
+
+00:37:54.680 --> 00:37:56.760
+<v Speaker 0>And then Yeah. So you can, yeah, show
+
+00:37:56.760 --> 00:37:57.240
+<v Speaker 1>logs.
+
+00:38:00.555 --> 00:38:02.155
+<v Speaker 1>And there's no log for that one.
+
+00:38:02.795 --> 00:38:05.195
+<v Speaker 1>Or maybe not no log for yeah.
+
+00:38:06.395 --> 00:38:08.075
+<v Speaker 1>Last hour. Yeah.
+
+00:38:08.155 --> 00:38:08.635
+<v Speaker 1>There we are.
+
+00:38:10.119 --> 00:38:12.280
+<v Speaker 1>So if you if you're running I don't
+
+00:38:12.280 --> 00:38:13.880
+<v Speaker 1>know if we're running currently
+
+00:38:14.280 --> 00:38:16.359
+<v Speaker 1>a deployment that are that has more than
+
+00:38:16.359 --> 00:38:17.320
+<v Speaker 1>multiple
+
+00:38:17.880 --> 00:38:19.400
+<v Speaker 1>the more than one
+
+00:38:19.960 --> 00:38:21.800
+<v Speaker 1>pod. Do you do we have that? I
+
+00:38:21.800 --> 00:38:22.440
+<v Speaker 1>don't I'm not sure.
+
+00:38:24.085 --> 00:38:26.405
+<v Speaker 0>Let's have a look. Let's see what we've
+
+00:38:26.405 --> 00:38:27.685
+<v Speaker 0>got in the stock shop. We can always
+
+00:38:27.685 --> 00:38:29.365
+<v Speaker 0>scale one of these up. Oh, everything is
+
+00:38:29.365 --> 00:38:32.965
+<v Speaker 1>one. Yeah. Let's just modify one. So let's
+
+00:38:32.965 --> 00:38:34.885
+<v Speaker 0>get this a little bit more interesting.
+
+00:38:34.885 --> 00:38:36.245
+<v Speaker 0>We're gonna do edit
+
+00:38:36.420 --> 00:38:37.540
+<v Speaker 0>deployment.
+
+00:38:40.020 --> 00:38:41.300
+<v Speaker 0>Should modify
+
+00:38:41.460 --> 00:38:42.660
+<v Speaker 0>orders.
+
+00:38:43.540 --> 00:38:44.819
+<v Speaker 0>We check the log first to make sure
+
+00:38:44.819 --> 00:38:45.940
+<v Speaker 0>they output log?
+
+00:38:47.059 --> 00:38:48.420
+<v Speaker 1>Yeah.
+
+00:38:48.420 --> 00:38:50.444
+<v Speaker 1>Yeah. I mean, let's make sure there is
+
+00:38:50.444 --> 00:38:51.805
+<v Speaker 1>log. But yeah.
+
+00:38:52.125 --> 00:38:54.125
+<v Speaker 1>Yeah. Whatever logs there is. Yeah. That's good.
+
+00:38:54.125 --> 00:38:56.365
+<v Speaker 1>Yeah. Let's go with this. Just wanna show,
+
+00:38:56.365 --> 00:38:58.045
+<v Speaker 1>you know, that with Loki, you can you
+
+00:38:58.045 --> 00:38:59.244
+<v Speaker 1>can find
+
+00:38:59.644 --> 00:39:01.565
+<v Speaker 1>logs for a single pod if you need
+
+00:39:01.565 --> 00:39:03.005
+<v Speaker 1>to using labels.
+
+00:39:04.810 --> 00:39:05.690
+<v Speaker 0>Order
+
+00:39:07.290 --> 00:39:08.250
+<v Speaker 0>replicas.
+
+00:39:10.010 --> 00:39:12.490
+<v Speaker 1>Yeah. Sketch. There we go. Oh, yes. Six.
+
+00:39:12.890 --> 00:39:14.410
+<v Speaker 0>It's a big cluster. We might as well
+
+00:39:14.410 --> 00:39:15.450
+<v Speaker 0>have a problem with it.
+
+00:39:16.730 --> 00:39:19.335
+<v Speaker 1>Sure. Sure. Alright. So this was our orders
+
+00:39:19.335 --> 00:39:21.095
+<v Speaker 0>sock shop. So I'm gonna try and use
+
+00:39:21.095 --> 00:39:23.095
+<v Speaker 0>the log browser. And what is the Yep.
+
+00:39:23.095 --> 00:39:23.495
+<v Speaker 0>Turn
+
+00:39:25.015 --> 00:39:26.215
+<v Speaker 0>off job.
+
+00:39:26.695 --> 00:39:28.375
+<v Speaker 0>Oh, I really should have checked the labels,
+
+00:39:28.375 --> 00:39:28.775
+<v Speaker 0>shouldn't I?
+
+00:39:31.670 --> 00:39:35.190
+<v Speaker 1>Maybe order. Maybe it's name order. No. Deploy
+
+00:39:35.510 --> 00:39:36.550
+<v Speaker 0>order.
+
+00:39:37.510 --> 00:39:39.430
+<v Speaker 0>Let's see. What labels do we have?
+
+00:39:39.990 --> 00:39:41.510
+<v Speaker 0>Name orders. Alright.
+
+00:39:42.550 --> 00:39:43.829
+<v Speaker 0>The name
+
+00:39:45.765 --> 00:39:46.805
+<v Speaker 0>orders.
+
+00:39:46.964 --> 00:39:48.805
+<v Speaker 0>And we have a few options here, so
+
+00:39:48.805 --> 00:39:50.085
+<v Speaker 0>why don't we talk about that? So we
+
+00:39:50.085 --> 00:39:51.845
+<v Speaker 0>already clicked on show logs. It showed us
+
+00:39:51.845 --> 00:39:53.765
+<v Speaker 0>all the logs from those pods.
+
+00:39:54.085 --> 00:39:56.165
+<v Speaker 0>What are the other two options here?
+
+00:39:57.204 --> 00:39:59.365
+<v Speaker 1>So show log rate will, I believe,
+
+00:40:00.560 --> 00:40:03.200
+<v Speaker 1>create a metric query out of the selector
+
+00:40:03.200 --> 00:40:04.400
+<v Speaker 1>to show
+
+00:40:05.120 --> 00:40:07.440
+<v Speaker 1>the log rate of that stream. So we
+
+00:40:07.440 --> 00:40:08.800
+<v Speaker 1>we call it stream
+
+00:40:09.120 --> 00:40:10.160
+<v Speaker 1>set of
+
+00:40:11.200 --> 00:40:13.600
+<v Speaker 1>log from one or more different
+
+00:40:14.000 --> 00:40:14.320
+<v Speaker 1>pod.
+
+00:40:14.855 --> 00:40:16.694
+<v Speaker 1>And this will just show the rate of
+
+00:40:16.694 --> 00:40:19.734
+<v Speaker 1>it. And validate is just basically trying to
+
+00:40:19.734 --> 00:40:21.575
+<v Speaker 1>see if the query that you craft is
+
+00:40:21.575 --> 00:40:24.215
+<v Speaker 1>actually valid because you can change it manually.
+
+00:40:25.895 --> 00:40:26.855
+<v Speaker 0>Yeah,
+
+00:40:26.855 --> 00:40:29.174
+<v Speaker 0>it's valid. Yeah, that's good. Okay, let's see
+
+00:40:29.174 --> 00:40:31.430
+<v Speaker 0>the logs. And,
+
+00:40:32.150 --> 00:40:34.309
+<v Speaker 0>yep, these are the logs from
+
+00:40:34.309 --> 00:40:35.430
+<v Speaker 0>that process.
+
+00:40:36.150 --> 00:40:38.309
+<v Speaker 0>Yep. So think I've checked the Java one,
+
+00:40:38.309 --> 00:40:39.990
+<v Speaker 0>unfortunately. Sorry about that.
+
+00:40:40.549 --> 00:40:42.549
+<v Speaker 1>No. That's okay. No. That's okay. We're not
+
+00:40:42.549 --> 00:40:43.510
+<v Speaker 1>gonna pass it too much.
+
+00:40:45.985 --> 00:40:47.105
+<v Speaker 1>What
+
+00:40:48.065 --> 00:40:50.625
+<v Speaker 1>we could do is look a bit about
+
+00:40:51.105 --> 00:40:52.545
+<v Speaker 1>the labels, if
+
+00:40:53.185 --> 00:40:55.265
+<v Speaker 1>you can see if they are from different
+
+00:40:55.425 --> 00:40:57.345
+<v Speaker 1>pods. So if you expand
+
+00:40:57.425 --> 00:40:58.385
+<v Speaker 1>a couple of lines,
+
+00:40:59.609 --> 00:41:01.530
+<v Speaker 1>you should be able to see that
+
+00:41:01.930 --> 00:41:04.170
+<v Speaker 1>the pod is different from time to time.
+
+00:41:05.289 --> 00:41:07.130
+<v Speaker 1>Yeah. This is this one.
+
+00:41:08.730 --> 00:41:10.089
+<v Speaker 0>So would we be able to,
+
+00:41:11.545 --> 00:41:13.785
+<v Speaker 0>like because this like, with LogQL, could I
+
+00:41:13.785 --> 00:41:16.345
+<v Speaker 0>actually group by the pod and see how
+
+00:41:16.345 --> 00:41:17.945
+<v Speaker 0>many different pods there are?
+
+00:41:18.425 --> 00:41:20.265
+<v Speaker 1>Yeah. We can do that. Let's do that.
+
+00:41:20.745 --> 00:41:22.505
+<v Speaker 1>So I'm gonna help you to write this
+
+00:41:22.505 --> 00:41:24.665
+<v Speaker 1>down. We're gonna write at the beginning.
+
+00:41:25.660 --> 00:41:26.460
+<v Speaker 1>Alright.
+
+00:41:26.460 --> 00:41:28.380
+<v Speaker 1>Actually, we're gonna do a wait.
+
+00:41:28.620 --> 00:41:29.580
+<v Speaker 1>Do rates
+
+00:41:30.300 --> 00:41:32.540
+<v Speaker 1>and then open parenthesis.
+
+00:41:32.540 --> 00:41:35.020
+<v Speaker 1>Yeah. So that's exactly like Punkyard. You you
+
+00:41:35.020 --> 00:41:35.420
+<v Speaker 1>should feel
+
+00:41:36.380 --> 00:41:38.700
+<v Speaker 1>so, yeah, you have the selector the range
+
+00:41:38.700 --> 00:41:40.060
+<v Speaker 1>selector here. So it's brackets.
+
+00:41:40.905 --> 00:41:42.265
+<v Speaker 1>Square square bracket.
+
+00:41:45.145 --> 00:41:47.145
+<v Speaker 1>And, yeah, select interval.
+
+00:41:47.145 --> 00:41:48.825
+<v Speaker 1>Interval will automatically
+
+00:41:48.825 --> 00:41:51.545
+<v Speaker 1>the first one. Yeah. Automatically select the interval
+
+00:41:51.545 --> 00:41:54.505
+<v Speaker 1>that we are using on the range currently.
+
+00:41:54.880 --> 00:41:57.840
+<v Speaker 1>Okay. And you can run that. If there's
+
+00:41:57.840 --> 00:41:59.359
+<v Speaker 1>not too many label, it should it should
+
+00:41:59.359 --> 00:42:00.080
+<v Speaker 1>go fine.
+
+00:42:01.200 --> 00:42:02.720
+<v Speaker 1>Let's run that to see.
+
+00:42:04.480 --> 00:42:05.680
+<v Speaker 0>I can't hit return.
+
+00:42:08.155 --> 00:42:10.075
+<v Speaker 1>Yeah. You can hit the the blue button
+
+00:42:10.075 --> 00:42:11.515
+<v Speaker 1>at the top. I don't remember what's the
+
+00:42:11.515 --> 00:42:14.075
+<v Speaker 1>key. Yeah. Yeah. It's probably commanded or something,
+
+00:42:14.075 --> 00:42:15.915
+<v Speaker 0>isn't it? Yeah. Yeah.
+
+00:42:18.235 --> 00:42:19.195
+<v Speaker 1>So we need to
+
+00:42:21.069 --> 00:42:23.150
+<v Speaker 0>I think the interval was maybe just too
+
+00:42:23.150 --> 00:42:24.190
+<v Speaker 0>big here.
+
+00:42:24.750 --> 00:42:26.589
+<v Speaker 1>The yeah. The top the the the time
+
+00:42:26.589 --> 00:42:28.190
+<v Speaker 1>shift. If you look at the top next
+
+00:42:28.190 --> 00:42:29.230
+<v Speaker 1>to clear all
+
+00:42:29.630 --> 00:42:31.869
+<v Speaker 1>yeah. Yeah. Click on this button next to
+
+00:42:31.869 --> 00:42:32.990
+<v Speaker 1>the the loop.
+
+00:42:33.150 --> 00:42:34.109
+<v Speaker 0>Oh, yep. No.
+
+00:42:35.415 --> 00:42:37.575
+<v Speaker 1>It's more on the left, not the clear
+
+00:42:37.575 --> 00:42:40.135
+<v Speaker 1>hole. Not this one. Yeah. Left again. Oh,
+
+00:42:40.135 --> 00:42:42.295
+<v Speaker 1>yeah. Yeah. That one. Yeah. Yeah. Let's change
+
+00:42:42.295 --> 00:42:44.935
+<v Speaker 1>it to maybe five minutes or fifteen minutes.
+
+00:42:45.495 --> 00:42:45.655
+<v Speaker 1>Yeah.
+
+00:42:48.130 --> 00:42:50.290
+<v Speaker 1>And, yeah, we we can so it shows
+
+00:42:50.290 --> 00:42:52.530
+<v Speaker 1>too many label right now. So if you
+
+00:42:52.530 --> 00:42:54.530
+<v Speaker 1>know Prometheus, you can do a sum by
+
+00:42:54.530 --> 00:42:55.570
+<v Speaker 1>to aggregate
+
+00:42:56.130 --> 00:42:58.210
+<v Speaker 1>by pod. I think it's pod.
+
+00:42:59.090 --> 00:43:00.995
+<v Speaker 1>Yeah. We can do a sum by pod.
+
+00:43:00.995 --> 00:43:03.075
+<v Speaker 1>You can wrap everything by with a sum
+
+00:43:03.075 --> 00:43:05.715
+<v Speaker 1>by pod. Sum and then yeah. No. So
+
+00:43:05.715 --> 00:43:07.395
+<v Speaker 1>there's no there's a space between
+
+00:43:07.555 --> 00:43:10.835
+<v Speaker 1>yeah. There's a space between sum and buy.
+
+00:43:12.115 --> 00:43:14.275
+<v Speaker 1>Yeah. And then open parenthesis
+
+00:43:15.940 --> 00:43:17.860
+<v Speaker 1>right after the yeah. Pod,
+
+00:43:18.020 --> 00:43:20.020
+<v Speaker 1>close the parenthesis, and then you wrap everything
+
+00:43:20.020 --> 00:43:21.700
+<v Speaker 1>into parenthesis at
+
+00:43:23.300 --> 00:43:24.660
+<v Speaker 1>the end. Yeah. Is that right? So you
+
+00:43:24.660 --> 00:43:26.180
+<v Speaker 1>need to wrap it again. Yeah. You need
+
+00:43:26.180 --> 00:43:28.820
+<v Speaker 1>to wrap again the rate into parenthesis one
+
+00:43:28.820 --> 00:43:29.140
+<v Speaker 1>more time.
+
+00:43:30.005 --> 00:43:30.965
+<v Speaker 1>That's how
+
+00:43:31.685 --> 00:43:32.885
+<v Speaker 1>yeah. Yeah.
+
+00:43:33.525 --> 00:43:34.965
+<v Speaker 1>So that's going to send by pod this
+
+00:43:34.965 --> 00:43:35.445
+<v Speaker 1>time.
+
+00:43:35.845 --> 00:43:37.765
+<v Speaker 1>So it's going to remove all the label
+
+00:43:37.765 --> 00:43:40.485
+<v Speaker 1>dimension and only keep the pod. Ah, there
+
+00:43:40.485 --> 00:43:43.330
+<v Speaker 0>we go. Nice. Yeah. So this
+
+00:43:45.170 --> 00:43:46.850
+<v Speaker 1>pod doesn't seem to log
+
+00:43:47.730 --> 00:43:49.490
+<v Speaker 0>a lot just at the beginning when it's
+
+00:43:49.490 --> 00:43:50.050
+<v Speaker 1>tough.
+
+00:43:50.450 --> 00:43:51.810
+<v Speaker 0>Yeah. I think it's
+
+00:43:51.970 --> 00:43:53.730
+<v Speaker 0>the pod's all started up. It's about a
+
+00:43:53.730 --> 00:43:55.170
+<v Speaker 0>little bit of log. I mean, we're not
+
+00:43:55.170 --> 00:43:57.555
+<v Speaker 0>browsing to the sock shop. We're not adding
+
+00:43:57.555 --> 00:43:59.315
+<v Speaker 0>things to cars and trying to cause more
+
+00:43:59.315 --> 00:44:01.155
+<v Speaker 0>load data. We we could definitely do that
+
+00:44:01.155 --> 00:44:03.315
+<v Speaker 0>if we want, but I think we we've
+
+00:44:03.315 --> 00:44:04.915
+<v Speaker 0>seen what we wanted to see here. And
+
+00:44:04.915 --> 00:44:06.835
+<v Speaker 0>we've seen a burst of calls. Right. Yeah.
+
+00:44:06.915 --> 00:44:09.395
+<v Speaker 0>We you know, it's nice. I mean, I
+
+00:44:09.395 --> 00:44:11.234
+<v Speaker 0>I don't think I understand LogQL
+
+00:44:11.430 --> 00:44:13.430
+<v Speaker 0>in GridDef or anything, but I like the
+
+00:44:13.430 --> 00:44:15.030
+<v Speaker 0>familiarity with PromQL.
+
+00:44:15.349 --> 00:44:17.110
+<v Speaker 0>It's not too dissimilar.
+
+00:44:17.270 --> 00:44:18.950
+<v Speaker 0>So I think I could probably work my
+
+00:44:18.950 --> 00:44:21.349
+<v Speaker 0>way through a few examples there. So that's
+
+00:44:21.349 --> 00:44:23.750
+<v Speaker 0>pretty cool. Yeah. I think that's the idea
+
+00:44:23.750 --> 00:44:26.869
+<v Speaker 1>of why LokiL is heavily inspired by PromQL
+
+00:44:26.869 --> 00:44:28.645
+<v Speaker 1>is to make it simple for people that
+
+00:44:28.645 --> 00:44:29.525
+<v Speaker 1>are already
+
+00:44:30.885 --> 00:44:32.565
+<v Speaker 1>comfortable with PromQL
+
+00:44:32.565 --> 00:44:33.445
+<v Speaker 1>to learn
+
+00:44:33.684 --> 00:44:34.645
+<v Speaker 1>this new language.
+
+00:44:35.125 --> 00:44:36.805
+<v Speaker 1>And if there's something that I can add
+
+00:44:36.805 --> 00:44:39.445
+<v Speaker 1>is if you scroll up to the query,
+
+00:44:39.605 --> 00:44:40.485
+<v Speaker 1>is in
+
+00:44:40.645 --> 00:44:41.445
+<v Speaker 1>Loki,
+
+00:44:41.924 --> 00:44:43.710
+<v Speaker 1>the only difference
+
+00:44:44.510 --> 00:44:47.470
+<v Speaker 1>between Loki and PromptQL is the log queries.
+
+00:44:47.470 --> 00:44:49.230
+<v Speaker 1>So this is a metric query because it
+
+00:44:49.230 --> 00:44:51.310
+<v Speaker 1>output a metric query. So all the metric
+
+00:44:51.310 --> 00:44:53.070
+<v Speaker 1>queries are very exactly
+
+00:44:53.070 --> 00:44:54.350
+<v Speaker 1>the same as in PromptQL.
+
+00:44:54.885 --> 00:44:57.845
+<v Speaker 1>The log queries where you can search world
+
+00:44:58.565 --> 00:45:00.485
+<v Speaker 1>RegEx world or grep world,
+
+00:45:00.645 --> 00:45:02.165
+<v Speaker 1>those use Pipe.
+
+00:45:02.325 --> 00:45:03.445
+<v Speaker 1>And those are
+
+00:45:03.685 --> 00:45:04.245
+<v Speaker 1>more
+
+00:45:04.805 --> 00:45:05.765
+<v Speaker 1>new to
+
+00:45:07.765 --> 00:45:08.325
+<v Speaker 1>the space.
+
+00:45:09.060 --> 00:45:11.140
+<v Speaker 0>Okay. So could we
+
+00:45:12.740 --> 00:45:15.860
+<v Speaker 0>search for default lifecycle processor?
+
+00:45:16.420 --> 00:45:18.340
+<v Speaker 1>Yeah. I think we could we could yeah.
+
+00:45:18.340 --> 00:45:19.860
+<v Speaker 1>Let's do that. So
+
+00:45:20.100 --> 00:45:22.340
+<v Speaker 1>you need to let let's add another query.
+
+00:45:22.485 --> 00:45:24.405
+<v Speaker 1>Keep that query here and create a new
+
+00:45:24.405 --> 00:45:26.725
+<v Speaker 1>one. There's a button, add query. Yeah. And
+
+00:45:26.725 --> 00:45:27.205
+<v Speaker 1>then
+
+00:45:27.685 --> 00:45:29.765
+<v Speaker 1>yeah. So you can do a name. So
+
+00:45:31.205 --> 00:45:31.605
+<v Speaker 1>open
+
+00:45:32.645 --> 00:45:35.045
+<v Speaker 1>exactly. Yeah. Write the same selector. And then
+
+00:45:35.420 --> 00:45:37.100
+<v Speaker 1>after, at the end, when you want to
+
+00:45:37.100 --> 00:45:38.780
+<v Speaker 1>look for a world, it is a pipe
+
+00:45:38.780 --> 00:45:40.940
+<v Speaker 1>equal. If you want to do a search
+
+00:45:40.940 --> 00:45:43.580
+<v Speaker 1>pipe equal and then space, and then, yeah,
+
+00:45:44.140 --> 00:45:45.900
+<v Speaker 1>you put the world that you want to
+
+00:45:45.900 --> 00:45:46.380
+<v Speaker 1>find.
+
+00:45:47.100 --> 00:45:48.540
+<v Speaker 1>So this is case sensitive?
+
+00:45:49.905 --> 00:45:50.865
+<v Speaker 1>Yep.
+
+00:45:51.665 --> 00:45:53.425
+<v Speaker 1>I think that's fine. Yeah. No. It's gonna
+
+00:45:53.585 --> 00:45:55.025
+<v Speaker 1>yeah. That should be that should be fine.
+
+00:45:55.025 --> 00:45:56.385
+<v Speaker 1>So if you run that, it will run
+
+00:45:56.385 --> 00:45:57.265
+<v Speaker 1>both query.
+
+00:45:58.305 --> 00:46:00.145
+<v Speaker 1>And it hasn't fine, I think. We may
+
+00:46:00.465 --> 00:46:03.580
+<v Speaker 0>have fallen out of the five minute window.
+
+00:46:04.619 --> 00:46:06.940
+<v Speaker 1>I'm not sure. I'm not oh, yeah. You're
+
+00:46:06.940 --> 00:46:09.260
+<v Speaker 1>right. Yeah. Yeah. That's the case. Yeah. Yeah.
+
+00:46:09.260 --> 00:46:10.859
+<v Speaker 0>It's been over five minutes since we started
+
+00:46:11.020 --> 00:46:12.460
+<v Speaker 0>since we scaled that up, so I was
+
+00:46:12.460 --> 00:46:14.140
+<v Speaker 0>kind of watching for it. Yeah.
+
+00:46:14.940 --> 00:46:16.619
+<v Speaker 1>So we found four
+
+00:46:17.085 --> 00:46:20.125
+<v Speaker 1>line that contained that one across all the
+
+00:46:20.125 --> 00:46:20.845
+<v Speaker 1>pods.
+
+00:46:22.205 --> 00:46:22.925
+<v Speaker 1>Right? And
+
+00:46:23.565 --> 00:46:25.805
+<v Speaker 1>that's that's that's kind of like a.
+
+00:46:26.125 --> 00:46:28.925
+<v Speaker 1>So there's so there's multiple option. Here, we
+
+00:46:28.925 --> 00:46:29.725
+<v Speaker 1>do
+
+00:46:30.609 --> 00:46:32.050
+<v Speaker 1>a match of the world. But we can
+
+00:46:32.050 --> 00:46:34.290
+<v Speaker 1>do a regex, which is instead
+
+00:46:34.290 --> 00:46:36.850
+<v Speaker 1>of using pipe equal, it's pipe tilde.
+
+00:46:37.170 --> 00:46:39.250
+<v Speaker 1>And then you can write regex. So obviously,
+
+00:46:39.250 --> 00:46:41.089
+<v Speaker 1>that's a valid regex, what you have here,
+
+00:46:41.089 --> 00:46:41.170
+<v Speaker 1>too.
+
+00:46:42.305 --> 00:46:43.745
+<v Speaker 1>But you could write
+
+00:46:44.145 --> 00:46:46.145
+<v Speaker 1>yeah. You can show me your Array two
+
+00:46:46.145 --> 00:46:46.785
+<v Speaker 1>skill.
+
+00:46:49.265 --> 00:46:50.865
+<v Speaker 0>We'll keep it simple, right?
+
+00:46:51.185 --> 00:46:52.865
+<v Speaker 1>Yeah. Exactly. Good
+
+00:46:53.425 --> 00:46:54.065
+<v Speaker 1>call.
+
+00:46:54.465 --> 00:46:56.305
+<v Speaker 1>But yeah, you can write this is how
+
+00:46:56.305 --> 00:46:58.210
+<v Speaker 1>you and you can chain them. So
+
+00:46:58.690 --> 00:46:59.410
+<v Speaker 1>you could do
+
+00:47:00.610 --> 00:47:01.650
+<v Speaker 1>it contains
+
+00:47:01.810 --> 00:47:03.970
+<v Speaker 1>the default, but you can chain another one
+
+00:47:03.970 --> 00:47:04.850
+<v Speaker 1>at the end.
+
+00:47:05.570 --> 00:47:06.770
+<v Speaker 1>So if you go at the end and
+
+00:47:06.770 --> 00:47:08.450
+<v Speaker 1>you go another pipe equal, you can have
+
+00:47:08.450 --> 00:47:10.770
+<v Speaker 1>another one. Yeah. You can chain multiple of
+
+00:47:10.210 --> 00:47:11.730
+<v Speaker 0>Default.
+
+00:47:12.474 --> 00:47:15.675
+<v Speaker 1>So the both clause needs to be fulfilled.
+
+00:47:19.915 --> 00:47:21.515
+<v Speaker 0>Sorry. Can you say that last bit again?
+
+00:47:22.075 --> 00:47:22.795
+<v Speaker 1>Yeah.
+
+00:47:22.875 --> 00:47:24.954
+<v Speaker 1>Both both both of those clause need to
+
+00:47:24.954 --> 00:47:26.795
+<v Speaker 1>be fulfilled. Yeah. That's gonna be fine. Yeah.
+
+00:47:29.200 --> 00:47:31.120
+<v Speaker 0>There we go. Yeah.
+
+00:47:31.280 --> 00:47:32.960
+<v Speaker 0>I mean, I don't have any Rawkode logs,
+
+00:47:32.960 --> 00:47:35.120
+<v Speaker 0>but it did filter on default lifecycle, which
+
+00:47:35.120 --> 00:47:36.080
+<v Speaker 0>is what I wanted.
+
+00:47:36.560 --> 00:47:38.560
+<v Speaker 0>Just throwing in random bits of regex just
+
+00:47:38.560 --> 00:47:40.000
+<v Speaker 0>to, you know, just to check that it
+
+00:47:40.000 --> 00:47:40.240
+<v Speaker 0>works.
+
+00:47:41.664 --> 00:47:43.744
+<v Speaker 1>I guess Yeah. So you can chain as
+
+00:47:43.744 --> 00:47:45.345
+<v Speaker 1>much as you want. And then after, there's
+
+00:47:45.345 --> 00:47:47.505
+<v Speaker 1>the negative one. So if you need to,
+
+00:47:47.505 --> 00:47:48.945
+<v Speaker 1>you can instead of pipe,
+
+00:47:49.105 --> 00:47:51.184
+<v Speaker 1>you can do exclamation mark. And that's gonna
+
+00:47:51.184 --> 00:47:53.265
+<v Speaker 1>do the negative one. So everything that doesn't
+
+00:47:53.265 --> 00:47:53.984
+<v Speaker 1>contain.
+
+00:47:54.785 --> 00:47:55.744
+<v Speaker 0>Alright. Yep.
+
+00:47:57.720 --> 00:47:59.640
+<v Speaker 0>I mean, I should probably just return nothing.
+
+00:47:59.640 --> 00:48:00.440
+<v Speaker 0>Would've thought.
+
+00:48:00.840 --> 00:48:02.680
+<v Speaker 0>That Oh, no. There's other defaults that are
+
+00:48:02.680 --> 00:48:05.240
+<v Speaker 0>in life cycle. Okay. That actually worked then.
+
+00:48:05.240 --> 00:48:05.720
+<v Speaker 0>Cool.
+
+00:48:06.040 --> 00:48:06.680
+<v Speaker 0>Nice.
+
+00:48:07.480 --> 00:48:08.280
+<v Speaker 1>Yep.
+
+00:48:08.680 --> 00:48:10.440
+<v Speaker 1>And the estimation
+
+00:48:10.680 --> 00:48:12.125
+<v Speaker 0>training thing. You know, it feels like a
+
+00:48:12.125 --> 00:48:14.125
+<v Speaker 0>data transformation. You know, I've got all of
+
+00:48:14.125 --> 00:48:15.645
+<v Speaker 0>my logs. I wanna do a filter. I
+
+00:48:15.645 --> 00:48:16.765
+<v Speaker 0>wanna do a filter. I wanna do a
+
+00:48:16.765 --> 00:48:18.205
+<v Speaker 0>filter. And I wanna get something at the
+
+00:48:18.205 --> 00:48:21.484
+<v Speaker 0>end. And it it's, again, intuitive and, you
+
+00:48:21.484 --> 00:48:23.325
+<v Speaker 0>know, similar to some programming languages that I've
+
+00:48:23.325 --> 00:48:24.445
+<v Speaker 0>worked with as well. So
+
+00:48:25.230 --> 00:48:27.630
+<v Speaker 0>I think that. Yeah. The idea is it
+
+00:48:27.630 --> 00:48:29.710
+<v Speaker 1>should feel like a CLI a bit. So
+
+00:48:29.710 --> 00:48:30.750
+<v Speaker 1>you're piping
+
+00:48:30.750 --> 00:48:31.950
+<v Speaker 1>and processing
+
+00:48:32.670 --> 00:48:34.910
+<v Speaker 1>from left to right data.
+
+00:48:35.790 --> 00:48:37.230
+<v Speaker 1>That's
+
+00:48:37.230 --> 00:48:40.015
+<v Speaker 1>the idea. So that's the search. Search are
+
+00:48:40.175 --> 00:48:42.415
+<v Speaker 1>so that's the most powerful way to search
+
+00:48:42.415 --> 00:48:43.215
+<v Speaker 1>data.
+
+00:48:43.695 --> 00:48:45.535
+<v Speaker 1>If you look at your first query at
+
+00:48:45.535 --> 00:48:48.255
+<v Speaker 1>the top, you can insert the search in
+
+00:48:48.255 --> 00:48:52.495
+<v Speaker 1>between the square brackets and the label matcher
+
+00:48:52.735 --> 00:48:54.250
+<v Speaker 1>to count
+
+00:48:54.410 --> 00:48:57.770
+<v Speaker 1>the rates of logs, but for only a
+
+00:48:58.170 --> 00:48:59.210
+<v Speaker 1>specific word.
+
+00:49:00.010 --> 00:49:02.410
+<v Speaker 0>So is that just this bit here?
+
+00:49:02.810 --> 00:49:03.530
+<v Speaker 1>You
+
+00:49:03.610 --> 00:49:06.250
+<v Speaker 1>can copy everything and replace the label match
+
+00:49:06.250 --> 00:49:07.370
+<v Speaker 1>at the top here.
+
+00:49:07.690 --> 00:49:08.810
+<v Speaker 1>Only the yeah,
+
+00:49:10.125 --> 00:49:12.605
+<v Speaker 1>To this. Yeah. Replace this. Yeah.
+
+00:49:13.405 --> 00:49:14.685
+<v Speaker 1>And then run that.
+
+00:49:19.165 --> 00:49:21.165
+<v Speaker 0>Nice. Right. So, yeah.
+
+00:49:21.565 --> 00:49:21.965
+<v Speaker 1>It's
+
+00:49:22.650 --> 00:49:25.049
+<v Speaker 1>I don't know if it's there's not enough
+
+00:49:25.049 --> 00:49:26.490
+<v Speaker 1>data, I think, to show.
+
+00:49:26.809 --> 00:49:28.170
+<v Speaker 1>Maybe try to
+
+00:49:28.490 --> 00:49:29.930
+<v Speaker 0>Yeah. There might not be enough data for
+
+00:49:29.930 --> 00:49:32.089
+<v Speaker 0>the the rate to show. But The rate
+
+00:49:32.089 --> 00:49:34.329
+<v Speaker 1>to show. Yeah. But the the apparently,
+
+00:49:34.665 --> 00:49:36.745
+<v Speaker 1>there's one point somewhere. I'm not sure where
+
+00:49:36.745 --> 00:49:38.425
+<v Speaker 1>it is because it shows like a zero
+
+00:49:38.425 --> 00:49:39.305
+<v Speaker 1>to two.
+
+00:49:40.745 --> 00:49:42.185
+<v Speaker 0>Yeah. No idea.
+
+00:49:42.585 --> 00:49:44.505
+<v Speaker 1>But try to to to, like,
+
+00:49:44.905 --> 00:49:47.065
+<v Speaker 1>do a search that hits a bit more
+
+00:49:47.065 --> 00:49:49.225
+<v Speaker 1>without the the second player. Let's take off
+
+00:49:49.225 --> 00:49:50.025
+<v Speaker 0>the
+
+00:49:55.470 --> 00:49:57.230
+<v Speaker 1>oh, oh, you can switch also to another
+
+00:49:57.230 --> 00:49:59.630
+<v Speaker 1>container. Maybe look here. Yeah. Here we go.
+
+00:49:59.630 --> 00:50:01.390
+<v Speaker 1>So it's not the most most
+
+00:50:01.790 --> 00:50:02.910
+<v Speaker 1>nice graph
+
+00:50:02.910 --> 00:50:03.870
+<v Speaker 1>that I've seen.
+
+00:50:04.349 --> 00:50:06.615
+<v Speaker 1>Know? Okay. So we could use not just
+
+00:50:06.615 --> 00:50:08.615
+<v Speaker 0>a label select or an metric queries, but
+
+00:50:08.615 --> 00:50:10.535
+<v Speaker 0>a a fill log query to do the
+
+00:50:10.535 --> 00:50:13.575
+<v Speaker 0>filtering and then perform aggregations or metrics on
+
+00:50:13.575 --> 00:50:15.415
+<v Speaker 0>top of those log data, which is very
+
+00:50:15.415 --> 00:50:16.455
+<v Speaker 0>nice and neat. Yeah.
+
+00:50:17.095 --> 00:50:18.535
+<v Speaker 1>Yeah. That's correct. So you can do search.
+
+00:50:18.535 --> 00:50:20.135
+<v Speaker 1>And once you have your search so, for
+
+00:50:20.030 --> 00:50:21.630
+<v Speaker 1>instance, you can look at, you know,
+
+00:50:22.430 --> 00:50:23.869
+<v Speaker 1>do I have an error in the last
+
+00:50:23.869 --> 00:50:26.190
+<v Speaker 1>six hour? And if you find an error,
+
+00:50:26.190 --> 00:50:28.190
+<v Speaker 1>you can try to look at, was this
+
+00:50:28.190 --> 00:50:30.750
+<v Speaker 1>error there yesterday too? And you can start
+
+00:50:30.750 --> 00:50:32.270
+<v Speaker 1>to do a rate and look at, you
+
+00:50:32.270 --> 00:50:34.445
+<v Speaker 1>know, since when this error is happening, how
+
+00:50:34.445 --> 00:50:36.045
+<v Speaker 1>often it's happening. So you can do those
+
+00:50:36.045 --> 00:50:37.405
+<v Speaker 1>kind of operation.
+
+00:50:37.965 --> 00:50:40.765
+<v Speaker 1>And so to remember everything that is inside
+
+00:50:40.925 --> 00:50:42.045
+<v Speaker 1>parentheses,
+
+00:50:42.605 --> 00:50:45.085
+<v Speaker 1>it's the selector of the stream of the
+
+00:50:45.085 --> 00:50:47.590
+<v Speaker 1>the the actual log. And everything that is
+
+00:50:47.590 --> 00:50:48.390
+<v Speaker 1>a function
+
+00:50:49.190 --> 00:50:52.470
+<v Speaker 1>will be used to extract metric, so like
+
+00:50:52.470 --> 00:50:53.350
+<v Speaker 1>in Prometheus.
+
+00:50:53.510 --> 00:50:56.470
+<v Speaker 1>Piping goes with log, and then function goes
+
+00:50:56.470 --> 00:50:57.350
+<v Speaker 1>with metric.
+
+00:50:57.990 --> 00:50:58.950
+<v Speaker 0>Okay, cool.
+
+00:50:59.765 --> 00:51:01.445
+<v Speaker 0>You happy to take a couple more questions
+
+00:51:01.445 --> 00:51:03.045
+<v Speaker 0>from the audience just now before we move
+
+00:51:03.045 --> 00:51:03.605
+<v Speaker 0>on?
+
+00:51:03.925 --> 00:51:04.645
+<v Speaker 1>Yep.
+
+00:51:05.125 --> 00:51:07.605
+<v Speaker 0>Okay. So we got a question here from
+
+00:51:07.605 --> 00:51:08.485
+<v Speaker 0>Andres.
+
+00:51:08.805 --> 00:51:11.925
+<v Speaker 0>How does Loki compare to Graylog or Logstash?
+
+00:51:12.990 --> 00:51:13.870
+<v Speaker 1>Yeah.
+
+00:51:15.150 --> 00:51:15.710
+<v Speaker 1>So
+
+00:51:16.030 --> 00:51:17.070
+<v Speaker 1>Logstash,
+
+00:51:17.230 --> 00:51:19.630
+<v Speaker 1>it doesn't really compare to because Logstash is
+
+00:51:19.630 --> 00:51:20.750
+<v Speaker 1>an agent.
+
+00:51:21.150 --> 00:51:23.630
+<v Speaker 1>But if we look at Pontail and
+
+00:51:23.710 --> 00:51:24.510
+<v Speaker 1>Logstash,
+
+00:51:24.510 --> 00:51:27.005
+<v Speaker 1>I think Pontail is in Go. And as
+
+00:51:27.005 --> 00:51:28.365
+<v Speaker 1>I was saying at the beginning,
+
+00:51:28.684 --> 00:51:30.765
+<v Speaker 1>the service discovery to
+
+00:51:30.845 --> 00:51:33.005
+<v Speaker 1>find the labels is very much the same
+
+00:51:33.005 --> 00:51:34.365
+<v Speaker 1>as Prometheus.
+
+00:51:34.365 --> 00:51:35.724
+<v Speaker 1>So that's the big difference.
+
+00:51:36.045 --> 00:51:38.365
+<v Speaker 1>Logstash is a is a bit more
+
+00:51:39.290 --> 00:51:41.130
+<v Speaker 1>a bit more focused on
+
+00:51:42.010 --> 00:51:43.930
+<v Speaker 1>working on your logs and
+
+00:51:45.530 --> 00:51:50.010
+<v Speaker 1>modifying them or aggregating and transforming the logs.
+
+00:51:50.170 --> 00:51:51.930
+<v Speaker 1>Promptile does that a bit, but that's not
+
+00:51:51.930 --> 00:51:52.810
+<v Speaker 1>the
+
+00:51:52.994 --> 00:51:55.234
+<v Speaker 1>The the that's why that's not why we
+
+00:51:55.234 --> 00:51:55.875
+<v Speaker 1>created.
+
+00:51:56.035 --> 00:51:57.395
+<v Speaker 1>It's more like to ship logs.
+
+00:51:58.115 --> 00:51:59.875
+<v Speaker 1>And gray logs, I mean, I've I never
+
+00:51:59.875 --> 00:52:02.035
+<v Speaker 1>really used gray log, but I know exactly
+
+00:52:02.035 --> 00:52:03.875
+<v Speaker 1>what it is. And it's the same idea.
+
+00:52:04.275 --> 00:52:06.194
+<v Speaker 1>Loki and and gray logs are of the
+
+00:52:06.194 --> 00:52:08.320
+<v Speaker 1>same purpose. You can send logs to
+
+00:52:08.960 --> 00:52:11.040
+<v Speaker 1>to to Graylog and aggregate.
+
+00:52:11.680 --> 00:52:13.520
+<v Speaker 1>So I think the biggest difference is that
+
+00:52:13.520 --> 00:52:15.920
+<v Speaker 1>Loki is inspired by Prometheus. So if you're
+
+00:52:15.920 --> 00:52:17.360
+<v Speaker 1>already running Prometheus,
+
+00:52:17.599 --> 00:52:19.680
+<v Speaker 1>it makes your experience a bit more easier.
+
+00:52:19.680 --> 00:52:21.920
+<v Speaker 1>And it's all integrated in Grafana.
+
+00:52:21.920 --> 00:52:23.694
+<v Speaker 1>And I don't think Graylog is put in
+
+00:52:23.694 --> 00:52:24.494
+<v Speaker 1>Grafana.
+
+00:52:24.655 --> 00:52:26.895
+<v Speaker 0>So what do you you know, let's just
+
+00:52:26.895 --> 00:52:29.375
+<v Speaker 0>assume I'm an operator for a production Kubernetes
+
+00:52:29.375 --> 00:52:31.535
+<v Speaker 0>cluster. We have all this log data and
+
+00:52:31.535 --> 00:52:32.655
+<v Speaker 0>I'm setting down
+
+00:52:33.375 --> 00:52:35.375
+<v Speaker 0>and I have to make the decision. Do
+
+00:52:35.375 --> 00:52:38.575
+<v Speaker 0>I install Loki to my cluster or Elasticsearch
+
+00:52:38.575 --> 00:52:40.070
+<v Speaker 0>or both? Like,
+
+00:52:40.310 --> 00:52:42.870
+<v Speaker 0>how do people evaluate and make that decision?
+
+00:52:43.350 --> 00:52:45.350
+<v Speaker 1>Yeah. I think if it's if it's so
+
+00:52:45.350 --> 00:52:46.470
+<v Speaker 1>if it was me,
+
+00:52:46.870 --> 00:52:49.910
+<v Speaker 1>and I'm also, you know, doing operation in
+
+00:52:49.910 --> 00:52:50.470
+<v Speaker 1>my
+
+00:52:51.350 --> 00:52:53.750
+<v Speaker 1>in my in my job, and if it's
+
+00:52:53.750 --> 00:52:55.270
+<v Speaker 1>for logs, I will go for Loki.
+
+00:52:55.885 --> 00:52:57.725
+<v Speaker 1>I will always go for Loki with logs
+
+00:52:57.725 --> 00:52:59.965
+<v Speaker 1>because that's what it has been created for.
+
+00:52:59.965 --> 00:53:00.605
+<v Speaker 1>After,
+
+00:53:01.405 --> 00:53:02.765
+<v Speaker 1>if I'm building a shop
+
+00:53:02.925 --> 00:53:05.085
+<v Speaker 1>and I know that some of my customer
+
+00:53:05.085 --> 00:53:07.085
+<v Speaker 1>will need to search for a given world
+
+00:53:07.085 --> 00:53:09.530
+<v Speaker 1>to find a specific product, I will use
+
+00:53:09.530 --> 00:53:11.930
+<v Speaker 1>Elasticsearch for that to store the information of
+
+00:53:11.930 --> 00:53:12.410
+<v Speaker 1>my
+
+00:53:13.690 --> 00:53:14.330
+<v Speaker 1>store.
+
+00:53:14.490 --> 00:53:17.609
+<v Speaker 1>But you can quickly realize the difference between
+
+00:53:17.609 --> 00:53:19.210
+<v Speaker 1>the two is one of them is going
+
+00:53:19.210 --> 00:53:20.410
+<v Speaker 1>to probably receive
+
+00:53:20.570 --> 00:53:22.810
+<v Speaker 1>a lot of traffic. The other one should
+
+00:53:22.810 --> 00:53:25.210
+<v Speaker 1>only receive, I don't know, a couple of
+
+00:53:24.555 --> 00:53:26.315
+<v Speaker 1>thousand of product that you have.
+
+00:53:26.714 --> 00:53:28.555
+<v Speaker 1>And that should make it a bit more
+
+00:53:28.555 --> 00:53:31.595
+<v Speaker 1>easy to easier to scale your Elastic cluster
+
+00:53:31.595 --> 00:53:33.435
+<v Speaker 1>compared to Loki.
+
+00:53:34.474 --> 00:53:36.635
+<v Speaker 1>So it really depends on the use case.
+
+00:53:36.635 --> 00:53:37.675
+<v Speaker 1>That's what I want to say.
+
+00:53:38.910 --> 00:53:42.190
+<v Speaker 1>Elastic is very good for indexing data and
+
+00:53:42.349 --> 00:53:42.990
+<v Speaker 1>your
+
+00:53:44.670 --> 00:53:46.030
+<v Speaker 1>items using
+
+00:53:46.349 --> 00:53:47.630
+<v Speaker 1>LUCEN queries.
+
+00:53:48.270 --> 00:53:50.270
+<v Speaker 1>Loki is really good at logs. That's what
+
+00:53:50.270 --> 00:53:50.990
+<v Speaker 1>it does
+
+00:53:51.395 --> 00:53:53.795
+<v Speaker 1>at best. Yeah. So let's kinda talk about
+
+00:53:53.795 --> 00:53:57.555
+<v Speaker 0>the the difference there as well. Like, Elasticsearch
+
+00:53:57.555 --> 00:53:58.835
+<v Speaker 0>indexes everything,
+
+00:53:58.835 --> 00:54:00.755
+<v Speaker 0>I believe. It does full text search and
+
+00:54:00.755 --> 00:54:02.035
+<v Speaker 0>has indices for it. Everything
+
+00:54:02.435 --> 00:54:03.954
+<v Speaker 0>every document that you throw into it is
+
+00:54:03.954 --> 00:54:06.069
+<v Speaker 0>is is really index. Loki, you have to
+
+00:54:06.069 --> 00:54:08.390
+<v Speaker 0>be a lot more explicit about what we
+
+00:54:08.390 --> 00:54:10.310
+<v Speaker 0>want to index. It's not am am I
+
+00:54:10.310 --> 00:54:12.150
+<v Speaker 0>right in saying that Loki can index stuff,
+
+00:54:12.150 --> 00:54:13.589
+<v Speaker 0>I just have to tell it which fields
+
+00:54:13.589 --> 00:54:15.350
+<v Speaker 0>I I care about. Is that correct?
+
+00:54:15.829 --> 00:54:17.750
+<v Speaker 1>Yeah. That's correct. So by default,
+
+00:54:17.990 --> 00:54:20.205
+<v Speaker 1>like you like you've seen when we install
+
+00:54:20.205 --> 00:54:22.845
+<v Speaker 1>it with Elm, we choose a couple of
+
+00:54:23.005 --> 00:54:24.685
+<v Speaker 1>a couple of labels that we think are
+
+00:54:24.685 --> 00:54:27.405
+<v Speaker 1>good out of your own label from Kubernetes.
+
+00:54:27.725 --> 00:54:29.805
+<v Speaker 1>But you can configure that. You can add
+
+00:54:29.805 --> 00:54:31.565
+<v Speaker 1>more. You can extract directly from the log
+
+00:54:31.565 --> 00:54:33.485
+<v Speaker 1>line, the label, like the label. If you
+
+00:54:33.485 --> 00:54:35.165
+<v Speaker 1>want to have the label, you can extract
+
+00:54:35.609 --> 00:54:37.450
+<v Speaker 1>a bit more. You can do that. But
+
+00:54:37.450 --> 00:54:39.529
+<v Speaker 1>by default, usually, for most of the people,
+
+00:54:39.529 --> 00:54:41.210
+<v Speaker 1>it should be fine, you know, what we
+
+00:54:41.210 --> 00:54:42.730
+<v Speaker 1>have configured here.
+
+00:54:43.130 --> 00:54:43.930
+<v Speaker 0>Okay.
+
+00:54:44.250 --> 00:54:46.170
+<v Speaker 0>We have another question, which I think leads
+
+00:54:46.170 --> 00:54:47.369
+<v Speaker 0>in nicely to what we want to show
+
+00:54:47.369 --> 00:54:49.450
+<v Speaker 0>next, which is kind of maybe dashboarding
+
+00:54:49.450 --> 00:54:51.565
+<v Speaker 0>and such. So Frank has asked,
+
+00:54:51.885 --> 00:54:53.645
+<v Speaker 0>is it possible when a customer found a
+
+00:54:53.645 --> 00:54:55.805
+<v Speaker 0>dashboard with a logs panel for a filtered
+
+00:54:55.805 --> 00:54:58.605
+<v Speaker 0>set of Loki logs to activate this expand
+
+00:54:58.605 --> 00:54:59.405
+<v Speaker 0>functionality
+
+00:54:59.405 --> 00:55:00.765
+<v Speaker 0>like an explorer view?
+
+00:55:02.849 --> 00:55:03.890
+<v Speaker 1>Yeah.
+
+00:55:03.890 --> 00:55:05.890
+<v Speaker 1>I think it is. So I think
+
+00:55:08.049 --> 00:55:08.609
+<v Speaker 1>if
+
+00:55:08.930 --> 00:55:11.010
+<v Speaker 1>the question is, can we have this query
+
+00:55:11.170 --> 00:55:11.890
+<v Speaker 1>here
+
+00:55:12.690 --> 00:55:13.570
+<v Speaker 1>inside
+
+00:55:14.210 --> 00:55:16.609
+<v Speaker 1>a dashboard, the answer the the answer is
+
+00:55:16.609 --> 00:55:17.905
+<v Speaker 1>yes. We can have that.
+
+00:55:19.184 --> 00:55:20.704
+<v Speaker 0>Okay. Let's let's take a look at the
+
+00:55:20.704 --> 00:55:22.305
+<v Speaker 0>dashboard and stuff then. So
+
+00:55:22.704 --> 00:55:24.865
+<v Speaker 0>we build a dashboard with a a mix
+
+00:55:24.865 --> 00:55:27.505
+<v Speaker 0>of metrics and log data? Just a really
+
+00:55:27.505 --> 00:55:28.225
+<v Speaker 0>simple Yeah.
+
+00:55:29.265 --> 00:55:29.825
+<v Speaker 1>Yeah.
+
+00:55:30.305 --> 00:55:32.385
+<v Speaker 1>Let's do a let's do that. Alright.
+
+00:55:33.320 --> 00:55:35.640
+<v Speaker 0>So you want me just to click create
+
+00:55:35.640 --> 00:55:36.360
+<v Speaker 0>dashboard?
+
+00:55:36.840 --> 00:55:38.360
+<v Speaker 1>Yep. There we go.
+
+00:55:39.480 --> 00:55:41.320
+<v Speaker 0>And then we wanna add
+
+00:55:41.640 --> 00:55:43.320
+<v Speaker 0>panel icon. Yeah.
+
+00:55:43.480 --> 00:55:45.720
+<v Speaker 1>Yeah. Let's start with a metric. So look
+
+00:55:45.720 --> 00:55:48.040
+<v Speaker 1>at promoters maybe if you wanna add metrics.
+
+00:55:49.295 --> 00:55:51.695
+<v Speaker 1>K. So you need to select, yeah, promoters.
+
+00:55:53.695 --> 00:55:55.855
+<v Speaker 1>Metric, I think you should You can find
+
+00:55:55.855 --> 00:55:56.495
+<v Speaker 1>one.
+
+00:55:58.255 --> 00:56:01.295
+<v Speaker 1>I'm thinking what we're have here. Oh, we
+
+00:56:01.295 --> 00:56:02.255
+<v Speaker 1>have cAdvisor
+
+00:56:02.255 --> 00:56:05.090
+<v Speaker 1>running. It's good. Can look at CPU from
+
+00:56:05.090 --> 00:56:06.130
+<v Speaker 1>cAdvisor.
+
+00:56:07.970 --> 00:56:09.090
+<v Speaker 1>Oh, shit.
+
+00:56:09.330 --> 00:56:09.730
+<v Speaker 1>That's
+
+00:56:11.010 --> 00:56:13.330
+<v Speaker 1>maybe it's container. Maybe it's container.
+
+00:56:17.615 --> 00:56:18.255
+<v Speaker 1>Yeah.
+
+00:56:18.494 --> 00:56:20.335
+<v Speaker 0>Load average over ten seconds?
+
+00:56:20.734 --> 00:56:21.375
+<v Speaker 1>Yeah.
+
+00:56:25.455 --> 00:56:27.775
+<v Speaker 0>Zero. But it is a metric. So
+
+00:56:31.450 --> 00:56:32.970
+<v Speaker 0>And then just apply?
+
+00:56:34.890 --> 00:56:35.930
+<v Speaker 1>Yeah. The other
+
+00:56:37.450 --> 00:56:38.330
+<v Speaker 1>yeah. We need to
+
+00:56:40.490 --> 00:56:41.770
+<v Speaker 1>I'm not sure this was one
+
+00:56:42.410 --> 00:56:44.330
+<v Speaker 0>Alright. A great Excellent. But the load average
+
+00:56:44.490 --> 00:56:46.665
+<v Speaker 1>the the load yeah. That's the what I
+
+00:56:46.665 --> 00:56:47.465
+<v Speaker 1>was thinking.
+
+00:56:48.585 --> 00:56:48.905
+<v Speaker 1>As
+
+00:56:50.105 --> 00:56:52.345
+<v Speaker 1>yeah. CPU CPU is not a bad one,
+
+00:56:52.345 --> 00:56:54.665
+<v Speaker 1>but, yeah, let's take another one. Node
+
+00:56:58.345 --> 00:57:00.040
+<v Speaker 1>or we can do a Pontail, like a
+
+00:57:00.040 --> 00:57:02.440
+<v Speaker 1>a Pontail total line received, something like that.
+
+00:57:02.440 --> 00:57:04.680
+<v Speaker 1>There's a Pontail somewhere. I've seen it.
+
+00:57:06.359 --> 00:57:09.400
+<v Speaker 1>Yeah. Because we we yep. And then what
+
+00:57:09.400 --> 00:57:09.880
+<v Speaker 1>do we have?
+
+00:57:11.285 --> 00:57:13.445
+<v Speaker 1>Log byte total is not bad. Log entry
+
+00:57:13.765 --> 00:57:15.845
+<v Speaker 1>log read byte total. Yeah. Let's do that.
+
+00:57:16.565 --> 00:57:18.005
+<v Speaker 1>So you want to
+
+00:57:18.965 --> 00:57:20.565
+<v Speaker 1>write and sum
+
+00:57:20.805 --> 00:57:22.965
+<v Speaker 1>all of this. So sum
+
+00:57:22.965 --> 00:57:23.765
+<v Speaker 1>parentheses
+
+00:57:27.580 --> 00:57:28.300
+<v Speaker 1>rates.
+
+00:57:30.460 --> 00:57:31.580
+<v Speaker 1>Yeah. So
+
+00:57:31.900 --> 00:57:33.420
+<v Speaker 1>if you want to buy, I think a
+
+00:57:33.420 --> 00:57:35.180
+<v Speaker 1>pod will be will be there. We can
+
+00:57:35.180 --> 00:57:37.420
+<v Speaker 1>do pod, most likely. You can do some
+
+00:57:37.420 --> 00:57:39.645
+<v Speaker 1>buy, though. Yeah. And then the rate at
+
+00:57:39.645 --> 00:57:41.085
+<v Speaker 1>the end before
+
+00:57:41.245 --> 00:57:43.885
+<v Speaker 1>yeah. Right here, and it's the entire yeah.
+
+00:57:43.885 --> 00:57:44.925
+<v Speaker 1>Five minutes is good.
+
+00:57:45.325 --> 00:57:46.045
+<v Speaker 1>Or one minute.
+
+00:57:52.119 --> 00:57:53.720
+<v Speaker 0>I think aggregate was some
+
+00:57:54.359 --> 00:57:56.359
+<v Speaker 1>Yeah. No. Put one minute. I think it's
+
+00:57:56.359 --> 00:57:56.920
+<v Speaker 1>better.
+
+00:57:57.880 --> 00:57:58.840
+<v Speaker 1>Yeah. Okay.
+
+00:58:00.040 --> 00:58:00.840
+<v Speaker 1>Alright.
+
+00:58:03.160 --> 00:58:04.040
+<v Speaker 1>Yeah. Maybe the
+
+00:58:04.920 --> 00:58:05.720
+<v Speaker 1>it was working.
+
+00:58:08.225 --> 00:58:09.585
+<v Speaker 0>Yeah. I broke it.
+
+00:58:11.505 --> 00:58:13.665
+<v Speaker 1>Maybe it's the the the part that doesn't
+
+00:58:13.665 --> 00:58:14.625
+<v Speaker 1>exist, possibly.
+
+00:58:17.585 --> 00:58:19.505
+<v Speaker 0>But it it was returning data. Right?
+
+00:58:24.160 --> 00:58:25.520
+<v Speaker 1>That's not a good query.
+
+00:58:25.920 --> 00:58:28.080
+<v Speaker 1>If yeah. Go back and just do a
+
+00:58:28.080 --> 00:58:30.720
+<v Speaker 1>sum, right, like, resolve the bipod. Remove the
+
+00:58:30.720 --> 00:58:32.160
+<v Speaker 1>the bipod just to make sure that we're
+
+00:58:32.160 --> 00:58:32.960
+<v Speaker 1>not missing.
+
+00:58:34.080 --> 00:58:34.400
+<v Speaker 1>Yeah.
+
+00:58:39.035 --> 00:58:40.635
+<v Speaker 1>Are we still on the parameters at the
+
+00:58:40.635 --> 00:58:41.355
+<v Speaker 1>top?
+
+00:58:42.234 --> 00:58:44.315
+<v Speaker 1>Just call it up. I'm not showing it
+
+00:58:44.315 --> 00:58:44.955
+<v Speaker 1>anymore.
+
+00:58:46.795 --> 00:58:47.914
+<v Speaker 0>Yeah. I broke it.
+
+00:58:50.730 --> 00:58:51.930
+<v Speaker 0>There we go. Oh,
+
+00:58:52.250 --> 00:58:54.090
+<v Speaker 0>here we go. It's just leaving. Yeah.
+
+00:58:56.010 --> 00:58:57.210
+<v Speaker 1>Yeah. I mean,
+
+00:58:57.610 --> 00:59:00.250
+<v Speaker 1>rates rates should should give you, like, the
+
+00:59:01.845 --> 00:59:04.405
+<v Speaker 0>The change over time. Yeah. Yeah. The change
+
+00:59:04.405 --> 00:59:05.205
+<v Speaker 1>over time.
+
+00:59:06.405 --> 00:59:08.325
+<v Speaker 1>And then there's not a lot of there's
+
+00:59:08.325 --> 00:59:10.484
+<v Speaker 1>not a lot success or the rate rate.
+
+00:59:10.484 --> 00:59:11.925
+<v Speaker 1>Yeah. Well
+
+00:59:13.205 --> 00:59:15.810
+<v Speaker 0>Yeah. There we go. Okay. Yeah, maybe one
+
+00:59:15.810 --> 00:59:17.970
+<v Speaker 1>minute was not a good idea. Maybe you
+
+00:59:17.970 --> 00:59:19.810
+<v Speaker 1>need something bigger. Because if the Skype interval
+
+00:59:19.810 --> 00:59:22.050
+<v Speaker 1>is too small, then that could cause a
+
+00:59:22.050 --> 00:59:22.610
+<v Speaker 1>problem.
+
+00:59:22.930 --> 00:59:24.770
+<v Speaker 1>But yeah, five minutes is good. And
+
+00:59:25.090 --> 00:59:27.250
+<v Speaker 1>that's in bytes. So I think in the
+
+00:59:27.250 --> 00:59:27.970
+<v Speaker 1>fields
+
+00:59:28.050 --> 00:59:30.375
+<v Speaker 1>next panel, you can put bytes there if
+
+00:59:30.375 --> 00:59:33.335
+<v Speaker 1>you want to make it more more fun.
+
+00:59:33.895 --> 00:59:35.975
+<v Speaker 1>So there's a field tab. So you're on
+
+00:59:35.975 --> 00:59:38.695
+<v Speaker 1>the panel tab. Next to the panel, there's
+
+00:59:38.695 --> 00:59:39.655
+<v Speaker 1>like a field.
+
+00:59:39.975 --> 00:59:42.260
+<v Speaker 1>Yeah. And then in unit, you can choose
+
+00:59:42.740 --> 00:59:45.220
+<v Speaker 1>I think it's data or byte. Yeah.
+
+00:59:45.700 --> 00:59:46.900
+<v Speaker 1>I see. Yeah.
+
+00:59:47.780 --> 00:59:48.580
+<v Speaker 1>SI.
+
+00:59:48.580 --> 00:59:48.980
+<v Speaker 1>Yeah.
+
+00:59:50.500 --> 00:59:51.300
+<v Speaker 1>Yeah.
+
+00:59:51.300 --> 00:59:53.780
+<v Speaker 1>So that's the rate of logs that we
+
+00:59:53.780 --> 00:59:57.204
+<v Speaker 1>receive over time, which is a good burst
+
+00:59:57.204 --> 00:59:59.125
+<v Speaker 1>at the beginning. And then after, it's
+
+00:59:59.765 --> 01:00:01.605
+<v Speaker 1>a bit less. But yeah, you can look
+
+01:00:01.605 --> 01:00:03.525
+<v Speaker 1>at the last hour, maybe,
+
+01:00:04.005 --> 01:00:05.445
+<v Speaker 1>instead of six hours. So it's going to
+
+01:00:05.445 --> 01:00:06.485
+<v Speaker 1>look a bit better.
+
+01:00:07.845 --> 01:00:09.685
+<v Speaker 0>Yeah, that makes more sense. There we go.
+
+01:00:10.170 --> 01:00:12.890
+<v Speaker 1>Alright. So that's that's a metric from point
+
+01:00:12.890 --> 01:00:14.730
+<v Speaker 1>is metric metric panel.
+
+01:00:15.849 --> 01:00:17.369
+<v Speaker 1>Now what we can do is add another
+
+01:00:17.369 --> 01:00:18.010
+<v Speaker 1>one,
+
+01:00:18.730 --> 01:00:22.250
+<v Speaker 1>and let's let's put the logs of Promptail
+
+01:00:22.250 --> 01:00:22.809
+<v Speaker 1>next to it.
+
+01:00:23.744 --> 01:00:26.385
+<v Speaker 1>So panel, if you go so if you
+
+01:00:26.385 --> 01:00:27.744
+<v Speaker 1>click on Loki, and then
+
+01:00:29.664 --> 01:00:31.025
+<v Speaker 1>on visualization,
+
+01:00:31.345 --> 01:00:34.065
+<v Speaker 1>on the far right visualization,
+
+01:00:34.065 --> 01:00:34.944
+<v Speaker 1>this yeah.
+
+01:00:35.820 --> 01:00:38.780
+<v Speaker 1>You can choose a log panel somewhere.
+
+01:00:40.220 --> 01:00:41.020
+<v Speaker 1>Logs.
+
+01:00:41.020 --> 01:00:41.660
+<v Speaker 1>Yep.
+
+01:00:41.820 --> 01:00:43.820
+<v Speaker 1>Alright. And now let's do
+
+01:00:44.140 --> 01:00:46.380
+<v Speaker 1>name Pontail, if you have it. You should
+
+01:00:46.380 --> 01:00:48.380
+<v Speaker 1>have it. No. So I think it's because
+
+01:00:48.380 --> 01:00:50.140
+<v Speaker 1>we don't have the name. So it's app.
+
+01:00:50.645 --> 01:00:52.005
+<v Speaker 0>App. Yeah.
+
+01:00:54.085 --> 01:00:55.445
+<v Speaker 1>You should use consistent
+
+01:00:56.005 --> 01:00:57.205
+<v Speaker 1>labeling name.
+
+01:00:58.405 --> 01:01:00.565
+<v Speaker 0>Yeah. There's app. There's Nothing like us. There's
+
+01:01:00.565 --> 01:01:04.005
+<v Speaker 0>case app. It's just so variable. Yeah. Alright.
+
+01:01:05.210 --> 01:01:06.570
+<v Speaker 0>And then I'll just need to So
+
+01:01:09.849 --> 01:01:12.329
+<v Speaker 1>let's try to see if we can find
+
+01:01:12.329 --> 01:01:13.770
+<v Speaker 1>something a bit better, like
+
+01:01:14.329 --> 01:01:16.170
+<v Speaker 1>find the errors or
+
+01:01:17.994 --> 01:01:20.315
+<v Speaker 1>try to to pipe into,
+
+01:01:20.475 --> 01:01:21.835
+<v Speaker 1>like, tail.
+
+01:01:22.155 --> 01:01:24.475
+<v Speaker 1>Yeah. So pipe equal tail.
+
+01:01:26.555 --> 01:01:28.315
+<v Speaker 1>Then look for the word tail. So just
+
+01:01:28.315 --> 01:01:29.595
+<v Speaker 1>to show that we can do a search
+
+01:01:29.595 --> 01:01:32.870
+<v Speaker 1>here. So it's, I think, tail is, yeah,
+
+01:01:33.990 --> 01:01:35.510
+<v Speaker 1>not a capital t.
+
+01:01:37.190 --> 01:01:39.110
+<v Speaker 1>Yeah. You can do that, but it's yeah.
+
+01:01:39.110 --> 01:01:40.230
+<v Speaker 1>Tilde. Yeah.
+
+01:01:43.110 --> 01:01:44.550
+<v Speaker 1>Nice. And you can save that.
+
+01:01:49.465 --> 01:01:50.985
+<v Speaker 1>Yeah. And you can usually, I like to
+
+01:01:50.985 --> 01:01:52.985
+<v Speaker 1>make my my lock panel
+
+01:01:53.065 --> 01:01:55.465
+<v Speaker 1>a bit bigger. So use a use a
+
+01:01:55.465 --> 01:01:57.385
+<v Speaker 1>single hole and make it use
+
+01:01:57.945 --> 01:01:58.905
+<v Speaker 1>the the the whole
+
+01:01:59.780 --> 01:02:01.380
+<v Speaker 1>row. It's much better.
+
+01:02:06.180 --> 01:02:08.260
+<v Speaker 0>Nice. So yeah, that's
+
+01:02:08.740 --> 01:02:11.380
+<v Speaker 1>the beginning. But you can build very interesting
+
+01:02:11.380 --> 01:02:12.260
+<v Speaker 1>dashboard.
+
+01:02:12.339 --> 01:02:15.605
+<v Speaker 0>Oh, nice. I filtered the when I sorry,
+
+01:02:15.605 --> 01:02:16.965
+<v Speaker 0>I did the zoom and the metrics. Then
+
+01:02:16.965 --> 01:02:19.685
+<v Speaker 0>I actually zoomed in and filtered the logs
+
+01:02:19.685 --> 01:02:20.325
+<v Speaker 0>as well.
+
+01:02:20.645 --> 01:02:22.085
+<v Speaker 1>Yeah. So you can see the logs that
+
+01:02:22.325 --> 01:02:24.405
+<v Speaker 1>if there were any logs that contain tail
+
+01:02:24.405 --> 01:02:26.085
+<v Speaker 1>at this moment in time, which is kind
+
+01:02:26.085 --> 01:02:27.445
+<v Speaker 1>of nice for errors, right?
+
+01:02:28.410 --> 01:02:30.170
+<v Speaker 1>I don't think we have any errors. But
+
+01:02:30.170 --> 01:02:32.570
+<v Speaker 1>maybe we can find some. But it's kind
+
+01:02:32.570 --> 01:02:34.650
+<v Speaker 1>of nice to see when you have an
+
+01:02:34.650 --> 01:02:36.410
+<v Speaker 1>error, can you correlate that with a metric
+
+01:02:36.410 --> 01:02:38.089
+<v Speaker 1>and find the metric where the error was
+
+01:02:38.089 --> 01:02:38.570
+<v Speaker 1>happening? So
+
+01:02:39.875 --> 01:02:41.395
+<v Speaker 1>being able to mix the two is kind
+
+01:02:41.395 --> 01:02:43.234
+<v Speaker 1>of nice. It's being able to mix two
+
+01:02:43.234 --> 01:02:44.435
+<v Speaker 1>different signals.
+
+01:02:46.595 --> 01:02:48.035
+<v Speaker 0>Nice. I like that.
+
+01:02:48.275 --> 01:02:50.675
+<v Speaker 1>Yeah. And you can jump directly to explore.
+
+01:02:50.675 --> 01:02:51.395
+<v Speaker 1>So when
+
+01:02:51.635 --> 01:02:53.380
+<v Speaker 1>you have a dashboard like this, when you
+
+01:02:53.380 --> 01:02:55.540
+<v Speaker 1>click on the on the panel at the
+
+01:02:55.540 --> 01:02:57.380
+<v Speaker 1>top, the panel title, then you can go
+
+01:02:57.380 --> 01:02:59.619
+<v Speaker 1>directly on explore from that query. You can
+
+01:02:59.619 --> 01:03:00.740
+<v Speaker 1>do explore here.
+
+01:03:01.060 --> 01:03:02.340
+<v Speaker 1>And it goes to explore, and you can
+
+01:03:02.340 --> 01:03:04.340
+<v Speaker 1>start exploring. Yeah. Save it.
+
+01:03:04.740 --> 01:03:05.619
+<v Speaker 1>That's
+
+01:03:05.619 --> 01:03:06.100
+<v Speaker 1>our work.
+
+01:03:07.555 --> 01:03:09.235
+<v Speaker 0>I need to ship this to prod layer.
+
+01:03:09.235 --> 01:03:09.635
+<v Speaker 1>So
+
+01:03:10.675 --> 01:03:12.195
+<v Speaker 1>There you go. Yeah. And I get my
+
+01:03:12.275 --> 01:03:14.275
+<v Speaker 0>And and you keep yeah. And you keep
+
+01:03:14.275 --> 01:03:15.875
+<v Speaker 1>the query, and you can maybe
+
+01:03:16.115 --> 01:03:18.515
+<v Speaker 1>improve the query and, you know, try to
+
+01:03:18.515 --> 01:03:19.635
+<v Speaker 1>find a bit more
+
+01:03:20.210 --> 01:03:22.530
+<v Speaker 1>information for what you're looking for.
+
+01:03:23.089 --> 01:03:24.369
+<v Speaker 1>I'm
+
+01:03:24.369 --> 01:03:26.369
+<v Speaker 1>amazed to see that those logs are the
+
+01:03:26.369 --> 01:03:28.369
+<v Speaker 1>prompt tail one are still in
+
+01:03:29.329 --> 01:03:30.450
+<v Speaker 1>the wrong format.
+
+01:03:31.329 --> 01:03:34.210
+<v Speaker 0>I think this was we changed the configuration
+
+01:03:34.210 --> 01:03:35.250
+<v Speaker 0>at 45.
+
+01:03:36.195 --> 01:03:38.835
+<v Speaker 1>Okay. One forty five. It's time Can we
+
+01:03:38.995 --> 01:03:41.555
+<v Speaker 0>We could restart prompt if you want. No.
+
+01:03:41.555 --> 01:03:42.675
+<v Speaker 1>That'll be it. Okay. Can we look at
+
+01:03:42.675 --> 01:03:44.595
+<v Speaker 1>the can we look at Loki Loki logs
+
+01:03:44.595 --> 01:03:45.795
+<v Speaker 1>for instance, maybe?
+
+01:03:46.755 --> 01:03:48.595
+<v Speaker 1>Of course, we can. Yeah. Upload.
+
+01:03:48.755 --> 01:03:49.475
+<v Speaker 1>Yeah.
+
+01:03:49.715 --> 01:03:52.355
+<v Speaker 1>And then remove the remove this. Yeah. Now
+
+01:03:51.930 --> 01:03:53.610
+<v Speaker 1>you're getting good at Okay.
+
+01:03:57.130 --> 01:03:59.450
+<v Speaker 1>Alright. So, yeah, I wanted to show you
+
+01:03:59.450 --> 01:04:00.330
+<v Speaker 1>a bit more
+
+01:04:00.809 --> 01:04:03.130
+<v Speaker 1>interesting queries that we can do. And because
+
+01:04:03.130 --> 01:04:04.970
+<v Speaker 1>I know a lot of Loki logs,
+
+01:04:05.130 --> 01:04:07.685
+<v Speaker 1>obviously, I expect developers to know a bit
+
+01:04:07.685 --> 01:04:09.445
+<v Speaker 1>more about what they are logging.
+
+01:04:09.685 --> 01:04:11.765
+<v Speaker 1>So that makes it more interesting when you
+
+01:04:12.005 --> 01:04:13.525
+<v Speaker 1>want to play with your logs. So I
+
+01:04:13.525 --> 01:04:14.645
+<v Speaker 1>know that Loki
+
+01:04:14.645 --> 01:04:16.565
+<v Speaker 1>is kind of like logging every time you
+
+01:04:16.565 --> 01:04:17.445
+<v Speaker 1>make a query.
+
+01:04:18.085 --> 01:04:19.205
+<v Speaker 1>It's logging the query itself.
+
+01:04:20.260 --> 01:04:22.100
+<v Speaker 1>And I want to show you, let's try
+
+01:04:22.100 --> 01:04:23.220
+<v Speaker 1>to show only that.
+
+01:04:24.420 --> 01:04:27.620
+<v Speaker 1>Imagine you have a database. Every time someone
+
+01:04:27.620 --> 01:04:29.460
+<v Speaker 1>does a query, you want to create a
+
+01:04:29.460 --> 01:04:31.620
+<v Speaker 1>dashboard that shows all the queries that have
+
+01:04:31.620 --> 01:04:32.500
+<v Speaker 1>been made by the user.
+
+01:04:33.265 --> 01:04:34.145
+<v Speaker 1>So
+
+01:04:34.305 --> 01:04:36.465
+<v Speaker 1>let's use the equal here. Let's use the
+
+01:04:36.465 --> 01:04:39.185
+<v Speaker 1>equal instead of the yeah, equal. And then
+
+01:04:40.225 --> 01:04:40.945
+<v Speaker 1>use
+
+01:04:41.425 --> 01:04:42.225
+<v Speaker 1>metric.
+
+01:04:42.305 --> 01:04:44.305
+<v Speaker 1>Go, and then there's a comma. You can
+
+01:04:44.305 --> 01:04:45.585
+<v Speaker 1>see in the first line.
+
+01:04:45.984 --> 01:04:47.505
+<v Speaker 1>Yeah, metric. Go.
+
+01:04:47.825 --> 01:04:49.105
+<v Speaker 1>There's asset metric.
+
+01:04:51.480 --> 01:04:52.440
+<v Speaker 1>Metrics.
+
+01:04:52.440 --> 01:04:53.640
+<v Speaker 1>That makes sense.
+
+01:04:53.880 --> 01:04:55.320
+<v Speaker 1>Yeah. And then run that.
+
+01:04:56.760 --> 01:04:58.680
+<v Speaker 1>And we're gonna be able to find
+
+01:04:59.000 --> 01:04:59.800
+<v Speaker 1>oh, yeah.
+
+01:05:00.760 --> 01:05:03.494
+<v Speaker 1>And now we can see only the logline
+
+01:05:03.494 --> 01:05:04.855
+<v Speaker 1>that are showing metrics.
+
+01:05:06.135 --> 01:05:08.295
+<v Speaker 1>What's nice here is what we can do
+
+01:05:08.295 --> 01:05:10.535
+<v Speaker 1>is we can start using and pass that
+
+01:05:10.535 --> 01:05:12.615
+<v Speaker 1>logline. So we haven't done that yet, but
+
+01:05:12.615 --> 01:05:15.255
+<v Speaker 1>let's do that. So this logline is in
+
+01:05:15.255 --> 01:05:17.770
+<v Speaker 1>log format. That's what we call log format.
+
+01:05:17.770 --> 01:05:19.609
+<v Speaker 1>So it's a key value pair. It's a
+
+01:05:19.609 --> 01:05:21.049
+<v Speaker 1>key equal value,
+
+01:05:21.049 --> 01:05:23.850
+<v Speaker 1>and then space, another key equal value.
+
+01:05:23.930 --> 01:05:26.250
+<v Speaker 1>And it's very human readable as opposed to
+
+01:05:26.250 --> 01:05:27.130
+<v Speaker 1>JSON.
+
+01:05:27.530 --> 01:05:29.609
+<v Speaker 1>And in the query, let's
+
+01:05:29.609 --> 01:05:31.849
+<v Speaker 1>look at currently the
+
+01:05:32.495 --> 01:05:33.855
+<v Speaker 1>let's add a pipe
+
+01:05:34.335 --> 01:05:36.415
+<v Speaker 1>and then log format.
+
+01:05:36.815 --> 01:05:39.295
+<v Speaker 1>So L O G yeah, it's going to
+
+01:05:39.295 --> 01:05:41.135
+<v Speaker 1>suggest it. Yeah, this one.
+
+01:05:41.615 --> 01:05:43.215
+<v Speaker 1>Right, so hit Enter.
+
+01:05:46.460 --> 01:05:48.700
+<v Speaker 1>Now, if you look at the labels of
+
+01:05:48.700 --> 01:05:50.460
+<v Speaker 1>any of those logline, you're going to see
+
+01:05:50.460 --> 01:05:51.740
+<v Speaker 1>that something has changed.
+
+01:05:54.380 --> 01:05:57.099
+<v Speaker 1>And there's way more labels. There, there are.
+
+01:05:57.099 --> 01:05:57.900
+<v Speaker 1>And that's
+
+01:05:58.859 --> 01:06:00.140
+<v Speaker 1>basically
+
+01:06:00.355 --> 01:06:02.275
+<v Speaker 1>all the key value pair of the logline
+
+01:06:02.275 --> 01:06:02.995
+<v Speaker 1>itself.
+
+01:06:03.315 --> 01:06:04.835
+<v Speaker 1>They have been extracted,
+
+01:06:04.915 --> 01:06:07.075
+<v Speaker 1>and you can now use them as labels.
+
+01:06:07.075 --> 01:06:08.675
+<v Speaker 1>So that means you can aggregate. You can
+
+01:06:08.675 --> 01:06:10.595
+<v Speaker 1>use them to search, filter.
+
+01:06:11.475 --> 01:06:13.555
+<v Speaker 1>And and we can even transform some of
+
+01:06:13.555 --> 01:06:14.835
+<v Speaker 1>them into metrics.
+
+01:06:15.549 --> 01:06:17.550
+<v Speaker 1>So you can see there's a status here.
+
+01:06:19.150 --> 01:06:19.790
+<v Speaker 1>Yep.
+
+01:06:20.029 --> 01:06:23.070
+<v Speaker 1>200. So you could technically do a rate
+
+01:06:23.230 --> 01:06:25.869
+<v Speaker 1>per status now. If you wrap everything with
+
+01:06:25.869 --> 01:06:27.710
+<v Speaker 1>a rate a a sum by rate.
+
+01:06:31.065 --> 01:06:32.985
+<v Speaker 1>So we do sum by stages.
+
+01:06:41.705 --> 01:06:43.545
+<v Speaker 1>And then you need the you need the,
+
+01:06:43.625 --> 01:06:45.945
+<v Speaker 1>yeah, you need the
+
+01:06:45.290 --> 01:06:47.770
+<v Speaker 1>bracket at the end right after the
+
+01:06:48.010 --> 01:06:49.930
+<v Speaker 1>yeah. Square bracket right after the end of
+
+01:06:49.930 --> 01:06:51.610
+<v Speaker 1>the log queries.
+
+01:06:52.010 --> 01:06:54.330
+<v Speaker 1>It's inside. Yeah. Exactly.
+
+01:06:55.210 --> 01:06:55.850
+<v Speaker 1>Yeah.
+
+01:06:57.050 --> 01:06:58.494
+<v Speaker 1>Here we go. So we can see by
+
+01:06:58.494 --> 01:07:01.535
+<v Speaker 1>status now. Alright. So status is not labeled.
+
+01:07:04.895 --> 01:07:06.335
+<v Speaker 0>This will
+
+01:07:06.494 --> 01:07:07.295
+<v Speaker 0>fail.
+
+01:07:08.895 --> 01:07:10.015
+<v Speaker 0>And
+
+01:07:10.015 --> 01:07:12.960
+<v Speaker 0>theory, me paste this back. We we should
+
+01:07:12.960 --> 01:07:14.800
+<v Speaker 0>be able to see some failed ones there?
+
+01:07:15.040 --> 01:07:16.880
+<v Speaker 0>No? Yeah. Yeah.
+
+01:07:16.880 --> 01:07:18.560
+<v Speaker 1>I mean, I don't know if we show
+
+01:07:18.560 --> 01:07:19.760
+<v Speaker 1>them as a status to
+
+01:07:20.320 --> 01:07:22.240
+<v Speaker 1>I think the 400, we don't we just
+
+01:07:22.720 --> 01:07:25.040
+<v Speaker 1>this is a code that doesn't get triggered
+
+01:07:25.745 --> 01:07:26.945
+<v Speaker 1>by 400,
+
+01:07:27.185 --> 01:07:28.785
+<v Speaker 1>so that's why you don't see it. You
+
+01:07:28.785 --> 01:07:30.545
+<v Speaker 1>don't see it there. It will actually need
+
+01:07:30.545 --> 01:07:31.425
+<v Speaker 1>to crash
+
+01:07:32.065 --> 01:07:33.425
+<v Speaker 1>to see it. But
+
+01:07:34.785 --> 01:07:37.105
+<v Speaker 1>you can add another query and and look
+
+01:07:37.105 --> 01:07:38.785
+<v Speaker 1>at the query dot go.
+
+01:07:40.040 --> 01:07:42.599
+<v Speaker 1>Yeah. Click on other query, and then copy
+
+01:07:42.599 --> 01:07:43.800
+<v Speaker 1>this selector
+
+01:07:43.800 --> 01:07:46.359
+<v Speaker 1>with, yeah, everything except and you can look
+
+01:07:46.359 --> 01:07:48.200
+<v Speaker 1>at if you can see now the font.
+
+01:07:48.200 --> 01:07:49.960
+<v Speaker 1>I don't think you will see it. Remove
+
+01:07:49.960 --> 01:07:51.480
+<v Speaker 1>the standby and the rate
+
+01:07:51.800 --> 01:07:53.080
+<v Speaker 1>to see the logs. Oh, it's got the
+
+01:07:53.080 --> 01:07:55.080
+<v Speaker 0>logs. Right. Okay. Good. Yeah. Let's let's let's
+
+01:07:55.080 --> 01:07:57.295
+<v Speaker 1>look at the logs, see if all the
+
+01:07:57.295 --> 01:07:59.135
+<v Speaker 1>bad queries that you've made will
+
+01:07:59.295 --> 01:08:00.015
+<v Speaker 1>show up.
+
+01:08:01.455 --> 01:08:04.335
+<v Speaker 1>Yeah. I like to have always two query
+
+01:08:04.335 --> 01:08:06.095
+<v Speaker 1>when I'm crafting queries. One to show the
+
+01:08:06.095 --> 01:08:07.455
+<v Speaker 1>logs so I can see what I'm working
+
+01:08:07.455 --> 01:08:09.375
+<v Speaker 1>on, and one which is the metric one
+
+01:08:09.375 --> 01:08:10.015
+<v Speaker 1>that I'm crafting.
+
+01:08:11.220 --> 01:08:13.380
+<v Speaker 1>Can you see? No. You see it doesn't
+
+01:08:13.700 --> 01:08:16.100
+<v Speaker 1>actually show. However, there is one label that
+
+01:08:16.100 --> 01:08:18.739
+<v Speaker 1>is interesting. As you can see the type,
+
+01:08:18.739 --> 01:08:19.619
+<v Speaker 1>query type.
+
+01:08:21.460 --> 01:08:25.425
+<v Speaker 1>There's metric and there's probably filter. So if
+
+01:08:25.425 --> 01:08:26.944
+<v Speaker 1>you change the sum
+
+01:08:27.505 --> 01:08:29.505
+<v Speaker 1>by status, you change it by query type,
+
+01:08:29.505 --> 01:08:31.425
+<v Speaker 1>you're going to see different type of queries
+
+01:08:31.425 --> 01:08:32.225
+<v Speaker 1>instead.
+
+01:08:32.785 --> 01:08:34.945
+<v Speaker 0>Does it show you the number of results
+
+01:08:34.945 --> 01:08:36.225
+<v Speaker 0>for a query? No?
+
+01:08:36.960 --> 01:08:37.920
+<v Speaker 1>No.
+
+01:08:37.920 --> 01:08:39.840
+<v Speaker 1>No. Not no. But it shows you all
+
+01:08:39.840 --> 01:08:41.200
+<v Speaker 1>those all those things. So at the top,
+
+01:08:41.200 --> 01:08:42.559
+<v Speaker 1>yeah, I've changed the status,
+
+01:08:43.279 --> 01:08:46.080
+<v Speaker 1>send by query type query underscore type. Yeah.
+
+01:08:51.145 --> 01:08:52.505
+<v Speaker 1>And now you can see that there is
+
+01:08:52.505 --> 01:08:53.145
+<v Speaker 1>different
+
+01:08:53.785 --> 01:08:56.745
+<v Speaker 1>Metric different type of queries. Limited query.
+
+01:08:57.545 --> 01:09:01.385
+<v Speaker 1>Yeah, limited is a search. And that's Filter
+
+01:09:01.385 --> 01:09:02.185
+<v Speaker 1>is also a search.
+
+01:09:03.210 --> 01:09:04.569
+<v Speaker 1>So that's yeah. So you can see the
+
+01:09:04.569 --> 01:09:06.410
+<v Speaker 1>different type of query that have been made.
+
+01:09:06.410 --> 01:09:08.810
+<v Speaker 1>And you can imagine if you are SRE.
+
+01:09:08.810 --> 01:09:10.250
+<v Speaker 1>There's a lot of information that you have
+
+01:09:10.250 --> 01:09:12.329
+<v Speaker 1>in your logs, you can aggregate now
+
+01:09:12.649 --> 01:09:14.090
+<v Speaker 1>by extracting those labels.
+
+01:09:17.725 --> 01:09:20.045
+<v Speaker 1>Yeah. There's a there there's there's more that
+
+01:09:20.045 --> 01:09:21.645
+<v Speaker 1>we can we can do. We can look
+
+01:09:21.645 --> 01:09:23.725
+<v Speaker 1>at how to use those those
+
+01:09:23.965 --> 01:09:25.965
+<v Speaker 1>numbers. You see the duration here?
+
+01:09:27.245 --> 01:09:29.085
+<v Speaker 1>Inside the logline, you can see that the
+
+01:09:29.165 --> 01:09:31.085
+<v Speaker 1>that metric took four milliseconds.
+
+01:09:32.500 --> 01:09:34.819
+<v Speaker 1>We can use those to maybe graph a
+
+01:09:34.819 --> 01:09:36.659
+<v Speaker 1>quantile. If you if you want, we can
+
+01:09:36.659 --> 01:09:38.819
+<v Speaker 1>do that. Okay. Can we
+
+01:09:40.580 --> 01:09:41.939
+<v Speaker 0>contrive something?
+
+01:09:43.540 --> 01:09:46.179
+<v Speaker 0>So we have where we use the log
+
+01:09:46.179 --> 01:09:47.219
+<v Speaker 0>format
+
+01:09:48.125 --> 01:09:49.085
+<v Speaker 0>here,
+
+01:09:49.564 --> 01:09:52.364
+<v Speaker 0>we're bringing in a whole bunch of extra
+
+01:09:52.364 --> 01:09:54.525
+<v Speaker 0>labels into our
+
+01:09:56.125 --> 01:09:57.885
+<v Speaker 0>each record in the stream
+
+01:09:58.445 --> 01:10:01.420
+<v Speaker 0>Mhmm. Which means that we have access to
+
+01:10:01.420 --> 01:10:03.020
+<v Speaker 0>the query itself.
+
+01:10:03.020 --> 01:10:05.500
+<v Speaker 0>Could we contrive a situation where if we
+
+01:10:05.660 --> 01:10:07.900
+<v Speaker 0>query for Rawkode
+
+01:10:08.220 --> 01:10:10.220
+<v Speaker 0>and then count the currencies of that search
+
+01:10:10.220 --> 01:10:12.460
+<v Speaker 0>over time and then that means we can
+
+01:10:12.860 --> 01:10:14.835
+<v Speaker 0>do loads of them, stop it, loads of
+
+01:10:14.835 --> 01:10:16.035
+<v Speaker 0>them, just to try and see how this
+
+01:10:16.035 --> 01:10:18.595
+<v Speaker 0>works together. Because I'm curious, like, we've not
+
+01:10:18.595 --> 01:10:20.915
+<v Speaker 0>told it to index the query. Right? That's
+
+01:10:20.915 --> 01:10:23.395
+<v Speaker 0>something that comes in from the log prompt.
+
+01:10:23.395 --> 01:10:24.995
+<v Speaker 1>Yeah. Okay. And it wouldn't be a bad
+
+01:10:24.995 --> 01:10:26.915
+<v Speaker 1>idea to index it because, you know, the
+
+01:10:26.915 --> 01:10:28.675
+<v Speaker 1>of it could be very high.
+
+01:10:29.930 --> 01:10:32.410
+<v Speaker 1>So don't do that. However,
+
+01:10:32.410 --> 01:10:34.410
+<v Speaker 1>the log format, the pipeline format that you
+
+01:10:34.410 --> 01:10:37.130
+<v Speaker 1>did is doing that at query time, is
+
+01:10:37.610 --> 01:10:39.530
+<v Speaker 1>actually extracting the labels
+
+01:10:40.170 --> 01:10:42.090
+<v Speaker 1>from the log line. It's not coming from
+
+01:10:42.090 --> 01:10:43.815
+<v Speaker 1>the index. But you can still use it
+
+01:10:43.815 --> 01:10:45.735
+<v Speaker 1>to run aggregation.
+
+01:10:45.895 --> 01:10:49.095
+<v Speaker 0>Yeah. So if I add another query here
+
+01:10:49.095 --> 01:10:50.535
+<v Speaker 0>and say this
+
+01:10:50.695 --> 01:10:53.015
+<v Speaker 0>and then say where Rawkode I mean, the
+
+01:10:53.015 --> 01:10:54.695
+<v Speaker 0>first time I run this, we're gonna get
+
+01:10:54.695 --> 01:10:56.775
+<v Speaker 0>nothing or maybe itself. I'm not sure.
+
+01:10:57.920 --> 01:10:59.360
+<v Speaker 0>Nothing, I think.
+
+01:11:00.480 --> 01:11:02.639
+<v Speaker 1>Yeah. It's mixing the two. Yeah. It's mixing
+
+01:11:02.639 --> 01:11:03.439
+<v Speaker 0>the two.
+
+01:11:04.480 --> 01:11:06.239
+<v Speaker 1>You can hide it. There's a there's a
+
+01:11:06.239 --> 01:11:07.679
+<v Speaker 1>button on the yeah. You click on that
+
+01:11:07.679 --> 01:11:09.599
+<v Speaker 1>and it's gonna hide it. Okay. So now
+
+01:11:09.599 --> 01:11:11.760
+<v Speaker 0>I've got that one request for Rawkode. If
+
+01:11:11.760 --> 01:11:13.360
+<v Speaker 0>I do it again, we should see two.
+
+01:11:13.815 --> 01:11:16.295
+<v Speaker 0>Alright. Okay. So we can, like, fake the
+
+01:11:16.295 --> 01:11:19.815
+<v Speaker 0>rate essentially by just Yeah. You can. Yeah.
+
+01:11:20.775 --> 01:11:21.815
+<v Speaker 0>Alright.
+
+01:11:21.815 --> 01:11:24.215
+<v Speaker 0>So should we try and rate the searches
+
+01:11:24.215 --> 01:11:26.455
+<v Speaker 0>for Rawkode every five seconds?
+
+01:11:27.230 --> 01:11:28.830
+<v Speaker 1>Yeah. And then that will give us a
+
+01:11:28.830 --> 01:11:30.990
+<v Speaker 0>draft. So I'm assuming if I just come
+
+01:11:30.990 --> 01:11:31.710
+<v Speaker 0>in here,
+
+01:11:34.990 --> 01:11:35.790
+<v Speaker 0>query
+
+01:11:36.590 --> 01:11:39.870
+<v Speaker 1>Mhmm. Rawkode
+
+01:11:40.510 --> 01:11:41.470
+<v Speaker 0>five seconds.
+
+01:11:42.895 --> 01:11:45.215
+<v Speaker 0>Is that right? Yeah. That's correct.
+
+01:11:48.014 --> 01:11:49.695
+<v Speaker 1>Five second is a is a bit low.
+
+01:11:49.695 --> 01:11:50.735
+<v Speaker 1>You need to make a make a big
+
+01:11:50.735 --> 01:11:52.255
+<v Speaker 1>gap because this is a range that it's
+
+01:11:52.255 --> 01:11:52.895
+<v Speaker 1>gonna search for.
+
+01:11:54.530 --> 01:11:56.210
+<v Speaker 0>Oh, this is the oh, okay. I thought
+
+01:11:56.210 --> 01:11:57.650
+<v Speaker 0>it was how many I thought I was
+
+01:11:57.650 --> 01:11:59.410
+<v Speaker 0>doing a rate over
+
+01:12:01.010 --> 01:12:02.850
+<v Speaker 0>five seconds. Okay. So let's do five minutes.
+
+01:12:02.850 --> 01:12:04.450
+<v Speaker 0>We should return them all.
+
+01:12:05.010 --> 01:12:05.650
+<v Speaker 0>Yep. So
+
+01:12:06.290 --> 01:12:08.770
+<v Speaker 0>what's that rate over? How does it determine
+
+01:12:08.770 --> 01:12:09.410
+<v Speaker 0>the window?
+
+01:12:10.425 --> 01:12:11.784
+<v Speaker 1>So
+
+01:12:13.704 --> 01:12:14.744
+<v Speaker 1>the window is
+
+01:12:15.385 --> 01:12:17.065
+<v Speaker 1>at the top, the
+
+01:12:17.065 --> 01:12:18.584
+<v Speaker 1>time selector that you have.
+
+01:12:19.864 --> 01:12:21.945
+<v Speaker 1>So currently, you are on, what, an hour,
+
+01:12:21.945 --> 01:12:24.270
+<v Speaker 1>I think? So it's going to split the
+
+01:12:24.270 --> 01:12:27.230
+<v Speaker 1>hour into multiple point. And for each point,
+
+01:12:27.230 --> 01:12:28.909
+<v Speaker 1>it's going to look back at five minutes.
+
+01:12:28.909 --> 01:12:30.669
+<v Speaker 1>Yeah. So it's an hour.
+
+01:12:31.550 --> 01:12:34.270
+<v Speaker 0>Okay. So why did five seconds not show
+
+01:12:34.270 --> 01:12:35.389
+<v Speaker 0>me how many
+
+01:12:36.030 --> 01:12:37.869
+<v Speaker 0>searches for Rawkode I had? Oh, it did.
+
+01:12:37.869 --> 01:12:39.765
+<v Speaker 0>We were just It does. It Yeah. But
+
+01:12:39.765 --> 01:12:41.925
+<v Speaker 1>you're going to miss my point is you're
+
+01:12:41.925 --> 01:12:43.125
+<v Speaker 1>going miss a couple of them if you
+
+01:12:43.125 --> 01:12:44.645
+<v Speaker 1>if you do just do five. You're going
+
+01:12:44.645 --> 01:12:46.005
+<v Speaker 1>to see some, but you're to miss a
+
+01:12:46.005 --> 01:12:46.804
+<v Speaker 1>couple of them.
+
+01:12:47.765 --> 01:12:48.804
+<v Speaker 0>Okay. So
+
+01:12:49.125 --> 01:12:52.085
+<v Speaker 1>Because five seconds, if you don't know what
+
+01:12:52.085 --> 01:12:54.610
+<v Speaker 1>the interval is between each point. So it's
+
+01:12:54.610 --> 01:12:56.770
+<v Speaker 1>exactly like Prometheus, the query. So this is
+
+01:12:56.770 --> 01:12:57.730
+<v Speaker 1>a query range.
+
+01:12:57.970 --> 01:12:59.489
+<v Speaker 1>A query range is basically
+
+01:13:00.050 --> 01:13:02.530
+<v Speaker 1>an instant query that is executed
+
+01:13:03.090 --> 01:13:06.849
+<v Speaker 1>for given steps or every depending on the
+
+01:13:06.770 --> 01:13:10.185
+<v Speaker 1>the interval, the total interval. So if it's
+
+01:13:10.185 --> 01:13:12.505
+<v Speaker 1>a one hour, it's probably gonna do 60
+
+01:13:12.505 --> 01:13:13.225
+<v Speaker 1>step,
+
+01:13:13.545 --> 01:13:14.745
+<v Speaker 1>one for each second.
+
+01:13:15.225 --> 01:13:17.785
+<v Speaker 1>Looking at five seconds, yeah, you're gonna probably
+
+01:13:17.785 --> 01:13:19.785
+<v Speaker 1>hit all the the points. But if you
+
+01:13:19.785 --> 01:13:22.105
+<v Speaker 1>are looking sub second, you will miss a
+
+01:13:22.105 --> 01:13:23.960
+<v Speaker 1>couple of data because for each point, you
+
+01:13:23.960 --> 01:13:25.800
+<v Speaker 1>will not look at all the point in
+
+01:13:25.800 --> 01:13:27.000
+<v Speaker 1>the in the window.
+
+01:13:27.560 --> 01:13:30.760
+<v Speaker 0>Okay. That makes sense. I've got one follow-up
+
+01:13:30.760 --> 01:13:31.960
+<v Speaker 0>question then. So
+
+01:13:32.920 --> 01:13:34.040
+<v Speaker 0>this, I completely
+
+01:13:34.855 --> 01:13:35.735
+<v Speaker 0>understand.
+
+01:13:35.815 --> 01:13:37.415
+<v Speaker 0>That's we've got disabled right now, so I'm
+
+01:13:37.415 --> 01:13:38.614
+<v Speaker 0>gonna ignore it. But here,
+
+01:13:39.815 --> 01:13:41.895
+<v Speaker 0>we're just searching the entire log line for
+
+01:13:41.895 --> 01:13:42.774
+<v Speaker 0>Rawkode.
+
+01:13:43.574 --> 01:13:45.735
+<v Speaker 0>Can I only search the query and I
+
+01:13:45.735 --> 01:13:47.415
+<v Speaker 0>guess that would come after I do the
+
+01:13:47.415 --> 01:13:48.855
+<v Speaker 0>log format? Can I then,
+
+01:13:50.300 --> 01:13:51.980
+<v Speaker 0>how would I only search on the query
+
+01:13:51.980 --> 01:13:53.419
+<v Speaker 0>field for Rawkode?
+
+01:13:53.739 --> 01:13:55.900
+<v Speaker 1>Yeah. No. That's a that's a good good
+
+01:13:55.900 --> 01:13:57.579
+<v Speaker 1>question. So all the labels that you have
+
+01:13:57.579 --> 01:13:59.820
+<v Speaker 1>extracted now can be used here.
+
+01:14:00.619 --> 01:14:03.500
+<v Speaker 1>So you can use query equal, for instance.
+
+01:14:04.315 --> 01:14:06.155
+<v Speaker 1>And that's like this is
+
+01:14:07.755 --> 01:14:10.074
+<v Speaker 1>it's less fast. It's
+
+01:14:10.074 --> 01:14:11.994
+<v Speaker 1>a bit slower than doing a pipe search
+
+01:14:11.994 --> 01:14:14.795
+<v Speaker 1>because pipe search are really the first thing
+
+01:14:14.795 --> 01:14:17.060
+<v Speaker 1>that happen. But if you do a search
+
+01:14:17.060 --> 01:14:19.220
+<v Speaker 1>here, it's going to happen after the log
+
+01:14:19.220 --> 01:14:21.700
+<v Speaker 1>format. So he still needs to process all
+
+01:14:21.700 --> 01:14:24.020
+<v Speaker 1>the log line one by one. But it's
+
+01:14:24.020 --> 01:14:25.860
+<v Speaker 1>not a pipe equal. It's pipe this time.
+
+01:14:27.140 --> 01:14:28.900
+<v Speaker 1>Just pipe. And then here, you can add
+
+01:14:28.900 --> 01:14:30.980
+<v Speaker 1>any labels that you want. And there's a
+
+01:14:30.980 --> 01:14:32.555
+<v Speaker 1>lot of things that you can do. So
+
+01:14:32.555 --> 01:14:33.995
+<v Speaker 1>let's start with equal
+
+01:14:34.075 --> 01:14:35.195
+<v Speaker 1>the name, yeah?
+
+01:14:38.635 --> 01:14:39.594
+<v Speaker 0>Like that?
+
+01:14:39.915 --> 01:14:40.235
+<v Speaker 1>Yeah.
+
+01:14:45.230 --> 01:14:48.110
+<v Speaker 1>Yeah. I think you're gonna need to hide
+
+01:14:48.190 --> 01:14:50.670
+<v Speaker 1>now you hide it. Yeah. Let's let's see.
+
+01:14:50.670 --> 01:14:52.510
+<v Speaker 1>Let's remove the the log query. Plus, it
+
+01:14:52.510 --> 01:14:54.830
+<v Speaker 1>looks like it's
+
+01:14:54.830 --> 01:14:56.270
+<v Speaker 1>not having a good time.
+
+01:14:58.590 --> 01:14:59.630
+<v Speaker 0>Remove this query?
+
+01:15:00.605 --> 01:15:02.445
+<v Speaker 1>No. The the first query, the at the
+
+01:15:02.445 --> 01:15:04.605
+<v Speaker 1>top, like, this one. Yeah. I think that's
+
+01:15:04.605 --> 01:15:06.205
+<v Speaker 1>the one that's struggling. Yeah.
+
+01:15:07.485 --> 01:15:08.285
+<v Speaker 1>Yep.
+
+01:15:10.365 --> 01:15:11.485
+<v Speaker 1>Oh, it didn't find any.
+
+01:15:12.300 --> 01:15:14.300
+<v Speaker 1>Maybe you need to look back in
+
+01:15:15.020 --> 01:15:15.900
+<v Speaker 0>Let's
+
+01:15:15.900 --> 01:15:16.780
+<v Speaker 0>just try
+
+01:15:19.020 --> 01:15:20.139
+<v Speaker 1>Let's just make sure.
+
+01:15:20.380 --> 01:15:22.379
+<v Speaker 1>Let's make sure that it's query equal.
+
+01:15:24.139 --> 01:15:25.820
+<v Speaker 1>Ah, you see there's like a, yeah,
+
+01:15:27.255 --> 01:15:29.015
+<v Speaker 1>Query I think it is.
+
+01:15:35.095 --> 01:15:36.935
+<v Speaker 0>So is there is there a special syntax
+
+01:15:36.935 --> 01:15:39.020
+<v Speaker 0>here? I mean, is is this just a
+
+01:15:39.020 --> 01:15:41.420
+<v Speaker 0>regular filter? No. No. Okay. No. No. It's
+
+01:15:41.420 --> 01:15:43.340
+<v Speaker 1>a it's a label of we call it
+
+01:15:43.340 --> 01:15:45.660
+<v Speaker 1>label filter. So you need label equal on
+
+01:15:47.100 --> 01:15:48.940
+<v Speaker 1>yeah. But it's and it's the yeah. And
+
+01:15:48.940 --> 01:15:49.500
+<v Speaker 1>it's the part.
+
+01:15:52.195 --> 01:15:54.275
+<v Speaker 1>Yeah. That's not gonna work. You need the
+
+01:15:54.355 --> 01:15:55.475
+<v Speaker 1>yeah. He needs to know if it's a
+
+01:15:55.475 --> 01:15:56.435
+<v Speaker 1>string. So
+
+01:15:57.075 --> 01:15:58.995
+<v Speaker 1>yeah. I know. Don't don't yeah. That's not
+
+01:15:58.995 --> 01:15:59.875
+<v Speaker 1>gonna work too.
+
+01:16:00.275 --> 01:16:01.795
+<v Speaker 0>I'm just gonna keep taking No. I think
+
+01:16:01.795 --> 01:16:04.355
+<v Speaker 1>it should it should work there what you
+
+01:16:04.355 --> 01:16:05.715
+<v Speaker 1>did at first. Like, let's try again.
+
+01:16:08.230 --> 01:16:10.310
+<v Speaker 0>Yeah. You need to include to quote it.
+
+01:16:10.310 --> 01:16:10.949
+<v Speaker 1>Yeah.
+
+01:16:11.830 --> 01:16:12.709
+<v Speaker 1>Quote it.
+
+01:16:17.110 --> 01:16:18.949
+<v Speaker 1>Can you increase maybe the window?
+
+01:16:19.429 --> 01:16:21.190
+<v Speaker 1>I don't know. What's the is it one
+
+01:16:21.190 --> 01:16:23.034
+<v Speaker 1>hour? Fifteen minutes.
+
+01:16:23.275 --> 01:16:26.554
+<v Speaker 0>Thirty minutes. Yeah, it's not coming up. So
+
+01:16:26.554 --> 01:16:27.195
+<v Speaker 1>let's
+
+01:16:27.434 --> 01:16:28.394
+<v Speaker 1>try duration
+
+01:16:29.755 --> 01:16:31.994
+<v Speaker 1>instead. So let's try duration.
+
+01:16:33.114 --> 01:16:34.235
+<v Speaker 1>And then you do
+
+01:16:35.150 --> 01:16:35.869
+<v Speaker 1>below
+
+01:16:36.510 --> 01:16:37.949
+<v Speaker 1>five seconds,
+
+01:16:38.030 --> 01:16:39.469
+<v Speaker 1>s with s.
+
+01:16:39.630 --> 01:16:40.829
+<v Speaker 1>Do we yeah.
+
+01:16:42.750 --> 01:16:44.750
+<v Speaker 1>Alright. So can we see those logline that
+
+01:16:44.750 --> 01:16:45.469
+<v Speaker 1>you're trying to find?
+
+01:16:47.435 --> 01:16:49.595
+<v Speaker 0>Yeah. So that Because it's query
+
+01:16:54.555 --> 01:16:57.435
+<v Speaker 0>Yeah. So there's one there. Yeah. Yeah. Yeah.
+
+01:16:57.435 --> 01:16:58.315
+<v Speaker 1>It's because
+
+01:16:58.635 --> 01:17:01.355
+<v Speaker 1>the label one, like, a is
+
+01:17:01.355 --> 01:17:03.749
+<v Speaker 1>a real. It's not like a grep.
+
+01:17:04.630 --> 01:17:07.030
+<v Speaker 1>Right? So the query the real query is
+
+01:17:07.030 --> 01:17:10.310
+<v Speaker 1>app equal Loki log format query. You see
+
+01:17:10.310 --> 01:17:11.030
+<v Speaker 1>what I mean?
+
+01:17:11.429 --> 01:17:13.510
+<v Speaker 1>So you need to do, like, a regex.
+
+01:17:13.989 --> 01:17:16.150
+<v Speaker 1>So you can you can filter with those
+
+01:17:16.150 --> 01:17:18.255
+<v Speaker 1>now. So you can do a if you
+
+01:17:18.255 --> 01:17:19.935
+<v Speaker 1>want. I do this. Yep.
+
+01:17:21.375 --> 01:17:22.575
+<v Speaker 1>That's going to work.
+
+01:17:24.895 --> 01:17:25.775
+<v Speaker 1>It
+
+01:17:27.295 --> 01:17:27.935
+<v Speaker 1>should
+
+01:17:28.335 --> 01:17:29.135
+<v Speaker 1>have worked.
+
+01:17:31.055 --> 01:17:32.335
+<v Speaker 1>Why is it not working?
+
+01:17:35.690 --> 01:17:36.489
+<v Speaker 0>Yeah.
+
+01:17:36.969 --> 01:17:38.650
+<v Speaker 0>I just Try Loki instead.
+
+01:17:38.969 --> 01:17:42.250
+<v Speaker 1>Try try Loki maybe instead of yeah. Just
+
+01:17:42.250 --> 01:17:42.810
+<v Speaker 1>to see if
+
+01:17:47.785 --> 01:17:50.985
+<v Speaker 1>Yeah. So is the label query exist?
+
+01:17:51.625 --> 01:17:53.385
+<v Speaker 1>Now I'm now I'm curious.
+
+01:17:54.025 --> 01:17:56.345
+<v Speaker 1>Can you, yeah, remove everything? Look at just
+
+01:17:56.345 --> 01:17:58.585
+<v Speaker 1>this. Yeah. Look at the labels.
+
+01:17:59.945 --> 01:18:00.585
+<v Speaker 0>That's what?
+
+01:18:02.060 --> 01:18:04.300
+<v Speaker 0>That's the Oh, yeah. Yeah. We need the
+
+01:18:04.300 --> 01:18:05.179
+<v Speaker 1>metrics. Yeah.
+
+01:18:05.980 --> 01:18:08.540
+<v Speaker 0>Let me do equal
+
+01:18:12.860 --> 01:18:13.100
+<v Speaker 1>yeah.
+
+01:18:15.995 --> 01:18:16.715
+<v Speaker 0>What?
+
+01:18:18.795 --> 01:18:21.035
+<v Speaker 0>Wait. Maybe the quotes. I didn't need the
+
+01:18:21.035 --> 01:18:23.275
+<v Speaker 0>quotes. Right? No. Yeah. No. You need it.
+
+01:18:23.275 --> 01:18:24.155
+<v Speaker 1>Yeah. Oh, yeah.
+
+01:18:24.475 --> 01:18:25.275
+<v Speaker 1>Yeah.
+
+01:18:26.555 --> 01:18:28.075
+<v Speaker 1>No. You needed to to say it's a
+
+01:18:28.075 --> 01:18:28.395
+<v Speaker 1>string.
+
+01:18:32.659 --> 01:18:34.340
+<v Speaker 0>But that was working. Right?
+
+01:18:34.659 --> 01:18:36.580
+<v Speaker 0>That was saying that's just a basic query
+
+01:18:36.580 --> 01:18:39.139
+<v Speaker 0>of find Rawkode in my log, I thought.
+
+01:18:40.900 --> 01:18:43.380
+<v Speaker 0>What have I done? Yeah. I'm I'm
+
+01:18:43.380 --> 01:18:45.699
+<v Speaker 1>I'm also impressed that it doesn't work, but
+
+01:18:45.699 --> 01:18:46.420
+<v Speaker 1>it should be working.
+
+01:18:49.255 --> 01:18:51.015
+<v Speaker 0>When in time Yeah. Let's just go back
+
+01:18:51.015 --> 01:18:52.534
+<v Speaker 0>to explore. Like,
+
+01:18:53.975 --> 01:18:54.935
+<v Speaker 0>Loki.
+
+01:18:56.295 --> 01:18:58.135
+<v Speaker 0>And what we were gonna do was
+
+01:19:00.935 --> 01:19:03.255
+<v Speaker 0>app
+
+01:19:02.040 --> 01:19:03.079
+<v Speaker 0>equals
+
+01:19:04.679 --> 01:19:05.639
+<v Speaker 0>Loki.
+
+01:19:05.639 --> 01:19:07.400
+<v Speaker 0>And then let's get all the logs for
+
+01:19:07.400 --> 01:19:08.999
+<v Speaker 0>the last fifteen minutes.
+
+01:19:10.520 --> 01:19:11.320
+<v Speaker 0>And then
+
+01:19:11.639 --> 01:19:13.480
+<v Speaker 1>We can see it here. Yeah. We can
+
+01:19:13.480 --> 01:19:14.119
+<v Speaker 1>see
+
+01:19:14.375 --> 01:19:16.535
+<v Speaker 1>Do a log format to see the labels
+
+01:19:16.535 --> 01:19:17.094
+<v Speaker 1>if we
+
+01:19:18.215 --> 01:19:20.455
+<v Speaker 0>For my own sanity, just wanna walk through
+
+01:19:20.455 --> 01:19:22.454
+<v Speaker 0>those things that didn't work. I don't know
+
+01:19:22.535 --> 01:19:24.455
+<v Speaker 0>why they didn't work. Yeah. That's I think
+
+01:19:24.455 --> 01:19:26.535
+<v Speaker 0>a friend was a little confused. Okay. That's
+
+01:19:26.535 --> 01:19:26.855
+<v Speaker 0>better.
+
+01:19:29.850 --> 01:19:32.170
+<v Speaker 1>Alright. Let's blame Grafana. Yeah. That's good.
+
+01:19:33.210 --> 01:19:35.530
+<v Speaker 0>So so we have query here. So what
+
+01:19:35.530 --> 01:19:37.130
+<v Speaker 0>we were saying was So this is a
+
+01:19:37.130 --> 01:19:39.050
+<v Speaker 0>global search, but we wanna do it as
+
+01:19:39.050 --> 01:19:41.450
+<v Speaker 0>the individual filter search. And you're saying I
+
+01:19:41.450 --> 01:19:42.410
+<v Speaker 0>could just rejects?
+
+01:19:42.875 --> 01:19:44.315
+<v Speaker 1>Yes. Like so.
+
+01:19:44.875 --> 01:19:45.595
+<v Speaker 0>Mhmm.
+
+01:19:49.435 --> 01:19:51.755
+<v Speaker 1>But it doesn't want to. Yeah. Let's let's
+
+01:19:51.755 --> 01:19:53.115
+<v Speaker 1>maybe try This is a good one.
+
+01:19:54.475 --> 01:19:57.915
+<v Speaker 1>It doesn't want to. But you can do
+
+01:19:59.889 --> 01:20:01.730
+<v Speaker 1>a yeah. The query the query was the
+
+01:20:01.809 --> 01:20:02.849
+<v Speaker 1>just I'm I'm a
+
+01:20:04.050 --> 01:20:05.409
+<v Speaker 1>if you click on the
+
+01:20:05.730 --> 01:20:06.530
+<v Speaker 1>logline
+
+01:20:06.770 --> 01:20:08.369
+<v Speaker 1>yeah. Click on it to see the labels.
+
+01:20:12.205 --> 01:20:13.485
+<v Speaker 1>Yeah. It's the
+
+01:20:15.405 --> 01:20:18.204
+<v Speaker 0>Well, the duration one worked. Let's try
+
+01:20:20.205 --> 01:20:21.485
+<v Speaker 0>level info.
+
+01:20:22.045 --> 01:20:24.125
+<v Speaker 1>Yeah. Let's try level info because this is
+
+01:20:24.125 --> 01:20:25.164
+<v Speaker 1>gonna be a call.
+
+01:20:25.565 --> 01:20:25.965
+<v Speaker 0>Yeah.
+
+01:20:27.580 --> 01:20:30.140
+<v Speaker 0>Yeah. Okay. That works fine. That works. Yeah.
+
+01:20:30.140 --> 01:20:31.980
+<v Speaker 1>I think there's a mistake somewhere in the
+
+01:20:31.980 --> 01:20:34.140
+<v Speaker 1>query that we're we're doing. I'm gonna try
+
+01:20:34.140 --> 01:20:34.860
+<v Speaker 0>this. Yeah. This is
+
+01:20:35.660 --> 01:20:39.260
+<v Speaker 1>yeah. Try yeah. Yeah. Okay. Something wrong with
+
+01:20:39.260 --> 01:20:40.219
+<v Speaker 0>that potentially.
+
+01:20:40.715 --> 01:20:42.635
+<v Speaker 0>Okay. Let's just ignore that.
+
+01:20:44.635 --> 01:20:46.954
+<v Speaker 0>But and for dead work. Okay. So once
+
+01:20:46.954 --> 01:20:49.594
+<v Speaker 0>we've got log format, we can then query
+
+01:20:49.594 --> 01:20:50.874
+<v Speaker 0>individual
+
+01:20:51.034 --> 01:20:53.700
+<v Speaker 0>labels Yeah. Then the data. Of course, you
+
+01:20:53.700 --> 01:20:55.620
+<v Speaker 0>were very clear that there's a performance penalty
+
+01:20:55.620 --> 01:20:57.700
+<v Speaker 0>for this because this all happens on the
+
+01:20:57.700 --> 01:20:59.139
+<v Speaker 0>stream and real time
+
+01:20:59.700 --> 01:21:01.940
+<v Speaker 0>can be a little CPU intensive. But that
+
+01:21:01.940 --> 01:21:04.420
+<v Speaker 0>was Yeah. Really, really cool. But that yeah.
+
+01:21:04.420 --> 01:21:06.100
+<v Speaker 1>But that's what Loki has been built for.
+
+01:21:06.100 --> 01:21:08.020
+<v Speaker 1>Right? It has been built for you to
+
+01:21:08.020 --> 01:21:08.180
+<v Speaker 1>use
+
+01:21:08.875 --> 01:21:09.835
+<v Speaker 1>resources
+
+01:21:09.835 --> 01:21:11.594
+<v Speaker 1>when you need it to, not when you're
+
+01:21:11.594 --> 01:21:12.394
+<v Speaker 1>ingesting.
+
+01:21:12.635 --> 01:21:14.715
+<v Speaker 1>So when you query, we expect you to
+
+01:21:14.715 --> 01:21:17.114
+<v Speaker 1>burn some CPU because you're going to scan
+
+01:21:17.114 --> 01:21:19.355
+<v Speaker 1>data. You're going to scan a lot data.
+
+01:21:19.355 --> 01:21:21.195
+<v Speaker 1>There's a little index.
+
+01:21:21.820 --> 01:21:24.060
+<v Speaker 1>So since the index is very small, we
+
+01:21:24.060 --> 01:21:25.900
+<v Speaker 1>expect you to have to need to do
+
+01:21:25.900 --> 01:21:28.540
+<v Speaker 1>those scan to find what you want
+
+01:21:28.620 --> 01:21:29.180
+<v Speaker 1>to find.
+
+01:21:30.140 --> 01:21:33.020
+<v Speaker 1>We can rewrite the logline. So maybe we
+
+01:21:33.340 --> 01:21:34.940
+<v Speaker 1>can look at this if you Yeah, sure.
+
+01:21:34.940 --> 01:21:35.660
+<v Speaker 0>Let's do it.
+
+01:21:36.485 --> 01:21:37.284
+<v Speaker 1>So right
+
+01:21:37.605 --> 01:21:39.524
+<v Speaker 1>after, you can pipe in. There's
+
+01:21:39.844 --> 01:21:42.324
+<v Speaker 1>an operation name, line format.
+
+01:21:42.565 --> 01:21:44.244
+<v Speaker 1>And it's using your favorite
+
+01:21:44.565 --> 01:21:45.204
+<v Speaker 1>Go
+
+01:21:45.764 --> 01:21:46.405
+<v Speaker 0>Go
+
+01:21:47.125 --> 01:21:51.800
+<v Speaker 0>template. Go template. Yeah. So yeah, exactly. Yeah,
+
+01:21:51.800 --> 01:21:53.879
+<v Speaker 1>exactly. So let's try dot query.
+
+01:21:58.039 --> 01:22:00.280
+<v Speaker 1>Yeah, Ladle, yeah, for instance. I think you
+
+01:22:00.280 --> 01:22:00.760
+<v Speaker 1>need the
+
+01:22:01.960 --> 01:22:04.215
+<v Speaker 1>yeah, I'm not sure. I'm Oh, yeah. Think
+
+01:22:04.215 --> 01:22:04.614
+<v Speaker 0>it
+
+01:22:05.335 --> 01:22:06.935
+<v Speaker 1>needs to be yeah, I think you need
+
+01:22:06.935 --> 01:22:08.135
+<v Speaker 1>to yeah, exactly.
+
+01:22:09.574 --> 01:22:10.935
+<v Speaker 1>All right. So you can even add a
+
+01:22:10.935 --> 01:22:12.854
+<v Speaker 1>smiley if you know how to
+
+01:22:13.255 --> 01:22:14.375
+<v Speaker 1>do an image con.
+
+01:22:15.510 --> 01:22:17.510
+<v Speaker 1>I actually know. Oh, you know how to.
+
+01:22:17.510 --> 01:22:18.070
+<v Speaker 1>Nice.
+
+01:22:21.349 --> 01:22:23.429
+<v Speaker 1>It didn't work. I don't know what's my
+
+01:22:23.429 --> 01:22:24.229
+<v Speaker 0>emoji.
+
+01:22:24.789 --> 01:22:26.550
+<v Speaker 1>I don't know. It should be working. I
+
+01:22:26.550 --> 01:22:28.070
+<v Speaker 1>use it a lot of time.
+
+01:22:29.885 --> 01:22:31.565
+<v Speaker 0>Let's try But you can see the logline
+
+01:22:31.565 --> 01:22:32.285
+<v Speaker 1>is is
+
+01:22:34.125 --> 01:22:36.204
+<v Speaker 1>yeah. Don't know if the yeah.
+
+01:22:36.845 --> 01:22:39.245
+<v Speaker 0>No. Oh, well. It doesn't it doesn't want
+
+01:22:39.245 --> 01:22:41.324
+<v Speaker 1>to. But we we do get there. Yeah.
+
+01:22:41.325 --> 01:22:42.125
+<v Speaker 0>Sorry. On your go. Yeah.
+
+01:22:43.989 --> 01:22:44.790
+<v Speaker 1>And,
+
+01:22:44.790 --> 01:22:46.469
+<v Speaker 1>yeah, that that's that's pretty cool because you
+
+01:22:46.469 --> 01:22:48.389
+<v Speaker 1>can use this format.
+
+01:22:48.790 --> 01:22:50.389
+<v Speaker 1>If if the log line were not very
+
+01:22:50.389 --> 01:22:53.110
+<v Speaker 1>sane, you can pass it, rewrite it, make
+
+01:22:53.110 --> 01:22:55.429
+<v Speaker 1>it more readable. And you can use that
+
+01:22:55.429 --> 01:22:57.190
+<v Speaker 1>in a dashboard again, you know, if you
+
+01:22:57.190 --> 01:22:59.565
+<v Speaker 1>want to have, like, a table showing only
+
+01:22:59.565 --> 01:23:01.244
+<v Speaker 1>duration or only
+
+01:23:01.405 --> 01:23:03.565
+<v Speaker 1>information that you want. Yeah. That's what I
+
+01:23:03.565 --> 01:23:05.005
+<v Speaker 0>was as soon as you showed me the
+
+01:23:05.005 --> 01:23:07.325
+<v Speaker 0>the the line format here, and I can
+
+01:23:07.325 --> 01:23:08.685
+<v Speaker 0>assume what we were working here. I said,
+
+01:23:08.685 --> 01:23:10.525
+<v Speaker 0>oh, we're we're now able to build, like,
+
+01:23:10.525 --> 01:23:13.460
+<v Speaker 0>tabular data. So does that mean can I
+
+01:23:13.460 --> 01:23:16.340
+<v Speaker 0>change the visualization on this to to be
+
+01:23:16.340 --> 01:23:18.260
+<v Speaker 0>a table? Like, if I change the
+
+01:23:18.980 --> 01:23:19.940
+<v Speaker 1>I don't know. I don't know if we
+
+01:23:19.940 --> 01:23:22.340
+<v Speaker 1>support that now. No. At at least not
+
+01:23:22.340 --> 01:23:23.300
+<v Speaker 1>in explore.
+
+01:23:23.620 --> 01:23:25.780
+<v Speaker 1>But I think in the dashboard, it it
+
+01:23:25.780 --> 01:23:28.175
+<v Speaker 1>works. But I'm not 100% sure. We can
+
+01:23:28.175 --> 01:23:29.375
+<v Speaker 1>give it to try if you want. But
+
+01:23:29.375 --> 01:23:30.574
+<v Speaker 1>it needs to be a dashboard.
+
+01:23:30.895 --> 01:23:32.494
+<v Speaker 0>My emojis have
+
+01:23:33.375 --> 01:23:36.415
+<v Speaker 0>broken Grafana. Broken broken Grafana. Yeah. I can
+
+01:23:36.415 --> 01:23:39.135
+<v Speaker 1>see that. I'm just gonna copy this query.
+
+01:23:39.534 --> 01:23:41.215
+<v Speaker 0>Let's go back to our dashboard that we
+
+01:23:41.215 --> 01:23:41.534
+<v Speaker 0>built.
+
+01:23:43.140 --> 01:23:44.660
+<v Speaker 0>I'm sure I could have just added that
+
+01:23:44.660 --> 01:23:46.900
+<v Speaker 0>to the dashboard, but my Grafana is not
+
+01:23:46.900 --> 01:23:47.540
+<v Speaker 0>great.
+
+01:23:49.620 --> 01:23:50.820
+<v Speaker 0>Let's do ads.
+
+01:23:51.940 --> 01:23:53.460
+<v Speaker 0>Let's do row.
+
+01:23:53.620 --> 01:23:55.940
+<v Speaker 0>Nope. That didn't do that. Okay. Panel.
+
+01:23:57.195 --> 01:23:57.994
+<v Speaker 0>Better.
+
+01:23:58.954 --> 01:24:00.794
+<v Speaker 0>We wanted to do a Loki query.
+
+01:24:00.954 --> 01:24:02.635
+<v Speaker 0>We want to drop in this.
+
+01:24:02.954 --> 01:24:05.195
+<v Speaker 0>We've got a line format, which needs
+
+01:24:07.675 --> 01:24:08.794
+<v Speaker 0>And we did,
+
+01:24:08.954 --> 01:24:10.715
+<v Speaker 0>that's the level
+
+01:24:12.390 --> 01:24:13.350
+<v Speaker 0>query.
+
+01:24:13.430 --> 01:24:15.270
+<v Speaker 0>Was it query status?
+
+01:24:15.590 --> 01:24:18.150
+<v Speaker 0>No. It's just status. Status.
+
+01:24:18.150 --> 01:24:18.630
+<v Speaker 1>Yeah.
+
+01:24:19.110 --> 01:24:19.989
+<v Speaker 0>And
+
+01:24:20.150 --> 01:24:22.390
+<v Speaker 0>then we'll do the query.
+
+01:24:22.790 --> 01:24:24.710
+<v Speaker 1>You can even add labels that are from
+
+01:24:24.710 --> 01:24:25.830
+<v Speaker 1>the index if you want to add the
+
+01:24:25.830 --> 01:24:26.550
+<v Speaker 1>the app
+
+01:24:27.445 --> 01:24:30.085
+<v Speaker 1>or the the the container from which container
+
+01:24:30.085 --> 01:24:31.765
+<v Speaker 1>it comes from. There's a you know, all
+
+01:24:31.765 --> 01:24:33.925
+<v Speaker 1>the all the labels are are available.
+
+01:24:34.885 --> 01:24:35.605
+<v Speaker 0>Okay.
+
+01:24:35.765 --> 01:24:38.005
+<v Speaker 0>So we can we
+
+01:24:38.005 --> 01:24:39.685
+<v Speaker 0>can probably just take off
+
+01:24:40.610 --> 01:24:42.209
+<v Speaker 0>the Rawkode. Yeah.
+
+01:24:44.770 --> 01:24:46.530
+<v Speaker 0>The Envoy is not really doing much, but
+
+01:24:46.530 --> 01:24:48.050
+<v Speaker 0>let's just take it off anyway.
+
+01:24:49.250 --> 01:24:51.329
+<v Speaker 1>Yeah. Not all the logline is gonna have
+
+01:24:51.329 --> 01:24:52.290
+<v Speaker 1>this
+
+01:24:53.074 --> 01:24:54.835
+<v Speaker 1>this query label,
+
+01:24:55.235 --> 01:24:56.195
+<v Speaker 1>but that's okay.
+
+01:24:56.594 --> 01:24:58.515
+<v Speaker 0>Oh, and it's actually offering to switch to
+
+01:24:58.515 --> 01:25:01.715
+<v Speaker 0>a table. Oh, interesting. Oh, never seen it.
+
+01:25:01.715 --> 01:25:02.434
+<v Speaker 0>Fancy.
+
+01:25:05.235 --> 01:25:07.395
+<v Speaker 0>But it actually detected that we had
+
+01:25:09.500 --> 01:25:10.860
+<v Speaker 0>oh, no, but it's not got the fields
+
+01:25:10.860 --> 01:25:13.180
+<v Speaker 0>that I told it to have. No.
+
+01:25:13.180 --> 01:25:15.100
+<v Speaker 1>But maybe you can change maybe you can
+
+01:25:15.100 --> 01:25:15.980
+<v Speaker 1>change the
+
+01:25:18.140 --> 01:25:19.980
+<v Speaker 1>yeah. I'm not an expert on that,
+
+01:25:20.380 --> 01:25:22.860
+<v Speaker 1>but I think it's possible to select, like,
+
+01:25:22.860 --> 01:25:25.605
+<v Speaker 1>the in the transformation, like, the labels as
+
+01:25:25.605 --> 01:25:26.565
+<v Speaker 1>a field maybe.
+
+01:25:27.685 --> 01:25:29.925
+<v Speaker 0>Well, we do have the logs and exactly
+
+01:25:29.925 --> 01:25:31.605
+<v Speaker 0>the format that we expect.
+
+01:25:32.885 --> 01:25:34.485
+<v Speaker 0>Let's try that again.
+
+01:25:35.285 --> 01:25:37.365
+<v Speaker 0>Oh, this is the line. Okay. So we
+
+01:25:37.365 --> 01:25:38.885
+<v Speaker 0>probably have to It's just the line.
+
+01:25:39.445 --> 01:25:41.250
+<v Speaker 0>Got it. Yeah. So pretty cool. But I
+
+01:25:41.250 --> 01:25:41.650
+<v Speaker 1>think I
+
+01:25:42.449 --> 01:25:43.010
+<v Speaker 1>it's a
+
+01:25:43.969 --> 01:25:46.209
+<v Speaker 1>nice feature feature request.
+
+01:25:47.090 --> 01:25:48.209
+<v Speaker 1>I'll take this back
+
+01:25:48.770 --> 01:25:50.209
+<v Speaker 1>to the GraphQL team.
+
+01:25:50.530 --> 01:25:51.090
+<v Speaker 0>Nice.
+
+01:25:51.570 --> 01:25:52.449
+<v Speaker 1>I like it.
+
+01:25:53.409 --> 01:25:55.635
+<v Speaker 1>There's one last thing that we haven't that
+
+01:25:55.635 --> 01:25:57.314
+<v Speaker 1>we haven't really show
+
+01:25:57.315 --> 01:25:59.715
+<v Speaker 1>about the language is extracting
+
+01:26:00.514 --> 01:26:01.234
+<v Speaker 1>value,
+
+01:26:01.715 --> 01:26:04.195
+<v Speaker 0>like a numerical value from the logline and
+
+01:26:04.195 --> 01:26:06.354
+<v Speaker 1>use them as a metric query. That's
+
+01:26:06.994 --> 01:26:09.310
+<v Speaker 1>the last most difficult type of query that
+
+01:26:09.310 --> 01:26:10.030
+<v Speaker 1>we can do.
+
+01:26:10.670 --> 01:26:12.430
+<v Speaker 1>But they're really cool because there's a lot
+
+01:26:12.430 --> 01:26:14.910
+<v Speaker 1>of people out there that have a counter
+
+01:26:15.070 --> 01:26:15.790
+<v Speaker 1>or
+
+01:26:16.990 --> 01:26:18.030
+<v Speaker 1>speed or
+
+01:26:18.190 --> 01:26:20.670
+<v Speaker 1>duration in their logline. And they want to
+
+01:26:20.670 --> 01:26:23.965
+<v Speaker 1>maybe graph the average or things like that,
+
+01:26:23.965 --> 01:26:26.205
+<v Speaker 1>or the quintile, the max, or the mean.
+
+01:26:26.205 --> 01:26:27.885
+<v Speaker 1>And we can do that with Loki.
+
+01:26:28.285 --> 01:26:29.405
+<v Speaker 0>All right. Do you want to walk me
+
+01:26:29.405 --> 01:26:30.125
+<v Speaker 0>through it?
+
+01:26:30.525 --> 01:26:33.165
+<v Speaker 1>Yeah. So you don't need this
+
+01:26:33.405 --> 01:26:35.804
+<v Speaker 1>line format anymore. Everything can
+
+01:26:36.125 --> 01:26:37.700
+<v Speaker 1>be removed. You
+
+01:26:37.860 --> 01:26:39.060
+<v Speaker 1>still need the log
+
+01:26:39.540 --> 01:26:40.980
+<v Speaker 1>the line format, you don't need it, but
+
+01:26:40.980 --> 01:26:42.580
+<v Speaker 1>you still need the log format because we
+
+01:26:42.580 --> 01:26:44.420
+<v Speaker 1>want to use one of the fields.
+
+01:26:46.980 --> 01:26:48.580
+<v Speaker 1>So what we're going to do is we're
+
+01:26:48.580 --> 01:26:51.205
+<v Speaker 1>going to use the unwrap. So it's u
+
+01:26:51.205 --> 01:26:52.165
+<v Speaker 1>n w
+
+01:26:52.405 --> 01:26:54.485
+<v Speaker 1>so u n yeah, wrap. And then the
+
+01:26:54.485 --> 01:26:55.765
+<v Speaker 1>name of the label that we want to
+
+01:26:55.765 --> 01:26:59.125
+<v Speaker 1>unwrap. So unwrap means use that label as
+
+01:27:00.245 --> 01:27:00.965
+<v Speaker 1>sample value.
+
+01:27:02.850 --> 01:27:04.290
+<v Speaker 1>Let's use maybe
+
+01:27:04.930 --> 01:27:05.890
+<v Speaker 1>duration.
+
+01:27:05.890 --> 01:27:07.650
+<v Speaker 1>So it doesn't need parentheses.
+
+01:27:09.330 --> 01:27:11.730
+<v Speaker 1>So yeah, to remember that is very easy.
+
+01:27:11.730 --> 01:27:13.410
+<v Speaker 1>Everything about the logline,
+
+01:27:13.650 --> 01:27:15.810
+<v Speaker 1>it doesn't need parentheses. It's all
+
+01:27:16.610 --> 01:27:17.410
+<v Speaker 1>pipe.
+
+01:27:18.505 --> 01:27:19.545
+<v Speaker 1>So
+
+01:27:20.105 --> 01:27:20.985
+<v Speaker 1>we
+
+01:27:21.385 --> 01:27:23.065
+<v Speaker 1>need to make sure that it's only
+
+01:27:25.465 --> 01:27:27.305
+<v Speaker 1>yeah. So let's do an average over time
+
+01:27:27.305 --> 01:27:28.185
+<v Speaker 1>of all of this.
+
+01:27:30.500 --> 01:27:32.180
+<v Speaker 1>Average underscore
+
+01:27:32.260 --> 01:27:34.660
+<v Speaker 1>over time. So we need the over time,
+
+01:27:34.660 --> 01:27:36.180
+<v Speaker 1>yeah, over time.
+
+01:27:36.900 --> 01:27:39.060
+<v Speaker 1>And then you need yeah. But the
+
+01:27:39.220 --> 01:27:40.500
+<v Speaker 1>bracket needs to be inside.
+
+01:27:43.595 --> 01:27:45.115
+<v Speaker 1>And you need at the end to add
+
+01:27:45.115 --> 01:27:47.035
+<v Speaker 1>a by. Let's do a by
+
+01:27:50.555 --> 01:27:52.715
+<v Speaker 1>pod. Yeah, it's a by pod.
+
+01:27:53.355 --> 01:27:55.755
+<v Speaker 1>No, just by. And then parentheses open and
+
+01:27:55.755 --> 01:27:57.275
+<v Speaker 1>close. Grafana is disturbing
+
+01:27:58.235 --> 01:27:58.795
+<v Speaker 1>us here.
+
+01:27:59.430 --> 01:28:00.310
+<v Speaker 1>Just by
+
+01:28:01.350 --> 01:28:03.270
+<v Speaker 1>enclosing to parentheses pod.
+
+01:28:06.950 --> 01:28:08.630
+<v Speaker 0>Sorry, I missed that last bit.
+
+01:28:09.270 --> 01:28:10.310
+<v Speaker 1>Yeah,
+
+01:28:11.350 --> 01:28:12.470
+<v Speaker 1>just add.
+
+01:28:12.585 --> 01:28:15.545
+<v Speaker 1>So remove bytes All right. Okay. And add
+
+01:28:15.705 --> 01:28:16.825
+<v Speaker 1>parentheses,
+
+01:28:16.825 --> 01:28:18.264
+<v Speaker 1>open parentheses,
+
+01:28:18.505 --> 01:28:20.745
+<v Speaker 1>and then part. Yeah, that's so there will
+
+01:28:20.745 --> 01:28:22.985
+<v Speaker 1>be probably errors because duration
+
+01:28:23.545 --> 01:28:24.585
+<v Speaker 1>doesn't really
+
+01:28:25.545 --> 01:28:26.985
+<v Speaker 1>exist on all the logline.
+
+01:28:27.360 --> 01:28:29.280
+<v Speaker 1>So there's two options. Either we can skip
+
+01:28:29.280 --> 01:28:29.840
+<v Speaker 1>those,
+
+01:28:30.160 --> 01:28:31.360
+<v Speaker 1>or we can
+
+01:28:31.600 --> 01:28:34.720
+<v Speaker 1>filter them manually. I think skip is better.
+
+01:28:34.720 --> 01:28:37.120
+<v Speaker 1>So at the end of right after duration,
+
+01:28:37.280 --> 01:28:38.560
+<v Speaker 1>you can add another pipe.
+
+01:28:40.515 --> 01:28:42.355
+<v Speaker 1>And there is a special key one for
+
+01:28:42.355 --> 01:28:44.594
+<v Speaker 1>the errors. It's underscore underscore,
+
+01:28:45.074 --> 01:28:46.514
+<v Speaker 1>error underscore underscore.
+
+01:28:47.875 --> 01:28:49.875
+<v Speaker 1>And we can do equal
+
+01:28:50.114 --> 01:28:50.994
+<v Speaker 1>empty
+
+01:28:51.635 --> 01:28:51.875
+<v Speaker 1>string.
+
+01:28:53.330 --> 01:28:55.570
+<v Speaker 1>So that means we're going to consider only
+
+01:28:55.570 --> 01:28:57.970
+<v Speaker 1>a logline that doesn't have an error. Because
+
+01:28:57.970 --> 01:28:59.810
+<v Speaker 1>the error label is basically added every time
+
+01:28:59.810 --> 01:29:02.050
+<v Speaker 1>there's an issue passing the logline.
+
+01:29:02.770 --> 01:29:05.250
+<v Speaker 1>So that should be working.
+
+01:29:07.965 --> 01:29:09.565
+<v Speaker 1>You need to switch that to a graph,
+
+01:29:09.565 --> 01:29:10.285
+<v Speaker 1>I believe,
+
+01:29:11.965 --> 01:29:13.485
+<v Speaker 1>on the visualization.
+
+01:29:16.285 --> 01:29:18.765
+<v Speaker 1>Right. So it doesn't find anything.
+
+01:29:18.765 --> 01:29:21.485
+<v Speaker 1>And it's because duration so this is going
+
+01:29:21.485 --> 01:29:23.005
+<v Speaker 1>to be confusing. But duration
+
+01:29:23.620 --> 01:29:24.820
+<v Speaker 1>is in a format.
+
+01:29:25.380 --> 01:29:27.619
+<v Speaker 1>It's in GoDuration format.
+
+01:29:28.180 --> 01:29:30.260
+<v Speaker 1>And so we need to tell the unwrap
+
+01:29:30.260 --> 01:29:32.580
+<v Speaker 1>how to pass that. And you just need
+
+01:29:32.580 --> 01:29:34.580
+<v Speaker 1>to enclose duration with duration again.
+
+01:29:36.585 --> 01:29:39.225
+<v Speaker 1>So open parentheses here and add duration inside
+
+01:29:39.225 --> 01:29:40.505
+<v Speaker 1>the parentheses. Yeah.
+
+01:29:41.225 --> 01:29:44.265
+<v Speaker 1>Yeah, exactly. So yeah, normally you will name
+
+01:29:44.265 --> 01:29:45.065
+<v Speaker 1>duration.
+
+01:29:45.465 --> 01:29:46.985
+<v Speaker 1>You will name your own
+
+01:29:47.864 --> 01:29:48.505
+<v Speaker 1>duration.
+
+01:29:49.230 --> 01:29:51.070
+<v Speaker 1>But that's the reason why. We need to
+
+01:29:51.070 --> 01:29:52.910
+<v Speaker 1>tell it. If it's bytes, so there's another
+
+01:29:52.910 --> 01:29:54.030
+<v Speaker 1>one, which is throughput.
+
+01:29:55.150 --> 01:29:56.510
+<v Speaker 1>And you can switch if you want. You
+
+01:29:56.510 --> 01:29:58.430
+<v Speaker 1>can do the first duration. You could switch
+
+01:29:58.430 --> 01:29:59.469
+<v Speaker 1>it to bytes
+
+01:30:00.030 --> 01:30:01.469
+<v Speaker 1>with S at the end.
+
+01:30:02.830 --> 01:30:05.114
+<v Speaker 1>And then duration by throughput. Yeah.
+
+01:30:06.315 --> 01:30:07.835
+<v Speaker 1>And this is going to be the average
+
+01:30:07.835 --> 01:30:09.275
+<v Speaker 1>throughput per query
+
+01:30:09.915 --> 01:30:10.875
+<v Speaker 1>in bytes.
+
+01:30:11.115 --> 01:30:14.554
+<v Speaker 0>Okay. So we have a label selector
+
+01:30:14.555 --> 01:30:15.675
+<v Speaker 0>with a log format.
+
+01:30:16.520 --> 01:30:19.400
+<v Speaker 0>The unwrap is extracting one of the values
+
+01:30:19.400 --> 01:30:21.080
+<v Speaker 0>from the log lanes where we're telling it
+
+01:30:21.080 --> 01:30:22.600
+<v Speaker 0>which type of value it is. So we
+
+01:30:22.600 --> 01:30:24.679
+<v Speaker 0>try doing a duration duration
+
+01:30:24.920 --> 01:30:27.000
+<v Speaker 0>and we also tell in it that throughput
+
+01:30:27.000 --> 01:30:27.960
+<v Speaker 0>is abates.
+
+01:30:29.005 --> 01:30:31.245
+<v Speaker 0>We're then piping through to where error equals
+
+01:30:31.245 --> 01:30:32.845
+<v Speaker 0>zero just to filter out any lines that
+
+01:30:32.845 --> 01:30:34.845
+<v Speaker 0>didn't have a duration and we've got the
+
+01:30:34.845 --> 01:30:36.765
+<v Speaker 0>average over time by a five minute
+
+01:30:37.085 --> 01:30:37.965
+<v Speaker 0>window
+
+01:30:37.965 --> 01:30:40.045
+<v Speaker 0>and then we group that bipod
+
+01:30:40.205 --> 01:30:40.605
+<v Speaker 0>using.
+
+01:30:41.850 --> 01:30:43.050
+<v Speaker 1>Exactly. But
+
+01:30:43.850 --> 01:30:46.010
+<v Speaker 1>that's a very powerful query because
+
+01:30:46.410 --> 01:30:49.290
+<v Speaker 1>the throughput here is actually a value that
+
+01:30:49.290 --> 01:30:50.969
+<v Speaker 1>is inside the logline.
+
+01:30:51.050 --> 01:30:53.370
+<v Speaker 1>And I can aggregate all the value of
+
+01:30:53.370 --> 01:30:56.245
+<v Speaker 1>the throughput that exists in my logline to
+
+01:30:56.245 --> 01:30:58.165
+<v Speaker 1>see, you know, over time how it looks
+
+01:30:58.165 --> 01:30:59.445
+<v Speaker 1>like, like the average.
+
+01:31:00.005 --> 01:31:01.364
+<v Speaker 1>So this is in bytes.
+
+01:31:02.165 --> 01:31:04.245
+<v Speaker 1>But that that can be very useful when
+
+01:31:04.245 --> 01:31:05.685
+<v Speaker 1>you're looking at duration if you want to
+
+01:31:05.685 --> 01:31:07.285
+<v Speaker 1>do you can even do a quantile on
+
+01:31:07.285 --> 01:31:10.900
+<v Speaker 1>top of this. So things about NGINX
+
+01:31:11.620 --> 01:31:13.300
+<v Speaker 1>logline that outputs
+
+01:31:13.300 --> 01:31:15.140
+<v Speaker 1>the duration in seconds,
+
+01:31:15.780 --> 01:31:17.780
+<v Speaker 1>and you can get the average
+
+01:31:17.940 --> 01:31:21.620
+<v Speaker 1>latency in seconds without having to instrument promoters,
+
+01:31:21.620 --> 01:31:22.820
+<v Speaker 1>right, just with the logs.
+
+01:31:23.495 --> 01:31:25.495
+<v Speaker 0>By using the quantile, I can see what
+
+01:31:25.495 --> 01:31:26.535
+<v Speaker 0>are 99%
+
+01:31:26.535 --> 01:31:29.495
+<v Speaker 0>of my requests returning under to see when
+
+01:31:29.495 --> 01:31:31.655
+<v Speaker 0>I've got major performance problems or
+
+01:31:32.935 --> 01:31:34.855
+<v Speaker 0>Yeah. Problems in general, I guess, to be
+
+01:31:34.855 --> 01:31:36.135
+<v Speaker 0>fair. Okay. Yeah.
+
+01:31:37.369 --> 01:31:39.449
+<v Speaker 0>Very very cool. There's
+
+01:31:39.449 --> 01:31:41.610
+<v Speaker 0>a lot to cover. Well, look. There's
+
+01:31:42.409 --> 01:31:44.489
+<v Speaker 1>Yeah. There's a lot. Yeah.
+
+01:31:44.969 --> 01:31:46.969
+<v Speaker 0>But I could I could already see where
+
+01:31:46.969 --> 01:31:49.369
+<v Speaker 0>it fits in to my to my stack.
+
+01:31:49.625 --> 01:31:50.985
+<v Speaker 0>What I wanna be doing with it. Getting
+
+01:31:50.985 --> 01:31:53.304
+<v Speaker 0>all those logs from my containers into it.
+
+01:31:53.304 --> 01:31:56.264
+<v Speaker 0>The ability to work with both logs
+
+01:31:56.505 --> 01:31:58.745
+<v Speaker 0>and aggregations of them into metrics, I think
+
+01:31:58.745 --> 01:32:00.905
+<v Speaker 0>is is almost a superpower. I love being
+
+01:32:00.905 --> 01:32:02.824
+<v Speaker 0>able to have that side by side and
+
+01:32:02.824 --> 01:32:05.065
+<v Speaker 0>a graph on a dashboard and really help
+
+01:32:05.310 --> 01:32:06.429
+<v Speaker 0>just increase
+
+01:32:06.830 --> 01:32:09.070
+<v Speaker 0>that, you know, understanding I have of all
+
+01:32:09.070 --> 01:32:12.030
+<v Speaker 0>my systems. So yeah. Yeah. Awesome. Very cool.
+
+01:32:12.030 --> 01:32:13.630
+<v Speaker 0>Thank you for for coming on and sharing
+
+01:32:13.630 --> 01:32:14.670
+<v Speaker 0>that with us today.
+
+01:32:15.230 --> 01:32:16.830
+<v Speaker 1>Yeah. I think that we did we did
+
+01:32:16.830 --> 01:32:19.390
+<v Speaker 1>good. I was expecting more
+
+01:32:18.785 --> 01:32:20.945
+<v Speaker 1>more issues along the way, but you did
+
+01:32:20.945 --> 01:32:22.864
+<v Speaker 1>well with your community skills.
+
+01:32:23.025 --> 01:32:23.505
+<v Speaker 0>Yeah.
+
+01:32:24.065 --> 01:32:26.465
+<v Speaker 0>Well, you know, you rave it off all
+
+01:32:26.465 --> 01:32:29.105
+<v Speaker 0>of those queries definitely kept things running smooth,
+
+01:32:29.105 --> 01:32:30.705
+<v Speaker 0>so I definitely appreciate that.
+
+01:32:31.185 --> 01:32:33.150
+<v Speaker 0>Although, we'll need to work out what happened
+
+01:32:33.150 --> 01:32:35.230
+<v Speaker 0>with that little magic equals regex we had
+
+01:32:35.230 --> 01:32:36.910
+<v Speaker 0>in our labels. Yeah. I'll open an issue
+
+01:32:36.910 --> 01:32:38.510
+<v Speaker 0>for you. There you go. There's my contribution
+
+01:32:38.510 --> 01:32:39.949
+<v Speaker 0>for Nice. Nice.
+
+01:32:40.190 --> 01:32:40.989
+<v Speaker 1>Love it.
+
+01:32:41.390 --> 01:32:43.390
+<v Speaker 0>Alright. Well Thanks a lot. We we don't
+
+01:32:43.390 --> 01:32:45.070
+<v Speaker 0>have any more questions, but, you know, to
+
+01:32:45.070 --> 01:32:46.510
+<v Speaker 0>the people watching, thank you very much for
+
+01:32:46.510 --> 01:32:48.645
+<v Speaker 0>for tuning in, and I hope you can
+
+01:32:48.645 --> 01:32:50.645
+<v Speaker 0>see the power and flexibility of Loki. I
+
+01:32:50.645 --> 01:32:52.405
+<v Speaker 0>hope you get it deployed to your systems.
+
+01:32:52.645 --> 01:32:54.885
+<v Speaker 0>Feel free to ask any questions on the
+
+01:32:54.885 --> 01:32:56.724
+<v Speaker 0>YouTube chat and the Discord or reach out
+
+01:32:56.724 --> 01:32:58.085
+<v Speaker 0>to us on Twitter, and we'll do our
+
+01:32:58.085 --> 01:32:58.724
+<v Speaker 0>best to help you out.
+
+01:32:59.540 --> 01:33:01.460
+<v Speaker 0>Sarah, thank you for joining me again. It
+
+01:33:01.460 --> 01:33:04.020
+<v Speaker 0>was great just to go through this. You
+
+01:33:04.020 --> 01:33:05.620
+<v Speaker 0>have a really good talent for just guiding
+
+01:33:05.620 --> 01:33:07.540
+<v Speaker 0>and explaining things as she goes. Thank you
+
+01:33:07.540 --> 01:33:08.739
+<v Speaker 0>for doing that. Nice.
+
+01:33:09.380 --> 01:33:10.900
+<v Speaker 1>Nice day. Thank you for having me. It
+
+01:33:10.900 --> 01:33:12.900
+<v Speaker 1>was very nice. I enjoyed it. Alright. Have
+
+01:33:12.900 --> 01:33:14.100
+<v Speaker 0>a great day. I'll speak to you soon.
+
+01:33:14.100 --> 01:33:15.994
+<v Speaker 0>Bye. Thank you. Bye.

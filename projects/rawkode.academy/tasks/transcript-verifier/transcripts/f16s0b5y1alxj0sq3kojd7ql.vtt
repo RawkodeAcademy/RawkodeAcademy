@@ -1,0 +1,6992 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: e182a8d8-0080-409f-a0e5-54bcfdce4cfe
+Created: 2025-04-29T17:17:24.449Z
+Duration: 5204.562
+Channels: 1
+
+00:01:01.840 --> 00:01:04.959
+<v Speaker 0>Hello, and welcome to today's episode of Rawkode
+
+00:01:04.959 --> 00:01:07.165
+<v Speaker 0>Live at the Rawkode Academy. I am of
+
+00:01:07.165 --> 00:01:08.845
+<v Speaker 0>course your host, Rawkode.
+
+00:01:09.244 --> 00:01:11.165
+<v Speaker 0>Today we're doing something a little bit different.
+
+00:01:11.165 --> 00:01:12.125
+<v Speaker 0>It's clustered,
+
+00:01:12.125 --> 00:01:13.165
+<v Speaker 0>but not clustered.
+
+00:01:13.325 --> 00:01:14.765
+<v Speaker 0>We are taking a look at the change
+
+00:01:14.765 --> 00:01:17.325
+<v Speaker 0>logs, real production infrastructure
+
+00:01:17.325 --> 00:01:18.924
+<v Speaker 0>running on Kubernetes,
+
+00:01:19.350 --> 00:01:21.750
+<v Speaker 0>which has a small networking issue that we
+
+00:01:21.750 --> 00:01:23.590
+<v Speaker 0>are gonna attempt to debug and fix live
+
+00:01:23.590 --> 00:01:24.550
+<v Speaker 0>for you today.
+
+00:01:25.270 --> 00:01:28.070
+<v Speaker 0>Please remember to subscribe, click the bell, share,
+
+00:01:28.070 --> 00:01:30.070
+<v Speaker 0>like, comment on all of these videos. It
+
+00:01:30.070 --> 00:01:32.230
+<v Speaker 0>helps the YouTube algorithm be nice to me
+
+00:01:32.230 --> 00:01:33.270
+<v Speaker 0>and make
+
+00:01:33.510 --> 00:01:35.575
+<v Speaker 0>these videos discoverable to other people.
+
+00:01:36.215 --> 00:01:38.375
+<v Speaker 0>We also have some membership options available if
+
+00:01:38.375 --> 00:01:40.615
+<v Speaker 0>you wish to support the Academy. They range
+
+00:01:40.615 --> 00:01:41.975
+<v Speaker 0>from a dollar a month to a little
+
+00:01:41.975 --> 00:01:44.135
+<v Speaker 0>bit more, which gets you access to private
+
+00:01:44.135 --> 00:01:46.455
+<v Speaker 0>and featured videos and courses which are currently
+
+00:01:46.455 --> 00:01:47.575
+<v Speaker 0>being worked on now.
+
+00:01:48.510 --> 00:01:50.750
+<v Speaker 0>And we have a rather active Discord server.
+
+00:01:50.750 --> 00:01:53.150
+<v Speaker 0>There's almost 600 people in there now talking
+
+00:01:53.150 --> 00:01:55.710
+<v Speaker 0>all things, cloud native, Kubernetes, EPPF,
+
+00:01:55.710 --> 00:01:57.150
+<v Speaker 0>and everything in between.
+
+00:01:57.470 --> 00:01:58.909
+<v Speaker 0>There's a lot of excitement about the new
+
+00:01:58.909 --> 00:02:01.070
+<v Speaker 0>Dune movie and Matrix movie, hence, I'm wearing
+
+00:02:01.070 --> 00:02:01.950
+<v Speaker 0>this t shirt today.
+
+00:02:03.015 --> 00:02:05.015
+<v Speaker 0>Alright. That is the housekeeping over. We are
+
+00:02:05.015 --> 00:02:07.495
+<v Speaker 0>gonna say hello to today's wonderful guests.
+
+00:02:08.055 --> 00:02:09.975
+<v Speaker 0>Hello, Judd Art. Hello, Marcus. How are you
+
+00:02:09.975 --> 00:02:10.775
+<v Speaker 0>both today?
+
+00:02:11.735 --> 00:02:14.375
+<v Speaker 1>We're good. I'm good. Marcus looks good to
+
+00:02:14.375 --> 00:02:16.550
+<v Speaker 1>me as well. So We're good. I'm wearing
+
+00:02:16.550 --> 00:02:19.590
+<v Speaker 2>a change log shirt. Oh, nice. I'm just
+
+00:02:19.590 --> 00:02:21.750
+<v Speaker 1>a weird fish. I'm still waiting for mine.
+
+00:02:23.590 --> 00:02:26.069
+<v Speaker 0>Alright. Can for people that are not familiar
+
+00:02:26.069 --> 00:02:27.350
+<v Speaker 0>with either of you, can we start off
+
+00:02:27.350 --> 00:02:29.350
+<v Speaker 0>with a little round of introductions? Gerard, would
+
+00:02:29.350 --> 00:02:30.310
+<v Speaker 0>you be happy to go first, please?
+
+00:02:31.185 --> 00:02:34.785
+<v Speaker 1>Yes. Hey. I'm Gerhard. How's it going? I'm
+
+00:02:34.785 --> 00:02:36.945
+<v Speaker 1>the host of the Ship It podcast on
+
+00:02:36.945 --> 00:02:38.225
+<v Speaker 1>changelog.com.
+
+00:02:38.305 --> 00:02:40.705
+<v Speaker 1>And episode 18 just came out where I
+
+00:02:40.705 --> 00:02:43.345
+<v Speaker 1>had David and Marcus. We're discussing bare metal
+
+00:02:43.345 --> 00:02:44.385
+<v Speaker 1>meets Kubernetes.
+
+00:02:44.705 --> 00:02:47.510
+<v Speaker 1>So it was only, I think, fair and
+
+00:02:47.510 --> 00:02:50.870
+<v Speaker 1>good to return the favor and do Rawkode
+
+00:02:50.870 --> 00:02:52.630
+<v Speaker 1>live. There's a real problem.
+
+00:02:53.110 --> 00:02:55.670
+<v Speaker 1>David and Marcus were curious,
+
+00:02:55.990 --> 00:02:58.230
+<v Speaker 1>which I really liked. And today, we're going
+
+00:02:58.230 --> 00:02:59.990
+<v Speaker 1>to try and debug it to see what
+
+00:02:59.990 --> 00:03:01.750
+<v Speaker 1>is the problem and how can you fix
+
+00:03:01.750 --> 00:03:01.910
+<v Speaker 1>it.
+
+00:03:03.004 --> 00:03:05.085
+<v Speaker 0>Awesome. Thank you very much. And Marcus?
+
+00:03:06.125 --> 00:03:08.205
+<v Speaker 2>Yeah. Hi. I'm
+
+00:03:08.205 --> 00:03:10.925
+<v Speaker 2>at Equinix Metal. I work on all sorts
+
+00:03:10.925 --> 00:03:11.965
+<v Speaker 2>of integrations,
+
+00:03:12.045 --> 00:03:12.605
+<v Speaker 2>and
+
+00:03:13.485 --> 00:03:14.205
+<v Speaker 2>I'm
+
+00:03:14.990 --> 00:03:15.710
+<v Speaker 2>curious,
+
+00:03:15.950 --> 00:03:18.430
+<v Speaker 2>about the problem. I'm curious about how Changelog
+
+00:03:18.430 --> 00:03:19.310
+<v Speaker 2>keeps things,
+
+00:03:19.709 --> 00:03:20.350
+<v Speaker 2>running,
+
+00:03:20.670 --> 00:03:21.150
+<v Speaker 2>and
+
+00:03:21.709 --> 00:03:22.990
+<v Speaker 2>I'm really
+
+00:03:23.069 --> 00:03:24.030
+<v Speaker 2>dreading
+
+00:03:24.430 --> 00:03:26.670
+<v Speaker 2>just as in a clustered episode kind of
+
+00:03:26.670 --> 00:03:28.590
+<v Speaker 2>dreading trying to figure out what what went
+
+00:03:28.590 --> 00:03:28.830
+<v Speaker 2>wrong.
+
+00:03:29.615 --> 00:03:32.334
+<v Speaker 0>Yeah. I will I be very disappointed if
+
+00:03:32.334 --> 00:03:34.495
+<v Speaker 1>we don't take production now down.
+
+00:03:34.655 --> 00:03:36.415
+<v Speaker 1>Right? So Fridays, you shouldn't deploy on a
+
+00:03:36.415 --> 00:03:39.215
+<v Speaker 1>Friday. You absolutely should every day. Right? Deploy
+
+00:03:39.375 --> 00:03:41.855
+<v Speaker 1>be deploying multiple times a day, please. Ship
+
+00:03:41.855 --> 00:03:44.500
+<v Speaker 1>ship it. Keep shipping it. Not only that,
+
+00:03:44.500 --> 00:03:46.819
+<v Speaker 1>but Friday is a great day to break
+
+00:03:46.819 --> 00:03:49.700
+<v Speaker 1>things and just see how reliable your system
+
+00:03:49.700 --> 00:03:51.459
+<v Speaker 1>is. Because if you wanna take Saturday and
+
+00:03:51.459 --> 00:03:53.860
+<v Speaker 1>Sunday off, you better be sure that everything
+
+00:03:53.860 --> 00:03:54.660
+<v Speaker 1>works the way it should.
+
+00:03:55.915 --> 00:03:57.515
+<v Speaker 0>Well, I do have a knack for breaking
+
+00:03:57.515 --> 00:03:59.114
+<v Speaker 0>things, but I'll I'll do my best to
+
+00:03:59.114 --> 00:04:00.155
+<v Speaker 0>say, I promise.
+
+00:04:00.635 --> 00:04:02.314
+<v Speaker 0>Now this is really cool. We've never done
+
+00:04:02.314 --> 00:04:03.755
+<v Speaker 0>anything like this before.
+
+00:04:04.314 --> 00:04:06.395
+<v Speaker 0>We obviously have clustered where we have
+
+00:04:06.795 --> 00:04:09.355
+<v Speaker 0>very terrible people doing very terrible things to
+
+00:04:09.355 --> 00:04:11.670
+<v Speaker 0>all of our clusters, and it's also
+
+00:04:11.830 --> 00:04:12.230
+<v Speaker 0>massive
+
+00:04:12.710 --> 00:04:15.670
+<v Speaker 0>almost masochistic trying to fix it. And
+
+00:04:16.230 --> 00:04:17.750
+<v Speaker 0>I don't know what I'm dreading more. Like,
+
+00:04:17.750 --> 00:04:19.990
+<v Speaker 0>Marcus, like, clustered, I know people are intentionally
+
+00:04:19.990 --> 00:04:22.470
+<v Speaker 0>breaking up, real world problems are
+
+00:04:22.805 --> 00:04:24.405
+<v Speaker 0>are debugging
+
+00:04:24.645 --> 00:04:26.405
+<v Speaker 0>like, there's nobody to give us answers. There's
+
+00:04:26.405 --> 00:04:28.805
+<v Speaker 0>no hints. That that's what worries me. But
+
+00:04:28.805 --> 00:04:29.925
+<v Speaker 0>I I think it's gonna be a whole
+
+00:04:29.925 --> 00:04:31.925
+<v Speaker 0>lot of fun, and you two are two
+
+00:04:31.925 --> 00:04:33.205
+<v Speaker 0>of the smartest people that I know. So
+
+00:04:33.205 --> 00:04:34.805
+<v Speaker 0>I know that we're gonna smash this today.
+
+00:04:35.800 --> 00:04:37.480
+<v Speaker 0>No. Thank you. The pressure on both of
+
+00:04:37.480 --> 00:04:39.080
+<v Speaker 0>you right now. Thank you. I'm just walking
+
+00:04:39.080 --> 00:04:40.600
+<v Speaker 1>away. Yeah. I was just gonna say thank
+
+00:04:40.600 --> 00:04:41.480
+<v Speaker 1>you for the pressure.
+
+00:04:43.480 --> 00:04:47.640
+<v Speaker 0>Alright. Okay. So we have your screen shared.
+
+00:04:48.095 --> 00:04:48.815
+<v Speaker 0>Mhmm.
+
+00:04:49.455 --> 00:04:52.095
+<v Speaker 0>Gerard Hart. So I'm gonna pop that up.
+
+00:04:52.575 --> 00:04:54.815
+<v Speaker 0>There's our episode that we recorded.
+
+00:04:55.775 --> 00:04:57.135
+<v Speaker 0>Was a whole lot of Thank you so
+
+00:04:57.135 --> 00:04:58.895
+<v Speaker 0>much for inviting us on. I really enjoyed
+
+00:04:58.895 --> 00:05:00.975
+<v Speaker 0>that session. And it went live yesterday. Is
+
+00:05:00.975 --> 00:05:01.295
+<v Speaker 0>that correct?
+
+00:05:02.100 --> 00:05:03.620
+<v Speaker 1>It is. Yes. So
+
+00:05:04.100 --> 00:05:06.419
+<v Speaker 1>in my mind, first of all, we have
+
+00:05:06.419 --> 00:05:07.860
+<v Speaker 1>to top that fun. It has to be
+
+00:05:07.860 --> 00:05:09.380
+<v Speaker 1>more fun today, and I hope it will
+
+00:05:09.380 --> 00:05:11.699
+<v Speaker 1>be. Because like a real problem, anything can
+
+00:05:11.699 --> 00:05:14.260
+<v Speaker 1>happen. Again, would be disappointed if production doesn't
+
+00:05:14.260 --> 00:05:15.860
+<v Speaker 1>go down. So that's one of my goals,
+
+00:05:16.065 --> 00:05:18.145
+<v Speaker 1>to take production down. Right? You don't hear
+
+00:05:18.145 --> 00:05:19.905
+<v Speaker 1>this every day. And
+
+00:05:20.465 --> 00:05:22.625
+<v Speaker 1>proof. Right? Here it is. So I was
+
+00:05:22.625 --> 00:05:23.985
+<v Speaker 1>really looking forward to that. It's in the
+
+00:05:23.985 --> 00:05:24.705
+<v Speaker 1>show notes.
+
+00:05:25.585 --> 00:05:29.345
+<v Speaker 1>Yeah. Really excited to see what happens, literally.
+
+00:05:29.345 --> 00:05:30.225
+<v Speaker 1>So let's see what happens.
+
+00:05:31.430 --> 00:05:33.270
+<v Speaker 0>Alright. And just like that, I I I
+
+00:05:33.590 --> 00:05:35.590
+<v Speaker 2>listened to the whole thing before I retweeted
+
+00:05:35.590 --> 00:05:36.710
+<v Speaker 2>it. I just wanna make sure I didn't
+
+00:05:36.710 --> 00:05:38.230
+<v Speaker 2>say anything that I would regret.
+
+00:05:39.910 --> 00:05:41.350
+<v Speaker 1>Okay. And did you?
+
+00:05:42.230 --> 00:05:45.205
+<v Speaker 2>No. No. My, audio my kid said I
+
+00:05:45.205 --> 00:05:47.285
+<v Speaker 2>sounded like I was, talking from a tin
+
+00:05:47.285 --> 00:05:49.365
+<v Speaker 2>can in space, so I'm on a different
+
+00:05:49.365 --> 00:05:50.405
+<v Speaker 2>microphone today.
+
+00:05:51.125 --> 00:05:53.045
+<v Speaker 1>Right. Well, I was gonna say, why does
+
+00:05:53.045 --> 00:05:54.885
+<v Speaker 1>it sound better? Because it sounds better.
+
+00:05:56.000 --> 00:05:57.440
+<v Speaker 0>What what I thought was great about that
+
+00:05:57.440 --> 00:06:00.400
+<v Speaker 0>episode is I sounded terrible. And anyone who's
+
+00:06:00.400 --> 00:06:02.400
+<v Speaker 0>seen this anyone who's seen my show before
+
+00:06:02.400 --> 00:06:04.400
+<v Speaker 0>knows that my audio quality ranges
+
+00:06:04.800 --> 00:06:06.400
+<v Speaker 0>are all over the place. Sometimes it can
+
+00:06:06.400 --> 00:06:09.085
+<v Speaker 0>be okay. Sometimes it's absolutely dreadful. And you
+
+00:06:09.085 --> 00:06:10.365
+<v Speaker 0>actually spent a bit of time with me
+
+00:06:10.365 --> 00:06:11.885
+<v Speaker 0>before we went live and actually walked me
+
+00:06:11.885 --> 00:06:14.285
+<v Speaker 0>through fixing that, and I'm eternally grateful for
+
+00:06:14.285 --> 00:06:15.965
+<v Speaker 0>that as well. And my audio over the
+
+00:06:15.965 --> 00:06:17.325
+<v Speaker 0>last couple of weeks has been
+
+00:06:17.805 --> 00:06:18.605
+<v Speaker 0>astoundingly
+
+00:06:18.605 --> 00:06:19.325
+<v Speaker 0>better.
+
+00:06:19.805 --> 00:06:20.285
+<v Speaker 0>So
+
+00:06:20.765 --> 00:06:22.285
+<v Speaker 1>I know. I actually, I did a favor
+
+00:06:22.285 --> 00:06:24.340
+<v Speaker 1>to myself because I listened to your videos,
+
+00:06:24.340 --> 00:06:25.940
+<v Speaker 1>and I follow your videos. And I thought,
+
+00:06:25.940 --> 00:06:27.380
+<v Speaker 1>no. I just have to fix that.
+
+00:06:28.100 --> 00:06:29.860
+<v Speaker 1>So I've been enjoying them a lot more.
+
+00:06:29.860 --> 00:06:32.020
+<v Speaker 1>So, yes, you're welcome, and thank you.
+
+00:06:32.900 --> 00:06:33.460
+<v Speaker 0>Awesome.
+
+00:06:33.780 --> 00:06:36.020
+<v Speaker 0>So could we maybe get are you happy
+
+00:06:36.020 --> 00:06:38.194
+<v Speaker 0>to give us a bit of an overview
+
+00:06:38.194 --> 00:06:41.555
+<v Speaker 0>on what does the changelog production infrastructure look
+
+00:06:41.555 --> 00:06:43.635
+<v Speaker 0>like? What what have we got running here?
+
+00:06:43.875 --> 00:06:46.194
+<v Speaker 1>Right. So I spent quite a bit of
+
+00:06:46.194 --> 00:06:49.074
+<v Speaker 1>time with metrics, with logs, with graphs, with
+
+00:06:49.074 --> 00:06:51.520
+<v Speaker 1>that sort of a thing. And I knew
+
+00:06:51.520 --> 00:06:53.280
+<v Speaker 1>that you wanted me to prepare some slides,
+
+00:06:53.280 --> 00:06:55.520
+<v Speaker 1>so I did. The slides are actually Grafana
+
+00:06:55.520 --> 00:06:56.320
+<v Speaker 1>dashboard,
+
+00:06:56.639 --> 00:06:58.160
+<v Speaker 1>Rawkode Grafana Cloud.
+
+00:06:58.400 --> 00:07:00.160
+<v Speaker 1>So, yeah, this is something new. Haven't done
+
+00:07:00.160 --> 00:07:02.815
+<v Speaker 1>it like this before, being like a semi
+
+00:07:02.815 --> 00:07:05.775
+<v Speaker 1>slideshow in in the Grafana dashboard, but that's
+
+00:07:05.775 --> 00:07:06.815
+<v Speaker 1>exactly what this is.
+
+00:07:07.295 --> 00:07:07.855
+<v Speaker 1>So
+
+00:07:08.415 --> 00:07:10.415
+<v Speaker 1>a link to the to the actual what's
+
+00:07:10.415 --> 00:07:12.175
+<v Speaker 1>happening right now for people to follow the
+
+00:07:12.175 --> 00:07:13.055
+<v Speaker 1>follow-up.
+
+00:07:13.615 --> 00:07:16.495
+<v Speaker 1>The changelog application infrastructure setup, everything is open
+
+00:07:16.495 --> 00:07:18.810
+<v Speaker 1>source. So if I click that, go to
+
+00:07:18.810 --> 00:07:19.610
+<v Speaker 1>GitHub,
+
+00:07:20.009 --> 00:07:23.289
+<v Speaker 1>everything is there. So application code twenty twenty
+
+00:07:23.289 --> 00:07:25.050
+<v Speaker 1>one, this is the whole setup.
+
+00:07:25.210 --> 00:07:28.169
+<v Speaker 1>There's some make files, various things that we
+
+00:07:28.169 --> 00:07:30.169
+<v Speaker 1>use, and we'll be looking at what it
+
+00:07:30.169 --> 00:07:31.370
+<v Speaker 1>looks like once it's configured.
+
+00:07:32.045 --> 00:07:33.565
+<v Speaker 1>But I would like to come back and
+
+00:07:33.565 --> 00:07:35.645
+<v Speaker 1>look at this little thing.
+
+00:07:35.965 --> 00:07:39.645
+<v Speaker 1>So this is how everything works from the
+
+00:07:39.645 --> 00:07:42.285
+<v Speaker 1>request coming in to changelog.com.
+
+00:07:42.445 --> 00:07:44.525
+<v Speaker 1>All those requests are served by Fastly,
+
+00:07:46.050 --> 00:07:47.009
+<v Speaker 1>CDN,
+
+00:07:47.569 --> 00:07:50.210
+<v Speaker 1>they serve a lot of traffic. And as
+
+00:07:50.210 --> 00:07:52.530
+<v Speaker 1>a result, our back ends, they don't see
+
+00:07:52.530 --> 00:07:54.289
+<v Speaker 1>a lot of it. So 90%,
+
+00:07:54.289 --> 00:07:56.050
+<v Speaker 1>ninety five %, it's all cached.
+
+00:07:56.530 --> 00:07:57.169
+<v Speaker 1>So
+
+00:07:57.955 --> 00:08:00.755
+<v Speaker 1>most requests are served by CDN, by Fastly.
+
+00:08:00.755 --> 00:08:02.595
+<v Speaker 1>Then we have a Linode Node Balancer
+
+00:08:02.595 --> 00:08:04.355
+<v Speaker 1>where the requests come through.
+
+00:08:04.835 --> 00:08:07.475
+<v Speaker 1>And this is just a TCP pass through,
+
+00:08:07.475 --> 00:08:10.115
+<v Speaker 1>so there's no TLS termination, nothing like that.
+
+00:08:10.354 --> 00:08:11.860
+<v Speaker 1>And This is where the fun starts. This
+
+00:08:11.860 --> 00:08:13.220
+<v Speaker 1>is where we'll be focusing on. There's a
+
+00:08:13.220 --> 00:08:14.020
+<v Speaker 1>Kubernetes,
+
+00:08:14.020 --> 00:08:16.660
+<v Speaker 1>LK managed Kubernetes. It's a single node. Ask
+
+00:08:16.660 --> 00:08:17.940
+<v Speaker 1>me all about it. There's a very good
+
+00:08:17.940 --> 00:08:19.460
+<v Speaker 1>reason why it is a single node.
+
+00:08:20.100 --> 00:08:21.940
+<v Speaker 1>Behind that, we have Ingress NGINX,
+
+00:08:22.675 --> 00:08:24.275
+<v Speaker 1>Phoenix, and PostgreSQL.
+
+00:08:24.275 --> 00:08:26.675
+<v Speaker 1>So it's a typical three tier app. It's
+
+00:08:26.675 --> 00:08:27.635
+<v Speaker 1>monolithic.
+
+00:08:27.794 --> 00:08:30.514
+<v Speaker 1>Ingress NGINX is the web layer. Those requests
+
+00:08:30.514 --> 00:08:32.835
+<v Speaker 1>go to Phoenix, is like an application.
+
+00:08:33.075 --> 00:08:35.955
+<v Speaker 1>That application has a volume to it's using
+
+00:08:35.955 --> 00:08:37.554
+<v Speaker 1>like a local path, local storage.
+
+00:08:38.360 --> 00:08:40.039
+<v Speaker 1>The persistent volume,
+
+00:08:40.200 --> 00:08:42.760
+<v Speaker 1>that's the uploads where all the m p
+
+00:08:42.760 --> 00:08:45.640
+<v Speaker 1>threes are stored, all the media stored, thumbnails,
+
+00:08:45.640 --> 00:08:46.520
+<v Speaker 1>all that stuff.
+
+00:08:47.000 --> 00:08:49.560
+<v Speaker 1>And then we have PostgreSQL database,
+
+00:08:49.640 --> 00:08:51.720
+<v Speaker 1>which also has a local path database
+
+00:08:52.125 --> 00:08:53.005
+<v Speaker 1>volume,
+
+00:08:53.805 --> 00:08:56.205
+<v Speaker 1>which stores all the data. So fairly simple.
+
+00:08:56.525 --> 00:08:57.645
+<v Speaker 1>The reason why
+
+00:08:58.205 --> 00:09:00.365
+<v Speaker 1>this is okay is because and this is
+
+00:09:00.365 --> 00:09:02.125
+<v Speaker 1>the reason why, again, it's okay to take
+
+00:09:02.125 --> 00:09:05.325
+<v Speaker 1>production down because even if it goes down
+
+00:09:05.565 --> 00:09:07.645
+<v Speaker 1>fastly, we'll keep serving stale content.
+
+00:09:08.579 --> 00:09:09.140
+<v Speaker 1>So
+
+00:09:09.620 --> 00:09:12.339
+<v Speaker 1>all requests will be cached, and they keep
+
+00:09:12.339 --> 00:09:14.660
+<v Speaker 1>getting cached all the time, by the way.
+
+00:09:14.820 --> 00:09:16.980
+<v Speaker 1>And if the back end cannot the origin,
+
+00:09:16.980 --> 00:09:18.980
+<v Speaker 1>as it's called, cannot be contacted, the request
+
+00:09:18.980 --> 00:09:20.500
+<v Speaker 1>will be just served from Fastly.
+
+00:09:20.660 --> 00:09:20.899
+<v Speaker 1>So,
+
+00:09:21.555 --> 00:09:23.154
+<v Speaker 1>again, if this all works the way it
+
+00:09:23.154 --> 00:09:25.075
+<v Speaker 1>should, if we take production down,
+
+00:09:25.555 --> 00:09:28.675
+<v Speaker 1>majority of the users, 95% will be unaffected.
+
+00:09:28.835 --> 00:09:30.274
+<v Speaker 1>It's only the ones that are logged in
+
+00:09:30.274 --> 00:09:32.274
+<v Speaker 1>or, you know, stuff like that. So if
+
+00:09:32.274 --> 00:09:34.115
+<v Speaker 1>you are logged in, by the way, you'll
+
+00:09:34.115 --> 00:09:36.550
+<v Speaker 1>know why it doesn't work. So using private
+
+00:09:36.550 --> 00:09:38.150
+<v Speaker 1>browsing always fixes it.
+
+00:09:38.710 --> 00:09:40.310
+<v Speaker 1>As long as there are no cookies, you're
+
+00:09:40.310 --> 00:09:41.030
+<v Speaker 1>good to go.
+
+00:09:41.750 --> 00:09:45.190
+<v Speaker 0>Alright. Well, I was so confident coming into
+
+00:09:45.190 --> 00:09:47.190
+<v Speaker 0>this session that Kube proxy was gonna be
+
+00:09:47.190 --> 00:09:49.350
+<v Speaker 0>the culprit. But it's a single node cluster,
+
+00:09:49.350 --> 00:09:51.110
+<v Speaker 0>so Kube proxy is not even doing anything.
+
+00:09:51.405 --> 00:09:54.045
+<v Speaker 0>So that that that rules that out completely.
+
+00:09:55.005 --> 00:09:55.645
+<v Speaker 1>Okay.
+
+00:09:56.285 --> 00:09:56.765
+<v Speaker 0>So
+
+00:09:57.165 --> 00:09:59.805
+<v Speaker 2>What what were some of the reasons why
+
+00:09:59.805 --> 00:10:01.405
+<v Speaker 2>you went to the single node? So you
+
+00:10:01.405 --> 00:10:02.445
+<v Speaker 2>hinted at it
+
+00:10:03.085 --> 00:10:04.845
+<v Speaker 2>in ship at the other day and and
+
+00:10:05.000 --> 00:10:06.279
+<v Speaker 2>again. So,
+
+00:10:06.600 --> 00:10:09.320
+<v Speaker 2>yeah, you said ask me for the details,
+
+00:10:09.320 --> 00:10:11.320
+<v Speaker 2>so I'm asking you. You're asking me. Great.
+
+00:10:11.320 --> 00:10:13.080
+<v Speaker 1>Okay. I was expecting that. Thank you.
+
+00:10:13.639 --> 00:10:14.200
+<v Speaker 1>So
+
+00:10:14.920 --> 00:10:17.320
+<v Speaker 1>before we went to single node, we used
+
+00:10:17.525 --> 00:10:20.085
+<v Speaker 1>a multi node Kubernetes setup, right, as it's
+
+00:10:20.085 --> 00:10:21.525
+<v Speaker 1>recommended three nodes.
+
+00:10:22.565 --> 00:10:25.845
+<v Speaker 1>What we have found out is various issues
+
+00:10:25.845 --> 00:10:29.765
+<v Speaker 1>regarding volumes attaching and reattaching, so detaching and
+
+00:10:29.765 --> 00:10:30.245
+<v Speaker 1>reattaching.
+
+00:10:30.630 --> 00:10:33.350
+<v Speaker 1>So let's say if a specific workload would
+
+00:10:33.350 --> 00:10:36.070
+<v Speaker 1>move around, we would have increased downtime because
+
+00:10:36.070 --> 00:10:36.950
+<v Speaker 1>volumes
+
+00:10:37.030 --> 00:10:39.430
+<v Speaker 1>failed to detach correctly and reattach.
+
+00:10:39.510 --> 00:10:40.630
+<v Speaker 1>So
+
+00:10:40.790 --> 00:10:43.030
+<v Speaker 1>I know that these issues were like early
+
+00:10:43.030 --> 00:10:45.590
+<v Speaker 1>days, like beta time on LKE, and things
+
+00:10:45.590 --> 00:10:46.550
+<v Speaker 1>have been fixed since.
+
+00:10:47.565 --> 00:10:48.365
+<v Speaker 1>However,
+
+00:10:48.605 --> 00:10:51.165
+<v Speaker 1>even after they were fixed, we were using
+
+00:10:52.845 --> 00:10:54.365
+<v Speaker 1>clustered PostgreSQL.
+
+00:10:55.005 --> 00:10:56.524
+<v Speaker 1>And for whatever reason,
+
+00:10:57.485 --> 00:10:59.964
+<v Speaker 1>the reader or, like, the replica, shall I
+
+00:10:59.964 --> 00:11:01.404
+<v Speaker 1>say, would stop
+
+00:11:02.630 --> 00:11:03.510
+<v Speaker 1>replicating.
+
+00:11:04.230 --> 00:11:05.030
+<v Speaker 1>So then
+
+00:11:05.670 --> 00:11:06.790
+<v Speaker 1>the primary
+
+00:11:07.270 --> 00:11:08.390
+<v Speaker 1>PostgreSQL,
+
+00:11:08.390 --> 00:11:10.390
+<v Speaker 1>the write ahead log would fill up. It
+
+00:11:10.390 --> 00:11:11.750
+<v Speaker 1>would fill up the disk.
+
+00:11:11.990 --> 00:11:14.070
+<v Speaker 1>It would crash eventually, and you couldn't restart
+
+00:11:14.070 --> 00:11:15.110
+<v Speaker 1>because disk was full.
+
+00:11:16.115 --> 00:11:18.035
+<v Speaker 1>So try resizing the volume.
+
+00:11:18.274 --> 00:11:20.755
+<v Speaker 1>Really? Okay. So, yeah, eventually you do fix
+
+00:11:20.755 --> 00:11:22.755
+<v Speaker 1>that a couple of times. But then you
+
+00:11:22.755 --> 00:11:23.315
+<v Speaker 1>wonder,
+
+00:11:23.954 --> 00:11:25.875
+<v Speaker 1>would a single node fix all of this?
+
+00:11:26.195 --> 00:11:28.274
+<v Speaker 1>And not only it fixed all the problems,
+
+00:11:29.130 --> 00:11:30.170
+<v Speaker 1>it made us
+
+00:11:30.650 --> 00:11:33.290
+<v Speaker 1>rely heavier on backups, for example,
+
+00:11:33.850 --> 00:11:36.970
+<v Speaker 1>and it simplified so many things. So
+
+00:11:37.290 --> 00:11:38.650
+<v Speaker 1>until recently,
+
+00:11:38.810 --> 00:11:42.090
+<v Speaker 1>on LKE, you couldn't get block storage backed
+
+00:11:42.090 --> 00:11:42.970
+<v Speaker 1>by SSDs,
+
+00:11:43.745 --> 00:11:46.065
+<v Speaker 1>like really fast block storage. It used to
+
+00:11:46.065 --> 00:11:48.065
+<v Speaker 1>be slow. This is a recent change. Like,
+
+00:11:48.065 --> 00:11:50.065
+<v Speaker 1>I think in the last maybe month and
+
+00:11:50.065 --> 00:11:52.305
+<v Speaker 1>only in a specific data center, this feature
+
+00:11:52.305 --> 00:11:53.185
+<v Speaker 1>is available.
+
+00:11:53.425 --> 00:11:55.024
+<v Speaker 1>But what that meant is that our database
+
+00:11:55.024 --> 00:11:55.825
+<v Speaker 1>queries were slow.
+
+00:11:56.430 --> 00:11:58.830
+<v Speaker 1>So it's crazy to have these Linode VMs
+
+00:11:58.830 --> 00:12:00.910
+<v Speaker 1>which have really fast local SSDs that you
+
+00:12:00.910 --> 00:12:03.790
+<v Speaker 1>can't use because you're attaching a persistent volume,
+
+00:12:03.790 --> 00:12:05.630
+<v Speaker 1>which is which is backed by block storage,
+
+00:12:05.630 --> 00:12:06.190
+<v Speaker 1>which is
+
+00:12:06.590 --> 00:12:08.030
+<v Speaker 1>forty, fifty times slower.
+
+00:12:08.805 --> 00:12:10.885
+<v Speaker 1>So again, we solved a lot of problems
+
+00:12:10.885 --> 00:12:13.605
+<v Speaker 1>by just going single node, use local storage,
+
+00:12:13.685 --> 00:12:16.245
+<v Speaker 1>have backups, do them often, like, every hour,
+
+00:12:17.125 --> 00:12:19.445
+<v Speaker 1>and restore. Like, we can restore really quickly
+
+00:12:19.445 --> 00:12:20.325
+<v Speaker 1>from backups.
+
+00:12:20.645 --> 00:12:21.205
+<v Speaker 1>And
+
+00:12:21.790 --> 00:12:23.630
+<v Speaker 1>I test them regularly,
+
+00:12:24.270 --> 00:12:27.150
+<v Speaker 1>but what hasn't happened yet is we haven't
+
+00:12:27.150 --> 00:12:27.870
+<v Speaker 1>gone
+
+00:12:28.590 --> 00:12:30.830
+<v Speaker 1>in a situation like in
+
+00:12:31.310 --> 00:12:33.070
+<v Speaker 1>I think since the beginning of the year,
+
+00:12:33.070 --> 00:12:34.750
+<v Speaker 1>since we switched to single node,
+
+00:12:35.070 --> 00:12:35.710
+<v Speaker 1>that
+
+00:12:36.205 --> 00:12:38.925
+<v Speaker 1>we were missing a cluster. So what I'm
+
+00:12:38.925 --> 00:12:41.485
+<v Speaker 1>saying is in practice, we tried both. And
+
+00:12:41.485 --> 00:12:44.205
+<v Speaker 1>for us, single node is more reliable,
+
+00:12:44.365 --> 00:12:45.245
+<v Speaker 1>faster,
+
+00:12:45.245 --> 00:12:47.485
+<v Speaker 1>simpler. So that's why we use that's why
+
+00:12:47.485 --> 00:12:47.964
+<v Speaker 1>we chose that.
+
+00:12:48.839 --> 00:12:50.360
+<v Speaker 0>I love that. I think,
+
+00:12:50.760 --> 00:12:53.000
+<v Speaker 0>you know, especially with everything going on with
+
+00:12:53.000 --> 00:12:55.160
+<v Speaker 0>Kubernetes and cloud native is that teams are
+
+00:12:55.160 --> 00:12:57.240
+<v Speaker 0>so quick to reach for horizontal scale to
+
+00:12:57.240 --> 00:13:00.200
+<v Speaker 0>get resiliency and redundancy when sometimes
+
+00:13:00.200 --> 00:13:02.600
+<v Speaker 0>just really getting a tight feedback loop on
+
+00:13:02.600 --> 00:13:04.654
+<v Speaker 0>backup and restore is a much more
+
+00:13:05.055 --> 00:13:07.375
+<v Speaker 0>efficient and effective way to handle this stuff.
+
+00:13:07.375 --> 00:13:08.895
+<v Speaker 0>That's really cool to hear. I like that
+
+00:13:08.895 --> 00:13:09.535
+<v Speaker 0>a lot.
+
+00:13:10.095 --> 00:13:10.735
+<v Speaker 1>Yeah.
+
+00:13:10.975 --> 00:13:11.535
+<v Speaker 1>And
+
+00:13:11.855 --> 00:13:13.214
+<v Speaker 1>one of the other things which I wanna
+
+00:13:13.214 --> 00:13:15.695
+<v Speaker 1>mention is a lot of people keep saying,
+
+00:13:15.695 --> 00:13:17.055
+<v Speaker 1>Why are you using Kubernetes? You have a
+
+00:13:17.055 --> 00:13:18.654
+<v Speaker 1>single app. It's so simple.
+
+00:13:19.280 --> 00:13:21.280
+<v Speaker 1>The reason why we use Kubernetes because we
+
+00:13:21.280 --> 00:13:23.360
+<v Speaker 1>have a couple of concerns around it, like,
+
+00:13:23.360 --> 00:13:24.160
+<v Speaker 1>for example,
+
+00:13:24.560 --> 00:13:26.720
+<v Speaker 1>generating TLS certificates and
+
+00:13:27.280 --> 00:13:30.240
+<v Speaker 1>keeping the TLS certificates in sync between
+
+00:13:30.320 --> 00:13:31.840
+<v Speaker 1>the ingress NGINX
+
+00:13:31.805 --> 00:13:33.964
+<v Speaker 1>and the CDN. So we have jobs that
+
+00:13:33.964 --> 00:13:35.644
+<v Speaker 1>we run that keep them in sync.
+
+00:13:35.964 --> 00:13:36.925
+<v Speaker 1>We have
+
+00:13:37.725 --> 00:13:40.204
+<v Speaker 1>automatic updates, which are which are just baked
+
+00:13:40.204 --> 00:13:40.764
+<v Speaker 1>in.
+
+00:13:41.005 --> 00:13:42.845
+<v Speaker 1>We can use a lot of tooling very
+
+00:13:42.845 --> 00:13:45.324
+<v Speaker 1>easily because everything is in a container. We
+
+00:13:45.060 --> 00:13:46.820
+<v Speaker 1>just pull it down. And everything is self
+
+00:13:46.820 --> 00:13:49.780
+<v Speaker 1>contained, well defined, so the ecosystem around it
+
+00:13:50.260 --> 00:13:51.460
+<v Speaker 1>makes it simpler.
+
+00:13:52.580 --> 00:13:55.060
+<v Speaker 1>And we are avoiding some of the gnarlier
+
+00:13:55.060 --> 00:13:56.180
+<v Speaker 1>problems,
+
+00:13:56.740 --> 00:13:58.180
+<v Speaker 1>multi node, big clusters,
+
+00:13:59.075 --> 00:14:01.475
+<v Speaker 1>stuff like that. So it is simple. Almost
+
+00:14:01.475 --> 00:14:04.275
+<v Speaker 1>like we're picking the good parts and maybe
+
+00:14:06.435 --> 00:14:07.075
+<v Speaker 1>not
+
+00:14:07.555 --> 00:14:09.795
+<v Speaker 1>relying on the bad parts, not
+
+00:14:09.795 --> 00:14:11.315
+<v Speaker 1>using the bad parts. I'm not sure how
+
+00:14:11.315 --> 00:14:12.779
+<v Speaker 1>to say that, but we're picking the good
+
+00:14:12.779 --> 00:14:14.060
+<v Speaker 1>parts. Let me put it that way. We're
+
+00:14:14.060 --> 00:14:16.060
+<v Speaker 1>picking the good parts. Yeah. I actually wrote
+
+00:14:16.060 --> 00:14:16.860
+<v Speaker 0>an article
+
+00:14:17.100 --> 00:14:18.540
+<v Speaker 0>in the same vein as this that was
+
+00:14:18.540 --> 00:14:20.220
+<v Speaker 0>called you may not need Kubernetes. No. You
+
+00:14:20.220 --> 00:14:22.140
+<v Speaker 0>may not require Kubernetes, but you definitely need
+
+00:14:22.140 --> 00:14:24.380
+<v Speaker 0>Kubernetes. And it's like Yeah. Your technical requirements
+
+00:14:24.380 --> 00:14:26.140
+<v Speaker 0>may not say, okay. I need all these
+
+00:14:26.140 --> 00:14:27.020
+<v Speaker 0>features of Kubernetes.
+
+00:14:27.345 --> 00:14:29.504
+<v Speaker 0>But the ecosystem and the tooling and all
+
+00:14:29.504 --> 00:14:30.944
+<v Speaker 0>of these conventions
+
+00:14:30.944 --> 00:14:32.625
+<v Speaker 0>stuff that's out there that you can take
+
+00:14:32.625 --> 00:14:35.665
+<v Speaker 0>advantage of is generally a competitive advantage for
+
+00:14:35.665 --> 00:14:36.704
+<v Speaker 0>most organizations,
+
+00:14:36.704 --> 00:14:37.985
+<v Speaker 0>even if there is a small
+
+00:14:38.305 --> 00:14:40.704
+<v Speaker 0>not a small, but maybe a significant learning
+
+00:14:40.704 --> 00:14:41.904
+<v Speaker 0>that has to happen to be able to
+
+00:14:41.904 --> 00:14:42.945
+<v Speaker 0>run Kubernetes.
+
+00:14:43.024 --> 00:14:44.170
+<v Speaker 0>But then that doesn't mean you have to
+
+00:14:44.170 --> 00:14:46.089
+<v Speaker 0>operate Kubernetes like you're doing. Like, you're using
+
+00:14:46.089 --> 00:14:48.250
+<v Speaker 0>a managed service and then just breaking the
+
+00:14:48.250 --> 00:14:50.330
+<v Speaker 0>bits of Kubernetes that you need to solve
+
+00:14:50.330 --> 00:14:52.810
+<v Speaker 0>the problems that you have. Yeah. A very
+
+00:14:52.810 --> 00:14:54.410
+<v Speaker 0>wise way of doing it. Definitely.
+
+00:14:55.130 --> 00:14:56.970
+<v Speaker 1>Also, nothing in place upgrades.
+
+00:14:58.425 --> 00:15:00.425
+<v Speaker 1>Always, like, set the new one up, restore
+
+00:15:00.425 --> 00:15:03.225
+<v Speaker 1>from backup, try it out. Yeah. Like, blue
+
+00:15:03.225 --> 00:15:07.145
+<v Speaker 1>green, everything. You using Valero for your backups?
+
+00:15:07.305 --> 00:15:10.825
+<v Speaker 0>Nope. Nope. Just standard Postgres tooling to an
+
+00:15:10.825 --> 00:15:11.785
+<v Speaker 0>s three bucket on?
+
+00:15:12.450 --> 00:15:13.810
+<v Speaker 1>I can show you how that works in
+
+00:15:13.810 --> 00:15:15.010
+<v Speaker 1>a second. I mean, do want me to
+
+00:15:15.010 --> 00:15:16.610
+<v Speaker 1>do that or show you the problem? Like,
+
+00:15:16.610 --> 00:15:18.130
+<v Speaker 1>what do you mean to do first? Yeah.
+
+00:15:18.130 --> 00:15:20.050
+<v Speaker 0>I mean, we could just have fun taking
+
+00:15:20.050 --> 00:15:21.570
+<v Speaker 0>a look at the change logs infrastructure. But
+
+00:15:21.570 --> 00:15:23.570
+<v Speaker 0>we are here on a mission, so maybe
+
+00:15:23.570 --> 00:15:24.450
+<v Speaker 0>we should
+
+00:15:25.425 --> 00:15:27.025
+<v Speaker 0>oh, no. Okay. Go for it then. Git
+
+00:15:27.025 --> 00:15:28.945
+<v Speaker 1>remote v. I mean, it'll be really quick.
+
+00:15:28.945 --> 00:15:30.465
+<v Speaker 1>So git remote v, I just I just
+
+00:15:30.465 --> 00:15:31.265
+<v Speaker 1>pulled it down.
+
+00:15:31.585 --> 00:15:33.745
+<v Speaker 1>C d twenty twenty one. That is a
+
+00:15:33.745 --> 00:15:36.465
+<v Speaker 1>directory which currently stores all the config. Where
+
+00:15:36.465 --> 00:15:38.145
+<v Speaker 1>am I? P w d. Yeah. I'm already
+
+00:15:38.145 --> 00:15:38.305
+<v Speaker 1>there.
+
+00:15:39.040 --> 00:15:41.360
+<v Speaker 1>So I have to source n. That's the
+
+00:15:41.360 --> 00:15:42.800
+<v Speaker 1>first thing. It just contains a couple of
+
+00:15:42.800 --> 00:15:45.600
+<v Speaker 1>credentials using LastPass to set my local environment
+
+00:15:45.600 --> 00:15:48.000
+<v Speaker 1>up to get me the tokens and everything
+
+00:15:48.000 --> 00:15:49.280
+<v Speaker 1>everything that I need.
+
+00:15:49.920 --> 00:15:51.920
+<v Speaker 1>And once I have that, I mean, make
+
+00:15:51.920 --> 00:15:52.720
+<v Speaker 1>targets everywhere.
+
+00:15:53.274 --> 00:15:56.154
+<v Speaker 1>But if I do make k nines n,
+
+00:15:56.154 --> 00:15:57.595
+<v Speaker 1>these are all the things that will run-in
+
+00:15:57.595 --> 00:15:59.834
+<v Speaker 1>the background. So make k nines, it's an
+
+00:15:59.834 --> 00:16:01.035
+<v Speaker 1>end cursor interface.
+
+00:16:01.515 --> 00:16:03.195
+<v Speaker 1>And just as you're used to maybe using
+
+00:16:03.195 --> 00:16:05.195
+<v Speaker 1>Vim or Tig, which is an end cursor
+
+00:16:05.195 --> 00:16:06.315
+<v Speaker 1>interface for Git,
+
+00:16:07.060 --> 00:16:09.940
+<v Speaker 1>Canines, it's an end cursor's interface to Kubernetes.
+
+00:16:10.420 --> 00:16:12.100
+<v Speaker 1>And this is what it looks like. I
+
+00:16:12.100 --> 00:16:14.740
+<v Speaker 1>can see all the pods running in this
+
+00:16:14.740 --> 00:16:16.899
+<v Speaker 1>LKE managed Kubernetes cluster.
+
+00:16:17.139 --> 00:16:19.860
+<v Speaker 1>And it's that simple. Once I'm here, I
+
+00:16:19.860 --> 00:16:21.860
+<v Speaker 1>can do pretty much anything on production.
+
+00:16:22.475 --> 00:16:24.555
+<v Speaker 1>So you're asking about backups.
+
+00:16:24.555 --> 00:16:25.195
+<v Speaker 1>Okay?
+
+00:16:25.595 --> 00:16:27.755
+<v Speaker 1>So let's go. Let's look at the namespace
+
+00:16:27.755 --> 00:16:29.195
+<v Speaker 1>prod 2021.
+
+00:16:29.195 --> 00:16:30.875
+<v Speaker 1>This was when that was set up in
+
+00:16:30.875 --> 00:16:31.835
+<v Speaker 1>in April.
+
+00:16:31.995 --> 00:16:33.435
+<v Speaker 1>This specific instance,
+
+00:16:33.995 --> 00:16:36.555
+<v Speaker 1>we can see the version one twenty ten
+
+00:16:36.555 --> 00:16:37.595
+<v Speaker 1>of Kubernetes
+
+00:16:37.930 --> 00:16:38.970
+<v Speaker 1>that we're running.
+
+00:16:39.370 --> 00:16:42.010
+<v Speaker 1>And you can see these backups, these pods,
+
+00:16:42.010 --> 00:16:44.090
+<v Speaker 1>they are from the there's a cron job
+
+00:16:44.090 --> 00:16:46.010
+<v Speaker 1>which runs them every hour.
+
+00:16:47.050 --> 00:16:49.850
+<v Speaker 1>The app instance, the database instance, and there's
+
+00:16:49.850 --> 00:16:52.170
+<v Speaker 1>a pod which all we have is, like,
+
+00:16:52.170 --> 00:16:53.450
+<v Speaker 1>to be able to restore the database.
+
+00:16:53.975 --> 00:16:56.535
+<v Speaker 1>Now if I restore the database, it's gonna
+
+00:16:56.615 --> 00:16:58.295
+<v Speaker 1>have everything inside, like
+
+00:16:58.775 --> 00:17:00.375
+<v Speaker 1>drop all the connection. It has do a
+
+00:17:00.375 --> 00:17:02.295
+<v Speaker 1>couple of things. And all that is self
+
+00:17:02.295 --> 00:17:04.375
+<v Speaker 1>contained in a pod sorry, in a container
+
+00:17:04.375 --> 00:17:05.494
+<v Speaker 1>image. So what I have to do is
+
+00:17:05.494 --> 00:17:07.255
+<v Speaker 1>jump there, run a few commands, and it
+
+00:17:07.255 --> 00:17:07.815
+<v Speaker 1>happens.
+
+00:17:08.295 --> 00:17:10.820
+<v Speaker 1>So I wouldn't say it's clickopsy,
+
+00:17:10.820 --> 00:17:12.340
+<v Speaker 1>but it's terminalopsy,
+
+00:17:12.340 --> 00:17:13.860
+<v Speaker 1>if that's a thing. I don't know if
+
+00:17:13.860 --> 00:17:15.380
+<v Speaker 1>it's a thing. Maybe it will be as
+
+00:17:15.380 --> 00:17:16.020
+<v Speaker 1>of today.
+
+00:17:16.420 --> 00:17:18.580
+<v Speaker 1>So let's have a look at cron jobs
+
+00:17:18.580 --> 00:17:20.100
+<v Speaker 1>so we have a backup. Is it is
+
+00:17:20.100 --> 00:17:21.300
+<v Speaker 2>it cron ops?
+
+00:17:21.540 --> 00:17:23.804
+<v Speaker 1>Has that hasn't been coined yet? Yeah. Cron
+
+00:17:23.804 --> 00:17:25.964
+<v Speaker 1>ops? May maybe this specific thing, but no.
+
+00:17:25.964 --> 00:17:27.484
+<v Speaker 1>Like, the rest, everything else, I don't think
+
+00:17:27.484 --> 00:17:29.245
+<v Speaker 1>it's cron ops. I think it's my terminal
+
+00:17:29.245 --> 00:17:31.404
+<v Speaker 1>and me typing and doing things.
+
+00:17:31.804 --> 00:17:34.125
+<v Speaker 1>But the cron jobs are only two. Right?
+
+00:17:34.125 --> 00:17:35.565
+<v Speaker 1>One which runs the backups.
+
+00:17:36.350 --> 00:17:38.110
+<v Speaker 1>And the backup job, this is, you know,
+
+00:17:38.110 --> 00:17:40.030
+<v Speaker 1>what it looks like. In terms of the
+
+00:17:40.030 --> 00:17:42.190
+<v Speaker 1>description, I think I maybe would have wanted
+
+00:17:42.190 --> 00:17:44.270
+<v Speaker 1>to do an e to edit it. And
+
+00:17:44.270 --> 00:17:46.190
+<v Speaker 1>now it's opening the terminal, loads all the
+
+00:17:46.190 --> 00:17:48.270
+<v Speaker 1>secrets. All it does is just, like, you
+
+00:17:48.270 --> 00:17:49.390
+<v Speaker 1>know, runs
+
+00:17:49.790 --> 00:17:50.350
+<v Speaker 1>some
+
+00:17:51.070 --> 00:17:51.630
+<v Speaker 1>commands.
+
+00:17:52.005 --> 00:17:52.804
+<v Speaker 1>That's it.
+
+00:17:53.285 --> 00:17:54.725
+<v Speaker 1>Which is there is an image.
+
+00:17:55.125 --> 00:17:57.205
+<v Speaker 1>There's image. The change log backups.
+
+00:17:58.005 --> 00:17:58.644
+<v Speaker 1>And
+
+00:18:00.245 --> 00:18:02.325
+<v Speaker 1>it's runs commands, and it knows how to
+
+00:18:02.325 --> 00:18:03.365
+<v Speaker 1>back up. So
+
+00:18:04.165 --> 00:18:04.965
+<v Speaker 1>let's
+
+00:18:05.909 --> 00:18:08.070
+<v Speaker 1>trigger this job. How about that? If we're
+
+00:18:08.070 --> 00:18:09.269
+<v Speaker 1>to trigger this job, this is how simple
+
+00:18:09.269 --> 00:18:11.349
+<v Speaker 1>it is to trigger trigger an ad hoc
+
+00:18:11.750 --> 00:18:13.509
+<v Speaker 1>backup. So control t.
+
+00:18:14.549 --> 00:18:15.909
+<v Speaker 1>Did I trick no. T.
+
+00:18:16.549 --> 00:18:19.705
+<v Speaker 1>Yes. Let's do backup right now. Live backup.
+
+00:18:19.705 --> 00:18:21.465
+<v Speaker 1>Let's go back to pods. We'll see the
+
+00:18:21.465 --> 00:18:24.344
+<v Speaker 1>new backup manual one. Container.
+
+00:18:24.345 --> 00:18:25.784
+<v Speaker 1>Let's look at the logs.
+
+00:18:26.264 --> 00:18:28.024
+<v Speaker 1>Starting the database backup.
+
+00:18:28.264 --> 00:18:30.345
+<v Speaker 1>Starting uploads backup. So back it backs up
+
+00:18:30.345 --> 00:18:32.920
+<v Speaker 1>everything to s three. It takes a database
+
+00:18:32.920 --> 00:18:35.000
+<v Speaker 1>dump, streams it to s three, and it
+
+00:18:35.000 --> 00:18:36.360
+<v Speaker 1>takes it synchronizes
+
+00:18:36.360 --> 00:18:38.120
+<v Speaker 1>all the back all the uploads, all the
+
+00:18:38.120 --> 00:18:38.760
+<v Speaker 1>media.
+
+00:18:39.080 --> 00:18:40.760
+<v Speaker 1>There's there's, like, a few new files,
+
+00:18:41.320 --> 00:18:42.680
+<v Speaker 1>and it does that. It's like an incremental
+
+00:18:42.680 --> 00:18:44.360
+<v Speaker 1>one. There's a new episode of JS Party
+
+00:18:44.360 --> 00:18:46.040
+<v Speaker 1>that was just backed up to s three.
+
+00:18:46.595 --> 00:18:47.875
+<v Speaker 2>There you go. Have you seen this on
+
+00:18:47.875 --> 00:18:49.235
+<v Speaker 2>our before, David?
+
+00:18:49.635 --> 00:18:51.795
+<v Speaker 0>Yeah. K9 is is is quite popular by
+
+00:18:51.795 --> 00:18:52.835
+<v Speaker 0>people on Custard.
+
+00:18:54.915 --> 00:18:56.515
+<v Speaker 2>Nah. It's much more episodes.
+
+00:18:57.155 --> 00:18:59.155
+<v Speaker 1>And the database backup, how long did it
+
+00:18:59.155 --> 00:19:01.099
+<v Speaker 1>take Starting 04:50,
+
+00:19:01.100 --> 00:19:02.940
+<v Speaker 1>four fifty, twenty four. No. That was too
+
+00:19:02.940 --> 00:19:03.419
+<v Speaker 1>quick.
+
+00:19:04.940 --> 00:19:06.539
+<v Speaker 1>Starting 04:50.
+
+00:19:08.220 --> 00:19:09.740
+<v Speaker 1>Actually, no. It wasn't too quick. It was
+
+00:19:09.740 --> 00:19:12.539
+<v Speaker 1>twenty and something seconds. So twenty one seconds
+
+00:19:12.539 --> 00:19:14.875
+<v Speaker 1>later, we've backed up the entire database. Only
+
+00:19:14.875 --> 00:19:15.994
+<v Speaker 1>one is this simple.
+
+00:19:16.235 --> 00:19:18.234
+<v Speaker 1>Restoring takes maybe two minutes.
+
+00:19:18.875 --> 00:19:21.434
+<v Speaker 1>That's it. The entire data. Like, what more
+
+00:19:21.434 --> 00:19:23.434
+<v Speaker 1>would you need than this?
+
+00:19:23.835 --> 00:19:26.794
+<v Speaker 1>So okay. So we took a backup. How
+
+00:19:26.794 --> 00:19:27.914
+<v Speaker 1>about we
+
+00:19:28.159 --> 00:19:30.639
+<v Speaker 1>shell we open a shell in this container,
+
+00:19:30.640 --> 00:19:32.960
+<v Speaker 1>and we look at backups. That's like an
+
+00:19:32.960 --> 00:19:34.159
+<v Speaker 1>autocomplete.
+
+00:19:34.960 --> 00:19:37.279
+<v Speaker 1>I don't wanna backup. I wanna do s
+
+00:19:37.279 --> 00:19:38.719
+<v Speaker 1>three backups.
+
+00:19:38.799 --> 00:19:41.119
+<v Speaker 1>This will list all the backups.
+
+00:19:41.600 --> 00:19:43.200
+<v Speaker 1>So this is the backup that we just
+
+00:19:43.200 --> 00:19:43.440
+<v Speaker 1>did.
+
+00:19:44.275 --> 00:19:46.275
+<v Speaker 1>This one right here. This is a database
+
+00:19:46.275 --> 00:19:46.914
+<v Speaker 1>backup.
+
+00:19:47.155 --> 00:19:48.915
+<v Speaker 1>And as for the media, it's just, like,
+
+00:19:48.915 --> 00:19:49.955
+<v Speaker 1>synchronized here.
+
+00:19:50.595 --> 00:19:52.595
+<v Speaker 1>So everything is backed up to s three.
+
+00:19:52.595 --> 00:19:53.955
+<v Speaker 1>And by the way, it just needs an
+
+00:19:53.955 --> 00:19:55.475
+<v Speaker 1>s three compatible
+
+00:19:55.970 --> 00:19:57.730
+<v Speaker 1>store API.
+
+00:19:57.970 --> 00:19:59.330
+<v Speaker 1>In this case, we use
+
+00:19:59.810 --> 00:20:01.730
+<v Speaker 1>AWS s three, but it can be anything,
+
+00:20:01.730 --> 00:20:02.210
+<v Speaker 1>really.
+
+00:20:02.930 --> 00:20:03.890
+<v Speaker 0>Nice. So
+
+00:20:04.290 --> 00:20:05.730
+<v Speaker 1>there you go. That's how simple it is
+
+00:20:05.730 --> 00:20:07.410
+<v Speaker 1>to take a backup, and that's what it
+
+00:20:07.410 --> 00:20:09.890
+<v Speaker 1>looks like from a perspective of pods. I
+
+00:20:09.890 --> 00:20:11.905
+<v Speaker 1>mean, what else would you like to see?
+
+00:20:12.065 --> 00:20:13.505
+<v Speaker 0>I mean, we can hold off on the
+
+00:20:13.505 --> 00:20:15.105
+<v Speaker 0>restorative way breaks on the stuff if you
+
+00:20:15.105 --> 00:20:15.985
+<v Speaker 0>want. Yeah.
+
+00:20:16.785 --> 00:20:19.585
+<v Speaker 1>I think so too. Why don't we
+
+00:20:20.465 --> 00:20:22.625
+<v Speaker 0>look, k nine is a really great interface.
+
+00:20:22.625 --> 00:20:25.400
+<v Speaker 0>I like that you're you're using that. Maybe
+
+00:20:25.400 --> 00:20:26.279
+<v Speaker 0>we should
+
+00:20:26.920 --> 00:20:28.919
+<v Speaker 0>take a look at what the problem is
+
+00:20:28.920 --> 00:20:30.679
+<v Speaker 0>and give people a bit of an idea
+
+00:20:30.679 --> 00:20:32.360
+<v Speaker 0>about what we're going to try and debug
+
+00:20:32.360 --> 00:20:32.999
+<v Speaker 0>today.
+
+00:20:33.640 --> 00:20:35.799
+<v Speaker 1>That is a good idea. Sure. This is,
+
+00:20:35.799 --> 00:20:37.335
+<v Speaker 1>by the way, an overview of what we
+
+00:20:37.335 --> 00:20:38.855
+<v Speaker 1>have running right now. This is what production
+
+00:20:38.855 --> 00:20:40.615
+<v Speaker 1>means. This is what change load production looks
+
+00:20:40.615 --> 00:20:43.815
+<v Speaker 1>like right now. The memory, just over allocate
+
+00:20:43.815 --> 00:20:45.095
+<v Speaker 1>because we cache a lot of stuff in
+
+00:20:45.095 --> 00:20:46.615
+<v Speaker 1>the app, but it doesn't need that much
+
+00:20:46.615 --> 00:20:49.015
+<v Speaker 1>memory. And, again, single note. So what is
+
+00:20:49.015 --> 00:20:50.855
+<v Speaker 0>the problem? Gerald Santo in the chat who
+
+00:20:50.855 --> 00:20:52.750
+<v Speaker 0>said, you just shipped that episode of JS
+
+00:20:52.750 --> 00:20:55.070
+<v Speaker 0>Party. There you go. Hey, Jared. Great. Well,
+
+00:20:55.070 --> 00:20:57.150
+<v Speaker 1>it's backed up now. And if we wouldn't
+
+00:20:57.150 --> 00:20:58.670
+<v Speaker 1>have backed it up manually in the next
+
+00:20:58.670 --> 00:21:00.510
+<v Speaker 1>hour, it would have done it directly.
+
+00:21:00.750 --> 00:21:03.070
+<v Speaker 1>Great. Well, it's backed up. It's all good.
+
+00:21:03.710 --> 00:21:05.790
+<v Speaker 1>Cool. So coming back, what is the problem?
+
+00:21:06.135 --> 00:21:08.215
+<v Speaker 1>So let's close the intro. We kinda we
+
+00:21:08.215 --> 00:21:10.215
+<v Speaker 1>understand Yeah. Slide two, please.
+
+00:21:10.695 --> 00:21:12.535
+<v Speaker 0>Next slide. Slide two. Yes. Slide two. So
+
+00:21:12.535 --> 00:21:14.215
+<v Speaker 1>let me close slide one, and let me
+
+00:21:14.215 --> 00:21:16.534
+<v Speaker 1>open slide two. So what is the problem?
+
+00:21:16.535 --> 00:21:16.855
+<v Speaker 1>Okay.
+
+00:21:18.950 --> 00:21:22.390
+<v Speaker 1>The problem is that the web response times
+
+00:21:23.110 --> 00:21:24.710
+<v Speaker 1>are and if I have to bring up
+
+00:21:24.710 --> 00:21:26.630
+<v Speaker 1>the intro, it's basically this layer,
+
+00:21:27.190 --> 00:21:28.470
+<v Speaker 1>Ingress NGINX.
+
+00:21:28.550 --> 00:21:30.790
+<v Speaker 1>The web response times sometimes are slow.
+
+00:21:32.195 --> 00:21:33.955
+<v Speaker 1>Does anything look slow here?
+
+00:21:34.915 --> 00:21:36.835
+<v Speaker 0>We have a couple of outliers, but nothing
+
+00:21:36.835 --> 00:21:38.674
+<v Speaker 0>that gives me any cause for concern.
+
+00:21:38.995 --> 00:21:39.635
+<v Speaker 1>Right.
+
+00:21:39.875 --> 00:21:41.395
+<v Speaker 1>The reason why is that because we're looking
+
+00:21:41.395 --> 00:21:43.075
+<v Speaker 1>at the ninetieth percentile.
+
+00:21:43.395 --> 00:21:44.915
+<v Speaker 1>So if we are looking at the ninetieth
+
+00:21:44.915 --> 00:21:46.835
+<v Speaker 1>percentile, 90% of requests,
+
+00:21:47.460 --> 00:21:48.899
+<v Speaker 1>they complete within
+
+00:21:49.220 --> 00:21:51.620
+<v Speaker 1>some two hundred milliseconds. I haven't seen any.
+
+00:21:51.620 --> 00:21:52.979
+<v Speaker 1>I mean, I can zoom in to
+
+00:21:53.380 --> 00:21:55.780
+<v Speaker 1>see something specific if there's any outliers here.
+
+00:21:55.780 --> 00:21:58.019
+<v Speaker 1>But you can see that the ninetieth percentile
+
+00:21:58.260 --> 00:22:00.419
+<v Speaker 1>within three hundred milliseconds,
+
+00:22:00.980 --> 00:22:02.260
+<v Speaker 1>they complete.
+
+00:22:02.644 --> 00:22:03.524
+<v Speaker 1>Okay?
+
+00:22:03.605 --> 00:22:05.604
+<v Speaker 1>What about the ninety fifth percentile?
+
+00:22:07.365 --> 00:22:08.244
+<v Speaker 1>Okay.
+
+00:22:08.804 --> 00:22:10.324
+<v Speaker 1>Five hundred milliseconds,
+
+00:22:10.325 --> 00:22:11.604
+<v Speaker 1>slightly worse,
+
+00:22:11.684 --> 00:22:13.605
+<v Speaker 1>but nothing crazy. Right? We have a few
+
+00:22:13.605 --> 00:22:14.804
+<v Speaker 1>which take maybe
+
+00:22:15.350 --> 00:22:17.190
+<v Speaker 1>this is two seconds here. This one right
+
+00:22:17.190 --> 00:22:18.710
+<v Speaker 1>here, I wish it would highlight, but it
+
+00:22:18.710 --> 00:22:20.789
+<v Speaker 1>doesn't. It's just around the two second mark.
+
+00:22:20.870 --> 00:22:23.190
+<v Speaker 1>But what about the ninety ninth percentile?
+
+00:22:23.430 --> 00:22:25.429
+<v Speaker 1>There you go. This is a different story.
+
+00:22:25.990 --> 00:22:28.950
+<v Speaker 1>So some requests can take a minute,
+
+00:22:29.590 --> 00:22:31.715
+<v Speaker 1>a minute and a half. So why do
+
+00:22:31.715 --> 00:22:32.915
+<v Speaker 1>they take that long?
+
+00:22:33.875 --> 00:22:36.435
+<v Speaker 1>Why do certain requests, like, at the tail
+
+00:22:36.435 --> 00:22:37.075
+<v Speaker 1>end
+
+00:22:37.715 --> 00:22:40.675
+<v Speaker 1>take that long to respond? I mean, it's
+
+00:22:40.675 --> 00:22:43.395
+<v Speaker 1>it's a single host. Right? Ingress NGINX talking
+
+00:22:43.395 --> 00:22:45.955
+<v Speaker 1>to the to the app. It's all local.
+
+00:22:47.500 --> 00:22:50.940
+<v Speaker 1>Any guesses? But this isn't all static
+
+00:22:51.340 --> 00:22:53.660
+<v Speaker 2>content, is it? This is this is dynamic
+
+00:22:53.660 --> 00:22:56.700
+<v Speaker 2>content. Well, I think there's some dynamic between
+
+00:22:56.700 --> 00:22:56.940
+<v Speaker 2>the
+
+00:22:57.580 --> 00:22:59.260
+<v Speaker 2>yeah. What what differs between
+
+00:22:59.660 --> 00:23:00.460
+<v Speaker 2>the
+
+00:23:00.615 --> 00:23:02.855
+<v Speaker 2>the endpoints that are experiencing
+
+00:23:02.855 --> 00:23:04.934
+<v Speaker 2>this and the ones that are not? Yeah.
+
+00:23:04.934 --> 00:23:06.934
+<v Speaker 0>I'd wanna see a like Okay. I think
+
+00:23:06.934 --> 00:23:08.455
+<v Speaker 0>what Mark is the same as a histogram
+
+00:23:08.455 --> 00:23:10.135
+<v Speaker 0>of the endpoints to see if there's any
+
+00:23:10.135 --> 00:23:12.695
+<v Speaker 0>groupings of the anomalies on a single endpoint.
+
+00:23:13.250 --> 00:23:15.890
+<v Speaker 1>Yeah. So that is which responses are slow,
+
+00:23:15.890 --> 00:23:18.050
+<v Speaker 1>right? That's exactly what you're asking me. Slide
+
+00:23:18.050 --> 00:23:19.890
+<v Speaker 1>number three. I'm gonna open it up now.
+
+00:23:19.890 --> 00:23:21.170
+<v Speaker 1>We have to slow down because we'll go
+
+00:23:21.170 --> 00:23:23.170
+<v Speaker 1>through too quickly through the slides.
+
+00:23:23.410 --> 00:23:25.490
+<v Speaker 1>I will have loads of time left. So
+
+00:23:25.970 --> 00:23:26.770
+<v Speaker 1>slide number three,
+
+00:23:27.515 --> 00:23:29.595
+<v Speaker 1>which is telling us is that this one
+
+00:23:29.595 --> 00:23:30.555
+<v Speaker 1>is a get
+
+00:23:31.195 --> 00:23:31.995
+<v Speaker 1>to
+
+00:23:32.235 --> 00:23:35.195
+<v Speaker 1>uploads podcast four five eight, the change log
+
+00:23:35.195 --> 00:23:37.195
+<v Speaker 1>four five eight. This took two point three
+
+00:23:37.195 --> 00:23:38.155
+<v Speaker 1>nine minutes.
+
+00:23:39.435 --> 00:23:40.875
+<v Speaker 1>So we can see if we sort them
+
+00:23:40.875 --> 00:23:41.515
+<v Speaker 1>by max,
+
+00:23:42.120 --> 00:23:43.880
+<v Speaker 1>a lot of the ones actually, all the
+
+00:23:43.880 --> 00:23:45.320
+<v Speaker 1>ones that take minutes
+
+00:23:46.600 --> 00:23:48.360
+<v Speaker 1>are the ones are the m p threes.
+
+00:23:48.360 --> 00:23:50.039
+<v Speaker 0>Yeah. The media files. Yep.
+
+00:23:50.440 --> 00:23:51.799
+<v Speaker 1>So what are you thinking?
+
+00:23:53.480 --> 00:23:56.120
+<v Speaker 0>So those media files, are they just files
+
+00:23:56.375 --> 00:23:58.375
+<v Speaker 0>on the desk locally? They're not being pulled
+
+00:23:58.375 --> 00:23:59.735
+<v Speaker 0>from s three. Right? They're backed up to
+
+00:23:59.735 --> 00:24:01.335
+<v Speaker 0>s three but served locally.
+
+00:24:01.415 --> 00:24:02.695
+<v Speaker 1>That's correct. Yes.
+
+00:24:05.895 --> 00:24:07.655
+<v Speaker 0>Alright. So we've got something.
+
+00:24:09.750 --> 00:24:12.390
+<v Speaker 0>I'm assuming that there's a single endpoint and
+
+00:24:12.390 --> 00:24:15.110
+<v Speaker 0>your Phoenix application that does delivery of these
+
+00:24:15.110 --> 00:24:16.790
+<v Speaker 0>empathy assets.
+
+00:24:18.630 --> 00:24:20.390
+<v Speaker 0>Or these aren't going through the Alexa. Right?
+
+00:24:20.390 --> 00:24:22.070
+<v Speaker 0>These are just go these are direct HTTP
+
+00:24:22.070 --> 00:24:23.750
+<v Speaker 0>requests to the failed through the web server.
+
+00:24:24.394 --> 00:24:26.394
+<v Speaker 1>No. No. No. No. The the Phoenix app
+
+00:24:26.394 --> 00:24:27.434
+<v Speaker 1>serves them. But it's
+
+00:24:27.835 --> 00:24:30.315
+<v Speaker 1>you don't have to worry about, like, scaling
+
+00:24:30.315 --> 00:24:32.955
+<v Speaker 1>on the Phoenix side because it just uses
+
+00:24:32.955 --> 00:24:33.914
+<v Speaker 1>all the CPUs.
+
+00:24:34.154 --> 00:24:36.554
+<v Speaker 1>So, like, every every single request will just
+
+00:24:36.554 --> 00:24:38.075
+<v Speaker 1>use as many CPUs as it needs to
+
+00:24:38.075 --> 00:24:40.560
+<v Speaker 1>use. So sorry. Every request will use, like,
+
+00:24:40.560 --> 00:24:42.399
+<v Speaker 1>one CPU core. So there's no
+
+00:24:42.960 --> 00:24:45.280
+<v Speaker 1>there isn't a bottleneck on the on the
+
+00:24:45.280 --> 00:24:46.320
+<v Speaker 1>Phoenix side.
+
+00:24:48.800 --> 00:24:51.440
+<v Speaker 0>Okay. I mean, obviously, they're being pushed. Right?
+
+00:24:51.440 --> 00:24:53.680
+<v Speaker 1>And it's, like, the clients, however long they
+
+00:24:53.680 --> 00:24:56.075
+<v Speaker 1>take. But I think there's something interesting happening
+
+00:24:56.075 --> 00:24:57.674
+<v Speaker 1>here. I don't know whether this does a
+
+00:24:57.674 --> 00:24:59.434
+<v Speaker 1>good job of showing it. But look at
+
+00:24:59.434 --> 00:25:01.434
+<v Speaker 1>these. There seem to be many
+
+00:25:01.434 --> 00:25:02.154
+<v Speaker 1>of these,
+
+00:25:02.715 --> 00:25:05.595
+<v Speaker 1>which take about a minute. Is it just
+
+00:25:05.595 --> 00:25:07.274
+<v Speaker 0>the size of the files?
+
+00:25:10.800 --> 00:25:12.720
+<v Speaker 1>It is. I mean, they're they're big files.
+
+00:25:12.720 --> 00:25:14.320
+<v Speaker 0>I mean, do we have do we are
+
+00:25:14.320 --> 00:25:16.560
+<v Speaker 0>we able to break down where the requests
+
+00:25:16.560 --> 00:25:18.640
+<v Speaker 0>came from for these files?
+
+00:25:19.934 --> 00:25:21.614
+<v Speaker 1>Where the requests came from.
+
+00:25:21.855 --> 00:25:23.855
+<v Speaker 1>Well, let's have a look at that. So
+
+00:25:23.855 --> 00:25:27.614
+<v Speaker 1>let's explore the upstream responses which take more
+
+00:25:27.934 --> 00:25:30.094
+<v Speaker 1>than ten seconds. Okay.
+
+00:25:30.335 --> 00:25:31.054
+<v Speaker 1>Okay.
+
+00:25:31.695 --> 00:25:32.495
+<v Speaker 1>So
+
+00:25:33.260 --> 00:25:35.899
+<v Speaker 1>all the upstream response times, they take more
+
+00:25:35.899 --> 00:25:37.019
+<v Speaker 1>than ten seconds.
+
+00:25:37.580 --> 00:25:39.739
+<v Speaker 1>So let's see. This one, for example,
+
+00:25:40.220 --> 00:25:42.940
+<v Speaker 1>request time sixty one seconds.
+
+00:25:43.260 --> 00:25:44.459
+<v Speaker 1>JS party.
+
+00:25:44.700 --> 00:25:46.299
+<v Speaker 1>This is everything that we see about this
+
+00:25:46.299 --> 00:25:46.700
+<v Speaker 1>request.
+
+00:25:47.865 --> 00:25:49.385
+<v Speaker 1>Anything that stands out.
+
+00:25:53.945 --> 00:25:56.425
+<v Speaker 2>I I like, the comment there about, you
+
+00:25:56.425 --> 00:25:56.905
+<v Speaker 2>know,
+
+00:25:57.385 --> 00:25:59.385
+<v Speaker 2>MIME typesetting and g ZIP not turned on
+
+00:25:59.385 --> 00:26:01.169
+<v Speaker 2>in the NGINX config. I also wonder if
+
+00:26:01.169 --> 00:26:02.450
+<v Speaker 2>it could go the other way. So, like,
+
+00:26:02.450 --> 00:26:04.210
+<v Speaker 2>if the client didn't if if it's a
+
+00:26:04.210 --> 00:26:07.409
+<v Speaker 2>special client making the request and that client
+
+00:26:07.970 --> 00:26:10.210
+<v Speaker 2>doesn't have gzip
+
+00:26:10.210 --> 00:26:11.650
+<v Speaker 2>encoding support,
+
+00:26:12.505 --> 00:26:14.345
+<v Speaker 2>We would be able to tell that from
+
+00:26:14.345 --> 00:26:17.304
+<v Speaker 2>the headers what what the client requested, but
+
+00:26:17.304 --> 00:26:18.825
+<v Speaker 2>we're talking about m p three files. So
+
+00:26:18.825 --> 00:26:20.424
+<v Speaker 2>they're already compressed.
+
+00:26:20.424 --> 00:26:22.264
+<v Speaker 2>So I I don't think
+
+00:26:22.505 --> 00:26:24.424
+<v Speaker 2>that's an area of concern.
+
+00:26:25.290 --> 00:26:27.770
+<v Speaker 2>I also wonder when all these requests are
+
+00:26:27.770 --> 00:26:28.650
+<v Speaker 2>coming in,
+
+00:26:29.050 --> 00:26:30.890
+<v Speaker 2>this m p three is slow. I so
+
+00:26:30.890 --> 00:26:32.250
+<v Speaker 2>my thought was, well,
+
+00:26:32.730 --> 00:26:34.890
+<v Speaker 2>you're running on a VM. Maybe your VM
+
+00:26:34.890 --> 00:26:36.890
+<v Speaker 2>is hitting some kind of IO contention,
+
+00:26:37.645 --> 00:26:40.285
+<v Speaker 2>and maybe the disk really is running slow
+
+00:26:40.285 --> 00:26:42.605
+<v Speaker 2>at this moment in time. Mhmm.
+
+00:26:43.565 --> 00:26:46.045
+<v Speaker 2>But if you're receiving other requests that are
+
+00:26:46.045 --> 00:26:48.365
+<v Speaker 2>being served at the same time, then maybe,
+
+00:26:48.684 --> 00:26:49.405
+<v Speaker 2>maybe that's
+
+00:26:50.159 --> 00:26:52.960
+<v Speaker 2>that could show that it's not a disk
+
+00:26:52.960 --> 00:26:53.759
+<v Speaker 2>IO
+
+00:26:53.840 --> 00:26:54.320
+<v Speaker 2>problem.
+
+00:26:55.200 --> 00:26:57.360
+<v Speaker 2>But we can't really tell that because other
+
+00:26:57.360 --> 00:26:59.279
+<v Speaker 2>requests might be getting served directly from cache
+
+00:26:59.279 --> 00:27:00.559
+<v Speaker 2>or or kernel,
+
+00:27:01.039 --> 00:27:02.399
+<v Speaker 2>file system cache.
+
+00:27:02.559 --> 00:27:02.879
+<v Speaker 0>Mhmm.
+
+00:27:04.265 --> 00:27:06.025
+<v Speaker 1>Okay. So I I've given you a lot
+
+00:27:06.025 --> 00:27:06.744
+<v Speaker 2>of nothing.
+
+00:27:07.785 --> 00:27:09.625
+<v Speaker 1>Well, you you gave some ideas. Like, I
+
+00:27:09.625 --> 00:27:11.225
+<v Speaker 1>I like again, this is, the whole point.
+
+00:27:11.225 --> 00:27:12.664
+<v Speaker 1>We're doing this so that we run through
+
+00:27:12.664 --> 00:27:14.505
+<v Speaker 1>various ideas and we see, like, what could
+
+00:27:14.505 --> 00:27:16.105
+<v Speaker 1>it be. And the goal is to show
+
+00:27:16.650 --> 00:27:18.410
+<v Speaker 1>how we interact, how we discuss about this
+
+00:27:18.410 --> 00:27:19.049
+<v Speaker 1>problem.
+
+00:27:19.370 --> 00:27:21.530
+<v Speaker 1>So what I find really interesting is that
+
+00:27:21.530 --> 00:27:23.690
+<v Speaker 1>we have, like, a whole band of requests,
+
+00:27:24.010 --> 00:27:26.890
+<v Speaker 1>which are around, like, the the sixty second
+
+00:27:26.970 --> 00:27:27.690
+<v Speaker 1>limit,
+
+00:27:28.010 --> 00:27:28.970
+<v Speaker 1>and that is meaningful.
+
+00:27:29.695 --> 00:27:32.335
+<v Speaker 1>The other meaningful thing, think, is the status.
+
+00:27:32.335 --> 00:27:33.695
+<v Speaker 0>Yeah. Partial content. Exactly.
+
+00:27:35.615 --> 00:27:36.335
+<v Speaker 1>So
+
+00:27:36.495 --> 00:27:39.055
+<v Speaker 1>the way I understand this is that we
+
+00:27:39.055 --> 00:27:40.175
+<v Speaker 1>are streaming
+
+00:27:40.335 --> 00:27:41.695
+<v Speaker 1>these responses,
+
+00:27:41.695 --> 00:27:44.015
+<v Speaker 1>right, because they're like m p three files,
+
+00:27:44.015 --> 00:27:46.090
+<v Speaker 1>and it just depends what does the client
+
+00:27:46.090 --> 00:27:47.770
+<v Speaker 1>want. And we stream them based on what
+
+00:27:47.770 --> 00:27:48.969
+<v Speaker 1>the client is requesting.
+
+00:27:50.250 --> 00:27:51.849
+<v Speaker 1>After sixty seconds,
+
+00:27:52.169 --> 00:27:54.250
+<v Speaker 1>I'm wondering if there's, like, another request which
+
+00:27:54.250 --> 00:27:56.010
+<v Speaker 1>is opened. Right? Because I don't think these
+
+00:27:56.010 --> 00:27:57.850
+<v Speaker 1>are long long lived. I think it's, like,
+
+00:27:57.850 --> 00:27:59.289
+<v Speaker 1>a max time, and then they
+
+00:27:59.804 --> 00:28:02.044
+<v Speaker 1>stop, and then maybe another one opens and
+
+00:28:02.044 --> 00:28:03.324
+<v Speaker 1>then continue streaming.
+
+00:28:04.284 --> 00:28:06.445
+<v Speaker 1>So we could filter them out to see
+
+00:28:06.445 --> 00:28:08.205
+<v Speaker 1>which ones are non two zero six and
+
+00:28:08.205 --> 00:28:09.164
+<v Speaker 1>see what happens.
+
+00:28:09.884 --> 00:28:10.684
+<v Speaker 1>GZIP,
+
+00:28:10.684 --> 00:28:12.365
+<v Speaker 1>that's an interesting idea, but these are m
+
+00:28:12.365 --> 00:28:13.084
+<v Speaker 1>p threes.
+
+00:28:13.325 --> 00:28:14.490
+<v Speaker 1>So and as far as I know, they
+
+00:28:14.490 --> 00:28:16.809
+<v Speaker 1>don't compress very well because they're already compressed.
+
+00:28:16.970 --> 00:28:18.250
+<v Speaker 1>So I don't think
+
+00:28:18.330 --> 00:28:20.330
+<v Speaker 1>GZIP will make any difference.
+
+00:28:20.970 --> 00:28:23.530
+<v Speaker 1>I'm wondering if the reason why this is
+
+00:28:23.530 --> 00:28:26.010
+<v Speaker 1>the way it is is simply because the
+
+00:28:26.010 --> 00:28:27.450
+<v Speaker 1>application is serving
+
+00:28:28.505 --> 00:28:29.304
+<v Speaker 1>data,
+
+00:28:29.384 --> 00:28:31.865
+<v Speaker 1>binary data in this case, which has to
+
+00:28:31.865 --> 00:28:34.024
+<v Speaker 1>be streamed. Right? That's how users listen to
+
+00:28:34.024 --> 00:28:34.984
+<v Speaker 1>m p threes.
+
+00:28:35.625 --> 00:28:38.424
+<v Speaker 1>And it's literally like that streaming thing
+
+00:28:38.585 --> 00:28:40.664
+<v Speaker 1>that just takes time. Right? Like, the the
+
+00:28:40.664 --> 00:28:42.184
+<v Speaker 1>TCP connection is open,
+
+00:28:42.505 --> 00:28:43.625
+<v Speaker 1>and you're streaming chunks.
+
+00:28:44.080 --> 00:28:45.920
+<v Speaker 1>And that's why the status is two zero
+
+00:28:45.920 --> 00:28:46.480
+<v Speaker 1>six,
+
+00:28:46.720 --> 00:28:47.920
+<v Speaker 1>partial content.
+
+00:28:48.080 --> 00:28:50.320
+<v Speaker 1>It closes the connection, and then it opens
+
+00:28:50.320 --> 00:28:51.120
+<v Speaker 1>another one.
+
+00:28:51.440 --> 00:28:52.720
+<v Speaker 1>And you have to tell it, okay. So
+
+00:28:52.720 --> 00:28:54.640
+<v Speaker 1>where do you want me to continue
+
+00:28:54.800 --> 00:28:56.800
+<v Speaker 1>streaming this file or, like, serving this file
+
+00:28:56.800 --> 00:28:59.625
+<v Speaker 1>from? And I think I think that's what's
+
+00:28:59.625 --> 00:29:01.065
+<v Speaker 1>happening here, but I'm not sure.
+
+00:29:02.105 --> 00:29:04.664
+<v Speaker 0>Okay. So can we take that query and
+
+00:29:04.664 --> 00:29:07.065
+<v Speaker 0>group by status to see the breakdown,
+
+00:29:07.145 --> 00:29:07.625
+<v Speaker 0>the distribution? So
+
+00:29:10.399 --> 00:29:11.919
+<v Speaker 1>let's see. How do we do that? So
+
+00:29:11.919 --> 00:29:13.519
+<v Speaker 1>it's sum by.
+
+00:29:13.840 --> 00:29:15.279
+<v Speaker 1>Would be sum by actually, I think it's
+
+00:29:15.279 --> 00:29:16.639
+<v Speaker 1>this query. Think this is the one that
+
+00:29:16.639 --> 00:29:18.879
+<v Speaker 1>we would need to work with. So
+
+00:29:19.519 --> 00:29:22.159
+<v Speaker 1>this one is max over time by method
+
+00:29:22.159 --> 00:29:24.235
+<v Speaker 1>and path. What else would you like us
+
+00:29:24.235 --> 00:29:25.755
+<v Speaker 1>to add? Would you like us to add
+
+00:29:25.755 --> 00:29:26.955
+<v Speaker 1>status?
+
+00:29:27.995 --> 00:29:31.514
+<v Speaker 1>Great. So let's do method, path, and status.
+
+00:29:32.235 --> 00:29:34.155
+<v Speaker 1>All that we need to do, shift enter.
+
+00:29:35.429 --> 00:29:38.070
+<v Speaker 1>So status. Even though it grouped by status,
+
+00:29:38.070 --> 00:29:39.669
+<v Speaker 1>we don't see the status, and this is
+
+00:29:39.669 --> 00:29:41.109
+<v Speaker 1>where let me just hide that.
+
+00:29:41.429 --> 00:29:43.110
+<v Speaker 1>Let me come down here. So let's just
+
+00:29:43.110 --> 00:29:44.469
+<v Speaker 1>add a status there.
+
+00:29:45.190 --> 00:29:46.629
+<v Speaker 2>I because we're not gonna be able to
+
+00:29:46.629 --> 00:29:49.110
+<v Speaker 2>group very well by user agent, but I've
+
+00:29:49.110 --> 00:29:52.494
+<v Speaker 2>seen different user agents handle partial
+
+00:29:53.134 --> 00:29:54.014
+<v Speaker 2>requests
+
+00:29:54.014 --> 00:29:58.654
+<v Speaker 2>or ranged HTTP requests differently. Mhmm. Mhmm. I
+
+00:29:58.975 --> 00:29:59.854
+<v Speaker 2>tried to
+
+00:30:00.095 --> 00:30:00.654
+<v Speaker 2>implement
+
+00:30:01.960 --> 00:30:03.960
+<v Speaker 2>a streaming service using
+
+00:30:04.200 --> 00:30:06.040
+<v Speaker 2>just RangerQuest
+
+00:30:06.440 --> 00:30:06.760
+<v Speaker 2>Mhmm.
+
+00:30:08.040 --> 00:30:10.680
+<v Speaker 2>Options available in the spec or or sort
+
+00:30:10.680 --> 00:30:11.640
+<v Speaker 2>of vagueties
+
+00:30:12.440 --> 00:30:14.200
+<v Speaker 2>of the HTTP spec
+
+00:30:14.625 --> 00:30:15.185
+<v Speaker 2>that,
+
+00:30:15.505 --> 00:30:18.625
+<v Speaker 2>I I observed that browsers were handling the
+
+00:30:18.625 --> 00:30:20.465
+<v Speaker 2>request differently. You you could,
+
+00:30:21.665 --> 00:30:22.465
+<v Speaker 2>you could,
+
+00:30:22.785 --> 00:30:24.705
+<v Speaker 2>now I'm not gonna remember what the exact
+
+00:30:24.705 --> 00:30:25.585
+<v Speaker 2>syntax
+
+00:30:25.585 --> 00:30:26.305
+<v Speaker 2>was. But,
+
+00:30:27.505 --> 00:30:29.665
+<v Speaker 2>if if the browser requested
+
+00:30:30.370 --> 00:30:32.529
+<v Speaker 2>a certain range on the server side, I
+
+00:30:32.529 --> 00:30:33.570
+<v Speaker 2>tried to re
+
+00:30:34.130 --> 00:30:36.929
+<v Speaker 2>give them back less than what they requested
+
+00:30:37.169 --> 00:30:39.730
+<v Speaker 2>and have them come back for more in
+
+00:30:39.730 --> 00:30:41.649
+<v Speaker 2>a way so that I could sort of,
+
+00:30:41.890 --> 00:30:44.049
+<v Speaker 2>do a a per minute charge of what
+
+00:30:44.049 --> 00:30:45.925
+<v Speaker 2>they were doing. I could see how much
+
+00:30:45.925 --> 00:30:47.525
+<v Speaker 2>content they were requesting.
+
+00:30:47.845 --> 00:30:50.485
+<v Speaker 2>And if they tried to request the entire
+
+00:30:50.485 --> 00:30:52.405
+<v Speaker 2>file, only give them back part of the
+
+00:30:52.405 --> 00:30:52.965
+<v Speaker 2>file.
+
+00:30:53.285 --> 00:30:56.245
+<v Speaker 2>Mhmm. But that was only possible because different
+
+00:30:56.245 --> 00:30:59.445
+<v Speaker 2>browsers handled the requests in different ways, Firefox
+
+00:31:02.620 --> 00:31:05.820
+<v Speaker 2>versus Chrome even. So if we try to
+
+00:31:05.820 --> 00:31:06.700
+<v Speaker 2>see if
+
+00:31:07.020 --> 00:31:09.019
+<v Speaker 2>the problems that we were getting here,
+
+00:31:09.500 --> 00:31:11.419
+<v Speaker 2>were one browser or another,
+
+00:31:12.140 --> 00:31:13.900
+<v Speaker 2>that might tell us something, but I I
+
+00:31:13.900 --> 00:31:14.940
+<v Speaker 2>don't know that we're gonna be able to
+
+00:31:14.940 --> 00:31:16.780
+<v Speaker 2>group that very well in this tool.
+
+00:31:18.935 --> 00:31:21.175
+<v Speaker 1>So that's that's a good idea. But I'm
+
+00:31:21.175 --> 00:31:22.855
+<v Speaker 1>wondering if now
+
+00:31:22.855 --> 00:31:24.695
+<v Speaker 1>we have a problem. Like, do we have
+
+00:31:24.695 --> 00:31:26.295
+<v Speaker 1>a problem, or the is this behaving the
+
+00:31:26.295 --> 00:31:27.175
+<v Speaker 1>way it should?
+
+00:31:27.735 --> 00:31:29.175
+<v Speaker 1>And when we are looking at all the
+
+00:31:29.175 --> 00:31:31.930
+<v Speaker 1>requests and grouping them all together, then some
+
+00:31:31.930 --> 00:31:32.730
+<v Speaker 1>requests,
+
+00:31:32.810 --> 00:31:34.970
+<v Speaker 1>like, for example, m p threes, they behave
+
+00:31:34.970 --> 00:31:35.690
+<v Speaker 1>correctly.
+
+00:31:36.570 --> 00:31:39.610
+<v Speaker 1>They will take sixty seconds or more based
+
+00:31:39.610 --> 00:31:41.130
+<v Speaker 1>on the speed of the client.
+
+00:31:43.715 --> 00:31:45.235
+<v Speaker 0>So we have a question on the chat
+
+00:31:45.235 --> 00:31:47.555
+<v Speaker 0>from Carlos who's asking, are all of the
+
+00:31:47.555 --> 00:31:49.075
+<v Speaker 0>sixty second requests
+
+00:31:49.075 --> 00:31:50.434
+<v Speaker 0>partial contents?
+
+00:31:51.315 --> 00:31:52.835
+<v Speaker 0>Which I think is something we all want
+
+00:31:52.835 --> 00:31:53.315
+<v Speaker 0>we all want to Okay.
+
+00:31:54.675 --> 00:31:57.075
+<v Speaker 1>Let's have a look. So upstream response time,
+
+00:31:57.075 --> 00:31:57.635
+<v Speaker 1>more than
+
+00:32:00.110 --> 00:32:01.149
+<v Speaker 1>59,
+
+00:32:02.669 --> 00:32:05.789
+<v Speaker 1>and upstream response time, less than
+
+00:32:05.950 --> 00:32:06.590
+<v Speaker 1>61.
+
+00:32:12.425 --> 00:32:13.865
+<v Speaker 1>It's nine sixty one.
+
+00:32:15.145 --> 00:32:16.024
+<v Speaker 1>Two
+
+00:32:18.345 --> 00:32:20.345
+<v Speaker 1>zero six, two zero six, two hundred,
+
+00:32:20.585 --> 00:32:23.304
+<v Speaker 1>two zero six, two hundred, two zero six.
+
+00:32:23.304 --> 00:32:25.065
+<v Speaker 1>So it's a combination of two hundreds and
+
+00:32:25.065 --> 00:32:25.865
+<v Speaker 1>two o sixes.
+
+00:32:27.960 --> 00:32:30.120
+<v Speaker 0>Can we change the visualization to a histogram
+
+00:32:30.120 --> 00:32:31.240
+<v Speaker 0>on status?
+
+00:32:32.280 --> 00:32:33.799
+<v Speaker 1>Can we change to histogram?
+
+00:32:33.800 --> 00:32:34.759
+<v Speaker 1>I
+
+00:32:34.920 --> 00:32:36.920
+<v Speaker 1>can try, but I don't know how that's
+
+00:32:36.920 --> 00:32:39.080
+<v Speaker 1>gonna be like. So hang on. No. That's
+
+00:32:39.080 --> 00:32:39.800
+<v Speaker 1>not what I wanted.
+
+00:32:40.505 --> 00:32:41.705
+<v Speaker 1>Why did this break?
+
+00:32:42.825 --> 00:32:44.825
+<v Speaker 1>Oh, there it is. It's my e there.
+
+00:32:44.825 --> 00:32:46.585
+<v Speaker 1>I added an e. Cool. So let's go
+
+00:32:46.585 --> 00:32:47.465
+<v Speaker 1>to graph.
+
+00:32:47.785 --> 00:32:49.545
+<v Speaker 1>If we change it to his oh, that's
+
+00:32:49.545 --> 00:32:50.345
+<v Speaker 1>the pipe.
+
+00:32:50.585 --> 00:32:50.825
+<v Speaker 1>Yeah.
+
+00:32:54.430 --> 00:32:56.030
+<v Speaker 1>Hist I I
+
+00:32:58.110 --> 00:33:01.550
+<v Speaker 0>know the influx. Histogram. There we go. Histogram.
+
+00:33:01.710 --> 00:33:03.870
+<v Speaker 1>I don't think that's telling us much, really.
+
+00:33:05.705 --> 00:33:08.745
+<v Speaker 0>No. Not what I was hoping for. No.
+
+00:33:08.745 --> 00:33:10.985
+<v Speaker 1>We have to mess with this. And, again,
+
+00:33:12.025 --> 00:33:14.505
+<v Speaker 1>I'm not sure how exactly that would work.
+
+00:33:14.505 --> 00:33:14.904
+<v Speaker 1>But
+
+00:33:16.265 --> 00:33:18.320
+<v Speaker 1>so why did you want why did you
+
+00:33:18.320 --> 00:33:19.600
+<v Speaker 1>want a histogram?
+
+00:33:19.600 --> 00:33:21.600
+<v Speaker 0>I wanted to see the distribution of 200
+
+00:33:21.600 --> 00:33:22.799
+<v Speaker 0>to two o sixties.
+
+00:33:23.840 --> 00:33:25.040
+<v Speaker 0>I guess we could always just do it
+
+00:33:25.040 --> 00:33:27.039
+<v Speaker 0>at a really hacky way and maybe do
+
+00:33:27.280 --> 00:33:28.960
+<v Speaker 0>a count unique of the
+
+00:33:29.200 --> 00:33:30.800
+<v Speaker 0>the status just so we could get some
+
+00:33:30.800 --> 00:33:31.679
+<v Speaker 0>sort of number.
+
+00:33:31.920 --> 00:33:33.895
+<v Speaker 1>If you know what you want, walk me
+
+00:33:33.895 --> 00:33:35.894
+<v Speaker 1>through it and I'll write it. No. I'm
+
+00:33:36.295 --> 00:33:39.095
+<v Speaker 0>not a Prometheus person. I'm I'm a FluxDB
+
+00:33:39.175 --> 00:33:40.855
+<v Speaker 0>through and through. So I'm a
+
+00:33:41.975 --> 00:33:43.495
+<v Speaker 1>So so interestingly,
+
+00:33:43.495 --> 00:33:46.934
+<v Speaker 1>this is not Prometheus. These are logQL queries.
+
+00:33:46.934 --> 00:33:49.015
+<v Speaker 0>Oh, so this is Loki? This is Loki.
+
+00:33:49.015 --> 00:33:51.549
+<v Speaker 1>Exactly. Yep. Because we're looking at the logs,
+
+00:33:52.270 --> 00:33:54.350
+<v Speaker 1>and that's what we're working with here. So
+
+00:33:54.350 --> 00:33:56.110
+<v Speaker 1>what did you want to do, David, again?
+
+00:33:56.110 --> 00:33:58.190
+<v Speaker 1>Tell me so that I can Yeah. If
+
+00:33:58.190 --> 00:34:00.590
+<v Speaker 0>we could get maybe if we just do
+
+00:34:00.590 --> 00:34:01.870
+<v Speaker 0>by status
+
+00:34:01.870 --> 00:34:04.190
+<v Speaker 0>and then do account of that value.
+
+00:34:05.595 --> 00:34:07.835
+<v Speaker 1>So by status. Okay. So let's group them
+
+00:34:07.835 --> 00:34:08.795
+<v Speaker 1>by status,
+
+00:34:09.195 --> 00:34:09.755
+<v Speaker 1>maybe.
+
+00:34:11.195 --> 00:34:13.915
+<v Speaker 1>Let's do and that will give us fewer
+
+00:34:14.875 --> 00:34:16.475
+<v Speaker 1>see if it does something.
+
+00:34:17.139 --> 00:34:18.420
+<v Speaker 1>There we go. So we see the two
+
+00:34:18.420 --> 00:34:20.100
+<v Speaker 1>hundred and two o sixes.
+
+00:34:20.420 --> 00:34:22.020
+<v Speaker 1>Do want me to remove this,
+
+00:34:22.500 --> 00:34:24.739
+<v Speaker 1>or is this what you wanted to see?
+
+00:34:26.500 --> 00:34:27.140
+<v Speaker 0>Yeah.
+
+00:34:27.540 --> 00:34:29.540
+<v Speaker 0>I guess that's that's close enough. It looks
+
+00:34:29.540 --> 00:34:31.300
+<v Speaker 0>like what? One, two, three, four.
+
+00:34:32.244 --> 00:34:34.405
+<v Speaker 0>Seven eights are split. So it's mostly February
+
+00:34:34.405 --> 00:34:35.685
+<v Speaker 0>with some February.
+
+00:34:36.005 --> 00:34:37.285
+<v Speaker 0>Yep. Yeah.
+
+00:34:38.484 --> 00:34:40.324
+<v Speaker 0>I mean, that kind of that aligns with
+
+00:34:40.324 --> 00:34:41.445
+<v Speaker 0>the hypothesis
+
+00:34:41.445 --> 00:34:44.085
+<v Speaker 0>we had. There's maybe this is working as
+
+00:34:44.085 --> 00:34:46.630
+<v Speaker 0>intended with the partial content and the media
+
+00:34:46.630 --> 00:34:49.670
+<v Speaker 0>files being streamed over potentially slow connections that
+
+00:34:49.670 --> 00:34:51.030
+<v Speaker 0>make it take a bit of time.
+
+00:34:51.429 --> 00:34:51.989
+<v Speaker 1>Yeah.
+
+00:34:52.469 --> 00:34:54.630
+<v Speaker 1>That's what I'm Is there too. Could we
+
+00:34:54.630 --> 00:34:56.630
+<v Speaker 2>filter it to a single file?
+
+00:34:57.825 --> 00:35:00.385
+<v Speaker 2>I I'm wondering if that would reveal anything
+
+00:35:00.385 --> 00:35:02.385
+<v Speaker 2>just to take out the variability of these
+
+00:35:02.385 --> 00:35:03.425
+<v Speaker 2>are different files.
+
+00:35:04.704 --> 00:35:06.945
+<v Speaker 1>Okay. Yeah. That's a good idea. So let's
+
+00:35:06.945 --> 00:35:08.625
+<v Speaker 1>do path again in status.
+
+00:35:10.560 --> 00:35:13.760
+<v Speaker 1>And let's do actually group by group by
+
+00:35:13.760 --> 00:35:15.440
+<v Speaker 1>path. Wondering if, like you know, maybe some
+
+00:35:15.440 --> 00:35:18.080
+<v Speaker 2>of the m p threes are compressed differently
+
+00:35:19.760 --> 00:35:22.880
+<v Speaker 2>or are more compressible or are larger sizes.
+
+00:35:22.880 --> 00:35:23.520
+<v Speaker 2>So let's
+
+00:35:24.195 --> 00:35:25.475
+<v Speaker 2>kill the
+
+00:35:25.555 --> 00:35:27.555
+<v Speaker 2>fruit salad and turn this into, like, an
+
+00:35:27.555 --> 00:35:29.155
+<v Speaker 2>apples to apples comparison.
+
+00:35:29.635 --> 00:35:31.875
+<v Speaker 1>Yeah. Okay. So we're only we we are
+
+00:35:31.875 --> 00:35:33.715
+<v Speaker 1>grouping them by path now.
+
+00:35:34.755 --> 00:35:37.580
+<v Speaker 1>This one, for example, but we're limiting the
+
+00:35:37.580 --> 00:35:40.780
+<v Speaker 1>upstream response time to 59 to 61.
+
+00:35:40.860 --> 00:35:42.220
+<v Speaker 1>Do we want to expand that a little
+
+00:35:42.220 --> 00:35:42.700
+<v Speaker 1>bit?
+
+00:35:44.060 --> 00:35:45.820
+<v Speaker 1>Because this is constraining
+
+00:35:45.980 --> 00:35:46.620
+<v Speaker 1>which
+
+00:35:47.340 --> 00:35:49.260
+<v Speaker 1>responses it's going to show us, and I
+
+00:35:49.260 --> 00:35:50.620
+<v Speaker 1>think we want to have more.
+
+00:35:51.020 --> 00:35:52.325
+<v Speaker 1>I think we want to have more can
+
+00:35:52.325 --> 00:35:54.244
+<v Speaker 0>probably do anything above above,
+
+00:35:54.565 --> 00:35:57.125
+<v Speaker 0>you know, thirty, twenty. Like, anything that's not
+
+00:35:57.125 --> 00:35:59.845
+<v Speaker 0>normal, and then There we go. So if
+
+00:35:59.845 --> 00:36:01.204
+<v Speaker 1>you were to look at this one, for
+
+00:36:01.204 --> 00:36:02.885
+<v Speaker 1>example, go time one nine six,
+
+00:36:03.440 --> 00:36:05.520
+<v Speaker 1>we have an interesting I'm just gonna can
+
+00:36:05.520 --> 00:36:07.200
+<v Speaker 1>I make this I can't make this bigger
+
+00:36:07.200 --> 00:36:10.080
+<v Speaker 1>than this, unfortunately? I could maybe hide the
+
+00:36:10.960 --> 00:36:13.840
+<v Speaker 1>anyways, if we look at this, majority take
+
+00:36:13.840 --> 00:36:15.680
+<v Speaker 1>a minute. I think if you do the
+
+00:36:15.680 --> 00:36:16.960
+<v Speaker 0>full screen,
+
+00:36:16.960 --> 00:36:17.920
+<v Speaker 0>the graph.
+
+00:36:19.095 --> 00:36:20.935
+<v Speaker 1>Yes. No. I I think it's just like
+
+00:36:20.935 --> 00:36:23.015
+<v Speaker 1>the resolution. Alright. Okay. Let's
+
+00:36:23.015 --> 00:36:24.215
+<v Speaker 1>everybody can see.
+
+00:36:25.415 --> 00:36:26.055
+<v Speaker 1>So
+
+00:36:28.055 --> 00:36:29.974
+<v Speaker 1>what is our audience saying? I think we
+
+00:36:29.974 --> 00:36:30.935
+<v Speaker 1>have some good suggestions.
+
+00:36:32.380 --> 00:36:35.100
+<v Speaker 0>Yeah. So Carlos is agreeing that this is
+
+00:36:35.100 --> 00:36:36.300
+<v Speaker 0>maybe just standard
+
+00:36:36.460 --> 00:36:37.340
+<v Speaker 0>behavior.
+
+00:36:37.340 --> 00:36:39.500
+<v Speaker 0>The $2.00 6 is what's expected.
+
+00:36:40.460 --> 00:36:41.580
+<v Speaker 0>Yeah. What
+
+00:36:42.060 --> 00:36:42.860
+<v Speaker 0>else have we got?
+
+00:36:45.194 --> 00:36:46.714
+<v Speaker 0>Exactly what I'm saying. Request is gonna be
+
+00:36:46.714 --> 00:36:49.434
+<v Speaker 2>a smaller request than, like, a 200 request.
+
+00:36:49.434 --> 00:36:51.035
+<v Speaker 2>The 200 is going to be I I've
+
+00:36:51.035 --> 00:36:53.115
+<v Speaker 2>delivered you the entire file to you. The
+
+00:36:53.115 --> 00:36:54.555
+<v Speaker 2>206 is going to be I gave you
+
+00:36:54.555 --> 00:36:55.915
+<v Speaker 2>some subset of the file.
+
+00:36:56.234 --> 00:36:57.994
+<v Speaker 2>So I'd I'd expect the two zero sixes
+
+00:36:57.994 --> 00:36:58.954
+<v Speaker 2>to be slower, not
+
+00:36:59.780 --> 00:37:00.500
+<v Speaker 2>longer.
+
+00:37:01.380 --> 00:37:03.140
+<v Speaker 1>So these are the two hundreds.
+
+00:37:03.380 --> 00:37:05.220
+<v Speaker 1>We can see for this, like, go time
+
+00:37:05.220 --> 00:37:07.460
+<v Speaker 1>file how they are distributed.
+
+00:37:07.540 --> 00:37:09.300
+<v Speaker 1>The majority around one minute. We have a
+
+00:37:09.300 --> 00:37:10.180
+<v Speaker 1>few outliers here.
+
+00:37:11.635 --> 00:37:13.155
+<v Speaker 1>And for two zero six,
+
+00:37:13.555 --> 00:37:15.155
+<v Speaker 1>we have one which takes a minute and
+
+00:37:15.155 --> 00:37:17.795
+<v Speaker 1>one which takes two point six minutes.
+
+00:37:17.955 --> 00:37:18.995
+<v Speaker 1>Two point seven.
+
+00:37:19.395 --> 00:37:21.395
+<v Speaker 1>That's it. We can yeah. Why don't we
+
+00:37:21.395 --> 00:37:24.115
+<v Speaker 0>try and confirm our hypothesis then? And, like,
+
+00:37:24.115 --> 00:37:27.150
+<v Speaker 0>let's filter out the uploads directory and look
+
+00:37:27.150 --> 00:37:29.710
+<v Speaker 0>at the median response time of just standard
+
+00:37:29.710 --> 00:37:30.430
+<v Speaker 0>pages.
+
+00:37:30.510 --> 00:37:32.030
+<v Speaker 0>And then if we see anything that is
+
+00:37:32.030 --> 00:37:34.030
+<v Speaker 0>an outlier Yes. Yes. That's a great idea.
+
+00:37:34.030 --> 00:37:35.869
+<v Speaker 1>Okay. So I'll go back. I'll just refresh
+
+00:37:35.869 --> 00:37:37.630
+<v Speaker 1>so that we no. That's not what I
+
+00:37:37.630 --> 00:37:37.869
+<v Speaker 1>wanted.
+
+00:37:40.265 --> 00:37:43.305
+<v Speaker 1>Stay on page. Slides. Let me just refresh
+
+00:37:43.305 --> 00:37:45.385
+<v Speaker 1>this. Yeah. Leave page. I don't care about
+
+00:37:45.385 --> 00:37:47.065
+<v Speaker 1>any of the changes. I want to reset
+
+00:37:47.065 --> 00:37:48.905
+<v Speaker 1>back to, like, a good known state.
+
+00:37:49.705 --> 00:37:51.945
+<v Speaker 1>Let's what is the problem? Let's look at
+
+00:37:51.945 --> 00:37:54.025
+<v Speaker 1>that. Let's take the ninety ninth percentile.
+
+00:37:54.025 --> 00:37:56.160
+<v Speaker 1>Let's look at the web response times. And
+
+00:37:56.160 --> 00:37:57.760
+<v Speaker 1>let us in exclude
+
+00:37:58.000 --> 00:37:59.280
+<v Speaker 1>and by the way, we're excluding all the
+
+00:37:59.280 --> 00:38:00.320
+<v Speaker 1>health requests,
+
+00:38:00.400 --> 00:38:02.640
+<v Speaker 1>which is a good one to do. But
+
+00:38:02.640 --> 00:38:04.000
+<v Speaker 1>I think what we want to do is
+
+00:38:04.000 --> 00:38:04.960
+<v Speaker 1>exclude
+
+00:38:05.599 --> 00:38:08.640
+<v Speaker 1>everything which is doesn't include m p three.
+
+00:38:08.720 --> 00:38:10.480
+<v Speaker 0>Yeah. I think that's a good idea.
+
+00:38:11.165 --> 00:38:13.165
+<v Speaker 0>Let's just include all m p threes. Let's
+
+00:38:13.165 --> 00:38:15.484
+<v Speaker 1>include all m p threes. Oh, look at
+
+00:38:15.484 --> 00:38:15.965
+<v Speaker 0>that.
+
+00:38:16.925 --> 00:38:19.085
+<v Speaker 1>Nice. That's what you want. If we exclude,
+
+00:38:19.085 --> 00:38:20.685
+<v Speaker 1>we have, like, a few think there was
+
+00:38:20.845 --> 00:38:22.125
+<v Speaker 1>I know there was an event there, so
+
+00:38:22.125 --> 00:38:23.885
+<v Speaker 1>let's just ignore that for now, and let's
+
+00:38:23.885 --> 00:38:24.605
+<v Speaker 1>focus on this.
+
+00:38:25.580 --> 00:38:27.660
+<v Speaker 1>And maybe let's come back to see this.
+
+00:38:27.660 --> 00:38:28.940
+<v Speaker 1>So what do we see now?
+
+00:38:29.900 --> 00:38:31.580
+<v Speaker 1>So if we don't take into account the
+
+00:38:31.580 --> 00:38:32.540
+<v Speaker 1>m p threes,
+
+00:38:32.700 --> 00:38:34.380
+<v Speaker 1>this looks a lot lot better.
+
+00:38:34.860 --> 00:38:37.420
+<v Speaker 1>Most requests are under one second.
+
+00:38:39.305 --> 00:38:40.105
+<v Speaker 0>Yep.
+
+00:38:40.184 --> 00:38:41.545
+<v Speaker 1>And I think we'd like to understand a
+
+00:38:41.545 --> 00:38:43.625
+<v Speaker 1>bit more what happens with those requests.
+
+00:38:44.184 --> 00:38:45.865
+<v Speaker 1>So let's just do that. I'm going to
+
+00:38:45.865 --> 00:38:47.225
+<v Speaker 1>refresh the page again.
+
+00:38:47.865 --> 00:38:49.704
+<v Speaker 1>I just remind myself that I have a
+
+00:38:49.704 --> 00:38:49.944
+<v Speaker 1>slide.
+
+00:38:50.890 --> 00:38:53.450
+<v Speaker 1>Which responses take over one second
+
+00:38:53.450 --> 00:38:55.850
+<v Speaker 1>which are not uploads? Look at that.
+
+00:38:56.330 --> 00:38:58.330
+<v Speaker 1>It's almost like I could foretell that's like
+
+00:38:58.330 --> 00:39:01.130
+<v Speaker 1>we're going to get there. Look at that.
+
+00:39:01.130 --> 00:39:01.690
+<v Speaker 1>So
+
+00:39:03.050 --> 00:39:04.810
+<v Speaker 1>we see all requests,
+
+00:39:05.290 --> 00:39:06.250
+<v Speaker 1>get sitemap.
+
+00:39:07.425 --> 00:39:08.545
+<v Speaker 1>That is the one
+
+00:39:09.025 --> 00:39:11.025
+<v Speaker 1>which takes many seconds.
+
+00:39:11.905 --> 00:39:13.185
+<v Speaker 0>That is XML
+
+00:39:13.185 --> 00:39:16.225
+<v Speaker 0>failed. Alright. Exactly. It's clearing the the entire,
+
+00:39:16.225 --> 00:39:17.425
+<v Speaker 1>like, master feed.
+
+00:39:17.665 --> 00:39:18.945
+<v Speaker 1>This takes a few seconds. Generated?
+
+00:39:19.590 --> 00:39:21.510
+<v Speaker 2>Is it a generated URL? Or just because
+
+00:39:21.510 --> 00:39:23.350
+<v Speaker 2>it says sitemap..XML
+
+00:39:23.350 --> 00:39:25.510
+<v Speaker 2>doesn't mean that it's not a dynamically generated
+
+00:39:25.510 --> 00:39:27.990
+<v Speaker 2>page. It is a dynamically generated page. Yes.
+
+00:39:27.990 --> 00:39:30.230
+<v Speaker 1>It is. And it has to query the
+
+00:39:30.230 --> 00:39:31.350
+<v Speaker 1>entire database
+
+00:39:31.590 --> 00:39:32.710
+<v Speaker 1>when it gets generated.
+
+00:39:33.895 --> 00:39:36.295
+<v Speaker 2>Are your m p threes served as, like,
+
+00:39:36.295 --> 00:39:39.095
+<v Speaker 2>static content, or are they also going through
+
+00:39:39.655 --> 00:39:40.135
+<v Speaker 2>dynamic
+
+00:39:41.095 --> 00:39:41.975
+<v Speaker 2>processing?
+
+00:39:42.135 --> 00:39:44.775
+<v Speaker 2>Maybe the ranged requests are are
+
+00:39:45.255 --> 00:39:47.415
+<v Speaker 2>like like I was describing, I tried to
+
+00:39:47.415 --> 00:39:49.880
+<v Speaker 2>make my own media service that that would
+
+00:39:49.880 --> 00:39:51.640
+<v Speaker 2>cut things up. Mhmm.
+
+00:39:51.880 --> 00:39:54.520
+<v Speaker 2>Are you is, you know, NGINX
+
+00:39:54.680 --> 00:39:56.840
+<v Speaker 2>doing the partial range
+
+00:39:56.920 --> 00:39:57.800
+<v Speaker 2>response
+
+00:39:58.200 --> 00:39:59.560
+<v Speaker 2>request handling,
+
+00:39:59.800 --> 00:40:03.135
+<v Speaker 2>or is this, like, you know, for lack
+
+00:40:03.135 --> 00:40:06.095
+<v Speaker 2>of a better comparison, a PHP script that's
+
+00:40:06.415 --> 00:40:07.695
+<v Speaker 2>reading this in?
+
+00:40:08.735 --> 00:40:10.175
+<v Speaker 1>Because the volume
+
+00:40:10.895 --> 00:40:13.295
+<v Speaker 1>the uploads volume is attached to the app,
+
+00:40:14.670 --> 00:40:15.790
+<v Speaker 1>the requests
+
+00:40:15.869 --> 00:40:18.510
+<v Speaker 1>go through the app. So we can't attach
+
+00:40:18.510 --> 00:40:19.630
+<v Speaker 1>this volume
+
+00:40:20.109 --> 00:40:22.190
+<v Speaker 1>to this pod. This runs, like, in a
+
+00:40:22.190 --> 00:40:23.310
+<v Speaker 1>different namespace.
+
+00:40:24.430 --> 00:40:27.390
+<v Speaker 1>It's like you know? So we need like,
+
+00:40:27.390 --> 00:40:29.310
+<v Speaker 1>the app needs to be able to write
+
+00:40:30.165 --> 00:40:31.765
+<v Speaker 1>the app needs to be able to write
+
+00:40:31.765 --> 00:40:34.085
+<v Speaker 1>to this volume when, for example, we upload
+
+00:40:34.085 --> 00:40:35.525
+<v Speaker 1>m p threes. So
+
+00:40:36.005 --> 00:40:38.325
+<v Speaker 1>the volume is attached to the app. The
+
+00:40:38.325 --> 00:40:40.245
+<v Speaker 1>requests to m p threes go through the
+
+00:40:40.245 --> 00:40:40.885
+<v Speaker 1>app,
+
+00:40:41.285 --> 00:40:41.605
+<v Speaker 1>which is
+
+00:40:42.400 --> 00:40:44.400
+<v Speaker 1>fairly fast to serve them. And I don't
+
+00:40:44.400 --> 00:40:45.920
+<v Speaker 1>think that's a problem. It's just like we're
+
+00:40:45.920 --> 00:40:47.520
+<v Speaker 1>seeing that the app
+
+00:40:47.680 --> 00:40:49.920
+<v Speaker 1>or say, we're seeing the result of the
+
+00:40:49.920 --> 00:40:51.200
+<v Speaker 1>app serving
+
+00:40:51.200 --> 00:40:53.120
+<v Speaker 1>m p three files,
+
+00:40:53.120 --> 00:40:54.800
+<v Speaker 1>which maybe we wouldn't expect.
+
+00:40:55.425 --> 00:40:56.785
+<v Speaker 1>So I think that we need to filter
+
+00:40:56.785 --> 00:40:57.665
+<v Speaker 1>this out.
+
+00:40:59.025 --> 00:41:01.185
+<v Speaker 2>Does the app have hooks of some sort?
+
+00:41:01.185 --> 00:41:03.105
+<v Speaker 2>So every time somebody makes a request, is
+
+00:41:03.105 --> 00:41:05.425
+<v Speaker 2>it writing something to a database? Is it
+
+00:41:05.425 --> 00:41:06.705
+<v Speaker 2>keeping track of,
+
+00:41:07.105 --> 00:41:08.705
+<v Speaker 2>you know, user activity
+
+00:41:09.585 --> 00:41:10.385
+<v Speaker 2>in real time?
+
+00:41:12.200 --> 00:41:14.280
+<v Speaker 1>It it depends on the request. Process?
+
+00:41:14.680 --> 00:41:16.280
+<v Speaker 1>Yeah. Not when an m p three gets
+
+00:41:16.280 --> 00:41:18.200
+<v Speaker 1>gets hit. So for example, an m p
+
+00:41:18.200 --> 00:41:19.400
+<v Speaker 1>three request,
+
+00:41:19.400 --> 00:41:21.320
+<v Speaker 1>if it's not cached in the CDN
+
+00:41:22.359 --> 00:41:24.280
+<v Speaker 1>it's usually is. But if it's not cached
+
+00:41:24.280 --> 00:41:25.000
+<v Speaker 1>in the CDN,
+
+00:41:25.434 --> 00:41:27.755
+<v Speaker 1>then it has to go through all the
+
+00:41:27.755 --> 00:41:29.355
+<v Speaker 1>stack. It has to go through the balancer,
+
+00:41:29.355 --> 00:41:30.875
+<v Speaker 1>through the ingress, through the phoenix.
+
+00:41:31.515 --> 00:41:34.395
+<v Speaker 1>So the expectation is that the c the
+
+00:41:34.395 --> 00:41:36.715
+<v Speaker 1>the m p threes will eventually
+
+00:41:37.355 --> 00:41:39.515
+<v Speaker 1>all be served from the CDN unless they
+
+00:41:39.515 --> 00:41:39.914
+<v Speaker 1>expire.
+
+00:41:40.630 --> 00:41:41.910
+<v Speaker 1>So the
+
+00:41:42.150 --> 00:41:43.190
+<v Speaker 1>TTL
+
+00:41:43.510 --> 00:41:45.590
+<v Speaker 1>on the m p threes is really high.
+
+00:41:45.590 --> 00:41:47.510
+<v Speaker 1>So if we were to look, for example,
+
+00:41:47.510 --> 00:41:48.070
+<v Speaker 1>at
+
+00:41:48.550 --> 00:41:50.710
+<v Speaker 1>this one let's take this one,
+
+00:41:51.030 --> 00:41:52.310
+<v Speaker 1>and let's see what do we get if
+
+00:41:52.310 --> 00:41:53.270
+<v Speaker 1>we were to query it.
+
+00:41:54.025 --> 00:41:55.545
+<v Speaker 0>So let me just get out of here.
+
+00:41:55.545 --> 00:41:57.065
+<v Speaker 1>HTTP stats.
+
+00:41:59.625 --> 00:42:05.545
+<v Speaker 1>Uploads.
+
+00:42:05.545 --> 00:42:06.800
+<v Speaker 1>So what do we get this, by the
+
+00:42:06.800 --> 00:42:08.320
+<v Speaker 1>way? We'll get it. So it's a miss
+
+00:42:08.320 --> 00:42:10.080
+<v Speaker 1>miss. It's not in the cache.
+
+00:42:10.880 --> 00:42:14.560
+<v Speaker 1>And what happened? Audio MPEG. HTTP 200.
+
+00:42:14.720 --> 00:42:16.480
+<v Speaker 1>So what what happens if we do that
+
+00:42:16.480 --> 00:42:16.800
+<v Speaker 1>again?
+
+00:42:19.575 --> 00:42:20.775
+<v Speaker 1>Oh, it's in the cache.
+
+00:42:25.255 --> 00:42:27.815
+<v Speaker 2>Jared gave us a message that there's no
+
+00:42:27.815 --> 00:42:29.255
+<v Speaker 2>logic involved.
+
+00:42:29.255 --> 00:42:32.135
+<v Speaker 2>It's Elixir static serving library.
+
+00:42:32.135 --> 00:42:32.375
+<v Speaker 1>Yeah.
+
+00:42:33.030 --> 00:42:34.950
+<v Speaker 1>Yeah. Yeah. That's right. There's a few comments
+
+00:42:34.950 --> 00:42:36.710
+<v Speaker 0>probably worth highlighting. So if there's that one
+
+00:42:36.710 --> 00:42:38.310
+<v Speaker 0>there saying the other is not logic.
+
+00:42:39.430 --> 00:42:40.790
+<v Speaker 0>We've got one from
+
+00:42:41.990 --> 00:42:44.630
+<v Speaker 0>Bogdan who says, it's curious if we divide
+
+00:42:44.630 --> 00:42:46.550
+<v Speaker 0>the response body size to the time of
+
+00:42:46.550 --> 00:42:48.955
+<v Speaker 0>delivery or response with the equal to bit
+
+00:42:48.955 --> 00:42:51.275
+<v Speaker 0>rate of the m p three. I don't
+
+00:42:51.275 --> 00:42:52.875
+<v Speaker 0>think we have that information in the log.
+
+00:42:52.875 --> 00:42:54.714
+<v Speaker 0>No. We don't. No. And the bit rate
+
+00:42:54.714 --> 00:42:57.115
+<v Speaker 1>is always the same. That doesn't change. Yeah.
+
+00:42:57.195 --> 00:42:58.715
+<v Speaker 1>They all have the same bit rate.
+
+00:42:59.115 --> 00:43:01.500
+<v Speaker 0>Yeah. Gerard asked, how does the CDN play
+
+00:43:01.500 --> 00:43:03.340
+<v Speaker 0>into this? Shouldn't it be handling those range
+
+00:43:03.340 --> 00:43:05.660
+<v Speaker 0>requests directly and caching our MP thirties?
+
+00:43:05.820 --> 00:43:08.380
+<v Speaker 1>That's exactly what I'm showing here. Yeah. So
+
+00:43:08.380 --> 00:43:10.540
+<v Speaker 1>the first request was not
+
+00:43:10.860 --> 00:43:12.700
+<v Speaker 1>in the CDN. I was expecting it to
+
+00:43:12.700 --> 00:43:14.244
+<v Speaker 1>be in the CDN, to be honest. Yeah.
+
+00:43:14.244 --> 00:43:16.325
+<v Speaker 0>That can cut off guard. Because I'm assuming
+
+00:43:16.325 --> 00:43:18.885
+<v Speaker 0>people listen to these quite Exactly. I mean,
+
+00:43:18.885 --> 00:43:21.605
+<v Speaker 1>we've seen the requests. Right? Yeah. So how
+
+00:43:21.605 --> 00:43:23.285
+<v Speaker 1>long should it be in the CDN?
+
+00:43:24.085 --> 00:43:25.445
+<v Speaker 1>Strict transport security,
+
+00:43:26.950 --> 00:43:27.990
+<v Speaker 1>ETag.
+
+00:43:29.190 --> 00:43:32.230
+<v Speaker 0>Yeah. What's the cache control on it? The
+
+00:43:32.630 --> 00:43:34.630
+<v Speaker 1>length? Cache control public.
+
+00:43:36.230 --> 00:43:38.070
+<v Speaker 2>Can we include the cache in our
+
+00:43:38.950 --> 00:43:39.830
+<v Speaker 2>in the filter?
+
+00:43:42.555 --> 00:43:45.595
+<v Speaker 1>The cache header, I'm not sure. Response headers.
+
+00:43:45.595 --> 00:43:47.595
+<v Speaker 2>Yeah. There's yeah. So let me see that.
+
+00:43:47.595 --> 00:43:49.275
+<v Speaker 1>Let me explore. We have to go back
+
+00:43:49.275 --> 00:43:50.795
+<v Speaker 1>to the explorer.
+
+00:43:51.275 --> 00:43:52.635
+<v Speaker 1>Let me close this one.
+
+00:43:53.035 --> 00:43:54.155
+<v Speaker 1>And if we look at that, let's see
+
+00:43:54.155 --> 00:43:54.875
+<v Speaker 1>what do we have here.
+
+00:43:58.740 --> 00:43:59.380
+<v Speaker 2>So
+
+00:43:59.620 --> 00:44:01.220
+<v Speaker 2>this is all request,
+
+00:44:01.220 --> 00:44:03.700
+<v Speaker 2>but do we have response headers of any
+
+00:44:03.700 --> 00:44:04.340
+<v Speaker 2>sort?
+
+00:44:05.060 --> 00:44:07.620
+<v Speaker 1>That's it. Bye. Here's
+
+00:44:07.620 --> 00:44:09.380
+<v Speaker 0>a question from Noel, which I think is
+
+00:44:09.380 --> 00:44:12.260
+<v Speaker 0>quite interesting. I'm curious if you know the
+
+00:44:11.595 --> 00:44:14.234
+<v Speaker 0>answer. Well, Noel has a hypothesis first. So
+
+00:44:14.234 --> 00:44:16.075
+<v Speaker 0>he says, is the client that requests a
+
+00:44:16.075 --> 00:44:18.234
+<v Speaker 0>fail on slower connection is getting it delivered
+
+00:44:18.234 --> 00:44:20.155
+<v Speaker 0>in chunks with two o sixes, whereas faster
+
+00:44:20.155 --> 00:44:22.155
+<v Speaker 0>connections get it in a single go?
+
+00:44:22.555 --> 00:44:25.195
+<v Speaker 0>Does anyone know how that negotiation happens between
+
+00:44:25.195 --> 00:44:25.755
+<v Speaker 0>the browser,
+
+00:44:26.190 --> 00:44:27.869
+<v Speaker 0>the size of the file, and whether it
+
+00:44:27.869 --> 00:44:30.190
+<v Speaker 0>wants to stream it or not? Like,
+
+00:44:31.390 --> 00:44:33.230
+<v Speaker 0>is is that even how it works?
+
+00:44:34.270 --> 00:44:35.390
+<v Speaker 0>Because I have no idea.
+
+00:44:40.255 --> 00:44:42.815
+<v Speaker 2>The browser makes two zero six requests,
+
+00:44:42.815 --> 00:44:44.175
+<v Speaker 2>and the server can
+
+00:44:47.135 --> 00:44:48.735
+<v Speaker 2>so you you request, like, you can say
+
+00:44:48.735 --> 00:44:51.295
+<v Speaker 2>zero dash to to the end of file,
+
+00:44:51.295 --> 00:44:53.135
+<v Speaker 2>or you can give a specific range request.
+
+00:44:53.570 --> 00:44:56.290
+<v Speaker 2>The server is expected to deliver
+
+00:44:56.290 --> 00:44:58.930
+<v Speaker 2>that entire range. The shortcut I was trying
+
+00:44:58.930 --> 00:45:01.410
+<v Speaker 2>to make was to give the user less
+
+00:45:01.410 --> 00:45:02.770
+<v Speaker 2>than what they asked for,
+
+00:45:03.090 --> 00:45:04.370
+<v Speaker 2>which wasn't
+
+00:45:05.090 --> 00:45:06.770
+<v Speaker 2>covered in the spec. If the user said
+
+00:45:06.770 --> 00:45:08.130
+<v Speaker 2>they wanted zero dash,
+
+00:45:10.565 --> 00:45:11.205
+<v Speaker 2>the
+
+00:45:11.444 --> 00:45:13.685
+<v Speaker 2>user was expecting to get the whole file.
+
+00:45:14.645 --> 00:45:16.565
+<v Speaker 2>I I believe that there's also if you
+
+00:45:16.565 --> 00:45:19.525
+<v Speaker 2>make a a regular request, the server can
+
+00:45:19.525 --> 00:45:21.365
+<v Speaker 2>can refuse to do that and tell you
+
+00:45:21.365 --> 00:45:22.724
+<v Speaker 2>to make ranged requests.
+
+00:45:24.540 --> 00:45:25.100
+<v Speaker 2>And,
+
+00:45:26.380 --> 00:45:28.700
+<v Speaker 2>and if your range is,
+
+00:45:29.260 --> 00:45:31.020
+<v Speaker 2>if your range size is wrong, I think
+
+00:45:31.020 --> 00:45:32.140
+<v Speaker 2>there's HTTP,
+
+00:45:32.940 --> 00:45:35.660
+<v Speaker 2>error messages you can return. Status codes, can
+
+00:45:35.740 --> 00:45:37.740
+<v Speaker 2>return for, range
+
+00:45:38.060 --> 00:45:38.860
+<v Speaker 2>scoping problems.
+
+00:45:40.665 --> 00:45:43.145
+<v Speaker 2>But the control, I think, is in the
+
+00:45:43.145 --> 00:45:44.825
+<v Speaker 2>in the client sense here.
+
+00:45:45.225 --> 00:45:46.185
+<v Speaker 0>Okay. So,
+
+00:45:46.665 --> 00:45:48.825
+<v Speaker 0>I mean, I'm still confused, but that's that's
+
+00:45:48.825 --> 00:45:51.545
+<v Speaker 0>not an anomaly. Right? I'm always confused. So
+
+00:45:52.150 --> 00:45:54.070
+<v Speaker 0>how does we've seen a lot of those
+
+00:45:54.070 --> 00:45:56.470
+<v Speaker 0>m p threes with a 200 rather than
+
+00:45:56.470 --> 00:45:58.310
+<v Speaker 0>a two zero six. Who makes that decision?
+
+00:45:58.310 --> 00:45:59.670
+<v Speaker 0>The client or the server?
+
+00:46:02.310 --> 00:46:03.830
+<v Speaker 2>The client Or does the 200 mean the
+
+00:46:03.830 --> 00:46:04.790
+<v Speaker 0>server all? Like.
+
+00:46:05.845 --> 00:46:06.725
+<v Speaker 2>Carlos
+
+00:46:06.725 --> 00:46:09.205
+<v Speaker 2>said that the browser does an options first,
+
+00:46:09.205 --> 00:46:10.325
+<v Speaker 2>and that that sounds
+
+00:46:10.645 --> 00:46:12.485
+<v Speaker 0>The options would give it the size,
+
+00:46:12.485 --> 00:46:14.965
+<v Speaker 0>and then the browser decides whether I'm fast
+
+00:46:14.965 --> 00:46:16.725
+<v Speaker 0>enough to do a 200 or a partial.
+
+00:46:17.540 --> 00:46:19.780
+<v Speaker 2>I think it it tells the client that
+
+00:46:19.780 --> 00:46:22.020
+<v Speaker 2>I'm capable of doing ranged requests,
+
+00:46:22.020 --> 00:46:23.940
+<v Speaker 2>and then the client says, I I wanna
+
+00:46:23.940 --> 00:46:25.380
+<v Speaker 2>do ranged requests.
+
+00:46:25.619 --> 00:46:26.180
+<v Speaker 0>Mhmm.
+
+00:46:27.940 --> 00:46:29.380
+<v Speaker 2>When when you send it, there's
+
+00:46:31.035 --> 00:46:32.075
+<v Speaker 2>is it range?
+
+00:46:32.395 --> 00:46:34.155
+<v Speaker 2>The header might be range that you send
+
+00:46:34.155 --> 00:46:36.395
+<v Speaker 2>it in your in your get request.
+
+00:46:37.115 --> 00:46:39.115
+<v Speaker 0>So does that range always happen for an
+
+00:46:39.115 --> 00:46:39.674
+<v Speaker 0>MBFTs?
+
+00:46:44.430 --> 00:46:46.589
+<v Speaker 1>I don't think because right now, I'm struggling
+
+00:46:46.589 --> 00:46:48.270
+<v Speaker 0>to know how to explain the two hundreds
+
+00:46:48.270 --> 00:46:49.870
+<v Speaker 0>on the MPT files
+
+00:46:50.349 --> 00:46:51.870
+<v Speaker 0>because we did see a few.
+
+00:46:53.790 --> 00:46:54.990
+<v Speaker 1>Okay. So
+
+00:46:55.869 --> 00:46:57.835
+<v Speaker 1>Is this the difference between a browser that
+
+00:46:57.835 --> 00:46:59.835
+<v Speaker 0>knows how to play media and streams it
+
+00:46:59.835 --> 00:47:02.635
+<v Speaker 0>versus something like, you know, a download,
+
+00:47:02.635 --> 00:47:03.915
+<v Speaker 0>which would be a 200?
+
+00:47:03.915 --> 00:47:05.515
+<v Speaker 0>Is it maybe just that kind of interface
+
+00:47:05.515 --> 00:47:07.035
+<v Speaker 0>or right click and save as is a
+
+00:47:07.035 --> 00:47:09.435
+<v Speaker 0>200, but playing in the browser is a
+
+00:47:09.435 --> 00:47:10.635
+<v Speaker 0>range?
+
+00:47:10.635 --> 00:47:11.915
+<v Speaker 0>Is it as simple as that maybe?
+
+00:47:15.040 --> 00:47:17.440
+<v Speaker 1>What happens if you download this with curl
+
+00:47:18.320 --> 00:47:19.920
+<v Speaker 1>and send it to dev null?
+
+00:47:22.320 --> 00:47:23.760
+<v Speaker 1>You go to two hundreds
+
+00:47:23.920 --> 00:47:26.285
+<v Speaker 1>and you serve the whole thing. Yeah.
+
+00:47:26.925 --> 00:47:28.125
+<v Speaker 0>But what if you do that on the
+
+00:47:28.125 --> 00:47:30.845
+<v Speaker 0>Changelog website with DevTools opened? Are we gonna
+
+00:47:30.845 --> 00:47:32.365
+<v Speaker 0>see a $2.00 6 range?
+
+00:47:32.765 --> 00:47:33.805
+<v Speaker 1>So
+
+00:47:33.805 --> 00:47:36.605
+<v Speaker 1>that's not what I meant. I meant Changelog.com.
+
+00:47:37.725 --> 00:47:39.780
+<v Speaker 1>And let's save this one. So if you
+
+00:47:39.780 --> 00:47:41.220
+<v Speaker 1>were to play this one, let me open
+
+00:47:41.220 --> 00:47:44.020
+<v Speaker 1>the browser. I I'd see inspect element. That's
+
+00:47:44.020 --> 00:47:44.660
+<v Speaker 1>the one.
+
+00:47:45.780 --> 00:47:48.020
+<v Speaker 1>Network. Yeah. So if we clear the network
+
+00:47:48.020 --> 00:47:49.300
+<v Speaker 0>and keep an eye on that and then
+
+00:47:49.300 --> 00:47:51.140
+<v Speaker 0>hit play, I'm curious what we see.
+
+00:47:55.425 --> 00:47:56.145
+<v Speaker 1>Okay.
+
+00:47:56.385 --> 00:47:58.224
+<v Speaker 1>CDN byte range. I think this is the
+
+00:47:58.224 --> 00:48:00.305
+<v Speaker 1>one. An error occurred while trying to get
+
+00:48:00.305 --> 00:48:01.345
+<v Speaker 1>the resource. Right?
+
+00:48:01.825 --> 00:48:03.585
+<v Speaker 1>Accept request bytes.
+
+00:48:04.785 --> 00:48:05.665
+<v Speaker 1>Varnage
+
+00:48:05.665 --> 00:48:06.224
+<v Speaker 1>miss.
+
+00:48:07.390 --> 00:48:10.270
+<v Speaker 1>I'm not seeing the response, though. Headers.
+
+00:48:10.510 --> 00:48:11.790
+<v Speaker 1>O206.
+
+00:48:11.790 --> 00:48:12.750
+<v Speaker 0>Alright. Okay.
+
+00:48:12.990 --> 00:48:15.550
+<v Speaker 0>The behavior we're seeing is the difference between
+
+00:48:15.550 --> 00:48:16.430
+<v Speaker 0>download
+
+00:48:16.430 --> 00:48:19.070
+<v Speaker 0>and playing it through the change log website,
+
+00:48:19.070 --> 00:48:19.470
+<v Speaker 0>perhaps.
+
+00:48:20.305 --> 00:48:22.065
+<v Speaker 1>That makes sense. You should see in the
+
+00:48:22.065 --> 00:48:24.785
+<v Speaker 2>request, you should see that content range header.
+
+00:48:24.785 --> 00:48:26.785
+<v Speaker 2>Was that specified here or not at all?
+
+00:48:26.785 --> 00:48:29.025
+<v Speaker 1>That's right. It was specified. Look. And that's
+
+00:48:29.025 --> 00:48:30.545
+<v Speaker 1>right there. Range bytes.
+
+00:48:31.825 --> 00:48:32.785
+<v Speaker 1>That's exactly right.
+
+00:48:34.500 --> 00:48:36.260
+<v Speaker 0>And now I'm learning how media works over
+
+00:48:36.260 --> 00:48:37.620
+<v Speaker 0>HTTP. So
+
+00:48:40.740 --> 00:48:42.500
+<v Speaker 1>can we see this? I'm wondering if we
+
+00:48:42.500 --> 00:48:44.260
+<v Speaker 1>can see this request right now live.
+
+00:48:46.855 --> 00:48:48.454
+<v Speaker 0>Do we have the request ID on the
+
+00:48:48.454 --> 00:48:50.134
+<v Speaker 0>client side that we can go ahead to
+
+00:48:50.134 --> 00:48:51.015
+<v Speaker 0>locate? Every
+
+00:48:51.575 --> 00:48:53.734
+<v Speaker 2>everyone in the comment thread, hit this file
+
+00:48:53.734 --> 00:48:54.934
+<v Speaker 2>at the same time, and we're gonna see
+
+00:48:54.934 --> 00:48:56.214
+<v Speaker 2>who gets it slowest.
+
+00:48:57.015 --> 00:48:58.375
+<v Speaker 2>And we'll ask you what you like for
+
+00:48:58.375 --> 00:49:00.134
+<v Speaker 2>dinner. That's a great idea. I love it.
+
+00:49:00.134 --> 00:49:02.200
+<v Speaker 1>I love that. Also, I have to switch
+
+00:49:02.200 --> 00:49:03.160
+<v Speaker 1>my lights on.
+
+00:49:03.800 --> 00:49:04.840
+<v Speaker 1>Very important.
+
+00:49:10.280 --> 00:49:12.280
+<v Speaker 1>One is done. Just one second.
+
+00:49:12.520 --> 00:49:14.760
+<v Speaker 2>Something something else that
+
+00:49:15.195 --> 00:49:16.475
+<v Speaker 2>I was
+
+00:49:16.475 --> 00:49:18.555
+<v Speaker 2>considering in Google, but I I didn't find
+
+00:49:18.555 --> 00:49:20.875
+<v Speaker 2>any great answers, was possibly
+
+00:49:22.795 --> 00:49:25.515
+<v Speaker 2>that your your caching back end is maybe
+
+00:49:25.515 --> 00:49:27.435
+<v Speaker 2>having an easier time caching
+
+00:49:27.515 --> 00:49:29.835
+<v Speaker 2>the entire file versus ranges.
+
+00:49:36.640 --> 00:49:38.320
+<v Speaker 1>I didn't hear what you've said because I
+
+00:49:38.320 --> 00:49:41.040
+<v Speaker 1>was busy clicking. But we've loaded we've loaded
+
+00:49:41.040 --> 00:49:43.520
+<v Speaker 1>the we've loaded. So this one was which
+
+00:49:43.520 --> 00:49:46.185
+<v Speaker 1>one was this? This one change Log458.
+
+00:49:46.185 --> 00:49:47.865
+<v Speaker 1>This was a miss. So let's see if
+
+00:49:47.865 --> 00:49:50.585
+<v Speaker 1>we can see it here. Right here. 458
+
+00:49:50.585 --> 00:49:52.585
+<v Speaker 1>change log. I'm not seeing it. Yeah.
+
+00:49:54.105 --> 00:49:56.505
+<v Speaker 1>Are they taking over ten seconds? Because there's
+
+00:49:56.505 --> 00:49:56.905
+<v Speaker 1>a limit.
+
+00:49:57.819 --> 00:50:00.380
+<v Speaker 1>Are they taking over ten seconds? ShipIt. Fm,
+
+00:50:00.380 --> 00:50:02.220
+<v Speaker 1>by the way, I think people must have
+
+00:50:02.220 --> 00:50:03.980
+<v Speaker 1>been hitting this when I mentioned it.
+
+00:50:04.460 --> 00:50:06.460
+<v Speaker 1>Do you see that? Like, a lot of
+
+00:50:06.460 --> 00:50:09.099
+<v Speaker 1>these like, the ShipIt episode 18 was being
+
+00:50:09.099 --> 00:50:11.945
+<v Speaker 1>played. So that's an interesting one. So That's
+
+00:50:11.945 --> 00:50:13.545
+<v Speaker 0>probably just my mom. We can ignore that
+
+00:50:13.545 --> 00:50:15.305
+<v Speaker 0>one. It is. It is. You're right. She
+
+00:50:15.305 --> 00:50:16.665
+<v Speaker 1>really wants to listen to that episode. So
+
+00:50:16.665 --> 00:50:18.345
+<v Speaker 1>if we if we remove that, if we
+
+00:50:18.345 --> 00:50:20.985
+<v Speaker 1>remove the limitation and then we come back
+
+00:50:20.985 --> 00:50:22.425
+<v Speaker 1>to the slides, what do we see?
+
+00:50:23.720 --> 00:50:25.160
+<v Speaker 1>Oh, that's interesting.
+
+00:50:26.200 --> 00:50:28.760
+<v Speaker 1>Let's just filter by m p threes.
+
+00:50:28.920 --> 00:50:29.480
+<v Speaker 1>So
+
+00:50:30.359 --> 00:50:31.240
+<v Speaker 1>let's do
+
+00:50:31.960 --> 00:50:34.119
+<v Speaker 1>responses taking over. I think we already have
+
+00:50:34.119 --> 00:50:35.640
+<v Speaker 1>this, actually. So let me go back. Let
+
+00:50:35.640 --> 00:50:37.640
+<v Speaker 1>me just refresh this. Yeah. Leave oh, no.
+
+00:50:37.725 --> 00:50:39.165
+<v Speaker 1>Just leave page.
+
+00:50:39.965 --> 00:50:42.205
+<v Speaker 1>Let's take which responses are slow.
+
+00:50:42.685 --> 00:50:44.765
+<v Speaker 1>Response is taking over ten seconds.
+
+00:50:45.245 --> 00:50:46.525
+<v Speaker 1>JS party.
+
+00:50:48.365 --> 00:50:50.445
+<v Speaker 1>Shit. These are the only ones in the
+
+00:50:50.445 --> 00:50:52.205
+<v Speaker 1>last five minutes which take more than ten
+
+00:50:52.205 --> 00:50:52.445
+<v Speaker 1>seconds.
+
+00:50:53.160 --> 00:50:54.599
+<v Speaker 0>Okay. So Oh, I see. I see what
+
+00:50:54.599 --> 00:50:57.240
+<v Speaker 1>the problem was. Yeah. Gone. I'm now I've
+
+00:50:57.240 --> 00:50:59.319
+<v Speaker 0>got my dev tool set up on throttles
+
+00:50:59.319 --> 00:51:00.680
+<v Speaker 0>on network to GPRS,
+
+00:51:00.680 --> 00:51:03.000
+<v Speaker 0>and I am now playing four five eight.
+
+00:51:03.000 --> 00:51:05.240
+<v Speaker 0>So Mhmm. You should be able to see
+
+00:51:05.240 --> 00:51:07.000
+<v Speaker 0>that command, and it's definitely gonna take more
+
+00:51:07.000 --> 00:51:08.440
+<v Speaker 0>than ten seconds with that throttle,
+
+00:51:09.375 --> 00:51:10.575
+<v Speaker 1>One hopes. Right.
+
+00:51:10.895 --> 00:51:13.535
+<v Speaker 1>So which responses are slow, taking over ten
+
+00:51:13.535 --> 00:51:14.895
+<v Speaker 1>seconds? This is one which I want to
+
+00:51:14.895 --> 00:51:15.455
+<v Speaker 1>edit.
+
+00:51:15.935 --> 00:51:17.935
+<v Speaker 1>I want to I don't care about the
+
+00:51:17.935 --> 00:51:20.095
+<v Speaker 1>response. I just care that the path
+
+00:51:20.655 --> 00:51:21.375
+<v Speaker 1>matches.
+
+00:51:26.849 --> 00:51:28.130
+<v Speaker 0>Maybe I was a bit harsh with the
+
+00:51:28.130 --> 00:51:30.130
+<v Speaker 0>GPRS because it's not even started playing yet.
+
+00:51:30.130 --> 00:51:31.010
+<v Speaker 0>It's buffeting.
+
+00:51:32.050 --> 00:51:32.690
+<v Speaker 0>Yeah.
+
+00:51:34.050 --> 00:51:36.050
+<v Speaker 0>On the right side.
+
+00:51:36.050 --> 00:51:38.530
+<v Speaker 2>Yeah. These log query tools
+
+00:51:38.495 --> 00:51:40.335
+<v Speaker 0>There we go. Are There's me. Things I've
+
+00:51:40.335 --> 00:51:42.015
+<v Speaker 2>been looking for. I'm
+
+00:51:42.255 --> 00:51:43.055
+<v Speaker 2>I'm gonna have to
+
+00:51:43.455 --> 00:51:45.135
+<v Speaker 2>look into this a little more later.
+
+00:51:45.375 --> 00:51:46.975
+<v Speaker 1>So which which one are you? Are you
+
+00:51:46.975 --> 00:51:49.295
+<v Speaker 0>this one? Dot. Yeah. You're this orange one.
+
+00:51:49.295 --> 00:51:51.055
+<v Speaker 1>Okay. So what happens if I request it
+
+00:51:51.055 --> 00:51:53.490
+<v Speaker 1>again with curl? I want to request the
+
+00:51:53.490 --> 00:51:55.490
+<v Speaker 1>same one, so let me just grab this
+
+00:51:55.490 --> 00:51:56.370
+<v Speaker 1>URL.
+
+00:51:58.530 --> 00:52:01.090
+<v Speaker 0>Carlos is enjoying the introduction to Loki as
+
+00:52:01.090 --> 00:52:02.450
+<v Speaker 0>we parse the engine x log.
+
+00:52:05.345 --> 00:52:07.185
+<v Speaker 0>Lots to learn. So that was a that
+
+00:52:07.185 --> 00:52:08.305
+<v Speaker 1>was a 200,
+
+00:52:08.305 --> 00:52:09.665
+<v Speaker 1>very quick 200.
+
+00:52:09.744 --> 00:52:10.785
+<v Speaker 1>Let's see how time
+
+00:52:11.345 --> 00:52:12.625
+<v Speaker 1>do I have time? I don't know. I
+
+00:52:12.625 --> 00:52:13.745
+<v Speaker 1>just run the time.
+
+00:52:14.625 --> 00:52:16.910
+<v Speaker 1>One point one five seconds. Okay.
+
+00:52:17.550 --> 00:52:20.990
+<v Speaker 0>So let's see. Start reloading every ten seconds.
+
+00:52:21.710 --> 00:52:23.150
+<v Speaker 1>Actually, no. That will be annoying if I
+
+00:52:23.150 --> 00:52:24.750
+<v Speaker 1>do that. Let's just do off.
+
+00:52:25.230 --> 00:52:25.790
+<v Speaker 1>So
+
+00:52:26.190 --> 00:52:28.830
+<v Speaker 1>change log four five eight. That's the one.
+
+00:52:29.470 --> 00:52:30.990
+<v Speaker 1>Three hundred 16 milliseconds.
+
+00:52:32.205 --> 00:52:34.205
+<v Speaker 1>We could add the browser here,
+
+00:52:34.445 --> 00:52:37.965
+<v Speaker 1>what do you call it? Method
+
+00:52:37.965 --> 00:52:38.765
+<v Speaker 1>path
+
+00:52:39.005 --> 00:52:41.085
+<v Speaker 1>HTTP user agent. What is it?
+
+00:52:42.285 --> 00:52:44.205
+<v Speaker 0>Mean, I can force my user agent to
+
+00:52:44.205 --> 00:52:46.445
+<v Speaker 0>Rawkode or something if you wanna confirm anything,
+
+00:52:46.445 --> 00:52:46.925
+<v Speaker 0>but
+
+00:52:47.550 --> 00:52:49.310
+<v Speaker 0>I think I can do that at least.
+
+00:52:49.550 --> 00:52:51.470
+<v Speaker 2>Go for it. We can get more Rawkode.
+
+00:52:51.470 --> 00:52:53.390
+<v Speaker 1>We need Rawkode in our logs. That's exactly
+
+00:52:53.390 --> 00:52:54.190
+<v Speaker 1>what we need.
+
+00:52:55.070 --> 00:52:56.110
+<v Speaker 1>Let's get it.
+
+00:52:56.830 --> 00:52:58.910
+<v Speaker 1>User agent. So now these will basically, these
+
+00:52:58.910 --> 00:53:00.830
+<v Speaker 1>will look a bit ugly because they're really,
+
+00:53:00.830 --> 00:53:02.430
+<v Speaker 1>really long. We won't be able to see
+
+00:53:02.430 --> 00:53:03.150
+<v Speaker 1>much, but
+
+00:53:03.845 --> 00:53:06.325
+<v Speaker 1>Macintosh. That's me. Ten fourteen there.
+
+00:53:06.645 --> 00:53:07.765
+<v Speaker 1>Podcasts.
+
+00:53:07.765 --> 00:53:09.525
+<v Speaker 1>Let's just focus on
+
+00:53:09.684 --> 00:53:10.645
+<v Speaker 1>this one.
+
+00:53:11.684 --> 00:53:13.765
+<v Speaker 1>Now it will do the grouping by episode
+
+00:53:13.765 --> 00:53:14.885
+<v Speaker 1>as well. So
+
+00:53:15.204 --> 00:53:17.045
+<v Speaker 1>those are, like, my two requests
+
+00:53:17.045 --> 00:53:17.684
+<v Speaker 1>right there.
+
+00:53:22.300 --> 00:53:23.100
+<v Speaker 1>Before
+
+00:53:23.100 --> 00:53:23.900
+<v Speaker 1>and
+
+00:53:24.860 --> 00:53:27.740
+<v Speaker 1>10:15. No. That's someone else. 10:14.
+
+00:53:27.900 --> 00:53:28.380
+<v Speaker 1>Alright.
+
+00:53:31.484 --> 00:53:33.005
+<v Speaker 1>You can use yeah. Okay.
+
+00:53:34.525 --> 00:53:35.165
+<v Speaker 1>So
+
+00:53:35.805 --> 00:53:37.565
+<v Speaker 1>what did we learn so far?
+
+00:53:38.684 --> 00:53:39.724
+<v Speaker 1>Let's just, like,
+
+00:53:41.244 --> 00:53:43.645
+<v Speaker 1>take a step back, big picture.
+
+00:53:44.605 --> 00:53:45.885
+<v Speaker 1>We learned that
+
+00:53:46.045 --> 00:53:46.444
+<v Speaker 1>these
+
+00:53:47.030 --> 00:53:47.990
+<v Speaker 1>requests,
+
+00:53:47.990 --> 00:53:49.670
+<v Speaker 1>the m p three requests,
+
+00:53:50.550 --> 00:53:52.790
+<v Speaker 1>they are the ones that are the slow
+
+00:53:52.790 --> 00:53:54.950
+<v Speaker 1>ones most of the time. There's also the
+
+00:53:54.950 --> 00:53:57.109
+<v Speaker 1>others, like the dynamic ones, which query the
+
+00:53:57.109 --> 00:53:59.190
+<v Speaker 1>database big time. And we can have a
+
+00:53:59.190 --> 00:54:00.230
+<v Speaker 1>look at the database
+
+00:54:00.710 --> 00:54:02.310
+<v Speaker 1>metrics as well, by the way.
+
+00:54:03.675 --> 00:54:05.755
+<v Speaker 1>Do we understand why some of them take
+
+00:54:05.755 --> 00:54:07.595
+<v Speaker 1>to respond two zero six and others two
+
+00:54:07.595 --> 00:54:09.995
+<v Speaker 1>hundreds? I think we do at this point.
+
+00:54:11.515 --> 00:54:13.275
+<v Speaker 2>But we're not but we're not seeing a
+
+00:54:13.275 --> 00:54:15.755
+<v Speaker 2>difference necessarily between two hundreds and two o
+
+00:54:15.755 --> 00:54:16.155
+<v Speaker 2>sixes?
+
+00:54:17.319 --> 00:54:19.079
+<v Speaker 1>We're not seeing a difference in
+
+00:54:20.119 --> 00:54:20.920
+<v Speaker 2>In
+
+00:54:21.880 --> 00:54:23.080
+<v Speaker 2>long running,
+
+00:54:23.720 --> 00:54:24.840
+<v Speaker 2>requests.
+
+00:54:25.079 --> 00:54:27.000
+<v Speaker 2>Can can would we say that two zero
+
+00:54:27.000 --> 00:54:29.400
+<v Speaker 2>sixes and two hundreds, it kinda doesn't matter.
+
+00:54:29.400 --> 00:54:31.454
+<v Speaker 2>It's just that we're we're seeing
+
+00:54:31.934 --> 00:54:34.255
+<v Speaker 2>long runs on m p threes.
+
+00:54:35.775 --> 00:54:37.615
+<v Speaker 1>Right. So Have we ruled out have we
+
+00:54:37.615 --> 00:54:40.174
+<v Speaker 2>ruled out the the status code as, indicative
+
+00:54:40.174 --> 00:54:40.894
+<v Speaker 2>of the problem?
+
+00:54:42.830 --> 00:54:43.710
+<v Speaker 1>Status
+
+00:54:43.710 --> 00:54:44.670
+<v Speaker 1>back in.
+
+00:54:46.030 --> 00:54:48.110
+<v Speaker 1>Me put the status down here as well.
+
+00:54:53.390 --> 00:54:55.070
+<v Speaker 0>So I can set my user agent to
+
+00:54:55.070 --> 00:54:56.750
+<v Speaker 0>Rawkode, but I have set it to PS
+
+00:54:56.750 --> 00:54:58.415
+<v Speaker 0>4, which I'm assuming you don't have anyone
+
+00:54:58.415 --> 00:54:59.935
+<v Speaker 0>listening on a PS four.
+
+00:55:01.215 --> 00:55:03.695
+<v Speaker 1>No. I don't think so. No. 206. If
+
+00:55:03.695 --> 00:55:05.215
+<v Speaker 0>we could see a 206
+
+00:55:05.215 --> 00:55:06.575
+<v Speaker 0>PS four then.
+
+00:55:06.975 --> 00:55:09.295
+<v Speaker 1>Yeah. So look. This 200,
+
+00:55:09.375 --> 00:55:10.255
+<v Speaker 1>interestingly,
+
+00:55:10.335 --> 00:55:12.415
+<v Speaker 1>here, it took one point eight three seconds.
+
+00:55:13.329 --> 00:55:15.329
+<v Speaker 1>But here, it took three hundred and sixteen
+
+00:55:15.329 --> 00:55:16.130
+<v Speaker 1>milliseconds.
+
+00:55:17.329 --> 00:55:19.730
+<v Speaker 1>And if we zoom out just to see
+
+00:55:19.730 --> 00:55:20.450
+<v Speaker 1>a bit more,
+
+00:55:21.010 --> 00:55:23.490
+<v Speaker 1>we can also see which one this one,
+
+00:55:23.490 --> 00:55:26.005
+<v Speaker 1>for example, chip it. Here, it took a
+
+00:55:26.005 --> 00:55:28.325
+<v Speaker 1>minute, which one is with 206.
+
+00:55:29.285 --> 00:55:30.485
+<v Speaker 1>And it was with two zero six zero
+
+00:55:30.485 --> 00:55:32.165
+<v Speaker 1>seconds. That's not right.
+
+00:55:34.165 --> 00:55:36.245
+<v Speaker 0>Can't see 0. That they closed the tab,
+
+00:55:36.245 --> 00:55:36.965
+<v Speaker 0>though. Right?
+
+00:55:37.365 --> 00:55:38.405
+<v Speaker 1>It's possible.
+
+00:55:38.645 --> 00:55:40.245
+<v Speaker 1>But zero? Okay. Maybe.
+
+00:55:41.150 --> 00:55:41.950
+<v Speaker 1>So
+
+00:55:42.910 --> 00:55:44.590
+<v Speaker 1>are there are also a good one. Are
+
+00:55:44.590 --> 00:55:45.790
+<v Speaker 1>there request for nothing.
+
+00:55:46.590 --> 00:55:47.550
+<v Speaker 1>206.
+
+00:55:47.550 --> 00:55:48.350
+<v Speaker 1>Say again?
+
+00:55:49.150 --> 00:55:50.990
+<v Speaker 2>If somebody did arrange a request for one
+
+00:55:50.990 --> 00:55:51.710
+<v Speaker 2>byte
+
+00:55:52.030 --> 00:55:53.390
+<v Speaker 0>Mhmm. Zero seconds.
+
+00:55:54.945 --> 00:55:55.745
+<v Speaker 1>One five
+
+00:55:55.985 --> 00:55:57.585
+<v Speaker 2>that would take more than zero.
+
+00:55:58.145 --> 00:55:58.865
+<v Speaker 2>Yeah.
+
+00:56:00.865 --> 00:56:03.825
+<v Speaker 1>So this one, interestingly, 20206.
+
+00:56:03.825 --> 00:56:05.585
+<v Speaker 1>Look. Both take one minute.
+
+00:56:07.265 --> 00:56:09.599
+<v Speaker 1>One minute here, One minute here. But these
+
+00:56:09.599 --> 00:56:12.400
+<v Speaker 1>are obviously different. Must be different user agents
+
+00:56:12.400 --> 00:56:13.359
+<v Speaker 1>or whatever.
+
+00:56:14.880 --> 00:56:15.840
+<v Speaker 1>This one,
+
+00:56:16.880 --> 00:56:21.440
+<v Speaker 1>HTTP user agent 206159154.
+
+00:56:21.440 --> 00:56:24.285
+<v Speaker 1>So yeah. Okay. Can we check something just
+
+00:56:24.285 --> 00:56:26.125
+<v Speaker 0>because I I'm curious. I have I've been
+
+00:56:26.285 --> 00:56:28.765
+<v Speaker 0>around on my side. Right? So I've for
+
+00:56:28.845 --> 00:56:29.885
+<v Speaker 0>the changelog.com
+
+00:56:29.885 --> 00:56:31.805
+<v Speaker 0>domain, my user agent is now set to
+
+00:56:31.805 --> 00:56:33.645
+<v Speaker 0>PS4. Can can we try and filter on
+
+00:56:33.645 --> 00:56:35.165
+<v Speaker 0>that in the logs? And we should see
+
+00:56:35.165 --> 00:56:37.325
+<v Speaker 0>a 200 and a few two o sixties.
+
+00:56:38.660 --> 00:56:40.420
+<v Speaker 1>So let's do
+
+00:56:40.580 --> 00:56:42.020
+<v Speaker 1>HTTP.
+
+00:56:42.340 --> 00:56:44.420
+<v Speaker 1>What does it refer? Something something.
+
+00:56:46.500 --> 00:56:49.140
+<v Speaker 1>It's
+
+00:56:49.140 --> 00:56:51.940
+<v Speaker 0>the HTTP underscore user underscore agent. Yeah. Yeah.
+
+00:56:51.940 --> 00:56:52.900
+<v Speaker 1>That's what I was looking for.
+
+00:56:54.215 --> 00:56:56.535
+<v Speaker 1>And you want it to include what? P
+
+00:56:56.535 --> 00:56:57.975
+<v Speaker 1>s four, did you say? P s five?
+
+00:56:57.975 --> 00:57:00.855
+<v Speaker 0>P s four. P s four. Okay. Caps?
+
+00:57:00.935 --> 00:57:03.415
+<v Speaker 1>Okay. I can confirm, but let's see if
+
+00:57:03.415 --> 00:57:05.175
+<v Speaker 0>we see anything. Okay.
+
+00:57:06.055 --> 00:57:08.660
+<v Speaker 1>No data. Alright. PS four.
+
+00:57:11.220 --> 00:57:12.260
+<v Speaker 1>No data.
+
+00:57:14.260 --> 00:57:15.540
+<v Speaker 0>That's good.
+
+00:57:15.779 --> 00:57:17.380
+<v Speaker 0>Let's see what I've got sent here.
+
+00:57:21.795 --> 00:57:23.075
+<v Speaker 0>Oh, sorry. PlayStation.
+
+00:57:23.875 --> 00:57:26.194
+<v Speaker 0>PlayStation. Well, the set is called PS four,
+
+00:57:26.194 --> 00:57:28.355
+<v Speaker 0>but it sends us PlayStation capital p capital
+
+00:57:28.355 --> 00:57:30.115
+<v Speaker 0>s. There you go. Okay. So that's a
+
+00:57:30.115 --> 00:57:32.355
+<v Speaker 0>200 from the download that I did.
+
+00:57:32.595 --> 00:57:32.994
+<v Speaker 1>Yep.
+
+00:57:34.530 --> 00:57:35.570
+<v Speaker 1>That's yours.
+
+00:57:35.970 --> 00:57:38.210
+<v Speaker 0>Yeah. And it took ninety six milliseconds.
+
+00:57:38.610 --> 00:57:40.770
+<v Speaker 1>So you must have had fast connection. What
+
+00:57:40.770 --> 00:57:42.210
+<v Speaker 1>about if you have it slow?
+
+00:57:42.290 --> 00:57:44.450
+<v Speaker 1>Slow it down. Yeah. Let's load it now.
+
+00:57:44.450 --> 00:57:45.890
+<v Speaker 0>So right now I'm trying I'm gonna try
+
+00:57:45.890 --> 00:57:47.890
+<v Speaker 0>and stream it on GPRS again. Let's see
+
+00:57:47.890 --> 00:57:48.130
+<v Speaker 0>what happen.
+
+00:57:54.935 --> 00:57:57.095
+<v Speaker 0>Okay, it's running very slowly.
+
+00:58:00.055 --> 00:58:00.775
+<v Speaker 1>Still nothing.
+
+00:58:06.520 --> 00:58:07.880
+<v Speaker 1>Nope. Still nothing.
+
+00:58:09.880 --> 00:58:12.040
+<v Speaker 0>I guess we'll have to wait for the
+
+00:58:12.520 --> 00:58:14.760
+<v Speaker 0>oh, we're not filtering on response, are we?
+
+00:58:14.760 --> 00:58:16.600
+<v Speaker 0>Like, it's not a minimum of sixty seconds.
+
+00:58:17.375 --> 00:58:18.255
+<v Speaker 0>Yeah. No.
+
+00:58:19.694 --> 00:58:21.855
+<v Speaker 0>So that's weird. We're not getting any NGINX
+
+00:58:21.855 --> 00:58:23.855
+<v Speaker 0>logs as I tried to stream JS party
+
+00:58:23.855 --> 00:58:24.815
+<v Speaker 0>one nine two.
+
+00:58:25.295 --> 00:58:27.695
+<v Speaker 2>Is it does the request not complete yet?
+
+00:58:27.775 --> 00:58:29.375
+<v Speaker 2>Are you still waiting for first block to
+
+00:58:29.375 --> 00:58:30.655
+<v Speaker 1>return? No. Hang on. Hang on. Look at
+
+00:58:30.655 --> 00:58:32.829
+<v Speaker 1>that. This is get podcast feed. So this
+
+00:58:32.829 --> 00:58:35.790
+<v Speaker 1>is completely different. HTTP user agent
+
+00:58:35.950 --> 00:58:37.310
+<v Speaker 1>where it says play.
+
+00:58:38.349 --> 00:58:40.510
+<v Speaker 1>Am I even, like, getting yours? Like, PlayStation,
+
+00:58:40.510 --> 00:58:42.349
+<v Speaker 1>did you say? You put PlayStation in the
+
+00:58:42.349 --> 00:58:42.990
+<v Speaker 1>refer?
+
+00:58:44.190 --> 00:58:46.589
+<v Speaker 0>Yeah. My user agent has PlayStation in it.
+
+00:58:49.904 --> 00:58:51.984
+<v Speaker 0>Nope. As a case There's no request.
+
+00:58:53.025 --> 00:58:55.424
+<v Speaker 1>Yep. Yeah. PlayStation.
+
+00:58:55.424 --> 00:58:56.545
+<v Speaker 1>A capital s.
+
+00:58:57.505 --> 00:58:58.305
+<v Speaker 1>Right.
+
+00:58:58.385 --> 00:58:59.345
+<v Speaker 1>Of course, you would do that.
+
+00:59:00.460 --> 00:59:01.740
+<v Speaker 1>There you go. Those
+
+00:59:02.140 --> 00:59:05.020
+<v Speaker 1>are yours. Right? Yes. So my 200 are
+
+00:59:05.020 --> 00:59:07.260
+<v Speaker 0>forever. I download the file, and then we
+
+00:59:07.260 --> 00:59:07.980
+<v Speaker 0>should see
+
+00:59:08.780 --> 00:59:11.020
+<v Speaker 1>Two seconds. Yeah. Look at that. Two hundred
+
+00:59:11.020 --> 00:59:12.620
+<v Speaker 1>four five eight
+
+00:59:13.020 --> 00:59:13.820
+<v Speaker 1>two seconds.
+
+00:59:15.405 --> 00:59:18.205
+<v Speaker 1>JS party. Dreaming JS party just now on
+
+00:59:18.205 --> 00:59:19.965
+<v Speaker 0>a slow connection, but I don't see that
+
+00:59:19.965 --> 00:59:20.525
+<v Speaker 0>there.
+
+00:59:21.245 --> 00:59:22.685
+<v Speaker 1>Let's see. Oh, no. It is there.
+
+00:59:23.085 --> 00:59:23.965
+<v Speaker 1>This one.
+
+00:59:26.125 --> 00:59:27.325
+<v Speaker 1>This one's happening right now.
+
+00:59:28.059 --> 00:59:29.260
+<v Speaker 0>Yes.
+
+00:59:30.140 --> 00:59:32.700
+<v Speaker 0>Yeah. That's your But why is it 2Hundreds
+
+00:59:32.700 --> 00:59:34.700
+<v Speaker 0>2 0 6? That's that's throwing that whole
+
+00:59:35.180 --> 00:59:36.619
+<v Speaker 0>thing out the window now.
+
+00:59:38.220 --> 00:59:40.220
+<v Speaker 1>I know. This one was here was 206.
+
+00:59:41.615 --> 00:59:43.295
+<v Speaker 1>This one now, it's 200. And we can
+
+00:59:43.295 --> 00:59:44.975
+<v Speaker 1>see we have multiples of those.
+
+00:59:46.015 --> 00:59:47.135
+<v Speaker 1>Can it be that you're
+
+00:59:48.015 --> 00:59:49.855
+<v Speaker 1>Does it do ranges, by the way?
+
+00:59:50.895 --> 00:59:53.135
+<v Speaker 1>Like, okay. Let's do this. Let's
+
+00:59:53.375 --> 00:59:54.175
+<v Speaker 1>take this one,
+
+00:59:55.619 --> 00:59:58.099
+<v Speaker 1>and let's explore it here because we can
+
+00:59:58.099 --> 00:59:59.060
+<v Speaker 1>see the actual
+
+01:00:00.259 --> 01:00:00.820
+<v Speaker 1>yeah.
+
+01:00:01.299 --> 01:00:04.180
+<v Speaker 2>I I was thinking about the not being
+
+01:00:04.180 --> 01:00:05.140
+<v Speaker 2>able to show
+
+01:00:06.180 --> 01:00:08.019
+<v Speaker 2>I was in our PlayStation four. Yeah. Sorry.
+
+01:00:08.019 --> 01:00:10.424
+<v Speaker 1>Go on. Those range headers, but we do
+
+01:00:10.424 --> 01:00:12.825
+<v Speaker 2>have, yeah, we do have the the size
+
+01:00:12.825 --> 01:00:13.545
+<v Speaker 2>of
+
+01:00:13.944 --> 01:00:16.025
+<v Speaker 2>the content that was transferred. Do we have
+
+01:00:16.025 --> 01:00:17.944
+<v Speaker 2>that in here? So, like, if we're seeing
+
+01:00:17.944 --> 01:00:19.865
+<v Speaker 2>two zero sixes, then we'd see this these
+
+01:00:19.865 --> 01:00:22.025
+<v Speaker 2>were two o sixes per one megabyte
+
+01:00:22.184 --> 01:00:24.950
+<v Speaker 2>or, you know, a few hundred k versus
+
+01:00:24.950 --> 01:00:27.029
+<v Speaker 2>where we're getting the full m p three
+
+01:00:27.029 --> 01:00:29.910
+<v Speaker 2>downloaded and maybe it's several megabytes.
+
+01:00:30.150 --> 01:00:31.750
+<v Speaker 0>Yeah. It's a good idea, actually. Yeah. Those
+
+01:00:31.750 --> 01:00:33.510
+<v Speaker 0>two hundreds that we think are full downloads
+
+01:00:33.510 --> 01:00:35.750
+<v Speaker 0>should have a consistent byte sent, I would
+
+01:00:35.750 --> 01:00:36.310
+<v Speaker 0>imagine.
+
+01:00:36.789 --> 01:00:39.029
+<v Speaker 1>Byte sent, four five three zero two.
+
+01:00:40.345 --> 01:00:42.105
+<v Speaker 1>Four five three zero two. Let's see this
+
+01:00:42.105 --> 01:00:42.825
+<v Speaker 1>other one.
+
+01:00:43.225 --> 01:00:44.425
+<v Speaker 1>Byte sent.
+
+01:00:45.145 --> 01:00:46.745
+<v Speaker 1>This is a lot more.
+
+01:00:50.185 --> 01:00:52.105
+<v Speaker 1>What about this one? This is the fav
+
+01:00:52.105 --> 01:00:53.545
+<v Speaker 1>icon. No. That's something else.
+
+01:00:54.290 --> 01:00:56.690
+<v Speaker 1>Uploads. No. That's already something else. So
+
+01:00:57.570 --> 01:00:59.410
+<v Speaker 1>did you get anything other than
+
+01:01:00.130 --> 01:01:01.650
+<v Speaker 1>there's like a lot of stuff here which
+
+01:01:01.650 --> 01:01:02.610
+<v Speaker 1>shouldn't be here.
+
+01:01:02.930 --> 01:01:05.810
+<v Speaker 1>So this one is you for sure, PlayStation
+
+01:01:05.810 --> 01:01:06.610
+<v Speaker 1>four.
+
+01:01:08.290 --> 01:01:08.930
+<v Speaker 1>This one
+
+01:01:10.575 --> 01:01:13.055
+<v Speaker 1>is also you, 445302.
+
+01:01:13.055 --> 01:01:14.815
+<v Speaker 1>Bytes send, this is +1 94.
+
+01:01:14.815 --> 01:01:16.575
+<v Speaker 0>Oh, this is +1 94 is me on
+
+01:01:16.575 --> 01:01:17.695
+<v Speaker 0>the heavily,
+
+01:01:17.695 --> 01:01:18.975
+<v Speaker 0>heavily throttled
+
+01:01:18.975 --> 01:01:21.295
+<v Speaker 0>GPRS connection, which is probably why the Bytes
+
+01:01:21.295 --> 01:01:23.615
+<v Speaker 0>send is so small. I'm assuming we'll see
+
+01:01:23.615 --> 01:01:25.589
+<v Speaker 0>loads of those. But look, this got a
+
+01:01:25.589 --> 01:01:26.550
+<v Speaker 1>304.
+
+01:01:26.710 --> 01:01:27.990
+<v Speaker 1>It's
+
+01:01:27.990 --> 01:01:30.150
+<v Speaker 1>got a 304. And you got from CDN.
+
+01:01:30.150 --> 01:01:31.670
+<v Speaker 1>Yep. So that's that.
+
+01:01:32.309 --> 01:01:33.990
+<v Speaker 1>This one is a 200
+
+01:01:34.950 --> 01:01:36.470
+<v Speaker 1>from PlayStation four
+
+01:01:37.589 --> 01:01:38.230
+<v Speaker 1>byte cent.
+
+01:01:40.225 --> 01:01:40.865
+<v Speaker 1>Okay.
+
+01:01:41.585 --> 01:01:43.185
+<v Speaker 1>And this one is
+
+01:01:44.385 --> 01:01:45.985
+<v Speaker 1>a lot more byte cent.
+
+01:01:47.185 --> 01:01:49.985
+<v Speaker 1>I'm not seeing any correlation here. Nope. Nothing.
+
+01:01:51.359 --> 01:01:52.160
+<v Speaker 1>Except
+
+01:01:52.240 --> 01:01:54.079
+<v Speaker 1>this one. This one. But this is the
+
+01:01:54.079 --> 01:01:55.520
+<v Speaker 1>fav icon, so no.
+
+01:01:56.559 --> 01:01:58.000
+<v Speaker 1>PlayStation four.
+
+01:01:58.720 --> 01:01:59.680
+<v Speaker 1>This gets
+
+01:02:00.960 --> 01:02:02.960
+<v Speaker 1>this is the avatar, so that's something else.
+
+01:02:02.960 --> 01:02:04.400
+<v Speaker 1>So maybe you should filter by m p
+
+01:02:04.400 --> 01:02:04.720
+<v Speaker 1>threes.
+
+01:02:07.105 --> 01:02:08.945
+<v Speaker 1>And
+
+01:02:13.424 --> 01:02:15.105
+<v Speaker 2>the three zero four is I had to
+
+01:02:15.105 --> 01:02:18.224
+<v Speaker 2>refresh myself on that. That's it's no content,
+
+01:02:18.224 --> 01:02:20.340
+<v Speaker 2>but it's no content because it's a a
+
+01:02:20.340 --> 01:02:22.900
+<v Speaker 2>comparison against the cached
+
+01:02:22.900 --> 01:02:25.140
+<v Speaker 2>value that the client already has. It's it's
+
+01:02:25.140 --> 01:02:27.700
+<v Speaker 2>asking if, what it has is
+
+01:02:27.860 --> 01:02:28.660
+<v Speaker 2>still Mhmm.
+
+01:02:29.700 --> 01:02:30.340
+<v Speaker 2>Correct.
+
+01:02:33.060 --> 01:02:39.225
+<v Speaker 1>Request time. 2.42202.4.
+
+01:02:39.225 --> 01:02:40.825
+<v Speaker 1>This is a different one. Yeah. This is
+
+01:02:40.825 --> 01:02:41.865
+<v Speaker 1>JS Party.
+
+01:02:42.345 --> 01:02:43.785
+<v Speaker 1>This is the change log.
+
+01:02:44.105 --> 01:02:46.425
+<v Speaker 0>Yeah. So the change log, I downloaded. And
+
+01:02:46.425 --> 01:02:48.025
+<v Speaker 0>JS Party, I'm currently streaming.
+
+01:02:49.510 --> 01:02:51.990
+<v Speaker 0>But I'm not seeing the consistency I expected
+
+01:02:51.990 --> 01:02:53.750
+<v Speaker 0>to see in the status codes.
+
+01:02:54.150 --> 01:02:55.910
+<v Speaker 0>So I turns out I have no idea
+
+01:02:55.910 --> 01:02:58.710
+<v Speaker 0>how media delivery works over HTTP.
+
+01:02:59.109 --> 01:03:00.710
+<v Speaker 1>Well, I'm still not seeing, like, the one
+
+01:03:00.710 --> 01:03:04.075
+<v Speaker 1>that you're streaming. Right? This was this started,
+
+01:03:04.235 --> 01:03:06.395
+<v Speaker 1>five minutes ago. Is that when you started
+
+01:03:06.395 --> 01:03:08.395
+<v Speaker 1>streaming it? I mean, no. Because this was
+
+01:03:08.395 --> 01:03:11.195
+<v Speaker 1>already finished. Right? So this is a finished
+
+01:03:12.155 --> 01:03:14.795
+<v Speaker 1>response. I think the one that is currently
+
+01:03:14.795 --> 01:03:17.760
+<v Speaker 1>happening hasn't been finished yet. Must be. Right?
+
+01:03:17.760 --> 01:03:20.160
+<v Speaker 0>It's still running. Yeah. Let's see. So there's
+
+01:03:20.160 --> 01:03:22.720
+<v Speaker 1>no there's no log here. It hasn't completed.
+
+01:03:23.120 --> 01:03:25.280
+<v Speaker 1>And it's not a partial one, so it
+
+01:03:25.280 --> 01:03:26.480
+<v Speaker 1>must be still open.
+
+01:03:26.960 --> 01:03:28.400
+<v Speaker 1>If Can you control c it and see
+
+01:03:28.400 --> 01:03:28.800
+<v Speaker 1>what happens?
+
+01:03:30.625 --> 01:03:32.145
+<v Speaker 1>If you control c, do we see it
+
+01:03:32.145 --> 01:03:32.945
+<v Speaker 1>in the log?
+
+01:03:34.065 --> 01:03:34.865
+<v Speaker 0>Sure.
+
+01:03:35.825 --> 01:03:36.545
+<v Speaker 0>Done.
+
+01:03:37.265 --> 01:03:37.744
+<v Speaker 0>K.
+
+01:03:41.520 --> 01:03:43.200
+<v Speaker 1>There's nothing here, so let's wait for something
+
+01:03:43.200 --> 01:03:44.880
+<v Speaker 1>else to appear here before we
+
+01:03:46.000 --> 01:03:47.280
+<v Speaker 1>declare success.
+
+01:03:48.400 --> 01:03:50.000
+<v Speaker 1>Nope. Still nothing.
+
+01:03:51.200 --> 01:03:53.520
+<v Speaker 2>And what we're trying to determine now is
+
+01:03:53.520 --> 01:03:54.400
+<v Speaker 2>it's still
+
+01:03:55.404 --> 01:03:58.045
+<v Speaker 2>figuring out if client throttling or client
+
+01:03:58.845 --> 01:03:59.645
+<v Speaker 2>speed
+
+01:03:59.964 --> 01:04:02.125
+<v Speaker 2>is plays a major factor in the time
+
+01:04:02.125 --> 01:04:03.005
+<v Speaker 2>that we're seeing.
+
+01:04:03.404 --> 01:04:05.325
+<v Speaker 0>Mhmm. I think what I expected to see
+
+01:04:05.325 --> 01:04:07.165
+<v Speaker 0>is when I throttled my connection
+
+01:04:07.404 --> 01:04:08.125
+<v Speaker 0>and
+
+01:04:08.440 --> 01:04:10.360
+<v Speaker 0>requested the m p three is that we
+
+01:04:10.360 --> 01:04:12.520
+<v Speaker 0>would see the two zero six partials
+
+01:04:12.600 --> 01:04:15.800
+<v Speaker 0>with a consistent base and a smaller range.
+
+01:04:16.920 --> 01:04:19.160
+<v Speaker 0>But I don't we've seen two hundreds as
+
+01:04:19.160 --> 01:04:21.000
+<v Speaker 0>well, so I really don't understand how that
+
+01:04:21.000 --> 01:04:23.035
+<v Speaker 0>works. Are you sure that you got it
+
+01:04:23.035 --> 01:04:24.555
+<v Speaker 1>from the back end? Are you sure that
+
+01:04:24.555 --> 01:04:26.075
+<v Speaker 1>it wasn't served from the cache?
+
+01:04:26.395 --> 01:04:28.395
+<v Speaker 1>Because by the way a different episode, and
+
+01:04:28.395 --> 01:04:30.715
+<v Speaker 0>I'll I'll check the the ones that are
+
+01:04:30.795 --> 01:04:32.715
+<v Speaker 1>Keep keep the go time.
+
+01:04:33.355 --> 01:04:35.275
+<v Speaker 1>Keep the same me dropping all all the
+
+01:04:35.275 --> 01:04:36.940
+<v Speaker 2>shows. Yeah.
+
+01:04:36.940 --> 01:04:39.900
+<v Speaker 1>Keep the same episode. Just put 21
+
+01:04:39.980 --> 01:04:41.500
+<v Speaker 1>as a subdomain.
+
+01:04:41.660 --> 01:04:43.500
+<v Speaker 1>That will go directly to the origin. That's
+
+01:04:43.500 --> 01:04:44.940
+<v Speaker 1>like a little known secret.
+
+01:04:45.180 --> 01:04:47.340
+<v Speaker 1>Nobody do that. Just go through the CDN.
+
+01:04:47.340 --> 01:04:48.620
+<v Speaker 1>But there's a way to go directly to
+
+01:04:48.620 --> 01:04:49.020
+<v Speaker 1>the origin.
+
+01:04:49.704 --> 01:04:50.984
+<v Speaker 1>K. So you want me to stick with
+
+01:04:50.984 --> 01:04:51.865
+<v Speaker 0>JS Party?
+
+01:04:52.585 --> 01:04:55.625
+<v Speaker 1>Just add 21 dot and then everything as
+
+01:04:55.625 --> 01:04:57.145
+<v Speaker 1>it was before the the URL.
+
+01:05:06.910 --> 01:05:07.710
+<v Speaker 0>Okay.
+
+01:05:12.910 --> 01:05:15.390
+<v Speaker 1>Okay. So it's streaming now. Right? It's
+
+01:05:16.030 --> 01:05:18.110
+<v Speaker 1>doing the thing that's supposed to do that
+
+01:05:18.110 --> 01:05:18.910
+<v Speaker 1>it's supposed to do.
+
+01:05:28.714 --> 01:05:31.194
+<v Speaker 0>It's trying to. Yeah. Okay. There we go.
+
+01:05:31.194 --> 01:05:32.875
+<v Speaker 1>So now we have one right there.
+
+01:05:33.680 --> 01:05:35.680
+<v Speaker 1>That was a 3 0 4,
+
+01:05:36.080 --> 01:05:38.160
+<v Speaker 1>but that came through the CDN. So we
+
+01:05:38.480 --> 01:05:40.320
+<v Speaker 1>don't want to see through the CDN. I'm
+
+01:05:40.320 --> 01:05:41.040
+<v Speaker 1>wondering
+
+01:05:41.520 --> 01:05:43.280
+<v Speaker 1>bytes. And that was a 304, so no.
+
+01:05:43.280 --> 01:05:43.760
+<v Speaker 0>It's I know.
+
+01:05:46.805 --> 01:05:49.605
+<v Speaker 1>Wait. Refresh. There we go. That's another one.
+
+01:05:49.684 --> 01:05:51.924
+<v Speaker 1>Okay. So 200. That's the host header. Now
+
+01:05:51.924 --> 01:05:53.525
+<v Speaker 1>you're going directly to the origin.
+
+01:05:53.605 --> 01:05:55.525
+<v Speaker 1>200. Yep. I can see it.
+
+01:05:55.924 --> 01:05:57.445
+<v Speaker 1>Request four seconds.
+
+01:05:57.605 --> 01:05:58.724
+<v Speaker 1>Yep. Byte sent.
+
+01:06:02.370 --> 01:06:04.290
+<v Speaker 1>So what do you wanna test next? Like,
+
+01:06:04.290 --> 01:06:07.810
+<v Speaker 1>we're seeing your request now from PlayStation four.
+
+01:06:08.130 --> 01:06:10.130
+<v Speaker 0>So it's still starting bring you the m
+
+01:06:10.130 --> 01:06:11.170
+<v Speaker 0>p three
+
+01:06:11.934 --> 01:06:12.815
+<v Speaker 0>right now.
+
+01:06:14.335 --> 01:06:15.934
+<v Speaker 1>This one was completed
+
+01:06:15.934 --> 01:06:17.135
+<v Speaker 1>according to this.
+
+01:06:20.494 --> 01:06:22.655
+<v Speaker 2>Nope. Was it completed? Was is there a
+
+01:06:22.655 --> 01:06:23.455
+<v Speaker 2>handoff?
+
+01:06:23.855 --> 01:06:26.815
+<v Speaker 2>Is this sending it is there a
+
+01:06:26.289 --> 01:06:27.570
+<v Speaker 2>a server in between?
+
+01:06:28.609 --> 01:06:31.089
+<v Speaker 2>And and now the buffering is happening through
+
+01:06:31.089 --> 01:06:32.530
+<v Speaker 2>some intermediary?
+
+01:06:35.650 --> 01:06:38.289
+<v Speaker 1>Well, no. I mean, the NGINX 21 will
+
+01:06:38.289 --> 01:06:39.329
+<v Speaker 2>have to change the request.
+
+01:06:40.155 --> 01:06:41.995
+<v Speaker 0>Okay. I think I'm throttling too much. I'm
+
+01:06:41.995 --> 01:06:44.155
+<v Speaker 0>gonna throttle it less so we can actually
+
+01:06:44.155 --> 01:06:45.835
+<v Speaker 0>maybe see what we wanna see.
+
+01:06:46.875 --> 01:06:49.115
+<v Speaker 1>So so this one was completed. Right? Like,
+
+01:06:49.115 --> 01:06:51.355
+<v Speaker 1>this is from the upstream.
+
+01:06:51.355 --> 01:06:53.355
+<v Speaker 1>We can see what up the upstream responded,
+
+01:06:54.400 --> 01:06:56.560
+<v Speaker 1>and we can see what NGINX responded.
+
+01:06:56.560 --> 01:06:58.240
+<v Speaker 1>So this is a complete request.
+
+01:07:01.920 --> 01:07:03.840
+<v Speaker 0>Yeah. I got a 304 number. I'm gonna
+
+01:07:03.840 --> 01:07:05.920
+<v Speaker 0>go to +1 91 instead of +1 92.
+
+01:07:06.960 --> 01:07:08.240
+<v Speaker 1>Yeah. 304.
+
+01:07:08.720 --> 01:07:09.120
+<v Speaker 0>Yep.
+
+01:07:17.125 --> 01:07:19.444
+<v Speaker 0>I don't think either that episode doesn't exist
+
+01:07:19.444 --> 01:07:20.645
+<v Speaker 0>or it's not loading.
+
+01:07:20.885 --> 01:07:22.404
+<v Speaker 0>Should there be a JS party one nine
+
+01:07:22.404 --> 01:07:22.565
+<v Speaker 0>one?
+
+01:07:24.550 --> 01:07:26.230
+<v Speaker 1>Right. You need to change it twice.
+
+01:07:26.790 --> 01:07:27.430
+<v Speaker 1>Once.
+
+01:07:27.750 --> 01:07:30.550
+<v Speaker 1>And there's +1 915. 0. Right. Okay. Got
+
+01:07:30.550 --> 01:07:31.030
+<v Speaker 0>it.
+
+01:07:36.950 --> 01:07:38.069
+<v Speaker 0>Alright. Do we see that?
+
+01:07:38.775 --> 01:07:40.855
+<v Speaker 1>It was a 404. We've seen your 404
+
+01:07:40.855 --> 01:07:42.375
+<v Speaker 1>where you didn't update
+
+01:07:42.934 --> 01:07:43.655
+<v Speaker 1>the
+
+01:07:43.895 --> 01:07:45.734
+<v Speaker 1>second one nine one or the first one
+
+01:07:45.734 --> 01:07:46.535
+<v Speaker 1>nine one.
+
+01:07:47.255 --> 01:07:49.174
+<v Speaker 1>And we are seeing this one as well.
+
+01:07:49.174 --> 01:07:51.575
+<v Speaker 1>Yep. We're seeing it. 200
+
+01:07:52.760 --> 01:07:53.640
+<v Speaker 1>Yes.
+
+01:07:54.280 --> 01:07:55.720
+<v Speaker 0>That 200 is
+
+01:07:56.040 --> 01:07:58.119
+<v Speaker 0>a stream well, looks like it's streaming on
+
+01:07:58.119 --> 01:07:59.720
+<v Speaker 0>my side. So I didn't expect to see
+
+01:07:59.720 --> 01:08:00.520
+<v Speaker 0>a 200.
+
+01:08:03.559 --> 01:08:04.440
+<v Speaker 1>You're interesting.
+
+01:08:05.664 --> 01:08:07.345
+<v Speaker 0>I think I've got some research to do
+
+01:08:07.345 --> 01:08:09.825
+<v Speaker 0>in my over in my next bad downtime.
+
+01:08:10.385 --> 01:08:11.025
+<v Speaker 1>Yeah. Like
+
+01:08:11.664 --> 01:08:13.424
+<v Speaker 1>so that means that, like, the server completed
+
+01:08:13.424 --> 01:08:16.145
+<v Speaker 1>the request. It's HTTP two. That's interesting.
+
+01:08:16.705 --> 01:08:18.864
+<v Speaker 2>That Your request is over HTTP two. Is
+
+01:08:18.864 --> 01:08:19.344
+<v Speaker 2>that
+
+01:08:20.139 --> 01:08:22.380
+<v Speaker 2>that what you're seeing from all of David's
+
+01:08:22.380 --> 01:08:23.179
+<v Speaker 2>requests?
+
+01:08:23.739 --> 01:08:26.300
+<v Speaker 1>The request protocol? Imagine it would change. Yeah.
+
+01:08:26.300 --> 01:08:27.659
+<v Speaker 2>I I imagine they'd all be the same.
+
+01:08:27.659 --> 01:08:29.420
+<v Speaker 2>I I'm trying to figure out if there's
+
+01:08:29.739 --> 01:08:31.500
+<v Speaker 1>Yes. They're all HTTP two.
+
+01:08:32.074 --> 01:08:32.954
+<v Speaker 1>All of them.
+
+01:08:33.755 --> 01:08:36.395
+<v Speaker 0>Yes. I guess HTTP does HTTP two does
+
+01:08:36.395 --> 01:08:38.554
+<v Speaker 0>streaming differently from HTTP one. So I wonder
+
+01:08:38.554 --> 01:08:40.955
+<v Speaker 0>if I even forced that the HTTP one,
+
+01:08:40.955 --> 01:08:42.234
+<v Speaker 0>we'd start seeing those.
+
+01:08:42.875 --> 01:08:44.715
+<v Speaker 0>Could probably just do a a grip on
+
+01:08:44.715 --> 01:08:46.554
+<v Speaker 0>the two o sixties and see if they're
+
+01:08:46.554 --> 01:08:46.875
+<v Speaker 0>all
+
+01:08:47.800 --> 01:08:49.880
+<v Speaker 0>anchored by the the proto, right, and see
+
+01:08:49.880 --> 01:08:52.200
+<v Speaker 0>if they're Yep. Two or one. You wanna
+
+01:08:52.200 --> 01:08:53.239
+<v Speaker 1>do status.
+
+01:08:53.240 --> 01:08:55.240
+<v Speaker 1>Okay. So not from yours. Right? Not from
+
+01:08:55.240 --> 01:08:56.920
+<v Speaker 1>your end? Yeah. We can do across them
+
+01:08:56.920 --> 01:08:57.560
+<v Speaker 0>all. Yeah.
+
+01:08:57.960 --> 01:08:59.160
+<v Speaker 1>So go back here. So what do you
+
+01:08:59.160 --> 01:08:59.640
+<v Speaker 1>want me to do?
+
+01:09:00.625 --> 01:09:01.184
+<v Speaker 1>By?
+
+01:09:01.824 --> 01:09:04.545
+<v Speaker 0>By http underscore proto
+
+01:09:04.625 --> 01:09:06.545
+<v Speaker 0>and status. You can probably just remove method
+
+01:09:06.545 --> 01:09:07.744
+<v Speaker 0>and path if you wish.
+
+01:09:08.944 --> 01:09:10.784
+<v Speaker 1>Path is important. We can remove the method
+
+01:09:10.784 --> 01:09:11.185
+<v Speaker 1>for sure.
+
+01:09:12.080 --> 01:09:14.239
+<v Speaker 1>Path. You wanna see the path.
+
+01:09:15.600 --> 01:09:18.319
+<v Speaker 1>HTTP prog. Yeah.
+
+01:09:21.040 --> 01:09:22.240
+<v Speaker 1>Status.
+
+01:09:22.240 --> 01:09:22.960
+<v Speaker 1>HTTP program.
+
+01:09:24.865 --> 01:09:27.585
+<v Speaker 2>Russell's got a interesting question there.
+
+01:09:31.185 --> 01:09:33.745
+<v Speaker 1>HTTP Proto. Yeah. Cool. That's
+
+01:09:34.305 --> 01:09:36.145
+<v Speaker 1>there. Why are we not seeing it?
+
+01:09:37.345 --> 01:09:39.505
+<v Speaker 1>Go back. Was it HTTP Proto?
+
+01:09:41.719 --> 01:09:44.520
+<v Speaker 0>I think it was. Request Proto. Oh, Request
+
+01:09:44.520 --> 01:09:45.159
+<v Speaker 1>Proto.
+
+01:09:45.880 --> 01:09:46.279
+<v Speaker 1>Okay.
+
+01:09:52.545 --> 01:09:54.225
+<v Speaker 0>Now it says just, like, clustered every time
+
+01:09:54.225 --> 01:09:56.065
+<v Speaker 0>I think it's something wrong, it's my fault.
+
+01:09:58.945 --> 01:10:09.419
+<v Speaker 1>To 200HTP1200HTP120620204.
+
+01:10:09.420 --> 01:10:10.699
+<v Speaker 0>We kind of assume
+
+01:10:10.940 --> 01:10:12.780
+<v Speaker 0>that we should never see a 206 on
+
+01:10:12.780 --> 01:10:14.139
+<v Speaker 0>the HTTP2.
+
+01:10:14.139 --> 01:10:14.699
+<v Speaker 0>Right?
+
+01:10:15.739 --> 01:10:18.460
+<v Speaker 1>Well, to confirm that, maybe we should oh,
+
+01:10:18.460 --> 01:10:20.139
+<v Speaker 1>and this is your just your user agent.
+
+01:10:20.139 --> 01:10:22.139
+<v Speaker 1>So maybe I should remove that user agent.
+
+01:10:22.139 --> 01:10:25.015
+<v Speaker 1>And instead, let's take the HTTP
+
+01:10:25.015 --> 01:10:27.094
+<v Speaker 1>request proto. Sorry.
+
+01:10:27.575 --> 01:10:28.215
+<v Speaker 1>Request
+
+01:10:28.695 --> 01:10:29.495
+<v Speaker 1>proto.
+
+01:10:29.975 --> 01:10:32.535
+<v Speaker 1>Let's make the request proto be
+
+01:10:37.480 --> 01:10:38.360
+<v Speaker 1>Yep.
+
+01:10:40.040 --> 01:10:41.080
+<v Speaker 1>Forward slash.
+
+01:10:42.440 --> 01:10:43.080
+<v Speaker 1>Right.
+
+01:10:43.400 --> 01:10:44.360
+<v Speaker 1>And this is.
+
+01:10:46.280 --> 01:10:48.200
+<v Speaker 1>K. So two point o.
+
+01:10:49.534 --> 01:10:52.494
+<v Speaker 1>Let's just look at the request proto. How
+
+01:10:52.494 --> 01:10:54.014
+<v Speaker 1>about that? I think that's what we want
+
+01:10:54.014 --> 01:10:55.054
+<v Speaker 1>in the status.
+
+01:10:55.455 --> 01:10:57.135
+<v Speaker 0>And we're not gonna see a 26. No
+
+01:10:57.135 --> 01:10:58.974
+<v Speaker 1>2Sixes. Yeah. Yep. That's right.
+
+01:10:59.534 --> 01:11:01.934
+<v Speaker 1>What about when the request proto is
+
+01:11:02.094 --> 01:11:02.974
+<v Speaker 1>1.1?
+
+01:11:06.110 --> 01:11:08.830
+<v Speaker 1>2 0 Sixes. 2 0 Sixes. Yep. Interesting.
+
+01:11:08.830 --> 01:11:10.750
+<v Speaker 1>That's the last fifteen minutes. Maybe we should
+
+01:11:10.750 --> 01:11:12.750
+<v Speaker 1>go for longer than that. What do you
+
+01:11:12.750 --> 01:11:13.870
+<v Speaker 1>think? 2O?
+
+01:11:13.870 --> 01:11:15.550
+<v Speaker 1>Yeah. So last.
+
+01:11:20.745 --> 01:11:23.305
+<v Speaker 0>No 20 Or just stop creating. No. No
+
+01:11:23.305 --> 01:11:24.665
+<v Speaker 0>20 No 20
+
+01:11:25.145 --> 01:11:27.625
+<v Speaker 1>That's right. Put it back to 1.1.
+
+01:11:28.344 --> 01:11:29.145
+<v Speaker 1>Point one.
+
+01:11:29.545 --> 01:11:31.465
+<v Speaker 1>This is fun. I like this.
+
+01:11:32.344 --> 01:11:32.745
+<v Speaker 1>Right.
+
+01:11:33.510 --> 01:11:35.030
+<v Speaker 2>This is just one of those h t
+
+01:11:35.030 --> 01:11:38.149
+<v Speaker 2>p two enhancements is, like, streaming comes free.
+
+01:11:38.630 --> 01:11:40.550
+<v Speaker 0>Look at that. Oh, yeah. With Yeah. With
+
+01:11:40.550 --> 01:11:42.070
+<v Speaker 0>h t t p two, you would just
+
+01:11:42.070 --> 01:11:43.989
+<v Speaker 0>get the response, and then everything else would
+
+01:11:43.989 --> 01:11:46.070
+<v Speaker 0>come behind the subsequent responses. So they would
+
+01:11:46.070 --> 01:11:47.844
+<v Speaker 0>all be two hundreds. Mhmm. But the issue
+
+01:11:47.844 --> 01:11:49.364
+<v Speaker 0>to be one, you'd have to indicate that
+
+01:11:49.364 --> 01:11:51.045
+<v Speaker 0>it's a partial response, and then the next
+
+01:11:51.045 --> 01:11:52.485
+<v Speaker 0>one would be a partial response,
+
+01:11:52.804 --> 01:11:54.005
+<v Speaker 0>and so on. So,
+
+01:11:54.485 --> 01:11:57.125
+<v Speaker 0>yeah, kinda makes sense based on my limited
+
+01:11:57.125 --> 01:11:58.965
+<v Speaker 0>knowledge there, or at least more sense than
+
+01:11:58.965 --> 01:12:01.439
+<v Speaker 0>it was. Well, based on these observations,
+
+01:12:01.599 --> 01:12:03.839
+<v Speaker 1>yeah, based on the data that we have
+
+01:12:04.079 --> 01:12:06.159
+<v Speaker 1>on the queries, yeah, I mean,
+
+01:12:06.559 --> 01:12:08.480
+<v Speaker 1>you group them by request proto. We can
+
+01:12:08.639 --> 01:12:10.479
+<v Speaker 1>we'll can filter the status
+
+01:12:10.719 --> 01:12:12.879
+<v Speaker 1>if we want to. So let's do status.
+
+01:12:12.880 --> 01:12:13.760
+<v Speaker 1>It is
+
+01:12:14.000 --> 01:12:14.800
+<v Speaker 1>200
+
+01:12:15.735 --> 01:12:18.054
+<v Speaker 1>or status is and there's an easy way
+
+01:12:18.054 --> 01:12:19.094
+<v Speaker 1>to do it, but let me just wrap
+
+01:12:19.094 --> 01:12:21.735
+<v Speaker 1>it like this. It is two zero six.
+
+01:12:22.855 --> 01:12:23.735
+<v Speaker 1>And then
+
+01:12:25.415 --> 01:12:26.054
+<v Speaker 1>k.
+
+01:12:26.534 --> 01:12:27.255
+<v Speaker 1>Only
+
+01:12:27.494 --> 01:12:29.255
+<v Speaker 1>see two hundreds. What did I do wrong?
+
+01:12:29.680 --> 01:12:31.040
+<v Speaker 1>Status 200.
+
+01:12:33.760 --> 01:12:35.200
+<v Speaker 0>Yeah. I don't think that OR will work
+
+01:12:35.200 --> 01:12:36.560
+<v Speaker 0>because you can't have the status of those
+
+01:12:36.560 --> 01:12:39.120
+<v Speaker 0>200. Yeah. Yeah. Yeah. Yeah. So I think
+
+01:12:39.120 --> 01:12:40.320
+<v Speaker 1>I will need a regex, and I think
+
+01:12:40.320 --> 01:12:41.920
+<v Speaker 1>I'll need to go for an OR inside.
+
+01:12:41.920 --> 01:12:42.800
+<v Speaker 1>Okay. Let's do that.
+
+01:12:48.265 --> 01:12:49.465
+<v Speaker 1>There we go. There we go.
+
+01:12:50.185 --> 01:12:51.465
+<v Speaker 1>So 200,
+
+01:12:51.865 --> 01:12:53.705
+<v Speaker 1>2 0 sixes. Do we see any difference?
+
+01:12:53.705 --> 01:12:55.145
+<v Speaker 1>I don't think we see any meaningful difference
+
+01:12:55.145 --> 01:12:58.025
+<v Speaker 1>between them. No. No. I mean, the two
+
+01:12:58.105 --> 01:13:00.105
+<v Speaker 1>they're
+
+01:12:59.070 --> 01:13:00.829
+<v Speaker 1>scattered just about the same.
+
+01:13:02.670 --> 01:13:04.750
+<v Speaker 1>What if we change the protocol to two
+
+01:13:04.750 --> 01:13:05.630
+<v Speaker 1>point zero?
+
+01:13:08.750 --> 01:13:09.550
+<v Speaker 1>Oh,
+
+01:13:09.949 --> 01:13:12.590
+<v Speaker 1>interesting. Yeah. So the slower response is different.
+
+01:13:12.909 --> 01:13:14.190
+<v Speaker 1>Yes. Chunk streams.
+
+01:13:14.895 --> 01:13:16.175
+<v Speaker 0>Interesting.
+
+01:13:17.135 --> 01:13:17.775
+<v Speaker 1>Okay.
+
+01:13:19.695 --> 01:13:21.935
+<v Speaker 1>Do we have any suggestions from the from
+
+01:13:21.935 --> 01:13:24.655
+<v Speaker 1>the channel, from the viewers that we should
+
+01:13:24.815 --> 01:13:27.695
+<v Speaker 0>Russell said something, Andres, and then Marcus just
+
+01:13:27.695 --> 01:13:27.855
+<v Speaker 0>said.
+
+01:13:28.670 --> 01:13:31.469
+<v Speaker 2>Yeah. Does NGINX still have a connection to
+
+01:13:31.469 --> 01:13:32.669
+<v Speaker 2>the client open
+
+01:13:32.989 --> 01:13:35.310
+<v Speaker 2>after getting all the data from the Phoenix
+
+01:13:35.310 --> 01:13:35.949
+<v Speaker 2>app?
+
+01:13:36.429 --> 01:13:37.869
+<v Speaker 2>Similar
+
+01:13:37.949 --> 01:13:40.110
+<v Speaker 2>thoughts. It would probably spawn by that.
+
+01:13:41.275 --> 01:13:44.315
+<v Speaker 2>Could the data have all been transferred and
+
+01:13:44.315 --> 01:13:45.915
+<v Speaker 2>we just haven't gotten
+
+01:13:46.315 --> 01:13:47.435
+<v Speaker 2>a closeout
+
+01:13:47.435 --> 01:13:47.755
+<v Speaker 2>from
+
+01:13:49.355 --> 01:13:50.555
+<v Speaker 2>of the request?
+
+01:13:51.595 --> 01:13:54.155
+<v Speaker 2>Maybe NGINX is not closing it. Maybe the
+
+01:13:54.155 --> 01:13:55.355
+<v Speaker 2>other side, maybe the
+
+01:13:55.630 --> 01:13:56.750
+<v Speaker 2>the application
+
+01:13:57.070 --> 01:13:59.790
+<v Speaker 2>has sent the data that hasn't closed yet.
+
+01:14:00.190 --> 01:14:02.670
+<v Speaker 2>Mhmm. That got me wondering about session data.
+
+01:14:02.670 --> 01:14:05.070
+<v Speaker 2>So so I don't know if you're every
+
+01:14:05.070 --> 01:14:06.910
+<v Speaker 2>time these m p three requests are coming
+
+01:14:06.910 --> 01:14:09.070
+<v Speaker 2>in, if your application is
+
+01:14:09.945 --> 01:14:12.745
+<v Speaker 2>doing some sort of state check, like,
+
+01:14:13.145 --> 01:14:15.225
+<v Speaker 2>check a session cookie that came in and
+
+01:14:15.225 --> 01:14:17.465
+<v Speaker 2>then update it, refresh it, and take it
+
+01:14:17.465 --> 01:14:19.865
+<v Speaker 2>back. No. It's all, like, it's all the
+
+01:14:19.865 --> 01:14:22.790
+<v Speaker 1>Phoenix. Jared answered this really well. So I
+
+01:14:22.790 --> 01:14:23.510
+<v Speaker 1>go back,
+
+01:14:23.910 --> 01:14:25.750
+<v Speaker 1>it's basically Phoenix. I mean, I can show
+
+01:14:25.750 --> 01:14:27.910
+<v Speaker 1>the code, but it's in
+
+01:14:28.390 --> 01:14:30.230
+<v Speaker 1>Lib. There's, like, a root test file. So
+
+01:14:30.230 --> 01:14:31.910
+<v Speaker 1>remember, and then there's something else.
+
+01:14:32.150 --> 01:14:33.590
+<v Speaker 1>There is static.
+
+01:14:35.110 --> 01:14:35.990
+<v Speaker 1>I'll put it here.
+
+01:14:38.435 --> 01:14:41.875
+<v Speaker 1>We still have Jared's change log web router.
+
+01:14:43.715 --> 01:14:44.275
+<v Speaker 1>Pages.
+
+01:14:47.075 --> 01:14:48.435
+<v Speaker 1>Static pages.
+
+01:14:48.595 --> 01:14:51.440
+<v Speaker 1>Oh, loads. You should search for that. Isn't
+
+01:14:51.520 --> 01:14:54.159
+<v Speaker 1>they're not here. We have all these plugs.
+
+01:14:56.320 --> 01:14:57.519
+<v Speaker 1>I don't know. We
+
+01:15:00.640 --> 01:15:02.800
+<v Speaker 1>don't have Jared. We lost that. That's endpoint
+
+01:15:02.800 --> 01:15:04.480
+<v Speaker 1>uploads. Unplug. There you go.
+
+01:15:05.935 --> 01:15:08.495
+<v Speaker 1>Plug static. I found it. Plug static uploads
+
+01:15:08.495 --> 01:15:11.375
+<v Speaker 1>from change log, GCFOLs, headers.
+
+01:15:12.495 --> 01:15:14.815
+<v Speaker 1>Circuit control, that's something which I was expecting
+
+01:15:14.815 --> 01:15:16.895
+<v Speaker 1>to see. CD and static cache.
+
+01:15:17.990 --> 01:15:20.310
+<v Speaker 1>Expecting surrogate control to be set,
+
+01:15:20.550 --> 01:15:22.070
+<v Speaker 1>but I haven't seen it be set, which
+
+01:15:22.070 --> 01:15:23.190
+<v Speaker 1>makes me wonder.
+
+01:15:24.070 --> 01:15:24.950
+<v Speaker 0>Let's see.
+
+01:15:25.270 --> 01:15:27.350
+<v Speaker 0>I'm
+
+01:15:28.550 --> 01:15:31.030
+<v Speaker 0>really disappointed we haven't killed your infrastructure yet.
+
+01:15:32.675 --> 01:15:34.595
+<v Speaker 1>Okay. We can fix that really quickly. Are
+
+01:15:34.595 --> 01:15:36.034
+<v Speaker 1>we towards the end of this stream?
+
+01:15:36.595 --> 01:15:37.795
+<v Speaker 1>We could we could yeah.
+
+01:15:38.515 --> 01:15:40.515
+<v Speaker 1>Are we are we almost done? Yeah. We're
+
+01:15:40.515 --> 01:15:42.915
+<v Speaker 0>we can start wrapping this up. Alright. I
+
+01:15:42.915 --> 01:15:44.995
+<v Speaker 0>I I don't know about you. I I
+
+01:15:44.995 --> 01:15:46.915
+<v Speaker 0>feel like we kind of almost worked this
+
+01:15:46.915 --> 01:15:47.075
+<v Speaker 0>out.
+
+01:15:48.000 --> 01:15:49.920
+<v Speaker 0>I just I think maybe what you've got
+
+01:15:49.920 --> 01:15:52.000
+<v Speaker 0>is those anomalies, you know, which we're talking
+
+01:15:52.000 --> 01:15:53.999
+<v Speaker 0>about less than 1% are
+
+01:15:54.400 --> 01:15:57.999
+<v Speaker 0>older devices or browsers, potentially older cars with
+
+01:15:58.639 --> 01:15:59.199
+<v Speaker 0>some
+
+01:15:59.485 --> 01:16:02.125
+<v Speaker 0>limited web functionality that's trying to pull down
+
+01:16:02.125 --> 01:16:04.285
+<v Speaker 0>the fail over HTTP one, which is causing
+
+01:16:04.285 --> 01:16:05.885
+<v Speaker 0>the partial content streams,
+
+01:16:06.125 --> 01:16:08.285
+<v Speaker 0>which are particularly slower than the HTTP two
+
+01:16:08.285 --> 01:16:10.605
+<v Speaker 0>streams. I guess the chunking mechanism is perhaps
+
+01:16:10.605 --> 01:16:10.845
+<v Speaker 0>different.
+
+01:16:12.450 --> 01:16:14.050
+<v Speaker 0>That's kind of Okay. Where I'm at. I
+
+01:16:14.050 --> 01:16:15.410
+<v Speaker 0>don't know if you both agree or you
+
+01:16:15.410 --> 01:16:17.090
+<v Speaker 0>you think something's slightly different.
+
+01:16:18.130 --> 01:16:20.050
+<v Speaker 1>No. I would I would agree with that.
+
+01:16:20.450 --> 01:16:21.489
+<v Speaker 1>Yeah. I would agree with that. I think
+
+01:16:21.489 --> 01:16:22.690
+<v Speaker 1>that's a that's a good
+
+01:16:24.545 --> 01:16:26.625
+<v Speaker 1>good wrap up. We do see the two
+
+01:16:26.625 --> 01:16:28.305
+<v Speaker 1>o sixes. We do see the two hundreds.
+
+01:16:28.305 --> 01:16:29.665
+<v Speaker 1>We understand the difference between h t p
+
+01:16:29.665 --> 01:16:31.505
+<v Speaker 1>one and h t p two. I will
+
+01:16:31.505 --> 01:16:33.665
+<v Speaker 1>do a follow-up research. We know that the
+
+01:16:33.665 --> 01:16:35.505
+<v Speaker 1>m p three files are the ones that
+
+01:16:35.505 --> 01:16:36.465
+<v Speaker 1>are inflating
+
+01:16:37.060 --> 01:16:39.940
+<v Speaker 1>the Ingress NGINX. That's why it suggests that
+
+01:16:39.940 --> 01:16:41.780
+<v Speaker 1>some requests are slow, but they're not. They're
+
+01:16:41.780 --> 01:16:43.460
+<v Speaker 1>just like m p threes, which, you take
+
+01:16:43.460 --> 01:16:45.380
+<v Speaker 1>time to be served. And, you know, sometimes
+
+01:16:45.380 --> 01:16:46.659
+<v Speaker 1>slower connections
+
+01:16:47.140 --> 01:16:49.460
+<v Speaker 1>can take longer, but oh, sorry, slow clients.
+
+01:16:49.460 --> 01:16:51.059
+<v Speaker 1>But why what I don't understand
+
+01:16:51.380 --> 01:16:52.179
+<v Speaker 1>is
+
+01:16:52.685 --> 01:16:53.565
+<v Speaker 1>why
+
+01:16:55.405 --> 01:16:57.885
+<v Speaker 1>aren't those m p threes cached
+
+01:16:57.885 --> 01:16:59.245
+<v Speaker 1>by our CDN?
+
+01:16:59.485 --> 01:17:01.805
+<v Speaker 1>Because they should they should be cached up
+
+01:17:01.805 --> 01:17:03.725
+<v Speaker 1>to, I think, a year or two years.
+
+01:17:03.885 --> 01:17:05.485
+<v Speaker 1>So once it has been served from the
+
+01:17:05.485 --> 01:17:07.165
+<v Speaker 1>CDN, it should always be served from the
+
+01:17:07.165 --> 01:17:07.645
+<v Speaker 1>CDN.
+
+01:17:08.830 --> 01:17:10.590
+<v Speaker 1>Because what I've just done now is scaled
+
+01:17:10.590 --> 01:17:12.590
+<v Speaker 1>down the app to zero. So if you
+
+01:17:12.590 --> 01:17:14.430
+<v Speaker 1>go to the origin, if you go to
+
+01:17:14.430 --> 01:17:16.030
+<v Speaker 1>21.changelog.com,
+
+01:17:16.030 --> 01:17:17.870
+<v Speaker 1>which is the origin directly, this will
+
+01:17:18.830 --> 01:17:20.510
+<v Speaker 1>not work. So production is down.
+
+01:17:21.665 --> 01:17:22.465
+<v Speaker 1>Except
+
+01:17:23.025 --> 01:17:25.665
+<v Speaker 1>for, like, a regular user, go to changelog.com.
+
+01:17:25.665 --> 01:17:26.865
+<v Speaker 1>I'm signed in.
+
+01:17:27.425 --> 01:17:29.105
+<v Speaker 1>But this is happening. So if I go
+
+01:17:29.105 --> 01:17:30.865
+<v Speaker 1>in private mode, changelog.com,
+
+01:17:30.865 --> 01:17:31.905
+<v Speaker 1>I have my cookie.
+
+01:17:32.065 --> 01:17:33.505
+<v Speaker 1>There we go. Changelog is up.
+
+01:17:34.560 --> 01:17:36.400
+<v Speaker 1>Oh, it's not done. And what happens if
+
+01:17:36.400 --> 01:17:38.320
+<v Speaker 1>I play this? Will this work?
+
+01:17:39.119 --> 01:17:40.079
+<v Speaker 1>And it works.
+
+01:17:41.119 --> 01:17:42.480
+<v Speaker 1>So m p threes. This m p three
+
+01:17:42.480 --> 01:17:44.079
+<v Speaker 1>could be streamed or at least it can
+
+01:17:44.079 --> 01:17:45.039
+<v Speaker 1>start streaming.
+
+01:17:45.360 --> 01:17:47.679
+<v Speaker 1>If you rerun your request, David, does it
+
+01:17:47.679 --> 01:17:49.915
+<v Speaker 1>still work? The one without the 21, by
+
+01:17:49.915 --> 01:17:50.875
+<v Speaker 1>the way. Oh,
+
+01:17:51.035 --> 01:17:52.715
+<v Speaker 0>the 21 is definitely broken.
+
+01:17:52.955 --> 01:17:54.555
+<v Speaker 1>Yeah. Of course. Because that's the origin. The
+
+01:17:54.555 --> 01:17:55.914
+<v Speaker 1>origin is down. Yep.
+
+01:17:56.235 --> 01:17:58.555
+<v Speaker 0>And my CDN when I change 21 to
+
+01:17:58.555 --> 01:18:00.875
+<v Speaker 0>CDN, I'm getting a 503 back end unhealthy.
+
+01:18:02.070 --> 01:18:03.030
+<v Speaker 0>CVN?
+
+01:18:03.030 --> 01:18:05.269
+<v Speaker 0>Yeah. For JS party one, that's 91.
+
+01:18:06.230 --> 01:18:08.230
+<v Speaker 1>Ah, that's interesting. Oh, yeah. I'm signed in
+
+01:18:08.230 --> 01:18:10.869
+<v Speaker 1>here. CVN for JS have to do. We
+
+01:18:10.869 --> 01:18:12.710
+<v Speaker 2>brought down the site. It's a good time.
+
+01:18:12.710 --> 01:18:14.710
+<v Speaker 1>We did. Yes. Right? At least parts of
+
+01:18:14.710 --> 01:18:14.949
+<v Speaker 1>it.
+
+01:18:15.555 --> 01:18:17.955
+<v Speaker 1>They're uncached. So so that's that's my question.
+
+01:18:17.955 --> 01:18:19.875
+<v Speaker 1>Why aren't these m p threes, why aren't
+
+01:18:19.875 --> 01:18:20.995
+<v Speaker 1>they stored longer
+
+01:18:21.635 --> 01:18:23.635
+<v Speaker 1>in the CDN? And that's what I would
+
+01:18:23.635 --> 01:18:24.355
+<v Speaker 1>like to dig
+
+01:18:24.835 --> 01:18:27.075
+<v Speaker 1>into next. So for example Follow-up. This one.
+
+01:18:27.235 --> 01:18:28.995
+<v Speaker 1>Sorry. Go on. Follow-up. Yes. That's a good
+
+01:18:28.995 --> 01:18:29.155
+<v Speaker 1>idea.
+
+01:18:29.910 --> 01:18:31.830
+<v Speaker 1>And this is working if I go here,
+
+01:18:31.830 --> 01:18:33.350
+<v Speaker 1>like, because I haven't listened it to here.
+
+01:18:33.350 --> 01:18:34.310
+<v Speaker 1>Will it still work?
+
+01:18:35.270 --> 01:18:36.310
+<v Speaker 1>This still works.
+
+01:18:37.190 --> 01:18:38.950
+<v Speaker 1>All the byte range, that still works.
+
+01:18:39.350 --> 01:18:41.350
+<v Speaker 1>So I'm wondering, yeah, this is back end
+
+01:18:41.350 --> 01:18:43.350
+<v Speaker 1>is unhealthy, and I think this one is
+
+01:18:43.350 --> 01:18:43.990
+<v Speaker 1>not cached
+
+01:18:44.905 --> 01:18:46.585
+<v Speaker 1>Right? These visits because this is when we
+
+01:18:46.585 --> 01:18:47.864
+<v Speaker 1>track, like, the clicks.
+
+01:18:48.665 --> 01:18:49.864
+<v Speaker 1>So that doesn't work.
+
+01:18:51.065 --> 01:18:53.225
+<v Speaker 1>So shall we scale it back up and
+
+01:18:53.225 --> 01:18:56.185
+<v Speaker 1>unbreak it? Yeah. Let's do it. Live? Okay.
+
+01:18:56.185 --> 01:18:56.985
+<v Speaker 1>Scale up.
+
+01:18:58.320 --> 01:18:59.199
+<v Speaker 1>Odds
+
+01:18:59.199 --> 01:19:00.239
+<v Speaker 1>namespace.
+
+01:19:01.360 --> 01:19:01.999
+<v Speaker 1>So
+
+01:19:04.000 --> 01:19:04.639
+<v Speaker 1>pods
+
+01:19:05.280 --> 01:19:07.360
+<v Speaker 1>and through its status. So l.
+
+01:19:08.239 --> 01:19:09.520
+<v Speaker 1>It's one of the things which it does
+
+01:19:09.520 --> 01:19:12.400
+<v Speaker 1>always. It always tries to restore
+
+01:19:12.955 --> 01:19:13.994
+<v Speaker 1>from backup,
+
+01:19:14.235 --> 01:19:15.835
+<v Speaker 1>and it just does like a sync. So
+
+01:19:15.835 --> 01:19:18.874
+<v Speaker 1>it just makes sure that whatever it has,
+
+01:19:19.114 --> 01:19:21.515
+<v Speaker 1>it just well, sorry. Whatever it needs to
+
+01:19:21.515 --> 01:19:23.675
+<v Speaker 1>have, it's already local. So there's nothing backed
+
+01:19:23.675 --> 01:19:24.874
+<v Speaker 1>up which it doesn't have.
+
+01:19:25.275 --> 01:19:26.715
+<v Speaker 1>And then it, like, does the does the
+
+01:19:26.715 --> 01:19:27.114
+<v Speaker 1>reverse,
+
+01:19:27.670 --> 01:19:29.350
+<v Speaker 1>which means that if we were to deploy
+
+01:19:29.350 --> 01:19:31.030
+<v Speaker 1>this, like, on a brand new system,
+
+01:19:31.750 --> 01:19:32.230
+<v Speaker 1>which
+
+01:19:34.150 --> 01:19:35.750
+<v Speaker 1>oh, I just got my alert.
+
+01:19:36.710 --> 01:19:38.470
+<v Speaker 1>This needs to be alert. So that's, yeah,
+
+01:19:38.470 --> 01:19:40.230
+<v Speaker 1>that's the one when things aren't working, so
+
+01:19:40.230 --> 01:19:42.375
+<v Speaker 1>it finally noticed that. Well, I'm still getting
+
+01:19:42.375 --> 01:19:44.535
+<v Speaker 0>a five or three years. Is expected right
+
+01:19:44.535 --> 01:19:45.014
+<v Speaker 0>now?
+
+01:19:45.655 --> 01:19:47.815
+<v Speaker 1>Yes. Because it's still starting. It hasn't started
+
+01:19:47.815 --> 01:19:50.455
+<v Speaker 1>yet. Alright. My alerts keep going yet.
+
+01:19:51.175 --> 01:19:53.175
+<v Speaker 1>So let's have a look. If we go
+
+01:19:53.175 --> 01:19:55.335
+<v Speaker 1>to changelog or findout.net,
+
+01:19:55.530 --> 01:19:57.449
+<v Speaker 1>we have this synthetic monitoring.
+
+01:19:57.530 --> 01:19:58.809
+<v Speaker 1>Let's have a quick look.
+
+01:20:00.730 --> 01:20:02.809
+<v Speaker 1>This is down. We know this is down,
+
+01:20:02.809 --> 01:20:04.489
+<v Speaker 1>but this is up according to
+
+01:20:05.929 --> 01:20:07.050
+<v Speaker 1>all the probes.
+
+01:20:08.570 --> 01:20:10.010
+<v Speaker 1>Yeah. No. You can't post links.
+
+01:20:11.105 --> 01:20:12.864
+<v Speaker 1>So this one is
+
+01:20:13.585 --> 01:20:15.425
+<v Speaker 1>let's see. Change log. Yeah. We just need
+
+01:20:15.425 --> 01:20:17.105
+<v Speaker 1>to switch to changelog.com.
+
+01:20:17.105 --> 01:20:19.025
+<v Speaker 1>A % uptime. Look at that. The latency
+
+01:20:19.025 --> 01:20:20.304
+<v Speaker 1>will go slightly higher.
+
+01:20:20.705 --> 01:20:21.985
+<v Speaker 1>Let me go to the last, you know,
+
+01:20:21.985 --> 01:20:23.665
+<v Speaker 1>last thirty minutes. There we go. See, the
+
+01:20:23.665 --> 01:20:24.784
+<v Speaker 1>latency goes up,
+
+01:20:25.425 --> 01:20:26.304
+<v Speaker 1>but
+
+01:20:26.730 --> 01:20:28.090
+<v Speaker 1>this is still cached.
+
+01:20:28.650 --> 01:20:30.730
+<v Speaker 1>I think we are currently down. Yes. We
+
+01:20:30.730 --> 01:20:32.330
+<v Speaker 1>are coming back up. So
+
+01:20:32.570 --> 01:20:33.770
+<v Speaker 1>changelog.com,
+
+01:20:33.770 --> 01:20:35.770
+<v Speaker 1>if you're not logged in, it will work.
+
+01:20:35.770 --> 01:20:36.810
+<v Speaker 1>Changelog.com.
+
+01:20:36.810 --> 01:20:38.330
+<v Speaker 1>I'm not I have don't have any cookie,
+
+01:20:38.330 --> 01:20:38.490
+<v Speaker 1>so
+
+01:20:39.364 --> 01:20:41.525
+<v Speaker 1>opt down for the majority of the users.
+
+01:20:42.965 --> 01:20:44.885
+<v Speaker 1>Stuff that's dynamic, for example,
+
+01:20:45.285 --> 01:20:46.885
+<v Speaker 1>this one, if we click here, this was
+
+01:20:46.885 --> 01:20:47.605
+<v Speaker 1>cached.
+
+01:20:48.324 --> 01:20:49.925
+<v Speaker 1>Even though the back end is down, this
+
+01:20:49.925 --> 01:20:51.765
+<v Speaker 1>was cached. It's just searched from the CDN.
+
+01:20:51.765 --> 01:20:52.885
+<v Speaker 1>If you were to play,
+
+01:20:53.125 --> 01:20:55.020
+<v Speaker 1>they should also be cached, they should work.
+
+01:20:55.500 --> 01:20:56.940
+<v Speaker 1>Yep. And it does.
+
+01:20:57.260 --> 01:20:58.940
+<v Speaker 1>So our episode is okay.
+
+01:20:59.340 --> 01:21:00.940
+<v Speaker 1>But if we were to, for example, click
+
+01:21:00.940 --> 01:21:02.219
+<v Speaker 1>on some news items
+
+01:21:02.460 --> 01:21:03.179
+<v Speaker 1>like
+
+01:21:03.260 --> 01:21:04.140
+<v Speaker 1>this one,
+
+01:21:05.100 --> 01:21:06.620
+<v Speaker 1>because this goes, oh, and we're back up.
+
+01:21:06.935 --> 01:21:08.375
+<v Speaker 1>So you must be back up. That must
+
+01:21:08.375 --> 01:21:10.935
+<v Speaker 1>have restarted. Yeah. It's back you go. Yeah.
+
+01:21:10.935 --> 01:21:12.215
+<v Speaker 1>So already back up.
+
+01:21:13.335 --> 01:21:15.655
+<v Speaker 1>That would not have worked had the origin
+
+01:21:15.655 --> 01:21:18.295
+<v Speaker 1>not been up because the request, the the
+
+01:21:18.295 --> 01:21:20.935
+<v Speaker 1>redirect, and the and the tracking, like, link
+
+01:21:20.935 --> 01:21:21.495
+<v Speaker 1>was posted.
+
+01:21:24.830 --> 01:21:25.390
+<v Speaker 0>Okay.
+
+01:21:25.870 --> 01:21:28.110
+<v Speaker 0>Okay. Can can we look at one last
+
+01:21:28.110 --> 01:21:30.190
+<v Speaker 0>thing to because my curiosity is getting the
+
+01:21:30.190 --> 01:21:32.110
+<v Speaker 0>better of me before we we finish. But
+
+01:21:32.110 --> 01:21:34.430
+<v Speaker 0>can we take a look at the request
+
+01:21:34.430 --> 01:21:35.870
+<v Speaker 0>proto 1.1
+
+01:21:35.870 --> 01:21:38.074
+<v Speaker 0>status two zero six and see if we
+
+01:21:38.074 --> 01:21:39.114
+<v Speaker 0>can see any
+
+01:21:39.515 --> 01:21:41.675
+<v Speaker 0>commonality across the user agents.
+
+01:21:42.315 --> 01:21:44.155
+<v Speaker 1>Okay. Can you say that one more time?
+
+01:21:44.235 --> 01:21:45.755
+<v Speaker 1>So let's take a look at the logs
+
+01:21:45.755 --> 01:21:48.074
+<v Speaker 0>for the request proto 1.1.
+
+01:21:49.450 --> 01:21:52.010
+<v Speaker 1>Right. So the logs request proto. So let
+
+01:21:52.010 --> 01:21:53.370
+<v Speaker 1>me just get it from here. Your agent
+
+01:21:53.370 --> 01:21:56.730
+<v Speaker 1>or a different agent? Just all all requests.
+
+01:21:56.730 --> 01:21:58.250
+<v Speaker 0>So 1.1.
+
+01:21:58.890 --> 01:22:00.410
+<v Speaker 0>Okay. So I think we this is the
+
+01:22:00.410 --> 01:22:02.650
+<v Speaker 1>view that you want. Yes. 1.1. Yes? Yeah.
+
+01:22:02.650 --> 01:22:04.730
+<v Speaker 0>And just the two o sixes on the
+
+01:22:04.730 --> 01:22:05.050
+<v Speaker 0>status.
+
+01:22:05.745 --> 01:22:07.425
+<v Speaker 1>The two o sixes. Yes.
+
+01:22:08.305 --> 01:22:09.825
+<v Speaker 0>Okay. Let's take a look at the user
+
+01:22:09.825 --> 01:22:12.145
+<v Speaker 0>agent. So h t t p underscore user
+
+01:22:12.145 --> 01:22:13.344
+<v Speaker 0>underscore agent.
+
+01:22:15.665 --> 01:22:17.505
+<v Speaker 0>Russell somehow managed to get a two zero
+
+01:22:17.505 --> 01:22:19.449
+<v Speaker 0>six on h two, which has also thrown
+
+01:22:19.449 --> 01:22:21.449
+<v Speaker 0>that out the window. So thank you, Russell.
+
+01:22:21.449 --> 01:22:22.090
+<v Speaker 0>Okay.
+
+01:22:26.730 --> 01:22:30.650
+<v Speaker 1>Method path. So that's the agent 206HTTP
+
+01:22:30.650 --> 01:22:34.025
+<v Speaker 1>1 1. Android, Mac, Windows, Linux. It's all
+
+01:22:34.025 --> 01:22:35.304
+<v Speaker 0>different. I was just
+
+01:22:35.864 --> 01:22:38.585
+<v Speaker 0>curious if it's gonna see BMW or
+
+01:22:39.545 --> 01:22:41.385
+<v Speaker 0>something. I don't know. Like, x 11. The
+
+01:22:41.385 --> 01:22:44.025
+<v Speaker 1>next that's Mozilla. Okay. Mac OS
+
+01:22:44.600 --> 01:22:46.040
+<v Speaker 1>a two, Android,
+
+01:22:47.400 --> 01:22:49.960
+<v Speaker 1>Chrome. Yeah. All sorts of browsers. Yeah.
+
+01:22:50.280 --> 01:22:52.920
+<v Speaker 1>Two zero six for HTTP two. Interesting. Yeah.
+
+01:22:54.200 --> 01:22:57.640
+<v Speaker 1>So let's let's test that. If the protocol
+
+01:22:57.640 --> 01:22:59.080
+<v Speaker 1>is two point o,
+
+01:23:01.045 --> 01:23:03.125
+<v Speaker 1>we'll see any two o sixes
+
+01:23:05.045 --> 01:23:07.844
+<v Speaker 1>in the last seven days. No. No.
+
+01:23:08.965 --> 01:23:09.685
+<v Speaker 1>So
+
+01:23:09.765 --> 01:23:10.725
+<v Speaker 1>I think
+
+01:23:11.365 --> 01:23:12.005
+<v Speaker 1>actually,
+
+01:23:12.645 --> 01:23:14.085
+<v Speaker 1>yeah, I'm not sure why we're not seeing
+
+01:23:14.085 --> 01:23:14.245
+<v Speaker 1>this.
+
+01:23:15.199 --> 01:23:18.080
+<v Speaker 0>Can we try htp2.star
+
+01:23:18.080 --> 01:23:19.039
+<v Speaker 0>just in case?
+
+01:23:19.520 --> 01:23:21.440
+<v Speaker 0>Or just htp2star?
+
+01:23:22.159 --> 01:23:24.239
+<v Speaker 1>I am. Yeah. Let's try h t p
+
+01:23:24.239 --> 01:23:24.880
+<v Speaker 1>two.
+
+01:23:25.520 --> 01:23:26.239
+<v Speaker 1>Nothing.
+
+01:23:26.639 --> 01:23:29.284
+<v Speaker 1>Nothing. Status is 200. No. We're not seeing
+
+01:23:29.284 --> 01:23:31.684
+<v Speaker 1>any 200 2 0 on htptwo.
+
+01:23:31.685 --> 01:23:33.364
+<v Speaker 0>Yeah, Russell. We're not calling you a liar,
+
+01:23:33.364 --> 01:23:35.364
+<v Speaker 0>but we're definitely calling you a liar. Yeah.
+
+01:23:35.364 --> 01:23:37.045
+<v Speaker 1>No. We can't see them in the logs.
+
+01:23:37.045 --> 01:23:38.965
+<v Speaker 1>That's all we're saying. Yeah. We can't see
+
+01:23:38.965 --> 01:23:39.605
+<v Speaker 1>them in the logs.
+
+01:23:41.030 --> 01:23:41.670
+<v Speaker 0>Yep.
+
+01:23:41.990 --> 01:23:43.750
+<v Speaker 0>Alright. I think unless
+
+01:23:44.070 --> 01:23:45.590
+<v Speaker 0>it's if you wanna do it in next
+
+01:23:45.590 --> 01:23:46.630
+<v Speaker 0>couple of minutes, I think we can maybe
+
+01:23:46.630 --> 01:23:48.150
+<v Speaker 0>leave that there. I think it's been really
+
+01:23:48.150 --> 01:23:51.270
+<v Speaker 0>fun and, you know, just testing our thoughts
+
+01:23:51.270 --> 01:23:52.710
+<v Speaker 0>and talking about that alert. I think it's
+
+01:23:52.710 --> 01:23:53.910
+<v Speaker 0>been really good for me to try and
+
+01:23:53.910 --> 01:23:55.670
+<v Speaker 0>understand what's going on, and I'm sure others
+
+01:23:55.670 --> 01:23:56.070
+<v Speaker 0>as well.
+
+01:23:56.805 --> 01:23:57.445
+<v Speaker 1>So
+
+01:23:57.765 --> 01:23:59.445
+<v Speaker 1>SSB, we've enjoyed it.
+
+01:23:59.925 --> 01:24:01.125
+<v Speaker 2>Yeah. One of the things we tried to
+
+01:24:01.125 --> 01:24:02.485
+<v Speaker 2>do is, like, figure out what what was
+
+01:24:02.485 --> 01:24:05.205
+<v Speaker 2>in common between all of the the failures,
+
+01:24:05.205 --> 01:24:06.405
+<v Speaker 2>and there were too
+
+01:24:06.725 --> 01:24:07.764
+<v Speaker 2>many variables
+
+01:24:07.765 --> 01:24:09.364
+<v Speaker 2>that we had to poke at and maybe
+
+01:24:09.364 --> 01:24:10.485
+<v Speaker 2>not all the data.
+
+01:24:10.965 --> 01:24:13.460
+<v Speaker 2>Mhmm. We I don't know if we really
+
+01:24:13.460 --> 01:24:16.340
+<v Speaker 2>dug into if it could have been geographically,
+
+01:24:16.580 --> 01:24:17.539
+<v Speaker 2>correlated.
+
+01:24:18.180 --> 01:24:20.340
+<v Speaker 2>I'm also curious about the other aspects of
+
+01:24:20.340 --> 01:24:23.219
+<v Speaker 2>the back end, like the database. So I
+
+01:24:23.219 --> 01:24:25.940
+<v Speaker 2>I know, you know, you say it's static,
+
+01:24:25.940 --> 01:24:28.125
+<v Speaker 2>but I still think that there's room for
+
+01:24:28.125 --> 01:24:31.165
+<v Speaker 2>that elixir on its way to delivering some
+
+01:24:31.165 --> 01:24:33.324
+<v Speaker 2>static content to try to
+
+01:24:33.645 --> 01:24:35.405
+<v Speaker 2>touch a database on the way.
+
+01:24:36.285 --> 01:24:38.525
+<v Speaker 2>And if not elixir, then something else. There's
+
+01:24:38.525 --> 01:24:40.365
+<v Speaker 2>also the possibility that there's
+
+01:24:40.860 --> 01:24:43.500
+<v Speaker 2>middle layers of this that we're not seeing
+
+01:24:43.500 --> 01:24:46.620
+<v Speaker 2>captured in this one set of log output.
+
+01:24:46.620 --> 01:24:48.540
+<v Speaker 2>So being able to put all the information
+
+01:24:48.540 --> 01:24:50.699
+<v Speaker 2>together and then sift through it
+
+01:24:51.420 --> 01:24:53.980
+<v Speaker 1>Yeah. The answer's out there somewhere, though. So
+
+01:24:53.980 --> 01:24:55.100
+<v Speaker 1>what I'm wondering is,
+
+01:24:55.945 --> 01:24:58.505
+<v Speaker 1>what about we create a GitHub issue
+
+01:24:58.824 --> 01:25:00.585
+<v Speaker 1>on change.com,
+
+01:25:00.665 --> 01:25:03.785
+<v Speaker 1>which captures these thoughts? And maybe when we
+
+01:25:03.785 --> 01:25:06.265
+<v Speaker 1>have some answers, some good answers, maybe we
+
+01:25:06.265 --> 01:25:08.185
+<v Speaker 1>can do a follow-up. How does that sound?
+
+01:25:09.170 --> 01:25:10.289
+<v Speaker 0>Yeah. Definitely.
+
+01:25:11.250 --> 01:25:12.530
+<v Speaker 0>I think that sounds like a a good
+
+01:25:12.530 --> 01:25:13.249
+<v Speaker 0>idea.
+
+01:25:13.810 --> 01:25:16.290
+<v Speaker 0>I'm also gonna dig into your your cache
+
+01:25:16.290 --> 01:25:18.850
+<v Speaker 0>messes. Those seem to be rather sporadic. I
+
+01:25:18.850 --> 01:25:20.130
+<v Speaker 0>think there's something there.
+
+01:25:20.690 --> 01:25:22.530
+<v Speaker 0>But yeah, definitely something for another day.
+
+01:25:23.015 --> 01:25:24.935
+<v Speaker 0>Yep. So that yeah. We'll get that issue
+
+01:25:25.095 --> 01:25:27.015
+<v Speaker 0>well, someone will open that issue. We'll get
+
+01:25:27.015 --> 01:25:28.375
+<v Speaker 0>it shared in the short notes for anyone
+
+01:25:28.375 --> 01:25:31.255
+<v Speaker 0>that watches this. I nominate Marcus. Yeah. Alright.
+
+01:25:31.735 --> 01:25:33.175
+<v Speaker 0>And we encourage you all to come and
+
+01:25:33.175 --> 01:25:35.095
+<v Speaker 0>join us and have some fun working this
+
+01:25:35.095 --> 01:25:36.215
+<v Speaker 0>one out because
+
+01:25:36.930 --> 01:25:38.450
+<v Speaker 1>Love it. This is a good mystery. I
+
+01:25:38.450 --> 01:25:39.410
+<v Speaker 0>like it. Alright.
+
+01:25:41.170 --> 01:25:42.690
+<v Speaker 0>Well, thank you both for taking time out
+
+01:25:42.690 --> 01:25:44.130
+<v Speaker 0>of your day for joining me. Thank you,
+
+01:25:44.130 --> 01:25:46.370
+<v Speaker 0>J Hart, for bringing, you know, this interesting
+
+01:25:46.370 --> 01:25:48.130
+<v Speaker 0>problem that wasn't a problem but might be
+
+01:25:48.130 --> 01:25:48.450
+<v Speaker 0>a problem.
+
+01:25:49.135 --> 01:25:51.215
+<v Speaker 0>Just exploring and pulling away the layers of
+
+01:25:51.215 --> 01:25:52.735
+<v Speaker 0>this has been a whole lot of fun.
+
+01:25:52.815 --> 01:25:54.815
+<v Speaker 0>So I hope you both have a wonderful
+
+01:25:54.815 --> 01:25:56.574
+<v Speaker 0>weekend, and I I hope to speak to
+
+01:25:56.574 --> 01:25:58.895
+<v Speaker 0>you again soon. That's all for now. Bye.
+
+01:25:58.895 --> 01:25:59.775
+<v Speaker 1>Thank you.
+
+01:26:00.094 --> 01:26:00.735
+<v Speaker 1>See you all.

@@ -1,0 +1,6737 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: a0a4fabf-8591-443c-86d0-d9eca7abf61d
+Created: 2025-06-05T21:57:13.290Z
+Duration: 5699.892
+Channels: 1
+
+00:01:48.735 --> 00:01:49.695
+<v Speaker 0>Policy set,
+
+00:02:47.549 --> 00:02:50.909
+<v Speaker 1>Hello, and welcome back to the Rawkode Academy.
+
+00:02:50.909 --> 00:02:53.069
+<v Speaker 1>I'm your host, Dave Flanagan, also known across
+
+00:02:53.069 --> 00:02:54.349
+<v Speaker 1>the Internet as Rawkode.
+
+00:02:55.195 --> 00:02:57.195
+<v Speaker 1>For today's Rawkode Live, we are taking a
+
+00:02:57.195 --> 00:02:59.435
+<v Speaker 1>look at not one, not even two, but
+
+00:02:59.435 --> 00:03:01.915
+<v Speaker 1>three different projects from the cloud native ecosystem
+
+00:03:01.915 --> 00:03:04.715
+<v Speaker 1>to help you improve your security posture and
+
+00:03:04.715 --> 00:03:06.315
+<v Speaker 1>container image pipeline.
+
+00:03:06.795 --> 00:03:09.755
+<v Speaker 1>Those projects are Notary, OraS, and Ratify.
+
+00:03:09.755 --> 00:03:11.080
+<v Speaker 1>And joining us today,
+
+00:03:13.240 --> 00:03:16.040
+<v Speaker 1>I'm pleased to welcome Yi from Microsoft,
+
+00:03:16.040 --> 00:03:17.000
+<v Speaker 1>a maintainer,
+
+00:03:17.000 --> 00:03:18.680
+<v Speaker 1>or two of these projects,
+
+00:03:18.840 --> 00:03:19.880
+<v Speaker 1>Notary
+
+00:03:19.880 --> 00:03:23.000
+<v Speaker 1>and Radify and a contributor to OraS. Welcome
+
+00:03:23.000 --> 00:03:23.720
+<v Speaker 1>Yi. How are you?
+
+00:03:25.175 --> 00:03:28.215
+<v Speaker 0>Hi, David. I'm good. Hello, everyone.
+
+00:03:28.695 --> 00:03:31.335
+<v Speaker 1>For anyone who has not met you before,
+
+00:03:31.335 --> 00:03:32.935
+<v Speaker 1>could you please give us a little bit
+
+00:03:32.935 --> 00:03:35.175
+<v Speaker 1>of history, flavor, context, and tell us all
+
+00:03:35.175 --> 00:03:37.255
+<v Speaker 1>about yourself, please? Sure.
+
+00:03:37.970 --> 00:03:40.210
+<v Speaker 0>My name is Yi. So
+
+00:03:40.610 --> 00:03:43.810
+<v Speaker 0>I'm currently senior product manager at Microsoft.
+
+00:03:44.130 --> 00:03:47.410
+<v Speaker 0>My main focus is on the container's secure
+
+00:03:47.410 --> 00:03:48.370
+<v Speaker 0>supply chain.
+
+00:03:49.490 --> 00:03:50.850
+<v Speaker 0>I'm also the
+
+00:03:51.485 --> 00:03:55.645
+<v Speaker 0>project maintainer for the CNCF project, notary project,
+
+00:03:56.364 --> 00:03:57.965
+<v Speaker 0>and the RADify project.
+
+00:03:58.204 --> 00:04:00.045
+<v Speaker 0>And also, I'm spending
+
+00:04:00.045 --> 00:04:01.645
+<v Speaker 0>time working on the
+
+00:04:02.045 --> 00:04:02.924
+<v Speaker 0>ORIS project.
+
+00:04:03.900 --> 00:04:04.620
+<v Speaker 0>Yeah.
+
+00:04:04.780 --> 00:04:05.420
+<v Speaker 0>So
+
+00:04:05.980 --> 00:04:06.780
+<v Speaker 0>my
+
+00:04:07.019 --> 00:04:07.820
+<v Speaker 0>main
+
+00:04:08.379 --> 00:04:10.780
+<v Speaker 0>goal is to build in the solutions
+
+00:04:10.780 --> 00:04:13.019
+<v Speaker 0>and the tools to help users,
+
+00:04:13.019 --> 00:04:16.185
+<v Speaker 0>customers to secure their supply chain by using
+
+00:04:16.185 --> 00:04:19.385
+<v Speaker 0>authentic content, their images and other
+
+00:04:19.385 --> 00:04:20.425
+<v Speaker 0>effects.
+
+00:04:21.945 --> 00:04:25.065
+<v Speaker 1>All right. Yep. Now, maybe a little bit
+
+00:04:25.065 --> 00:04:27.145
+<v Speaker 1>of a broad question here, but let's open
+
+00:04:27.145 --> 00:04:28.264
+<v Speaker 1>it up to some conversation.
+
+00:04:30.420 --> 00:04:32.980
+<v Speaker 1>Aren't if we're shipping containers to to a
+
+00:04:32.980 --> 00:04:34.180
+<v Speaker 1>Kubernetes project,
+
+00:04:34.580 --> 00:04:36.420
+<v Speaker 1>aren't we secure? Like, what is the state
+
+00:04:36.420 --> 00:04:38.660
+<v Speaker 1>of security today if you are just deploying
+
+00:04:38.660 --> 00:04:39.460
+<v Speaker 1>your first
+
+00:04:40.260 --> 00:04:42.500
+<v Speaker 1>pod and container image to a Kubernetes cluster?
+
+00:04:44.944 --> 00:04:45.505
+<v Speaker 0>Yeah,
+
+00:04:45.745 --> 00:04:46.784
+<v Speaker 0>I think it
+
+00:04:47.025 --> 00:04:51.025
+<v Speaker 0>yeah. So so today, in cloud native world,
+
+00:04:51.025 --> 00:04:53.745
+<v Speaker 0>the Container Warehouse application is where
+
+00:04:53.905 --> 00:04:55.664
+<v Speaker 0>we built it popular, especially
+
+00:04:57.669 --> 00:05:00.870
+<v Speaker 0>the Kubernetes and the different distributions
+
+00:05:00.870 --> 00:05:01.830
+<v Speaker 0>that
+
+00:05:02.230 --> 00:05:04.150
+<v Speaker 0>your vendor provided.
+
+00:05:04.310 --> 00:05:06.070
+<v Speaker 0>So security remains
+
+00:05:06.470 --> 00:05:08.230
+<v Speaker 0>the very hot topic,
+
+00:05:08.389 --> 00:05:08.950
+<v Speaker 0>as you know.
+
+00:05:10.225 --> 00:05:12.625
+<v Speaker 0>Recent years, there are many
+
+00:05:12.785 --> 00:05:13.585
+<v Speaker 0>cyber
+
+00:05:13.905 --> 00:05:17.664
+<v Speaker 0>attack on the software supply chain, especially with
+
+00:05:17.664 --> 00:05:18.225
+<v Speaker 0>the
+
+00:05:18.465 --> 00:05:19.824
+<v Speaker 0>with the growing
+
+00:05:19.824 --> 00:05:21.185
+<v Speaker 0>of the open source
+
+00:05:21.745 --> 00:05:26.420
+<v Speaker 0>projects. Right? So malicious code vulnerabilities could be
+
+00:05:26.420 --> 00:05:28.180
+<v Speaker 0>injected into those
+
+00:05:28.260 --> 00:05:30.980
+<v Speaker 0>open source projects, and those could be the
+
+00:05:31.300 --> 00:05:32.340
+<v Speaker 0>dependencies
+
+00:05:32.340 --> 00:05:35.060
+<v Speaker 0>for your container images that you are going
+
+00:05:35.060 --> 00:05:38.020
+<v Speaker 0>to deploy or use in your pipeline, in
+
+00:05:38.020 --> 00:05:38.340
+<v Speaker 0>your
+
+00:05:38.835 --> 00:05:40.435
+<v Speaker 0>Kubernetes environment.
+
+00:05:40.835 --> 00:05:43.155
+<v Speaker 0>Yeah, I think that's the main topic we'll
+
+00:05:43.155 --> 00:05:45.155
+<v Speaker 0>be able to talk about today about the
+
+00:05:45.155 --> 00:05:45.955
+<v Speaker 0>security.
+
+00:05:46.515 --> 00:05:47.075
+<v Speaker 0>Okay.
+
+00:05:48.035 --> 00:05:49.715
+<v Speaker 1>And the three projects that you're going to
+
+00:05:49.715 --> 00:05:52.755
+<v Speaker 1>show us today, they're all CNCF projects.
+
+00:05:53.075 --> 00:05:55.099
+<v Speaker 1>But what are they? Can you give us
+
+00:05:55.099 --> 00:05:57.580
+<v Speaker 1>the kind of TLDR on what is ORS,
+
+00:05:57.580 --> 00:06:00.699
+<v Speaker 1>what is notary, and what is ratify? And
+
+00:06:00.699 --> 00:06:02.139
+<v Speaker 1>if you're gonna cover this in your your
+
+00:06:02.139 --> 00:06:03.819
+<v Speaker 1>demo and stuff, please feel free just to,
+
+00:06:03.819 --> 00:06:05.500
+<v Speaker 1>like, say, let's move straight to the demo.
+
+00:06:05.500 --> 00:06:06.780
+<v Speaker 1>But if you wanna give us just the,
+
+00:06:06.780 --> 00:06:08.300
+<v Speaker 1>you know, the thirty second pitch for each.
+
+00:06:09.235 --> 00:06:10.115
+<v Speaker 0>Yeah.
+
+00:06:10.115 --> 00:06:13.795
+<v Speaker 0>Sure. Before I start to intro those
+
+00:06:14.915 --> 00:06:16.915
+<v Speaker 0>open source projects, I want to talk about
+
+00:06:16.915 --> 00:06:18.595
+<v Speaker 0>the more about the
+
+00:06:18.995 --> 00:06:19.875
+<v Speaker 0>backgrounds
+
+00:06:19.875 --> 00:06:21.395
+<v Speaker 0>and also
+
+00:06:22.320 --> 00:06:25.760
+<v Speaker 0>a systematic way for securing the software supply
+
+00:06:25.760 --> 00:06:28.720
+<v Speaker 0>chain for your containerized workloads.
+
+00:06:29.840 --> 00:06:30.720
+<v Speaker 0>Actually,
+
+00:06:31.280 --> 00:06:32.160
+<v Speaker 0>in the,
+
+00:06:32.560 --> 00:06:33.760
+<v Speaker 0>to superior,
+
+00:06:34.160 --> 00:06:36.000
+<v Speaker 0>container supply chain, there are different
+
+00:06:37.115 --> 00:06:39.995
+<v Speaker 0>aspects you needed to consider. For example,
+
+00:06:40.155 --> 00:06:40.795
+<v Speaker 0>once
+
+00:06:41.515 --> 00:06:44.955
+<v Speaker 0>how do you scan your container images and
+
+00:06:45.675 --> 00:06:48.555
+<v Speaker 0>you will receive some vulnerability reports, right? How
+
+00:06:48.555 --> 00:06:51.115
+<v Speaker 0>do you want to patch your container images?
+
+00:06:51.919 --> 00:06:54.400
+<v Speaker 0>How do you want to fix your application,
+
+00:06:54.639 --> 00:06:56.000
+<v Speaker 0>one of our codes.
+
+00:06:56.319 --> 00:06:58.719
+<v Speaker 0>Those are related to the one of the
+
+00:06:58.719 --> 00:06:59.680
+<v Speaker 0>management.
+
+00:07:00.000 --> 00:07:02.879
+<v Speaker 0>So today, we will talk about more about
+
+00:07:02.879 --> 00:07:04.319
+<v Speaker 0>the authenticity
+
+00:07:04.319 --> 00:07:06.080
+<v Speaker 0>and the integrity of
+
+00:07:07.085 --> 00:07:08.685
+<v Speaker 0>the contented images
+
+00:07:08.925 --> 00:07:09.965
+<v Speaker 0>That means that
+
+00:07:10.845 --> 00:07:11.565
+<v Speaker 0>so
+
+00:07:11.965 --> 00:07:14.205
+<v Speaker 0>as a developer when you want to use
+
+00:07:14.205 --> 00:07:16.285
+<v Speaker 0>some, for example, base images
+
+00:07:16.605 --> 00:07:18.605
+<v Speaker 0>or utility images,
+
+00:07:19.085 --> 00:07:21.485
+<v Speaker 0>you may want to ask the questions How
+
+00:07:21.485 --> 00:07:22.445
+<v Speaker 0>do I trust
+
+00:07:22.780 --> 00:07:24.860
+<v Speaker 0>those images? Right? Well,
+
+00:07:25.260 --> 00:07:28.139
+<v Speaker 0>that's where do those images come from? How
+
+00:07:28.139 --> 00:07:30.460
+<v Speaker 0>do I trust those images that come from
+
+00:07:30.460 --> 00:07:31.660
+<v Speaker 0>really the
+
+00:07:32.139 --> 00:07:35.419
+<v Speaker 0>the company or the organization I trust? This
+
+00:07:35.419 --> 00:07:37.660
+<v Speaker 0>is one question, and this is about the
+
+00:07:38.565 --> 00:07:39.445
+<v Speaker 0>authenticity.
+
+00:07:39.685 --> 00:07:40.885
+<v Speaker 0>Another question
+
+00:07:41.125 --> 00:07:43.205
+<v Speaker 0>often asked by developer
+
+00:07:43.365 --> 00:07:46.725
+<v Speaker 0>is that how do I ensure those images
+
+00:07:46.725 --> 00:07:50.165
+<v Speaker 0>are not tampered with during the distribution because
+
+00:07:50.165 --> 00:07:52.485
+<v Speaker 0>images move around the registries,
+
+00:07:52.979 --> 00:07:55.300
+<v Speaker 0>right, from your SAS ID system
+
+00:07:55.699 --> 00:07:56.580
+<v Speaker 0>to
+
+00:07:56.660 --> 00:07:57.539
+<v Speaker 0>registry
+
+00:07:57.539 --> 00:08:00.340
+<v Speaker 0>and to public registry or from public registry
+
+00:08:00.419 --> 00:08:02.260
+<v Speaker 0>to your private registry,
+
+00:08:02.500 --> 00:08:05.699
+<v Speaker 0>right, from public cloud to your on premise
+
+00:08:05.699 --> 00:08:07.780
+<v Speaker 0>cloud or even other cloud environment.
+
+00:08:08.705 --> 00:08:10.465
+<v Speaker 0>So how can you ensure
+
+00:08:10.545 --> 00:08:12.705
+<v Speaker 0>during this distribution?
+
+00:08:12.705 --> 00:08:14.945
+<v Speaker 0>How can you ensure the images are not
+
+00:08:14.945 --> 00:08:16.545
+<v Speaker 0>tampered with by the
+
+00:08:17.345 --> 00:08:18.465
+<v Speaker 0>bad actors?
+
+00:08:19.105 --> 00:08:22.385
+<v Speaker 0>So those authenticity and the integrity are
+
+00:08:23.530 --> 00:08:24.730
+<v Speaker 0>the topic today.
+
+00:08:25.530 --> 00:08:26.730
+<v Speaker 0>And in
+
+00:08:27.370 --> 00:08:30.890
+<v Speaker 0>the container supply chain area, so
+
+00:08:31.530 --> 00:08:32.970
+<v Speaker 0>I think the last
+
+00:08:33.530 --> 00:08:34.410
+<v Speaker 0>KubeCon
+
+00:08:34.410 --> 00:08:35.850
+<v Speaker 0>twenty twenty four
+
+00:08:36.304 --> 00:08:37.745
+<v Speaker 0>in North America
+
+00:08:37.825 --> 00:08:41.024
+<v Speaker 0>and one of the notary project maintainer, also
+
+00:08:41.024 --> 00:08:43.745
+<v Speaker 0>my colleague gave a very good keynote
+
+00:08:43.825 --> 00:08:45.345
+<v Speaker 0>talking about the
+
+00:08:45.505 --> 00:08:47.265
+<v Speaker 0>whole end to end solution
+
+00:08:47.345 --> 00:08:50.065
+<v Speaker 0>and the tools that can be used for
+
+00:08:50.065 --> 00:08:51.024
+<v Speaker 0>securing the
+
+00:08:51.410 --> 00:08:53.890
+<v Speaker 0>service supply chain. So I want to talk
+
+00:08:53.890 --> 00:08:56.450
+<v Speaker 0>that process a bit because
+
+00:08:56.610 --> 00:08:59.250
+<v Speaker 0>later on, when I show you hands on,
+
+00:08:59.410 --> 00:09:00.530
+<v Speaker 0>you will know
+
+00:09:01.570 --> 00:09:02.690
+<v Speaker 0>parts
+
+00:09:02.690 --> 00:09:05.250
+<v Speaker 0>that will be covered by those tools and
+
+00:09:05.250 --> 00:09:07.705
+<v Speaker 0>what's the purpose to use that tool to
+
+00:09:07.705 --> 00:09:09.865
+<v Speaker 0>achieve what go? Yeah.
+
+00:09:10.665 --> 00:09:13.785
+<v Speaker 0>So in order Yeah. Yeah, please.
+
+00:09:15.065 --> 00:09:16.665
+<v Speaker 1>Well, I just want to, you know, make
+
+00:09:16.665 --> 00:09:20.185
+<v Speaker 1>sure I fully understand the problem statement here.
+
+00:09:20.185 --> 00:09:22.550
+<v Speaker 1>Right? So when we're talking about patient images
+
+00:09:22.550 --> 00:09:24.230
+<v Speaker 1>around, like you said, you go from public
+
+00:09:24.230 --> 00:09:26.470
+<v Speaker 1>registries to private registries to inside of your
+
+00:09:26.470 --> 00:09:27.110
+<v Speaker 1>cluster.
+
+00:09:27.590 --> 00:09:28.790
+<v Speaker 1>Those are just
+
+00:09:29.590 --> 00:09:31.670
+<v Speaker 1>bytes and bets being thrown around the wild
+
+00:09:31.670 --> 00:09:33.670
+<v Speaker 1>internet. We need some sort of,
+
+00:09:34.310 --> 00:09:36.625
+<v Speaker 1>we can't trust them right away. We need
+
+00:09:36.625 --> 00:09:38.225
+<v Speaker 1>to be able to prove that we trust
+
+00:09:38.225 --> 00:09:38.705
+<v Speaker 1>them.
+
+00:09:39.585 --> 00:09:40.225
+<v Speaker 1>ORS,
+
+00:09:40.785 --> 00:09:42.465
+<v Speaker 1>I'm not super familiar with any of these
+
+00:09:42.465 --> 00:09:44.705
+<v Speaker 1>tools. So anything I say wrong, just jump
+
+00:09:44.705 --> 00:09:45.985
+<v Speaker 1>in there and say, no, no, that's not
+
+00:09:45.985 --> 00:09:47.265
+<v Speaker 1>right. ORS
+
+00:09:47.265 --> 00:09:48.385
+<v Speaker 1>is a tool that we can use to
+
+00:09:48.385 --> 00:09:50.545
+<v Speaker 1>push and pull from different registries to the
+
+00:09:50.545 --> 00:09:51.265
+<v Speaker 1>best of my knowledge.
+
+00:09:53.000 --> 00:09:55.720
+<v Speaker 1>Now, when I say let's run and I'll
+
+00:09:55.720 --> 00:09:57.240
+<v Speaker 1>just pick a random project here, let's say
+
+00:09:57.240 --> 00:10:00.600
+<v Speaker 1>Valky another CNCF project. I wanna run this
+
+00:10:00.600 --> 00:10:02.279
+<v Speaker 1>in my cluster. I say, I wanna run
+
+00:10:02.279 --> 00:10:04.600
+<v Speaker 1>version one in my manifest,
+
+00:10:05.880 --> 00:10:07.715
+<v Speaker 1>the kubelet and container D are responsible for
+
+00:10:07.715 --> 00:10:09.475
+<v Speaker 1>pulling that and putting that in the cluster.
+
+00:10:11.235 --> 00:10:13.475
+<v Speaker 1>If I pin that to a SHA, like
+
+00:10:13.475 --> 00:10:15.155
+<v Speaker 1>say instead of saying V1, I just use
+
+00:10:15.155 --> 00:10:15.955
+<v Speaker 1>a SHA.
+
+00:10:16.835 --> 00:10:18.970
+<v Speaker 1>How secure am I at that point? And
+
+00:10:18.970 --> 00:10:20.490
+<v Speaker 1>do I still need to bring in other
+
+00:10:20.490 --> 00:10:22.650
+<v Speaker 1>tools such as Notary and Rettify? I want
+
+00:10:22.650 --> 00:10:23.690
+<v Speaker 1>to understand where
+
+00:10:25.050 --> 00:10:26.730
+<v Speaker 1>that gap in my knowledge is to a
+
+00:10:26.730 --> 00:10:27.530
+<v Speaker 1>certain degree.
+
+00:10:27.770 --> 00:10:28.730
+<v Speaker 0>Yeah.
+
+00:10:28.810 --> 00:10:31.370
+<v Speaker 0>So I do that AORUS is the tool
+
+00:10:31.370 --> 00:10:33.930
+<v Speaker 0>to manage the OSA artifacts
+
+00:10:34.170 --> 00:10:36.385
+<v Speaker 0>in the OCI compliant registry,
+
+00:10:36.464 --> 00:10:38.705
+<v Speaker 0>but here to the OCI standards.
+
+00:10:39.024 --> 00:10:40.465
+<v Speaker 0>So for folks who
+
+00:10:41.505 --> 00:10:45.024
+<v Speaker 0>who doesn't know the OCI, OCI means Open
+
+00:10:45.024 --> 00:10:46.305
+<v Speaker 0>Content Initiative
+
+00:10:46.305 --> 00:10:47.105
+<v Speaker 0>is
+
+00:10:47.430 --> 00:10:48.070
+<v Speaker 0>also
+
+00:10:48.630 --> 00:10:49.350
+<v Speaker 0>Linux
+
+00:10:49.590 --> 00:10:51.830
+<v Speaker 0>Foundation projects that to
+
+00:10:52.950 --> 00:10:55.750
+<v Speaker 0>provide a standardized way to managers' images,
+
+00:10:58.070 --> 00:10:59.110
+<v Speaker 0>artifacts,
+
+00:10:59.190 --> 00:11:00.550
+<v Speaker 0>content the runtime,
+
+00:11:00.550 --> 00:11:02.070
+<v Speaker 0>and how to distribution
+
+00:11:03.045 --> 00:11:03.765
+<v Speaker 0>for
+
+00:11:04.245 --> 00:11:07.285
+<v Speaker 0>in a container world. That that is their
+
+00:11:07.285 --> 00:11:07.925
+<v Speaker 0>goal.
+
+00:11:08.085 --> 00:11:11.205
+<v Speaker 0>So ORS is the tool that managers
+
+00:11:11.365 --> 00:11:12.885
+<v Speaker 0>OSA identified
+
+00:11:13.445 --> 00:11:15.925
+<v Speaker 0>in the container OSAI
+
+00:11:15.925 --> 00:11:16.965
+<v Speaker 0>compliance
+
+00:11:16.965 --> 00:11:17.925
+<v Speaker 0>registry
+
+00:11:19.520 --> 00:11:22.400
+<v Speaker 0>according to the OCI standards.
+
+00:11:22.640 --> 00:11:25.440
+<v Speaker 0>So that is the purpose for AURAs. And
+
+00:11:25.440 --> 00:11:27.120
+<v Speaker 0>you mentioned that the share,
+
+00:11:27.440 --> 00:11:30.720
+<v Speaker 0>the digest of images, right? That is a
+
+00:11:30.720 --> 00:11:33.355
+<v Speaker 0>very good point because the digest is the
+
+00:11:33.355 --> 00:11:36.394
+<v Speaker 0>unified way to identify an image.
+
+00:11:36.795 --> 00:11:37.355
+<v Speaker 0>But
+
+00:11:38.154 --> 00:11:41.514
+<v Speaker 0>you can use the digest to identify an
+
+00:11:41.514 --> 00:11:43.355
+<v Speaker 0>image, but how do you know that the
+
+00:11:43.355 --> 00:11:46.154
+<v Speaker 0>images is coming from a trusted source?
+
+00:11:46.800 --> 00:11:47.440
+<v Speaker 0>Right?
+
+00:11:47.920 --> 00:11:50.560
+<v Speaker 0>It could be yeah. The digest, no
+
+00:11:51.200 --> 00:11:54.160
+<v Speaker 0>one changes, but the image is actually coming
+
+00:11:54.160 --> 00:11:56.640
+<v Speaker 0>from malicious hacker. How do how do you
+
+00:11:56.640 --> 00:11:59.200
+<v Speaker 0>know that? Right? So that is the purpose
+
+00:11:59.200 --> 00:12:03.144
+<v Speaker 0>for the yeah, we are introducing the product
+
+00:12:03.144 --> 00:12:06.425
+<v Speaker 0>now, our project now. That is the purpose
+
+00:12:06.425 --> 00:12:07.785
+<v Speaker 0>for the Notre project.
+
+00:12:08.264 --> 00:12:09.625
+<v Speaker 0>The Notre project,
+
+00:12:09.945 --> 00:12:12.665
+<v Speaker 0>the mission is Notre project is actually
+
+00:12:13.144 --> 00:12:15.480
+<v Speaker 0>a set of specifications and the tools. And
+
+00:12:15.480 --> 00:12:17.800
+<v Speaker 0>the mission of Notre Project is
+
+00:12:18.120 --> 00:12:20.920
+<v Speaker 0>to use a standard way across
+
+00:12:20.920 --> 00:12:24.279
+<v Speaker 0>multi clouds to provide the tools, solutions
+
+00:12:25.320 --> 00:12:27.720
+<v Speaker 0>for users to ensure integrity
+
+00:12:27.720 --> 00:12:28.920
+<v Speaker 0>and the authenticity
+
+00:12:29.955 --> 00:12:33.315
+<v Speaker 0>of their images and also other artifacts used
+
+00:12:33.315 --> 00:12:35.235
+<v Speaker 0>in the contender world. Yeah,
+
+00:12:36.355 --> 00:12:37.155
+<v Speaker 0>so I'm
+
+00:12:37.315 --> 00:12:40.275
+<v Speaker 0>by mentioning the other artifacts, so contender images
+
+00:12:40.275 --> 00:12:42.275
+<v Speaker 0>are the main one, but it could be
+
+00:12:42.275 --> 00:12:45.630
+<v Speaker 0>some other artifacts, for example, ham charts, right?
+
+00:12:45.630 --> 00:12:48.589
+<v Speaker 0>Ham charts are very popular for the Kubernetes.
+
+00:12:48.589 --> 00:12:49.070
+<v Speaker 0>Yeah.
+
+00:12:49.550 --> 00:12:51.790
+<v Speaker 0>So using another project,
+
+00:12:51.949 --> 00:12:53.709
+<v Speaker 0>you can using the
+
+00:12:54.350 --> 00:12:56.510
+<v Speaker 0>by using the digital signature,
+
+00:12:57.045 --> 00:13:00.084
+<v Speaker 0>you can ensure the authenticity and the integrity
+
+00:13:00.084 --> 00:13:02.005
+<v Speaker 0>from a producer point of view, you can
+
+00:13:02.005 --> 00:13:02.645
+<v Speaker 0>cite
+
+00:13:03.045 --> 00:13:04.885
+<v Speaker 0>from a consumer point of view, you can
+
+00:13:04.885 --> 00:13:07.845
+<v Speaker 0>verify it to ensure it's really from
+
+00:13:08.885 --> 00:13:11.445
+<v Speaker 0>from the trusted source and then not modified
+
+00:13:11.445 --> 00:13:12.964
+<v Speaker 0>during the distribution.
+
+00:13:14.700 --> 00:13:17.340
+<v Speaker 1>Yeah. Yeah. I mean, the digest approach is
+
+00:13:17.340 --> 00:13:18.060
+<v Speaker 1>obviously
+
+00:13:18.780 --> 00:13:20.540
+<v Speaker 1>what we've been told over the years is
+
+00:13:20.540 --> 00:13:21.980
+<v Speaker 1>the best practice, but
+
+00:13:22.300 --> 00:13:24.300
+<v Speaker 1>the developer experience of that is not great.
+
+00:13:24.300 --> 00:13:26.220
+<v Speaker 1>I can honestly say, I don't think I've
+
+00:13:26.220 --> 00:13:28.060
+<v Speaker 1>been to a company or worked with a
+
+00:13:28.060 --> 00:13:30.695
+<v Speaker 1>company where they've just penned to digest and
+
+00:13:30.695 --> 00:13:32.695
+<v Speaker 1>they're manifest. It just never happened. And I
+
+00:13:32.695 --> 00:13:33.415
+<v Speaker 1>feel like,
+
+00:13:33.815 --> 00:13:35.415
+<v Speaker 1>well, it's best practice. We need to find
+
+00:13:35.415 --> 00:13:37.175
+<v Speaker 1>a way to make that easier to consume.
+
+00:13:37.175 --> 00:13:38.695
+<v Speaker 1>Notary is one of those projects that I
+
+00:13:38.695 --> 00:13:40.295
+<v Speaker 1>say really does fill in some gaps there
+
+00:13:40.295 --> 00:13:40.935
+<v Speaker 1>because
+
+00:13:41.495 --> 00:13:43.340
+<v Speaker 1>it allows you to break in what as
+
+00:13:43.340 --> 00:13:44.860
+<v Speaker 1>we're going to see, allows you to bring
+
+00:13:44.860 --> 00:13:46.780
+<v Speaker 1>it into the loop and still get the
+
+00:13:46.780 --> 00:13:48.780
+<v Speaker 1>convenience of tags, but still have some sort
+
+00:13:48.780 --> 00:13:51.660
+<v Speaker 1>of trust and integrity pipeline that says, okay,
+
+00:13:51.660 --> 00:13:53.020
+<v Speaker 1>this is the thing I want to run.
+
+00:13:53.260 --> 00:13:55.580
+<v Speaker 1>Now what about ratify? We haven't mentioned that
+
+00:13:55.580 --> 00:13:57.260
+<v Speaker 1>yet. Where does that fit into the puzzle?
+
+00:13:58.365 --> 00:14:00.365
+<v Speaker 0>Yeah. Ratify is
+
+00:14:01.005 --> 00:14:01.725
+<v Speaker 0>a
+
+00:14:01.965 --> 00:14:03.245
+<v Speaker 0>very flexible
+
+00:14:03.325 --> 00:14:04.285
+<v Speaker 0>verification
+
+00:14:04.285 --> 00:14:05.165
+<v Speaker 0>engine.
+
+00:14:05.565 --> 00:14:07.005
+<v Speaker 0>It's built
+
+00:14:07.405 --> 00:14:09.405
+<v Speaker 0>on top of extensible
+
+00:14:09.405 --> 00:14:12.910
+<v Speaker 0>framework that you can plug the different,
+
+00:14:13.630 --> 00:14:14.430
+<v Speaker 0>wildfires
+
+00:14:14.750 --> 00:14:16.110
+<v Speaker 0>to verify,
+
+00:14:16.510 --> 00:14:18.430
+<v Speaker 0>reference artifacts
+
+00:14:18.430 --> 00:14:19.470
+<v Speaker 0>to ensure,
+
+00:14:20.030 --> 00:14:21.310
+<v Speaker 0>the artifacts,
+
+00:14:21.630 --> 00:14:24.430
+<v Speaker 0>is secure from various aspects.
+
+00:14:24.590 --> 00:14:25.550
+<v Speaker 0>For example,
+
+00:14:25.710 --> 00:14:28.134
+<v Speaker 0>second issue we just talk about is to
+
+00:14:28.134 --> 00:14:32.134
+<v Speaker 0>ensure the integrity and the authenticity,
+
+00:14:32.134 --> 00:14:34.295
+<v Speaker 0>right? Ratify can
+
+00:14:34.454 --> 00:14:37.334
+<v Speaker 0>validate the signature for example produced by the
+
+00:14:37.334 --> 00:14:38.535
+<v Speaker 0>notary projects,
+
+00:14:38.935 --> 00:14:41.255
+<v Speaker 0>but there are some other artifacts
+
+00:14:41.255 --> 00:14:41.815
+<v Speaker 0>for example,
+
+00:14:42.450 --> 00:14:45.010
+<v Speaker 0>we, I think at the beginning, I talk
+
+00:14:45.010 --> 00:14:46.770
+<v Speaker 0>about the vulnerability management.
+
+00:14:46.850 --> 00:14:48.130
+<v Speaker 0>Right? So,
+
+00:14:48.610 --> 00:14:51.650
+<v Speaker 0>for container images, you can ensure they are
+
+00:14:51.650 --> 00:14:53.810
+<v Speaker 0>trusted, but how do you know whether they
+
+00:14:53.810 --> 00:14:54.690
+<v Speaker 0>contain
+
+00:14:54.690 --> 00:14:55.410
+<v Speaker 0>vulnerabilities?
+
+00:14:55.755 --> 00:14:59.835
+<v Speaker 0>So Ravodify can what verify the vulnerability
+
+00:14:59.835 --> 00:15:00.715
+<v Speaker 0>reports
+
+00:15:00.715 --> 00:15:02.875
+<v Speaker 0>or fundings associated
+
+00:15:02.875 --> 00:15:05.595
+<v Speaker 0>with that content images. For example,
+
+00:15:06.555 --> 00:15:07.755
+<v Speaker 0>if your company
+
+00:15:07.915 --> 00:15:11.730
+<v Speaker 0>you you have the policy that no critical
+
+00:15:11.730 --> 00:15:15.250
+<v Speaker 0>or high vulnerabilities are allowed, Ratify can
+
+00:15:15.889 --> 00:15:16.690
+<v Speaker 0>do that,
+
+00:15:17.410 --> 00:15:18.690
+<v Speaker 0>with policies.
+
+00:15:19.009 --> 00:15:19.970
+<v Speaker 0>And there
+
+00:15:20.130 --> 00:15:21.250
+<v Speaker 0>are some other,
+
+00:15:21.649 --> 00:15:25.649
+<v Speaker 0>artifacts like, SPAM, software B of materials,
+
+00:15:25.845 --> 00:15:27.445
+<v Speaker 0>So RADIFY can also
+
+00:15:27.764 --> 00:15:28.644
+<v Speaker 0>validate,
+
+00:15:28.964 --> 00:15:30.725
+<v Speaker 0>the artifact to ensure,
+
+00:15:30.964 --> 00:15:34.004
+<v Speaker 0>the software are compliant because software have a,
+
+00:15:34.004 --> 00:15:36.964
+<v Speaker 0>for example, have a different license, right? So
+
+00:15:36.964 --> 00:15:40.245
+<v Speaker 0>RADIFY is actually the verification engine
+
+00:15:40.564 --> 00:15:41.685
+<v Speaker 0>to validate
+
+00:15:41.840 --> 00:15:43.680
+<v Speaker 0>reference artifacts
+
+00:15:43.680 --> 00:15:47.040
+<v Speaker 0>associated with your contender images. But the goal
+
+00:15:47.040 --> 00:15:50.400
+<v Speaker 0>is the same, to safeguard your contender
+
+00:15:51.280 --> 00:15:52.240
+<v Speaker 0>security.
+
+00:15:52.640 --> 00:15:54.480
+<v Speaker 0>And the Ratify currently
+
+00:15:54.480 --> 00:15:55.280
+<v Speaker 0>working
+
+00:15:55.280 --> 00:15:55.920
+<v Speaker 0>with
+
+00:15:56.240 --> 00:15:57.360
+<v Speaker 0>OPAC Gatekeeper,
+
+00:15:58.125 --> 00:16:00.765
+<v Speaker 0>open policy agent gatekeeper.
+
+00:16:01.165 --> 00:16:03.405
+<v Speaker 0>Gatekeeper is the policy engine
+
+00:16:03.645 --> 00:16:07.565
+<v Speaker 0>in the Kubernetes. So Radify worked with Gatekeeper
+
+00:16:07.565 --> 00:16:09.165
+<v Speaker 0>to help secure
+
+00:16:09.485 --> 00:16:10.205
+<v Speaker 0>your
+
+00:16:10.605 --> 00:16:14.420
+<v Speaker 0>containerized workload deployed on the Kubernetes.
+
+00:16:15.140 --> 00:16:16.820
+<v Speaker 1>Very, very cool. I'm looking forward to this
+
+00:16:16.820 --> 00:16:19.060
+<v Speaker 1>then. Alright. I think we've covered enough of
+
+00:16:19.060 --> 00:16:20.820
+<v Speaker 1>the bases to set the stage,
+
+00:16:21.060 --> 00:16:22.980
+<v Speaker 1>if you will. If you could now share
+
+00:16:22.980 --> 00:16:24.660
+<v Speaker 1>your screen, I'm happy to hand over and
+
+00:16:24.660 --> 00:16:26.420
+<v Speaker 1>get hands on and see the demo that
+
+00:16:26.420 --> 00:16:27.620
+<v Speaker 1>you've prepared for us.
+
+00:16:28.100 --> 00:16:28.500
+<v Speaker 0>Sure.
+
+00:16:30.175 --> 00:16:32.895
+<v Speaker 0>Let me adjust my window. Yeah. Of course.
+
+00:16:32.895 --> 00:16:33.375
+<v Speaker 1>Take your time.
+
+00:16:51.190 --> 00:16:53.910
+<v Speaker 1>Alright. Your screen is shared. The font looks
+
+00:16:53.910 --> 00:16:55.670
+<v Speaker 1>great. Take it away.
+
+00:16:56.709 --> 00:16:57.269
+<v Speaker 0>Thank you.
+
+00:16:58.925 --> 00:17:00.925
+<v Speaker 0>Yeah. So today, I will
+
+00:17:02.605 --> 00:17:05.005
+<v Speaker 0>show you how to secure
+
+00:17:05.165 --> 00:17:06.444
+<v Speaker 0>your containers'
+
+00:17:06.605 --> 00:17:07.404
+<v Speaker 0>workloads,
+
+00:17:07.484 --> 00:17:08.925
+<v Speaker 0>containerized workloads
+
+00:17:08.925 --> 00:17:10.925
+<v Speaker 0>from end to end point of view.
+
+00:17:13.399 --> 00:17:15.559
+<v Speaker 0>When I say end to end, it means
+
+00:17:15.720 --> 00:17:17.079
+<v Speaker 0>starting from
+
+00:17:17.240 --> 00:17:19.399
+<v Speaker 0>your build, your container images
+
+00:17:20.200 --> 00:17:22.599
+<v Speaker 0>and you assign your container images
+
+00:17:22.599 --> 00:17:23.319
+<v Speaker 0>to
+
+00:17:23.559 --> 00:17:26.919
+<v Speaker 0>generate the digital signature and those signature can
+
+00:17:26.919 --> 00:17:27.880
+<v Speaker 0>be associated
+
+00:17:27.880 --> 00:17:29.575
+<v Speaker 0>with your container images.
+
+00:17:29.894 --> 00:17:32.215
+<v Speaker 0>And then later on, you'll want to distribute
+
+00:17:32.215 --> 00:17:34.215
+<v Speaker 0>your container images
+
+00:17:34.215 --> 00:17:37.495
+<v Speaker 0>to from your build system or CSID pipelines
+
+00:17:37.495 --> 00:17:38.534
+<v Speaker 0>to another
+
+00:17:39.654 --> 00:17:40.614
+<v Speaker 0>environment
+
+00:17:41.255 --> 00:17:43.015
+<v Speaker 0>for the production usage.
+
+00:17:43.860 --> 00:17:44.500
+<v Speaker 0>And
+
+00:17:44.740 --> 00:17:47.460
+<v Speaker 0>on your production environment,
+
+00:17:47.620 --> 00:17:49.700
+<v Speaker 0>I will demonstrate how to use
+
+00:17:50.420 --> 00:17:52.259
+<v Speaker 0>Ratify and the Gatekeeper
+
+00:17:52.340 --> 00:17:53.539
+<v Speaker 0>to prevent,
+
+00:17:54.260 --> 00:17:55.780
+<v Speaker 0>deploy, untrusted
+
+00:17:55.780 --> 00:17:56.340
+<v Speaker 0>images.
+
+00:17:58.065 --> 00:18:00.945
+<v Speaker 0>Okay? So that's basically the process.
+
+00:18:01.265 --> 00:18:01.904
+<v Speaker 0>So
+
+00:18:02.465 --> 00:18:04.465
+<v Speaker 0>what I will do today,
+
+00:18:05.265 --> 00:18:08.144
+<v Speaker 0>you can do that on your, actually,
+
+00:18:08.465 --> 00:18:09.184
+<v Speaker 0>Windows
+
+00:18:09.265 --> 00:18:10.065
+<v Speaker 0>laptop
+
+00:18:10.145 --> 00:18:11.745
+<v Speaker 0>because I use
+
+00:18:12.440 --> 00:18:15.480
+<v Speaker 0>Docker desktop to set up the Docker environments.
+
+00:18:15.480 --> 00:18:18.040
+<v Speaker 0>I use the WSL2
+
+00:18:18.040 --> 00:18:18.600
+<v Speaker 0>for
+
+00:18:19.000 --> 00:18:20.600
+<v Speaker 0>the Linux environment
+
+00:18:20.840 --> 00:18:24.600
+<v Speaker 0>and I download the tools from Notre Projects,
+
+00:18:25.325 --> 00:18:26.284
+<v Speaker 0>Rottify,
+
+00:18:26.845 --> 00:18:28.044
+<v Speaker 0>and Auras,
+
+00:18:28.045 --> 00:18:29.005
+<v Speaker 0>and also,
+
+00:18:29.645 --> 00:18:30.685
+<v Speaker 0>the Gatekeeper.
+
+00:18:30.685 --> 00:18:32.445
+<v Speaker 0>So I will show show them.
+
+00:18:32.845 --> 00:18:34.924
+<v Speaker 0>So basically, everything you,
+
+00:18:35.165 --> 00:18:35.804
+<v Speaker 0>I
+
+00:18:36.205 --> 00:18:37.404
+<v Speaker 0>will do today,
+
+00:18:37.725 --> 00:18:39.780
+<v Speaker 0>you can do it on your laptop. Of
+
+00:18:39.780 --> 00:18:41.700
+<v Speaker 0>course, if you have a Mac
+
+00:18:41.860 --> 00:18:43.220
+<v Speaker 0>or Linux
+
+00:18:43.220 --> 00:18:45.700
+<v Speaker 0>workstation, you you can also do that as
+
+00:18:45.700 --> 00:18:46.260
+<v Speaker 0>well.
+
+00:18:47.940 --> 00:18:48.580
+<v Speaker 0>Okay.
+
+00:18:49.140 --> 00:18:51.620
+<v Speaker 0>So on the window you you see is
+
+00:18:51.620 --> 00:18:52.260
+<v Speaker 0>the
+
+00:18:52.500 --> 00:18:53.540
+<v Speaker 0>WSDL two.
+
+00:18:55.135 --> 00:18:56.815
+<v Speaker 0>So I already
+
+00:18:57.135 --> 00:18:57.934
+<v Speaker 0>downloaded
+
+00:18:58.895 --> 00:19:00.894
+<v Speaker 0>Noteproject tool Notation,
+
+00:19:01.295 --> 00:19:03.855
+<v Speaker 0>which is the CLI tool for sign and
+
+00:19:03.855 --> 00:19:06.895
+<v Speaker 0>verify content images and other artifacts.
+
+00:19:07.730 --> 00:19:09.490
+<v Speaker 0>So let me show you.
+
+00:19:12.370 --> 00:19:14.850
+<v Speaker 0>Yeah. This is the tool I downloaded from
+
+00:19:16.610 --> 00:19:18.290
+<v Speaker 0>Docker project GitHub.
+
+00:19:18.610 --> 00:19:21.170
+<v Speaker 0>By the way, I also prepared
+
+00:19:21.505 --> 00:19:23.825
+<v Speaker 0>a README file, so after
+
+00:19:23.825 --> 00:19:25.024
+<v Speaker 0>this podcast,
+
+00:19:25.025 --> 00:19:27.024
+<v Speaker 0>can share it out so you can
+
+00:19:27.664 --> 00:19:30.705
+<v Speaker 0>try them. And that README file is located
+
+00:19:30.705 --> 00:19:32.784
+<v Speaker 0>on my GitHub repo if you
+
+00:19:33.664 --> 00:19:35.024
+<v Speaker 0>you go to my
+
+00:19:35.585 --> 00:19:36.465
+<v Speaker 0>GitHub
+
+00:19:36.970 --> 00:19:39.929
+<v Speaker 0>using my name, y I v h a
+
+00:19:39.929 --> 00:19:42.329
+<v Speaker 0>one, you can immediately find that.
+
+00:19:43.049 --> 00:19:44.490
+<v Speaker 1>Yeah. I'll make sure that link is in
+
+00:19:44.490 --> 00:19:46.970
+<v Speaker 1>the description afterwards as well for anyone watching
+
+00:19:47.130 --> 00:19:48.570
+<v Speaker 0>Yeah. For the fact. Thank you.
+
+00:19:49.315 --> 00:19:50.835
+<v Speaker 0>So this is the
+
+00:19:51.955 --> 00:19:53.555
+<v Speaker 0>notation CLI.
+
+00:19:53.555 --> 00:19:54.915
+<v Speaker 0>I also
+
+00:19:56.195 --> 00:19:57.795
+<v Speaker 0>download the ORAS
+
+00:19:58.755 --> 00:20:00.595
+<v Speaker 0>tool. These two are ready
+
+00:20:00.755 --> 00:20:01.315
+<v Speaker 0>to use.
+
+00:20:02.850 --> 00:20:04.850
+<v Speaker 0>And for Radify and Gatekeeper,
+
+00:20:04.850 --> 00:20:05.809
+<v Speaker 0>they will be
+
+00:20:06.610 --> 00:20:08.850
+<v Speaker 0>deployed on the Kubernetes. I will show them
+
+00:20:08.850 --> 00:20:09.570
+<v Speaker 0>later.
+
+00:20:10.690 --> 00:20:11.330
+<v Speaker 0>Okay?
+
+00:20:12.049 --> 00:20:12.769
+<v Speaker 0>So
+
+00:20:13.250 --> 00:20:15.409
+<v Speaker 0>yeah, in this directory,
+
+00:20:15.410 --> 00:20:17.010
+<v Speaker 0>I also have
+
+00:20:17.385 --> 00:20:20.424
+<v Speaker 0>several files. I will explain them later on.
+
+00:20:20.585 --> 00:20:23.545
+<v Speaker 0>The first is the Dockerfile. So normally, you
+
+00:20:23.545 --> 00:20:24.664
+<v Speaker 0>will have this
+
+00:20:25.545 --> 00:20:28.025
+<v Speaker 0>in your CICD build system. You will have
+
+00:20:28.025 --> 00:20:30.585
+<v Speaker 0>a Dockerfile to build your content images. Right?
+
+00:20:30.585 --> 00:20:32.745
+<v Speaker 0>This is just an example of Dockerfile.
+
+00:20:33.380 --> 00:20:35.060
+<v Speaker 0>And then today, I will also,
+
+00:20:35.460 --> 00:20:39.140
+<v Speaker 0>demo something different but more secure, and we
+
+00:20:39.140 --> 00:20:40.820
+<v Speaker 0>will would like to promote,
+
+00:20:40.980 --> 00:20:43.060
+<v Speaker 0>the usage in the near
+
+00:20:43.060 --> 00:20:44.580
+<v Speaker 0>future for the
+
+00:20:45.140 --> 00:20:46.900
+<v Speaker 0>for us, intend the images.
+
+00:20:47.485 --> 00:20:48.124
+<v Speaker 0>So,
+
+00:20:49.404 --> 00:20:51.164
+<v Speaker 0>today, so for most,
+
+00:20:51.885 --> 00:20:52.845
+<v Speaker 0>in most,
+
+00:20:53.725 --> 00:20:54.445
+<v Speaker 0>solutions,
+
+00:20:54.924 --> 00:20:56.445
+<v Speaker 0>the contender images
+
+00:20:56.764 --> 00:20:58.684
+<v Speaker 0>needed to be pushed to
+
+00:20:58.845 --> 00:21:00.044
+<v Speaker 0>a registry
+
+00:21:00.559 --> 00:21:03.600
+<v Speaker 0>that signs the contender images in the registry,
+
+00:21:03.600 --> 00:21:06.640
+<v Speaker 0>right? So that means the contender images after
+
+00:21:06.640 --> 00:21:07.519
+<v Speaker 0>you build,
+
+00:21:08.000 --> 00:21:08.799
+<v Speaker 0>you will
+
+00:21:09.040 --> 00:21:11.360
+<v Speaker 0>push them from your file system
+
+00:21:11.520 --> 00:21:13.360
+<v Speaker 0>to the registry.
+
+00:21:13.360 --> 00:21:17.600
+<v Speaker 0>For example, you use Docker build and
+
+00:21:16.695 --> 00:21:20.215
+<v Speaker 0>it will create images on your file system,
+
+00:21:20.215 --> 00:21:22.294
+<v Speaker 0>and you use the Docker push to push
+
+00:21:22.294 --> 00:21:24.294
+<v Speaker 0>those images to the registry,
+
+00:21:24.375 --> 00:21:26.534
+<v Speaker 0>then you sign it. This is
+
+00:21:28.615 --> 00:21:29.575
+<v Speaker 0>the way
+
+00:21:29.929 --> 00:21:33.210
+<v Speaker 0>notation already supported, but today I will demo
+
+00:21:33.210 --> 00:21:35.129
+<v Speaker 0>more advanced the usage.
+
+00:21:35.530 --> 00:21:36.249
+<v Speaker 0>That's
+
+00:21:36.490 --> 00:21:39.049
+<v Speaker 0>you build your container images, and then the
+
+00:21:39.049 --> 00:21:41.369
+<v Speaker 0>images are on your file system,
+
+00:21:41.929 --> 00:21:42.570
+<v Speaker 0>right,
+
+00:21:42.730 --> 00:21:43.610
+<v Speaker 0>before
+
+00:21:43.885 --> 00:21:47.884
+<v Speaker 0>your you copy or push your images from
+
+00:21:48.285 --> 00:21:50.845
+<v Speaker 0>your trusted domain, your file system
+
+00:21:51.005 --> 00:21:52.124
+<v Speaker 0>to other,
+
+00:21:53.085 --> 00:21:55.565
+<v Speaker 0>for example, registry or other
+
+00:21:55.804 --> 00:21:59.164
+<v Speaker 0>file system. For example, we we have a
+
+00:21:59.470 --> 00:22:02.750
+<v Speaker 0>some customer they are using Lgap environment right
+
+00:22:02.750 --> 00:22:05.550
+<v Speaker 0>so you cannot easily just copy
+
+00:22:05.550 --> 00:22:06.830
+<v Speaker 0>the images
+
+00:22:06.830 --> 00:22:09.550
+<v Speaker 0>between the registries normally
+
+00:22:09.550 --> 00:22:10.590
+<v Speaker 0>you will
+
+00:22:11.390 --> 00:22:13.710
+<v Speaker 0>copy them as
+
+00:22:13.265 --> 00:22:15.985
+<v Speaker 0>using some file transfer mechanism.
+
+00:22:16.065 --> 00:22:17.745
+<v Speaker 0>So I will show you how to do
+
+00:22:17.745 --> 00:22:20.625
+<v Speaker 0>that in a more secure way to distribute
+
+00:22:20.625 --> 00:22:22.385
+<v Speaker 0>your content images.
+
+00:22:23.505 --> 00:22:25.585
+<v Speaker 0>And at the same time, you can still
+
+00:22:25.740 --> 00:22:27.900
+<v Speaker 0>have your signatures associated
+
+00:22:27.900 --> 00:22:29.580
+<v Speaker 0>with your content images.
+
+00:22:29.740 --> 00:22:31.580
+<v Speaker 0>The digest will not change.
+
+00:22:31.660 --> 00:22:35.179
+<v Speaker 0>Everything keeps the same as you just built.
+
+00:22:36.059 --> 00:22:36.380
+<v Speaker 0>Okay?
+
+00:22:38.275 --> 00:22:40.835
+<v Speaker 0>Now I will I have this Dockerfile.
+
+00:22:40.835 --> 00:22:43.155
+<v Speaker 0>You can take this environment as your, for
+
+00:22:43.155 --> 00:22:45.875
+<v Speaker 0>example, SICD system. I just use the command
+
+00:22:45.875 --> 00:22:48.434
+<v Speaker 0>line to simulate the process.
+
+00:22:49.075 --> 00:22:50.434
+<v Speaker 0>Okay? Then
+
+00:22:50.835 --> 00:22:51.235
+<v Speaker 0>so
+
+00:22:51.900 --> 00:22:54.700
+<v Speaker 0>let's first export
+
+00:22:54.780 --> 00:22:56.140
+<v Speaker 0>some environment.
+
+00:22:58.940 --> 00:23:00.780
+<v Speaker 0>Yeah. I will use my
+
+00:23:01.660 --> 00:23:03.020
+<v Speaker 0>I will use the
+
+00:23:03.180 --> 00:23:04.140
+<v Speaker 0>DocHarp
+
+00:23:04.140 --> 00:23:06.060
+<v Speaker 0>to simulate the registry.
+
+00:23:07.485 --> 00:23:10.205
+<v Speaker 0>It could be any registry, for example, public
+
+00:23:10.365 --> 00:23:12.525
+<v Speaker 0>any other public registry you want to use
+
+00:23:12.525 --> 00:23:14.605
+<v Speaker 0>or any private registry.
+
+00:23:16.445 --> 00:23:17.965
+<v Speaker 0>I will give the name.
+
+00:23:20.970 --> 00:23:21.690
+<v Speaker 0>Okay,
+
+00:23:22.970 --> 00:23:25.690
+<v Speaker 0>and I will then start to build.
+
+00:23:32.835 --> 00:23:36.195
+<v Speaker 0>Okay, I start a new Buildx environment,
+
+00:23:36.195 --> 00:23:38.114
+<v Speaker 0>then I will use the Docker
+
+00:23:38.595 --> 00:23:39.395
+<v Speaker 0>Buildx
+
+00:23:39.395 --> 00:23:39.794
+<v Speaker 0>build.
+
+00:24:07.635 --> 00:24:09.955
+<v Speaker 0>I will just plan this later on.
+
+00:24:11.315 --> 00:24:16.275
+<v Speaker 0>Yeah, the tag will be the
+
+00:24:14.110 --> 00:24:14.989
+<v Speaker 0>image
+
+00:24:15.390 --> 00:24:16.590
+<v Speaker 0>that the
+
+00:24:17.630 --> 00:24:19.070
+<v Speaker 0>environment variable
+
+00:24:19.070 --> 00:24:20.749
+<v Speaker 0>that we just set.
+
+00:24:20.909 --> 00:24:22.590
+<v Speaker 0>So with this command,
+
+00:24:23.150 --> 00:24:24.509
+<v Speaker 0>you will build
+
+00:24:24.590 --> 00:24:26.029
+<v Speaker 0>the image in
+
+00:24:26.270 --> 00:24:28.510
+<v Speaker 0>OCI image layout format.
+
+00:24:29.575 --> 00:24:30.135
+<v Speaker 0>And
+
+00:24:30.855 --> 00:24:32.535
+<v Speaker 0>for Docker Builder
+
+00:24:32.935 --> 00:24:35.175
+<v Speaker 0>command, either we will generate a tarp or
+
+00:24:35.175 --> 00:24:37.095
+<v Speaker 0>for the OCI image layout.
+
+00:24:37.895 --> 00:24:41.655
+<v Speaker 0>For folks who is not familiar with OCI
+
+00:24:41.655 --> 00:24:44.850
+<v Speaker 0>image layout, OCI image layout is also from
+
+00:24:44.850 --> 00:24:45.489
+<v Speaker 0>the
+
+00:24:47.490 --> 00:24:49.330
+<v Speaker 0>OCI image standard
+
+00:24:49.649 --> 00:24:51.010
+<v Speaker 0>from the OCI
+
+00:24:51.010 --> 00:24:51.969
+<v Speaker 0>community.
+
+00:24:52.690 --> 00:24:55.445
+<v Speaker 0>It is the standard way for you to
+
+00:24:55.445 --> 00:24:56.965
+<v Speaker 0>manage OCI
+
+00:24:56.965 --> 00:24:57.925
+<v Speaker 0>images
+
+00:24:57.925 --> 00:24:59.365
+<v Speaker 0>or artifacts
+
+00:24:59.365 --> 00:25:00.884
+<v Speaker 0>on your file system.
+
+00:25:02.165 --> 00:25:03.205
+<v Speaker 0>So simply,
+
+00:25:03.285 --> 00:25:04.804
+<v Speaker 0>you can think this
+
+00:25:05.045 --> 00:25:06.644
+<v Speaker 0>is just a table,
+
+00:25:06.885 --> 00:25:08.885
+<v Speaker 0>and it contains
+
+00:25:08.640 --> 00:25:11.760
+<v Speaker 0>directory and the files. Will show you later.
+
+00:25:14.080 --> 00:25:15.360
+<v Speaker 1>Just out of curiosity,
+
+00:25:15.520 --> 00:25:17.120
+<v Speaker 1>if you mind, are you happy to take
+
+00:25:17.120 --> 00:25:18.799
+<v Speaker 1>questions throughout? Is that okay?
+
+00:25:19.280 --> 00:25:20.240
+<v Speaker 0>Yeah,
+
+00:25:20.240 --> 00:25:20.800
+<v Speaker 0>I think so.
+
+00:25:22.655 --> 00:25:25.535
+<v Speaker 1>So I don't use build X very much,
+
+00:25:25.535 --> 00:25:28.415
+<v Speaker 1>but does Docker not build OCI images by
+
+00:25:28.415 --> 00:25:29.215
+<v Speaker 1>default
+
+00:25:29.535 --> 00:25:30.654
+<v Speaker 1>as the layout?
+
+00:25:30.815 --> 00:25:32.415
+<v Speaker 1>If not, does it use something else? Or
+
+00:25:32.415 --> 00:25:34.495
+<v Speaker 1>does this output just specify to do it
+
+00:25:34.495 --> 00:25:35.935
+<v Speaker 1>as a tar file? Is that the main
+
+00:25:35.935 --> 00:25:36.735
+<v Speaker 1>thing that's different here?
+
+00:25:37.420 --> 00:25:39.980
+<v Speaker 0>Yeah. If you want to produce the OSA
+
+00:25:39.980 --> 00:25:40.940
+<v Speaker 0>image layout,
+
+00:25:41.420 --> 00:25:43.820
+<v Speaker 0>you will use this command. This is the
+
+00:25:43.980 --> 00:25:46.299
+<v Speaker 0>only command to support produce
+
+00:25:46.460 --> 00:25:48.140
+<v Speaker 0>OSA image layout
+
+00:25:48.700 --> 00:25:51.100
+<v Speaker 0>using Docker. Okay. Yeah. So normally, you just
+
+00:25:51.100 --> 00:25:52.300
+<v Speaker 0>use Docker builds
+
+00:25:52.675 --> 00:25:54.755
+<v Speaker 0>or some other commands that is build to
+
+00:25:54.755 --> 00:25:57.875
+<v Speaker 0>the container images not in the OCA image
+
+00:25:57.875 --> 00:25:59.075
+<v Speaker 0>layout format.
+
+00:25:59.715 --> 00:26:00.515
+<v Speaker 1>Okay.
+
+00:26:00.515 --> 00:26:01.075
+<v Speaker 1>Thanks.
+
+00:26:01.395 --> 00:26:01.875
+<v Speaker 0>Okay.
+
+00:26:09.090 --> 00:26:12.370
+<v Speaker 0>Okay. I think it is successful, although there
+
+00:26:12.370 --> 00:26:14.770
+<v Speaker 0>is a warning. So this is the TARC
+
+00:26:14.770 --> 00:26:15.330
+<v Speaker 0>work.
+
+00:26:15.650 --> 00:26:16.850
+<v Speaker 0>So
+
+00:26:17.255 --> 00:26:18.775
+<v Speaker 0>so let's
+
+00:26:18.855 --> 00:26:20.295
+<v Speaker 0>use tar to
+
+00:26:20.855 --> 00:26:22.535
+<v Speaker 0>extract it into
+
+00:26:22.615 --> 00:26:23.255
+<v Speaker 0>a directory.
+
+00:26:37.080 --> 00:26:40.040
+<v Speaker 0>Okay, choose the directory we just created
+
+00:26:46.235 --> 00:26:49.195
+<v Speaker 0>Okay. Then we go to this directory.
+
+00:26:49.755 --> 00:26:50.795
+<v Speaker 0>You see it is
+
+00:26:51.515 --> 00:26:52.235
+<v Speaker 0>yeah.
+
+00:26:53.275 --> 00:26:55.835
+<v Speaker 0>Actually, OSA image layout is just the files
+
+00:26:55.835 --> 00:26:56.635
+<v Speaker 0>and directory
+
+00:26:57.660 --> 00:27:00.860
+<v Speaker 0>according to the OCI media layout specification.
+
+00:27:02.140 --> 00:27:03.580
+<v Speaker 0>And let's
+
+00:27:03.660 --> 00:27:05.020
+<v Speaker 0>check this index.
+
+00:27:09.755 --> 00:27:11.675
+<v Speaker 0>Yeah. You will see the media type. You
+
+00:27:11.835 --> 00:27:13.835
+<v Speaker 0>if you are familiar with the manifest of
+
+00:27:13.835 --> 00:27:14.795
+<v Speaker 0>the images,
+
+00:27:15.355 --> 00:27:16.075
+<v Speaker 0>the
+
+00:27:16.395 --> 00:27:17.434
+<v Speaker 0>media type,
+
+00:27:18.075 --> 00:27:20.795
+<v Speaker 0>and also you see the annotation, it is
+
+00:27:20.795 --> 00:27:23.355
+<v Speaker 0>actually the image that we want to tap,
+
+00:27:23.355 --> 00:27:25.190
+<v Speaker 0>right, into the
+
+00:27:26.470 --> 00:27:27.510
+<v Speaker 0>the registry.
+
+00:27:27.590 --> 00:27:29.190
+<v Speaker 0>And this is the tag,
+
+00:27:29.350 --> 00:27:31.030
+<v Speaker 0>and this is the architectures.
+
+00:27:32.870 --> 00:27:35.669
+<v Speaker 0>So basically, in the registry, they are similar
+
+00:27:37.270 --> 00:27:38.550
+<v Speaker 0>structure.
+
+00:27:38.550 --> 00:27:39.830
+<v Speaker 0>So that is the
+
+00:27:42.525 --> 00:27:44.205
+<v Speaker 0>how do you say? That is the benefits
+
+00:27:44.205 --> 00:27:46.605
+<v Speaker 0>of the OCA image layout because you can
+
+00:27:46.605 --> 00:27:47.325
+<v Speaker 0>easily
+
+00:27:47.405 --> 00:27:49.645
+<v Speaker 0>move from file system to any disk
+
+00:27:50.525 --> 00:27:53.565
+<v Speaker 0>any registry or even any other file system.
+
+00:27:56.240 --> 00:27:56.879
+<v Speaker 0>Okay.
+
+00:27:57.279 --> 00:27:58.239
+<v Speaker 0>So why
+
+00:27:59.200 --> 00:28:01.200
+<v Speaker 0>there could be a question that why I
+
+00:28:01.200 --> 00:28:03.440
+<v Speaker 0>needed to, because it is already a tab
+
+00:28:03.440 --> 00:28:05.519
+<v Speaker 0>or a file. Why I
+
+00:28:05.760 --> 00:28:06.799
+<v Speaker 0>needed to
+
+00:28:07.855 --> 00:28:11.695
+<v Speaker 0>inspect it into a directory? Because another project,
+
+00:28:11.695 --> 00:28:14.815
+<v Speaker 0>when signed the contented images, it will produce
+
+00:28:14.815 --> 00:28:16.414
+<v Speaker 0>detached signature.
+
+00:28:17.215 --> 00:28:20.015
+<v Speaker 0>Means detached signature means the signature is actually
+
+00:28:20.015 --> 00:28:21.534
+<v Speaker 0>a different artifact.
+
+00:28:22.255 --> 00:28:25.510
+<v Speaker 0>So if you store this signature
+
+00:28:25.510 --> 00:28:27.990
+<v Speaker 0>in the registry, it will have a different
+
+00:28:27.990 --> 00:28:31.669
+<v Speaker 0>manifest, but that manifest will have an association
+
+00:28:32.070 --> 00:28:34.549
+<v Speaker 0>with the contained images so that you will
+
+00:28:34.549 --> 00:28:35.190
+<v Speaker 0>know
+
+00:28:35.750 --> 00:28:37.509
+<v Speaker 0>the signature is for
+
+00:28:37.669 --> 00:28:38.630
+<v Speaker 0>which
+
+00:28:38.925 --> 00:28:40.125
+<v Speaker 0>container images.
+
+00:28:40.685 --> 00:28:41.645
+<v Speaker 0>So I
+
+00:28:41.885 --> 00:28:44.845
+<v Speaker 0>extract the the container images into
+
+00:28:45.325 --> 00:28:46.525
+<v Speaker 0>this directory.
+
+00:28:47.485 --> 00:28:50.045
+<v Speaker 0>Now I'm going to sign the container images,
+
+00:28:50.045 --> 00:28:53.325
+<v Speaker 0>and the signature will be produced inside this
+
+00:28:53.325 --> 00:28:54.445
+<v Speaker 0>directory as well.
+
+00:28:57.000 --> 00:28:58.919
+<v Speaker 0>Okay. So before
+
+00:28:58.919 --> 00:29:02.519
+<v Speaker 0>we using the notation tool to assign
+
+00:29:04.280 --> 00:29:05.159
+<v Speaker 0>images,
+
+00:29:05.559 --> 00:29:08.600
+<v Speaker 0>there's another important thing I want to talk
+
+00:29:08.600 --> 00:29:08.919
+<v Speaker 0>about.
+
+00:29:09.605 --> 00:29:12.325
+<v Speaker 0>Because when you assign content images,
+
+00:29:13.125 --> 00:29:14.245
+<v Speaker 0>Notre projects
+
+00:29:14.805 --> 00:29:17.125
+<v Speaker 0>utilize the PKI infrastructure,
+
+00:29:17.525 --> 00:29:20.325
+<v Speaker 0>public key infrastructure.
+
+00:29:21.285 --> 00:29:22.085
+<v Speaker 0>Actually,
+
+00:29:22.325 --> 00:29:23.525
+<v Speaker 0>you need to have
+
+00:29:24.090 --> 00:29:27.129
+<v Speaker 0>a private key key files and the certificates.
+
+00:29:27.610 --> 00:29:30.730
+<v Speaker 0>You're using the private key for signed and
+
+00:29:30.730 --> 00:29:31.690
+<v Speaker 0>then the images.
+
+00:29:32.410 --> 00:29:33.850
+<v Speaker 0>And from
+
+00:29:33.850 --> 00:29:34.970
+<v Speaker 0>the file
+
+00:29:35.690 --> 00:29:38.250
+<v Speaker 0>point of view, they will using the certificates.
+
+00:29:38.905 --> 00:29:40.504
+<v Speaker 0>And that the certificates
+
+00:29:40.905 --> 00:29:43.225
+<v Speaker 0>inside it it contains a public key and
+
+00:29:43.225 --> 00:29:45.465
+<v Speaker 0>you use the public key to verify
+
+00:29:45.945 --> 00:29:48.265
+<v Speaker 0>the signature and the certificate
+
+00:29:48.265 --> 00:29:49.705
+<v Speaker 0>include any
+
+00:29:50.105 --> 00:29:51.225
+<v Speaker 0>signer information.
+
+00:29:52.050 --> 00:29:54.690
+<v Speaker 0>Those are the folks that you also need
+
+00:29:54.690 --> 00:29:56.690
+<v Speaker 0>to verify you you should trust.
+
+00:29:57.170 --> 00:29:57.730
+<v Speaker 0>So
+
+00:29:59.570 --> 00:30:02.130
+<v Speaker 0>so this is the the basic knowledge here
+
+00:30:02.130 --> 00:30:04.610
+<v Speaker 0>for for the DG signature.
+
+00:30:05.415 --> 00:30:06.055
+<v Speaker 0>And
+
+00:30:07.495 --> 00:30:08.295
+<v Speaker 0>actually,
+
+00:30:08.695 --> 00:30:11.495
+<v Speaker 0>the keys and certificate are quite critical,
+
+00:30:11.495 --> 00:30:14.775
+<v Speaker 0>right? If any malicious users get the private
+
+00:30:14.775 --> 00:30:15.415
+<v Speaker 0>key,
+
+00:30:15.815 --> 00:30:17.495
+<v Speaker 0>they can sign it, right?
+
+00:30:17.735 --> 00:30:18.295
+<v Speaker 0>So
+
+00:30:19.720 --> 00:30:23.240
+<v Speaker 0>to securely store your keys and certificate, you
+
+00:30:23.240 --> 00:30:24.360
+<v Speaker 0>can use any
+
+00:30:24.600 --> 00:30:25.480
+<v Speaker 0>popular
+
+00:30:25.880 --> 00:30:28.040
+<v Speaker 0>key management system, for example,
+
+00:30:28.920 --> 00:30:29.480
+<v Speaker 0>from
+
+00:30:29.960 --> 00:30:30.600
+<v Speaker 0>error,
+
+00:30:31.000 --> 00:30:32.920
+<v Speaker 0>error providing the error keywords,
+
+00:30:33.855 --> 00:30:35.934
+<v Speaker 0>If you are using the
+
+00:30:38.015 --> 00:30:40.174
+<v Speaker 0>AWS cloud,
+
+00:30:40.255 --> 00:30:42.654
+<v Speaker 0>you can choose the AWS Assigner.
+
+00:30:43.215 --> 00:30:43.855
+<v Speaker 0>And
+
+00:30:44.175 --> 00:30:45.135
+<v Speaker 0>recently,
+
+00:30:45.135 --> 00:30:47.055
+<v Speaker 0>another project
+
+00:30:47.400 --> 00:30:50.200
+<v Speaker 0>was adopted by Alibaba Cloud,
+
+00:30:50.280 --> 00:30:52.840
+<v Speaker 0>so if you are in the Alibaba Cloud
+
+00:30:52.840 --> 00:30:54.760
+<v Speaker 0>environment, you can choose Alibaba
+
+00:30:54.840 --> 00:30:56.600
+<v Speaker 0>Cloud Secrets Manager.
+
+00:30:58.760 --> 00:31:00.280
+<v Speaker 0>We also support
+
+00:31:00.440 --> 00:31:03.865
+<v Speaker 0>HashKob Vault, but, it is in
+
+00:31:03.865 --> 00:31:07.065
+<v Speaker 0>the R5 version, it's still an early version,
+
+00:31:07.065 --> 00:31:07.545
+<v Speaker 0>so if,
+
+00:31:08.505 --> 00:31:10.505
+<v Speaker 0>folks are interested into,
+
+00:31:11.065 --> 00:31:13.785
+<v Speaker 0>this, pain management system, feel free to join
+
+00:31:13.785 --> 00:31:14.985
+<v Speaker 0>the community,
+
+00:31:14.985 --> 00:31:17.570
+<v Speaker 0>we can talk about how to enhance
+
+00:31:17.890 --> 00:31:18.530
+<v Speaker 0>that.
+
+00:31:19.090 --> 00:31:20.130
+<v Speaker 0>So today,
+
+00:31:20.370 --> 00:31:22.210
+<v Speaker 0>for the hands on purpose
+
+00:31:22.210 --> 00:31:24.610
+<v Speaker 0>for for you to easily
+
+00:31:25.090 --> 00:31:27.010
+<v Speaker 0>try the sign and verification
+
+00:31:27.010 --> 00:31:27.970
+<v Speaker 0>experience,
+
+00:31:27.970 --> 00:31:30.210
+<v Speaker 0>I use self signed certificates
+
+00:31:30.795 --> 00:31:34.075
+<v Speaker 0>And actually, Notary Project two, Notation provide a
+
+00:31:34.075 --> 00:31:36.475
+<v Speaker 0>very convenient way for you to generate a
+
+00:31:36.475 --> 00:31:39.195
+<v Speaker 0>self a self signed certificate
+
+00:31:40.315 --> 00:31:40.955
+<v Speaker 0>for
+
+00:31:41.435 --> 00:31:43.755
+<v Speaker 0>trying the signed and the verification experience.
+
+00:31:45.310 --> 00:31:48.350
+<v Speaker 0>So notation has the cert command,
+
+00:31:48.510 --> 00:31:50.110
+<v Speaker 0>certificate command,
+
+00:31:50.350 --> 00:31:51.549
+<v Speaker 0>in short cert,
+
+00:31:52.030 --> 00:31:55.390
+<v Speaker 0>and you can use it to generate
+
+00:31:55.470 --> 00:31:56.350
+<v Speaker 0>test
+
+00:31:57.070 --> 00:31:57.710
+<v Speaker 0>certificates.
+
+00:31:58.095 --> 00:31:59.614
+<v Speaker 0>For example, I
+
+00:32:01.455 --> 00:32:02.335
+<v Speaker 0>generate
+
+00:32:02.495 --> 00:32:04.254
+<v Speaker 0>for my company.
+
+00:32:04.414 --> 00:32:07.534
+<v Speaker 0>You you can use any name here.
+
+00:32:09.294 --> 00:32:11.695
+<v Speaker 0>This is what I choose, and you make
+
+00:32:11.695 --> 00:32:13.375
+<v Speaker 0>it a default
+
+00:32:15.760 --> 00:32:16.560
+<v Speaker 0>certificates
+
+00:32:16.560 --> 00:32:18.800
+<v Speaker 0>and the keys so that you can use
+
+00:32:18.800 --> 00:32:19.920
+<v Speaker 0>it easily
+
+00:32:20.080 --> 00:32:21.120
+<v Speaker 0>later on.
+
+00:32:23.760 --> 00:32:25.840
+<v Speaker 0>Okay, you see I
+
+00:32:26.000 --> 00:32:26.800
+<v Speaker 0>generated
+
+00:32:26.800 --> 00:32:27.440
+<v Speaker 0>the
+
+00:32:28.240 --> 00:32:29.680
+<v Speaker 0>test key
+
+00:32:30.265 --> 00:32:32.024
+<v Speaker 0>and the test certificate.
+
+00:32:32.265 --> 00:32:34.985
+<v Speaker 0>Those are stored in the notation
+
+00:32:35.385 --> 00:32:36.825
+<v Speaker 0>config directory.
+
+00:32:38.825 --> 00:32:39.465
+<v Speaker 0>Okay.
+
+00:32:39.945 --> 00:32:42.985
+<v Speaker 0>And then you can use SERP lists.
+
+00:32:43.930 --> 00:32:46.410
+<v Speaker 0>You can see this is the one I
+
+00:32:46.410 --> 00:32:47.450
+<v Speaker 0>just created.
+
+00:32:48.410 --> 00:32:50.730
+<v Speaker 0>The second one is what I test for
+
+00:32:50.730 --> 00:32:52.250
+<v Speaker 0>the hands on today.
+
+00:32:53.050 --> 00:32:55.930
+<v Speaker 0>Okay? And you can also check
+
+00:32:55.930 --> 00:32:56.809
+<v Speaker 0>key
+
+00:32:57.130 --> 00:32:58.810
+<v Speaker 0>using notation key command.
+
+00:33:00.395 --> 00:33:02.955
+<v Speaker 0>You will see I also have a key
+
+00:33:02.955 --> 00:33:04.154
+<v Speaker 0>for my test
+
+00:33:04.795 --> 00:33:06.874
+<v Speaker 0>before this broadcast.
+
+00:33:07.595 --> 00:33:10.235
+<v Speaker 0>This my company, this is the key I
+
+00:33:10.235 --> 00:33:12.635
+<v Speaker 0>just created, and you see this
+
+00:33:13.279 --> 00:33:16.559
+<v Speaker 0>star, it means it is the default key.
+
+00:33:17.600 --> 00:33:19.919
+<v Speaker 0>So with that, we have the key and
+
+00:33:19.919 --> 00:33:20.880
+<v Speaker 0>certificate
+
+00:33:20.880 --> 00:33:21.679
+<v Speaker 0>created.
+
+00:33:22.080 --> 00:33:23.519
+<v Speaker 0>As I just mentioned,
+
+00:33:23.840 --> 00:33:26.720
+<v Speaker 0>in production, normally, you will store those keys
+
+00:33:26.720 --> 00:33:27.359
+<v Speaker 0>in
+
+00:33:27.520 --> 00:33:30.625
+<v Speaker 0>a key management system. So today, those are
+
+00:33:30.625 --> 00:33:33.024
+<v Speaker 0>the self signed key. They stored on my
+
+00:33:33.024 --> 00:33:33.984
+<v Speaker 0>file system.
+
+00:33:35.825 --> 00:33:39.424
+<v Speaker 0>Okay. To sign OCI image layout, actually, notation,
+
+00:33:41.429 --> 00:33:44.789
+<v Speaker 0>currently, the feature in notation is experimental.
+
+00:33:44.950 --> 00:33:46.629
+<v Speaker 0>So I needed to
+
+00:33:47.190 --> 00:33:49.190
+<v Speaker 0>enable the experimental
+
+00:33:49.190 --> 00:33:50.149
+<v Speaker 0>flag
+
+00:33:50.470 --> 00:33:51.269
+<v Speaker 0>notation
+
+00:33:51.830 --> 00:33:52.230
+<v Speaker 0>x.
+
+00:33:57.044 --> 00:33:58.085
+<v Speaker 0>Experimental.
+
+00:33:58.085 --> 00:33:59.764
+<v Speaker 0>Okay. That's correct.
+
+00:34:00.325 --> 00:34:01.044
+<v Speaker 0>Then
+
+00:34:01.445 --> 00:34:02.725
+<v Speaker 0>I can sign.
+
+00:34:03.125 --> 00:34:06.164
+<v Speaker 0>But before I sign, I want to check,
+
+00:34:06.164 --> 00:34:06.725
+<v Speaker 0>for example,
+
+00:34:07.640 --> 00:34:09.080
+<v Speaker 0>just to show
+
+00:34:09.160 --> 00:34:11.560
+<v Speaker 0>you that there's no signature
+
+00:34:12.199 --> 00:34:14.120
+<v Speaker 0>for the OCI image layout.
+
+00:34:17.320 --> 00:34:19.560
+<v Speaker 0>I can use notation list,
+
+00:34:19.640 --> 00:34:21.480
+<v Speaker 0>in short, ls command
+
+00:34:22.625 --> 00:34:23.425
+<v Speaker 0>to
+
+00:34:23.984 --> 00:34:25.025
+<v Speaker 0>OSI
+
+00:34:25.105 --> 00:34:25.985
+<v Speaker 0>layout.
+
+00:34:28.145 --> 00:34:30.864
+<v Speaker 0>The layout I just created.
+
+00:34:34.889 --> 00:34:35.530
+<v Speaker 0>Okay.
+
+00:34:35.929 --> 00:34:37.290
+<v Speaker 0>So on the screen,
+
+00:34:37.690 --> 00:34:39.050
+<v Speaker 0>can see that
+
+00:34:39.849 --> 00:34:42.489
+<v Speaker 0>this warning for experimental feature.
+
+00:34:42.730 --> 00:34:44.730
+<v Speaker 0>And because I use TAC,
+
+00:34:45.130 --> 00:34:48.089
+<v Speaker 0>there's warning as well. It is suggested to
+
+00:34:48.089 --> 00:34:48.809
+<v Speaker 0>use
+
+00:34:49.724 --> 00:34:53.005
+<v Speaker 0>the SHA, which is more secure because SHA
+
+00:34:53.005 --> 00:34:54.364
+<v Speaker 0>is the unified
+
+00:34:54.684 --> 00:34:56.844
+<v Speaker 0>way to identify images.
+
+00:34:57.325 --> 00:34:59.644
+<v Speaker 0>But for the demo purpose, I just need
+
+00:34:59.644 --> 00:35:01.244
+<v Speaker 0>to use
+
+00:35:01.890 --> 00:35:04.290
+<v Speaker 0>the tag V1 and which will be
+
+00:35:05.410 --> 00:35:07.090
+<v Speaker 0>shown on the doc
+
+00:35:07.730 --> 00:35:09.810
+<v Speaker 0>later on. Will show you.
+
+00:35:10.609 --> 00:35:11.410
+<v Speaker 0>You'll see
+
+00:35:11.890 --> 00:35:13.010
+<v Speaker 0>these images
+
+00:35:13.250 --> 00:35:14.210
+<v Speaker 0>identified
+
+00:35:14.210 --> 00:35:15.089
+<v Speaker 0>by the SHA
+
+00:35:15.665 --> 00:35:18.065
+<v Speaker 0>has no associated signature.
+
+00:35:18.224 --> 00:35:20.385
+<v Speaker 0>Okay? This is before we sign.
+
+00:35:20.705 --> 00:35:22.945
+<v Speaker 0>Okay. Now we have everything. We have a
+
+00:35:22.945 --> 00:35:23.585
+<v Speaker 0>key,
+
+00:35:23.905 --> 00:35:26.065
+<v Speaker 0>and we have a certificate which will be
+
+00:35:26.065 --> 00:35:27.585
+<v Speaker 0>used later on for verification.
+
+00:35:28.680 --> 00:35:30.680
+<v Speaker 0>We checked the OCI layout.
+
+00:35:30.680 --> 00:35:32.520
+<v Speaker 0>There's no certificate
+
+00:35:32.839 --> 00:35:33.560
+<v Speaker 0>no
+
+00:35:33.720 --> 00:35:35.160
+<v Speaker 0>signature generated.
+
+00:35:35.400 --> 00:35:37.320
+<v Speaker 0>Now I'm going to sign it.
+
+00:35:42.145 --> 00:35:44.944
+<v Speaker 0>It is very easy because I made the
+
+00:35:44.944 --> 00:35:46.704
+<v Speaker 0>key default.
+
+00:35:46.704 --> 00:35:49.905
+<v Speaker 0>Right? I I have set a default key.
+
+00:35:50.145 --> 00:35:52.944
+<v Speaker 0>So I will going to set sign the
+
+00:35:52.944 --> 00:35:53.984
+<v Speaker 0>OSAT layout,
+
+00:35:56.800 --> 00:35:58.320
+<v Speaker 0>Net Monitor.
+
+00:36:01.119 --> 00:36:01.760
+<v Speaker 0>Okay.
+
+00:36:03.359 --> 00:36:06.079
+<v Speaker 0>Okay. It's very quick because it's all on
+
+00:36:06.079 --> 00:36:08.855
+<v Speaker 0>my local machine. So successfully
+
+00:36:08.855 --> 00:36:09.975
+<v Speaker 0>assigned
+
+00:36:10.055 --> 00:36:11.255
+<v Speaker 0>these images.
+
+00:36:11.815 --> 00:36:13.335
+<v Speaker 0>You remember this
+
+00:36:14.375 --> 00:36:15.335
+<v Speaker 0>digest
+
+00:36:17.095 --> 00:36:19.734
+<v Speaker 0>three forty seven. So if I can scroll
+
+00:36:19.734 --> 00:36:24.220
+<v Speaker 0>up this image layout index file, see 3472,
+
+00:36:24.220 --> 00:36:24.860
+<v Speaker 0>right?
+
+00:36:25.260 --> 00:36:27.099
+<v Speaker 0>So it is the image we want to
+
+00:36:27.099 --> 00:36:27.500
+<v Speaker 0>send,
+
+00:36:28.140 --> 00:36:31.180
+<v Speaker 0>then we check whether they have signatures. I
+
+00:36:31.180 --> 00:36:33.180
+<v Speaker 0>use the same command I've got
+
+00:36:33.615 --> 00:36:34.495
+<v Speaker 0>before
+
+00:36:35.055 --> 00:36:36.335
+<v Speaker 0>notation list.
+
+00:36:38.655 --> 00:36:39.215
+<v Speaker 0>Okay.
+
+00:36:40.335 --> 00:36:43.055
+<v Speaker 0>You will see a very nice graph
+
+00:36:43.295 --> 00:36:44.255
+<v Speaker 0>output.
+
+00:36:45.375 --> 00:36:48.820
+<v Speaker 0>This is the container images, right, identified by
+
+00:36:48.820 --> 00:36:50.500
+<v Speaker 0>this digest and
+
+00:36:50.500 --> 00:36:52.020
+<v Speaker 0>that is the
+
+00:36:53.619 --> 00:36:55.380
+<v Speaker 0>notary project signature,
+
+00:36:55.940 --> 00:36:56.660
+<v Speaker 0>associated
+
+00:36:56.820 --> 00:36:58.740
+<v Speaker 0>with this container images
+
+00:36:58.900 --> 00:37:01.220
+<v Speaker 0>and it is, as explained
+
+00:37:01.220 --> 00:37:03.915
+<v Speaker 0>before, it is the detached signature, Right?
+
+00:37:04.795 --> 00:37:08.075
+<v Speaker 0>So it has its own manifest, and this
+
+00:37:08.075 --> 00:37:10.315
+<v Speaker 0>is the digest for that signature.
+
+00:37:10.955 --> 00:37:11.675
+<v Speaker 0>Okay?
+
+00:37:11.995 --> 00:37:12.555
+<v Speaker 0>So
+
+00:37:12.955 --> 00:37:14.555
+<v Speaker 0>we complete the sign.
+
+00:37:15.450 --> 00:37:17.770
+<v Speaker 0>Till now, we have the signature.
+
+00:37:18.010 --> 00:37:21.770
+<v Speaker 0>We we have the contained images on my
+
+00:37:21.770 --> 00:37:22.810
+<v Speaker 0>file system.
+
+00:37:23.050 --> 00:37:26.330
+<v Speaker 0>It is still under my trusted domain. Right?
+
+00:37:26.570 --> 00:37:28.570
+<v Speaker 0>It is on my system. So imagine it
+
+00:37:28.570 --> 00:37:30.970
+<v Speaker 0>is your CICD system or build the system
+
+00:37:31.185 --> 00:37:33.585
+<v Speaker 0>in a private environment or any
+
+00:37:34.065 --> 00:37:35.265
+<v Speaker 0>public cloud
+
+00:37:35.265 --> 00:37:36.625
+<v Speaker 0>host environment.
+
+00:37:36.785 --> 00:37:38.865
+<v Speaker 0>It is on your environment.
+
+00:37:38.945 --> 00:37:40.385
+<v Speaker 0>It is not
+
+00:37:40.385 --> 00:37:43.105
+<v Speaker 0>in any other registry yet. It is on
+
+00:37:43.105 --> 00:37:45.185
+<v Speaker 0>your file system. It is secure.
+
+00:37:45.890 --> 00:37:47.490
+<v Speaker 0>Then we go to the
+
+00:37:49.250 --> 00:37:52.210
+<v Speaker 0>OCA media layout, the directory. Let's check the
+
+00:37:52.210 --> 00:37:53.410
+<v Speaker 0>index file again.
+
+00:37:58.865 --> 00:38:01.585
+<v Speaker 0>You see they are something more. Right?
+
+00:38:01.984 --> 00:38:02.545
+<v Speaker 0>So
+
+00:38:02.944 --> 00:38:05.105
+<v Speaker 0>previously, you only see this
+
+00:38:05.265 --> 00:38:06.145
+<v Speaker 0>metadata
+
+00:38:06.145 --> 00:38:07.185
+<v Speaker 0>for the
+
+00:38:07.505 --> 00:38:10.305
+<v Speaker 0>images in OCI image layout format.
+
+00:38:11.040 --> 00:38:13.920
+<v Speaker 0>Now you'll see there's addition
+
+00:38:14.880 --> 00:38:15.680
+<v Speaker 0>metadata
+
+00:38:15.680 --> 00:38:16.400
+<v Speaker 0>for
+
+00:38:16.880 --> 00:38:19.600
+<v Speaker 0>signature If you remember this is the digest
+
+00:38:19.600 --> 00:38:22.560
+<v Speaker 0>for signature I scroll up a bit
+
+00:38:23.055 --> 00:38:24.175
+<v Speaker 0>You can see
+
+00:38:24.575 --> 00:38:25.535
+<v Speaker 0>the same
+
+00:38:26.335 --> 00:38:27.375
+<v Speaker 0>digest.
+
+00:38:27.535 --> 00:38:29.375
+<v Speaker 0>So you you will see there are two
+
+00:38:29.375 --> 00:38:30.335
+<v Speaker 0>manifests,
+
+00:38:30.335 --> 00:38:32.575
+<v Speaker 0>and one is for the images,
+
+00:38:32.575 --> 00:38:34.095
+<v Speaker 0>another is for the
+
+00:38:34.255 --> 00:38:35.375
+<v Speaker 0>for the signature.
+
+00:38:37.380 --> 00:38:39.619
+<v Speaker 0>And there are some other annotation.
+
+00:38:39.619 --> 00:38:42.020
+<v Speaker 0>This is sample print is actually the
+
+00:38:42.420 --> 00:38:44.580
+<v Speaker 0>sample print for the certificate.
+
+00:38:44.980 --> 00:38:47.460
+<v Speaker 0>Because we use self signed certificate,
+
+00:38:47.460 --> 00:38:48.660
+<v Speaker 0>there's only one.
+
+00:38:49.695 --> 00:38:50.815
+<v Speaker 0>In production,
+
+00:38:50.895 --> 00:38:53.775
+<v Speaker 0>normally, user will have a root certificate,
+
+00:38:54.815 --> 00:38:55.775
+<v Speaker 0>intermediate
+
+00:38:55.775 --> 00:38:56.895
+<v Speaker 0>certificate,
+
+00:38:57.135 --> 00:38:59.055
+<v Speaker 0>and the signed certificate.
+
+00:38:59.135 --> 00:39:01.215
+<v Speaker 0>So in production, you will see three.
+
+00:39:02.990 --> 00:39:03.630
+<v Speaker 0>Okay?
+
+00:39:04.590 --> 00:39:07.390
+<v Speaker 0>Okay. Then we completed the design process. We
+
+00:39:07.390 --> 00:39:08.670
+<v Speaker 0>we have everything
+
+00:39:10.109 --> 00:39:10.430
+<v Speaker 0>on my file Yeah.
+
+00:39:12.109 --> 00:39:13.150
+<v Speaker 0>Yeah, please.
+
+00:39:13.390 --> 00:39:14.109
+<v Speaker 1>So
+
+00:39:14.395 --> 00:39:17.195
+<v Speaker 1>when you've signed that with the notations CLI,
+
+00:39:17.195 --> 00:39:18.475
+<v Speaker 1>you've modified
+
+00:39:18.875 --> 00:39:19.595
+<v Speaker 1>the
+
+00:39:19.995 --> 00:39:21.275
+<v Speaker 1>OCI layout
+
+00:39:21.515 --> 00:39:24.635
+<v Speaker 1>image JSON artifact. Does that not change?
+
+00:39:25.595 --> 00:39:27.115
+<v Speaker 0>No. Didn't.
+
+00:39:27.275 --> 00:39:30.839
+<v Speaker 0>No. I didn't modify the image itself.
+
+00:39:31.000 --> 00:39:34.200
+<v Speaker 0>I just add a detached
+
+00:39:34.200 --> 00:39:34.839
+<v Speaker 0>signature,
+
+00:39:35.960 --> 00:39:40.119
+<v Speaker 0>another manifest into the OCI image layout directory.
+
+00:39:40.279 --> 00:39:42.839
+<v Speaker 0>So the image is still there under that
+
+00:39:42.839 --> 00:39:43.400
+<v Speaker 0>directory,
+
+00:39:43.994 --> 00:39:45.515
+<v Speaker 0>but I attached
+
+00:39:45.515 --> 00:39:46.875
+<v Speaker 0>another signature,
+
+00:39:47.434 --> 00:39:51.755
+<v Speaker 0>another separate artifact into that OCA image layout
+
+00:39:51.755 --> 00:39:52.635
+<v Speaker 0>directory.
+
+00:39:53.115 --> 00:39:55.195
+<v Speaker 0>It is similar like
+
+00:39:55.275 --> 00:39:57.835
+<v Speaker 0>in the registry, right? You have your container
+
+00:39:57.835 --> 00:39:58.634
+<v Speaker 0>image
+
+00:39:58.740 --> 00:40:00.500
+<v Speaker 0>stored in the registry.
+
+00:40:00.500 --> 00:40:02.020
+<v Speaker 0>It has its own
+
+00:40:02.260 --> 00:40:03.060
+<v Speaker 0>manifest
+
+00:40:03.060 --> 00:40:04.500
+<v Speaker 0>and the layers.
+
+00:40:04.820 --> 00:40:06.660
+<v Speaker 0>Then I add another
+
+00:40:07.140 --> 00:40:08.100
+<v Speaker 0>artifact,
+
+00:40:08.180 --> 00:40:10.260
+<v Speaker 0>in our case signature,
+
+00:40:10.260 --> 00:40:11.380
+<v Speaker 0>into the registry.
+
+00:40:12.474 --> 00:40:16.075
+<v Speaker 0>It has its own manifest and also layouts.
+
+00:40:16.795 --> 00:40:19.035
+<v Speaker 0>So in the registry, you have image signature
+
+00:40:19.035 --> 00:40:21.195
+<v Speaker 0>on your file system similarly
+
+00:40:21.355 --> 00:40:24.475
+<v Speaker 0>under that directory, although the directory name
+
+00:40:24.555 --> 00:40:25.035
+<v Speaker 0>could be
+
+00:40:25.620 --> 00:40:28.660
+<v Speaker 0>a bit confusing because it used the image
+
+00:40:28.660 --> 00:40:31.620
+<v Speaker 0>name, right, the the the repository name. So
+
+00:40:31.620 --> 00:40:34.340
+<v Speaker 0>it looks like I modified the
+
+00:40:35.380 --> 00:40:36.900
+<v Speaker 0>image, but actually not.
+
+00:40:37.220 --> 00:40:37.940
+<v Speaker 0>Actually,
+
+00:40:38.100 --> 00:40:40.660
+<v Speaker 0>that is just the directory for OCI image
+
+00:40:40.660 --> 00:40:41.140
+<v Speaker 0>layouts.
+
+00:40:41.575 --> 00:40:44.215
+<v Speaker 0>And under it, by checking the index, you
+
+00:40:44.215 --> 00:40:47.495
+<v Speaker 0>see there are two different manifests.
+
+00:40:48.775 --> 00:40:50.855
+<v Speaker 1>Right. Okay. Gotcha. Yep.
+
+00:40:51.575 --> 00:40:54.055
+<v Speaker 0>Okay. That makes The digest is yeah. Digest
+
+00:40:54.055 --> 00:40:55.495
+<v Speaker 0>is totally the same.
+
+00:40:56.319 --> 00:40:56.960
+<v Speaker 0>Okay.
+
+00:40:57.200 --> 00:40:58.480
+<v Speaker 0>Now I will
+
+00:40:59.119 --> 00:40:59.920
+<v Speaker 0>copy
+
+00:41:00.720 --> 00:41:03.680
+<v Speaker 0>the images using Auras. This is now the
+
+00:41:03.680 --> 00:41:05.680
+<v Speaker 0>Auras tool. Jump into the picture.
+
+00:41:10.335 --> 00:41:13.215
+<v Speaker 0>Okay. Auras manager artifacts
+
+00:41:13.215 --> 00:41:15.455
+<v Speaker 0>in OCI compliant registry.
+
+00:41:15.695 --> 00:41:16.575
+<v Speaker 0>So Auras,
+
+00:41:20.829 --> 00:41:23.869
+<v Speaker 0>in in this context, RRAS will copy the
+
+00:41:23.869 --> 00:41:25.310
+<v Speaker 0>OCI image layout
+
+00:41:25.710 --> 00:41:27.150
+<v Speaker 0>to a registry.
+
+00:41:28.190 --> 00:41:29.070
+<v Speaker 0>For example,
+
+00:41:29.150 --> 00:41:30.109
+<v Speaker 0>in the
+
+00:41:30.430 --> 00:41:34.190
+<v Speaker 0>in in our hands on, I use DocHub
+
+00:41:34.335 --> 00:41:36.415
+<v Speaker 0>for store the images.
+
+00:41:36.494 --> 00:41:38.815
+<v Speaker 0>But in your case, it could be
+
+00:41:39.135 --> 00:41:41.855
+<v Speaker 0>some private registry or any other
+
+00:41:42.015 --> 00:41:43.135
+<v Speaker 0>private other
+
+00:41:43.535 --> 00:41:44.895
+<v Speaker 0>public registry
+
+00:41:45.455 --> 00:41:47.455
+<v Speaker 0>based on your cloud environment.
+
+00:41:47.855 --> 00:41:48.335
+<v Speaker 0>And
+
+00:41:49.610 --> 00:41:52.490
+<v Speaker 0>the good part or the beautiful part is
+
+00:41:52.490 --> 00:41:55.370
+<v Speaker 0>that you see everything is actually
+
+00:41:55.850 --> 00:41:57.850
+<v Speaker 0>directory and files. Right?
+
+00:41:58.730 --> 00:42:00.890
+<v Speaker 0>You actually can make another
+
+00:42:01.290 --> 00:42:02.250
+<v Speaker 0>table
+
+00:42:03.135 --> 00:42:04.095
+<v Speaker 0>or
+
+00:42:04.095 --> 00:42:04.895
+<v Speaker 0>other
+
+00:42:05.375 --> 00:42:07.855
+<v Speaker 0>file transfer mechanism.
+
+00:42:08.255 --> 00:42:09.215
+<v Speaker 0>You can
+
+00:42:09.615 --> 00:42:11.855
+<v Speaker 0>transfer it from your
+
+00:42:12.415 --> 00:42:14.015
+<v Speaker 0>local file system
+
+00:42:14.095 --> 00:42:15.135
+<v Speaker 0>to any other,
+
+00:42:15.810 --> 00:42:18.290
+<v Speaker 0>for example, file system or storage
+
+00:42:18.450 --> 00:42:21.410
+<v Speaker 0>using your own file transfer mechanism,
+
+00:42:21.650 --> 00:42:24.610
+<v Speaker 0>your own secure way for transfer files.
+
+00:42:25.810 --> 00:42:28.610
+<v Speaker 0>For example, if you have air gapped environment,
+
+00:42:29.575 --> 00:42:32.375
+<v Speaker 0>you can actually copy the images and the
+
+00:42:32.375 --> 00:42:35.575
+<v Speaker 0>signature from your file system, your build system,
+
+00:42:35.975 --> 00:42:38.935
+<v Speaker 0>for example, to to a USB drive. Right?
+
+00:42:39.495 --> 00:42:42.055
+<v Speaker 0>Then you use that drive to your air
+
+00:42:42.055 --> 00:42:43.975
+<v Speaker 0>gapped environment you plug in.
+
+00:42:44.619 --> 00:42:45.340
+<v Speaker 0>Right?
+
+00:42:45.420 --> 00:42:47.740
+<v Speaker 0>And the the images and signature
+
+00:42:47.740 --> 00:42:48.380
+<v Speaker 0>are
+
+00:42:48.700 --> 00:42:50.780
+<v Speaker 0>the same, totally the same.
+
+00:42:51.099 --> 00:42:53.340
+<v Speaker 0>So it can leverage your current
+
+00:42:55.099 --> 00:42:57.020
+<v Speaker 0>file transfer mechanism,
+
+00:42:57.020 --> 00:42:58.940
+<v Speaker 0>the secure way to distribute
+
+00:42:59.244 --> 00:42:59.885
+<v Speaker 0>your
+
+00:43:01.165 --> 00:43:04.365
+<v Speaker 0>files or binaries as you did previously.
+
+00:43:04.925 --> 00:43:07.165
+<v Speaker 0>And from that environment,
+
+00:43:07.244 --> 00:43:08.045
+<v Speaker 0>you can,
+
+00:43:08.205 --> 00:43:11.245
+<v Speaker 0>for example, use Aura's to copy
+
+00:43:11.885 --> 00:43:14.925
+<v Speaker 0>the OCA image layout to the registry
+
+00:43:14.640 --> 00:43:16.240
+<v Speaker 0>for production usage.
+
+00:43:16.880 --> 00:43:19.519
+<v Speaker 0>So now what I will do today, I
+
+00:43:19.519 --> 00:43:22.720
+<v Speaker 0>will skip the process on how you transfer
+
+00:43:22.720 --> 00:43:23.760
+<v Speaker 0>these files.
+
+00:43:24.240 --> 00:43:26.319
+<v Speaker 0>Assume that you
+
+00:43:27.095 --> 00:43:30.775
+<v Speaker 0>copy these files using some file transfer mechanism
+
+00:43:31.255 --> 00:43:34.375
+<v Speaker 0>and copy it to your production environment.
+
+00:43:34.615 --> 00:43:35.175
+<v Speaker 0>So
+
+00:43:35.654 --> 00:43:37.895
+<v Speaker 0>now I'm on the production environment.
+
+00:43:39.494 --> 00:43:40.215
+<v Speaker 0>Okay?
+
+00:43:40.295 --> 00:43:42.135
+<v Speaker 0>Then you can use ORA's tool.
+
+00:43:44.880 --> 00:43:48.000
+<v Speaker 0>Actually, before that, let's use Auras tool to
+
+00:43:48.000 --> 00:43:50.000
+<v Speaker 0>check whether there is
+
+00:43:51.280 --> 00:43:53.040
+<v Speaker 0>the same image in
+
+00:43:53.040 --> 00:43:53.600
+<v Speaker 0>my
+
+00:43:53.840 --> 00:43:56.720
+<v Speaker 0>registry. I use DocHub to simulate.
+
+00:43:56.720 --> 00:43:58.865
+<v Speaker 0>So if you remember,
+
+00:43:59.665 --> 00:44:00.785
+<v Speaker 0>let me check.
+
+00:44:02.065 --> 00:44:02.705
+<v Speaker 0>Okay.
+
+00:44:03.905 --> 00:44:06.145
+<v Speaker 0>This image is not fun, right?
+
+00:44:06.785 --> 00:44:08.625
+<v Speaker 0>Okay. Now I'm on the
+
+00:44:09.265 --> 00:44:12.385
+<v Speaker 0>production environment
+
+00:44:11.859 --> 00:44:13.300
+<v Speaker 0>or the environment
+
+00:44:13.460 --> 00:44:16.580
+<v Speaker 0>that I will propagate the images to my
+
+00:44:16.580 --> 00:44:17.460
+<v Speaker 0>registry,
+
+00:44:18.580 --> 00:44:20.020
+<v Speaker 0>I use OrasCopy.
+
+00:44:23.795 --> 00:44:25.555
+<v Speaker 0>This means recursively.
+
+00:44:25.555 --> 00:44:27.875
+<v Speaker 0>It means that not only the image,
+
+00:44:29.795 --> 00:44:32.035
+<v Speaker 0>but also the signature associated
+
+00:44:32.035 --> 00:44:33.155
+<v Speaker 0>with the image
+
+00:44:39.910 --> 00:44:41.350
+<v Speaker 0>from OCI
+
+00:44:42.390 --> 00:44:43.270
+<v Speaker 0>layout
+
+00:44:43.990 --> 00:44:46.150
+<v Speaker 0>to
+
+00:44:55.065 --> 00:44:55.865
+<v Speaker 0>Okay.
+
+00:44:56.265 --> 00:44:58.025
+<v Speaker 0>It seems there's the
+
+00:44:59.865 --> 00:45:00.505
+<v Speaker 0>arrow.
+
+00:45:08.569 --> 00:45:10.089
+<v Speaker 1>Let me try again. I think Docker Hub
+
+00:45:10.089 --> 00:45:12.010
+<v Speaker 1>may just have been having a wee moment.
+
+00:45:13.290 --> 00:45:13.930
+<v Speaker 0>Yep.
+
+00:45:14.569 --> 00:45:15.609
+<v Speaker 0>Let me check.
+
+00:45:24.965 --> 00:45:26.165
+<v Speaker 0>Just a second.
+
+00:45:30.005 --> 00:45:32.325
+<v Speaker 1>Because all of the layers are one rule.
+
+00:45:36.750 --> 00:45:37.790
+<v Speaker 0>Yep. Let's
+
+00:45:38.030 --> 00:45:39.310
+<v Speaker 0>try it again.
+
+00:45:42.990 --> 00:45:43.950
+<v Speaker 1>There you go.
+
+00:45:44.190 --> 00:45:44.910
+<v Speaker 1>Yeah.
+
+00:45:47.710 --> 00:45:48.270
+<v Speaker 0>Okay.
+
+00:45:49.155 --> 00:45:52.275
+<v Speaker 0>If you remember, previously, I used this command
+
+00:45:52.275 --> 00:45:55.875
+<v Speaker 0>to discover whether this image exists or not.
+
+00:45:55.875 --> 00:45:56.435
+<v Speaker 0>Right?
+
+00:45:56.675 --> 00:45:57.395
+<v Speaker 0>So
+
+00:45:57.635 --> 00:45:59.875
+<v Speaker 0>let's check again.
+
+00:45:59.875 --> 00:46:00.195
+<v Speaker 0>Okay.
+
+00:46:01.250 --> 00:46:03.650
+<v Speaker 0>Now this image is is stored in the
+
+00:46:03.650 --> 00:46:04.609
+<v Speaker 0>DocHarp,
+
+00:46:04.609 --> 00:46:06.770
+<v Speaker 0>the same digest, you remember.
+
+00:46:07.410 --> 00:46:10.290
+<v Speaker 0>And it also has a signature associated
+
+00:46:10.290 --> 00:46:11.330
+<v Speaker 0>with the image.
+
+00:46:13.010 --> 00:46:13.650
+<v Speaker 0>Okay.
+
+00:46:13.810 --> 00:46:15.170
+<v Speaker 0>So now we
+
+00:46:15.569 --> 00:46:15.890
+<v Speaker 0>yeah.
+
+00:46:17.145 --> 00:46:17.945
+<v Speaker 0>We we have
+
+00:46:18.665 --> 00:46:21.865
+<v Speaker 0>first of previously, we have everything securely stored
+
+00:46:21.865 --> 00:46:23.705
+<v Speaker 0>on my file system. Right?
+
+00:46:24.185 --> 00:46:26.905
+<v Speaker 0>Then I use the secure way to transfer
+
+00:46:27.625 --> 00:46:28.425
+<v Speaker 0>images
+
+00:46:28.425 --> 00:46:29.545
+<v Speaker 0>and the signatures
+
+00:46:29.730 --> 00:46:31.890
+<v Speaker 0>to another secure environment,
+
+00:46:32.050 --> 00:46:33.010
+<v Speaker 0>which will
+
+00:46:33.810 --> 00:46:36.370
+<v Speaker 0>promote the image to production registry.
+
+00:46:36.930 --> 00:46:40.530
+<v Speaker 0>Then I use Aura's command to copy from
+
+00:46:40.530 --> 00:46:43.730
+<v Speaker 0>the OSAI image layout to the
+
+00:46:44.265 --> 00:46:47.464
+<v Speaker 0>production registry, I use DocHub for simulation. So
+
+00:46:47.464 --> 00:46:50.105
+<v Speaker 0>you see everything is now in my production
+
+00:46:50.105 --> 00:46:51.145
+<v Speaker 0>registry.
+
+00:46:52.984 --> 00:46:53.625
+<v Speaker 0>Okay.
+
+00:46:54.424 --> 00:46:56.425
+<v Speaker 0>Then we will go to the
+
+00:46:56.904 --> 00:46:58.105
+<v Speaker 0>verification part.
+
+00:47:01.780 --> 00:47:03.860
+<v Speaker 0>Okay. To verify
+
+00:47:04.180 --> 00:47:06.580
+<v Speaker 0>images, actually, it depends.
+
+00:47:07.300 --> 00:47:08.260
+<v Speaker 0>For example,
+
+00:47:08.500 --> 00:47:11.620
+<v Speaker 0>it could be, for example, I produce
+
+00:47:12.339 --> 00:47:13.140
+<v Speaker 0>base images,
+
+00:47:13.865 --> 00:47:16.585
+<v Speaker 0>and this base image is stored somewhere, and
+
+00:47:16.585 --> 00:47:19.865
+<v Speaker 0>then you will use in your environment to
+
+00:47:20.025 --> 00:47:21.385
+<v Speaker 0>use that base
+
+00:47:21.385 --> 00:47:25.625
+<v Speaker 0>images for building your own application image. Right?
+
+00:47:25.785 --> 00:47:27.385
+<v Speaker 0>So in that case,
+
+00:47:27.690 --> 00:47:30.569
+<v Speaker 0>the base image is actually consumed in a
+
+00:47:30.569 --> 00:47:32.010
+<v Speaker 0>CICD pipeline
+
+00:47:32.250 --> 00:47:32.970
+<v Speaker 0>system,
+
+00:47:33.290 --> 00:47:36.170
+<v Speaker 0>so that you can use notation tool
+
+00:47:36.569 --> 00:47:37.770
+<v Speaker 0>to validate
+
+00:47:37.770 --> 00:47:40.010
+<v Speaker 0>the signature of the base
+
+00:47:40.250 --> 00:47:41.130
+<v Speaker 0>images
+
+00:47:41.210 --> 00:47:43.210
+<v Speaker 0>to ensure they are trusted
+
+00:47:43.464 --> 00:47:46.025
+<v Speaker 0>before you use them. Right? So this is
+
+00:47:46.025 --> 00:47:49.545
+<v Speaker 0>one scenarios that you can validate the images
+
+00:47:49.545 --> 00:47:50.505
+<v Speaker 0>in your
+
+00:47:51.065 --> 00:47:53.305
+<v Speaker 0>build system, CICD pipeline.
+
+00:47:53.545 --> 00:47:54.345
+<v Speaker 0>Another
+
+00:47:55.145 --> 00:47:56.585
+<v Speaker 0>scenario is
+
+00:47:57.305 --> 00:47:58.184
+<v Speaker 0>about
+
+00:47:59.030 --> 00:48:02.310
+<v Speaker 0>the workloads on the Kubernetes. Right? So
+
+00:48:02.470 --> 00:48:04.790
+<v Speaker 0>you build your connected images. In the end,
+
+00:48:04.790 --> 00:48:05.830
+<v Speaker 0>you want to
+
+00:48:07.030 --> 00:48:09.670
+<v Speaker 0>run them in the Kubernetes to provide the
+
+00:48:09.670 --> 00:48:11.945
+<v Speaker 0>service to your customers.
+
+00:48:12.105 --> 00:48:14.265
+<v Speaker 0>So that is the scenario that you will
+
+00:48:14.265 --> 00:48:16.585
+<v Speaker 0>pull images from registry
+
+00:48:16.745 --> 00:48:19.225
+<v Speaker 0>and then deploy to the Kubernetes.
+
+00:48:19.785 --> 00:48:22.265
+<v Speaker 0>And in that case, we also needed to
+
+00:48:23.065 --> 00:48:24.345
+<v Speaker 0>do some validation,
+
+00:48:24.345 --> 00:48:27.599
+<v Speaker 0>verification to make sure those images that are
+
+00:48:27.599 --> 00:48:29.839
+<v Speaker 0>going to be pulled and the wrong
+
+00:48:30.079 --> 00:48:31.760
+<v Speaker 0>are trusted. Right?
+
+00:48:32.079 --> 00:48:34.400
+<v Speaker 0>So I will demo these two scenarios.
+
+00:48:39.174 --> 00:48:42.934
+<v Speaker 0>To demo the replication inside CD pipeline, I
+
+00:48:42.934 --> 00:48:44.695
+<v Speaker 0>will using Notation tool
+
+00:48:44.855 --> 00:48:48.214
+<v Speaker 0>to simulate it. So normally, we have a
+
+00:48:48.535 --> 00:48:49.974
+<v Speaker 0>currently, Notation
+
+00:48:50.694 --> 00:48:53.894
+<v Speaker 0>tool has been integrated with GitHub Actions,
+
+00:48:55.220 --> 00:48:56.260
+<v Speaker 0>Azure DevOps,
+
+00:48:56.740 --> 00:48:58.180
+<v Speaker 0>and the FluxCD.
+
+00:48:58.660 --> 00:49:00.100
+<v Speaker 0>And there will be more
+
+00:49:00.420 --> 00:49:03.220
+<v Speaker 0>SAS AD pipeline that we plan to integrate.
+
+00:49:03.460 --> 00:49:06.180
+<v Speaker 0>So if you are on the GitHub or
+
+00:49:06.180 --> 00:49:08.420
+<v Speaker 0>Azure DevOps or FluxCD,
+
+00:49:08.420 --> 00:49:10.935
+<v Speaker 0>you you will have a manager, the task
+
+00:49:11.174 --> 00:49:13.494
+<v Speaker 0>manager, the access actions
+
+00:49:13.494 --> 00:49:14.935
+<v Speaker 0>to use to
+
+00:49:15.414 --> 00:49:16.375
+<v Speaker 0>verify
+
+00:49:16.775 --> 00:49:17.974
+<v Speaker 0>the signatures.
+
+00:49:18.295 --> 00:49:21.255
+<v Speaker 0>So today, I will use the Notation CLI
+
+00:49:21.530 --> 00:49:24.890
+<v Speaker 0>to simulate the process. Actually, for those tasks,
+
+00:49:24.890 --> 00:49:27.369
+<v Speaker 0>they also integrate with the Notation CLI to
+
+00:49:27.369 --> 00:49:29.450
+<v Speaker 0>do that, but provide the management
+
+00:49:29.450 --> 00:49:30.250
+<v Speaker 0>experience.
+
+00:49:30.250 --> 00:49:31.930
+<v Speaker 0>I will use Notation tool
+
+00:49:32.170 --> 00:49:34.570
+<v Speaker 0>to demo it and show you the
+
+00:49:35.050 --> 00:49:36.089
+<v Speaker 0>how Notation
+
+00:49:37.095 --> 00:49:38.215
+<v Speaker 0>can trust
+
+00:49:38.295 --> 00:49:40.455
+<v Speaker 0>an image an instant nature.
+
+00:49:42.535 --> 00:49:45.415
+<v Speaker 0>Assume now we are on the CICD pipeline.
+
+00:49:45.815 --> 00:49:47.655
+<v Speaker 0>In order to verify
+
+00:49:47.735 --> 00:49:49.175
+<v Speaker 0>a container images,
+
+00:49:50.400 --> 00:49:53.440
+<v Speaker 0>for notation, we needed to set up
+
+00:49:54.640 --> 00:49:57.200
+<v Speaker 0>trust the store and trust the policy.
+
+00:49:57.839 --> 00:50:00.000
+<v Speaker 0>Trust the store means the
+
+00:50:00.559 --> 00:50:01.440
+<v Speaker 0>trust anchor,
+
+00:50:02.105 --> 00:50:04.984
+<v Speaker 0>means who you trust. It is based on
+
+00:50:04.984 --> 00:50:05.945
+<v Speaker 0>the PPA
+
+00:50:06.184 --> 00:50:07.145
+<v Speaker 0>system.
+
+00:50:07.145 --> 00:50:08.265
+<v Speaker 0>So normally,
+
+00:50:08.505 --> 00:50:11.464
+<v Speaker 0>there will be a CAE. Right? CAE issued
+
+00:50:11.464 --> 00:50:12.825
+<v Speaker 0>a signed certificate,
+
+00:50:13.464 --> 00:50:15.305
+<v Speaker 0>and those signed certificates
+
+00:50:15.700 --> 00:50:18.580
+<v Speaker 0>will be used for assigned content images. Just
+
+00:50:18.580 --> 00:50:21.460
+<v Speaker 0>now we demoed that using the self signed
+
+00:50:21.940 --> 00:50:23.140
+<v Speaker 0>certificate
+
+00:50:23.140 --> 00:50:24.740
+<v Speaker 0>to simulate this
+
+00:50:25.140 --> 00:50:26.180
+<v Speaker 0>hierarchy.
+
+00:50:26.340 --> 00:50:27.860
+<v Speaker 0>But in real world,
+
+00:50:28.020 --> 00:50:29.620
+<v Speaker 0>you trust the SCA,
+
+00:50:30.245 --> 00:50:31.605
+<v Speaker 0>your consumer,
+
+00:50:31.605 --> 00:50:32.565
+<v Speaker 0>your customer,
+
+00:50:32.965 --> 00:50:33.365
+<v Speaker 0>or
+
+00:50:33.845 --> 00:50:35.205
+<v Speaker 0>image verifier,
+
+00:50:35.685 --> 00:50:37.605
+<v Speaker 0>they trust the SCA.
+
+00:50:37.605 --> 00:50:40.245
+<v Speaker 0>Right? So trust store is where you store
+
+00:50:40.245 --> 00:50:42.085
+<v Speaker 0>the root SCA certificate
+
+00:50:43.200 --> 00:50:44.400
+<v Speaker 0>from the ZAID.
+
+00:50:44.960 --> 00:50:47.360
+<v Speaker 0>That is the trust anchor.
+
+00:50:48.160 --> 00:50:48.800
+<v Speaker 0>Then
+
+00:50:49.600 --> 00:50:51.280
+<v Speaker 0>you don't need to set up the trust
+
+00:50:51.280 --> 00:50:52.080
+<v Speaker 0>policy.
+
+00:50:52.400 --> 00:50:54.960
+<v Speaker 0>So in the trust policy, user needed to
+
+00:50:54.960 --> 00:50:56.320
+<v Speaker 0>specify some
+
+00:50:57.494 --> 00:50:59.575
+<v Speaker 0>properties. I will show you now.
+
+00:51:00.454 --> 00:51:02.135
+<v Speaker 0>So in order to,
+
+00:51:02.375 --> 00:51:03.895
+<v Speaker 0>set up a trust store,
+
+00:51:05.174 --> 00:51:06.215
+<v Speaker 0>to simulate,
+
+00:51:07.494 --> 00:51:10.839
+<v Speaker 0>you copy the root state certificate to to
+
+00:51:10.839 --> 00:51:12.920
+<v Speaker 0>our file system and then use that have
+
+00:51:12.920 --> 00:51:14.600
+<v Speaker 0>the trust or coordinate.
+
+00:51:14.839 --> 00:51:17.640
+<v Speaker 0>So in my case, I will copy
+
+00:51:18.040 --> 00:51:20.599
+<v Speaker 0>the route to say certificate.
+
+00:51:25.935 --> 00:51:29.135
+<v Speaker 0>If you remember, I have this, my company.
+
+00:51:29.135 --> 00:51:29.775
+<v Speaker 0>Right?
+
+00:51:31.215 --> 00:51:32.015
+<v Speaker 0>Cert.
+
+00:51:33.375 --> 00:51:35.615
+<v Speaker 0>So this is just to simulate. The route
+
+00:51:35.615 --> 00:51:36.735
+<v Speaker 0>stays. Normally,
+
+00:51:37.455 --> 00:51:40.015
+<v Speaker 0>the route stays dedicated from, say, they will
+
+00:51:40.015 --> 00:51:40.815
+<v Speaker 0>distribute
+
+00:51:40.880 --> 00:51:42.880
+<v Speaker 0>to through some web
+
+00:51:43.040 --> 00:51:45.840
+<v Speaker 0>storage or some preconfig
+
+00:51:45.840 --> 00:51:47.120
+<v Speaker 0>system
+
+00:51:47.120 --> 00:51:49.440
+<v Speaker 0>so that you can easily get.
+
+00:51:49.760 --> 00:51:52.800
+<v Speaker 0>So now I simulate. I copy this root
+
+00:51:52.800 --> 00:51:53.760
+<v Speaker 0>assay certificate,
+
+00:51:54.635 --> 00:51:55.515
+<v Speaker 0>distributed
+
+00:51:55.515 --> 00:51:57.915
+<v Speaker 0>or published the BIOS CA to
+
+00:51:58.155 --> 00:52:00.075
+<v Speaker 0>my local file system.
+
+00:52:02.234 --> 00:52:02.875
+<v Speaker 0>Okay.
+
+00:52:03.194 --> 00:52:04.315
+<v Speaker 0>I click.
+
+00:52:06.395 --> 00:52:07.994
+<v Speaker 0>So I have the root
+
+00:52:08.480 --> 00:52:09.599
+<v Speaker 0>say certificate.
+
+00:52:09.599 --> 00:52:12.080
+<v Speaker 0>I set up the trust door first.
+
+00:52:13.839 --> 00:52:15.280
+<v Speaker 0>Notation cert.
+
+00:52:17.680 --> 00:52:18.400
+<v Speaker 0>Okay.
+
+00:52:19.680 --> 00:52:21.665
+<v Speaker 0>Yeah. I want to mention that
+
+00:52:21.905 --> 00:52:24.385
+<v Speaker 0>at the beginning, I used the notation
+
+00:52:25.425 --> 00:52:26.145
+<v Speaker 0>cert
+
+00:52:27.505 --> 00:52:30.065
+<v Speaker 0>generate test. Right? This command.
+
+00:52:31.745 --> 00:52:33.345
+<v Speaker 0>So it actually
+
+00:52:33.425 --> 00:52:35.345
+<v Speaker 0>helped me to set up the trust tool
+
+00:52:35.345 --> 00:52:37.480
+<v Speaker 0>already. So I will show you.
+
+00:52:41.400 --> 00:52:42.680
+<v Speaker 0>It is already
+
+00:52:43.640 --> 00:52:46.360
+<v Speaker 0>set up if you use the generate
+
+00:52:46.520 --> 00:52:47.320
+<v Speaker 0>test.
+
+00:52:47.560 --> 00:52:49.640
+<v Speaker 0>So if the type is the same,
+
+00:52:50.635 --> 00:52:52.795
+<v Speaker 0>that this is the trustor name,
+
+00:52:53.355 --> 00:52:55.515
+<v Speaker 0>and this is the root certificate.
+
+00:52:56.155 --> 00:52:57.755
+<v Speaker 0>So in real world,
+
+00:52:57.995 --> 00:52:59.995
+<v Speaker 0>you needed to use notation
+
+00:53:00.315 --> 00:53:02.155
+<v Speaker 0>cert add command
+
+00:53:02.980 --> 00:53:06.980
+<v Speaker 0>to I add the root certificate that you
+
+00:53:06.980 --> 00:53:09.060
+<v Speaker 0>received from your signer.
+
+00:53:09.300 --> 00:53:11.860
+<v Speaker 0>The signer should publish the guide on how
+
+00:53:11.860 --> 00:53:13.700
+<v Speaker 0>to verify the signature.
+
+00:53:13.860 --> 00:53:16.420
+<v Speaker 0>The signer will know that
+
+00:53:16.734 --> 00:53:17.535
+<v Speaker 0>where the,
+
+00:53:18.175 --> 00:53:20.974
+<v Speaker 0>route to say certificate is, if they will,
+
+00:53:21.295 --> 00:53:21.935
+<v Speaker 0>publish,
+
+00:53:22.095 --> 00:53:24.335
+<v Speaker 0>the information in in the guide. So you
+
+00:53:24.335 --> 00:53:25.935
+<v Speaker 0>will use this command
+
+00:53:27.375 --> 00:53:29.775
+<v Speaker 0>and a store name, your store,
+
+00:53:29.935 --> 00:53:30.655
+<v Speaker 0>for example,
+
+00:53:31.280 --> 00:53:32.320
+<v Speaker 0>and the
+
+00:53:32.880 --> 00:53:33.600
+<v Speaker 0>file
+
+00:53:37.760 --> 00:53:40.240
+<v Speaker 0>to the trust store. Because we already have
+
+00:53:40.240 --> 00:53:42.160
+<v Speaker 0>this, so I don't need to do that.
+
+00:53:42.160 --> 00:53:44.855
+<v Speaker 0>This is command. It's just to show in
+
+00:53:44.855 --> 00:53:46.694
+<v Speaker 0>real world that you needed to use this
+
+00:53:46.694 --> 00:53:49.415
+<v Speaker 0>notation cert command to to add.
+
+00:53:49.734 --> 00:53:51.494
+<v Speaker 0>And then you can after that, you use
+
+00:53:51.494 --> 00:53:52.775
+<v Speaker 0>the notation cert
+
+00:53:52.855 --> 00:53:53.734
+<v Speaker 0>list
+
+00:53:53.734 --> 00:53:54.695
+<v Speaker 0>to check
+
+00:53:54.855 --> 00:53:56.454
+<v Speaker 0>whether the store is,
+
+00:53:57.174 --> 00:53:57.655
+<v Speaker 0>set up.
+
+00:53:59.330 --> 00:54:02.370
+<v Speaker 0>Then you needed to configure the trust policy.
+
+00:54:03.810 --> 00:54:06.770
+<v Speaker 0>Trust policy is actually a JSON document, so
+
+00:54:06.770 --> 00:54:08.450
+<v Speaker 0>I have a template here.
+
+00:54:10.770 --> 00:54:12.530
+<v Speaker 0>So let's take a look.
+
+00:54:14.735 --> 00:54:16.975
+<v Speaker 0>Maybe just let's edit.
+
+00:54:20.015 --> 00:54:22.015
+<v Speaker 0>Okay, it's a JSON
+
+00:54:22.015 --> 00:54:22.895
+<v Speaker 0>format.
+
+00:54:23.215 --> 00:54:26.015
+<v Speaker 0>This is the policy name, my policy, you
+
+00:54:26.015 --> 00:54:27.455
+<v Speaker 0>can give it any name.
+
+00:54:28.220 --> 00:54:29.740
+<v Speaker 0>And this is the
+
+00:54:30.059 --> 00:54:31.340
+<v Speaker 0>registry scope,
+
+00:54:31.420 --> 00:54:33.260
+<v Speaker 0>which is a list of
+
+00:54:34.380 --> 00:54:35.340
+<v Speaker 0>repositories.
+
+00:54:35.500 --> 00:54:37.900
+<v Speaker 0>So in our case, is that we
+
+00:54:38.140 --> 00:54:41.015
+<v Speaker 0>have our image with the tag V1.
+
+00:54:41.015 --> 00:54:44.935
+<v Speaker 0>Right? It is under the repository network.
+
+00:54:45.575 --> 00:54:47.175
+<v Speaker 0>And this is my
+
+00:54:48.055 --> 00:54:49.415
+<v Speaker 0>registry address.
+
+00:54:51.495 --> 00:54:53.175
+<v Speaker 0>So signature verification,
+
+00:54:53.175 --> 00:54:56.480
+<v Speaker 0>by default, is strict. It means that the
+
+00:54:57.359 --> 00:54:58.320
+<v Speaker 0>signature
+
+00:54:58.960 --> 00:54:59.920
+<v Speaker 0>integrity,
+
+00:54:59.920 --> 00:55:00.880
+<v Speaker 0>authenticity,
+
+00:55:01.040 --> 00:55:02.080
+<v Speaker 0>and the
+
+00:55:03.200 --> 00:55:04.000
+<v Speaker 0>revocation
+
+00:55:04.160 --> 00:55:04.960
+<v Speaker 0>checking,
+
+00:55:04.960 --> 00:55:07.040
+<v Speaker 0>expiry checking will be enforced.
+
+00:55:07.575 --> 00:55:09.335
+<v Speaker 0>There are some other values,
+
+00:55:09.415 --> 00:55:11.655
+<v Speaker 0>so, I will not demo
+
+00:55:11.895 --> 00:55:15.175
+<v Speaker 0>those values today, but, you can check out,
+
+00:55:15.494 --> 00:55:18.695
+<v Speaker 0>those values in Notreeable Project specification.
+
+00:55:19.494 --> 00:55:21.415
+<v Speaker 1>Could that register scope
+
+00:55:21.579 --> 00:55:24.059
+<v Speaker 1>be just your username, or do you have
+
+00:55:24.059 --> 00:55:26.619
+<v Speaker 1>to explicitly state every single image?
+
+00:55:27.260 --> 00:55:28.540
+<v Speaker 0>So currently,
+
+00:55:29.180 --> 00:55:32.619
+<v Speaker 0>you have to specify a list of repository,
+
+00:55:32.619 --> 00:55:34.380
+<v Speaker 0>not not the images, because
+
+00:55:34.795 --> 00:55:36.875
+<v Speaker 0>for another NET monitor,
+
+00:55:36.875 --> 00:55:39.355
+<v Speaker 0>we have V1, right? It could be V2,
+
+00:55:39.355 --> 00:55:40.075
+<v Speaker 0>V3.
+
+00:55:40.235 --> 00:55:42.555
+<v Speaker 0>We don't need to specify the tag. We
+
+00:55:42.555 --> 00:55:44.635
+<v Speaker 0>just need to specify the repository.
+
+00:55:44.955 --> 00:55:47.515
+<v Speaker 0>So currently, it is the list of repository.
+
+00:55:48.200 --> 00:55:50.040
+<v Speaker 0>We have a plan in the
+
+00:55:50.600 --> 00:55:54.280
+<v Speaker 0>future to support on different level, for example,
+
+00:55:54.280 --> 00:55:55.640
+<v Speaker 0>on registry level
+
+00:55:56.040 --> 00:55:57.480
+<v Speaker 0>or on the
+
+00:55:58.600 --> 00:55:59.640
+<v Speaker 0>namespace level.
+
+00:56:00.935 --> 00:56:01.575
+<v Speaker 0>So
+
+00:56:01.895 --> 00:56:03.495
+<v Speaker 0>that is for the
+
+00:56:03.735 --> 00:56:06.055
+<v Speaker 0>future. Yeah. Okay. Cool.
+
+00:56:08.055 --> 00:56:08.855
+<v Speaker 0>This
+
+00:56:08.855 --> 00:56:10.055
+<v Speaker 0>is the trustor
+
+00:56:10.535 --> 00:56:11.895
+<v Speaker 0>with this format,
+
+00:56:11.895 --> 00:56:13.175
+<v Speaker 0>trustor type,
+
+00:56:13.335 --> 00:56:14.055
+<v Speaker 0>trustor name.
+
+00:56:15.210 --> 00:56:17.770
+<v Speaker 0>Our name, I think, is called the company.
+
+00:56:17.770 --> 00:56:18.890
+<v Speaker 0>Right? Yes.
+
+00:56:20.730 --> 00:56:23.370
+<v Speaker 0>And this is the trust identity. Trust identity
+
+00:56:23.370 --> 00:56:25.690
+<v Speaker 0>is actually a subject the
+
+00:56:26.330 --> 00:56:28.010
+<v Speaker 0>distribute distinguished
+
+00:56:28.010 --> 00:56:30.170
+<v Speaker 0>name of your science science certificate.
+
+00:56:30.625 --> 00:56:32.625
+<v Speaker 0>I will show you how you can get
+
+00:56:32.625 --> 00:56:35.025
+<v Speaker 0>it. And normally, it will be also provided
+
+00:56:35.025 --> 00:56:35.985
+<v Speaker 0>by your
+
+00:56:37.185 --> 00:56:37.985
+<v Speaker 0>signer.
+
+00:56:38.065 --> 00:56:40.945
+<v Speaker 0>And actually, this is the identity you want
+
+00:56:40.945 --> 00:56:41.825
+<v Speaker 0>to trust.
+
+00:56:42.305 --> 00:56:44.385
+<v Speaker 0>You do not want to trust anyone
+
+00:56:44.690 --> 00:56:48.290
+<v Speaker 0>one else, because for root CA certificates
+
+00:56:48.290 --> 00:56:50.930
+<v Speaker 0>in real world, it can sign it can
+
+00:56:50.930 --> 00:56:51.730
+<v Speaker 0>issue
+
+00:56:52.290 --> 00:56:53.010
+<v Speaker 0>many
+
+00:56:53.250 --> 00:56:56.770
+<v Speaker 0>signed certificates, right? All those signed certificates,
+
+00:56:57.250 --> 00:56:59.650
+<v Speaker 0>are using the same root CA certificate.
+
+00:57:00.385 --> 00:57:03.025
+<v Speaker 0>So this is the identity you want to
+
+00:57:03.025 --> 00:57:03.905
+<v Speaker 0>trust.
+
+00:57:04.145 --> 00:57:05.985
+<v Speaker 0>So how can I get this
+
+00:57:07.265 --> 00:57:08.145
+<v Speaker 0>identity?
+
+00:57:08.145 --> 00:57:10.225
+<v Speaker 0>Normally, it will from your
+
+00:57:11.185 --> 00:57:11.905
+<v Speaker 0>signer
+
+00:57:12.339 --> 00:57:15.220
+<v Speaker 0>who will publish the document to mention this
+
+00:57:15.220 --> 00:57:17.460
+<v Speaker 0>is the identity you should trust.
+
+00:57:18.020 --> 00:57:19.620
+<v Speaker 0>But for our case,
+
+00:57:20.099 --> 00:57:22.260
+<v Speaker 0>for the self signed certificate, there is another
+
+00:57:22.260 --> 00:57:23.540
+<v Speaker 0>convenient way.
+
+00:57:23.619 --> 00:57:25.940
+<v Speaker 0>For example, you can use notation
+
+00:57:26.755 --> 00:57:27.555
+<v Speaker 0>cert
+
+00:57:27.715 --> 00:57:29.155
+<v Speaker 0>show command.
+
+00:57:30.915 --> 00:57:31.795
+<v Speaker 0>This one.
+
+00:57:33.075 --> 00:57:34.915
+<v Speaker 0>You can type
+
+00:57:35.955 --> 00:57:36.835
+<v Speaker 0>say a
+
+00:57:37.155 --> 00:57:37.875
+<v Speaker 0>store
+
+00:57:38.915 --> 00:57:42.760
+<v Speaker 0>mycompany.io
+
+00:57:42.839 --> 00:57:47.240
+<v Speaker 0>and mycompany.io
+
+00:57:47.799 --> 00:57:48.599
+<v Speaker 0>cert.
+
+00:57:50.839 --> 00:57:52.520
+<v Speaker 0>It will obtained some
+
+00:57:53.319 --> 00:57:55.000
+<v Speaker 0>details for the certificate.
+
+00:57:55.455 --> 00:57:57.295
+<v Speaker 1>That is a lot easier than trying to
+
+00:57:57.295 --> 00:57:59.215
+<v Speaker 1>remember the OpenSSL
+
+00:57:59.535 --> 00:58:00.495
+<v Speaker 1>incantation.
+
+00:58:02.655 --> 00:58:06.015
+<v Speaker 0>You. So you see the issuer subject,
+
+00:58:06.015 --> 00:58:08.415
+<v Speaker 0>they are the same. Right? So because it
+
+00:58:08.415 --> 00:58:09.935
+<v Speaker 0>is a self signed certificate,
+
+00:58:11.230 --> 00:58:13.310
+<v Speaker 0>So you can just copy this
+
+00:58:15.310 --> 00:58:17.310
+<v Speaker 0>to your trust policy.
+
+00:58:17.390 --> 00:58:20.030
+<v Speaker 0>So let's get back to the trust policy.
+
+00:58:20.190 --> 00:58:21.710
+<v Speaker 0>Basically, you copy it here.
+
+00:58:22.845 --> 00:58:25.245
+<v Speaker 0>Okay? So with trust policy
+
+00:58:25.485 --> 00:58:26.605
+<v Speaker 0>so I want to
+
+00:58:27.485 --> 00:58:28.605
+<v Speaker 0>highlight that
+
+00:58:28.845 --> 00:58:30.445
+<v Speaker 0>for another project,
+
+00:58:30.685 --> 00:58:32.605
+<v Speaker 0>when we want to verify something,
+
+00:58:33.325 --> 00:58:35.565
+<v Speaker 0>we start from zero trust.
+
+00:58:36.205 --> 00:58:36.765
+<v Speaker 0>You see,
+
+00:58:38.040 --> 00:58:39.960
+<v Speaker 0>before I set up a trust store and
+
+00:58:39.960 --> 00:58:43.880
+<v Speaker 0>trust policy, not not notation to trust no
+
+00:58:43.880 --> 00:58:44.440
+<v Speaker 0>one.
+
+00:58:44.840 --> 00:58:46.920
+<v Speaker 0>And for a user, you needed to be
+
+00:58:46.920 --> 00:58:49.080
+<v Speaker 0>clear who you want to trust. You can
+
+00:58:49.080 --> 00:58:52.200
+<v Speaker 0>just you you cannot just readily trust anything.
+
+00:58:52.865 --> 00:58:55.665
+<v Speaker 0>Use a well cut. In that case, even
+
+00:58:55.665 --> 00:58:58.944
+<v Speaker 0>you have the tools ready for sign verification
+
+00:58:58.944 --> 00:59:02.465
+<v Speaker 0>to verify, but still you increase your security
+
+00:59:04.385 --> 00:59:06.625
+<v Speaker 0>risk because you blindly
+
+00:59:06.625 --> 00:59:07.665
+<v Speaker 0>trust everyone.
+
+00:59:08.490 --> 00:59:09.130
+<v Speaker 0>So
+
+00:59:09.290 --> 00:59:12.730
+<v Speaker 0>we set up a trust store for
+
+00:59:14.250 --> 00:59:15.370
+<v Speaker 0>the anchor,
+
+00:59:15.370 --> 00:59:17.610
+<v Speaker 0>for the CA that we want to trust.
+
+00:59:18.330 --> 00:59:21.290
+<v Speaker 0>And then we set up the trust policy
+
+00:59:21.370 --> 00:59:23.130
+<v Speaker 0>to specify that
+
+00:59:23.744 --> 00:59:24.865
+<v Speaker 0>which images
+
+00:59:25.025 --> 00:59:26.464
+<v Speaker 0>we want to verify,
+
+00:59:26.704 --> 00:59:29.585
+<v Speaker 0>which will be specified by the trust scopes,
+
+00:59:29.744 --> 00:59:30.625
+<v Speaker 0>and also,
+
+00:59:31.184 --> 00:59:34.865
+<v Speaker 0>what is the trust angle coming from and,
+
+00:59:35.184 --> 00:59:35.984
+<v Speaker 0>who
+
+00:59:36.144 --> 00:59:37.424
+<v Speaker 0>we are going to trust.
+
+00:59:38.770 --> 00:59:40.770
+<v Speaker 0>Okay? So with that,
+
+00:59:42.049 --> 00:59:43.010
+<v Speaker 0>let's
+
+00:59:43.250 --> 00:59:44.930
+<v Speaker 0>notation import
+
+00:59:47.010 --> 00:59:47.890
+<v Speaker 0>this policy.
+
+00:59:52.615 --> 00:59:54.695
+<v Speaker 0>Sorry. I missed the policy
+
+00:59:54.855 --> 00:59:55.575
+<v Speaker 0>import.
+
+00:59:56.535 --> 00:59:59.415
+<v Speaker 0>I already have my test policy, so now
+
+00:59:59.415 --> 01:00:01.255
+<v Speaker 0>I have my company policy.
+
+01:00:01.575 --> 01:00:04.775
+<v Speaker 0>Okay. So after that, you will use policy
+
+01:00:04.775 --> 01:00:05.255
+<v Speaker 0>show.
+
+01:00:07.910 --> 01:00:10.789
+<v Speaker 0>You will see this is exactly the policy,
+
+01:00:10.789 --> 01:00:14.710
+<v Speaker 0>right, we used in the JSON file. It
+
+01:00:14.710 --> 01:00:17.190
+<v Speaker 0>is now imported into the notation
+
+01:00:17.670 --> 01:00:18.309
+<v Speaker 0>configuration.
+
+01:00:20.045 --> 01:00:22.845
+<v Speaker 0>Okay. With that, we can start to
+
+01:00:23.005 --> 01:00:23.884
+<v Speaker 0>verify
+
+01:00:23.884 --> 01:00:25.005
+<v Speaker 0>the images.
+
+01:00:27.325 --> 01:00:28.845
+<v Speaker 0>Notation verify
+
+01:00:29.805 --> 01:00:31.165
+<v Speaker 0>and image
+
+01:00:32.525 --> 01:00:32.765
+<v Speaker 0>sign.
+
+01:00:37.700 --> 01:00:38.340
+<v Speaker 0>Okay.
+
+01:00:38.580 --> 01:00:39.460
+<v Speaker 0>It's
+
+01:00:39.460 --> 01:00:42.260
+<v Speaker 0>pretty fast because we're on the local,
+
+01:00:42.420 --> 01:00:44.100
+<v Speaker 0>and we can use
+
+01:00:44.100 --> 01:00:44.900
+<v Speaker 0>verbose
+
+01:00:44.900 --> 01:00:46.740
+<v Speaker 0>flag to check more logs.
+
+01:00:50.755 --> 01:00:53.395
+<v Speaker 0>Yeah. You can see it's checking the signature
+
+01:00:53.715 --> 01:00:56.435
+<v Speaker 0>using the trust policy configuration,
+
+01:00:57.395 --> 01:00:59.795
+<v Speaker 0>and, this is the signature
+
+01:00:59.795 --> 01:01:02.595
+<v Speaker 0>digest if you remember previously we showed.
+
+01:01:04.930 --> 01:01:08.050
+<v Speaker 0>Okay. I cleared the terminal, so we cannot
+
+01:01:08.050 --> 01:01:11.010
+<v Speaker 0>see that. So this is the signature.
+
+01:01:11.090 --> 01:01:14.290
+<v Speaker 0>So maybe I can use the ORAS command
+
+01:01:16.850 --> 01:01:17.730
+<v Speaker 0>to discover.
+
+01:01:20.105 --> 01:01:22.425
+<v Speaker 0>You see, this is the digest for the
+
+01:01:22.425 --> 01:01:23.785
+<v Speaker 0>signature manifest.
+
+01:01:24.345 --> 01:01:27.625
+<v Speaker 0>This is the signature that Notation
+
+01:01:27.705 --> 01:01:30.025
+<v Speaker 0>Verify Commands verified against.
+
+01:01:32.700 --> 01:01:33.420
+<v Speaker 0>Okay.
+
+01:01:34.380 --> 01:01:37.420
+<v Speaker 0>Okay. Just now I demoed how to
+
+01:01:37.820 --> 01:01:39.180
+<v Speaker 0>do the verify
+
+01:01:39.500 --> 01:01:41.260
+<v Speaker 0>in a CICD pipeline
+
+01:01:41.500 --> 01:01:43.100
+<v Speaker 0>or build a system
+
+01:01:43.595 --> 01:01:44.395
+<v Speaker 0>that
+
+01:01:44.635 --> 01:01:45.355
+<v Speaker 0>normally
+
+01:01:45.994 --> 01:01:48.714
+<v Speaker 0>in the real world, it it is normally
+
+01:01:48.714 --> 01:01:50.315
+<v Speaker 0>that before you
+
+01:01:50.474 --> 01:01:53.355
+<v Speaker 0>want to use some other images to build
+
+01:01:53.355 --> 01:01:56.315
+<v Speaker 0>your application images, it could be base images
+
+01:01:56.315 --> 01:01:57.674
+<v Speaker 0>or utility images.
+
+01:01:58.320 --> 01:02:00.960
+<v Speaker 0>Before they want to use them for building
+
+01:02:00.960 --> 01:02:03.120
+<v Speaker 0>your own application
+
+01:02:03.200 --> 01:02:04.480
+<v Speaker 0>container images,
+
+01:02:04.800 --> 01:02:07.920
+<v Speaker 0>you in your CICD pipeline, you verify it
+
+01:02:07.920 --> 01:02:10.240
+<v Speaker 0>using Notation or any other
+
+01:02:10.560 --> 01:02:13.120
+<v Speaker 0>manager experience that integrate with Notation.
+
+01:02:15.985 --> 01:02:16.625
+<v Speaker 0>Okay.
+
+01:02:17.025 --> 01:02:19.345
+<v Speaker 0>I think that the last demo
+
+01:02:19.345 --> 01:02:20.785
+<v Speaker 0>will be how
+
+01:02:21.105 --> 01:02:24.385
+<v Speaker 0>we can ensure our workloads running on Kubernetes
+
+01:02:24.385 --> 01:02:25.505
+<v Speaker 0>is trusted.
+
+01:02:26.470 --> 01:02:27.110
+<v Speaker 0>Okay?
+
+01:02:27.830 --> 01:02:28.470
+<v Speaker 0>That,
+
+01:02:28.630 --> 01:02:30.470
+<v Speaker 0>we need the gatekeeper
+
+01:02:30.550 --> 01:02:31.990
+<v Speaker 0>and the ratify.
+
+01:02:37.910 --> 01:02:39.350
+<v Speaker 0>Okay. In the real world,
+
+01:02:40.935 --> 01:02:43.575
+<v Speaker 0>if you use some vendor's cloud
+
+01:02:43.575 --> 01:02:44.375
+<v Speaker 0>environment,
+
+01:02:44.375 --> 01:02:47.335
+<v Speaker 0>for example, if you are using Azure,
+
+01:02:47.575 --> 01:02:51.415
+<v Speaker 0>you can use Azure policy plus ratify.
+
+01:02:51.495 --> 01:02:53.175
+<v Speaker 0>You don't need to install
+
+01:02:53.655 --> 01:02:54.295
+<v Speaker 0>Gatekeeper.
+
+01:02:56.290 --> 01:02:58.210
+<v Speaker 0>Or from error,
+
+01:02:58.450 --> 01:03:00.050
+<v Speaker 0>there is a preview
+
+01:03:00.290 --> 01:03:01.170
+<v Speaker 0>policy
+
+01:03:01.329 --> 01:03:03.570
+<v Speaker 0>called AKS image integrity.
+
+01:03:03.650 --> 01:03:05.170
+<v Speaker 0>You can also try it.
+
+01:03:05.410 --> 01:03:08.930
+<v Speaker 0>That is actually a managed experience integrates both
+
+01:03:09.170 --> 01:03:11.045
+<v Speaker 0>Gatekeeper and the Routing plan. So you do
+
+01:03:11.045 --> 01:03:13.205
+<v Speaker 0>not need to install manually.
+
+01:03:13.845 --> 01:03:15.045
+<v Speaker 0>Or in
+
+01:03:15.525 --> 01:03:16.965
+<v Speaker 0>some other scenarios,
+
+01:03:17.605 --> 01:03:19.445
+<v Speaker 0>for example, you you you say you you
+
+01:03:19.445 --> 01:03:21.925
+<v Speaker 0>don't want to have the you don't want
+
+01:03:21.925 --> 01:03:23.445
+<v Speaker 0>to use Gatekeeper.
+
+01:03:23.445 --> 01:03:25.045
+<v Speaker 0>You want to use Keyverter.
+
+01:03:25.750 --> 01:03:27.430
+<v Speaker 0>That is also Okay.
+
+01:03:27.670 --> 01:03:28.550
+<v Speaker 0>You can
+
+01:03:29.750 --> 01:03:33.110
+<v Speaker 0>install Key Verner or any environment already integrated
+
+01:03:33.110 --> 01:03:34.790
+<v Speaker 0>with Key Verner
+
+01:03:34.870 --> 01:03:36.230
+<v Speaker 0>in any cloud,
+
+01:03:36.550 --> 01:03:38.230
+<v Speaker 0>you can use Key Verner
+
+01:03:38.550 --> 01:03:40.070
+<v Speaker 0>plus Notary Project Signature.
+
+01:03:40.605 --> 01:03:43.805
+<v Speaker 0>You can still verify not reproject signature. So
+
+01:03:43.805 --> 01:03:45.325
+<v Speaker 0>that is also
+
+01:03:45.645 --> 01:03:48.925
+<v Speaker 0>something beautiful that I mentioned for another project,
+
+01:03:49.165 --> 01:03:50.765
+<v Speaker 0>because we are aiming to be able to
+
+01:03:50.765 --> 01:03:52.365
+<v Speaker 0>standardize the tools
+
+01:03:52.930 --> 01:03:56.690
+<v Speaker 0>and produce standard interface, for example, in this
+
+01:03:56.690 --> 01:03:59.410
+<v Speaker 0>case, signature. So that no matter
+
+01:03:59.650 --> 01:04:00.850
+<v Speaker 0>what the tools
+
+01:04:01.090 --> 01:04:02.770
+<v Speaker 0>produce the signature,
+
+01:04:02.930 --> 01:04:05.170
+<v Speaker 0>because we have an author project specification,
+
+01:04:05.170 --> 01:04:05.890
+<v Speaker 0>you can also
+
+01:04:06.405 --> 01:04:08.805
+<v Speaker 0>build your own signature
+
+01:04:09.285 --> 01:04:13.445
+<v Speaker 0>tools using based on lottery project signature specification.
+
+01:04:13.525 --> 01:04:15.765
+<v Speaker 0>So no matter what the tool produce the
+
+01:04:15.765 --> 01:04:16.565
+<v Speaker 0>signature,
+
+01:04:16.725 --> 01:04:18.805
+<v Speaker 0>no matter what tool you want to consume
+
+01:04:18.805 --> 01:04:21.845
+<v Speaker 0>the signature, the signature format is standardized.
+
+01:04:22.380 --> 01:04:23.740
+<v Speaker 0>So that is the
+
+01:04:24.380 --> 01:04:25.900
+<v Speaker 0>beautiful thing that
+
+01:04:25.980 --> 01:04:28.140
+<v Speaker 0>basically you can choose any tools
+
+01:04:28.380 --> 01:04:31.020
+<v Speaker 0>based on your needs in any environment.
+
+01:04:31.980 --> 01:04:34.700
+<v Speaker 0>Okay. So today, I will demo Gatekeeper
+
+01:04:34.700 --> 01:04:37.339
+<v Speaker 0>plus Radify to help you to understand
+
+01:04:38.285 --> 01:04:39.805
+<v Speaker 0>the logic for the
+
+01:04:40.125 --> 01:04:42.605
+<v Speaker 0>signature verification on Kubernetes.
+
+01:04:43.245 --> 01:04:45.085
+<v Speaker 0>So Gatekeeper is actually
+
+01:04:45.405 --> 01:04:46.845
+<v Speaker 0>a Kubernetes native
+
+01:04:47.405 --> 01:04:48.765
+<v Speaker 0>policy controller.
+
+01:04:49.085 --> 01:04:51.565
+<v Speaker 0>So how it works? It is actually
+
+01:04:52.830 --> 01:04:53.950
+<v Speaker 0>intercepting
+
+01:04:54.830 --> 01:04:56.910
+<v Speaker 0>the API requests
+
+01:04:57.710 --> 01:04:59.470
+<v Speaker 0>and evaluate
+
+01:05:00.350 --> 01:05:01.870
+<v Speaker 0>them against
+
+01:05:02.190 --> 01:05:03.230
+<v Speaker 0>some policies.
+
+01:05:04.765 --> 01:05:06.445
+<v Speaker 0>So after evaluation,
+
+01:05:06.605 --> 01:05:09.245
+<v Speaker 0>it will make a decision whether go or
+
+01:05:09.245 --> 01:05:12.605
+<v Speaker 0>not go so that it can decide whether
+
+01:05:12.605 --> 01:05:14.605
+<v Speaker 0>the resource will be created,
+
+01:05:15.005 --> 01:05:15.805
+<v Speaker 0>modified,
+
+01:05:15.805 --> 01:05:16.685
+<v Speaker 0>or deleted.
+
+01:05:16.845 --> 01:05:18.445
+<v Speaker 0>That is how Gatekeeper
+
+01:05:19.140 --> 01:05:21.300
+<v Speaker 0>works as a policy controller.
+
+01:05:21.460 --> 01:05:22.420
+<v Speaker 0>But how
+
+01:05:22.900 --> 01:05:26.020
+<v Speaker 0>or why does Gatekeeper need to ratify?
+
+01:05:26.900 --> 01:05:28.099
+<v Speaker 0>Gatekeeper
+
+01:05:28.099 --> 01:05:28.900
+<v Speaker 0>actually
+
+01:05:29.700 --> 01:05:31.700
+<v Speaker 0>has the external data
+
+01:05:31.780 --> 01:05:32.900
+<v Speaker 0>provider interface.
+
+01:05:33.815 --> 01:05:36.375
+<v Speaker 0>So in order for Gatekeeper to make a
+
+01:05:36.375 --> 01:05:37.975
+<v Speaker 0>decision, Gatekeeper
+
+01:05:37.975 --> 01:05:41.415
+<v Speaker 0>needed to have data, right, to have a
+
+01:05:41.415 --> 01:05:44.455
+<v Speaker 0>data to evaluate against the policy,
+
+01:05:44.535 --> 01:05:46.880
+<v Speaker 0>then make a decision. So RADIFY,
+
+01:05:47.040 --> 01:05:50.080
+<v Speaker 0>in this case, serves as an external data
+
+01:05:50.080 --> 01:05:50.960
+<v Speaker 0>provider
+
+01:05:51.520 --> 01:05:52.240
+<v Speaker 0>to
+
+01:05:52.560 --> 01:05:54.080
+<v Speaker 0>feed Gatekeeper
+
+01:05:54.240 --> 01:05:55.040
+<v Speaker 0>with
+
+01:05:55.360 --> 01:05:56.160
+<v Speaker 0>its
+
+01:05:56.400 --> 01:05:57.360
+<v Speaker 0>verification
+
+01:05:57.360 --> 01:05:58.240
+<v Speaker 0>results
+
+01:05:58.320 --> 01:05:59.280
+<v Speaker 0>based on
+
+01:05:59.705 --> 01:06:02.825
+<v Speaker 0>Radify's verifier. For example, in our case,
+
+01:06:03.145 --> 01:06:04.825
+<v Speaker 0>Radify has the notation
+
+01:06:05.305 --> 01:06:07.385
+<v Speaker 0>as the verifier to verify
+
+01:06:07.705 --> 01:06:10.265
+<v Speaker 0>another project's signature. And Radify
+
+01:06:10.585 --> 01:06:12.905
+<v Speaker 0>provides these results to Gatekeeper.
+
+01:06:13.370 --> 01:06:16.010
+<v Speaker 0>And the Gatekeeper, it has its policy to
+
+01:06:16.010 --> 01:06:16.890
+<v Speaker 0>evaluate
+
+01:06:17.530 --> 01:06:19.770
+<v Speaker 0>whether it is go or not based on
+
+01:06:19.770 --> 01:06:20.330
+<v Speaker 0>the
+
+01:06:20.890 --> 01:06:21.610
+<v Speaker 0>data
+
+01:06:21.930 --> 01:06:23.290
+<v Speaker 0>from Ratify.
+
+01:06:23.690 --> 01:06:26.330
+<v Speaker 0>Then the results can be decided whether to
+
+01:06:26.330 --> 01:06:29.195
+<v Speaker 0>create, modify, or delete. So that's the whole
+
+01:06:29.195 --> 01:06:30.875
+<v Speaker 0>logic behind that.
+
+01:06:31.595 --> 01:06:32.315
+<v Speaker 0>Okay?
+
+01:06:33.275 --> 01:06:35.355
+<v Speaker 0>Then we needed to install Gatekeeper.
+
+01:06:35.355 --> 01:06:36.715
+<v Speaker 0>I think I have my
+
+01:06:39.195 --> 01:06:41.595
+<v Speaker 0>yeah. I actually use Kubernetes
+
+01:06:41.595 --> 01:06:42.635
+<v Speaker 0>that
+
+01:06:44.440 --> 01:06:47.160
+<v Speaker 0>created by the Docker desktop.
+
+01:06:47.160 --> 01:06:48.600
+<v Speaker 0>So I have everything
+
+01:06:49.960 --> 01:06:50.760
+<v Speaker 0>containerized
+
+01:06:50.760 --> 01:06:52.120
+<v Speaker 0>the toolings
+
+01:06:52.920 --> 01:06:55.560
+<v Speaker 0>provided by the Docker desktop. So let me
+
+01:06:55.560 --> 01:06:56.600
+<v Speaker 0>check
+
+01:06:57.005 --> 01:06:58.285
+<v Speaker 0>my Kubit is
+
+01:06:59.645 --> 01:07:00.125
+<v Speaker 0>running.
+
+01:07:10.780 --> 01:07:11.580
+<v Speaker 0>Okay.
+
+01:07:12.060 --> 01:07:13.420
+<v Speaker 0>It is running,
+
+01:07:13.740 --> 01:07:14.700
+<v Speaker 0>and the
+
+01:07:15.660 --> 01:07:16.540
+<v Speaker 0>so
+
+01:07:17.020 --> 01:07:19.339
+<v Speaker 0>I will use HAM. HAM is the tool
+
+01:07:19.339 --> 01:07:21.500
+<v Speaker 0>to manage your packages on Kubernetes.
+
+01:07:21.924 --> 01:07:23.045
+<v Speaker 0>It's popular.
+
+01:07:23.924 --> 01:07:24.724
+<v Speaker 0>Okay.
+
+01:07:24.724 --> 01:07:26.565
+<v Speaker 0>I already added because
+
+01:07:26.565 --> 01:07:28.645
+<v Speaker 0>I did some tests.
+
+01:07:30.005 --> 01:07:31.845
+<v Speaker 0>Now I want to install
+
+01:07:32.404 --> 01:07:33.045
+<v Speaker 0>Gatekeeper.
+
+01:07:34.420 --> 01:07:34.820
+<v Speaker 0>It's
+
+01:07:36.500 --> 01:07:37.860
+<v Speaker 0>yeah. This command.
+
+01:07:38.900 --> 01:07:40.420
+<v Speaker 0>It will install
+
+01:07:40.420 --> 01:07:41.220
+<v Speaker 0>Gatekeeper
+
+01:07:41.220 --> 01:07:43.460
+<v Speaker 0>from the repository I add.
+
+01:07:43.700 --> 01:07:46.500
+<v Speaker 0>It will install it in the Gatekeeper system,
+
+01:07:46.500 --> 01:07:47.460
+<v Speaker 0>this namespace.
+
+01:07:48.765 --> 01:07:52.045
+<v Speaker 0>And you see here what I just explained.
+
+01:07:52.045 --> 01:07:53.245
+<v Speaker 0>I set the
+
+01:07:53.405 --> 01:07:54.765
+<v Speaker 0>external data.
+
+01:07:57.005 --> 01:07:57.964
+<v Speaker 0>Basically,
+
+01:07:57.964 --> 01:07:59.964
+<v Speaker 0>I enable it so that the RADify can
+
+01:07:59.964 --> 01:08:01.645
+<v Speaker 0>communicate with Gatekeeper.
+
+01:08:03.089 --> 01:08:04.210
+<v Speaker 0>Now I
+
+01:08:04.369 --> 01:08:05.570
+<v Speaker 0>have filled it.
+
+01:08:06.769 --> 01:08:09.970
+<v Speaker 0>I will copy this namespace because it's long.
+
+01:08:10.930 --> 01:08:12.690
+<v Speaker 0>I will use it later.
+
+01:08:23.235 --> 01:08:23.955
+<v Speaker 0>Okay,
+
+01:08:26.274 --> 01:08:27.955
+<v Speaker 0>let's check the pot.
+
+01:08:29.715 --> 01:08:32.035
+<v Speaker 0>I just copied the namespace.
+
+01:08:35.690 --> 01:08:37.450
+<v Speaker 0>Okay. You see DataKeeper.
+
+01:08:39.290 --> 01:08:41.770
+<v Speaker 0>It's running now. It's very quick. Right?
+
+01:08:42.090 --> 01:08:43.210
+<v Speaker 0>Now let's
+
+01:08:43.210 --> 01:08:44.569
+<v Speaker 0>install the
+
+01:08:45.450 --> 01:08:45.930
+<v Speaker 0>RADify.
+
+01:08:51.205 --> 01:08:51.925
+<v Speaker 0>Yeah.
+
+01:08:52.805 --> 01:08:55.205
+<v Speaker 0>So just now, I downloaded the root state
+
+01:08:55.205 --> 01:08:56.165
+<v Speaker 0>certificate
+
+01:08:57.205 --> 01:08:59.285
+<v Speaker 0>into my file system. Right?
+
+01:08:59.765 --> 01:09:03.100
+<v Speaker 0>Actually, RADIFY will also use this root state
+
+01:09:03.100 --> 01:09:07.020
+<v Speaker 0>certificate as a trust anchor because Radify actually
+
+01:09:07.180 --> 01:09:08.460
+<v Speaker 0>integrates with
+
+01:09:08.700 --> 01:09:11.580
+<v Speaker 0>Notre project. So it follows the Notre project
+
+01:09:11.580 --> 01:09:12.460
+<v Speaker 0>specification
+
+01:09:12.779 --> 01:09:14.460
+<v Speaker 0>to set up the trust door and the
+
+01:09:14.460 --> 01:09:15.500
+<v Speaker 0>trust policy.
+
+01:09:15.819 --> 01:09:17.154
+<v Speaker 0>So I will show you a command, and
+
+01:09:17.154 --> 01:09:19.635
+<v Speaker 0>you will find it is very similar
+
+01:09:19.635 --> 01:09:22.035
+<v Speaker 0>for what we did for trust store and
+
+01:09:22.035 --> 01:09:23.154
+<v Speaker 0>the trust policy.
+
+01:09:23.875 --> 01:09:25.954
+<v Speaker 0>Let's make sure this repo
+
+01:09:26.435 --> 01:09:28.434
+<v Speaker 0>okay. This repo already
+
+01:09:28.995 --> 01:09:29.395
+<v Speaker 0>there.
+
+01:09:36.210 --> 01:09:38.050
+<v Speaker 0>This is the command to
+
+01:09:38.690 --> 01:09:40.050
+<v Speaker 0>install RADify.
+
+01:09:41.170 --> 01:09:42.770
+<v Speaker 0>Okay. And the same name
+
+01:09:43.810 --> 01:09:45.570
+<v Speaker 0>namespace as gatekeeper.
+
+01:09:46.715 --> 01:09:48.954
+<v Speaker 0>This assert rotation is actually
+
+01:09:49.434 --> 01:09:51.034
+<v Speaker 0>means the cert
+
+01:09:51.194 --> 01:09:53.034
+<v Speaker 0>that's used for the
+
+01:09:53.274 --> 01:09:56.395
+<v Speaker 0>secure connection between Radify and the gatekeeper. It
+
+01:09:56.395 --> 01:09:58.875
+<v Speaker 0>is not the cert that's related to the
+
+01:09:58.875 --> 01:09:59.275
+<v Speaker 0>site.
+
+01:10:00.400 --> 01:10:03.280
+<v Speaker 0>Okay. You see the SAT file. This is
+
+01:10:03.280 --> 01:10:05.520
+<v Speaker 0>actually means the root certificate
+
+01:10:05.920 --> 01:10:07.679
+<v Speaker 0>that use the bind notation.
+
+01:10:08.720 --> 01:10:11.120
+<v Speaker 0>So we just copy it to our local.
+
+01:10:12.095 --> 01:10:14.015
+<v Speaker 0>So it could be also
+
+01:10:14.895 --> 01:10:16.255
+<v Speaker 0>the HAM installation,
+
+01:10:16.255 --> 01:10:19.215
+<v Speaker 0>it could be also in your DevOps assistant
+
+01:10:19.215 --> 01:10:21.614
+<v Speaker 0>that you will execute,
+
+01:10:22.175 --> 01:10:25.935
+<v Speaker 0>and then the RADify package will be installed
+
+01:10:25.935 --> 01:10:27.055
+<v Speaker 0>in Kubernetes.
+
+01:10:27.810 --> 01:10:30.290
+<v Speaker 0>So this file could be on your
+
+01:10:30.850 --> 01:10:32.690
+<v Speaker 0>DevOps file system
+
+01:10:33.570 --> 01:10:34.929
+<v Speaker 0>or some storage.
+
+01:10:35.410 --> 01:10:38.370
+<v Speaker 0>And you set you see the trust policies,
+
+01:10:38.370 --> 01:10:39.490
+<v Speaker 0>the spreadsheet scope,
+
+01:10:40.835 --> 01:10:42.994
+<v Speaker 0>the same as we did for
+
+01:10:43.235 --> 01:10:46.275
+<v Speaker 0>our sensitive pipeline verifications error. Right?
+
+01:10:46.835 --> 01:10:49.635
+<v Speaker 0>And also the trust policy, the trust store,
+
+01:10:49.635 --> 01:10:50.835
+<v Speaker 0>the SA store,
+
+01:10:51.395 --> 01:10:52.594
+<v Speaker 0>and use the
+
+01:10:53.250 --> 01:10:56.530
+<v Speaker 0>first SA store that we we just set.
+
+01:10:57.810 --> 01:10:58.449
+<v Speaker 0>And
+
+01:11:00.050 --> 01:11:02.930
+<v Speaker 0>it is the identity we trust. We trust
+
+01:11:02.930 --> 01:11:04.050
+<v Speaker 0>this identity.
+
+01:11:04.530 --> 01:11:04.850
+<v Speaker 0>Right?
+
+01:11:05.485 --> 01:11:07.885
+<v Speaker 0>You see, it is the same
+
+01:11:08.045 --> 01:11:11.245
+<v Speaker 0>trust policy structure as we just did for
+
+01:11:11.245 --> 01:11:14.125
+<v Speaker 0>the CICD scenario using notation.
+
+01:11:16.125 --> 01:11:16.845
+<v Speaker 0>Okay.
+
+01:11:17.245 --> 01:11:17.805
+<v Speaker 0>With this,
+
+01:11:18.390 --> 01:11:20.309
+<v Speaker 0>just with this one command,
+
+01:11:20.390 --> 01:11:21.909
+<v Speaker 0>we install RADIFY,
+
+01:11:21.909 --> 01:11:23.510
+<v Speaker 0>we also configure RADIFY.
+
+01:11:34.335 --> 01:11:35.135
+<v Speaker 0>Okay.
+
+01:11:36.735 --> 01:11:38.655
+<v Speaker 0>Let's check bot.
+
+01:11:41.615 --> 01:11:44.415
+<v Speaker 0>Yeah. I don't think gonna be bot. Okay.
+
+01:11:45.855 --> 01:11:46.975
+<v Speaker 0>Radify.
+
+01:11:47.855 --> 01:11:49.455
+<v Speaker 0>Let me copy this.
+
+01:11:50.800 --> 01:11:53.119
+<v Speaker 0>I'm switching to another
+
+01:11:53.840 --> 01:11:54.800
+<v Speaker 0>window.
+
+01:11:55.760 --> 01:11:57.440
+<v Speaker 0>I want to show the logs.
+
+01:12:12.645 --> 01:12:13.525
+<v Speaker 0>Okay.
+
+01:12:14.485 --> 01:12:18.165
+<v Speaker 0>The logs are important. I will we can
+
+01:12:17.400 --> 01:12:19.719
+<v Speaker 0>switch to this window later.
+
+01:12:19.800 --> 01:12:21.400
+<v Speaker 0>So let's switch back.
+
+01:12:21.640 --> 01:12:23.719
+<v Speaker 0>So now we have a gatekeeper. We have
+
+01:12:23.719 --> 01:12:26.999
+<v Speaker 0>a ratified, provide date to gatekeeper.
+
+01:12:27.239 --> 01:12:29.719
+<v Speaker 0>We now we needed to set up the
+
+01:12:30.199 --> 01:12:31.000
+<v Speaker 0>policies.
+
+01:12:32.085 --> 01:12:32.804
+<v Speaker 0>Okay.
+
+01:12:35.125 --> 01:12:36.965
+<v Speaker 0>This is the template file,
+
+01:12:37.125 --> 01:12:39.045
+<v Speaker 0>according to the gatekeeper.
+
+01:12:39.045 --> 01:12:39.684
+<v Speaker 0>And,
+
+01:12:44.405 --> 01:12:47.765
+<v Speaker 0>we need another one. I will explain it
+
+01:12:48.300 --> 01:12:49.260
+<v Speaker 0>soon.
+
+01:12:50.620 --> 01:12:53.740
+<v Speaker 0>Okay. You'll see we just applied the template
+
+01:12:53.740 --> 01:12:55.340
+<v Speaker 0>and the constraints.
+
+01:12:55.420 --> 01:12:56.940
+<v Speaker 0>Why we need to do that?
+
+01:12:58.380 --> 01:13:01.740
+<v Speaker 0>So today, I demoed the
+
+01:13:00.815 --> 01:13:03.135
+<v Speaker 0>the behind off the scene. Actually, if you
+
+01:13:03.135 --> 01:13:05.534
+<v Speaker 0>want to use the managed experience, you don't
+
+01:13:05.534 --> 01:13:06.494
+<v Speaker 0>have to do that.
+
+01:13:06.895 --> 01:13:10.175
+<v Speaker 0>So I have these two file on my
+
+01:13:10.175 --> 01:13:11.775
+<v Speaker 0>on my file system.
+
+01:13:12.175 --> 01:13:14.735
+<v Speaker 0>So let's expand the template file first.
+
+01:13:20.140 --> 01:13:20.860
+<v Speaker 0>Maybe
+
+01:13:21.340 --> 01:13:22.140
+<v Speaker 0>not,
+
+01:13:23.020 --> 01:13:25.020
+<v Speaker 0>maybe we can use this way.
+
+01:13:26.460 --> 01:13:26.780
+<v Speaker 0>Okay.
+
+01:13:27.835 --> 01:13:29.755
+<v Speaker 0>So is this template,
+
+01:13:29.755 --> 01:13:32.474
+<v Speaker 0>constraint template, required by Gatekeeper?
+
+01:13:32.795 --> 01:13:35.755
+<v Speaker 0>Please remember this name, Radifier Revocation.
+
+01:13:36.235 --> 01:13:38.155
+<v Speaker 0>And you see, this is actually
+
+01:13:39.195 --> 01:13:41.195
+<v Speaker 0>a policy written in
+
+01:13:41.355 --> 01:13:42.315
+<v Speaker 0>regular language.
+
+01:13:43.400 --> 01:13:44.520
+<v Speaker 0>So Gatekeeper
+
+01:13:44.520 --> 01:13:45.159
+<v Speaker 0>is
+
+01:13:46.040 --> 01:13:47.639
+<v Speaker 0>using the OPA,
+
+01:13:48.119 --> 01:13:49.880
+<v Speaker 0>Open Policy Agent.
+
+01:13:50.360 --> 01:13:53.560
+<v Speaker 0>Actually, the policy is code as policy. So
+
+01:13:53.560 --> 01:13:56.360
+<v Speaker 0>in our case, it is using Rego.
+
+01:13:57.000 --> 01:13:59.844
+<v Speaker 0>So in this case, you will see
+
+01:14:01.605 --> 01:14:04.085
+<v Speaker 0>for example, I skipped some other details. You
+
+01:14:04.085 --> 01:14:04.645
+<v Speaker 0>can
+
+01:14:04.885 --> 01:14:06.725
+<v Speaker 0>check later. So
+
+01:14:07.525 --> 01:14:09.925
+<v Speaker 0>I jump to the bottom. You can see
+
+01:14:10.565 --> 01:14:12.485
+<v Speaker 0>if it is not success,
+
+01:14:13.220 --> 01:14:16.420
+<v Speaker 0>it will print out this block.
+
+01:14:18.500 --> 01:14:20.980
+<v Speaker 0>Right? And it will verify
+
+01:14:20.980 --> 01:14:24.660
+<v Speaker 0>whether remote data, for example, in our case,
+
+01:14:24.660 --> 01:14:25.860
+<v Speaker 0>RADify provided
+
+01:14:25.940 --> 01:14:26.980
+<v Speaker 0>has some errors.
+
+01:14:27.695 --> 01:14:28.335
+<v Speaker 0>Okay?
+
+01:14:28.575 --> 01:14:31.135
+<v Speaker 0>So please remember these keyboards.
+
+01:14:31.935 --> 01:14:34.175
+<v Speaker 0>This is actually a policy
+
+01:14:34.255 --> 01:14:34.895
+<v Speaker 0>we,
+
+01:14:35.455 --> 01:14:38.495
+<v Speaker 0>write in a very a very simple policy
+
+01:14:38.495 --> 01:14:40.175
+<v Speaker 0>for the for the,
+
+01:14:40.735 --> 01:14:42.255
+<v Speaker 0>for our, demo.
+
+01:14:42.950 --> 01:14:44.790
+<v Speaker 0>We will see the constraint.
+
+01:14:48.470 --> 01:14:51.670
+<v Speaker 0>You see, this is also according to Gatekeeper.
+
+01:14:52.390 --> 01:14:53.670
+<v Speaker 0>You'll see this
+
+01:14:54.070 --> 01:14:56.565
+<v Speaker 0>is a constraint for the ratified case, and
+
+01:14:56.565 --> 01:14:59.365
+<v Speaker 0>you see the enforcement action. This is quite
+
+01:14:59.365 --> 01:15:00.165
+<v Speaker 0>important.
+
+01:15:00.645 --> 01:15:03.765
+<v Speaker 0>This means that if any failures,
+
+01:15:04.805 --> 01:15:06.885
+<v Speaker 0>we will deny the deployment
+
+01:15:06.885 --> 01:15:08.165
+<v Speaker 0>of the contended images.
+
+01:15:09.020 --> 01:15:12.140
+<v Speaker 0>So in our case, if second nature verification
+
+01:15:12.140 --> 01:15:13.020
+<v Speaker 0>failed,
+
+01:15:13.180 --> 01:15:15.500
+<v Speaker 0>we will deny the deployment. So that means
+
+01:15:15.500 --> 01:15:17.660
+<v Speaker 0>that image cannot be deployed.
+
+01:15:18.220 --> 01:15:20.300
+<v Speaker 0>Okay. That that is the purpose. Right?
+
+01:15:20.780 --> 01:15:22.700
+<v Speaker 0>Because untrusted images
+
+01:15:23.175 --> 01:15:26.375
+<v Speaker 0>or unsigned images, they cannot be deployed.
+
+01:15:27.415 --> 01:15:29.495
+<v Speaker 0>Okay. There are other
+
+01:15:30.535 --> 01:15:31.415
+<v Speaker 0>effects.
+
+01:15:31.415 --> 01:15:33.735
+<v Speaker 0>For example, if I remember clearly,
+
+01:15:33.815 --> 01:15:34.615
+<v Speaker 0>there are
+
+01:15:35.780 --> 01:15:36.659
+<v Speaker 0>warning.
+
+01:15:37.140 --> 01:15:38.260
+<v Speaker 0>So that means
+
+01:15:39.940 --> 01:15:42.020
+<v Speaker 0>the image can be deployed, but there will
+
+01:15:42.020 --> 01:15:44.900
+<v Speaker 0>be some warning logs generated that you needed
+
+01:15:44.900 --> 01:15:48.420
+<v Speaker 0>to take a look. So this is actually
+
+01:15:48.420 --> 01:15:49.460
+<v Speaker 0>helpful
+
+01:15:49.745 --> 01:15:52.625
+<v Speaker 0>Before you are ready for production,
+
+01:15:52.625 --> 01:15:55.344
+<v Speaker 0>you want to make sure everything works right.
+
+01:15:55.345 --> 01:15:58.465
+<v Speaker 0>You want to check whether, images are properly
+
+01:15:58.465 --> 01:16:01.105
+<v Speaker 0>signed to avoid any outage,
+
+01:16:01.665 --> 01:16:02.864
+<v Speaker 0>during production,
+
+01:16:02.865 --> 01:16:04.305
+<v Speaker 0>so that you can first
+
+01:16:04.530 --> 01:16:06.929
+<v Speaker 0>set the enforcement to warning,
+
+01:16:07.250 --> 01:16:09.489
+<v Speaker 0>so that you can audit the logs to
+
+01:16:09.489 --> 01:16:12.449
+<v Speaker 0>see whether your images are properly signed,
+
+01:16:12.770 --> 01:16:15.250
+<v Speaker 0>whether they are any images that should not
+
+01:16:15.250 --> 01:16:17.250
+<v Speaker 0>be there. So after that, if you are
+
+01:16:17.250 --> 01:16:19.889
+<v Speaker 0>confident, then you can change the enforcement to
+
+01:16:19.889 --> 01:16:20.369
+<v Speaker 0>deny,
+
+01:16:20.764 --> 01:16:23.485
+<v Speaker 0>so that later on, any other images not
+
+01:16:23.485 --> 01:16:24.524
+<v Speaker 0>assigned by
+
+01:16:25.085 --> 01:16:28.204
+<v Speaker 0>the person or by the organization you trust
+
+01:16:28.204 --> 01:16:30.764
+<v Speaker 0>or any outstanding images will be denied.
+
+01:16:32.844 --> 01:16:33.244
+<v Speaker 0>Okay.
+
+01:16:34.210 --> 01:16:36.530
+<v Speaker 0>So we have a gatekeeper. We have a
+
+01:16:36.530 --> 01:16:39.249
+<v Speaker 0>ratify. We have our policy now.
+
+01:16:39.810 --> 01:16:41.169
+<v Speaker 0>Then let's
+
+01:16:41.570 --> 01:16:42.369
+<v Speaker 0>try it.
+
+01:16:43.409 --> 01:16:44.449
+<v Speaker 0>Okay. Yeah.
+
+01:16:47.845 --> 01:16:49.925
+<v Speaker 0>Okay. I put some
+
+01:16:50.965 --> 01:16:53.205
+<v Speaker 0>text here so that we know new dogs
+
+01:16:53.205 --> 01:16:54.645
+<v Speaker 0>are coming from here.
+
+01:16:55.605 --> 01:16:56.245
+<v Speaker 0>And
+
+01:16:56.565 --> 01:16:58.885
+<v Speaker 0>so let's firstly try the
+
+01:16:59.525 --> 01:17:00.485
+<v Speaker 0>signed images.
+
+01:17:04.410 --> 01:17:05.290
+<v Speaker 0>Demo
+
+01:17:05.770 --> 01:17:06.330
+<v Speaker 0>signed.
+
+01:17:07.290 --> 01:17:09.290
+<v Speaker 0>I want to use images
+
+01:17:09.370 --> 01:17:10.090
+<v Speaker 0>from
+
+01:17:10.250 --> 01:17:11.770
+<v Speaker 0>image environment.
+
+01:17:15.050 --> 01:17:15.450
+<v Speaker 0>Okay.
+
+01:17:20.605 --> 01:17:23.565
+<v Speaker 0>Okay. I think I needed to get it.
+
+01:17:31.150 --> 01:17:35.070
+<v Speaker 0>Yeah, it could be that I tested this,
+
+01:17:35.070 --> 01:17:36.670
+<v Speaker 0>I forgot to
+
+01:17:36.910 --> 01:17:38.350
+<v Speaker 0>delete the port.
+
+01:17:42.430 --> 01:17:44.990
+<v Speaker 1>Nothing that kubectl delete pod dash dash old
+
+01:17:44.990 --> 01:17:45.630
+<v Speaker 1>can't fix.
+
+01:17:48.885 --> 01:17:50.324
+<v Speaker 1>Far too quick to reach for the dash
+
+01:17:50.324 --> 01:17:51.204
+<v Speaker 1>dash all.
+
+01:17:51.605 --> 01:17:52.324
+<v Speaker 0>Okay.
+
+01:17:57.364 --> 01:17:57.685
+<v Speaker 0>Yeah.
+
+01:17:59.360 --> 01:18:01.920
+<v Speaker 0>The delete takes time, I agree. Yeah.
+
+01:18:04.640 --> 01:18:06.640
+<v Speaker 0>Even longer than the installation.
+
+01:18:06.640 --> 01:18:08.560
+<v Speaker 0>Let's check. Oh, it's because you're using a
+
+01:18:08.560 --> 01:18:11.440
+<v Speaker 1>sleep statement, which wouldn't respect Okay. The the
+
+01:18:11.440 --> 01:18:11.920
+<v Speaker 1>signals.
+
+01:18:12.265 --> 01:18:14.185
+<v Speaker 1>So it's waiting for the sec kill to
+
+01:18:14.185 --> 01:18:16.344
+<v Speaker 1>happen after thirty seconds. That's all.
+
+01:18:16.745 --> 01:18:17.304
+<v Speaker 0>Ah,
+
+01:18:17.864 --> 01:18:20.105
+<v Speaker 0>I think you are right. Yeah. Now that's
+
+01:18:20.265 --> 01:18:22.585
+<v Speaker 0>sleep demo, so many times I know the
+
+01:18:22.825 --> 01:18:23.945
+<v Speaker 1>the gotchas. Okay.
+
+01:18:24.500 --> 01:18:27.780
+<v Speaker 0>This is created. It's signed images, so let's
+
+01:18:27.780 --> 01:18:28.820
+<v Speaker 0>check a log.
+
+01:18:29.860 --> 01:18:32.099
+<v Speaker 0>Okay. This is the new log.
+
+01:18:33.380 --> 01:18:35.060
+<v Speaker 0>Yeah. After this text.
+
+01:18:37.155 --> 01:18:37.794
+<v Speaker 0>So
+
+01:18:38.434 --> 01:18:39.235
+<v Speaker 0>isSuccess
+
+01:18:39.235 --> 01:18:40.675
+<v Speaker 0>true? Right?
+
+01:18:40.994 --> 01:18:44.034
+<v Speaker 0>This is the images, if you remember this
+
+01:18:45.554 --> 01:18:46.594
+<v Speaker 0>digest.
+
+01:18:47.395 --> 01:18:50.114
+<v Speaker 0>And it's verified by the notation
+
+01:18:50.390 --> 01:18:51.270
+<v Speaker 0>verifier.
+
+01:18:51.830 --> 01:18:54.550
+<v Speaker 0>This is the artifact tab. As I explained,
+
+01:18:54.550 --> 01:18:56.390
+<v Speaker 0>that RADify support verify
+
+01:18:56.390 --> 01:18:59.510
+<v Speaker 0>other artifact tab. So in our case today,
+
+01:18:59.590 --> 01:19:01.030
+<v Speaker 0>it is the signature.
+
+01:19:02.150 --> 01:19:03.430
+<v Speaker 0>This is the
+
+01:19:03.885 --> 01:19:04.844
+<v Speaker 0>certificate
+
+01:19:04.844 --> 01:19:05.804
+<v Speaker 0>information.
+
+01:19:06.204 --> 01:19:09.085
+<v Speaker 0>Okay? So that's the reason the product can
+
+01:19:09.085 --> 01:19:10.044
+<v Speaker 0>be deployed.
+
+01:19:10.445 --> 01:19:12.124
+<v Speaker 0>Let's try again
+
+01:19:14.684 --> 01:19:18.684
+<v Speaker 0>to deploy an unsigned images. I have one
+
+01:19:18.684 --> 01:19:19.485
+<v Speaker 0>in
+
+01:19:19.990 --> 01:19:20.950
+<v Speaker 0>the DocHub.
+
+01:19:20.950 --> 01:19:23.110
+<v Speaker 0>It is not signed.
+
+01:19:23.190 --> 01:19:23.750
+<v Speaker 0>So
+
+01:19:26.470 --> 01:19:28.230
+<v Speaker 0>let's check this.
+
+01:19:29.510 --> 01:19:32.950
+<v Speaker 0>We use for us to discover whether they
+
+01:19:32.950 --> 01:19:33.750
+<v Speaker 0>are signature.
+
+01:19:36.054 --> 01:19:36.695
+<v Speaker 0>Yeah.
+
+01:19:38.855 --> 01:19:39.655
+<v Speaker 0>Okay.
+
+01:19:39.735 --> 01:19:42.215
+<v Speaker 0>So there's no signature, just these
+
+01:19:43.014 --> 01:19:43.894
+<v Speaker 0>images.
+
+01:19:44.054 --> 01:19:45.175
+<v Speaker 0>So that's
+
+01:19:46.054 --> 01:19:46.934
+<v Speaker 0>wrong
+
+01:19:47.974 --> 01:19:48.855
+<v Speaker 0>unsigned.
+
+01:19:57.660 --> 01:19:58.300
+<v Speaker 0>Okay.
+
+01:19:59.020 --> 01:19:59.980
+<v Speaker 0>You see,
+
+01:20:00.460 --> 01:20:03.580
+<v Speaker 0>yeah, denied, because we set the deny, right?
+
+01:20:04.045 --> 01:20:06.364
+<v Speaker 0>If you remember this name, it is the
+
+01:20:06.364 --> 01:20:09.164
+<v Speaker 0>constraint name. You can also customize it with
+
+01:20:09.164 --> 01:20:09.964
+<v Speaker 0>your name.
+
+01:20:10.284 --> 01:20:12.364
+<v Speaker 0>And this is actually the message.
+
+01:20:12.925 --> 01:20:15.724
+<v Speaker 0>Follow the format that's defined in the policy.
+
+01:20:15.724 --> 01:20:19.790
+<v Speaker 0>Right? So that means the admission controller gatekeeper
+
+01:20:20.030 --> 01:20:23.150
+<v Speaker 0>check the data received from RADIFY.
+
+01:20:24.190 --> 01:20:26.110
+<v Speaker 0>The verification is failed,
+
+01:20:26.590 --> 01:20:29.150
+<v Speaker 0>and then it produces this message, and it
+
+01:20:29.150 --> 01:20:32.030
+<v Speaker 0>then denied the request according to the policy.
+
+01:20:33.095 --> 01:20:36.055
+<v Speaker 0>Then let's switch to RADIFY to see whether
+
+01:20:36.055 --> 01:20:37.255
+<v Speaker 0>it is really
+
+01:20:38.295 --> 01:20:39.015
+<v Speaker 0>yeah.
+
+01:20:39.575 --> 01:20:41.735
+<v Speaker 0>This one is for the NET monitor.
+
+01:20:42.935 --> 01:20:45.575
+<v Speaker 0>This one is I think it's for us.
+
+01:20:45.575 --> 01:20:46.135
+<v Speaker 0>Yes.
+
+01:20:46.455 --> 01:20:47.495
+<v Speaker 0>For the on-site.
+
+01:20:48.330 --> 01:20:51.210
+<v Speaker 0>This is a force. This is on-site.
+
+01:20:51.290 --> 01:20:53.210
+<v Speaker 0>This is the char
+
+01:20:53.610 --> 01:20:54.410
+<v Speaker 0>field.
+
+01:20:54.650 --> 01:20:57.290
+<v Speaker 0>And the RADIFY produce these messages
+
+01:20:57.930 --> 01:21:00.890
+<v Speaker 0>to and send it to gatekeeper.
+
+01:21:00.890 --> 01:21:01.850
+<v Speaker 0>And the gatekeeper,
+
+01:21:02.235 --> 01:21:05.435
+<v Speaker 0>according to the template and entity constraint, makes
+
+01:21:05.435 --> 01:21:06.394
+<v Speaker 0>the decision.
+
+01:21:07.355 --> 01:21:09.275
+<v Speaker 0>Okay. Perfect. Yeah.
+
+01:21:09.355 --> 01:21:11.114
+<v Speaker 0>So just now we demoed
+
+01:21:11.594 --> 01:21:12.795
+<v Speaker 0>how to prevent
+
+01:21:13.195 --> 01:21:16.395
+<v Speaker 0>untrusted images to be deployed on your Kubernetes
+
+01:21:16.395 --> 01:21:19.840
+<v Speaker 0>cluster. And I explained the behind the scene
+
+01:21:19.840 --> 01:21:21.039
+<v Speaker 0>the logic for
+
+01:21:21.679 --> 01:21:23.280
+<v Speaker 0>for it. And also,
+
+01:21:23.840 --> 01:21:25.599
+<v Speaker 0>user has the flexibility
+
+01:21:26.000 --> 01:21:29.440
+<v Speaker 0>to customize their policy using regular languages, and
+
+01:21:29.440 --> 01:21:32.079
+<v Speaker 0>in the future, we will support the CL
+
+01:21:32.079 --> 01:21:32.800
+<v Speaker 0>cell
+
+01:21:33.035 --> 01:21:34.155
+<v Speaker 0>languages,
+
+01:21:34.635 --> 01:21:37.915
+<v Speaker 0>and the user can customize the error messages
+
+01:21:37.915 --> 01:21:40.635
+<v Speaker 0>and also customize the effect,
+
+01:21:40.795 --> 01:21:43.435
+<v Speaker 0>whether they want to deny or just
+
+01:21:44.235 --> 01:21:45.515
+<v Speaker 0>read some warning logs.
+
+01:21:47.219 --> 01:21:49.059
+<v Speaker 0>Okay. So in production
+
+01:21:49.219 --> 01:21:51.859
+<v Speaker 0>yeah, in production, for example, on
+
+01:21:52.420 --> 01:21:54.179
+<v Speaker 0>your premise Kubernetes,
+
+01:21:54.179 --> 01:21:57.219
+<v Speaker 0>you can install Gatekeeper, Ratify by yourself if
+
+01:21:57.219 --> 01:21:59.219
+<v Speaker 0>you want to do this customization.
+
+01:22:00.034 --> 01:22:02.355
+<v Speaker 0>Or you can use Wonder Solutions
+
+01:22:02.355 --> 01:22:04.514
+<v Speaker 0>error policy plus ratify,
+
+01:22:04.835 --> 01:22:07.795
+<v Speaker 0>WorkKeep or no, something like that. Yeah. It's
+
+01:22:07.795 --> 01:22:08.834
+<v Speaker 0>purely
+
+01:22:09.235 --> 01:22:11.235
+<v Speaker 0>dependent on your own environment.
+
+01:22:12.380 --> 01:22:14.460
+<v Speaker 0>But the idea is the same. The logic
+
+01:22:14.460 --> 01:22:15.820
+<v Speaker 0>is the same. Yeah.
+
+01:22:17.900 --> 01:22:21.260
+<v Speaker 0>Okay. I think that's the last one.
+
+01:22:21.420 --> 01:22:22.059
+<v Speaker 0>Yeah.
+
+01:22:23.900 --> 01:22:25.099
+<v Speaker 0>It's a long process.
+
+01:22:27.155 --> 01:22:29.235
+<v Speaker 1>Wow. So I
+
+01:22:29.475 --> 01:22:30.995
+<v Speaker 1>can't believe you just did a demo for
+
+01:22:30.995 --> 01:22:33.235
+<v Speaker 1>over an hour and I don't think anything
+
+01:22:33.235 --> 01:22:35.715
+<v Speaker 1>actually went wrong. Like that was fantastic.
+
+01:22:35.715 --> 01:22:36.435
+<v Speaker 1>Well done.
+
+01:22:37.475 --> 01:22:38.355
+<v Speaker 0>Thank you.
+
+01:22:38.915 --> 01:22:41.080
+<v Speaker 1>Recap that just to make sure we covered
+
+01:22:41.080 --> 01:22:43.160
+<v Speaker 1>everything. Then I've got a couple of questions
+
+01:22:43.160 --> 01:22:43.880
+<v Speaker 1>as well.
+
+01:22:44.360 --> 01:22:46.520
+<v Speaker 1>What we started off with was
+
+01:22:46.840 --> 01:22:49.560
+<v Speaker 1>building a container image. You use Buildx and
+
+01:22:49.560 --> 01:22:51.560
+<v Speaker 1>then the OCI layout. We could take a
+
+01:22:51.560 --> 01:22:53.800
+<v Speaker 1>look into that manifest and understand exactly what's
+
+01:22:53.800 --> 01:22:54.360
+<v Speaker 1>going on there.
+
+01:22:55.275 --> 01:22:58.235
+<v Speaker 1>We learned how to use ORS, particularly useful
+
+01:22:58.235 --> 01:23:00.875
+<v Speaker 1>there I think was the ORS discover command,
+
+01:23:00.875 --> 01:23:03.195
+<v Speaker 1>which is fantastic for seeing what information we
+
+01:23:03.195 --> 01:23:06.635
+<v Speaker 1>have on OCI artifacts within an OCI registry.
+
+01:23:07.570 --> 01:23:09.890
+<v Speaker 1>Then took a look at the notation command.
+
+01:23:10.050 --> 01:23:11.810
+<v Speaker 1>So there was a lot going on with
+
+01:23:11.810 --> 01:23:14.530
+<v Speaker 1>the notary stuff there. Right? There's a generate
+
+01:23:14.530 --> 01:23:16.770
+<v Speaker 1>test command to generate test keys. But really
+
+01:23:16.770 --> 01:23:18.530
+<v Speaker 1>in production, what we want people to do
+
+01:23:18.530 --> 01:23:20.770
+<v Speaker 1>there is use HashiCorp Vault or any of
+
+01:23:20.770 --> 01:23:24.105
+<v Speaker 1>the KMS providers from Azure, AWS, and dual
+
+01:23:24.105 --> 01:23:24.984
+<v Speaker 1>cloud, etcetera.
+
+01:23:25.784 --> 01:23:28.344
+<v Speaker 1>Those allow you to sign artifacts and then
+
+01:23:28.344 --> 01:23:31.545
+<v Speaker 1>push those signatures with push the new image
+
+01:23:31.545 --> 01:23:33.545
+<v Speaker 1>with the signatures and the manifest to the
+
+01:23:33.545 --> 01:23:34.264
+<v Speaker 1>registry.
+
+01:23:34.425 --> 01:23:36.264
+<v Speaker 1>And even if that would have been a
+
+01:23:36.264 --> 01:23:38.700
+<v Speaker 1>fantastic demo, but then we moved further into
+
+01:23:38.700 --> 01:23:40.700
+<v Speaker 1>the realm of Kubernetes, taking a look at
+
+01:23:40.700 --> 01:23:43.820
+<v Speaker 1>how we can use a combination
+
+01:23:43.820 --> 01:23:45.980
+<v Speaker 1>of gatekeeper archive,
+
+01:23:46.220 --> 01:23:46.940
+<v Speaker 1>you said,
+
+01:23:47.420 --> 01:23:49.340
+<v Speaker 1>web ratify inside of the cluster.
+
+01:23:49.875 --> 01:23:52.195
+<v Speaker 1>So what I got there is that ratify
+
+01:23:52.195 --> 01:23:54.675
+<v Speaker 1>is connecting to these policy engines within the
+
+01:23:54.675 --> 01:23:57.635
+<v Speaker 1>cluster. The two main ones are OPA and
+
+01:23:57.635 --> 01:23:59.315
+<v Speaker 1>gatekeeper and cavernal
+
+01:23:59.315 --> 01:24:01.235
+<v Speaker 1>where it allows you to then provide
+
+01:24:02.035 --> 01:24:04.035
+<v Speaker 1>validation hooks that just
+
+01:24:05.550 --> 01:24:07.310
+<v Speaker 1>verify that whatever you want in the cluster
+
+01:24:07.310 --> 01:24:09.310
+<v Speaker 1>is saying, there's a few questions there that
+
+01:24:09.310 --> 01:24:10.349
+<v Speaker 1>we can go into, but
+
+01:24:11.389 --> 01:24:13.150
+<v Speaker 1>I don't think any stone was left unturned
+
+01:24:13.150 --> 01:24:15.550
+<v Speaker 1>there. Pretty much showed us an entire pipeline
+
+01:24:15.550 --> 01:24:17.150
+<v Speaker 1>from start to finish, which is fantastic.
+
+01:24:17.805 --> 01:24:19.885
+<v Speaker 1>I think the question I had
+
+01:24:20.205 --> 01:24:22.525
+<v Speaker 1>that was front and center for me was,
+
+01:24:23.805 --> 01:24:27.644
+<v Speaker 1>is the integration with Kiverrno and Gatekeeper
+
+01:24:27.645 --> 01:24:30.045
+<v Speaker 1>there because people already have these things in
+
+01:24:30.045 --> 01:24:31.085
+<v Speaker 1>the cluster hopefully,
+
+01:24:31.430 --> 01:24:34.710
+<v Speaker 1>Like why isn't ratify its own validation admission
+
+01:24:34.710 --> 01:24:37.190
+<v Speaker 1>controller? Could it be run-in that fashion or
+
+01:24:37.190 --> 01:24:40.150
+<v Speaker 1>is it dependent on Kivernal and Gatekeeper to
+
+01:24:40.150 --> 01:24:40.870
+<v Speaker 1>some degree?
+
+01:24:41.670 --> 01:24:42.469
+<v Speaker 0>Yeah,
+
+01:24:42.470 --> 01:24:44.870
+<v Speaker 0>for X-ray for Kiboto, it does not need
+
+01:24:44.870 --> 01:24:47.415
+<v Speaker 0>to ratify. Kiboto is self is at the
+
+01:24:47.415 --> 01:24:49.335
+<v Speaker 0>vision control and itself already
+
+01:24:49.655 --> 01:24:50.855
+<v Speaker 0>integrated with
+
+01:24:52.135 --> 01:24:55.015
+<v Speaker 0>supporting the Notre projects in nature. Right. So
+
+01:24:55.015 --> 01:24:57.415
+<v Speaker 0>for Kibono case, you do not need to
+
+01:24:57.415 --> 01:24:58.535
+<v Speaker 0>install ratify.
+
+01:24:58.940 --> 01:25:02.780
+<v Speaker 0>You can, write Kibana YAML file similar as
+
+01:25:02.780 --> 01:25:05.420
+<v Speaker 0>the trust policy I I show. That is
+
+01:25:05.420 --> 01:25:08.059
+<v Speaker 0>the JSON format, but in Kibana,
+
+01:25:08.219 --> 01:25:09.900
+<v Speaker 0>it is a YAML file that cook this
+
+01:25:09.900 --> 01:25:11.500
+<v Speaker 0>native configuration
+
+01:25:11.500 --> 01:25:14.934
+<v Speaker 0>style. So you just configure that to validate
+
+01:25:14.934 --> 01:25:16.614
+<v Speaker 0>another project signature,
+
+01:25:16.934 --> 01:25:18.934
+<v Speaker 0>and then you put your root state certificate
+
+01:25:18.934 --> 01:25:21.094
+<v Speaker 0>there, and then you set up some trust
+
+01:25:21.094 --> 01:25:23.655
+<v Speaker 0>policy. So similar as a RADIFY, but for
+
+01:25:23.655 --> 01:25:26.295
+<v Speaker 0>Kibana case, you don't need to
+
+01:25:26.920 --> 01:25:29.000
+<v Speaker 0>use Ratify as data
+
+01:25:29.240 --> 01:25:30.040
+<v Speaker 0>provider.
+
+01:25:30.680 --> 01:25:32.040
+<v Speaker 0>But for Gatekeeper,
+
+01:25:32.280 --> 01:25:34.760
+<v Speaker 0>you needed to use that because Gatekeeper
+
+01:25:34.760 --> 01:25:37.239
+<v Speaker 0>is more flexible framework.
+
+01:25:38.200 --> 01:25:38.920
+<v Speaker 0>Can
+
+01:25:39.080 --> 01:25:41.240
+<v Speaker 0>I mean, user, you can plug in any
+
+01:25:41.240 --> 01:25:44.565
+<v Speaker 0>data, external data? So in our case, it
+
+01:25:44.565 --> 01:25:45.684
+<v Speaker 0>is RADIFY.
+
+01:25:46.085 --> 01:25:49.445
+<v Speaker 0>But I want to say that for RADIFY,
+
+01:25:49.684 --> 01:25:51.204
+<v Speaker 0>so currently,
+
+01:25:51.204 --> 01:25:53.764
+<v Speaker 0>the main scenario is working with Gatekeeper
+
+01:25:54.100 --> 01:25:54.739
+<v Speaker 0>at
+
+01:25:55.060 --> 01:25:56.980
+<v Speaker 0>the admission control level.
+
+01:25:57.219 --> 01:25:59.620
+<v Speaker 0>But the ratify in the community,
+
+01:25:59.620 --> 01:26:01.300
+<v Speaker 0>we also have the vision
+
+01:26:01.940 --> 01:26:03.380
+<v Speaker 0>to verify
+
+01:26:04.180 --> 01:26:05.540
+<v Speaker 0>support with policy
+
+01:26:06.715 --> 01:26:08.395
+<v Speaker 0>in the CICD pipeline.
+
+01:26:08.635 --> 01:26:09.915
+<v Speaker 0>So for notation,
+
+01:26:10.315 --> 01:26:13.035
+<v Speaker 0>you can only validate the signature because that
+
+01:26:13.035 --> 01:26:15.835
+<v Speaker 0>is the notation job. But the ratify, as
+
+01:26:15.835 --> 01:26:18.635
+<v Speaker 0>I mentioned, it can validate other artifacts
+
+01:26:18.635 --> 01:26:21.835
+<v Speaker 0>and also ratify support of this rego policy.
+
+01:26:22.320 --> 01:26:23.440
+<v Speaker 0>To ratify,
+
+01:26:23.440 --> 01:26:24.959
+<v Speaker 0>we also plan to
+
+01:26:25.360 --> 01:26:29.119
+<v Speaker 0>have ratify integrated with any CICD system or
+
+01:26:29.119 --> 01:26:30.880
+<v Speaker 0>even in a simple script.
+
+01:26:31.040 --> 01:26:32.639
+<v Speaker 0>Just use ratify
+
+01:26:32.719 --> 01:26:35.599
+<v Speaker 0>with the rego policy or sale policy
+
+01:26:35.679 --> 01:26:37.119
+<v Speaker 0>to validate the signature,
+
+01:26:38.135 --> 01:26:39.015
+<v Speaker 0>spawn,
+
+01:26:39.095 --> 01:26:39.895
+<v Speaker 0>vulnerability,
+
+01:26:40.135 --> 01:26:41.575
+<v Speaker 0>any artifacts.
+
+01:26:41.975 --> 01:26:45.015
+<v Speaker 0>And Artify is also capable
+
+01:26:45.175 --> 01:26:47.655
+<v Speaker 0>to integrate with ContenderD.
+
+01:26:47.975 --> 01:26:50.135
+<v Speaker 0>So if you check the RADIFY community, we
+
+01:26:50.135 --> 01:26:52.389
+<v Speaker 0>have a demo, we may have a POC
+
+01:26:52.389 --> 01:26:53.670
+<v Speaker 0>with ratify
+
+01:26:53.670 --> 01:26:57.109
+<v Speaker 0>integrated with candida D so that we
+
+01:26:57.349 --> 01:27:00.630
+<v Speaker 0>can actually validate the image on the node
+
+01:27:00.630 --> 01:27:02.789
+<v Speaker 0>level so just now what I show is
+
+01:27:02.789 --> 01:27:04.710
+<v Speaker 0>from the cluster level
+
+01:27:04.915 --> 01:27:06.835
+<v Speaker 0>for the elevation control,
+
+01:27:06.835 --> 01:27:07.954
+<v Speaker 0>right? But
+
+01:27:08.915 --> 01:27:11.795
+<v Speaker 0>to integrate with the Candidate, it can validate
+
+01:27:11.795 --> 01:27:15.395
+<v Speaker 0>the image from the node level. So RADIFY
+
+01:27:15.395 --> 01:27:16.755
+<v Speaker 0>is capable to do
+
+01:27:17.650 --> 01:27:20.610
+<v Speaker 0>many things. It is just at the current
+
+01:27:20.610 --> 01:27:21.330
+<v Speaker 0>phase.
+
+01:27:21.490 --> 01:27:24.449
+<v Speaker 0>It is just donated to the since they've
+
+01:27:24.450 --> 01:27:26.849
+<v Speaker 0>at the sandbox project last year,
+
+01:27:27.010 --> 01:27:27.730
+<v Speaker 0>we are
+
+01:27:28.050 --> 01:27:30.130
+<v Speaker 0>mainly focusing on gatekeeper,
+
+01:27:30.370 --> 01:27:30.610
+<v Speaker 0>this
+
+01:27:31.565 --> 01:27:33.965
+<v Speaker 0>story, but later on, we will move on
+
+01:27:33.965 --> 01:27:36.445
+<v Speaker 0>to implement other scenarios.
+
+01:27:36.445 --> 01:27:39.485
+<v Speaker 0>That could be some new opportunities I can
+
+01:27:39.485 --> 01:27:40.364
+<v Speaker 0>join this
+
+01:27:40.605 --> 01:27:42.604
+<v Speaker 0>podcast to to showcase
+
+01:27:43.085 --> 01:27:45.710
+<v Speaker 0>something in the future. Yeah. I mean, two
+
+01:27:45.710 --> 01:27:48.590
+<v Speaker 1>fantastic things there. First, the common expression language,
+
+01:27:48.590 --> 01:27:49.790
+<v Speaker 1>the cell support.
+
+01:27:50.270 --> 01:27:51.950
+<v Speaker 1>I've spoken to many people and I have
+
+01:27:51.950 --> 01:27:53.630
+<v Speaker 1>tried myself to write Reagle.
+
+01:27:53.870 --> 01:27:55.710
+<v Speaker 1>I find it very difficult. So being able
+
+01:27:55.710 --> 01:27:58.670
+<v Speaker 1>to support cell, I think is a great
+
+01:27:59.815 --> 01:28:02.375
+<v Speaker 1>and present developer experience for people, I believe.
+
+01:28:02.375 --> 01:28:04.695
+<v Speaker 1>And also the container D integration is fantastic
+
+01:28:04.695 --> 01:28:05.414
+<v Speaker 1>because
+
+01:28:05.735 --> 01:28:07.894
+<v Speaker 1>we've ratify web gatekeeper.
+
+01:28:08.054 --> 01:28:09.895
+<v Speaker 1>It can get past the validation checks and
+
+01:28:09.895 --> 01:28:12.454
+<v Speaker 1>then the API server, but what container D
+
+01:28:12.454 --> 01:28:14.375
+<v Speaker 1>actually pulls to the cluster is a completely
+
+01:28:14.375 --> 01:28:17.730
+<v Speaker 1>different attack surface. So that integration is also
+
+01:28:17.730 --> 01:28:20.770
+<v Speaker 1>phenomenal there. That's fantastic stuff. The only other
+
+01:28:20.770 --> 01:28:22.370
+<v Speaker 1>question that I had front and center, but
+
+01:28:22.370 --> 01:28:23.970
+<v Speaker 1>the other question I had at the back
+
+01:28:23.970 --> 01:28:25.970
+<v Speaker 1>of my mind was when we done the
+
+01:28:25.970 --> 01:28:28.130
+<v Speaker 1>notation commands, you did turn on
+
+01:28:29.125 --> 01:28:30.565
+<v Speaker 1>notary experimental
+
+01:28:30.565 --> 01:28:31.364
+<v Speaker 1>features.
+
+01:28:31.605 --> 01:28:33.285
+<v Speaker 1>What is the plan there then to get
+
+01:28:33.285 --> 01:28:36.085
+<v Speaker 1>that away from experimental and generally available for
+
+01:28:36.085 --> 01:28:38.485
+<v Speaker 1>everyone to start considering today? Yeah.
+
+01:28:38.725 --> 01:28:42.565
+<v Speaker 0>So we actually have this OCR layout support
+
+01:28:43.410 --> 01:28:44.530
+<v Speaker 0>years ago.
+
+01:28:44.610 --> 01:28:46.370
+<v Speaker 0>So why it is experimental
+
+01:28:46.370 --> 01:28:49.650
+<v Speaker 0>is because at that time, OCR image layout
+
+01:28:49.650 --> 01:28:50.930
+<v Speaker 0>is not well
+
+01:28:51.170 --> 01:28:52.610
+<v Speaker 0>is not widely
+
+01:28:52.690 --> 01:28:55.730
+<v Speaker 0>adopted in the in the build system. So
+
+01:28:55.730 --> 01:28:56.130
+<v Speaker 0>normally,
+
+01:28:57.445 --> 01:28:59.925
+<v Speaker 0>people will just be able to push to
+
+01:28:59.925 --> 01:29:00.885
+<v Speaker 0>the registry.
+
+01:29:01.285 --> 01:29:01.844
+<v Speaker 0>So
+
+01:29:02.324 --> 01:29:04.885
+<v Speaker 0>for the OCI image layout, it is not
+
+01:29:04.885 --> 01:29:06.165
+<v Speaker 0>wildly
+
+01:29:06.165 --> 01:29:07.684
+<v Speaker 0>adopted yet,
+
+01:29:07.685 --> 01:29:08.324
+<v Speaker 0>and also
+
+01:29:09.690 --> 01:29:11.850
+<v Speaker 0>people needed to do some changes on their
+
+01:29:11.850 --> 01:29:15.610
+<v Speaker 0>builder system to produce the OCA image layout.
+
+01:29:15.850 --> 01:29:18.810
+<v Speaker 0>And also from publishing image point of view,
+
+01:29:18.810 --> 01:29:21.690
+<v Speaker 0>they also needed to maybe modify their current
+
+01:29:21.690 --> 01:29:22.890
+<v Speaker 0>publishing process
+
+01:29:23.155 --> 01:29:26.195
+<v Speaker 0>to transfer these files to some
+
+01:29:26.595 --> 01:29:28.435
+<v Speaker 0>environment or storages.
+
+01:29:28.435 --> 01:29:30.915
+<v Speaker 0>So that is the main purpose. Main reason,
+
+01:29:30.915 --> 01:29:32.515
+<v Speaker 0>it is in the
+
+01:29:33.235 --> 01:29:34.835
+<v Speaker 0>experimental feature
+
+01:29:34.835 --> 01:29:35.795
+<v Speaker 0>status.
+
+01:29:35.955 --> 01:29:36.195
+<v Speaker 0>But
+
+01:29:36.770 --> 01:29:39.810
+<v Speaker 0>with recently, you noticed that even
+
+01:29:39.810 --> 01:29:43.090
+<v Speaker 0>Docker desktop support the content ID, right,
+
+01:29:43.330 --> 01:29:44.929
+<v Speaker 0>the runtime.
+
+01:29:45.170 --> 01:29:48.530
+<v Speaker 0>So that is open another door for the
+
+01:29:48.530 --> 01:29:51.775
+<v Speaker 0>OCI image nodes. And we see there will
+
+01:29:51.775 --> 01:29:53.454
+<v Speaker 0>be many folks, many
+
+01:29:55.295 --> 01:29:56.814
+<v Speaker 0>scenarios or
+
+01:29:59.054 --> 01:30:01.054
+<v Speaker 0>real world examples
+
+01:30:01.054 --> 01:30:03.215
+<v Speaker 0>will come. Because with Candidate,
+
+01:30:03.870 --> 01:30:06.830
+<v Speaker 0>so before that, if you use Docker to
+
+01:30:06.830 --> 01:30:09.630
+<v Speaker 0>build, and you can use Docker save, right,
+
+01:30:09.630 --> 01:30:13.070
+<v Speaker 0>save something or even save a Docker table.
+
+01:30:13.150 --> 01:30:16.430
+<v Speaker 0>But that Docker table is Docker format.
+
+01:30:16.590 --> 01:30:17.630
+<v Speaker 0>It is not standardized.
+
+01:30:19.505 --> 01:30:21.744
+<v Speaker 0>But with Candida D engine,
+
+01:30:21.744 --> 01:30:24.784
+<v Speaker 0>you use Docker, say, you actually can save
+
+01:30:24.784 --> 01:30:26.304
+<v Speaker 0>OCR image out.
+
+01:30:26.625 --> 01:30:28.945
+<v Speaker 0>So people, they don't know the the the
+
+01:30:28.945 --> 01:30:30.145
+<v Speaker 0>Tableau format,
+
+01:30:30.145 --> 01:30:32.625
+<v Speaker 0>so normally they just use it. But
+
+01:30:33.199 --> 01:30:35.360
+<v Speaker 0>the Docker table format, actually,
+
+01:30:35.600 --> 01:30:36.800
+<v Speaker 0>when you load it,
+
+01:30:37.120 --> 01:30:39.920
+<v Speaker 0>the digest, you needed to check the digest
+
+01:30:39.920 --> 01:30:40.639
+<v Speaker 0>dataset.
+
+01:30:41.360 --> 01:30:44.159
+<v Speaker 0>But with OCI image layout, as I just
+
+01:30:44.159 --> 01:30:44.719
+<v Speaker 0>showcased,
+
+01:30:45.345 --> 01:30:48.945
+<v Speaker 0>with the Identity support, Docker save OCI image
+
+01:30:48.945 --> 01:30:52.145
+<v Speaker 0>layout format. It is the standard according to
+
+01:30:52.145 --> 01:30:53.184
+<v Speaker 0>the OCI
+
+01:30:53.185 --> 01:30:55.265
+<v Speaker 0>standard. It can be distributed
+
+01:30:55.265 --> 01:30:56.304
+<v Speaker 0>anywhere
+
+01:30:56.385 --> 01:30:57.105
+<v Speaker 0>with
+
+01:30:57.280 --> 01:31:00.640
+<v Speaker 0>the unified identity digest not changed.
+
+01:31:01.040 --> 01:31:02.640
+<v Speaker 0>That is the
+
+01:31:03.440 --> 01:31:05.040
+<v Speaker 0>I see that is the
+
+01:31:06.640 --> 01:31:09.760
+<v Speaker 0>movement that in the future, the OSA image
+
+01:31:09.760 --> 01:31:11.120
+<v Speaker 0>layout could be
+
+01:31:11.600 --> 01:31:12.720
+<v Speaker 0>popular used.
+
+01:31:13.135 --> 01:31:15.295
+<v Speaker 0>So when that comes, we will
+
+01:31:16.735 --> 01:31:19.775
+<v Speaker 0>make this feature stable for you. That that
+
+01:31:19.775 --> 01:31:20.815
+<v Speaker 0>is the
+
+01:31:21.135 --> 01:31:22.574
+<v Speaker 0>background about this.
+
+01:31:23.855 --> 01:31:24.415
+<v Speaker 1>Awesome.
+
+01:31:24.815 --> 01:31:25.055
+<v Speaker 1>Well,
+
+01:31:25.650 --> 01:31:27.490
+<v Speaker 1>that was fantastic. Thank you so much for
+
+01:31:27.490 --> 01:31:29.170
+<v Speaker 1>taking time out of your day to sit
+
+01:31:29.170 --> 01:31:31.970
+<v Speaker 1>here show us how to make our container
+
+01:31:31.970 --> 01:31:34.770
+<v Speaker 1>images secure from local dev all the way
+
+01:31:34.770 --> 01:31:35.890
+<v Speaker 1>into production.
+
+01:31:36.450 --> 01:31:38.210
+<v Speaker 1>So you will be in London. So if
+
+01:31:38.210 --> 01:31:40.450
+<v Speaker 1>anyone is watching us before KubeCon London, make
+
+01:31:40.450 --> 01:31:42.525
+<v Speaker 1>sure to go and see these talks. And
+
+01:31:42.525 --> 01:31:45.005
+<v Speaker 1>I'm assuming you'll maybe be on the
+
+01:31:45.645 --> 01:31:50.365
+<v Speaker 1>maintainer booths for Notary and for Ratify. Right?
+
+01:31:50.845 --> 01:31:51.885
+<v Speaker 0>Yeah. But in
+
+01:31:53.085 --> 01:31:55.405
+<v Speaker 0>yeah. I will be on the project booths,
+
+01:31:55.530 --> 01:31:58.889
+<v Speaker 0>not a project, definitely. And for ORs, I'm
+
+01:31:58.889 --> 01:32:01.449
+<v Speaker 0>a contributor. I can also answer questions.
+
+01:32:01.849 --> 01:32:04.250
+<v Speaker 0>I will also host the Docker project, the
+
+01:32:04.250 --> 01:32:06.889
+<v Speaker 0>maintenance track, the a separate session.
+
+01:32:07.289 --> 01:32:09.690
+<v Speaker 0>I will also have a lightning talk, introduce
+
+01:32:09.690 --> 01:32:10.570
+<v Speaker 0>some new features.
+
+01:32:11.465 --> 01:32:13.304
+<v Speaker 1>Keeping yourself busy. Yeah.
+
+01:32:14.425 --> 01:32:15.065
+<v Speaker 0>Yeah.
+
+01:32:15.465 --> 01:32:16.025
+<v Speaker 0>So
+
+01:32:16.345 --> 01:32:19.465
+<v Speaker 0>yeah. Welcome. So that's hopefully, we can meet
+
+01:32:19.465 --> 01:32:20.505
+<v Speaker 0>in
+
+01:32:20.505 --> 01:32:22.505
+<v Speaker 0>person at the moment. Yeah.
+
+01:32:22.905 --> 01:32:23.065
+<v Speaker 0>Alright.
+
+01:32:24.020 --> 01:32:25.700
+<v Speaker 1>Well, thank you so much for all your
+
+01:32:25.700 --> 01:32:29.140
+<v Speaker 1>contributions. You know, security and container stuff is
+
+01:32:29.140 --> 01:32:31.780
+<v Speaker 1>not always glamorous, but it is so paramount,
+
+01:32:31.780 --> 01:32:33.860
+<v Speaker 1>the future of what we're doing with Kubernetes
+
+01:32:33.860 --> 01:32:35.540
+<v Speaker 1>and cloud native. So to you and all
+
+01:32:35.540 --> 01:32:37.219
+<v Speaker 1>the other maintainers of all these projects, thank
+
+01:32:37.219 --> 01:32:38.260
+<v Speaker 1>you so much for your time and effort.
+
+01:32:38.865 --> 01:32:40.945
+<v Speaker 0>Thank you. Thank you, David. You you did
+
+01:32:40.945 --> 01:32:44.305
+<v Speaker 0>a very good summary just now. Basically, captured
+
+01:32:44.465 --> 01:32:45.265
+<v Speaker 0>everything.
+
+01:32:45.345 --> 01:32:46.305
+<v Speaker 0>I know this is
+
+01:32:47.105 --> 01:32:48.625
+<v Speaker 0>I I said that before,
+
+01:32:49.265 --> 01:32:51.585
+<v Speaker 0>it will be around twenty minutes. Right? But
+
+01:32:51.585 --> 01:32:52.305
+<v Speaker 0>during
+
+01:32:53.000 --> 01:32:56.120
+<v Speaker 0>the hands on process, I explained it actually
+
+01:32:56.120 --> 01:32:56.840
+<v Speaker 0>takes
+
+01:32:57.320 --> 01:32:59.160
+<v Speaker 0>one hour or fourteen minutes.
+
+01:33:00.120 --> 01:33:02.200
+<v Speaker 0>But you captured everything
+
+01:33:02.200 --> 01:33:04.600
+<v Speaker 0>for the for the key key parts. That
+
+01:33:04.600 --> 01:33:07.745
+<v Speaker 0>is very good. And also, I noticed at
+
+01:33:07.745 --> 01:33:09.905
+<v Speaker 0>the beginning, you played that music.
+
+01:33:10.465 --> 01:33:13.105
+<v Speaker 0>It's a very it's actually a customized music.
+
+01:33:13.345 --> 01:33:15.344
+<v Speaker 1>Yeah. Yeah. They are integrity
+
+01:33:15.345 --> 01:33:16.864
+<v Speaker 0>sign published.
+
+01:33:17.265 --> 01:33:19.505
+<v Speaker 0>Think that is really good. Maybe you can
+
+01:33:19.505 --> 01:33:20.545
+<v Speaker 0>share that
+
+01:33:21.060 --> 01:33:23.620
+<v Speaker 0>to me. Will share with the community. That
+
+01:33:23.620 --> 01:33:24.739
+<v Speaker 0>is fantastic.
+
+01:33:24.740 --> 01:33:26.740
+<v Speaker 0>Yeah. Yes, I will share that with you.
+
+01:33:26.740 --> 01:33:28.740
+<v Speaker 1>Feel free to drop that into your Slack
+
+01:33:28.740 --> 01:33:30.900
+<v Speaker 1>channels or whatever you want with people. But
+
+01:33:30.900 --> 01:33:31.780
+<v Speaker 1>again,
+
+01:33:32.260 --> 01:33:34.180
+<v Speaker 1>this is the least I can do to
+
+01:33:34.180 --> 01:33:36.260
+<v Speaker 1>tell the amazing contributors and maintainers out there
+
+01:33:36.260 --> 01:33:38.395
+<v Speaker 1>making open source more secure.
+
+01:33:38.715 --> 01:33:40.075
+<v Speaker 1>Thank you so much again.
+
+01:33:40.235 --> 01:33:41.595
+<v Speaker 0>Yeah. Thank you.
+
+01:33:41.995 --> 01:33:44.155
+<v Speaker 1>Alright. Well, have a great day, a great
+
+01:33:44.155 --> 01:33:45.995
+<v Speaker 1>weekend. I'll hopefully see you in London and
+
+01:33:45.995 --> 01:33:48.155
+<v Speaker 1>to everyone who watched. We hope you found
+
+01:33:48.155 --> 01:33:48.955
+<v Speaker 1>this useful
+
+01:33:49.115 --> 01:33:52.280
+<v Speaker 1>and until next time. Bye. Yep. Same to
+
+01:33:52.280 --> 01:33:52.760
+<v Speaker 0>you.
+
+01:33:53.320 --> 01:33:53.640
+<v Speaker 0>Bye.
+
+01:34:19.790 --> 01:34:22.750
+<v Speaker 0>Bringing you these deep dives into the cloud
+
+01:34:22.750 --> 01:34:26.030
+<v Speaker 0>native world. Don't forget to like, subscribe, and
+
+01:34:26.030 --> 01:34:27.469
+<v Speaker 0>hit that notification
+
+01:34:27.469 --> 01:34:30.110
+<v Speaker 0>bell so you never miss a session. Keep
+
+01:34:30.110 --> 01:34:30.829
+<v Speaker 0>building,
+
+01:34:31.070 --> 01:34:32.110
+<v Speaker 0>keep learning,
+
+01:34:32.430 --> 01:34:33.950
+<v Speaker 0>and keep it secure.
+
+01:34:35.215 --> 01:34:36.815
+<v Speaker 0>We'll see you next time.
+
+01:34:37.055 --> 01:34:37.775
+<v Speaker 0>Peace out.

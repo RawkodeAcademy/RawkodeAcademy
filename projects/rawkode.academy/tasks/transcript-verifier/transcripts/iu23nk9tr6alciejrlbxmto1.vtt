@@ -1,0 +1,5981 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 85fef32a-5397-45e8-9455-f3147dfbcb59
+Created: 2025-04-29T12:28:41.761Z
+Duration: 4754.3735
+Channels: 1
+
+00:01:14.385 --> 00:01:15.185
+<v Speaker 0>Hello,
+
+00:01:15.265 --> 00:01:18.385
+<v Speaker 0>and welcome back to the Rawkode Academy.
+
+00:01:18.385 --> 00:01:20.545
+<v Speaker 0>I'm your host, David Flanagan, also known across
+
+00:01:20.545 --> 00:01:22.785
+<v Speaker 0>the Internet as Rawkode. And today is another
+
+00:01:22.785 --> 00:01:25.505
+<v Speaker 0>episode of Rawkode live where we explore
+
+00:01:25.740 --> 00:01:28.940
+<v Speaker 0>really cool cloud native and Kubernetes adjacent technologies
+
+00:01:28.940 --> 00:01:31.580
+<v Speaker 0>that will hopefully help make your developer and
+
+00:01:31.580 --> 00:01:33.340
+<v Speaker 0>operator lives a little bit easier.
+
+00:01:33.660 --> 00:01:35.340
+<v Speaker 0>Today, we're taking a look at a search
+
+00:01:35.340 --> 00:01:38.220
+<v Speaker 0>and analytics engine that promises, maybe that's a
+
+00:01:38.220 --> 00:01:40.085
+<v Speaker 0>strong word, we'll see what Francois says, But
+
+00:01:40.085 --> 00:01:41.924
+<v Speaker 0>promises sub second latency,
+
+00:01:42.165 --> 00:01:44.325
+<v Speaker 0>and it's obviously written in Rust, which obviously
+
+00:01:44.325 --> 00:01:46.165
+<v Speaker 0>makes it even more exciting for me to
+
+00:01:46.165 --> 00:01:47.284
+<v Speaker 0>take a look at today.
+
+00:01:47.685 --> 00:01:50.165
+<v Speaker 0>So let's jump over and meet today's guest,
+
+00:01:50.165 --> 00:01:53.070
+<v Speaker 0>Francois. Hello. Thank you for joining me. Hello,
+
+00:01:53.070 --> 00:01:53.630
+<v Speaker 1>David.
+
+00:01:54.030 --> 00:01:56.110
+<v Speaker 0>Please just take a moment and share a
+
+00:01:56.110 --> 00:01:57.710
+<v Speaker 0>little bit more information about you with the
+
+00:01:57.710 --> 00:01:58.350
+<v Speaker 0>audience.
+
+00:01:58.830 --> 00:01:59.390
+<v Speaker 1>Okay.
+
+00:01:59.710 --> 00:02:00.670
+<v Speaker 1>Hello,
+
+00:02:00.670 --> 00:02:03.229
+<v Speaker 1>David. Hello, everyone. Thank you very much for
+
+00:02:03.549 --> 00:02:04.590
+<v Speaker 1>inviting me.
+
+00:02:04.990 --> 00:02:07.310
+<v Speaker 1>I'm very happy, like, to talk about Quickwit,
+
+00:02:07.310 --> 00:02:07.549
+<v Speaker 1>obviously.
+
+00:02:08.165 --> 00:02:09.605
+<v Speaker 1>So what is Quickwit?
+
+00:02:09.845 --> 00:02:13.125
+<v Speaker 1>That's a company and a search engine. We
+
+00:02:13.125 --> 00:02:15.365
+<v Speaker 1>started it three years ago.
+
+00:02:15.685 --> 00:02:18.005
+<v Speaker 1>I'm one of the cofounder, and we are
+
+00:02:18.165 --> 00:02:20.725
+<v Speaker 1>we started it at free with Paul and
+
+00:02:20.725 --> 00:02:23.330
+<v Speaker 1>Adrian. Paul is in lives in Tokyo. Adrian
+
+00:02:23.330 --> 00:02:25.570
+<v Speaker 1>is in New York and living in Paris.
+
+00:02:26.530 --> 00:02:27.090
+<v Speaker 1>And
+
+00:02:27.330 --> 00:02:29.650
+<v Speaker 1>we are all engineers, and we
+
+00:02:30.290 --> 00:02:31.010
+<v Speaker 1>we
+
+00:02:31.890 --> 00:02:34.610
+<v Speaker 1>heard a lot of complaints about
+
+00:02:34.930 --> 00:02:38.370
+<v Speaker 1>Elasticsearch speeds, especially for big datasets
+
+00:02:38.665 --> 00:02:41.385
+<v Speaker 1>and especially in the observability space.
+
+00:02:41.704 --> 00:02:42.265
+<v Speaker 1>And
+
+00:02:42.504 --> 00:02:45.864
+<v Speaker 1>it happens that one of my cofounder, Paul,
+
+00:02:45.864 --> 00:02:46.745
+<v Speaker 1>created
+
+00:02:48.584 --> 00:02:51.305
+<v Speaker 1>many years ago a library called
+
+00:02:52.150 --> 00:02:54.790
+<v Speaker 1>written in Rust. And this is, like, an
+
+00:02:54.790 --> 00:02:56.630
+<v Speaker 1>equivalent of Lucene
+
+00:02:56.630 --> 00:02:58.710
+<v Speaker 1>in the Java world. So it's a search
+
+00:02:58.710 --> 00:03:00.790
+<v Speaker 1>library, but you it's not a
+
+00:03:00.950 --> 00:03:02.790
+<v Speaker 1>fully distributed search engine.
+
+00:03:03.030 --> 00:03:05.430
+<v Speaker 1>But at least you have the data structure
+
+00:03:05.795 --> 00:03:08.355
+<v Speaker 1>in it to make search fast.
+
+00:03:08.915 --> 00:03:09.555
+<v Speaker 1>And
+
+00:03:09.875 --> 00:03:10.915
+<v Speaker 1>this library
+
+00:03:10.915 --> 00:03:13.795
+<v Speaker 1>was really fast three years ago already.
+
+00:03:14.275 --> 00:03:16.194
+<v Speaker 1>And, like, when discussing
+
+00:03:16.194 --> 00:03:18.275
+<v Speaker 1>with Adrian and Paul, what we were
+
+00:03:19.260 --> 00:03:21.739
+<v Speaker 1>looking at at the space, and we we
+
+00:03:21.739 --> 00:03:23.260
+<v Speaker 1>said to ourselves, okay.
+
+00:03:23.500 --> 00:03:26.620
+<v Speaker 1>We can we can do something better. Maybe.
+
+00:03:27.099 --> 00:03:27.740
+<v Speaker 1>And,
+
+00:03:29.739 --> 00:03:30.299
+<v Speaker 1>I mean,
+
+00:03:30.855 --> 00:03:32.215
+<v Speaker 1>a search engine
+
+00:03:32.295 --> 00:03:33.175
+<v Speaker 1>distributed
+
+00:03:33.175 --> 00:03:35.894
+<v Speaker 1>that can be way, way faster or way
+
+00:03:35.894 --> 00:03:37.735
+<v Speaker 1>more efficient than Elasticsearch.
+
+00:03:37.974 --> 00:03:39.815
+<v Speaker 1>And when you when you start something like
+
+00:03:39.815 --> 00:03:41.655
+<v Speaker 1>this, you you you want to be at
+
+00:03:41.655 --> 00:03:44.055
+<v Speaker 1>least 10 times 10 times
+
+00:03:44.215 --> 00:03:45.894
+<v Speaker 1>cheaper or 10 times faster,
+
+00:03:46.350 --> 00:03:47.950
+<v Speaker 1>maybe 100 times
+
+00:03:48.350 --> 00:03:49.550
+<v Speaker 1>if possible.
+
+00:03:49.950 --> 00:03:51.470
+<v Speaker 1>And that was our goal.
+
+00:03:51.870 --> 00:03:55.070
+<v Speaker 1>And okay. So three years after, I'm here
+
+00:03:55.070 --> 00:03:56.430
+<v Speaker 1>to talk about it.
+
+00:03:56.990 --> 00:03:58.910
+<v Speaker 1>We just released
+
+00:03:59.310 --> 00:04:00.030
+<v Speaker 1>version
+
+00:04:00.430 --> 00:04:01.775
+<v Speaker 1>two version
+
+00:04:01.775 --> 00:04:03.535
+<v Speaker 1>zero dot seven
+
+00:04:04.495 --> 00:04:05.535
+<v Speaker 1>two weeks ago,
+
+00:04:06.335 --> 00:04:09.135
+<v Speaker 1>and we have some we we are starting
+
+00:04:09.135 --> 00:04:10.975
+<v Speaker 1>to have our big users
+
+00:04:11.055 --> 00:04:12.335
+<v Speaker 1>that are ingesting
+
+00:04:12.335 --> 00:04:14.975
+<v Speaker 1>hundreds of terabyte per days of logs,
+
+00:04:15.800 --> 00:04:16.360
+<v Speaker 1>and
+
+00:04:16.680 --> 00:04:19.160
+<v Speaker 1>it's really, really efficient. They
+
+00:04:19.320 --> 00:04:22.440
+<v Speaker 1>they divide it by five, their compute cost,
+
+00:04:22.919 --> 00:04:23.480
+<v Speaker 1>by
+
+00:04:24.600 --> 00:04:26.680
+<v Speaker 1>by the same number of their storage cost
+
+00:04:26.919 --> 00:04:28.440
+<v Speaker 1>their their storage cost.
+
+00:04:28.680 --> 00:04:29.320
+<v Speaker 1>So
+
+00:04:29.925 --> 00:04:31.685
+<v Speaker 1>we're we're very
+
+00:04:31.925 --> 00:04:33.045
+<v Speaker 1>happy for them,
+
+00:04:33.525 --> 00:04:34.085
+<v Speaker 1>and
+
+00:04:34.325 --> 00:04:36.005
+<v Speaker 1>we think that we can bring, like, a
+
+00:04:36.005 --> 00:04:36.885
+<v Speaker 1>lot of value
+
+00:04:37.125 --> 00:04:39.445
+<v Speaker 1>in the space of of the space.
+
+00:04:40.245 --> 00:04:41.925
+<v Speaker 1>I'm here to talk about it.
+
+00:04:42.725 --> 00:04:44.165
+<v Speaker 0>Awesome. Thank you so much.
+
+00:04:45.130 --> 00:04:46.889
+<v Speaker 0>Let's cover a couple of things that you've
+
+00:04:46.889 --> 00:04:47.690
+<v Speaker 0>mentioned then.
+
+00:04:48.650 --> 00:04:50.729
+<v Speaker 0>I've I've been a developer for a long
+
+00:04:50.729 --> 00:04:53.210
+<v Speaker 0>a long time, over twenty years now. And
+
+00:04:53.690 --> 00:04:56.729
+<v Speaker 0>everybody's always said Elasticsearch is amazing, but everybody
+
+00:04:56.729 --> 00:04:59.035
+<v Speaker 0>hates. And by everybody I'm gonna say I
+
+00:04:59.035 --> 00:05:01.595
+<v Speaker 0>and hopefully others. We hated the fact that
+
+00:05:01.595 --> 00:05:03.595
+<v Speaker 0>it was on the JVM. It's notoriously difficult
+
+00:05:03.595 --> 00:05:05.755
+<v Speaker 0>to to operate. It consumes a lot of
+
+00:05:05.755 --> 00:05:07.675
+<v Speaker 0>memory and CPU. It doesn't run well in
+
+00:05:07.675 --> 00:05:08.955
+<v Speaker 0>containers and on Kubernetes.
+
+00:05:09.780 --> 00:05:11.940
+<v Speaker 0>But people always said it would be impossible
+
+00:05:11.940 --> 00:05:13.780
+<v Speaker 0>to build it in any other language because
+
+00:05:13.780 --> 00:05:14.740
+<v Speaker 0>of Lucene.
+
+00:05:14.980 --> 00:05:16.740
+<v Speaker 0>And what you're saying now is that we
+
+00:05:17.380 --> 00:05:20.020
+<v Speaker 0>it's not impossible. We have Lucene available in
+
+00:05:20.020 --> 00:05:21.540
+<v Speaker 0>another language, Rust. I think there was even
+
+00:05:21.540 --> 00:05:23.380
+<v Speaker 0>a Go one as well at one point
+
+00:05:23.380 --> 00:05:24.660
+<v Speaker 0>and but I'm not sure what happened to
+
+00:05:24.660 --> 00:05:27.295
+<v Speaker 0>it. So that's that's awesome right off the
+
+00:05:27.295 --> 00:05:28.895
+<v Speaker 0>bat. Right? Just the fact that this library
+
+00:05:28.895 --> 00:05:30.655
+<v Speaker 0>now exists and allows people to be free
+
+00:05:30.655 --> 00:05:33.295
+<v Speaker 0>of the JVM, Elasticsearch, and other things and
+
+00:05:33.295 --> 00:05:36.175
+<v Speaker 0>still get that power that we get from
+
+00:05:36.175 --> 00:05:38.815
+<v Speaker 0>that type of search is awesome. Wonderful.
+
+00:05:39.980 --> 00:05:41.820
+<v Speaker 0>You then spoke a little bit about you
+
+00:05:41.820 --> 00:05:44.860
+<v Speaker 0>and your team building on Quickwit and sub
+
+00:05:44.860 --> 00:05:47.180
+<v Speaker 0>seconds is something we've said three times now.
+
+00:05:47.740 --> 00:05:48.300
+<v Speaker 0>You know,
+
+00:05:49.020 --> 00:05:51.820
+<v Speaker 0>why or like what are the use cases
+
+00:05:51.595 --> 00:05:53.755
+<v Speaker 0>people could be doing? You've you've mentioned observability.
+
+00:05:53.755 --> 00:05:55.995
+<v Speaker 0>Right? But Elasticsearch is obviously very broad in
+
+00:05:55.995 --> 00:05:58.395
+<v Speaker 0>this application. Is that true for Quickwit as
+
+00:05:58.395 --> 00:06:00.075
+<v Speaker 0>well? What do you see people using it
+
+00:06:00.075 --> 00:06:00.635
+<v Speaker 0>for?
+
+00:06:01.595 --> 00:06:03.835
+<v Speaker 1>Yeah. So that's that's a very good point.
+
+00:06:03.835 --> 00:06:05.755
+<v Speaker 1>So we chose to a subset of all
+
+00:06:05.755 --> 00:06:08.280
+<v Speaker 1>the search space. The search space is huge,
+
+00:06:08.840 --> 00:06:12.120
+<v Speaker 1>especially today with all the AI stuff.
+
+00:06:12.360 --> 00:06:15.640
+<v Speaker 1>So we chose a subset, like, the observability
+
+00:06:15.640 --> 00:06:18.440
+<v Speaker 1>space, but it's not only. It's append only
+
+00:06:19.560 --> 00:06:20.120
+<v Speaker 1>datasets.
+
+00:06:22.495 --> 00:06:25.215
+<v Speaker 1>It's coming from a choice that we of
+
+00:06:25.215 --> 00:06:26.255
+<v Speaker 1>architecture.
+
+00:06:26.414 --> 00:06:28.655
+<v Speaker 1>So very early on, we chose we chose
+
+00:06:28.655 --> 00:06:29.215
+<v Speaker 1>to
+
+00:06:30.014 --> 00:06:32.574
+<v Speaker 1>totally change the architecture of search
+
+00:06:32.735 --> 00:06:33.854
+<v Speaker 1>of our the search engine.
+
+00:06:34.350 --> 00:06:37.550
+<v Speaker 1>Like, Elasticsearch is based on a shared mapping
+
+00:06:37.550 --> 00:06:40.030
+<v Speaker 1>architecture. So all the data is on the
+
+00:06:40.030 --> 00:06:41.550
+<v Speaker 1>disk, on the local disk.
+
+00:06:42.030 --> 00:06:44.670
+<v Speaker 1>It's very fast. As you as you said,
+
+00:06:44.670 --> 00:06:46.670
+<v Speaker 1>it's it's a powerful engine.
+
+00:06:46.670 --> 00:06:47.710
+<v Speaker 1>It's
+
+00:06:48.185 --> 00:06:51.065
+<v Speaker 1>many many it has a a large community.
+
+00:06:51.065 --> 00:06:53.625
+<v Speaker 1>It's a great it's a great tool, really.
+
+00:06:53.625 --> 00:06:54.025
+<v Speaker 1>But
+
+00:06:55.705 --> 00:06:57.225
+<v Speaker 1>when you want to scale,
+
+00:06:57.465 --> 00:07:00.025
+<v Speaker 1>when you want to, like, separate concerns,
+
+00:07:00.729 --> 00:07:03.689
+<v Speaker 1>compute like, indexing stuff versus
+
+00:07:03.689 --> 00:07:04.889
+<v Speaker 1>search stuff,
+
+00:07:05.210 --> 00:07:06.889
+<v Speaker 1>it's really nice to start
+
+00:07:07.770 --> 00:07:09.530
+<v Speaker 1>separating compute storage.
+
+00:07:09.930 --> 00:07:13.050
+<v Speaker 1>And that's that's the starting point of Quickwit.
+
+00:07:13.050 --> 00:07:16.685
+<v Speaker 1>We wanted to decouple compute storage, to decouple
+
+00:07:16.685 --> 00:07:18.125
+<v Speaker 1>indexing and search,
+
+00:07:18.365 --> 00:07:22.125
+<v Speaker 1>and, like, seamlessly scale from one to
+
+00:07:22.365 --> 00:07:25.005
+<v Speaker 1>50 nodes for indexing and for such. Like,
+
+00:07:25.005 --> 00:07:27.085
+<v Speaker 1>in a a couple of seconds, you should
+
+00:07:27.085 --> 00:07:29.970
+<v Speaker 1>be able to do it without impacting anything,
+
+00:07:30.210 --> 00:07:31.970
+<v Speaker 1>without struggling with
+
+00:07:32.289 --> 00:07:34.370
+<v Speaker 1>yellow or head cluster.
+
+00:07:35.490 --> 00:07:38.129
+<v Speaker 1>I I used a lot Elasticsearch before, and
+
+00:07:38.129 --> 00:07:39.889
+<v Speaker 1>it was horrible
+
+00:07:39.889 --> 00:07:41.010
+<v Speaker 1>to operate.
+
+00:07:41.330 --> 00:07:44.135
+<v Speaker 1>I'm sure they improved that today, but at
+
+00:07:44.135 --> 00:07:46.695
+<v Speaker 1>that time, it was really horrible. And you
+
+00:07:46.695 --> 00:07:48.775
+<v Speaker 1>don't have this kind of mess when you
+
+00:07:48.775 --> 00:07:49.415
+<v Speaker 1>take a.
+
+00:07:49.895 --> 00:07:52.135
+<v Speaker 1>You start you you that is safe on
+
+00:07:52.135 --> 00:07:54.455
+<v Speaker 1>something like s three. You don't have any
+
+00:07:54.455 --> 00:07:55.895
+<v Speaker 1>issue with that with that.
+
+00:07:57.095 --> 00:07:57.495
+<v Speaker 0>Nice.
+
+00:07:58.310 --> 00:07:59.990
+<v Speaker 0>So I'm curious then. What
+
+00:08:00.950 --> 00:08:03.190
+<v Speaker 0>your background before you started working on on
+
+00:08:03.190 --> 00:08:05.190
+<v Speaker 0>Quickwit, were you already a Rust developer, or
+
+00:08:05.190 --> 00:08:07.830
+<v Speaker 0>is this your first exploration of writing Rust
+
+00:08:07.830 --> 00:08:08.390
+<v Speaker 0>code?
+
+00:08:09.670 --> 00:08:11.750
+<v Speaker 1>So for me, it was my first experience.
+
+00:08:11.835 --> 00:08:14.315
+<v Speaker 1>I was mainly a Python programmer and Java
+
+00:08:14.315 --> 00:08:15.355
+<v Speaker 1>programmer before.
+
+00:08:15.514 --> 00:08:15.995
+<v Speaker 1>Luckily
+
+00:08:16.955 --> 00:08:19.675
+<v Speaker 1>for us, my cofounder, Paul, who
+
+00:08:20.474 --> 00:08:22.715
+<v Speaker 1>created Tonti, was a very good REST developer.
+
+00:08:22.715 --> 00:08:25.410
+<v Speaker 1>So he let he led us the the
+
+00:08:25.410 --> 00:08:27.170
+<v Speaker 1>right way to code in Rust, and so
+
+00:08:27.170 --> 00:08:30.130
+<v Speaker 1>it was awesome because we improved
+
+00:08:30.610 --> 00:08:33.409
+<v Speaker 1>very fast. Like, the team the team was
+
+00:08:33.409 --> 00:08:36.370
+<v Speaker 1>able to improve their lot their skills.
+
+00:08:36.530 --> 00:08:38.690
+<v Speaker 1>So that was really precious to have him
+
+00:08:39.835 --> 00:08:41.275
+<v Speaker 1>in the team, of course.
+
+00:08:41.674 --> 00:08:43.995
+<v Speaker 1>But it was my first time in Rust,
+
+00:08:43.995 --> 00:08:46.075
+<v Speaker 1>and it was really painful at the beginning.
+
+00:08:46.155 --> 00:08:48.315
+<v Speaker 1>The the first three months were
+
+00:08:48.475 --> 00:08:49.435
+<v Speaker 1>very hard,
+
+00:08:51.355 --> 00:08:54.310
+<v Speaker 1>and then it was a revelation.
+
+00:08:54.470 --> 00:08:57.030
+<v Speaker 1>Like, no bug in production. We we we
+
+00:08:57.350 --> 00:08:59.910
+<v Speaker 1>at the very beginning of Quickwit, we made
+
+00:08:59.910 --> 00:09:02.150
+<v Speaker 1>a proof of concept of Quickwit,
+
+00:09:02.470 --> 00:09:05.110
+<v Speaker 1>the idea of separating compute and storage for
+
+00:09:05.110 --> 00:09:07.815
+<v Speaker 1>search. And it was based on the common
+
+00:09:07.815 --> 00:09:09.894
+<v Speaker 1>core demo. So common core is a dataset
+
+00:09:09.894 --> 00:09:12.535
+<v Speaker 1>with billions of web pages,
+
+00:09:13.014 --> 00:09:14.615
+<v Speaker 1>and we index everything
+
+00:09:15.095 --> 00:09:17.654
+<v Speaker 1>and put the data the index data on
+
+00:09:17.654 --> 00:09:20.800
+<v Speaker 1>s three. And you can go on common
+
+00:09:20.880 --> 00:09:23.520
+<v Speaker 1>like, we have a commoncall.Quickwit.i0
+
+00:09:23.520 --> 00:09:26.480
+<v Speaker 1>website where you can just search few things,
+
+00:09:26.480 --> 00:09:28.000
+<v Speaker 1>and we will return
+
+00:09:29.600 --> 00:09:33.120
+<v Speaker 1>a word cloud of the most probable combination
+
+00:09:33.120 --> 00:09:33.680
+<v Speaker 1>of words.
+
+00:09:34.375 --> 00:09:37.175
+<v Speaker 1>So if you start typing Obama is, you
+
+00:09:37.415 --> 00:09:39.255
+<v Speaker 1>we will give you, like, the all the
+
+00:09:39.255 --> 00:09:42.855
+<v Speaker 1>most common adjectives for Obama is something.
+
+00:09:43.335 --> 00:09:43.895
+<v Speaker 1>And
+
+00:09:45.015 --> 00:09:46.935
+<v Speaker 1>yeah. So and there was no bug.
+
+00:09:48.590 --> 00:09:50.590
+<v Speaker 1>Yes. There was one bug, but it was
+
+00:09:50.590 --> 00:09:52.510
+<v Speaker 1>in the Python code because we we have
+
+00:09:52.510 --> 00:09:54.190
+<v Speaker 1>to use Python for
+
+00:09:54.270 --> 00:09:55.310
+<v Speaker 1>some kind of
+
+00:09:55.950 --> 00:09:57.710
+<v Speaker 1>an analytic language
+
+00:09:57.710 --> 00:09:58.590
+<v Speaker 1>analytics
+
+00:09:58.590 --> 00:10:01.755
+<v Speaker 1>because we we were analyzing if we were
+
+00:10:01.755 --> 00:10:04.154
+<v Speaker 1>retrieving nouns or adjectives.
+
+00:10:04.235 --> 00:10:06.075
+<v Speaker 1>Mhmm. And the bug was there, but not
+
+00:10:06.075 --> 00:10:08.475
+<v Speaker 1>in our code. So it was really
+
+00:10:08.714 --> 00:10:11.195
+<v Speaker 1>a revelation, really. So I'm very happy to
+
+00:10:11.195 --> 00:10:12.315
+<v Speaker 1>code in Rust today.
+
+00:10:13.195 --> 00:10:13.514
+<v Speaker 0>Yeah.
+
+00:10:14.240 --> 00:10:16.399
+<v Speaker 0>Me too. I I pretty much write everything
+
+00:10:16.399 --> 00:10:18.639
+<v Speaker 0>in Rust by default now or TypeScript if
+
+00:10:18.639 --> 00:10:20.000
+<v Speaker 0>I have to do any sort of web
+
+00:10:20.000 --> 00:10:21.040
+<v Speaker 0>stuff. But
+
+00:10:22.000 --> 00:10:23.759
+<v Speaker 0>but even though I have been writing Rust
+
+00:10:23.759 --> 00:10:25.920
+<v Speaker 0>code for a while now, there's always that
+
+00:10:25.920 --> 00:10:28.075
+<v Speaker 0>weird lifetime bug or that I just don't
+
+00:10:28.075 --> 00:10:30.715
+<v Speaker 0>understand. Or when we get nested generics,
+
+00:10:30.795 --> 00:10:32.075
+<v Speaker 0>I end up just pulling my hair out.
+
+00:10:32.075 --> 00:10:33.435
+<v Speaker 0>And I I really actually spend more time
+
+00:10:33.435 --> 00:10:36.075
+<v Speaker 0>going deeper with these things, but I just
+
+00:10:36.395 --> 00:10:38.475
+<v Speaker 0>I've not had to deal with them often
+
+00:10:38.475 --> 00:10:40.475
+<v Speaker 0>enough to force myself to just learn it
+
+00:10:40.475 --> 00:10:40.715
+<v Speaker 0>properly.
+
+00:10:41.870 --> 00:10:43.790
+<v Speaker 1>I I'm in the same situation. This kind
+
+00:10:43.790 --> 00:10:46.110
+<v Speaker 1>of lifetime issues or trade
+
+00:10:46.270 --> 00:10:47.470
+<v Speaker 1>issues are really
+
+00:10:49.470 --> 00:10:51.470
+<v Speaker 1>that's horrible. I think it's a it's more
+
+00:10:51.470 --> 00:10:53.870
+<v Speaker 1>a problem of it's two variables. You have
+
+00:10:53.870 --> 00:10:54.670
+<v Speaker 1>too many
+
+00:10:55.070 --> 00:10:55.630
+<v Speaker 1>error
+
+00:10:55.950 --> 00:10:58.985
+<v Speaker 1>message is too complex. So maybe voice team
+
+00:10:58.985 --> 00:11:01.144
+<v Speaker 1>can improve that. I hope one day they
+
+00:11:01.144 --> 00:11:03.144
+<v Speaker 1>they would do. Yeah. The minute you just
+
+00:11:03.225 --> 00:11:04.745
+<v Speaker 0>you I don't wanna go into the weeds
+
+00:11:04.745 --> 00:11:06.264
+<v Speaker 0>of rest for everyone watching, but, you know,
+
+00:11:06.264 --> 00:11:08.985
+<v Speaker 0>once you start having, like, dynamic traits passed
+
+00:11:08.985 --> 00:11:11.625
+<v Speaker 0>around with late times, it's it's it's so
+
+00:11:11.625 --> 00:11:11.944
+<v Speaker 0>painful.
+
+00:11:12.459 --> 00:11:13.580
+<v Speaker 0>But that's
+
+00:11:13.899 --> 00:11:15.260
+<v Speaker 0>a lesson from another day.
+
+00:11:15.740 --> 00:11:17.420
+<v Speaker 0>Alright. Well, thank you for sharing all of
+
+00:11:17.420 --> 00:11:19.580
+<v Speaker 0>that. I'm really excited about this project. I
+
+00:11:19.580 --> 00:11:21.019
+<v Speaker 0>can't wait to actually see it and experiment
+
+00:11:21.019 --> 00:11:22.380
+<v Speaker 0>with it and play with it because I
+
+00:11:22.380 --> 00:11:24.779
+<v Speaker 0>think that everyone who has anything running in
+
+00:11:24.779 --> 00:11:27.245
+<v Speaker 0>production has a use case that Quickwit can
+
+00:11:27.245 --> 00:11:28.605
+<v Speaker 0>come in and help them with, and I
+
+00:11:28.605 --> 00:11:30.445
+<v Speaker 0>wanna try and show that to people today.
+
+00:11:30.765 --> 00:11:32.845
+<v Speaker 0>So the format for today's episode is we're
+
+00:11:32.845 --> 00:11:34.365
+<v Speaker 0>gonna run through the getting started gate like
+
+00:11:34.365 --> 00:11:36.445
+<v Speaker 0>we always do. And then Francois has a
+
+00:11:36.445 --> 00:11:38.125
+<v Speaker 0>demo where he's gonna show us a bit
+
+00:11:38.125 --> 00:11:41.084
+<v Speaker 0>more of a deeper use case for Quickwit.
+
+00:11:41.500 --> 00:11:43.980
+<v Speaker 0>Please remember, if you have any questions whatsoever,
+
+00:11:44.060 --> 00:11:45.820
+<v Speaker 0>you can drop them into the comments. And
+
+00:11:45.820 --> 00:11:47.420
+<v Speaker 0>that doesn't just mean now as we are
+
+00:11:47.420 --> 00:11:49.500
+<v Speaker 0>live. If you're watching this after the fact,
+
+00:11:49.500 --> 00:11:51.420
+<v Speaker 0>keep those comments coming, and I will always
+
+00:11:51.420 --> 00:11:54.140
+<v Speaker 0>pass them on to our guest to hopefully
+
+00:11:54.220 --> 00:11:56.715
+<v Speaker 0>get you the answer. No pressure, Francois, but
+
+00:11:56.715 --> 00:11:58.235
+<v Speaker 0>that means for the next twenty four months,
+
+00:11:58.235 --> 00:11:59.835
+<v Speaker 0>you always have to answer my emails and
+
+00:11:59.835 --> 00:12:01.035
+<v Speaker 0>a timely response.
+
+00:12:01.835 --> 00:12:02.715
+<v Speaker 1>That's alright.
+
+00:12:03.915 --> 00:12:06.315
+<v Speaker 0>Alright. Here is my terminal.
+
+00:12:06.475 --> 00:12:07.355
+<v Speaker 0>I also have
+
+00:12:07.940 --> 00:12:09.140
+<v Speaker 0>a browser
+
+00:12:09.140 --> 00:12:11.860
+<v Speaker 0>where we have the Quickwit homepage. So if
+
+00:12:11.860 --> 00:12:13.380
+<v Speaker 0>anyone wants to find this in their own
+
+00:12:13.380 --> 00:12:16.820
+<v Speaker 0>time, you can find us at quickwit.io.
+
+00:12:17.380 --> 00:12:20.180
+<v Speaker 0>We're gonna go straight to the quick start
+
+00:12:20.420 --> 00:12:20.740
+<v Speaker 0>guide.
+
+00:12:22.975 --> 00:12:24.975
+<v Speaker 0>Nice. So we're just gonna curl bash which
+
+00:12:24.975 --> 00:12:26.975
+<v Speaker 0>I'm always happy to do. Don't you worry.
+
+00:12:26.975 --> 00:12:28.575
+<v Speaker 0>Doesn't scare me whatsoever.
+
+00:12:29.055 --> 00:12:30.575
+<v Speaker 0>And this is gonna get us which I
+
+00:12:30.575 --> 00:12:32.335
+<v Speaker 0>assume is just a static binary because you've
+
+00:12:32.335 --> 00:12:33.935
+<v Speaker 0>written this thing in Rust and we should
+
+00:12:33.935 --> 00:12:35.780
+<v Speaker 0>be able to get started right away. That's
+
+00:12:35.780 --> 00:12:37.140
+<v Speaker 0>one of the other nice things. Like, when
+
+00:12:37.140 --> 00:12:39.620
+<v Speaker 0>you get a JVM artifact, a jar file,
+
+00:12:39.620 --> 00:12:41.460
+<v Speaker 0>it's just always like, well, what do I
+
+00:12:41.460 --> 00:12:41.860
+<v Speaker 0>do with this?
+
+00:12:49.345 --> 00:12:50.225
+<v Speaker 0>Awesome.
+
+00:12:52.785 --> 00:12:55.505
+<v Speaker 0>I'm gonna move this to here.
+
+00:12:56.144 --> 00:12:58.704
+<v Speaker 0>Two mod plus x Quickwit and
+
+00:12:59.904 --> 00:13:00.545
+<v Speaker 0>then run.
+
+00:13:05.690 --> 00:13:06.490
+<v Speaker 0>Okay.
+
+00:13:10.250 --> 00:13:11.930
+<v Speaker 0>So there's also docker image,
+
+00:13:12.090 --> 00:13:12.730
+<v Speaker 0>which is nice.
+
+00:13:15.225 --> 00:13:16.905
+<v Speaker 0>Is there a Helm chart? Just out of
+
+00:13:16.905 --> 00:13:18.665
+<v Speaker 0>curiosity. Like, if I wanna ship this into
+
+00:13:18.665 --> 00:13:19.305
+<v Speaker 0>production,
+
+00:13:19.545 --> 00:13:21.225
+<v Speaker 0>is Helm charts the best way for people
+
+00:13:21.225 --> 00:13:22.905
+<v Speaker 0>to you know, if anyone watches this and
+
+00:13:22.905 --> 00:13:24.745
+<v Speaker 0>goes, wow. That's amazing. I want it. Helm
+
+00:13:24.745 --> 00:13:25.945
+<v Speaker 0>chart. Is that what they do first?
+
+00:13:27.020 --> 00:13:29.740
+<v Speaker 1>Yes. So there there is a a ham
+
+00:13:29.740 --> 00:13:30.380
+<v Speaker 1>chart.
+
+00:13:30.620 --> 00:13:32.300
+<v Speaker 1>And, like, I I will make a demo
+
+00:13:32.300 --> 00:13:35.340
+<v Speaker 1>on it. So and it's available on the
+
+00:13:35.340 --> 00:13:36.540
+<v Speaker 1>GitHub repository.
+
+00:13:37.260 --> 00:13:38.140
+<v Speaker 0>Alright. Awesome.
+
+00:13:38.875 --> 00:13:41.035
+<v Speaker 0>So in order to get this Powerhouse of
+
+00:13:41.035 --> 00:13:43.514
+<v Speaker 0>a search engine running, we do Quickwit run.
+
+00:13:45.355 --> 00:13:46.634
+<v Speaker 0>I don't need to talk. So I gotta
+
+00:13:46.634 --> 00:13:47.915
+<v Speaker 0>work this out easy.
+
+00:13:49.435 --> 00:13:50.154
+<v Speaker 1>Uh-oh.
+
+00:13:50.555 --> 00:13:53.810
+<v Speaker 1>Yeah. I was expecting that. So as as
+
+00:13:53.810 --> 00:13:55.570
+<v Speaker 1>you move, like, as you move, like, the
+
+00:13:55.570 --> 00:13:58.370
+<v Speaker 1>binary outside the the directory,
+
+00:13:58.610 --> 00:13:59.730
+<v Speaker 1>you need to specify
+
+00:14:00.290 --> 00:14:01.890
+<v Speaker 1>you can specify, like,
+
+00:14:02.770 --> 00:14:03.650
+<v Speaker 1>the config file.
+
+00:14:04.625 --> 00:14:06.545
+<v Speaker 1>It it needs to find a a config
+
+00:14:06.545 --> 00:14:08.945
+<v Speaker 1>file. That that's it. Oh, that's alright. I'll
+
+00:14:08.945 --> 00:14:10.785
+<v Speaker 0>I'll take the ownership of that one. So
+
+00:14:10.705 --> 00:14:12.785
+<v Speaker 0>okay. I didn't realize we had a Quickwit
+
+00:14:12.785 --> 00:14:14.065
+<v Speaker 0>data directory,
+
+00:14:15.105 --> 00:14:18.065
+<v Speaker 0>and I don't have my alias configured. Let's
+
+00:14:18.065 --> 00:14:18.545
+<v Speaker 0>just do this.
+
+00:14:19.310 --> 00:14:21.070
+<v Speaker 0>We have a config file. So I'm gonna
+
+00:14:21.070 --> 00:14:22.270
+<v Speaker 0>take a really look at that. I'm always
+
+00:14:22.270 --> 00:14:24.270
+<v Speaker 0>curious about configuration.
+
+00:14:27.709 --> 00:14:28.750
+<v Speaker 0>We got YAML.
+
+00:14:31.735 --> 00:14:32.695
+<v Speaker 0>And
+
+00:14:32.695 --> 00:14:35.015
+<v Speaker 0>Vexors and that's it. Okay.
+
+00:14:35.335 --> 00:14:37.015
+<v Speaker 0>We'll maybe take a look at that in
+
+00:14:37.015 --> 00:14:38.935
+<v Speaker 0>a bit more detail later when we start
+
+00:14:38.935 --> 00:14:40.775
+<v Speaker 0>asking some of the questions about what's actually
+
+00:14:40.775 --> 00:14:42.935
+<v Speaker 0>happening with the system here.
+
+00:14:43.815 --> 00:14:45.415
+<v Speaker 0>But if we run this as it is,
+
+00:14:45.415 --> 00:14:46.935
+<v Speaker 0>we get a whole bunch of log output.
+
+00:14:48.029 --> 00:14:50.589
+<v Speaker 0>This output looks like the tracing library. Would
+
+00:14:50.589 --> 00:14:53.709
+<v Speaker 0>that be Exactly. Yes. We are always using
+
+00:14:53.709 --> 00:14:56.589
+<v Speaker 1>it a lot. Yeah. I think everybody uses
+
+00:14:56.589 --> 00:14:58.830
+<v Speaker 0>the tracing library for for output these days.
+
+00:14:58.830 --> 00:15:00.029
+<v Speaker 0>It's it's it's wonderful.
+
+00:15:01.995 --> 00:15:03.835
+<v Speaker 0>Alright. Do I have a search engine?
+
+00:15:05.595 --> 00:15:07.835
+<v Speaker 1>So what you can open yes. You can
+
+00:15:07.835 --> 00:15:09.515
+<v Speaker 1>open your web browser.
+
+00:15:09.915 --> 00:15:12.555
+<v Speaker 1>Like, you can you can click on Oh,
+
+00:15:12.555 --> 00:15:14.635
+<v Speaker 0>yeah. Just above there is a link if
+
+00:15:14.635 --> 00:15:15.035
+<v Speaker 1>you want.
+
+00:15:18.250 --> 00:15:19.850
+<v Speaker 0>Alright. So we just got a little bit
+
+00:15:19.850 --> 00:15:22.810
+<v Speaker 0>of There is a solution. There is also
+
+00:15:23.050 --> 00:15:25.130
+<v Speaker 1>a small user interface, so it can be
+
+00:15:25.130 --> 00:15:26.650
+<v Speaker 1>nice to just
+
+00:15:27.130 --> 00:15:28.490
+<v Speaker 1>hit the root
+
+00:15:28.810 --> 00:15:29.210
+<v Speaker 1>URL.
+
+00:15:30.385 --> 00:15:33.185
+<v Speaker 1>Yeah. That's it. Nice. Wasn't expecting that, but
+
+00:15:33.185 --> 00:15:33.905
+<v Speaker 0>I'm happy.
+
+00:15:35.105 --> 00:15:36.705
+<v Speaker 1>So you can you can get the list
+
+00:15:36.705 --> 00:15:37.745
+<v Speaker 1>of indexes
+
+00:15:38.705 --> 00:15:40.705
+<v Speaker 1>on the left and here.
+
+00:15:41.505 --> 00:15:43.825
+<v Speaker 0>So out the box then, Quickwit is sending
+
+00:15:43.825 --> 00:15:46.070
+<v Speaker 0>its own logs to itself. Is that correct?
+
+00:15:46.630 --> 00:15:49.510
+<v Speaker 1>Not by default. So what you can do
+
+00:15:49.510 --> 00:15:51.830
+<v Speaker 1>very simply is to send the traces.
+
+00:15:52.230 --> 00:15:55.110
+<v Speaker 1>Like, traces are more powerful, so we so
+
+00:15:55.110 --> 00:15:55.990
+<v Speaker 1>if
+
+00:15:55.990 --> 00:15:57.350
+<v Speaker 1>you use, like, two
+
+00:15:58.175 --> 00:16:01.855
+<v Speaker 1>environment variables, you can send tray Quickwit traces
+
+00:16:01.855 --> 00:16:03.055
+<v Speaker 1>into Quickwit.
+
+00:16:03.855 --> 00:16:05.454
+<v Speaker 1>But that's very common setup.
+
+00:16:05.615 --> 00:16:08.175
+<v Speaker 1>I can give you the environment variables
+
+00:16:08.334 --> 00:16:10.495
+<v Speaker 1>if you want. But so that you can
+
+00:16:10.495 --> 00:16:11.935
+<v Speaker 1>have something already
+
+00:16:12.150 --> 00:16:13.190
+<v Speaker 1>in your
+
+00:16:13.590 --> 00:16:15.190
+<v Speaker 0>Oh, so it just creates the indexes up
+
+00:16:15.190 --> 00:16:17.030
+<v Speaker 0>front, but there's not actually any any data
+
+00:16:17.030 --> 00:16:18.390
+<v Speaker 0>at the moment. Exactly.
+
+00:16:18.950 --> 00:16:21.350
+<v Speaker 0>Or indices, I guess, I should say. Correct
+
+00:16:21.350 --> 00:16:22.070
+<v Speaker 0>myself.
+
+00:16:23.350 --> 00:16:25.030
+<v Speaker 0>Although it says the index is here, I'll
+
+00:16:25.030 --> 00:16:26.230
+<v Speaker 0>just take it. We'll go with that. Alright.
+
+00:16:26.834 --> 00:16:28.595
+<v Speaker 0>So let's cover this up with the terminology,
+
+00:16:28.595 --> 00:16:29.875
+<v Speaker 0>and I'm sure this is covered in the
+
+00:16:29.875 --> 00:16:31.394
+<v Speaker 0>docs. But, you know, let's go off script
+
+00:16:31.394 --> 00:16:33.954
+<v Speaker 0>a little bit. We pulled up this UI.
+
+00:16:34.675 --> 00:16:36.115
+<v Speaker 0>We've got the query editor, but we don't
+
+00:16:36.115 --> 00:16:38.754
+<v Speaker 0>have any data yet. So we have cluster
+
+00:16:38.754 --> 00:16:41.380
+<v Speaker 0>information and config here, and we can see
+
+00:16:41.380 --> 00:16:44.580
+<v Speaker 0>notes. So this thing is obviously horizontally scalable.
+
+00:16:44.580 --> 00:16:45.780
+<v Speaker 0>We'll talk about that later.
+
+00:16:46.180 --> 00:16:47.220
+<v Speaker 0>We've got clusters,
+
+00:16:47.460 --> 00:16:49.940
+<v Speaker 0>node info. We've got the API documentation, which
+
+00:16:49.940 --> 00:16:51.380
+<v Speaker 0>is always nice to have embedded, and we
+
+00:16:51.380 --> 00:16:52.500
+<v Speaker 0>have indices and indexes.
+
+00:16:52.955 --> 00:16:55.275
+<v Speaker 0>So what is the vocabulary that people need
+
+00:16:55.275 --> 00:16:57.835
+<v Speaker 0>to understand when they're working with Quickwit? What
+
+00:16:57.835 --> 00:16:59.595
+<v Speaker 0>is it index in a specific
+
+00:16:59.755 --> 00:17:00.715
+<v Speaker 0>implementation?
+
+00:17:02.555 --> 00:17:04.875
+<v Speaker 1>Yeah. So like in Elasticsearch,
+
+00:17:05.419 --> 00:17:06.539
+<v Speaker 1>you define
+
+00:17:07.339 --> 00:17:09.579
+<v Speaker 1>you you don't have tables like in SQL.
+
+00:17:09.579 --> 00:17:12.140
+<v Speaker 1>You create your index and you put, like,
+
+00:17:12.140 --> 00:17:15.020
+<v Speaker 1>your JSON documents in it. That's it. And
+
+00:17:15.020 --> 00:17:17.980
+<v Speaker 1>for each index, you have to define a
+
+00:17:17.980 --> 00:17:18.299
+<v Speaker 1>mapping.
+
+00:17:19.135 --> 00:17:21.454
+<v Speaker 1>So if you if you click, for example,
+
+00:17:21.454 --> 00:17:24.014
+<v Speaker 1>on the trace index here,
+
+00:17:24.895 --> 00:17:25.454
+<v Speaker 1>you
+
+00:17:25.775 --> 00:17:28.335
+<v Speaker 1>have a small summary, and then you can
+
+00:17:28.494 --> 00:17:29.534
+<v Speaker 1>go to the
+
+00:17:29.855 --> 00:17:31.135
+<v Speaker 1>dot mapping tab
+
+00:17:31.600 --> 00:17:33.760
+<v Speaker 1>where you will see that we will prepare
+
+00:17:33.760 --> 00:17:36.080
+<v Speaker 1>fine, like, all the fields needed
+
+00:17:36.480 --> 00:17:37.119
+<v Speaker 1>for
+
+00:17:38.320 --> 00:17:39.440
+<v Speaker 1>a trace model.
+
+00:17:39.760 --> 00:17:43.200
+<v Speaker 1>We base this mapping on the open telemetry
+
+00:17:43.200 --> 00:17:45.284
+<v Speaker 1>model because it's
+
+00:17:45.684 --> 00:17:46.725
+<v Speaker 1>commonly used.
+
+00:17:46.885 --> 00:17:48.644
+<v Speaker 1>We did the same for logs.
+
+00:17:48.804 --> 00:17:50.565
+<v Speaker 1>And here, you have a bunch of fields,
+
+00:17:50.565 --> 00:17:52.804
+<v Speaker 1>like, the same way as Elasticsearch is a
+
+00:17:52.804 --> 00:17:53.604
+<v Speaker 1>bit different.
+
+00:17:54.164 --> 00:17:55.044
+<v Speaker 1>There
+
+00:17:55.044 --> 00:17:56.405
+<v Speaker 1>is one big difference
+
+00:17:58.410 --> 00:18:00.490
+<v Speaker 1>on the mapping part because
+
+00:18:01.210 --> 00:18:03.530
+<v Speaker 1>one thing where Quickwit is quite powerful is
+
+00:18:03.530 --> 00:18:04.970
+<v Speaker 1>on the part.
+
+00:18:04.970 --> 00:18:07.210
+<v Speaker 1>You don't you don't have to define your
+
+00:18:07.210 --> 00:18:10.410
+<v Speaker 1>schema. You can just define one timestamp field,
+
+00:18:10.570 --> 00:18:13.404
+<v Speaker 1>and everything can be dynamic.
+
+00:18:14.205 --> 00:18:16.605
+<v Speaker 1>And you don't you you won't have the
+
+00:18:16.605 --> 00:18:18.044
+<v Speaker 1>issues like
+
+00:18:18.125 --> 00:18:21.485
+<v Speaker 1>conflicting types, for example, because we we distinguish
+
+00:18:21.485 --> 00:18:24.044
+<v Speaker 1>in the in our database. We distinguish, like,
+
+00:18:24.044 --> 00:18:24.844
+<v Speaker 1>integers,
+
+00:18:25.005 --> 00:18:27.780
+<v Speaker 1>strings. If if there are two type different
+
+00:18:27.780 --> 00:18:28.820
+<v Speaker 1>types, that's fine.
+
+00:18:29.220 --> 00:18:31.940
+<v Speaker 1>We can agree do aggregations on different types,
+
+00:18:31.940 --> 00:18:34.420
+<v Speaker 1>so there's no there's no problem, no conflicts.
+
+00:18:34.580 --> 00:18:36.500
+<v Speaker 1>So it can be very flexible
+
+00:18:36.580 --> 00:18:38.500
+<v Speaker 1>for it and especially for in the log
+
+00:18:38.500 --> 00:18:39.940
+<v Speaker 1>space where you don't know
+
+00:18:40.654 --> 00:18:43.375
+<v Speaker 1>your schema, it's it's pretty efficient. So here
+
+00:18:43.375 --> 00:18:44.735
+<v Speaker 1>for OpenTelemetry,
+
+00:18:44.735 --> 00:18:46.014
+<v Speaker 1>you have the full mapping,
+
+00:18:47.135 --> 00:18:50.014
+<v Speaker 1>can be useful. And for some mapping, for
+
+00:18:50.014 --> 00:18:51.534
+<v Speaker 1>example, if you look at attributes,
+
+00:18:52.909 --> 00:18:55.630
+<v Speaker 1>like, resource attributes, if you go down in
+
+00:18:56.029 --> 00:18:57.309
+<v Speaker 1>you just have to go down in the
+
+00:18:57.309 --> 00:18:57.789
+<v Speaker 1>map.
+
+00:18:58.429 --> 00:18:58.669
+<v Speaker 1>You
+
+00:18:59.230 --> 00:19:01.710
+<v Speaker 1>if you look for resource attributes, you will
+
+00:19:01.710 --> 00:19:03.950
+<v Speaker 1>see that it's a JSON field. And the
+
+00:19:03.950 --> 00:19:06.445
+<v Speaker 1>fact that if it's JSON, you can put
+
+00:19:06.445 --> 00:19:08.924
+<v Speaker 1>everything in it. Like, for example, links, it's
+
+00:19:08.924 --> 00:19:10.284
+<v Speaker 1>an array of JSON.
+
+00:19:11.165 --> 00:19:13.325
+<v Speaker 1>And you can put every field in it,
+
+00:19:13.325 --> 00:19:14.924
+<v Speaker 1>and you will be able to search through
+
+00:19:14.924 --> 00:19:15.565
+<v Speaker 1>them.
+
+00:19:16.365 --> 00:19:17.325
+<v Speaker 0>Oh, very nice.
+
+00:19:18.730 --> 00:19:20.330
+<v Speaker 0>Alright. Yeah. I was gonna ask about that
+
+00:19:20.330 --> 00:19:21.529
+<v Speaker 0>if I've ever been had to have a
+
+00:19:21.529 --> 00:19:23.450
+<v Speaker 0>schema. So I like the the flexibility that
+
+00:19:23.450 --> 00:19:26.570
+<v Speaker 0>it can just pull in stuff. Can I
+
+00:19:26.570 --> 00:19:28.490
+<v Speaker 0>mark an index as strict and that it
+
+00:19:28.490 --> 00:19:31.544
+<v Speaker 0>won't accept anything that doesn't directly
+
+00:19:31.625 --> 00:19:32.264
+<v Speaker 0>Exactly?
+
+00:19:32.585 --> 00:19:34.825
+<v Speaker 1>Okay. Yeah. Exactly. You you you have this
+
+00:19:34.825 --> 00:19:36.424
+<v Speaker 1>strict mode to avoid.
+
+00:19:37.465 --> 00:19:39.784
+<v Speaker 0>Oh. You're a big a big mess. Alright.
+
+00:19:39.784 --> 00:19:40.424
+<v Speaker 0>Awesome.
+
+00:19:40.664 --> 00:19:41.304
+<v Speaker 0>Nice.
+
+00:19:41.865 --> 00:19:44.184
+<v Speaker 0>Alright. We have a comment
+
+00:19:44.550 --> 00:19:46.150
+<v Speaker 0>saying hello. First time catching one of these
+
+00:19:46.150 --> 00:19:48.470
+<v Speaker 0>live. Well, thank you for joining us. If
+
+00:19:48.470 --> 00:19:49.590
+<v Speaker 0>you're saying if you want to see with
+
+00:19:49.590 --> 00:19:51.990
+<v Speaker 0>Quickwit or you have a question, please feel
+
+00:19:52.070 --> 00:19:53.750
+<v Speaker 0>free to follow-up in the comments.
+
+00:19:54.550 --> 00:19:57.750
+<v Speaker 0>Alright. So we got index settings, search settings,
+
+00:19:57.750 --> 00:19:58.550
+<v Speaker 0>retention,
+
+00:19:58.550 --> 00:19:59.030
+<v Speaker 0>splits,
+
+00:19:59.475 --> 00:20:00.835
+<v Speaker 0>and sources.
+
+00:20:01.315 --> 00:20:03.955
+<v Speaker 0>So with retention settings, I'm assuming
+
+00:20:04.115 --> 00:20:06.195
+<v Speaker 0>we can configure the time to live on
+
+00:20:06.195 --> 00:20:07.795
+<v Speaker 0>the record so we can auto expire them
+
+00:20:07.795 --> 00:20:09.955
+<v Speaker 0>after twenty four hours, four days,
+
+00:20:10.115 --> 00:20:11.155
+<v Speaker 0>whatever. Would that be correct?
+
+00:20:12.010 --> 00:20:14.009
+<v Speaker 1>Yes. That's more or less correct.
+
+00:20:16.010 --> 00:20:16.809
+<v Speaker 1>What we do
+
+00:20:18.330 --> 00:20:20.010
+<v Speaker 1>so we now we I need to enter
+
+00:20:20.010 --> 00:20:23.370
+<v Speaker 1>a bit how Quickwit index things to explain
+
+00:20:23.370 --> 00:20:23.850
+<v Speaker 1>this.
+
+00:20:24.250 --> 00:20:26.169
+<v Speaker 1>When you push documents
+
+00:20:26.650 --> 00:20:27.610
+<v Speaker 1>into Quickwit,
+
+00:20:27.904 --> 00:20:30.465
+<v Speaker 1>Quickwit will create what we call splits. So
+
+00:20:30.465 --> 00:20:31.184
+<v Speaker 1>it's
+
+00:20:31.424 --> 00:20:33.584
+<v Speaker 1>a small piece of index, basically.
+
+00:20:33.904 --> 00:20:35.344
+<v Speaker 1>In the it's independent,
+
+00:20:35.664 --> 00:20:38.304
+<v Speaker 1>and Quickwit will just create
+
+00:20:38.544 --> 00:20:41.264
+<v Speaker 1>a bunch of splits, maybe a few hundreds
+
+00:20:41.264 --> 00:20:42.304
+<v Speaker 1>or thousands.
+
+00:20:42.919 --> 00:20:45.960
+<v Speaker 1>And, like, it's a big equivalent of segment
+
+00:20:45.960 --> 00:20:47.159
+<v Speaker 1>in Elasticsearch.
+
+00:20:47.640 --> 00:20:50.919
+<v Speaker 1>And and Quickwit will also do some merging
+
+00:20:50.919 --> 00:20:53.880
+<v Speaker 1>to make search more efficient. So if you
+
+00:20:53.880 --> 00:20:56.360
+<v Speaker 1>have 10 small split, it will merge them
+
+00:20:56.360 --> 00:20:57.239
+<v Speaker 1>into one.
+
+00:20:57.880 --> 00:20:58.520
+<v Speaker 1>And
+
+00:20:59.365 --> 00:21:00.885
+<v Speaker 1>what people generally
+
+00:21:00.885 --> 00:21:01.605
+<v Speaker 1>do
+
+00:21:01.924 --> 00:21:04.004
+<v Speaker 1>is they will just
+
+00:21:04.485 --> 00:21:07.044
+<v Speaker 1>remove those splits if they are
+
+00:21:07.125 --> 00:21:08.804
+<v Speaker 1>older than thirty days.
+
+00:21:09.445 --> 00:21:10.885
+<v Speaker 1>So we don't use
+
+00:21:11.605 --> 00:21:14.919
+<v Speaker 1>it's not a per document retention setting. It's
+
+00:21:14.919 --> 00:21:17.799
+<v Speaker 1>a split it's on on the split.
+
+00:21:17.960 --> 00:21:20.759
+<v Speaker 1>So it's really efficient. We don't have to
+
+00:21:21.159 --> 00:21:23.480
+<v Speaker 1>rebuild the entire split if we want to
+
+00:21:23.480 --> 00:21:25.080
+<v Speaker 1>remove only 10 documents, for example.
+
+00:21:25.865 --> 00:21:26.585
+<v Speaker 1>And
+
+00:21:26.745 --> 00:21:29.385
+<v Speaker 1>generally, it's sufficient because you would have
+
+00:21:29.705 --> 00:21:31.465
+<v Speaker 1>a few split per days. And
+
+00:21:31.785 --> 00:21:33.865
+<v Speaker 1>once once they are over
+
+00:21:33.945 --> 00:21:36.425
+<v Speaker 1>older than thirty days, it will be deleted.
+
+00:21:36.425 --> 00:21:37.305
+<v Speaker 1>They will be deleted.
+
+00:21:40.310 --> 00:21:40.950
+<v Speaker 0>Okay.
+
+00:21:41.510 --> 00:21:42.310
+<v Speaker 0>Are there,
+
+00:21:43.750 --> 00:21:46.950
+<v Speaker 0>you know, any cardinality limits or concerns
+
+00:21:46.950 --> 00:21:50.070
+<v Speaker 0>when we start to index things within Quickwit?
+
+00:21:50.070 --> 00:21:50.550
+<v Speaker 0>Like,
+
+00:21:51.990 --> 00:21:55.510
+<v Speaker 0>if I have a
+
+00:21:53.925 --> 00:21:56.725
+<v Speaker 0>a million or 10,000,000 or a billion series,
+
+00:21:56.725 --> 00:21:58.965
+<v Speaker 0>like, have you stress tested it to that
+
+00:21:58.965 --> 00:21:59.845
+<v Speaker 0>kind of level?
+
+00:22:00.565 --> 00:22:02.805
+<v Speaker 1>Billion what? Bit documents?
+
+00:22:03.445 --> 00:22:04.405
+<v Speaker 0>Yeah. So
+
+00:22:04.885 --> 00:22:05.925
+<v Speaker 0>when typically,
+
+00:22:06.900 --> 00:22:09.220
+<v Speaker 0>when you when you index stuff, right, you're
+
+00:22:09.220 --> 00:22:11.860
+<v Speaker 0>you're indexing on certain properties within the document.
+
+00:22:11.860 --> 00:22:14.340
+<v Speaker 0>And then if I write one document where
+
+00:22:14.340 --> 00:22:15.380
+<v Speaker 0>there's a
+
+00:22:16.100 --> 00:22:19.140
+<v Speaker 0>a value of country and then I insert
+
+00:22:18.675 --> 00:22:20.515
+<v Speaker 0>a thousand countries,
+
+00:22:20.595 --> 00:22:22.595
+<v Speaker 0>we have a cardinality of a Okay. Okay.
+
+00:22:22.595 --> 00:22:24.435
+<v Speaker 0>And then if that explodes, then the query
+
+00:22:24.435 --> 00:22:27.635
+<v Speaker 0>performance can essentially be crippled
+
+00:22:27.635 --> 00:22:29.475
+<v Speaker 0>because the cardinality is too high for the
+
+00:22:29.475 --> 00:22:32.600
+<v Speaker 0>indexes to optimize for. Is that something
+
+00:22:32.600 --> 00:22:34.919
+<v Speaker 0>that's been challenged or fixed with with Quickwit?
+
+00:22:35.240 --> 00:22:36.440
+<v Speaker 1>So, generally,
+
+00:22:36.600 --> 00:22:38.840
+<v Speaker 1>with search engine, the nice thing is that
+
+00:22:38.840 --> 00:22:40.839
+<v Speaker 1>you have those inverted index
+
+00:22:41.080 --> 00:22:41.879
+<v Speaker 1>indexes.
+
+00:22:42.360 --> 00:22:43.479
+<v Speaker 1>So it's really,
+
+00:22:43.799 --> 00:22:44.039
+<v Speaker 1>searching
+
+00:22:44.985 --> 00:22:46.905
+<v Speaker 1>to find the needle in the stack is
+
+00:22:46.905 --> 00:22:48.184
+<v Speaker 1>working pretty well.
+
+00:22:49.625 --> 00:22:51.945
+<v Speaker 1>What's happening is that if you have a
+
+00:22:51.945 --> 00:22:53.384
+<v Speaker 1>high cardinality fields,
+
+00:22:53.785 --> 00:22:55.465
+<v Speaker 1>indexing is a bit slower.
+
+00:22:55.545 --> 00:22:57.785
+<v Speaker 1>You will see that it is it will
+
+00:22:58.210 --> 00:23:01.170
+<v Speaker 1>get it will get slower because we will
+
+00:23:01.090 --> 00:23:03.890
+<v Speaker 1>like, the index would be bigger, so you
+
+00:23:03.890 --> 00:23:06.290
+<v Speaker 1>need to allocate more more memory for that.
+
+00:23:06.850 --> 00:23:09.250
+<v Speaker 1>But it will work really well. Like,
+
+00:23:10.875 --> 00:23:13.675
+<v Speaker 1>I tested, like, I tested with fields, with
+
+00:23:13.675 --> 00:23:15.995
+<v Speaker 1>millions with the cardinality in millions,
+
+00:23:16.315 --> 00:23:18.955
+<v Speaker 1>more than millions, 10 millions, and, like, there
+
+00:23:18.955 --> 00:23:21.915
+<v Speaker 1>is no issue doing that. Like, a search
+
+00:23:21.915 --> 00:23:22.315
+<v Speaker 1>engine
+
+00:23:23.780 --> 00:23:26.100
+<v Speaker 1>is can handle this pretty
+
+00:23:26.900 --> 00:23:28.019
+<v Speaker 1>pretty efficiently.
+
+00:23:28.740 --> 00:23:30.820
+<v Speaker 0>Yeah. And I think the reason I asked
+
+00:23:30.820 --> 00:23:32.500
+<v Speaker 0>is that, obviously, we have got the index
+
+00:23:32.500 --> 00:23:34.260
+<v Speaker 0>settings, and then we've got the retentions.
+
+00:23:35.075 --> 00:23:37.955
+<v Speaker 0>And if I've got a low retention threshold
+
+00:23:37.955 --> 00:23:39.875
+<v Speaker 0>where the index has to be purged
+
+00:23:40.115 --> 00:23:42.915
+<v Speaker 0>regularly with a high cardinality, I assume those
+
+00:23:42.915 --> 00:23:44.514
+<v Speaker 0>could be conflicting.
+
+00:23:44.675 --> 00:23:46.675
+<v Speaker 0>But I don't wanna create problems that don't
+
+00:23:46.675 --> 00:23:48.514
+<v Speaker 0>exist, so we'll come back for that
+
+00:23:48.995 --> 00:23:50.355
+<v Speaker 0>later on or another time.
+
+00:23:51.210 --> 00:23:52.090
+<v Speaker 0>I think
+
+00:23:52.410 --> 00:23:54.409
+<v Speaker 0>we should create an index
+
+00:23:54.570 --> 00:23:55.210
+<v Speaker 0>and
+
+00:23:55.370 --> 00:23:57.610
+<v Speaker 0>write some data, which I'll assume
+
+00:23:57.929 --> 00:24:00.090
+<v Speaker 0>is where this is going to go. Yeah.
+
+00:24:00.250 --> 00:24:01.049
+<v Speaker 0>So
+
+00:24:02.169 --> 00:24:04.330
+<v Speaker 0>in order to create an index, we need
+
+00:24:04.330 --> 00:24:05.049
+<v Speaker 0>to send
+
+00:24:06.955 --> 00:24:08.715
+<v Speaker 0>an index con oh, we have to download
+
+00:24:08.715 --> 00:24:11.195
+<v Speaker 0>an index config first. Alright. Okay. Which I'm
+
+00:24:11.195 --> 00:24:13.034
+<v Speaker 0>assuming is just this one here. So let's
+
+00:24:13.034 --> 00:24:14.075
+<v Speaker 0>copy this
+
+00:24:15.034 --> 00:24:17.034
+<v Speaker 0>and get a new tab.
+
+00:24:17.914 --> 00:24:20.155
+<v Speaker 0>I'm gonna call this index config dot YAML.
+
+00:24:21.289 --> 00:24:24.010
+<v Speaker 0>And all this is doing is configuring some
+
+00:24:24.010 --> 00:24:26.570
+<v Speaker 0>fields, so title body creation.
+
+00:24:27.850 --> 00:24:29.690
+<v Speaker 0>It's an RFC3239
+
+00:24:29.690 --> 00:24:30.809
+<v Speaker 0>for the dates.
+
+00:24:31.210 --> 00:24:34.169
+<v Speaker 0>And then we've got the precision sentence and
+
+00:24:34.169 --> 00:24:36.169
+<v Speaker 0>a second. I'm assuming we can change that
+
+00:24:36.169 --> 00:24:36.570
+<v Speaker 0>to
+
+00:24:37.065 --> 00:24:38.184
+<v Speaker 0>milliseconds,
+
+00:24:38.184 --> 00:24:39.065
+<v Speaker 0>nanoseconds.
+
+00:24:39.065 --> 00:24:41.224
+<v Speaker 0>What what's supported here under precision?
+
+00:24:41.784 --> 00:24:42.424
+<v Speaker 1>Yeah.
+
+00:24:42.585 --> 00:24:43.144
+<v Speaker 1>So
+
+00:24:44.105 --> 00:24:46.344
+<v Speaker 1>so so so we store,
+
+00:24:46.585 --> 00:24:47.065
+<v Speaker 1>like,
+
+00:24:47.625 --> 00:24:49.945
+<v Speaker 1>we we you have different storage here because
+
+00:24:49.945 --> 00:24:52.985
+<v Speaker 1>it's it's written fast precision, and it's
+
+00:24:53.440 --> 00:24:55.200
+<v Speaker 1>so we need you need to understand that
+
+00:24:55.200 --> 00:24:57.920
+<v Speaker 1>you have different storage parked in Quickwit.
+
+00:24:57.920 --> 00:25:01.520
+<v Speaker 1>So there is the document storage where we
+
+00:25:01.520 --> 00:25:04.320
+<v Speaker 1>store, like, the data as it is given,
+
+00:25:04.560 --> 00:25:06.955
+<v Speaker 1>or there is an option to ignore and
+
+00:25:06.955 --> 00:25:09.035
+<v Speaker 1>not store in the docs documents. Sorry. So
+
+00:25:09.035 --> 00:25:11.195
+<v Speaker 1>it's it's a kind of host store. So
+
+00:25:11.195 --> 00:25:12.795
+<v Speaker 1>if you have a document ID, we will
+
+00:25:12.795 --> 00:25:16.235
+<v Speaker 1>be able to fetch, like, the old document
+
+00:25:16.315 --> 00:25:17.754
+<v Speaker 1>from from
+
+00:25:18.395 --> 00:25:19.595
+<v Speaker 1>the the database.
+
+00:25:20.610 --> 00:25:21.169
+<v Speaker 1>And
+
+00:25:21.490 --> 00:25:24.450
+<v Speaker 1>then we have also columnar storage, but we
+
+00:25:24.450 --> 00:25:27.409
+<v Speaker 1>can we we call that fast fields.
+
+00:25:27.650 --> 00:25:29.409
+<v Speaker 1>Mhmm. And in this case,
+
+00:25:29.890 --> 00:25:32.930
+<v Speaker 1>depending on your data, you don't it's not
+
+00:25:32.930 --> 00:25:34.210
+<v Speaker 1>necessary to
+
+00:25:34.774 --> 00:25:38.614
+<v Speaker 1>to keep, like, the nanosecond precision, for example.
+
+00:25:38.615 --> 00:25:40.054
+<v Speaker 1>And being
+
+00:25:40.615 --> 00:25:43.815
+<v Speaker 1>at seconds level, it can be sufficient
+
+00:25:43.815 --> 00:25:46.054
+<v Speaker 1>if you just want to filter by
+
+00:25:46.215 --> 00:25:46.934
+<v Speaker 1>seconds.
+
+00:25:47.095 --> 00:25:48.800
+<v Speaker 1>So it depends on your use use case.
+
+00:25:48.800 --> 00:25:51.200
+<v Speaker 1>Generally, for upsides the use case, we use
+
+00:25:51.200 --> 00:25:52.799
+<v Speaker 1>milliseconds per sessions.
+
+00:25:53.360 --> 00:25:54.000
+<v Speaker 0>Okay.
+
+00:25:55.280 --> 00:25:56.000
+<v Speaker 0>Nice.
+
+00:25:56.640 --> 00:25:58.720
+<v Speaker 0>I see that we're using the default tokenizer
+
+00:25:58.720 --> 00:26:00.080
+<v Speaker 0>for the title and the body.
+
+00:26:00.845 --> 00:26:03.725
+<v Speaker 0>What other tokenizers exist within Quickwit?
+
+00:26:05.405 --> 00:26:07.645
+<v Speaker 1>Yeah. So the default tokenizer is
+
+00:26:07.965 --> 00:26:10.365
+<v Speaker 1>rather simple, and it it's mainly
+
+00:26:11.085 --> 00:26:12.684
+<v Speaker 1>for log stuff.
+
+00:26:12.845 --> 00:26:13.085
+<v Speaker 0>Mhmm.
+
+00:26:13.679 --> 00:26:16.559
+<v Speaker 1>And what you will do, we just split,
+
+00:26:16.559 --> 00:26:19.919
+<v Speaker 1>like, every time it enters a space or
+
+00:26:20.159 --> 00:26:22.799
+<v Speaker 1>comma or, like, a punctuation mark.
+
+00:26:23.120 --> 00:26:24.719
+<v Speaker 1>It will just split the text.
+
+00:26:25.360 --> 00:26:28.320
+<v Speaker 1>You can you you have an English tokenizer
+
+00:26:28.320 --> 00:26:30.615
+<v Speaker 1>where you have some stemming.
+
+00:26:31.015 --> 00:26:32.695
+<v Speaker 1>You have also some
+
+00:26:33.175 --> 00:26:34.535
+<v Speaker 1>we have a multilanguage
+
+00:26:34.535 --> 00:26:35.975
+<v Speaker 1>tokenizer too.
+
+00:26:36.535 --> 00:26:37.495
+<v Speaker 1>You
+
+00:26:37.495 --> 00:26:39.735
+<v Speaker 1>have an tokenizer.
+
+00:26:39.735 --> 00:26:41.975
+<v Speaker 1>You have a a bunch of of tokenizer.
+
+00:26:41.975 --> 00:26:43.815
+<v Speaker 1>You can come you can also build your
+
+00:26:43.815 --> 00:26:46.549
+<v Speaker 1>own tokenizer your own tokenizer if you want.
+
+00:26:47.190 --> 00:26:50.549
+<v Speaker 1>And for logs and, generally, you don't want
+
+00:26:50.549 --> 00:26:52.870
+<v Speaker 1>to make things complex. You want to keep
+
+00:26:52.870 --> 00:26:55.110
+<v Speaker 1>things very, very simple, so to be fast
+
+00:26:55.110 --> 00:26:56.149
+<v Speaker 1>at indexing.
+
+00:26:56.870 --> 00:26:57.429
+<v Speaker 0>Alright.
+
+00:26:58.395 --> 00:27:00.955
+<v Speaker 0>Let's get us an index then. So
+
+00:27:01.275 --> 00:27:03.515
+<v Speaker 0>let's copy this. So that's it's just using
+
+00:27:03.515 --> 00:27:05.195
+<v Speaker 0>the Quickwit command, but there is a current
+
+00:27:05.195 --> 00:27:07.275
+<v Speaker 0>post issue, which is cool.
+
+00:27:08.315 --> 00:27:09.915
+<v Speaker 0>So let's just run.
+
+00:27:10.715 --> 00:27:12.075
+<v Speaker 0>Oh, I'm not in my directory.
+
+00:27:17.529 --> 00:27:20.330
+<v Speaker 0>Alright. Let's do this split. That keeps me
+
+00:27:20.330 --> 00:27:21.209
+<v Speaker 0>in my directory.
+
+00:27:23.289 --> 00:27:25.049
+<v Speaker 0>Now where did I put that fail though?
+
+00:27:25.049 --> 00:27:25.929
+<v Speaker 0>That's a good question.
+
+00:27:29.895 --> 00:27:30.774
+<v Speaker 0>Cool.
+
+00:27:31.335 --> 00:27:32.134
+<v Speaker 0>Alright.
+
+00:27:33.415 --> 00:27:36.135
+<v Speaker 0>So we're going to ask Quickwit to create
+
+00:27:36.135 --> 00:27:38.534
+<v Speaker 0>our new index using this config.
+
+00:27:38.695 --> 00:27:40.855
+<v Speaker 0>Let's jump back to the user interface,
+
+00:27:43.669 --> 00:27:46.309
+<v Speaker 0>And now we have our stack overflow index.
+
+00:27:49.750 --> 00:27:50.549
+<v Speaker 0>Nice.
+
+00:27:51.350 --> 00:27:53.510
+<v Speaker 0>So this this now has like, I did
+
+00:27:53.510 --> 00:27:55.830
+<v Speaker 0>notice on our YAML that we applied, we
+
+00:27:55.830 --> 00:27:57.909
+<v Speaker 0>didn't set the mode. So the default mode
+
+00:27:57.909 --> 00:28:00.305
+<v Speaker 0>is dynamic, but you can you can set
+
+00:28:00.305 --> 00:28:01.265
+<v Speaker 0>it to strict.
+
+00:28:02.145 --> 00:28:02.785
+<v Speaker 0>So
+
+00:28:03.745 --> 00:28:06.705
+<v Speaker 0>I'm I'm I'm very curious now because now
+
+00:28:06.705 --> 00:28:08.145
+<v Speaker 0>that we have an index,
+
+00:28:08.865 --> 00:28:11.025
+<v Speaker 0>if I come in and change the index,
+
+00:28:11.025 --> 00:28:12.305
+<v Speaker 0>can I reapply it over the top?
+
+00:28:14.550 --> 00:28:16.309
+<v Speaker 1>Currently, we don't support updates.
+
+00:28:16.390 --> 00:28:17.029
+<v Speaker 0>Okay.
+
+00:28:17.510 --> 00:28:18.630
+<v Speaker 1>So it's
+
+00:28:18.630 --> 00:28:20.870
+<v Speaker 1>it's on the road map, but you
+
+00:28:20.870 --> 00:28:23.509
+<v Speaker 1>have to to delete it right now.
+
+00:28:24.630 --> 00:28:26.390
+<v Speaker 0>I well, I I I don't need to.
+
+00:28:26.390 --> 00:28:27.985
+<v Speaker 0>I was just curious because I like to
+
+00:28:27.985 --> 00:28:30.784
+<v Speaker 0>ask questions. But I'm assuming if we
+
+00:28:31.585 --> 00:28:34.145
+<v Speaker 0>remove the title in the body because the
+
+00:28:34.145 --> 00:28:36.145
+<v Speaker 0>default mode is dynamic, I could apply this,
+
+00:28:36.145 --> 00:28:37.825
+<v Speaker 0>and it would essentially be the same. Is
+
+00:28:37.825 --> 00:28:39.105
+<v Speaker 0>that a fair assumption?
+
+00:28:40.465 --> 00:28:43.800
+<v Speaker 1>So you need to understand, like, the default
+
+00:28:43.800 --> 00:28:44.600
+<v Speaker 1>settings
+
+00:28:45.560 --> 00:28:48.360
+<v Speaker 1>of a dynamic mode. And the dynamic mode,
+
+00:28:48.360 --> 00:28:50.279
+<v Speaker 1>we want to organize the text
+
+00:28:50.520 --> 00:28:51.399
+<v Speaker 1>by default.
+
+00:28:51.640 --> 00:28:53.639
+<v Speaker 1>Right. So that's why, like,
+
+00:28:54.040 --> 00:28:57.434
+<v Speaker 1>usually, what we do when you you identify,
+
+00:28:57.434 --> 00:28:58.715
+<v Speaker 1>like, the few the
+
+00:28:59.035 --> 00:29:00.554
+<v Speaker 1>fields where you need to
+
+00:29:00.875 --> 00:29:01.595
+<v Speaker 1>to
+
+00:29:01.914 --> 00:29:04.955
+<v Speaker 1>tokenize the text, and then everything else is
+
+00:29:06.475 --> 00:29:07.674
+<v Speaker 1>is dynamic.
+
+00:29:08.395 --> 00:29:12.149
+<v Speaker 0>Okay. Yeah. I guess that definitely makes sense.
+
+00:29:12.230 --> 00:29:12.789
+<v Speaker 0>So
+
+00:29:14.150 --> 00:29:16.710
+<v Speaker 0>alright. Now we're gonna add some documents.
+
+00:29:16.870 --> 00:29:17.509
+<v Speaker 0>So
+
+00:29:17.990 --> 00:29:19.830
+<v Speaker 0>let's download our
+
+00:29:19.910 --> 00:29:21.270
+<v Speaker 0>Stack Overflow post.
+
+00:29:24.775 --> 00:29:26.695
+<v Speaker 0>And I won't bother looking at this JSON.
+
+00:29:26.695 --> 00:29:29.174
+<v Speaker 0>Let's just get it ingested right away.
+
+00:29:31.495 --> 00:29:34.054
+<v Speaker 0>What's the force for here? Out of curiosity.
+
+00:29:34.695 --> 00:29:35.095
+<v Speaker 1>Yeah.
+
+00:29:37.300 --> 00:29:38.340
+<v Speaker 1>Like, as
+
+00:29:39.460 --> 00:29:42.180
+<v Speaker 1>it has we have the same mechanism as
+
+00:29:42.180 --> 00:29:44.820
+<v Speaker 1>in Elasticsearch is, generally, if you want to
+
+00:29:44.820 --> 00:29:47.620
+<v Speaker 1>be facet indexing, you have to batch things.
+
+00:29:47.780 --> 00:29:48.340
+<v Speaker 1>So
+
+00:29:48.980 --> 00:29:51.705
+<v Speaker 1>batching, like, you can wait twenty seconds or
+
+00:29:51.705 --> 00:29:55.305
+<v Speaker 1>thirty seconds before really committing and writing the
+
+00:29:55.305 --> 00:29:56.664
+<v Speaker 1>data structure on the disk.
+
+00:29:56.905 --> 00:29:59.304
+<v Speaker 1>For this index, by default, it's ten seconds.
+
+00:29:59.705 --> 00:30:01.545
+<v Speaker 1>Like, we commit every ten seconds. It can
+
+00:30:01.545 --> 00:30:04.425
+<v Speaker 1>be five seconds, but under, you will see
+
+00:30:04.425 --> 00:30:04.665
+<v Speaker 1>some
+
+00:30:05.269 --> 00:30:06.309
+<v Speaker 1>performance.
+
+00:30:07.990 --> 00:30:11.029
+<v Speaker 1>It will be less performance, basically. And so
+
+00:30:11.029 --> 00:30:13.909
+<v Speaker 1>here, force is just saying to Quickwit. Okay.
+
+00:30:13.909 --> 00:30:15.349
+<v Speaker 1>Just commit
+
+00:30:15.350 --> 00:30:16.309
+<v Speaker 1>immediately
+
+00:30:17.190 --> 00:30:18.949
+<v Speaker 1>so you can search
+
+00:30:19.429 --> 00:30:20.309
+<v Speaker 1>it immediately.
+
+00:30:21.455 --> 00:30:23.855
+<v Speaker 1>Nice. You don't have to wait ten seconds.
+
+00:30:24.575 --> 00:30:25.375
+<v Speaker 0>Alright.
+
+00:30:28.415 --> 00:30:29.294
+<v Speaker 0>Let's
+
+00:30:29.375 --> 00:30:30.174
+<v Speaker 0>try
+
+00:30:32.575 --> 00:30:34.975
+<v Speaker 0>throwing this reject here
+
+00:30:36.920 --> 00:30:38.520
+<v Speaker 0>When we get documents back.
+
+00:30:38.680 --> 00:30:39.640
+<v Speaker 0>Very cool.
+
+00:30:44.920 --> 00:30:47.240
+<v Speaker 0>I'm assuming I could just replicate that search
+
+00:30:47.240 --> 00:30:48.840
+<v Speaker 0>on our
+
+00:30:48.465 --> 00:30:51.264
+<v Speaker 0>user interface. So let's pull this up.
+
+00:30:52.225 --> 00:30:53.105
+<v Speaker 0>Search
+
+00:30:53.105 --> 00:30:53.904
+<v Speaker 0>and
+
+00:30:53.905 --> 00:30:54.864
+<v Speaker 0>engine.
+
+00:30:55.345 --> 00:30:55.904
+<v Speaker 0>Run.
+
+00:30:59.905 --> 00:31:01.025
+<v Speaker 0>Nice. I like it.
+
+00:31:04.010 --> 00:31:06.409
+<v Speaker 0>So that it's even things are just simple.
+
+00:31:06.409 --> 00:31:08.889
+<v Speaker 0>It just work. It's like it's just nice.
+
+00:31:08.889 --> 00:31:10.490
+<v Speaker 0>It's nice that that's all I have to
+
+00:31:10.490 --> 00:31:10.969
+<v Speaker 0>do.
+
+00:31:11.370 --> 00:31:12.169
+<v Speaker 0>Very cool.
+
+00:31:13.210 --> 00:31:14.649
+<v Speaker 0>Alright. Let's see. So
+
+00:31:15.585 --> 00:31:17.345
+<v Speaker 0>and I want us to understand
+
+00:31:17.345 --> 00:31:19.024
+<v Speaker 0>that we can okay. So this is now
+
+00:31:19.024 --> 00:31:20.465
+<v Speaker 0>getting into how to use
+
+00:31:21.424 --> 00:31:24.465
+<v Speaker 0>fields type searches. This is explicitly looking on
+
+00:31:24.465 --> 00:31:25.264
+<v Speaker 0>the title.
+
+00:31:26.145 --> 00:31:28.465
+<v Speaker 0>So let's look at this one here.
+
+00:31:30.040 --> 00:31:32.680
+<v Speaker 1>Yes. I assume there is an interesting question
+
+00:31:32.680 --> 00:31:33.880
+<v Speaker 1>for from
+
+00:31:33.880 --> 00:31:34.440
+<v Speaker 1>a
+
+00:31:35.720 --> 00:31:37.720
+<v Speaker 1>some from Blackmob band.
+
+00:31:39.160 --> 00:31:40.039
+<v Speaker 0>Sorry?
+
+00:31:40.120 --> 00:31:41.800
+<v Speaker 1>There is an I I saw that there
+
+00:31:41.800 --> 00:31:42.360
+<v Speaker 1>is an into
+
+00:31:43.640 --> 00:31:45.080
+<v Speaker 1>interesting question for Blackmob.
+
+00:31:45.554 --> 00:31:47.554
+<v Speaker 0>Right. Was too busy to play with Quickwit.
+
+00:31:47.554 --> 00:31:49.234
+<v Speaker 0>Alright. Let's see.
+
+00:31:51.794 --> 00:31:53.634
+<v Speaker 0>Okay. From a cost perspective,
+
+00:31:53.794 --> 00:31:56.355
+<v Speaker 0>it seems like traces and logs play a
+
+00:31:56.355 --> 00:31:59.235
+<v Speaker 0>special role. Is this actually the case?
+
+00:32:01.490 --> 00:32:03.810
+<v Speaker 1>Yeah. Sure. Like, he's right. So
+
+00:32:04.610 --> 00:32:07.650
+<v Speaker 1>it's and, like, the the the basic example
+
+00:32:07.650 --> 00:32:11.330
+<v Speaker 1>is to is that Quickwit has some OpenTelemetry
+
+00:32:11.650 --> 00:32:12.530
+<v Speaker 1>compatibility.
+
+00:32:12.770 --> 00:32:13.250
+<v Speaker 1>Like, we
+
+00:32:14.015 --> 00:32:15.055
+<v Speaker 1>gRPC
+
+00:32:15.535 --> 00:32:18.415
+<v Speaker 1>we we we are compatible Quickwit is compatible
+
+00:32:18.415 --> 00:32:19.695
+<v Speaker 1>with gRPC
+
+00:32:20.735 --> 00:32:24.575
+<v Speaker 1>open telemetry app API, HTTP API too. So
+
+00:32:24.575 --> 00:32:27.535
+<v Speaker 1>it's really easy to send your logs directly
+
+00:32:27.535 --> 00:32:30.550
+<v Speaker 1>into it. And I I would talk about
+
+00:32:30.550 --> 00:32:31.030
+<v Speaker 1>it
+
+00:32:31.510 --> 00:32:33.110
+<v Speaker 1>in my demo, so
+
+00:32:34.070 --> 00:32:36.310
+<v Speaker 1>I don't don't want to talk too much
+
+00:32:36.310 --> 00:32:37.669
+<v Speaker 1>of a right now.
+
+00:32:38.230 --> 00:32:38.870
+<v Speaker 0>Yeah.
+
+00:32:39.670 --> 00:32:41.270
+<v Speaker 0>So I think, you know, based on some
+
+00:32:41.270 --> 00:32:42.470
+<v Speaker 0>of the things we've covered so far, and
+
+00:32:42.470 --> 00:32:43.670
+<v Speaker 0>I don't wanna put words in your mouth
+
+00:32:43.670 --> 00:32:45.075
+<v Speaker 0>for anything like that. Right? But we did
+
+00:32:45.075 --> 00:32:46.755
+<v Speaker 0>talk about how the use cases at the
+
+00:32:46.755 --> 00:32:47.394
+<v Speaker 0>start.
+
+00:32:47.715 --> 00:32:48.914
+<v Speaker 0>I don't know. And I and I said,
+
+00:32:48.914 --> 00:32:50.995
+<v Speaker 0>are there more beyond the observability use case?
+
+00:32:50.995 --> 00:32:52.595
+<v Speaker 0>Like, from what I've seen so far, I
+
+00:32:52.595 --> 00:32:54.195
+<v Speaker 0>mean, if I really wanted to, I could
+
+00:32:54.195 --> 00:32:57.155
+<v Speaker 0>throw the entire IMDB database into this and
+
+00:32:57.155 --> 00:32:58.914
+<v Speaker 0>search for movies and actors, and it would
+
+00:32:58.914 --> 00:33:00.195
+<v Speaker 0>work just fine
+
+00:33:00.570 --> 00:33:02.249
+<v Speaker 0>based on what I wanna do. So
+
+00:33:02.649 --> 00:33:04.009
+<v Speaker 0>it's just one of those
+
+00:33:04.889 --> 00:33:06.570
+<v Speaker 0>yeah. It's a search engine where you're just
+
+00:33:06.649 --> 00:33:08.409
+<v Speaker 0>you're focusing on a particular use case, but
+
+00:33:08.409 --> 00:33:10.649
+<v Speaker 0>it does adapt very well, I think, to
+
+00:33:10.649 --> 00:33:13.210
+<v Speaker 0>other use cases. Would you agree with that?
+
+00:33:13.210 --> 00:33:14.970
+<v Speaker 1>Yep. Alright. Of course.
+
+00:33:15.725 --> 00:33:18.045
+<v Speaker 0>Now there's a challenge here already,
+
+00:33:18.205 --> 00:33:19.725
+<v Speaker 0>and I don't know if this is part
+
+00:33:19.725 --> 00:33:21.725
+<v Speaker 0>of the dogs or not. Right? But we
+
+00:33:21.725 --> 00:33:23.885
+<v Speaker 0>have title body creation date,
+
+00:33:24.765 --> 00:33:27.485
+<v Speaker 0>and there's no title or question
+
+00:33:28.285 --> 00:33:29.565
+<v Speaker 0>in these imports.
+
+00:33:31.650 --> 00:33:32.929
+<v Speaker 1>That's true.
+
+00:33:33.169 --> 00:33:35.970
+<v Speaker 1>That's fair. That's So I mean, the next
+
+00:33:35.970 --> 00:33:38.130
+<v Speaker 0>stage was to do a title and that
+
+00:33:38.130 --> 00:33:39.169
+<v Speaker 0>this should return.
+
+00:33:39.650 --> 00:33:41.169
+<v Speaker 0>Oh, it did get one.
+
+00:33:41.730 --> 00:33:44.365
+<v Speaker 0>One question had it. Yeah.
+
+00:33:45.085 --> 00:33:47.325
+<v Speaker 1>Oh, because you I I guess some documents
+
+00:33:47.325 --> 00:33:48.524
+<v Speaker 1>don't have titles,
+
+00:33:48.765 --> 00:33:51.804
+<v Speaker 1>I guess. That's it. Okay. Oh, okay. Right.
+
+00:33:52.685 --> 00:33:54.765
+<v Speaker 0>So now I don't want to find this,
+
+00:33:54.765 --> 00:33:56.605
+<v Speaker 0>but I wanna find that question another way.
+
+00:33:56.605 --> 00:33:57.885
+<v Speaker 0>So I'm gonna switch to body
+
+00:33:58.780 --> 00:34:01.180
+<v Speaker 0>and this time we will do a n
+
+00:34:01.180 --> 00:34:02.860
+<v Speaker 0>t l r just because I see that
+
+00:34:02.860 --> 00:34:05.340
+<v Speaker 0>on the thing. Oh, we got three questions.
+
+00:34:05.340 --> 00:34:06.139
+<v Speaker 0>K. Cool.
+
+00:34:07.900 --> 00:34:09.420
+<v Speaker 0>With this being the first one
+
+00:34:10.540 --> 00:34:11.580
+<v Speaker 0>and then this one.
+
+00:34:13.455 --> 00:34:15.055
+<v Speaker 0>Would this also work for
+
+00:34:16.175 --> 00:34:18.175
+<v Speaker 0>integers? So if I do one six nine
+
+00:34:18.175 --> 00:34:19.055
+<v Speaker 0>three.
+
+00:34:20.495 --> 00:34:21.135
+<v Speaker 0>Yeah.
+
+00:34:22.255 --> 00:34:22.895
+<v Speaker 0>Cool.
+
+00:34:23.855 --> 00:34:24.975
+<v Speaker 0>Very nice.
+
+00:34:25.295 --> 00:34:27.295
+<v Speaker 0>Let's see if user
+
+00:34:28.480 --> 00:34:30.880
+<v Speaker 0>one zero one has answered more than one
+
+00:34:30.880 --> 00:34:31.520
+<v Speaker 0>question.
+
+00:34:32.560 --> 00:34:33.280
+<v Speaker 0>Yeah.
+
+00:34:33.920 --> 00:34:36.320
+<v Speaker 0>Alright. I'm having fun here. This is nice.
+
+00:34:38.000 --> 00:34:40.400
+<v Speaker 0>So okay. So we executed a query and
+
+00:34:40.400 --> 00:34:42.304
+<v Speaker 0>all of this could be done with Carl,
+
+00:34:42.304 --> 00:34:44.385
+<v Speaker 0>with a JSON payload. That makes sense.
+
+00:34:44.625 --> 00:34:46.065
+<v Speaker 0>I'm curious. Can I
+
+00:34:46.944 --> 00:34:49.025
+<v Speaker 0>if I come here, let's say I wanna
+
+00:34:49.025 --> 00:34:50.464
+<v Speaker 0>create an index?
+
+00:34:53.424 --> 00:34:55.184
+<v Speaker 0>Can I just submit from here? Is it,
+
+00:34:55.184 --> 00:34:57.345
+<v Speaker 0>like, one of those? No. Okay. It just
+
+00:34:56.940 --> 00:34:58.140
+<v Speaker 0>shows me. K.
+
+00:34:59.260 --> 00:35:01.339
+<v Speaker 1>You can Oh, yeah. I can. Yeah. I'm
+
+00:35:01.339 --> 00:35:02.700
+<v Speaker 1>not using it, but I I
+
+00:35:04.140 --> 00:35:05.020
+<v Speaker 1>people
+
+00:35:05.819 --> 00:35:07.100
+<v Speaker 1>use use that.
+
+00:35:07.260 --> 00:35:09.660
+<v Speaker 1>I'm only using this to discover the endpoints
+
+00:35:09.660 --> 00:35:11.339
+<v Speaker 1>and then that's it.
+
+00:35:12.625 --> 00:35:13.425
+<v Speaker 0>Yeah.
+
+00:35:15.105 --> 00:35:16.945
+<v Speaker 0>Alright. Let's create an index this way. I
+
+00:35:16.945 --> 00:35:18.305
+<v Speaker 0>I don't know. I just I like pushing
+
+00:35:18.305 --> 00:35:19.665
+<v Speaker 0>buttons and see what happens.
+
+00:35:20.065 --> 00:35:22.225
+<v Speaker 0>And this does have an override flag, actually.
+
+00:35:22.225 --> 00:35:23.985
+<v Speaker 0>Or maybe I can update or maybe it's
+
+00:35:23.985 --> 00:35:25.185
+<v Speaker 0>not an update. Does it do a delete
+
+00:35:25.185 --> 00:35:25.745
+<v Speaker 0>and a create?
+
+00:35:27.500 --> 00:35:29.980
+<v Speaker 1>That's a good question. So here, I'll write
+
+00:35:31.100 --> 00:35:33.420
+<v Speaker 1>let me think of it. So it creates
+
+00:35:33.420 --> 00:35:34.380
+<v Speaker 1>an index.
+
+00:35:35.500 --> 00:35:37.580
+<v Speaker 1>Yeah. Exactly. So it would it would just
+
+00:35:37.580 --> 00:35:40.780
+<v Speaker 1>delete the previous one before creating. So
+
+00:35:41.100 --> 00:35:41.660
+<v Speaker 1>that's it.
+
+00:35:43.905 --> 00:35:46.305
+<v Speaker 0>Okay. So let's create an index
+
+00:35:46.305 --> 00:35:47.985
+<v Speaker 0>where I can see the mapping.
+
+00:35:49.185 --> 00:35:51.185
+<v Speaker 0>We've got a modal lenient. I'm not sure
+
+00:35:51.185 --> 00:35:53.105
+<v Speaker 0>how that's different from dynamic, but maybe we
+
+00:35:53.105 --> 00:35:54.705
+<v Speaker 0>could talk about that. This one is using
+
+00:35:54.705 --> 00:35:56.065
+<v Speaker 0>the multiline tokenizer
+
+00:35:56.890 --> 00:35:58.170
+<v Speaker 0>and index.
+
+00:35:59.530 --> 00:36:00.890
+<v Speaker 0>Okay. So I have to fill in some
+
+00:36:00.890 --> 00:36:02.490
+<v Speaker 0>of these. Let's just call this
+
+00:36:02.970 --> 00:36:04.010
+<v Speaker 0>Rawkode.
+
+00:36:08.570 --> 00:36:10.010
+<v Speaker 0>I mean, I guess this isn't actually a
+
+00:36:10.010 --> 00:36:11.930
+<v Speaker 0>valid document. Right? I'd have to change quite
+
+00:36:11.930 --> 00:36:14.385
+<v Speaker 0>a bit here. Yeah. What what you can
+
+00:36:14.385 --> 00:36:17.345
+<v Speaker 1>do is just drop almost everything. Keep the
+
+00:36:17.505 --> 00:36:19.425
+<v Speaker 1>if you really want to to do it,
+
+00:36:19.745 --> 00:36:22.065
+<v Speaker 1>the best would be dropping, like, most of
+
+00:36:22.065 --> 00:36:22.785
+<v Speaker 1>the part.
+
+00:36:23.425 --> 00:36:25.665
+<v Speaker 0>I think what I'll I'll just copy this
+
+00:36:25.665 --> 00:36:27.265
+<v Speaker 0>one and make a few tweaks. Like, I
+
+00:36:27.265 --> 00:36:28.305
+<v Speaker 0>don't actually need to
+
+00:36:29.079 --> 00:36:30.840
+<v Speaker 0>Oh, wait. This is no YAML.
+
+00:36:31.400 --> 00:36:34.040
+<v Speaker 1>Maybe you can change, like, the request body
+
+00:36:34.040 --> 00:36:37.080
+<v Speaker 1>type. Maybe you can change application to
+
+00:36:37.480 --> 00:36:39.240
+<v Speaker 1>this is there is a
+
+00:36:39.880 --> 00:36:40.839
+<v Speaker 0>Ah, yeah. Yeah. Yeah. Yeah.
+
+00:36:41.945 --> 00:36:44.505
+<v Speaker 1>Okay. So it's it's it's not available. Right?
+
+00:36:44.745 --> 00:36:47.225
+<v Speaker 1>So let's let's K. Good good luck with
+
+00:36:47.225 --> 00:36:47.785
+<v Speaker 1>that.
+
+00:36:51.625 --> 00:36:53.785
+<v Speaker 0>There isn't an application YAML, though, is there?
+
+00:36:53.785 --> 00:36:54.905
+<v Speaker 0>Either maybe there is.
+
+00:36:56.870 --> 00:36:59.110
+<v Speaker 0>Maybe, like, text YAML or something.
+
+00:37:00.390 --> 00:37:01.910
+<v Speaker 0>Let's just try and break it. What's the
+
+00:37:01.910 --> 00:37:03.270
+<v Speaker 0>worst that can happen? Right?
+
+00:37:03.590 --> 00:37:05.030
+<v Speaker 0>So we already have
+
+00:37:05.670 --> 00:37:08.390
+<v Speaker 0>Stack Overflow, so we'll call this Rawkode.
+
+00:37:14.150 --> 00:37:15.474
+<v Speaker 1>And Will it work?
+
+00:37:15.795 --> 00:37:16.755
+<v Speaker 1>Okay.
+
+00:37:17.555 --> 00:37:20.195
+<v Speaker 1>It is generating, yes, for bad stuff. Right?
+
+00:37:20.355 --> 00:37:22.115
+<v Speaker 0>Yeah. Okay. Yeah.
+
+00:37:22.595 --> 00:37:24.300
+<v Speaker 0>But it has given me the curl command,
+
+00:37:24.300 --> 00:37:26.300
+<v Speaker 0>so I could adapt the content type that
+
+00:37:26.300 --> 00:37:28.540
+<v Speaker 0>way. But it's it's not important. I just
+
+00:37:28.780 --> 00:37:30.380
+<v Speaker 0>I see something. I need to click it
+
+00:37:30.380 --> 00:37:31.740
+<v Speaker 0>or play with it. So
+
+00:37:33.100 --> 00:37:33.820
+<v Speaker 0>alright.
+
+00:37:34.300 --> 00:37:37.260
+<v Speaker 0>So now we could delete our index
+
+00:37:37.340 --> 00:37:37.980
+<v Speaker 0>like so.
+
+00:37:39.795 --> 00:37:40.755
+<v Speaker 0>Run this.
+
+00:37:42.835 --> 00:37:44.355
+<v Speaker 0>Let's see. Yes.
+
+00:37:46.195 --> 00:37:47.635
+<v Speaker 0>And then we get a t l d
+
+00:37:47.635 --> 00:37:49.234
+<v Speaker 0>r with the commands and stuff like that.
+
+00:37:49.234 --> 00:37:49.635
+<v Speaker 0>So that
+
+00:37:50.435 --> 00:37:52.275
+<v Speaker 0>this is really cool. It's super easy to
+
+00:37:52.275 --> 00:37:54.280
+<v Speaker 0>work with. We got an issue added to
+
+00:37:54.280 --> 00:37:55.080
+<v Speaker 0>the search.
+
+00:37:55.319 --> 00:37:57.720
+<v Speaker 0>All the API documentation is embedded into the
+
+00:37:57.720 --> 00:37:59.320
+<v Speaker 0>UI, which is awesome.
+
+00:37:59.640 --> 00:38:02.040
+<v Speaker 0>I mean, really, for anyone watching this, it's
+
+00:38:02.040 --> 00:38:04.119
+<v Speaker 0>like, that's interesting. I wanna play with it.
+
+00:38:04.440 --> 00:38:06.680
+<v Speaker 0>You've made it super simple, and that's fantastic.
+
+00:38:06.680 --> 00:38:09.435
+<v Speaker 0>So good job. Quickwit team. Thank you.
+
+00:38:10.475 --> 00:38:11.995
+<v Speaker 0>Now
+
+00:38:13.195 --> 00:38:14.475
+<v Speaker 0>there's obviously
+
+00:38:14.475 --> 00:38:16.235
+<v Speaker 0>a whole bunch of configuration.
+
+00:38:16.315 --> 00:38:18.315
+<v Speaker 0>There's clustering that's available.
+
+00:38:18.795 --> 00:38:20.315
+<v Speaker 0>I think you're gonna be doing the data
+
+00:38:20.315 --> 00:38:22.715
+<v Speaker 0>with doing a demo with slightly more data,
+
+00:38:22.715 --> 00:38:23.435
+<v Speaker 0>which is really cool.
+
+00:38:25.550 --> 00:38:27.630
+<v Speaker 0>We already talked about deployments. You're gonna show
+
+00:38:27.630 --> 00:38:28.910
+<v Speaker 0>the Kubernetes one.
+
+00:38:29.230 --> 00:38:31.310
+<v Speaker 0>So I guess the last question from my
+
+00:38:31.310 --> 00:38:32.990
+<v Speaker 0>side before we kinda talk about your demo
+
+00:38:33.070 --> 00:38:34.590
+<v Speaker 0>and, actually, I'll just move it back to
+
+00:38:34.590 --> 00:38:35.950
+<v Speaker 0>to back base mode.
+
+00:38:37.070 --> 00:38:38.590
+<v Speaker 0>What what is the
+
+00:38:39.375 --> 00:38:42.575
+<v Speaker 0>how does the clustering work with Quickwit? Are
+
+00:38:42.575 --> 00:38:45.455
+<v Speaker 0>you using, like, you know, Raft to do
+
+00:38:45.455 --> 00:38:48.015
+<v Speaker 0>a consensus? Are you doing something completely different?
+
+00:38:49.615 --> 00:38:51.135
+<v Speaker 0>Maybe you could share a bit more details.
+
+00:38:51.819 --> 00:38:54.460
+<v Speaker 1>Yeah. Okay. Well, that's an interesting question.
+
+00:38:54.700 --> 00:38:58.460
+<v Speaker 1>Raft, like, it's always, like, painful to do
+
+00:38:58.460 --> 00:39:01.500
+<v Speaker 1>to do these kind of things. So we
+
+00:39:01.819 --> 00:39:03.900
+<v Speaker 1>we avoided that for now.
+
+00:39:04.380 --> 00:39:05.180
+<v Speaker 1>We don't like
+
+00:39:06.059 --> 00:39:07.020
+<v Speaker 1>we managed to
+
+00:39:08.275 --> 00:39:10.755
+<v Speaker 1>scale the Quickwit cluster to
+
+00:39:11.555 --> 00:39:12.355
+<v Speaker 1>fifty
+
+00:39:12.435 --> 00:39:14.275
+<v Speaker 1>fifth between 5,100
+
+00:39:14.275 --> 00:39:17.635
+<v Speaker 1>nodes and in ingesting more than, like,
+
+00:39:18.435 --> 00:39:20.195
+<v Speaker 1>several gigabytes per seconds,
+
+00:39:20.890 --> 00:39:23.450
+<v Speaker 1>and it was it's working well. So right
+
+00:39:23.450 --> 00:39:25.210
+<v Speaker 1>now, we don't need that. We may need
+
+00:39:25.210 --> 00:39:25.850
+<v Speaker 1>one
+
+00:39:26.490 --> 00:39:27.370
+<v Speaker 1>later
+
+00:39:27.930 --> 00:39:28.650
+<v Speaker 1>for
+
+00:39:28.890 --> 00:39:30.410
+<v Speaker 1>replicating the metastore.
+
+00:39:30.970 --> 00:39:32.010
+<v Speaker 1>So currently,
+
+00:39:32.010 --> 00:39:34.330
+<v Speaker 1>let me so we don't use Rawkode at
+
+00:39:34.330 --> 00:39:34.410
+<v Speaker 1>all.
+
+00:39:35.255 --> 00:39:37.975
+<v Speaker 1>The cluster formation is ensured by
+
+00:39:38.615 --> 00:39:40.135
+<v Speaker 1>a gossip algorithm
+
+00:39:40.615 --> 00:39:42.135
+<v Speaker 1>that we implemented
+
+00:39:42.135 --> 00:39:43.255
+<v Speaker 1>called Chinchot.
+
+00:39:43.575 --> 00:39:44.135
+<v Speaker 1>Mhmm.
+
+00:39:45.415 --> 00:39:45.735
+<v Speaker 1>So
+
+00:39:47.720 --> 00:39:50.920
+<v Speaker 1>so once the cluster is is is formed,
+
+00:39:51.240 --> 00:39:53.240
+<v Speaker 1>so you have different roles.
+
+00:39:54.119 --> 00:39:56.200
+<v Speaker 1>You have, like, the metastable,
+
+00:39:56.200 --> 00:39:57.000
+<v Speaker 1>which is
+
+00:39:57.240 --> 00:39:59.960
+<v Speaker 1>the central piece where we store the index
+
+00:39:59.960 --> 00:40:00.359
+<v Speaker 1>config,
+
+00:40:01.155 --> 00:40:04.275
+<v Speaker 1>the splits metadata so that we we are
+
+00:40:04.275 --> 00:40:06.835
+<v Speaker 1>for an index, we are aware well, how
+
+00:40:06.835 --> 00:40:08.835
+<v Speaker 1>many splits we have, how many documents in
+
+00:40:08.835 --> 00:40:09.715
+<v Speaker 1>those splits,
+
+00:40:10.035 --> 00:40:12.755
+<v Speaker 1>and a few bunch of meta metadata. This
+
+00:40:12.755 --> 00:40:15.235
+<v Speaker 1>is very small because, generally, you have for
+
+00:40:16.480 --> 00:40:19.280
+<v Speaker 1>10,000,000 documents, you have one split. So it's
+
+00:40:19.280 --> 00:40:20.480
+<v Speaker 1>pretty, pretty small.
+
+00:40:20.800 --> 00:40:22.880
+<v Speaker 1>And you can choose to host it to
+
+00:40:22.880 --> 00:40:26.160
+<v Speaker 1>host this to to to back this metastore
+
+00:40:26.480 --> 00:40:27.280
+<v Speaker 1>component
+
+00:40:27.280 --> 00:40:28.080
+<v Speaker 1>by
+
+00:40:28.240 --> 00:40:32.065
+<v Speaker 1>a file on an object store or PostgresQL.
+
+00:40:33.585 --> 00:40:36.305
+<v Speaker 1>So once you have this metastore, then you
+
+00:40:36.305 --> 00:40:36.865
+<v Speaker 1>have
+
+00:40:38.065 --> 00:40:39.585
+<v Speaker 1>search of roles and
+
+00:40:39.825 --> 00:40:41.105
+<v Speaker 1>indexer role.
+
+00:40:41.825 --> 00:40:45.425
+<v Speaker 1>And thanks to the decouple architecture,
+
+00:40:46.190 --> 00:40:48.110
+<v Speaker 1>like, you know that your data is on
+
+00:40:48.110 --> 00:40:50.030
+<v Speaker 1>your object storage, for example.
+
+00:40:50.190 --> 00:40:52.910
+<v Speaker 1>And you can start one or 10 searches,
+
+00:40:52.910 --> 00:40:55.550
+<v Speaker 1>and they all fetch data from the object
+
+00:40:55.550 --> 00:40:56.190
+<v Speaker 1>storage.
+
+00:40:56.750 --> 00:40:58.510
+<v Speaker 1>That's for the read part.
+
+00:40:58.590 --> 00:40:59.950
+<v Speaker 1>And on the right path,
+
+00:41:00.684 --> 00:41:03.164
+<v Speaker 1>you will have those indexes who will receive
+
+00:41:03.164 --> 00:41:06.445
+<v Speaker 1>some documents through the ingest API or from
+
+00:41:06.605 --> 00:41:10.125
+<v Speaker 1>a Kafka source or Kinesis or Google Pepsis,
+
+00:41:10.125 --> 00:41:13.244
+<v Speaker 1>whatever. We have we have native integrations with
+
+00:41:13.839 --> 00:41:14.800
+<v Speaker 1>several
+
+00:41:14.800 --> 00:41:16.080
+<v Speaker 1>distributed queues.
+
+00:41:17.119 --> 00:41:18.880
+<v Speaker 1>And those indexes
+
+00:41:18.960 --> 00:41:20.960
+<v Speaker 1>will just prove the data from Kafka or
+
+00:41:20.960 --> 00:41:22.880
+<v Speaker 1>will just take the data that you send
+
+00:41:22.880 --> 00:41:24.480
+<v Speaker 1>in through the ingest API,
+
+00:41:24.560 --> 00:41:25.920
+<v Speaker 1>write
+
+00:41:26.585 --> 00:41:28.744
+<v Speaker 1>index files, split files on the disk, and
+
+00:41:28.744 --> 00:41:30.905
+<v Speaker 1>upload them to the object storage.
+
+00:41:31.865 --> 00:41:33.785
+<v Speaker 1>And that's it for
+
+00:41:34.265 --> 00:41:36.904
+<v Speaker 1>currently, it's working. It's it is scaling parallel
+
+00:41:36.904 --> 00:41:38.984
+<v Speaker 1>like this, and you have
+
+00:41:39.384 --> 00:41:42.184
+<v Speaker 1>totally different write and read pass,
+
+00:41:42.640 --> 00:41:45.280
+<v Speaker 1>which makes it very simple to manage.
+
+00:41:47.359 --> 00:41:48.240
+<v Speaker 1>You have
+
+00:41:48.480 --> 00:41:52.240
+<v Speaker 1>a a last component called that
+
+00:41:52.240 --> 00:41:53.120
+<v Speaker 1>is doing
+
+00:41:53.760 --> 00:41:54.560
+<v Speaker 1>very
+
+00:41:54.960 --> 00:41:56.160
+<v Speaker 1>a few things only.
+
+00:41:56.595 --> 00:41:59.475
+<v Speaker 1>Typically, it is handling the retention
+
+00:41:59.555 --> 00:42:02.035
+<v Speaker 1>stuff. So if you every hour, I would
+
+00:42:02.115 --> 00:42:04.195
+<v Speaker 1>it would he he the janitor will check
+
+00:42:04.195 --> 00:42:07.715
+<v Speaker 1>if he can delete some speed files on
+
+00:42:07.715 --> 00:42:08.435
+<v Speaker 1>the object storage.
+
+00:42:09.010 --> 00:42:12.290
+<v Speaker 1>And it can also execute some delete request
+
+00:42:13.490 --> 00:42:15.570
+<v Speaker 1>because we have users who
+
+00:42:15.890 --> 00:42:17.010
+<v Speaker 1>may
+
+00:42:17.010 --> 00:42:19.170
+<v Speaker 1>want for g GDPR
+
+00:42:19.410 --> 00:42:20.290
+<v Speaker 1>reasons.
+
+00:42:20.290 --> 00:42:22.130
+<v Speaker 1>They want to delete some data in
+
+00:42:22.505 --> 00:42:24.665
+<v Speaker 1>in their index. So it's possible to delete
+
+00:42:24.665 --> 00:42:27.305
+<v Speaker 1>data in the in Quickwit, but not
+
+00:42:27.305 --> 00:42:30.265
+<v Speaker 1>at a frequent rate. So Quickwit is not
+
+00:42:30.265 --> 00:42:31.305
+<v Speaker 1>made
+
+00:42:31.305 --> 00:42:33.145
+<v Speaker 1>for updates typically.
+
+00:42:33.305 --> 00:42:35.625
+<v Speaker 1>But for infrequent deletes, it's working
+
+00:42:36.030 --> 00:42:38.430
+<v Speaker 1>it's working well, and the generator is ensuring
+
+00:42:38.430 --> 00:42:39.230
+<v Speaker 1>this part.
+
+00:42:40.030 --> 00:42:42.910
+<v Speaker 1>And that's it for the for the architecture.
+
+00:42:44.030 --> 00:42:45.870
+<v Speaker 0>Yeah. Okay. So that
+
+00:42:47.230 --> 00:42:49.070
+<v Speaker 0>delete constraint is why
+
+00:42:49.310 --> 00:42:50.430
+<v Speaker 0>append only
+
+00:42:50.744 --> 00:42:53.305
+<v Speaker 0>data, like logs and observability is why it's
+
+00:42:53.305 --> 00:42:54.585
+<v Speaker 0>such a good use case for that, and
+
+00:42:54.585 --> 00:42:55.785
+<v Speaker 0>that's why you're pushing on that. So that
+
+00:42:55.785 --> 00:42:56.505
+<v Speaker 0>makes sense.
+
+00:42:57.704 --> 00:43:00.184
+<v Speaker 0>Now the blobs, the objects store stuff, right,
+
+00:43:00.184 --> 00:43:01.065
+<v Speaker 0>for your
+
+00:43:01.305 --> 00:43:03.224
+<v Speaker 0>meta store and for all the data itself,
+
+00:43:03.650 --> 00:43:06.290
+<v Speaker 0>Do you support, like, tiered storage? Like, can
+
+00:43:06.290 --> 00:43:08.850
+<v Speaker 0>I keep the last six hours of logs
+
+00:43:08.850 --> 00:43:11.810
+<v Speaker 0>and traces on a fast NVMe disk
+
+00:43:11.890 --> 00:43:14.290
+<v Speaker 0>and then push everything older to object store,
+
+00:43:14.290 --> 00:43:15.890
+<v Speaker 0>or is that something that may come later?
+
+00:43:16.545 --> 00:43:17.265
+<v Speaker 1>So,
+
+00:43:17.505 --> 00:43:19.985
+<v Speaker 1>yeah, object storage is our primary site.
+
+00:43:20.224 --> 00:43:22.545
+<v Speaker 1>So it's not the it's it's the primary
+
+00:43:22.545 --> 00:43:24.865
+<v Speaker 1>store. Right. Okay. So that's the first thing.
+
+00:43:24.865 --> 00:43:25.425
+<v Speaker 1>Now
+
+00:43:25.744 --> 00:43:27.745
+<v Speaker 1>if you have a lot of queries,
+
+00:43:28.305 --> 00:43:30.464
+<v Speaker 1>you may want to use some caching.
+
+00:43:31.820 --> 00:43:34.140
+<v Speaker 1>And it's we so we added this feature
+
+00:43:34.140 --> 00:43:36.060
+<v Speaker 1>in the last version of Quickwit.
+
+00:43:36.380 --> 00:43:38.220
+<v Speaker 1>So what will happen is that on the
+
+00:43:38.220 --> 00:43:40.700
+<v Speaker 1>searcher side, only on the read pass because
+
+00:43:40.700 --> 00:43:42.780
+<v Speaker 1>it's where you have your queries coming in
+
+00:43:42.780 --> 00:43:44.700
+<v Speaker 1>and you have to respond super fast, for
+
+00:43:44.700 --> 00:43:46.300
+<v Speaker 1>example, or you have a lot of QPS.
+
+00:43:46.905 --> 00:43:48.025
+<v Speaker 1>In this case,
+
+00:43:48.425 --> 00:43:50.825
+<v Speaker 1>you want to keep on your local disk
+
+00:43:50.905 --> 00:43:53.145
+<v Speaker 1>the data that you already downloaded, for example.
+
+00:43:53.145 --> 00:43:53.865
+<v Speaker 1>So those
+
+00:43:54.185 --> 00:43:56.425
+<v Speaker 1>split files, you want to keep there keep
+
+00:43:56.425 --> 00:43:57.385
+<v Speaker 1>keep it there.
+
+00:43:57.865 --> 00:44:01.040
+<v Speaker 1>So we added this possibility to to reduce
+
+00:44:01.040 --> 00:44:04.320
+<v Speaker 1>the cost of the object store storage because,
+
+00:44:04.320 --> 00:44:06.160
+<v Speaker 1>as you know, you when you
+
+00:44:06.880 --> 00:44:09.280
+<v Speaker 1>with a storage like s three, you will
+
+00:44:09.280 --> 00:44:11.040
+<v Speaker 1>pay the get request.
+
+00:44:11.440 --> 00:44:12.000
+<v Speaker 1>And
+
+00:44:12.320 --> 00:44:12.800
+<v Speaker 1>this will
+
+00:44:13.674 --> 00:44:16.474
+<v Speaker 1>this can become pricey if you have a
+
+00:44:16.474 --> 00:44:17.035
+<v Speaker 1>lot of.
+
+00:44:18.714 --> 00:44:19.435
+<v Speaker 0>K.
+
+00:44:19.515 --> 00:44:20.315
+<v Speaker 0>Awesome.
+
+00:44:22.234 --> 00:44:23.675
+<v Speaker 0>Alright. Are you ready
+
+00:44:23.994 --> 00:44:26.315
+<v Speaker 0>for your big skiddy demo? Yeah. Sure.
+
+00:44:27.910 --> 00:44:30.790
+<v Speaker 1>Alright. So just preparing my screen.
+
+00:44:30.950 --> 00:44:32.790
+<v Speaker 0>Yeah. Take your time, man. All good.
+
+00:44:34.150 --> 00:44:36.470
+<v Speaker 1>Okay. I'm I will share my entire screen.
+
+00:44:41.035 --> 00:44:41.835
+<v Speaker 1>Let's go.
+
+00:44:42.955 --> 00:44:44.875
+<v Speaker 1>I'm just checking if
+
+00:44:45.595 --> 00:44:47.755
+<v Speaker 1>I can connect. So so
+
+00:44:47.755 --> 00:44:49.275
+<v Speaker 1>here, I'm
+
+00:44:49.355 --> 00:44:50.235
+<v Speaker 1>I'm
+
+00:44:50.555 --> 00:44:53.195
+<v Speaker 1>I'm showing you a quick the Quickwit interface
+
+00:44:53.435 --> 00:44:55.115
+<v Speaker 1>on the cluster that is
+
+00:44:55.700 --> 00:44:56.420
+<v Speaker 1>available
+
+00:44:57.059 --> 00:44:57.859
+<v Speaker 1>on
+
+00:44:58.579 --> 00:45:01.140
+<v Speaker 1>on the Google Kubernetes engine.
+
+00:45:01.859 --> 00:45:04.099
+<v Speaker 1>So it is hosted on Google Cloud.
+
+00:45:05.299 --> 00:45:07.380
+<v Speaker 1>What can I show you?
+
+00:45:09.155 --> 00:45:11.075
+<v Speaker 1>So we I have a bunch of node
+
+00:45:11.075 --> 00:45:11.635
+<v Speaker 1>here.
+
+00:45:12.275 --> 00:45:14.195
+<v Speaker 1>So contrary to the
+
+00:45:14.915 --> 00:45:15.795
+<v Speaker 1>Quickstart,
+
+00:45:15.795 --> 00:45:17.875
+<v Speaker 1>here we are we we have a cluster
+
+00:45:17.875 --> 00:45:19.635
+<v Speaker 1>deployed with a hand chart,
+
+00:45:20.035 --> 00:45:21.234
+<v Speaker 1>and we have, like,
+
+00:45:22.080 --> 00:45:23.920
+<v Speaker 1>several nodes with different
+
+00:45:24.240 --> 00:45:27.200
+<v Speaker 1>different role roles, and I forgot to talk
+
+00:45:27.200 --> 00:45:28.560
+<v Speaker 1>about the control plane,
+
+00:45:28.960 --> 00:45:30.240
+<v Speaker 1>which is quite important,
+
+00:45:30.400 --> 00:45:30.960
+<v Speaker 1>actually.
+
+00:45:32.720 --> 00:45:34.560
+<v Speaker 1>So the control plane here, I will explain
+
+00:45:34.560 --> 00:45:35.760
+<v Speaker 1>it in
+
+00:45:35.760 --> 00:45:36.800
+<v Speaker 1>a a few seconds.
+
+00:45:37.434 --> 00:45:38.635
+<v Speaker 1>It is handling,
+
+00:45:38.954 --> 00:45:41.835
+<v Speaker 1>like, how we distribute the indexing task to
+
+00:45:41.835 --> 00:45:42.715
+<v Speaker 1>indexes.
+
+00:45:43.194 --> 00:45:44.715
+<v Speaker 1>So it will look at
+
+00:45:45.994 --> 00:45:48.395
+<v Speaker 1>all the indexes you have, and we say,
+
+00:45:48.395 --> 00:45:52.395
+<v Speaker 1>okay. This indexer will handle those 100 indexes,
+
+00:45:52.474 --> 00:45:52.875
+<v Speaker 1>and
+
+00:45:53.500 --> 00:45:56.780
+<v Speaker 1>this second indexer will handle those two those
+
+00:45:56.780 --> 00:45:59.500
+<v Speaker 1>10 indexes those 10 remaining indexes.
+
+00:46:00.540 --> 00:46:03.900
+<v Speaker 1>You have one searcher node, one indexer here,
+
+00:46:03.900 --> 00:46:04.940
+<v Speaker 1>the generator, and the.
+
+00:46:07.815 --> 00:46:10.535
+<v Speaker 1>You have also dead nodes because
+
+00:46:10.855 --> 00:46:11.815
+<v Speaker 1>previously,
+
+00:46:11.815 --> 00:46:12.615
+<v Speaker 1>before
+
+00:46:12.855 --> 00:46:13.495
+<v Speaker 1>this
+
+00:46:14.775 --> 00:46:16.375
+<v Speaker 1>this demo, I
+
+00:46:16.935 --> 00:46:17.655
+<v Speaker 1>started
+
+00:46:18.055 --> 00:46:20.510
+<v Speaker 1>10 nodes on this cluster, and they are
+
+00:46:20.510 --> 00:46:22.190
+<v Speaker 1>all dead right now because I shut them
+
+00:46:22.190 --> 00:46:22.830
+<v Speaker 1>down.
+
+00:46:24.750 --> 00:46:26.750
+<v Speaker 1>So, yeah, also on this cluster, I have
+
+00:46:26.750 --> 00:46:27.630
+<v Speaker 1>a bunch of
+
+00:46:29.070 --> 00:46:29.870
+<v Speaker 1>indexes.
+
+00:46:30.589 --> 00:46:32.990
+<v Speaker 1>I will show you during this demo the
+
+00:46:32.990 --> 00:46:34.990
+<v Speaker 1>trace indexes because I will ingest a lot
+
+00:46:34.990 --> 00:46:36.405
+<v Speaker 1>of trace in in it.
+
+00:46:37.765 --> 00:46:39.445
+<v Speaker 1>I already inserted
+
+00:46:40.725 --> 00:46:42.165
+<v Speaker 1>almost 300
+
+00:46:42.165 --> 00:46:45.125
+<v Speaker 1>millions of traces. So it's not traces. Actually,
+
+00:46:45.125 --> 00:46:46.005
+<v Speaker 1>it's spans.
+
+00:46:46.245 --> 00:46:47.365
+<v Speaker 1>When you when you collect
+
+00:46:47.845 --> 00:46:48.725
+<v Speaker 1>when you
+
+00:46:49.750 --> 00:46:52.950
+<v Speaker 1>when you instrument your applications, your application will
+
+00:46:52.950 --> 00:46:54.070
+<v Speaker 1>send span. So
+
+00:46:55.510 --> 00:46:56.790
+<v Speaker 1>you need operation
+
+00:46:57.430 --> 00:46:58.230
+<v Speaker 1>in
+
+00:46:58.710 --> 00:46:59.750
+<v Speaker 1>in your program.
+
+00:47:00.870 --> 00:47:03.910
+<v Speaker 1>There are there are, like, 65 splits,
+
+00:47:03.910 --> 00:47:06.265
+<v Speaker 1>and it's it's represents
+
+00:47:07.065 --> 00:47:09.865
+<v Speaker 1>in a very compressed size is 200
+
+00:47:09.865 --> 00:47:10.825
+<v Speaker 1>gigabytes,
+
+00:47:11.225 --> 00:47:14.025
+<v Speaker 1>and Quickwit managed to compress it to 35
+
+00:47:14.025 --> 00:47:14.905
+<v Speaker 1>gigabytes.
+
+00:47:15.305 --> 00:47:16.105
+<v Speaker 1>And it's on
+
+00:47:16.745 --> 00:47:18.585
+<v Speaker 1>it's not on s three, but it's on
+
+00:47:18.585 --> 00:47:21.250
+<v Speaker 1>Google Cloud Storage. So we are compatible with
+
+00:47:21.250 --> 00:47:22.210
+<v Speaker 1>different
+
+00:47:22.289 --> 00:47:24.050
+<v Speaker 1>different object storage.
+
+00:47:25.089 --> 00:47:25.810
+<v Speaker 0>Nice.
+
+00:47:26.210 --> 00:47:26.849
+<v Speaker 1>So
+
+00:47:27.970 --> 00:47:29.490
+<v Speaker 1>one interesting thing
+
+00:47:30.450 --> 00:47:33.250
+<v Speaker 1>I can show you, like, the the query
+
+00:47:33.250 --> 00:47:36.255
+<v Speaker 1>detail. So so here, I have only
+
+00:47:37.454 --> 00:47:39.535
+<v Speaker 1>okay. I have also logs here. So I
+
+00:47:39.535 --> 00:47:41.855
+<v Speaker 1>I will show you in. But
+
+00:47:42.335 --> 00:47:44.415
+<v Speaker 1>I have only one searcher, and so I'm
+
+00:47:44.415 --> 00:47:45.214
+<v Speaker 1>able to search,
+
+00:47:48.060 --> 00:47:48.700
+<v Speaker 1>like,
+
+00:47:49.100 --> 00:47:50.940
+<v Speaker 1>inside millions of
+
+00:47:52.060 --> 00:47:53.740
+<v Speaker 1>millions of spans.
+
+00:47:54.380 --> 00:47:56.380
+<v Speaker 1>So in two seconds here because
+
+00:47:57.420 --> 00:48:00.060
+<v Speaker 1>I'm searching through all the documents, so it's
+
+00:48:00.060 --> 00:48:00.860
+<v Speaker 1>not very efficient.
+
+00:48:01.885 --> 00:48:05.245
+<v Speaker 1>But I can just for example, let me
+
+00:48:05.245 --> 00:48:06.045
+<v Speaker 1>choose
+
+00:48:06.685 --> 00:48:07.645
+<v Speaker 1>probably yes.
+
+00:48:09.405 --> 00:48:12.125
+<v Speaker 1>Searching through only the service
+
+00:48:12.365 --> 00:48:13.325
+<v Speaker 1>name Quickwit
+
+00:48:13.740 --> 00:48:15.900
+<v Speaker 1>because on this cluster, I'm
+
+00:48:16.060 --> 00:48:16.860
+<v Speaker 1>indexing
+
+00:48:16.860 --> 00:48:18.860
+<v Speaker 1>Quickwit on traces.
+
+00:48:20.700 --> 00:48:24.620
+<v Speaker 1>So the fact here, I'm just looking into
+
+00:48:24.780 --> 00:48:25.740
+<v Speaker 1>1,000,000
+
+00:48:26.540 --> 00:48:29.100
+<v Speaker 1>1,700,000
+
+00:48:29.545 --> 00:48:32.185
+<v Speaker 1>spans, and it's way faster. Mhmm.
+
+00:48:33.225 --> 00:48:35.465
+<v Speaker 1>And everything is on object size. But
+
+00:48:36.665 --> 00:48:39.225
+<v Speaker 1>for Quickwit, it's it's not it's not a
+
+00:48:39.225 --> 00:48:41.945
+<v Speaker 1>big dataset here. If you have 200 millions,
+
+00:48:41.945 --> 00:48:43.945
+<v Speaker 1>that's okay. That's really
+
+00:48:44.025 --> 00:48:46.370
+<v Speaker 1>easy to handle. So what I will do
+
+00:48:46.370 --> 00:48:48.610
+<v Speaker 1>is we will index more more that into
+
+00:48:48.610 --> 00:48:50.770
+<v Speaker 1>it. And I will also show you
+
+00:48:51.330 --> 00:48:53.410
+<v Speaker 1>our graph on that plug in because we
+
+00:48:53.410 --> 00:48:54.530
+<v Speaker 1>implemented, like,
+
+00:48:54.850 --> 00:48:56.450
+<v Speaker 1>a graph on that plug in to
+
+00:48:57.730 --> 00:48:59.330
+<v Speaker 1>to search through logs and traces.
+
+00:49:03.085 --> 00:49:05.565
+<v Speaker 1>So what I will do now is that
+
+00:49:05.565 --> 00:49:08.045
+<v Speaker 1>I will I will start indexing
+
+00:49:08.045 --> 00:49:10.525
+<v Speaker 1>data into Quickwit a bit more than
+
+00:49:10.765 --> 00:49:11.725
+<v Speaker 1>currently.
+
+00:49:11.964 --> 00:49:12.685
+<v Speaker 1>So here,
+
+00:49:14.120 --> 00:49:17.080
+<v Speaker 1>what you see is a dashboard to monitor
+
+00:49:17.080 --> 00:49:17.880
+<v Speaker 1>Quickwit
+
+00:49:17.880 --> 00:49:19.400
+<v Speaker 1>with metrics.
+
+00:49:20.520 --> 00:49:23.480
+<v Speaker 1>You have, like, the classic endpoint slash metrics
+
+00:49:23.480 --> 00:49:26.360
+<v Speaker 1>to gather metrics generated by Quickwit.
+
+00:49:26.945 --> 00:49:28.865
+<v Speaker 1>So here, I'm looking at
+
+00:49:29.185 --> 00:49:31.025
+<v Speaker 1>the in the indexing
+
+00:49:31.025 --> 00:49:33.665
+<v Speaker 1>throughput of hotel traces index.
+
+00:49:33.985 --> 00:49:35.905
+<v Speaker 1>And you can see that you have already
+
+00:49:35.905 --> 00:49:38.385
+<v Speaker 1>a bunch of documents that are indexed.
+
+00:49:39.025 --> 00:49:41.505
+<v Speaker 1>Those spikes are due to the fact that
+
+00:49:41.505 --> 00:49:44.040
+<v Speaker 1>I ran some queries. And so when you
+
+00:49:44.040 --> 00:49:46.920
+<v Speaker 1>run queries on Quickwit, it will generate more
+
+00:49:46.920 --> 00:49:50.280
+<v Speaker 1>logs, and that's why there is more more
+
+00:49:50.280 --> 00:49:51.320
+<v Speaker 1>spans here.
+
+00:49:52.680 --> 00:49:55.800
+<v Speaker 1>But but it's almost nothing. So what I
+
+00:49:55.800 --> 00:49:56.520
+<v Speaker 1>will do
+
+00:49:57.744 --> 00:49:59.185
+<v Speaker 1>is I will
+
+00:49:59.585 --> 00:50:01.265
+<v Speaker 1>use a tool called.
+
+00:50:06.545 --> 00:50:07.585
+<v Speaker 1>So this
+
+00:50:08.305 --> 00:50:08.865
+<v Speaker 1>so
+
+00:50:09.345 --> 00:50:11.585
+<v Speaker 1>is a tool is a tool
+
+00:50:11.880 --> 00:50:14.279
+<v Speaker 1>that allows you to generate a lot of
+
+00:50:14.279 --> 00:50:15.320
+<v Speaker 1>spans and
+
+00:50:15.799 --> 00:50:16.920
+<v Speaker 1>send them
+
+00:50:18.359 --> 00:50:21.559
+<v Speaker 1>to one sync that is compatible with your
+
+00:50:21.559 --> 00:50:23.000
+<v Speaker 1>open telemetry
+
+00:50:23.319 --> 00:50:23.640
+<v Speaker 1>protocol.
+
+00:50:24.785 --> 00:50:27.745
+<v Speaker 1>So for example, here, I will generate I
+
+00:50:27.745 --> 00:50:28.865
+<v Speaker 1>will just create
+
+00:50:30.305 --> 00:50:31.265
+<v Speaker 1>jobs
+
+00:50:31.425 --> 00:50:33.505
+<v Speaker 1>several jobs that are sending
+
+00:50:33.985 --> 00:50:34.945
+<v Speaker 1>spans
+
+00:50:34.945 --> 00:50:36.145
+<v Speaker 1>to Quickwit.
+
+00:50:36.420 --> 00:50:39.060
+<v Speaker 1>So here, I'm using the OpenTelemetry
+
+00:50:39.140 --> 00:50:40.740
+<v Speaker 1>API of Quickwit.
+
+00:50:41.220 --> 00:50:44.900
+<v Speaker 1>So you are seeing that Quickwit has indexer
+
+00:50:44.900 --> 00:50:45.540
+<v Speaker 1>service,
+
+00:50:45.700 --> 00:50:48.260
+<v Speaker 1>and we will send just boost tray boost
+
+00:50:48.260 --> 00:50:51.175
+<v Speaker 1>traces to the indexer service. And then the
+
+00:50:51.175 --> 00:50:54.214
+<v Speaker 1>indexer service, if you have several indexers, it
+
+00:50:54.214 --> 00:50:57.335
+<v Speaker 1>will just forward those spans to
+
+00:50:58.055 --> 00:50:59.974
+<v Speaker 1>whatever indexer
+
+00:50:59.974 --> 00:51:01.015
+<v Speaker 1>are present.
+
+00:51:01.335 --> 00:51:03.415
+<v Speaker 1>So right now, we have only
+
+00:51:03.974 --> 00:51:05.015
+<v Speaker 1>one indexer,
+
+00:51:05.930 --> 00:51:08.330
+<v Speaker 1>and I would just create
+
+00:51:12.730 --> 00:51:14.330
+<v Speaker 1>this first job.
+
+00:51:17.450 --> 00:51:18.010
+<v Speaker 1>Fraction.
+
+00:51:24.305 --> 00:51:26.305
+<v Speaker 1>I'm gonna check if
+
+00:51:27.265 --> 00:51:29.825
+<v Speaker 1>everything needs I started. So okay. We have,
+
+00:51:29.825 --> 00:51:32.545
+<v Speaker 1>like, those different jobs that are created,
+
+00:51:32.705 --> 00:51:35.985
+<v Speaker 1>and they they will send, like, thousands of
+
+00:51:35.260 --> 00:51:36.700
+<v Speaker 1>spans to Quickwit.
+
+00:51:37.180 --> 00:51:38.220
+<v Speaker 1>Let's
+
+00:51:38.220 --> 00:51:40.380
+<v Speaker 1>see how Quickwit responds on this.
+
+00:51:43.740 --> 00:51:46.620
+<v Speaker 1>K. So you you see this this spike.
+
+00:51:47.795 --> 00:51:50.675
+<v Speaker 1>So, normally, you you should expect Quickwit to
+
+00:51:50.675 --> 00:51:51.395
+<v Speaker 1>index
+
+00:51:52.675 --> 00:51:56.115
+<v Speaker 1>at between 20 megabytes per second and
+
+00:51:56.755 --> 00:51:58.435
+<v Speaker 1>40 megabytes per second.
+
+00:52:00.035 --> 00:52:02.540
+<v Speaker 1>For for very simple documents,
+
+00:52:02.540 --> 00:52:04.620
+<v Speaker 1>you can go up to 40 megabytes. So
+
+00:52:04.620 --> 00:52:07.500
+<v Speaker 1>here, we should expect something around 30 megabytes
+
+00:52:07.500 --> 00:52:08.300
+<v Speaker 1>per second,
+
+00:52:09.580 --> 00:52:11.820
+<v Speaker 1>and we will see how which kind of
+
+00:52:11.820 --> 00:52:13.260
+<v Speaker 1>spans are sent by.
+
+00:52:15.995 --> 00:52:17.995
+<v Speaker 1>So yeah. So we have this
+
+00:52:18.235 --> 00:52:20.555
+<v Speaker 1>this first indexer that is running, so we're
+
+00:52:20.555 --> 00:52:22.075
+<v Speaker 1>happy with it. But
+
+00:52:22.475 --> 00:52:24.395
+<v Speaker 1>if we if you want to index more
+
+00:52:24.395 --> 00:52:25.035
+<v Speaker 1>data,
+
+00:52:25.355 --> 00:52:28.475
+<v Speaker 1>what we can do is scale the indexer.
+
+00:52:29.589 --> 00:52:30.150
+<v Speaker 1>So
+
+00:52:30.790 --> 00:52:32.390
+<v Speaker 1>in Quickwit, you have
+
+00:52:32.710 --> 00:52:34.790
+<v Speaker 1>in the deployment, the hand chart that we
+
+00:52:34.790 --> 00:52:35.590
+<v Speaker 1>provide.
+
+00:52:36.309 --> 00:52:39.829
+<v Speaker 1>We we added two stateful sets for indexer
+
+00:52:39.829 --> 00:52:40.550
+<v Speaker 1>and searcher.
+
+00:52:41.605 --> 00:52:44.325
+<v Speaker 1>And I'm using here the common line tool
+
+00:52:44.325 --> 00:52:46.565
+<v Speaker 1>or k nine that is very, very cool
+
+00:52:46.565 --> 00:52:49.045
+<v Speaker 1>to play with Kubernetes.
+
+00:52:49.365 --> 00:52:50.645
+<v Speaker 1>And I will just
+
+00:52:52.085 --> 00:52:54.885
+<v Speaker 1>add nine more indexers to
+
+00:52:57.700 --> 00:52:59.140
+<v Speaker 1>to index more data.
+
+00:53:01.060 --> 00:53:01.780
+<v Speaker 1>So,
+
+00:53:02.100 --> 00:53:02.580
+<v Speaker 1>normally
+
+00:53:09.474 --> 00:53:10.515
+<v Speaker 1>Yeah. So
+
+00:53:11.315 --> 00:53:14.035
+<v Speaker 1>I added, like, nine indexers, and they're they're
+
+00:53:14.035 --> 00:53:15.235
+<v Speaker 1>already ready.
+
+00:53:15.714 --> 00:53:18.435
+<v Speaker 1>So I'm normally, I should be able to
+
+00:53:19.155 --> 00:53:21.875
+<v Speaker 1>start another job that is sending even more
+
+00:53:21.875 --> 00:53:24.515
+<v Speaker 1>traces, and I have a second job
+
+00:53:25.280 --> 00:53:26.640
+<v Speaker 1>Second job for that.
+
+00:53:28.320 --> 00:53:31.440
+<v Speaker 1>This one has even more jobs, and
+
+00:53:32.160 --> 00:53:33.280
+<v Speaker 1>we
+
+00:53:33.280 --> 00:53:33.680
+<v Speaker 1>we
+
+00:53:34.400 --> 00:53:36.720
+<v Speaker 1>it will send more traces to Quickwit.
+
+00:53:39.025 --> 00:53:40.545
+<v Speaker 1>So let's create it
+
+00:53:46.945 --> 00:53:49.905
+<v Speaker 1>and see what's happening on Quickwit side.
+
+00:53:50.305 --> 00:53:54.065
+<v Speaker 1>But here, we have those two indexes
+
+00:53:53.190 --> 00:53:55.750
+<v Speaker 1>from the metric. I will just refresh just
+
+00:53:55.750 --> 00:53:57.990
+<v Speaker 1>to make sure that we are taking into
+
+00:53:57.990 --> 00:53:58.790
+<v Speaker 1>account
+
+00:53:59.750 --> 00:54:01.670
+<v Speaker 1>all the pods that are running.
+
+00:54:03.430 --> 00:54:05.990
+<v Speaker 1>And we will wait a bit to see
+
+00:54:06.310 --> 00:54:07.750
+<v Speaker 1>how indexing is scaling.
+
+00:54:12.845 --> 00:54:13.885
+<v Speaker 1>Okay. So
+
+00:54:14.605 --> 00:54:16.525
+<v Speaker 1>here, you you can see that we are
+
+00:54:16.525 --> 00:54:19.645
+<v Speaker 1>already at 162
+
+00:54:19.645 --> 00:54:20.925
+<v Speaker 1>megabytes per second.
+
+00:54:22.045 --> 00:54:23.165
+<v Speaker 1>I will jump to
+
+00:54:25.420 --> 00:54:27.260
+<v Speaker 1>the graph and I plug in interface of
+
+00:54:27.260 --> 00:54:28.140
+<v Speaker 1>Quickwit so
+
+00:54:28.940 --> 00:54:30.380
+<v Speaker 1>that we can we can have a look
+
+00:54:30.380 --> 00:54:31.340
+<v Speaker 1>at the volume.
+
+00:54:31.660 --> 00:54:33.980
+<v Speaker 0>Can I ask a question? Yep. Sure. Can
+
+00:54:33.980 --> 00:54:35.580
+<v Speaker 0>go you go back to that index and
+
+00:54:35.580 --> 00:54:36.300
+<v Speaker 0>dashboard?
+
+00:54:36.540 --> 00:54:38.380
+<v Speaker 0>Yep. So something I noticed that was quite
+
+00:54:38.380 --> 00:54:40.460
+<v Speaker 0>interesting there is the
+
+00:54:40.974 --> 00:54:43.935
+<v Speaker 0>resident set size of indexer zero dropped.
+
+00:54:43.935 --> 00:54:45.214
+<v Speaker 0>Is it rebalancing
+
+00:54:45.214 --> 00:54:47.055
+<v Speaker 0>across the other nine
+
+00:54:47.454 --> 00:54:48.495
+<v Speaker 0>indexers?
+
+00:54:50.095 --> 00:54:52.175
+<v Speaker 1>So probably here I I don't know what
+
+00:54:52.335 --> 00:54:54.095
+<v Speaker 1>why he did that. Why
+
+00:54:55.740 --> 00:54:56.540
+<v Speaker 1>Normally,
+
+00:54:56.620 --> 00:54:59.180
+<v Speaker 1>what's when you will see such a drop,
+
+00:54:59.660 --> 00:55:02.140
+<v Speaker 1>it's just that it is indexing less documents.
+
+00:55:02.860 --> 00:55:03.740
+<v Speaker 1>And so
+
+00:55:03.980 --> 00:55:06.300
+<v Speaker 1>the indexer is taking so probably,
+
+00:55:07.914 --> 00:55:10.395
+<v Speaker 1>some documents went to another indexer.
+
+00:55:10.555 --> 00:55:12.555
+<v Speaker 1>That's the most probable thing.
+
+00:55:13.035 --> 00:55:13.675
+<v Speaker 0>So
+
+00:55:14.234 --> 00:55:16.795
+<v Speaker 0>even though the data is stored in object
+
+00:55:16.795 --> 00:55:20.234
+<v Speaker 0>store, did the indexer store everything in RAM,
+
+00:55:20.234 --> 00:55:21.595
+<v Speaker 0>or are they paging it in and out?
+
+00:55:22.450 --> 00:55:24.050
+<v Speaker 1>Yeah. So one one
+
+00:55:24.610 --> 00:55:27.730
+<v Speaker 1>indexer has, like it needs to it needs
+
+00:55:27.730 --> 00:55:30.210
+<v Speaker 1>some RAM to build the the data structure.
+
+00:55:30.690 --> 00:55:32.210
+<v Speaker 1>And we have
+
+00:55:32.610 --> 00:55:35.090
+<v Speaker 1>what we call a wall so that to
+
+00:55:35.490 --> 00:55:36.850
+<v Speaker 1>that is saved on the disk
+
+00:55:38.335 --> 00:55:40.495
+<v Speaker 1>So that when you restart, it will
+
+00:55:40.975 --> 00:55:43.055
+<v Speaker 1>if you if you have, like,
+
+00:55:44.175 --> 00:55:46.015
+<v Speaker 1>an issue on your on
+
+00:55:46.255 --> 00:55:48.255
+<v Speaker 1>on your pod, it will all start with
+
+00:55:48.655 --> 00:55:49.615
+<v Speaker 1>at the same position.
+
+00:55:50.600 --> 00:55:53.320
+<v Speaker 1>So it will keep, like, a buffer here.
+
+00:55:53.320 --> 00:55:55.320
+<v Speaker 1>It's I think it's twenty seconds for this
+
+00:55:55.320 --> 00:55:56.040
+<v Speaker 1>index
+
+00:55:57.160 --> 00:55:59.240
+<v Speaker 1>before it is uploaded to
+
+00:55:59.640 --> 00:56:01.000
+<v Speaker 1>to the object storage.
+
+00:56:01.240 --> 00:56:03.720
+<v Speaker 1>So the this time is used for the
+
+00:56:03.720 --> 00:56:07.355
+<v Speaker 1>wall and for building the the data structure
+
+00:56:07.595 --> 00:56:09.995
+<v Speaker 1>the index data structure. Yeah. So that drop
+
+00:56:09.995 --> 00:56:11.595
+<v Speaker 0>then may it's just been a flush in
+
+00:56:11.595 --> 00:56:13.515
+<v Speaker 0>the wall to object store potentially.
+
+00:56:13.915 --> 00:56:15.995
+<v Speaker 1>Yeah. And, also, what
+
+00:56:16.475 --> 00:56:18.555
+<v Speaker 1>I would expect is that it isn't this
+
+00:56:18.770 --> 00:56:20.290
+<v Speaker 1>particular node
+
+00:56:20.369 --> 00:56:23.569
+<v Speaker 1>is indexing less document than others. If it's
+
+00:56:23.569 --> 00:56:25.570
+<v Speaker 1>lower, like, we can check.
+
+00:56:25.970 --> 00:56:26.850
+<v Speaker 1>For example,
+
+00:56:27.250 --> 00:56:29.089
+<v Speaker 1>if we look at the first one, because
+
+00:56:29.089 --> 00:56:30.290
+<v Speaker 1>this is the first one.
+
+00:56:31.905 --> 00:56:33.825
+<v Speaker 1>So we can see that it's indexing only
+
+00:56:33.825 --> 00:56:35.585
+<v Speaker 1>on 20 megabytes.
+
+00:56:36.225 --> 00:56:36.865
+<v Speaker 1>And
+
+00:56:37.345 --> 00:56:39.185
+<v Speaker 1>let's have a look at another one. This
+
+00:56:39.185 --> 00:56:40.865
+<v Speaker 1>one is indexing more. So
+
+00:56:41.665 --> 00:56:42.945
+<v Speaker 1>what I suspect
+
+00:56:42.945 --> 00:56:45.660
+<v Speaker 1>is that the configuration of is a lit
+
+00:56:45.820 --> 00:56:47.340
+<v Speaker 1>little bit different for
+
+00:56:47.500 --> 00:56:48.700
+<v Speaker 1>the first job.
+
+00:56:51.260 --> 00:56:53.100
+<v Speaker 1>I don't know. I'm I'm not I'm not
+
+00:56:53.100 --> 00:56:54.060
+<v Speaker 1>sure here.
+
+00:56:54.540 --> 00:56:55.340
+<v Speaker 1>Let me check.
+
+00:57:02.475 --> 00:57:04.795
+<v Speaker 1>Let's see. The configuration seems
+
+00:57:08.635 --> 00:57:11.035
+<v Speaker 1>I don't know. No. It's I I don't
+
+00:57:11.035 --> 00:57:13.600
+<v Speaker 1>think it's coming oh, that's interesting. Here, we
+
+00:57:13.600 --> 00:57:16.400
+<v Speaker 1>are using gRPC, and here we are using
+
+00:57:16.560 --> 00:57:18.160
+<v Speaker 1>Uh-huh. HTTP endpoint.
+
+00:57:18.240 --> 00:57:20.240
+<v Speaker 1>So there is a this small difference.
+
+00:57:20.480 --> 00:57:21.120
+<v Speaker 1>Okay.
+
+00:57:22.400 --> 00:57:24.640
+<v Speaker 1>Okay. May maybe I I should look into
+
+00:57:24.640 --> 00:57:26.240
+<v Speaker 1>that to see if it's coming from from
+
+00:57:26.240 --> 00:57:29.065
+<v Speaker 1>that, or maybe it's the
+
+00:57:29.465 --> 00:57:32.025
+<v Speaker 1>node that is already running
+
+00:57:32.105 --> 00:57:33.465
+<v Speaker 1>the jobs
+
+00:57:33.625 --> 00:57:34.345
+<v Speaker 1>from
+
+00:57:34.905 --> 00:57:35.545
+<v Speaker 1>from.
+
+00:57:35.865 --> 00:57:38.665
+<v Speaker 1>I'm not sure. Yeah. Okay. Thanks.
+
+00:57:44.160 --> 00:57:45.360
+<v Speaker 1>Okay. So
+
+00:57:45.520 --> 00:57:47.440
+<v Speaker 1>nice thing is that you can see that
+
+00:57:47.440 --> 00:57:50.000
+<v Speaker 1>we are indexing a lot of traces,
+
+00:57:50.400 --> 00:57:51.360
+<v Speaker 1>and you
+
+00:57:51.520 --> 00:57:53.599
+<v Speaker 1>what now we want to search to to
+
+00:57:53.599 --> 00:57:55.695
+<v Speaker 1>have a look at this volume too, and
+
+00:57:55.695 --> 00:57:57.695
+<v Speaker 1>that's the nice thing that we have. So
+
+00:57:57.695 --> 00:57:59.215
+<v Speaker 1>I'm using here the
+
+00:57:59.535 --> 00:58:01.455
+<v Speaker 1>Quickwit
+
+00:58:01.455 --> 00:58:02.175
+<v Speaker 1>plugin.
+
+00:58:03.615 --> 00:58:04.255
+<v Speaker 1>And
+
+00:58:05.295 --> 00:58:06.575
+<v Speaker 1>so it's like
+
+00:58:07.295 --> 00:58:08.095
+<v Speaker 1>we
+
+00:58:08.430 --> 00:58:09.630
+<v Speaker 1>it's a that
+
+00:58:09.950 --> 00:58:11.870
+<v Speaker 1>you can use, like, any other
+
+00:58:12.109 --> 00:58:13.070
+<v Speaker 1>plugging.
+
+00:58:16.109 --> 00:58:18.110
+<v Speaker 1>Actually, I'm not on the right.
+
+00:58:19.790 --> 00:58:21.950
+<v Speaker 1>I think I should be there. Yes.
+
+00:58:22.974 --> 00:58:26.415
+<v Speaker 1>Because I have two I have two instances.
+
+00:58:26.895 --> 00:58:29.935
+<v Speaker 1>So one on port three three thousand.
+
+00:58:29.935 --> 00:58:31.295
+<v Speaker 1>So I must
+
+00:58:31.775 --> 00:58:32.895
+<v Speaker 1>stay on this one.
+
+00:58:36.339 --> 00:58:39.140
+<v Speaker 1>So for this demo, I created two
+
+00:58:39.859 --> 00:58:41.940
+<v Speaker 1>two data source, one for logs and one
+
+00:58:41.940 --> 00:58:42.820
+<v Speaker 1>for traces.
+
+00:58:44.420 --> 00:58:45.300
+<v Speaker 1>To create
+
+00:58:46.740 --> 00:58:49.525
+<v Speaker 1>a Quickwit data source, you have to specify
+
+00:58:49.525 --> 00:58:52.085
+<v Speaker 1>the HTTP endpoint. So here,
+
+00:58:52.325 --> 00:58:55.205
+<v Speaker 1>we we are just pointing pointing to the
+
+00:58:55.205 --> 00:58:57.285
+<v Speaker 1>Quickwit searcher service.
+
+00:58:58.485 --> 00:59:00.085
+<v Speaker 1>And then you have to specify
+
+00:59:00.165 --> 00:59:01.205
+<v Speaker 1>an index ID.
+
+00:59:01.730 --> 00:59:03.890
+<v Speaker 1>The message field name, log level field name
+
+00:59:03.890 --> 00:59:05.250
+<v Speaker 1>are optional.
+
+00:59:05.970 --> 00:59:08.050
+<v Speaker 1>You can also link to
+
+00:59:08.690 --> 00:59:11.170
+<v Speaker 1>trace ID, and I will show you what's
+
+00:59:11.170 --> 00:59:13.170
+<v Speaker 1>the purpose of that. It is when you
+
+00:59:13.170 --> 00:59:15.650
+<v Speaker 1>want to go from, like, a log line
+
+00:59:15.650 --> 00:59:17.975
+<v Speaker 1>or a document and see
+
+00:59:18.295 --> 00:59:19.735
+<v Speaker 1>the whole traces
+
+00:59:19.815 --> 00:59:22.215
+<v Speaker 1>the whole trace with all the spans and
+
+00:59:22.615 --> 00:59:24.375
+<v Speaker 1>show it with with
+
+00:59:24.375 --> 00:59:25.255
+<v Speaker 1>with
+
+00:59:25.335 --> 00:59:26.855
+<v Speaker 1>user interface.
+
+00:59:29.095 --> 00:59:31.815
+<v Speaker 1>So let's go back to the explore view
+
+00:59:33.590 --> 00:59:36.070
+<v Speaker 1>and have a look at traces.
+
+00:59:36.070 --> 00:59:39.510
+<v Speaker 1>So here, we have some logs because I'm
+
+00:59:39.990 --> 00:59:41.590
+<v Speaker 1>I'm using OpenTelemetry
+
+00:59:41.590 --> 00:59:43.590
+<v Speaker 1>collector to send logs into Quickwit.
+
+00:59:44.815 --> 00:59:48.095
+<v Speaker 1>So it's a classic setup for a Kubernetes
+
+00:59:48.415 --> 00:59:49.295
+<v Speaker 1>cluster.
+
+00:59:49.855 --> 00:59:51.935
+<v Speaker 1>But let's have a look at traces.
+
+00:59:53.055 --> 00:59:54.415
+<v Speaker 1>So here we have
+
+00:59:54.815 --> 00:59:56.095
+<v Speaker 1>one searcher,
+
+00:59:56.495 --> 00:59:58.070
+<v Speaker 1>but we have a lot of logs. So
+
+00:59:58.070 --> 00:59:59.990
+<v Speaker 1>that's why it is taking some time.
+
+01:00:03.110 --> 01:00:05.990
+<v Speaker 1>And, actually, I will probably reduce the number.
+
+01:00:05.990 --> 01:00:07.110
+<v Speaker 1>I will stop
+
+01:00:07.270 --> 01:00:08.790
+<v Speaker 1>I will stop this because
+
+01:00:09.990 --> 01:00:12.070
+<v Speaker 1>the index would be a bit too too
+
+01:00:12.070 --> 01:00:14.150
+<v Speaker 1>large. I don't want to
+
+01:00:15.005 --> 01:00:15.645
+<v Speaker 1>we
+
+01:00:16.605 --> 01:00:19.805
+<v Speaker 1>we we can support this, but I think
+
+01:00:19.805 --> 01:00:21.245
+<v Speaker 1>it's it's useless
+
+01:00:21.325 --> 01:00:21.805
+<v Speaker 1>now.
+
+01:00:27.470 --> 01:00:30.349
+<v Speaker 1>So okay. It is taking a bit longer
+
+01:00:30.349 --> 01:00:31.710
+<v Speaker 1>than I would expect.
+
+01:00:32.270 --> 01:00:34.990
+<v Speaker 1>So sometimes I have some issues with my
+
+01:00:36.190 --> 01:00:37.630
+<v Speaker 1>with my instance.
+
+01:00:37.630 --> 01:00:40.430
+<v Speaker 1>So I have some packets over at all
+
+01:00:40.430 --> 01:00:42.365
+<v Speaker 1>lost. So I would just
+
+01:00:42.925 --> 01:00:44.205
+<v Speaker 1>restart this
+
+01:00:44.445 --> 01:00:46.845
+<v Speaker 1>portal one to make sure that
+
+01:00:49.405 --> 01:00:50.845
+<v Speaker 1>it it's working.
+
+01:00:53.165 --> 01:00:54.765
+<v Speaker 1>So we have already, like,
+
+01:00:55.780 --> 01:00:59.380
+<v Speaker 1>several hundreds and of millions of traces. So
+
+01:00:59.380 --> 01:01:01.700
+<v Speaker 1>we have only one searcher that is fetching
+
+01:01:01.700 --> 01:01:04.020
+<v Speaker 1>data directly from the pure object storage,
+
+01:01:04.180 --> 01:01:04.740
+<v Speaker 1>and
+
+01:01:05.220 --> 01:01:07.300
+<v Speaker 1>we are doing here two query.
+
+01:01:07.944 --> 01:01:10.184
+<v Speaker 1>Two queries. One query is for it's a
+
+01:01:10.184 --> 01:01:10.744
+<v Speaker 1>data.
+
+01:01:11.464 --> 01:01:14.105
+<v Speaker 1>You you have to so it is taking,
+
+01:01:14.424 --> 01:01:15.785
+<v Speaker 1>like, several seconds,
+
+01:01:15.865 --> 01:01:17.785
+<v Speaker 1>but you have to see that here we
+
+01:01:17.785 --> 01:01:18.345
+<v Speaker 1>are
+
+01:01:19.785 --> 01:01:21.785
+<v Speaker 1>making an aggregation over
+
+01:01:22.250 --> 01:01:23.450
+<v Speaker 1>probably now
+
+01:01:26.010 --> 01:01:27.930
+<v Speaker 1>let's let's have a look at this.
+
+01:01:29.290 --> 01:01:31.130
+<v Speaker 1>Yes. We we have almost
+
+01:01:31.210 --> 01:01:32.010
+<v Speaker 1>500
+
+01:01:32.010 --> 01:01:32.970
+<v Speaker 1>millions of documents.
+
+01:01:34.025 --> 01:01:36.425
+<v Speaker 1>So it's normal with one searcher to
+
+01:01:36.665 --> 01:01:39.865
+<v Speaker 1>to take a few few seconds to just
+
+01:01:39.865 --> 01:01:42.585
+<v Speaker 1>do this data histogram. In one minute here,
+
+01:01:42.585 --> 01:01:45.305
+<v Speaker 1>you can see that we have 27,000,000
+
+01:01:46.345 --> 01:01:47.705
+<v Speaker 1>spans, so that's a lot.
+
+01:01:48.920 --> 01:01:50.920
+<v Speaker 1>But Quickwit can handle it with only one
+
+01:01:50.920 --> 01:01:52.920
+<v Speaker 1>searcher. And, of course, if you look at
+
+01:01:52.920 --> 01:01:54.360
+<v Speaker 1>the only
+
+01:01:54.760 --> 01:01:56.840
+<v Speaker 1>fifty minutes, it should be faster.
+
+01:01:57.640 --> 01:01:59.560
+<v Speaker 1>But you you still have a lot. Yeah.
+
+01:02:02.285 --> 01:02:05.165
+<v Speaker 1>So here we are looking at traces,
+
+01:02:05.645 --> 01:02:07.405
+<v Speaker 1>spans to
+
+01:02:07.405 --> 01:02:07.965
+<v Speaker 1>be
+
+01:02:08.845 --> 01:02:09.485
+<v Speaker 1>accurate.
+
+01:02:09.805 --> 01:02:12.205
+<v Speaker 1>So if we look at a a span,
+
+01:02:12.605 --> 01:02:16.205
+<v Speaker 1>this one is a Quickwit span, like service
+
+01:02:16.205 --> 01:02:16.925
+<v Speaker 1>name Quickwit.
+
+01:02:17.780 --> 01:02:19.220
+<v Speaker 1>So if if
+
+01:02:19.780 --> 01:02:22.740
+<v Speaker 1>I'm looking so I can play with this
+
+01:02:22.820 --> 01:02:25.060
+<v Speaker 1>and search for span like this.
+
+01:02:26.660 --> 01:02:27.380
+<v Speaker 1>So
+
+01:02:27.460 --> 01:02:31.380
+<v Speaker 1>if I'm looking only at quick quickwit service
+
+01:02:31.540 --> 01:02:31.940
+<v Speaker 1>service,
+
+01:02:32.635 --> 01:02:34.395
+<v Speaker 1>you have a lot less
+
+01:02:35.435 --> 01:02:38.555
+<v Speaker 1>faces spans because most of them are generated
+
+01:02:39.115 --> 01:02:40.235
+<v Speaker 1>by trash
+
+01:02:40.315 --> 01:02:41.035
+<v Speaker 1>gen.
+
+01:02:43.435 --> 01:02:44.475
+<v Speaker 1>Something like that.
+
+01:02:48.050 --> 01:02:50.210
+<v Speaker 1>So, yeah, so here, we have
+
+01:02:51.970 --> 01:02:54.369
+<v Speaker 1>we have all of your we our traces
+
+01:02:55.250 --> 01:02:56.370
+<v Speaker 1>on traces
+
+01:02:56.770 --> 01:02:57.330
+<v Speaker 1>job.
+
+01:02:58.130 --> 01:03:00.210
+<v Speaker 1>And if we look at Quickwit, what can
+
+01:03:00.210 --> 01:03:02.865
+<v Speaker 1>be interesting is that if you look. So
+
+01:03:02.865 --> 01:03:04.945
+<v Speaker 1>here, the interface is not very nice,
+
+01:03:05.345 --> 01:03:07.745
+<v Speaker 1>but we can have a look at the
+
+01:03:07.745 --> 01:03:09.425
+<v Speaker 1>what's inside the span
+
+01:03:10.065 --> 01:03:11.105
+<v Speaker 1>and also
+
+01:03:11.505 --> 01:03:13.025
+<v Speaker 1>link it to
+
+01:03:13.825 --> 01:03:14.465
+<v Speaker 1>the trace.
+
+01:03:16.410 --> 01:03:19.130
+<v Speaker 1>So here, for example, it's a trace it's
+
+01:03:19.130 --> 01:03:21.050
+<v Speaker 1>a search trace from Quickwit.
+
+01:03:21.290 --> 01:03:22.250
+<v Speaker 1>So you can
+
+01:03:22.569 --> 01:03:23.130
+<v Speaker 1>really
+
+01:03:23.770 --> 01:03:25.290
+<v Speaker 1>see what's
+
+01:03:25.290 --> 01:03:27.050
+<v Speaker 1>happening inside Quickwit.
+
+01:03:27.130 --> 01:03:29.735
+<v Speaker 1>So here we have a leaf search. So
+
+01:03:29.735 --> 01:03:33.095
+<v Speaker 1>leaf, it's because it's happening on one
+
+01:03:33.095 --> 01:03:36.055
+<v Speaker 1>one node, and we are searching through one
+
+01:03:36.055 --> 01:03:37.015
+<v Speaker 1>single split.
+
+01:03:37.655 --> 01:03:40.135
+<v Speaker 1>And then you have the those different steps.
+
+01:03:40.295 --> 01:03:41.655
+<v Speaker 1>So you you can dig into that.
+
+01:03:43.960 --> 01:03:45.640
+<v Speaker 0>Can I ask a question? Yep.
+
+01:03:46.520 --> 01:03:48.600
+<v Speaker 0>Is on the right hand side, right, the
+
+01:03:48.600 --> 01:03:51.080
+<v Speaker 0>split the split to show the trace, is
+
+01:03:51.080 --> 01:03:53.560
+<v Speaker 0>that actually creating Quickwit, or is it creating
+
+01:03:53.640 --> 01:03:54.120
+<v Speaker 0>Jaeger?
+
+01:03:55.125 --> 01:03:57.445
+<v Speaker 1>Okay. It's here. It's create we are I'm
+
+01:03:57.445 --> 01:03:58.725
+<v Speaker 1>using a Yeager
+
+01:04:00.165 --> 01:04:01.205
+<v Speaker 1>data source.
+
+01:04:02.005 --> 01:04:04.725
+<v Speaker 1>Mhmm. And it is this Yeager data source
+
+01:04:04.725 --> 01:04:06.645
+<v Speaker 1>is directly hitting
+
+01:04:06.645 --> 01:04:09.605
+<v Speaker 1>the rest API of Quickwit to gather the
+
+01:04:09.605 --> 01:04:10.245
+<v Speaker 1>spans
+
+01:04:11.100 --> 01:04:12.780
+<v Speaker 1>here. Okay. So you support
+
+01:04:12.860 --> 01:04:15.180
+<v Speaker 0>the Yeager API for the benefits of this
+
+01:04:15.180 --> 01:04:17.900
+<v Speaker 0>Grafana plugin and other UIs, I guess. But
+
+01:04:17.980 --> 01:04:19.340
+<v Speaker 1>Yeah. Exactly. So I
+
+01:04:20.060 --> 01:04:22.060
+<v Speaker 1>just showing you how I configured, like, for
+
+01:04:22.060 --> 01:04:24.875
+<v Speaker 1>Yeager data source. So data source I like
+
+01:04:24.875 --> 01:04:25.355
+<v Speaker 0>that.
+
+01:04:25.675 --> 01:04:28.235
+<v Speaker 1>Is just so you have to
+
+01:04:28.955 --> 01:04:31.035
+<v Speaker 1>to give, like, the standpoint.
+
+01:04:31.195 --> 01:04:32.155
+<v Speaker 1>And because
+
+01:04:33.435 --> 01:04:36.075
+<v Speaker 1>plug in is using the rest API, which
+
+01:04:36.075 --> 01:04:38.555
+<v Speaker 1>is covering, like, spans in a certain way,
+
+01:04:38.555 --> 01:04:41.150
+<v Speaker 1>and we implemented it we implemented it
+
+01:04:41.470 --> 01:04:42.990
+<v Speaker 1>at the end point.
+
+01:04:43.950 --> 01:04:44.750
+<v Speaker 1>And that's it.
+
+01:04:51.155 --> 01:04:53.474
+<v Speaker 1>What else? So one interesting thing that you
+
+01:04:53.474 --> 01:04:54.355
+<v Speaker 1>can do
+
+01:04:55.234 --> 01:04:58.435
+<v Speaker 1>with Quickwit is also aggregations.
+
+01:05:00.515 --> 01:05:02.435
+<v Speaker 1>What else can I show you? For example,
+
+01:05:02.435 --> 01:05:04.515
+<v Speaker 1>here, if we look for
+
+01:05:04.860 --> 01:05:05.660
+<v Speaker 1>traces,
+
+01:05:05.660 --> 01:05:06.620
+<v Speaker 1>one thing that you
+
+01:05:07.100 --> 01:05:09.100
+<v Speaker 1>that is nice to do with traces
+
+01:05:10.140 --> 01:05:12.700
+<v Speaker 1>so I will look at Quickwit traces because
+
+01:05:12.700 --> 01:05:15.260
+<v Speaker 1>they are more relevant than try the problem
+
+01:05:15.260 --> 01:05:16.700
+<v Speaker 1>with is
+
+01:05:16.700 --> 01:05:18.300
+<v Speaker 1>that they are a bit dumb.
+
+01:05:18.935 --> 01:05:20.775
+<v Speaker 1>I will show you some of them a
+
+01:05:20.775 --> 01:05:21.575
+<v Speaker 1>bit later.
+
+01:05:22.295 --> 01:05:23.735
+<v Speaker 1>But one thing that you can do with
+
+01:05:23.735 --> 01:05:24.695
+<v Speaker 1>Quickwit is
+
+01:05:24.935 --> 01:05:26.535
+<v Speaker 1>do some analytics
+
+01:05:26.535 --> 01:05:28.535
+<v Speaker 1>on your traces. So for example,
+
+01:05:29.735 --> 01:05:31.415
+<v Speaker 1>if you want to do,
+
+01:05:32.200 --> 01:05:34.520
+<v Speaker 1>like, some kind of term aggregation
+
+01:05:34.600 --> 01:05:35.960
+<v Speaker 1>on span name,
+
+01:05:36.360 --> 01:05:38.680
+<v Speaker 1>that's typically what you want to do.
+
+01:05:40.040 --> 01:05:42.040
+<v Speaker 1>And what you want to do is to
+
+01:05:42.040 --> 01:05:44.600
+<v Speaker 1>to know if which span is, for example,
+
+01:05:44.600 --> 01:05:45.800
+<v Speaker 1>taking longer
+
+01:05:45.880 --> 01:05:48.355
+<v Speaker 1>than you than it should. In this case,
+
+01:05:48.755 --> 01:05:50.995
+<v Speaker 1>you can have a look at the average,
+
+01:05:50.995 --> 01:05:53.395
+<v Speaker 1>for example, of the span duration.
+
+01:05:56.115 --> 01:05:57.155
+<v Speaker 1>So here,
+
+01:05:57.395 --> 01:06:00.035
+<v Speaker 1>we have the output of an aggregation that
+
+01:06:00.035 --> 01:06:02.195
+<v Speaker 1>is giving us, like, all the spans that
+
+01:06:02.195 --> 01:06:02.915
+<v Speaker 1>are available
+
+01:06:03.369 --> 01:06:04.890
+<v Speaker 1>on the Quickwit service
+
+01:06:05.050 --> 01:06:07.130
+<v Speaker 1>and, like, the average
+
+01:06:08.089 --> 01:06:09.930
+<v Speaker 1>duration of each span.
+
+01:06:10.330 --> 01:06:12.650
+<v Speaker 1>So it can give you, like, a good
+
+01:06:12.650 --> 01:06:13.370
+<v Speaker 1>idea.
+
+01:06:14.089 --> 01:06:14.570
+<v Speaker 1>Generally,
+
+01:06:15.625 --> 01:06:16.745
+<v Speaker 1>we want to
+
+01:06:17.225 --> 01:06:18.665
+<v Speaker 1>get the percentile.
+
+01:06:21.465 --> 01:06:24.105
+<v Speaker 1>Monitor, like, when you monitor a service,
+
+01:06:24.345 --> 01:06:26.105
+<v Speaker 1>it's it's nice. So you can you can
+
+01:06:26.105 --> 01:06:27.465
+<v Speaker 1>get the the percentile
+
+01:06:28.790 --> 01:06:30.870
+<v Speaker 1>to to see there is a degradation in
+
+01:06:30.870 --> 01:06:31.750
+<v Speaker 1>your service.
+
+01:06:33.270 --> 01:06:35.190
+<v Speaker 1>And I will I will assure you a
+
+01:06:35.190 --> 01:06:38.630
+<v Speaker 1>real a well world application monitoring just after
+
+01:06:38.630 --> 01:06:38.870
+<v Speaker 1>that.
+
+01:06:41.225 --> 01:06:42.505
+<v Speaker 1>So yeah. So
+
+01:06:42.825 --> 01:06:44.345
+<v Speaker 1>you can do this, like,
+
+01:06:45.705 --> 01:06:48.025
+<v Speaker 1>on really on really big datasets.
+
+01:06:48.345 --> 01:06:50.505
+<v Speaker 1>So that that's that's one of the
+
+01:06:51.305 --> 01:06:53.225
+<v Speaker 1>advantage of using Quickwit.
+
+01:06:53.385 --> 01:06:55.705
+<v Speaker 1>And So how how much of
+
+01:06:56.220 --> 01:06:57.020
+<v Speaker 0>Lucene's
+
+01:06:57.020 --> 01:06:57.900
+<v Speaker 0>search
+
+01:06:57.980 --> 01:07:00.140
+<v Speaker 0>and operators do you support?
+
+01:07:00.380 --> 01:07:01.980
+<v Speaker 0>Because right now, we've we've been doing very
+
+01:07:01.980 --> 01:07:04.300
+<v Speaker 0>basic searches. Right? We haven't done any term
+
+01:07:04.300 --> 01:07:05.980
+<v Speaker 0>boosting, fuzzy matching.
+
+01:07:06.380 --> 01:07:06.940
+<v Speaker 1>Yeah.
+
+01:07:07.180 --> 01:07:09.420
+<v Speaker 0>And does it support any of that stuff?
+
+01:07:10.035 --> 01:07:11.555
+<v Speaker 1>Yeah. So it supports
+
+01:07:12.275 --> 01:07:13.795
+<v Speaker 1>what we support currently
+
+01:07:13.795 --> 01:07:16.915
+<v Speaker 1>okay. We don't support the fuzzy part. We
+
+01:07:16.915 --> 01:07:18.355
+<v Speaker 1>support prefix
+
+01:07:18.355 --> 01:07:19.235
+<v Speaker 1>queries.
+
+01:07:20.595 --> 01:07:20.915
+<v Speaker 1>So
+
+01:07:21.810 --> 01:07:25.490
+<v Speaker 1>here, if I'm starting, like, quick with an
+
+01:07:25.490 --> 01:07:27.330
+<v Speaker 1>AMD ending
+
+01:07:27.330 --> 01:07:29.650
+<v Speaker 1>this with a star, it will
+
+01:07:29.890 --> 01:07:31.250
+<v Speaker 1>return the response.
+
+01:07:31.730 --> 01:07:34.930
+<v Speaker 1>We don't support suffix suffix query where you
+
+01:07:34.930 --> 01:07:37.010
+<v Speaker 1>would start with the star.
+
+01:07:38.965 --> 01:07:40.885
+<v Speaker 1>So fuzzy fuzzy
+
+01:07:41.365 --> 01:07:42.965
+<v Speaker 1>query does not work.
+
+01:07:44.325 --> 01:07:46.405
+<v Speaker 1>We don't support currently even
+
+01:07:46.725 --> 01:07:50.325
+<v Speaker 1>if, like, we we could because it's fuzzy
+
+01:07:50.325 --> 01:07:52.005
+<v Speaker 1>and queries are supported in.
+
+01:07:53.680 --> 01:07:55.200
+<v Speaker 1>So we could add it.
+
+01:07:55.520 --> 01:07:55.840
+<v Speaker 1>What
+
+01:07:57.600 --> 01:07:59.440
+<v Speaker 1>the issue what we have with this kind
+
+01:07:59.440 --> 01:08:01.440
+<v Speaker 1>of queries is that you would we need
+
+01:08:01.440 --> 01:08:04.400
+<v Speaker 1>to cache more things. So we don't
+
+01:08:04.480 --> 01:08:07.200
+<v Speaker 1>we did for for now, we we don't
+
+01:08:07.600 --> 01:08:10.745
+<v Speaker 1>we did not added it added to to
+
+01:08:10.745 --> 01:08:11.545
+<v Speaker 1>Quickwit.
+
+01:08:13.465 --> 01:08:15.145
+<v Speaker 1>So, yeah, currently,
+
+01:08:15.305 --> 01:08:16.905
+<v Speaker 1>what you can do is this kind of
+
+01:08:16.905 --> 01:08:18.185
+<v Speaker 1>stuff, like,
+
+01:08:19.785 --> 01:08:21.385
+<v Speaker 1>for example, if you want to
+
+01:08:21.705 --> 01:08:24.665
+<v Speaker 1>specify a span name
+
+01:08:27.040 --> 01:08:29.600
+<v Speaker 1>You can do this Boolean queries.
+
+01:08:33.600 --> 01:08:36.479
+<v Speaker 1>Yeah. That that's mostly the the the main
+
+01:08:36.479 --> 01:08:38.000
+<v Speaker 1>part that you can you can do. You
+
+01:08:38.000 --> 01:08:39.840
+<v Speaker 1>can do some phrase query
+
+01:08:40.175 --> 01:08:42.895
+<v Speaker 1>on the full text search. What I I
+
+01:08:42.895 --> 01:08:44.495
+<v Speaker 1>can show you probably
+
+01:08:45.295 --> 01:08:48.015
+<v Speaker 1>this on the Quickwit log index.
+
+01:08:48.415 --> 01:08:50.255
+<v Speaker 1>So here we have logs, so you have
+
+01:08:50.255 --> 01:08:50.814
+<v Speaker 1>more
+
+01:08:51.215 --> 01:08:53.695
+<v Speaker 1>text. So it's nice to
+
+01:08:54.420 --> 01:08:56.020
+<v Speaker 1>to have a look at this.
+
+01:09:00.740 --> 01:09:02.819
+<v Speaker 1>Let me find, like, this.
+
+01:09:03.780 --> 01:09:05.380
+<v Speaker 0>Would you be able to do a sorry.
+
+01:09:05.380 --> 01:09:06.660
+<v Speaker 0>I'm gonna sort of span out of work.
+
+01:09:07.725 --> 01:09:09.804
+<v Speaker 0>Yeah. We have some nested JSON there with
+
+01:09:09.804 --> 01:09:11.885
+<v Speaker 0>the resource attributes. So would you be able
+
+01:09:11.885 --> 01:09:13.005
+<v Speaker 0>to find
+
+01:09:13.165 --> 01:09:14.524
+<v Speaker 0>logs where
+
+01:09:14.764 --> 01:09:17.645
+<v Speaker 0>the namespace or node name is that JSON
+
+01:09:17.645 --> 01:09:18.364
+<v Speaker 0>value?
+
+01:09:18.844 --> 01:09:21.724
+<v Speaker 1>Yeah. Yeah. Exactly. So that that's one
+
+01:09:21.965 --> 01:09:23.404
+<v Speaker 1>like, everything that is
+
+01:09:24.090 --> 01:09:25.130
+<v Speaker 1>not
+
+01:09:25.610 --> 01:09:28.170
+<v Speaker 1>declared in the schema or declared you can
+
+01:09:28.170 --> 01:09:30.250
+<v Speaker 1>you can do this kind of
+
+01:09:31.450 --> 01:09:33.290
+<v Speaker 1>fancy stuff. So you can you you can
+
+01:09:33.290 --> 01:09:35.370
+<v Speaker 1>write this. Oh, great. Okay.
+
+01:09:35.985 --> 01:09:37.745
+<v Speaker 0>Oh, so it just expands that out for
+
+01:09:37.745 --> 01:09:39.905
+<v Speaker 0>you when that JSON artifact exists on the
+
+01:09:39.905 --> 01:09:42.545
+<v Speaker 0>payload. Yes. So it's
+
+01:09:42.545 --> 01:09:43.905
+<v Speaker 1>the Quickwit
+
+01:09:43.905 --> 01:09:46.545
+<v Speaker 1>the Quickwit plug in is expanding this. So
+
+01:09:46.545 --> 01:09:46.865
+<v Speaker 1>it's
+
+01:09:47.905 --> 01:09:50.310
+<v Speaker 1>so the the region is there, so you
+
+01:09:50.310 --> 01:09:52.310
+<v Speaker 1>can have it. That's a that's a real
+
+01:09:52.310 --> 01:09:53.029
+<v Speaker 1>document.
+
+01:09:53.189 --> 01:09:55.590
+<v Speaker 1>And then it's is exploded for
+
+01:09:57.110 --> 01:09:57.909
+<v Speaker 1>UI
+
+01:09:58.150 --> 01:09:59.830
+<v Speaker 1>reasons. Okay. Cool.
+
+01:10:00.710 --> 01:10:01.110
+<v Speaker 1>So
+
+01:10:02.230 --> 01:10:03.430
+<v Speaker 1>what you can do, but
+
+01:10:04.114 --> 01:10:06.034
+<v Speaker 1>not not on this index because
+
+01:10:06.675 --> 01:10:10.035
+<v Speaker 1>it's not possible as I with I don't
+
+01:10:10.035 --> 01:10:12.675
+<v Speaker 1>index positions for logs, but you can do
+
+01:10:12.675 --> 01:10:15.235
+<v Speaker 1>fresh queries also. So for example,
+
+01:10:17.350 --> 01:10:18.230
+<v Speaker 1>imagine,
+
+01:10:18.469 --> 01:10:21.190
+<v Speaker 1>like, if we take, for example, this message,
+
+01:10:23.350 --> 01:10:24.869
+<v Speaker 1>like, merge.
+
+01:10:25.510 --> 01:10:26.469
+<v Speaker 1>You you
+
+01:10:27.670 --> 01:10:30.710
+<v Speaker 1>if you want to match exactly
+
+01:10:33.555 --> 01:10:35.475
+<v Speaker 1>those two consecutive words,
+
+01:10:36.675 --> 01:10:38.675
+<v Speaker 1>like, it's in body message.
+
+01:10:41.635 --> 01:10:44.115
+<v Speaker 1>But you you won't be happy because I
+
+01:10:44.115 --> 01:10:46.115
+<v Speaker 1>did not index the positions. But
+
+01:10:46.720 --> 01:10:49.440
+<v Speaker 1>for for some use cases, it's nice to
+
+01:10:49.440 --> 01:10:51.440
+<v Speaker 1>be able to do phrase queries.
+
+01:10:52.160 --> 01:10:54.160
+<v Speaker 1>When I say phrase queries, it is that
+
+01:10:54.160 --> 01:10:56.480
+<v Speaker 1>we expect a document to
+
+01:10:56.960 --> 01:11:01.120
+<v Speaker 1>documents only with those two consecutive words. Nothing
+
+01:11:01.120 --> 01:11:02.000
+<v Speaker 1>between them.
+
+01:11:03.335 --> 01:11:05.495
+<v Speaker 1>And we have, like, with
+
+01:11:05.495 --> 01:11:06.295
+<v Speaker 1>slope.
+
+01:11:06.535 --> 01:11:09.095
+<v Speaker 1>Slope, it means that we tolerate, like,
+
+01:11:09.975 --> 01:11:12.535
+<v Speaker 1>a change of positions of one
+
+01:11:13.655 --> 01:11:14.135
+<v Speaker 1>element,
+
+01:11:14.869 --> 01:11:17.270
+<v Speaker 1>and and that's it. So we we we
+
+01:11:17.270 --> 01:11:19.510
+<v Speaker 1>support those kind of queries too. But generally
+
+01:11:19.510 --> 01:11:21.670
+<v Speaker 1>for calls them proximity queries. Right? Or you
+
+01:11:21.670 --> 01:11:23.750
+<v Speaker 0>want two words within four words of of
+
+01:11:23.750 --> 01:11:26.469
+<v Speaker 0>each other? In Elasticsearch world, it's
+
+01:11:26.710 --> 01:11:29.270
+<v Speaker 1>phrase queries with slope, I think. Oh, alright.
+
+01:11:29.270 --> 01:11:29.349
+<v Speaker 0>Okay.
+
+01:11:31.215 --> 01:11:33.535
+<v Speaker 0>Great. So current it's not working here because
+
+01:11:33.535 --> 01:11:34.495
+<v Speaker 1>I have said
+
+01:11:34.815 --> 01:11:36.655
+<v Speaker 1>we I did not index, like,
+
+01:11:38.335 --> 01:11:39.455
+<v Speaker 1>the the positions.
+
+01:11:39.535 --> 01:11:41.695
+<v Speaker 1>For logs, generally, it's not necessary.
+
+01:11:43.110 --> 01:11:44.150
+<v Speaker 0>Okay. Cool.
+
+01:11:45.190 --> 01:11:46.150
+<v Speaker 1>Awesome. Yeah.
+
+01:11:46.870 --> 01:11:47.429
+<v Speaker 1>So
+
+01:11:47.989 --> 01:11:49.830
+<v Speaker 1>I think that's it for the demo that
+
+01:11:49.830 --> 01:11:51.670
+<v Speaker 1>I can show you today.
+
+01:11:51.670 --> 01:11:53.909
+<v Speaker 1>I have, like, a preview of what you
+
+01:11:53.909 --> 01:11:55.190
+<v Speaker 1>can expect in the
+
+01:11:55.775 --> 01:11:56.975
+<v Speaker 1>in the coming
+
+01:11:57.535 --> 01:11:59.135
+<v Speaker 1>weeks or months.
+
+01:12:00.175 --> 01:12:03.135
+<v Speaker 1>Because here, one drawback here, as you I
+
+01:12:03.135 --> 01:12:05.695
+<v Speaker 1>think you you will note you noticed it,
+
+01:12:05.695 --> 01:12:06.815
+<v Speaker 1>is that it's
+
+01:12:08.280 --> 01:12:10.760
+<v Speaker 1>it's nice to be able to search through,
+
+01:12:10.760 --> 01:12:12.840
+<v Speaker 1>like, this amount of logs. It's nice to
+
+01:12:12.840 --> 01:12:15.480
+<v Speaker 1>be able to to to build this kind
+
+01:12:15.480 --> 01:12:16.840
+<v Speaker 1>of statistics.
+
+01:12:17.239 --> 01:12:19.639
+<v Speaker 1>But you can you can
+
+01:12:20.315 --> 01:12:21.835
+<v Speaker 1>go you can do more.
+
+01:12:22.315 --> 01:12:24.074
+<v Speaker 1>And I prepared, like,
+
+01:12:25.195 --> 01:12:28.475
+<v Speaker 1>an application monitoring dashboard built with Quickwit.
+
+01:12:30.635 --> 01:12:33.435
+<v Speaker 1>So here, you can imagine that you have
+
+01:12:33.840 --> 01:12:34.960
+<v Speaker 1>an application.
+
+01:12:35.280 --> 01:12:37.120
+<v Speaker 1>Like, here, it's a first API
+
+01:12:37.360 --> 01:12:38.239
+<v Speaker 1>application,
+
+01:12:38.640 --> 01:12:40.080
+<v Speaker 1>and I'm running,
+
+01:12:40.400 --> 01:12:42.320
+<v Speaker 1>like, on my local instance,
+
+01:12:43.200 --> 01:12:44.480
+<v Speaker 1>some script
+
+01:12:44.480 --> 01:12:46.160
+<v Speaker 1>that is making request
+
+01:12:46.525 --> 01:12:48.205
+<v Speaker 1>on this API.
+
+01:12:48.845 --> 01:12:49.485
+<v Speaker 1>And
+
+01:12:50.205 --> 01:12:53.085
+<v Speaker 1>this application this past API application is also
+
+01:12:53.085 --> 01:12:54.365
+<v Speaker 1>instrumented with
+
+01:12:54.765 --> 01:12:55.965
+<v Speaker 1>OpenTelemetry,
+
+01:12:55.965 --> 01:12:58.445
+<v Speaker 1>and it is sending traces to Quickwit.
+
+01:12:59.290 --> 01:13:01.450
+<v Speaker 1>And so what I did here is
+
+01:13:01.770 --> 01:13:04.890
+<v Speaker 1>saw a bunch of aggregations with what's available
+
+01:13:04.890 --> 01:13:06.730
+<v Speaker 1>with Quickwit currently.
+
+01:13:06.970 --> 01:13:09.690
+<v Speaker 1>And I just, like as I showed
+
+01:13:10.170 --> 01:13:12.410
+<v Speaker 1>you the latency of
+
+01:13:12.570 --> 01:13:14.010
+<v Speaker 1>span name before,
+
+01:13:14.565 --> 01:13:18.405
+<v Speaker 1>Here, I'm just showing you the average latency
+
+01:13:18.805 --> 01:13:20.724
+<v Speaker 1>of some service name.
+
+01:13:20.965 --> 01:13:21.605
+<v Speaker 1>And
+
+01:13:21.765 --> 01:13:22.965
+<v Speaker 1>here, I'm using
+
+01:13:25.205 --> 01:13:26.565
+<v Speaker 1>a span attributes,
+
+01:13:27.525 --> 01:13:27.685
+<v Speaker 1>not
+
+01:13:28.430 --> 01:13:31.950
+<v Speaker 1>not a HTTP content length, but here we
+
+01:13:31.950 --> 01:13:34.910
+<v Speaker 1>are we are looking for the the root.
+
+01:13:35.310 --> 01:13:37.230
+<v Speaker 1>So if you you look at the root,
+
+01:13:38.190 --> 01:13:40.270
+<v Speaker 1>you can, like, build
+
+01:13:40.685 --> 01:13:42.765
+<v Speaker 1>your application monitoring dashboard
+
+01:13:43.085 --> 01:13:43.885
+<v Speaker 1>because
+
+01:13:44.205 --> 01:13:45.325
+<v Speaker 1>OpenTelemetry
+
+01:13:46.045 --> 01:13:49.485
+<v Speaker 1>giving is giving you, like, the nice attributes
+
+01:13:49.485 --> 01:13:50.685
+<v Speaker 1>that you can use
+
+01:13:51.165 --> 01:13:54.045
+<v Speaker 1>to understand what's happening in your application.
+
+01:13:54.445 --> 01:13:55.085
+<v Speaker 0>Nice.
+
+01:13:55.699 --> 01:13:56.260
+<v Speaker 1>So
+
+01:13:56.900 --> 01:13:59.780
+<v Speaker 1>here it's a it's a preview because currently,
+
+01:14:00.020 --> 01:14:01.780
+<v Speaker 1>I'm still working on this.
+
+01:14:02.179 --> 01:14:05.139
+<v Speaker 1>It's working I'm using the zero dot seven
+
+01:14:05.139 --> 01:14:07.139
+<v Speaker 1>version, so it's you can already
+
+01:14:07.460 --> 01:14:09.139
+<v Speaker 1>do that with with Quickwit.
+
+01:14:10.235 --> 01:14:11.275
+<v Speaker 1>I'm just not
+
+01:14:11.675 --> 01:14:13.755
+<v Speaker 1>totally satisfied by
+
+01:14:14.795 --> 01:14:18.155
+<v Speaker 1>when you need to compute some
+
+01:14:18.795 --> 01:14:19.675
+<v Speaker 1>rates.
+
+01:14:19.915 --> 01:14:20.395
+<v Speaker 1>Like,
+
+01:14:20.875 --> 01:14:23.835
+<v Speaker 1>Quickwit is nice for computing
+
+01:14:23.835 --> 01:14:24.395
+<v Speaker 1>percentage,
+
+01:14:25.420 --> 01:14:26.300
+<v Speaker 1>average,
+
+01:14:26.380 --> 01:14:27.580
+<v Speaker 1>mean, max,
+
+01:14:27.980 --> 01:14:30.540
+<v Speaker 1>this class boost classic statistics.
+
+01:14:30.700 --> 01:14:32.699
+<v Speaker 1>But we are new not good at
+
+01:14:34.540 --> 01:14:35.420
+<v Speaker 1>computing
+
+01:14:35.500 --> 01:14:36.699
+<v Speaker 1>rates
+
+01:14:36.700 --> 01:14:38.940
+<v Speaker 1>rates, for example, which is more classic when
+
+01:14:38.940 --> 01:14:42.065
+<v Speaker 1>you when you are doing some time series
+
+01:14:42.065 --> 01:14:42.864
+<v Speaker 1>analysis.
+
+01:14:43.265 --> 01:14:45.265
+<v Speaker 1>So we hope to provide with those kind
+
+01:14:45.265 --> 01:14:46.465
+<v Speaker 1>of aggregations
+
+01:14:46.465 --> 01:14:47.824
+<v Speaker 1>in the coming months
+
+01:14:48.385 --> 01:14:50.945
+<v Speaker 1>and so to have a to to be
+
+01:14:50.945 --> 01:14:51.664
+<v Speaker 1>able to
+
+01:14:52.145 --> 01:14:55.320
+<v Speaker 1>to build even better dashboard than this one.
+
+01:14:56.600 --> 01:14:57.239
+<v Speaker 1>And
+
+01:14:57.560 --> 01:14:59.800
+<v Speaker 1>that's that's our road map currently, so we
+
+01:14:59.800 --> 01:15:02.519
+<v Speaker 1>want to to provide this kind of stuff.
+
+01:15:04.440 --> 01:15:05.080
+<v Speaker 1>What else?
+
+01:15:07.845 --> 01:15:10.165
+<v Speaker 1>Yeah. We one thing that we want to
+
+01:15:10.165 --> 01:15:12.005
+<v Speaker 1>work on is also
+
+01:15:12.485 --> 01:15:13.205
+<v Speaker 1>the
+
+01:15:13.605 --> 01:15:17.045
+<v Speaker 1>plugin as you saw it in the explore
+
+01:15:17.045 --> 01:15:17.445
+<v Speaker 1>view.
+
+01:15:23.000 --> 01:15:25.960
+<v Speaker 1>Here, when you need to build your query,
+
+01:15:25.960 --> 01:15:26.520
+<v Speaker 1>it's
+
+01:15:26.760 --> 01:15:29.000
+<v Speaker 1>you you need to you you need to
+
+01:15:29.000 --> 01:15:31.800
+<v Speaker 1>your to know your mapping. So it's not
+
+01:15:31.800 --> 01:15:33.159
+<v Speaker 1>always easy
+
+01:15:33.480 --> 01:15:35.240
+<v Speaker 1>to know which field to query,
+
+01:15:35.765 --> 01:15:38.645
+<v Speaker 1>so we plan to improve this experience.
+
+01:15:38.965 --> 01:15:41.045
+<v Speaker 1>And we have a bunch of developments that
+
+01:15:41.045 --> 01:15:41.685
+<v Speaker 1>are
+
+01:15:42.085 --> 01:15:44.085
+<v Speaker 1>but we we are currently working on it
+
+01:15:44.085 --> 01:15:44.965
+<v Speaker 1>to improve
+
+01:15:45.365 --> 01:15:47.365
+<v Speaker 1>globally the plugin experience.
+
+01:15:48.219 --> 01:15:50.460
+<v Speaker 1>So we hope to to deliver more things
+
+01:15:50.460 --> 01:15:52.619
+<v Speaker 1>on on the user interface side.
+
+01:15:53.179 --> 01:15:54.699
+<v Speaker 1>And on the back end side,
+
+01:15:55.099 --> 01:15:57.820
+<v Speaker 1>we plan to work also on on metrics,
+
+01:15:57.820 --> 01:16:00.219
+<v Speaker 1>which are not supported currently in Quickwit
+
+01:16:00.825 --> 01:16:04.344
+<v Speaker 1>and also to provide a type query language.
+
+01:16:04.425 --> 01:16:07.145
+<v Speaker 1>So we we are we have a lot
+
+01:16:07.145 --> 01:16:09.145
+<v Speaker 1>of work for this for this year.
+
+01:16:10.745 --> 01:16:11.385
+<v Speaker 0>Yeah.
+
+01:16:12.025 --> 01:16:12.985
+<v Speaker 0>There's a question
+
+01:16:13.980 --> 01:16:16.300
+<v Speaker 0>that we have from Blackboard Ben asking,
+
+01:16:16.620 --> 01:16:18.780
+<v Speaker 0>is it oh, I'll pop this back over
+
+01:16:18.780 --> 01:16:20.380
+<v Speaker 0>here just there we go. Is it possible
+
+01:16:20.380 --> 01:16:22.380
+<v Speaker 0>to parse log bodies at query time to
+
+01:16:22.380 --> 01:16:25.420
+<v Speaker 0>support cases where log records weren't properly parsed
+
+01:16:25.420 --> 01:16:27.925
+<v Speaker 0>at ingestion time? So, you know, where we
+
+01:16:27.925 --> 01:16:30.485
+<v Speaker 0>have that JSON inside of the source of
+
+01:16:30.485 --> 01:16:33.765
+<v Speaker 0>the body that hasn't been expanded or exploded
+
+01:16:33.765 --> 01:16:35.525
+<v Speaker 0>is their ability to do that.
+
+01:16:36.565 --> 01:16:38.324
+<v Speaker 0>Like, you know, the way I don't know
+
+01:16:38.324 --> 01:16:40.565
+<v Speaker 0>if you're familiar with locating and LogQL, but
+
+01:16:40.565 --> 01:16:42.330
+<v Speaker 0>it has the ability to pipe into a
+
+01:16:42.330 --> 01:16:44.170
+<v Speaker 0>parse JSON and then start to query and
+
+01:16:44.170 --> 01:16:46.010
+<v Speaker 0>work with that JSON. Is that something Quickwit
+
+01:16:46.010 --> 01:16:47.449
+<v Speaker 0>would have on a short map?
+
+01:16:47.770 --> 01:16:48.170
+<v Speaker 1>So
+
+01:16:49.690 --> 01:16:51.130
+<v Speaker 1>I'm just trying to understand
+
+01:16:51.929 --> 01:16:53.530
+<v Speaker 1>what what do you want to do to
+
+01:16:53.690 --> 01:16:55.050
+<v Speaker 1>do do you want to do some, like,
+
+01:16:55.050 --> 01:16:55.369
+<v Speaker 1>some
+
+01:16:56.055 --> 01:16:59.015
+<v Speaker 1>count on it, some aggregation on it? Like,
+
+01:16:59.015 --> 01:17:01.255
+<v Speaker 1>you I'm not sure to understand the the
+
+01:17:01.255 --> 01:17:03.495
+<v Speaker 1>use case. Yeah. Maybe there's a log client
+
+01:17:03.495 --> 01:17:05.255
+<v Speaker 0>that has adjacent string
+
+01:17:05.735 --> 01:17:07.895
+<v Speaker 0>where they want to parse that and filter
+
+01:17:07.895 --> 01:17:09.930
+<v Speaker 0>based on one of the properties within the
+
+01:17:09.930 --> 01:17:12.330
+<v Speaker 0>JSON and then aggregate that. Yeah. Okay. So
+
+01:17:12.330 --> 01:17:14.170
+<v Speaker 1>we we we do we do not support
+
+01:17:14.170 --> 01:17:15.130
+<v Speaker 1>that currently.
+
+01:17:15.690 --> 01:17:18.250
+<v Speaker 0>K. Is that something that you're looking to
+
+01:17:18.250 --> 01:17:19.930
+<v Speaker 0>support in the future, or are you just
+
+01:17:19.930 --> 01:17:22.330
+<v Speaker 0>focusing purely on on metrics at the moment?
+
+01:17:24.295 --> 01:17:26.135
+<v Speaker 1>That's a good question. Like,
+
+01:17:27.175 --> 01:17:29.815
+<v Speaker 1>currently, don't know what we will support on
+
+01:17:29.815 --> 01:17:31.094
+<v Speaker 1>this part. Mhmm.
+
+01:17:31.815 --> 01:17:34.295
+<v Speaker 1>What what we want to provide is a
+
+01:17:34.295 --> 01:17:37.320
+<v Speaker 1>a pipeline wage so that you can indeed
+
+01:17:38.760 --> 01:17:41.560
+<v Speaker 1>filter on whatever field you want, then pipe
+
+01:17:41.560 --> 01:17:44.679
+<v Speaker 1>it and count and then pipe it again
+
+01:17:44.840 --> 01:17:47.320
+<v Speaker 1>and do some stuff. I don't know yet
+
+01:17:48.565 --> 01:17:50.324
+<v Speaker 1>exactly what we will do. That's all. That's
+
+01:17:50.324 --> 01:17:52.564
+<v Speaker 1>the plan, but I don't have details.
+
+01:17:52.804 --> 01:17:54.324
+<v Speaker 0>Do you think you'd be likely to support
+
+01:17:54.324 --> 01:17:55.204
+<v Speaker 0>LogQL
+
+01:17:55.204 --> 01:17:57.604
+<v Speaker 0>rather than inventing your own?
+
+01:17:58.244 --> 01:17:59.525
+<v Speaker 1>Yeah. That's
+
+01:17:59.525 --> 01:18:01.284
+<v Speaker 1>one of the question we have. Like, I
+
+01:18:01.284 --> 01:18:03.559
+<v Speaker 1>think we want to, like,
+
+01:18:04.360 --> 01:18:06.679
+<v Speaker 1>we want to support to be well integrated
+
+01:18:06.679 --> 01:18:07.959
+<v Speaker 1>in the ecosystem.
+
+01:18:08.039 --> 01:18:08.839
+<v Speaker 1>So
+
+01:18:09.880 --> 01:18:11.399
+<v Speaker 1>we plan to support
+
+01:18:11.480 --> 01:18:12.199
+<v Speaker 1>Kibana,
+
+01:18:12.440 --> 01:18:12.999
+<v Speaker 1>and
+
+01:18:13.400 --> 01:18:15.239
+<v Speaker 1>we also we support,
+
+01:18:15.480 --> 01:18:16.359
+<v Speaker 1>obviously,
+
+01:18:16.679 --> 01:18:17.079
+<v Speaker 1>Kafana.
+
+01:18:17.505 --> 01:18:19.025
+<v Speaker 1>So we really want to
+
+01:18:20.385 --> 01:18:21.184
+<v Speaker 1>it's actually
+
+01:18:22.065 --> 01:18:25.745
+<v Speaker 1>being compatible with existing language could be really
+
+01:18:25.745 --> 01:18:26.385
+<v Speaker 1>nice.
+
+01:18:27.425 --> 01:18:28.624
+<v Speaker 0>Alright. Awesome.
+
+01:18:28.945 --> 01:18:31.520
+<v Speaker 0>Well, thank you so much for joining us
+
+01:18:31.520 --> 01:18:34.240
+<v Speaker 0>today, for sharing all the information about Quickwit
+
+01:18:34.240 --> 01:18:36.400
+<v Speaker 0>and for the wonderful demo.
+
+01:18:36.960 --> 01:18:38.720
+<v Speaker 0>I was getting a little bit nervous with
+
+01:18:38.720 --> 01:18:40.160
+<v Speaker 0>the how much data you were putting through
+
+01:18:40.160 --> 01:18:42.240
+<v Speaker 0>it, but Quickwit handled it just fine. So
+
+01:18:42.240 --> 01:18:44.844
+<v Speaker 0>that was awesome. Yeah. And usually,
+
+01:18:44.844 --> 01:18:46.684
+<v Speaker 1>start several searches, but
+
+01:18:47.324 --> 01:18:49.165
+<v Speaker 1>I need to start several searches when you
+
+01:18:49.165 --> 01:18:50.684
+<v Speaker 1>have billions of documents.
+
+01:18:50.844 --> 01:18:52.284
+<v Speaker 1>Like, 500
+
+01:18:52.284 --> 01:18:54.205
+<v Speaker 1>millions, that's okay. Child's
+
+01:18:54.205 --> 01:18:54.445
+<v Speaker 0>play.
+
+01:18:56.780 --> 01:18:58.860
+<v Speaker 0>Alright. Awesome. Well, thank you again.
+
+01:18:59.260 --> 01:19:01.420
+<v Speaker 0>Thank you very much. Anyone watching after the
+
+01:19:01.420 --> 01:19:03.260
+<v Speaker 0>fact, please feel free to add any comments
+
+01:19:03.260 --> 01:19:04.860
+<v Speaker 0>that you have or questions to the comment
+
+01:19:04.860 --> 01:19:06.220
+<v Speaker 0>section, and we'll do our best to get
+
+01:19:06.220 --> 01:19:07.260
+<v Speaker 0>back to you as soon as we can.
+
+01:19:07.658 --> 01:19:09.898
+<v Speaker 0>And Blackboard, Ben, says thank you, folks. Yeah.
+
+01:19:09.898 --> 01:19:11.018
+<v Speaker 0>Thank you for watching.
+
+01:19:11.178 --> 01:19:13.498
+<v Speaker 0>Thank you, Francois, and everyone have a wonderful
+
+01:19:13.498 --> 01:19:14.378
+<v Speaker 0>day. Bye. Thank

@@ -1,0 +1,6020 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: a18b94b1-d3a7-4396-8f10-5a6dd810e893
+Created: 2025-04-29T17:36:47.294Z
+Duration: 5063.2104
+Channels: 1
+
+00:00:58.550 --> 00:01:01.350
+<v Speaker 0>And so, and welcome to today's episode of
+
+00:01:01.350 --> 00:01:03.510
+<v Speaker 0>Rawkode Live at Rawkode Academy.
+
+00:01:04.415 --> 00:01:06.815
+<v Speaker 0>Today, we are doing a hands on session
+
+00:01:06.815 --> 00:01:09.775
+<v Speaker 0>looking at how Rust and asynchronous programming work
+
+00:01:09.775 --> 00:01:10.415
+<v Speaker 0>together.
+
+00:01:10.735 --> 00:01:12.175
+<v Speaker 0>Before we do that, there's a little bit
+
+00:01:12.175 --> 00:01:12.975
+<v Speaker 0>of housekeeping.
+
+00:01:13.295 --> 00:01:15.775
+<v Speaker 0>Please like, comment, share, and subscribe all the
+
+00:01:15.775 --> 00:01:16.975
+<v Speaker 0>things on YouTube.
+
+00:01:17.560 --> 00:01:20.760
+<v Speaker 0>Can always find this channel available at Rawkode.live.
+
+00:01:21.160 --> 00:01:23.640
+<v Speaker 0>Also, we have membership options available and courses
+
+00:01:23.640 --> 00:01:25.480
+<v Speaker 0>where you can come and learn the complete
+
+00:01:25.480 --> 00:01:26.920
+<v Speaker 0>guide to InfluxDB.
+
+00:01:26.920 --> 00:01:29.080
+<v Speaker 0>We'll check out the different options available there,
+
+00:01:29.080 --> 00:01:31.720
+<v Speaker 0>and feel free to jump into the Discord.
+
+00:01:32.275 --> 00:01:34.354
+<v Speaker 0>We have around 500 people in there now
+
+00:01:34.354 --> 00:01:37.075
+<v Speaker 0>talking all things cloud native, Kubernetes, and everything
+
+00:01:37.075 --> 00:01:37.954
+<v Speaker 0>in between.
+
+00:01:38.195 --> 00:01:39.715
+<v Speaker 0>So come and say hello, and I look
+
+00:01:39.715 --> 00:01:40.835
+<v Speaker 0>forward to meeting you.
+
+00:01:42.034 --> 00:01:43.634
+<v Speaker 0>Okay. So
+
+00:01:45.009 --> 00:01:45.729
+<v Speaker 0>because
+
+00:01:46.049 --> 00:01:49.170
+<v Speaker 0>I am not a Rust person well, I'm
+
+00:01:49.170 --> 00:01:51.329
+<v Speaker 0>trying to be, but my synchronous Rust is
+
+00:01:51.329 --> 00:01:53.490
+<v Speaker 0>pretty poor as Samuel is gonna find out.
+
+00:01:53.490 --> 00:01:55.170
+<v Speaker 0>You have a wonderful guy today. So, hey,
+
+00:01:55.170 --> 00:01:57.325
+<v Speaker 0>Samuel. How are you doing? Good. Thanks. And
+
+00:01:57.325 --> 00:01:59.885
+<v Speaker 1>yourself? Yeah. Yeah. I'm doing alright today.
+
+00:02:00.125 --> 00:02:02.045
+<v Speaker 0>Awesome. It's always fun to be able to
+
+00:02:02.045 --> 00:02:03.485
+<v Speaker 0>write a little bit of Rust for people,
+
+00:02:03.485 --> 00:02:05.005
+<v Speaker 0>so it's gonna be awesome. Yeah. I'm I'm
+
+00:02:05.005 --> 00:02:07.805
+<v Speaker 1>sure it's gonna be great. I'm excited. Awesome.
+
+00:02:08.460 --> 00:02:09.340
+<v Speaker 0>Can you
+
+00:02:09.580 --> 00:02:12.060
+<v Speaker 0>tell us a little bit about you and
+
+00:02:12.060 --> 00:02:14.540
+<v Speaker 0>introduce it off to the audience, please? Yeah.
+
+00:02:14.540 --> 00:02:17.900
+<v Speaker 1>Sure. So, yeah, I'm Samuel, as as Dave's
+
+00:02:17.900 --> 00:02:18.540
+<v Speaker 1>mentioned.
+
+00:02:19.820 --> 00:02:21.580
+<v Speaker 1>Cool. So, yeah, I work as a
+
+00:02:22.205 --> 00:02:25.005
+<v Speaker 1>platform engineer at a company called Aerobotics.
+
+00:02:25.005 --> 00:02:27.325
+<v Speaker 1>It's a company in Cape Town, South Africa
+
+00:02:27.325 --> 00:02:28.365
+<v Speaker 1>where I live.
+
+00:02:29.725 --> 00:02:30.285
+<v Speaker 1>And,
+
+00:02:30.765 --> 00:02:33.885
+<v Speaker 1>yeah, we build software for the agriculture industry
+
+00:02:33.885 --> 00:02:34.685
+<v Speaker 1>using
+
+00:02:34.685 --> 00:02:37.510
+<v Speaker 1>a whole lot of nice buzzwords of drones,
+
+00:02:37.510 --> 00:02:40.550
+<v Speaker 1>AI, machine learning, blah blah blah. Really cool
+
+00:02:40.550 --> 00:02:41.110
+<v Speaker 1>stuff.
+
+00:02:41.510 --> 00:02:43.590
+<v Speaker 1>I actually started off as a data scientist,
+
+00:02:43.670 --> 00:02:44.150
+<v Speaker 1>surprisingly,
+
+00:02:45.190 --> 00:02:47.349
+<v Speaker 1>and then about, like, a year and a
+
+00:02:47.349 --> 00:02:47.830
+<v Speaker 1>bit in,
+
+00:02:48.345 --> 00:02:50.585
+<v Speaker 1>figured I enjoyed engineering more,
+
+00:02:51.225 --> 00:02:52.425
+<v Speaker 1>and so moved over.
+
+00:02:53.305 --> 00:02:54.105
+<v Speaker 1>And then,
+
+00:02:54.745 --> 00:02:56.585
+<v Speaker 1>yeah, I've been, like, doing Rust,
+
+00:02:56.825 --> 00:02:58.505
+<v Speaker 1>like, in my free time for, like, a
+
+00:02:58.505 --> 00:03:00.345
+<v Speaker 1>year, roughly. So,
+
+00:03:00.665 --> 00:03:02.345
+<v Speaker 1>yeah, it's pretty much how I ended up
+
+00:03:02.345 --> 00:03:02.585
+<v Speaker 1>here.
+
+00:03:03.300 --> 00:03:04.100
+<v Speaker 0>I'm
+
+00:03:04.100 --> 00:03:06.740
+<v Speaker 0>assuming being originally a data scientist, you must
+
+00:03:06.740 --> 00:03:08.500
+<v Speaker 0>you must be a Python developer as well.
+
+00:03:08.500 --> 00:03:10.900
+<v Speaker 0>Right? Yeah. Yeah. I know. I know a
+
+00:03:10.900 --> 00:03:11.780
+<v Speaker 1>lot of Python.
+
+00:03:12.740 --> 00:03:15.460
+<v Speaker 0>So what caught your attention about about Rust?
+
+00:03:16.954 --> 00:03:20.555
+<v Speaker 1>So at the time so this was last
+
+00:03:20.555 --> 00:03:23.034
+<v Speaker 1>year. So, yeah, last year, was basically learning
+
+00:03:23.034 --> 00:03:24.715
+<v Speaker 1>a bunch of programming languages. So last year
+
+00:03:24.715 --> 00:03:26.314
+<v Speaker 1>was, like, my first year as a full
+
+00:03:26.314 --> 00:03:27.515
+<v Speaker 1>time developer,
+
+00:03:27.915 --> 00:03:28.395
+<v Speaker 1>and
+
+00:03:28.795 --> 00:03:30.715
+<v Speaker 1>I was just learning languages because everyone's like,
+
+00:03:30.715 --> 00:03:33.330
+<v Speaker 1>learning new languages makes you a better programmer.
+
+00:03:33.330 --> 00:03:36.209
+<v Speaker 1>So I started off with Haskell. That went
+
+00:03:36.209 --> 00:03:37.010
+<v Speaker 1>terribly.
+
+00:03:37.170 --> 00:03:39.330
+<v Speaker 0>Wow. Jump in on the deep end. Yeah.
+
+00:03:39.330 --> 00:03:40.610
+<v Speaker 1>I know. It wasn't it wasn't a great
+
+00:03:40.610 --> 00:03:42.210
+<v Speaker 1>it wasn't a great time. Honestly,
+
+00:03:42.370 --> 00:03:44.530
+<v Speaker 1>couldn't really figure out left from right there.
+
+00:03:45.245 --> 00:03:47.325
+<v Speaker 1>And so then moved on to
+
+00:03:48.045 --> 00:03:49.885
+<v Speaker 1>I tried closure. That was that was a
+
+00:03:49.885 --> 00:03:50.685
+<v Speaker 1>great experience.
+
+00:03:51.005 --> 00:03:53.245
+<v Speaker 1>Did a little bit of go, and then
+
+00:03:54.045 --> 00:03:56.205
+<v Speaker 1>then at some point, I was like, let
+
+00:03:56.205 --> 00:03:58.845
+<v Speaker 1>me learn Rust. And that yeah. I read
+
+00:03:58.845 --> 00:03:59.245
+<v Speaker 1>the book.
+
+00:04:00.000 --> 00:04:02.240
+<v Speaker 1>I know yeah. I mean, just from there,
+
+00:04:02.560 --> 00:04:04.239
+<v Speaker 1>it just caught my attention as, like, a
+
+00:04:04.239 --> 00:04:06.400
+<v Speaker 1>really interesting language, and then also solved a
+
+00:04:06.400 --> 00:04:09.120
+<v Speaker 1>lot of problems that, like, I had seen
+
+00:04:10.400 --> 00:04:13.920
+<v Speaker 1>developers make in in Python, myself included. So
+
+00:04:13.920 --> 00:04:14.480
+<v Speaker 1>for instance,
+
+00:04:15.765 --> 00:04:19.045
+<v Speaker 1>like, a function just returning none or some
+
+00:04:19.045 --> 00:04:22.165
+<v Speaker 1>random value or whatever, and then it blows
+
+00:04:22.165 --> 00:04:24.245
+<v Speaker 1>up in your face at runtime or whatever.
+
+00:04:24.245 --> 00:04:26.325
+<v Speaker 1>So there was situations like that, and I
+
+00:04:26.325 --> 00:04:27.845
+<v Speaker 1>was like, you know, Rust has these nice
+
+00:04:27.845 --> 00:04:28.725
+<v Speaker 1>guarantees,
+
+00:04:28.725 --> 00:04:30.810
+<v Speaker 1>and, like, kinda, like, you know, forces you
+
+00:04:30.810 --> 00:04:32.170
+<v Speaker 1>to program it in a in a bit
+
+00:04:32.170 --> 00:04:34.010
+<v Speaker 1>of a better way in my opinion. So
+
+00:04:34.490 --> 00:04:36.890
+<v Speaker 1>that that kind of, like, just stuck with
+
+00:04:36.890 --> 00:04:38.330
+<v Speaker 1>me. And then
+
+00:04:39.450 --> 00:04:42.170
+<v Speaker 1>I've stumbled upon awesome Rust mentors,
+
+00:04:42.585 --> 00:04:44.105
+<v Speaker 1>And then from there,
+
+00:04:45.225 --> 00:04:46.585
+<v Speaker 1>found a bunch of people in the Rust
+
+00:04:46.585 --> 00:04:48.505
+<v Speaker 1>community, and they just stuck. Like, that was
+
+00:04:48.505 --> 00:04:49.625
+<v Speaker 1>that
+
+00:04:49.625 --> 00:04:51.625
+<v Speaker 1>was it for me. So, yeah, since then,
+
+00:04:51.625 --> 00:04:53.145
+<v Speaker 1>pretty much been
+
+00:04:53.465 --> 00:04:55.810
+<v Speaker 1>doing Rust like in my personal time as
+
+00:04:55.810 --> 00:04:56.770
+<v Speaker 1>much as possible.
+
+00:04:57.250 --> 00:04:59.490
+<v Speaker 0>Yeah. I think the the Rust community is
+
+00:04:59.570 --> 00:05:01.570
+<v Speaker 0>it should be like an example of how
+
+00:05:01.570 --> 00:05:04.370
+<v Speaker 0>to make a welcoming programming community. Just always
+
+00:05:04.370 --> 00:05:07.330
+<v Speaker 0>taken aback by how happy and charitable everyone
+
+00:05:07.330 --> 00:05:09.250
+<v Speaker 0>is with their time and their knowledge. Like,
+
+00:05:09.250 --> 00:05:10.745
+<v Speaker 0>just it doesn't matter what your problem is
+
+00:05:10.745 --> 00:05:12.345
+<v Speaker 0>or what you run up against. There just
+
+00:05:12.345 --> 00:05:13.625
+<v Speaker 0>seems to be always someone they're willing to
+
+00:05:13.625 --> 00:05:14.105
+<v Speaker 0>help.
+
+00:05:14.505 --> 00:05:16.824
+<v Speaker 1>Hundred percent. Yeah. It's it's really amazing. And
+
+00:05:16.824 --> 00:05:18.824
+<v Speaker 1>I think it's it's probably one of the
+
+00:05:18.824 --> 00:05:21.225
+<v Speaker 1>biggest contributors to our Rust is doing so
+
+00:05:21.225 --> 00:05:22.345
+<v Speaker 1>well as a language.
+
+00:05:22.824 --> 00:05:24.750
+<v Speaker 1>Just because it's a difficult language to learn
+
+00:05:24.750 --> 00:05:26.750
+<v Speaker 1>and so having a a community that's there
+
+00:05:26.750 --> 00:05:28.590
+<v Speaker 1>to support you through it actually makes a
+
+00:05:28.590 --> 00:05:30.030
+<v Speaker 1>lot of difference. Yeah.
+
+00:05:30.430 --> 00:05:32.430
+<v Speaker 0>Yeah. I've I've been writing Rust for a
+
+00:05:32.430 --> 00:05:33.950
+<v Speaker 0>little while now and still bang my head
+
+00:05:33.950 --> 00:05:36.030
+<v Speaker 0>against the table quite often. So Yeah. No.
+
+00:05:36.270 --> 00:05:38.815
+<v Speaker 0>It is definitely difficult to learn. But I
+
+00:05:38.815 --> 00:05:41.455
+<v Speaker 0>am writing much more functionally correct code because
+
+00:05:41.455 --> 00:05:43.375
+<v Speaker 0>of, the type system and the guarantees and
+
+00:05:43.375 --> 00:05:44.735
+<v Speaker 0>the and all that. So
+
+00:05:45.294 --> 00:05:46.175
+<v Speaker 1>Awesome. Sure.
+
+00:05:46.895 --> 00:05:49.215
+<v Speaker 0>Alright. Can you then do us a favor
+
+00:05:49.215 --> 00:05:50.735
+<v Speaker 0>and maybe just tell us a little bit
+
+00:05:50.735 --> 00:05:53.055
+<v Speaker 0>about what we mean by asynchronous
+
+00:05:53.055 --> 00:05:53.615
+<v Speaker 0>programming?
+
+00:05:54.229 --> 00:05:55.590
+<v Speaker 1>Sure. So
+
+00:05:56.150 --> 00:05:57.750
+<v Speaker 1>yeah. So just
+
+00:05:58.070 --> 00:06:00.870
+<v Speaker 1>for context, like, I am I started learning
+
+00:06:00.870 --> 00:06:03.830
+<v Speaker 1>about, like, async, I think, late last year.
+
+00:06:03.830 --> 00:06:05.190
+<v Speaker 1>Well, I mean, I started learning about Rust
+
+00:06:05.190 --> 00:06:07.190
+<v Speaker 1>late last year, but it's been a it's
+
+00:06:07.190 --> 00:06:09.030
+<v Speaker 1>been an interesting journey. And so
+
+00:06:09.495 --> 00:06:12.375
+<v Speaker 1>the the I guess, most exciting thing about
+
+00:06:12.375 --> 00:06:15.575
+<v Speaker 1>async for me was that I could actually
+
+00:06:15.575 --> 00:06:17.335
+<v Speaker 1>learn, like, the details of it,
+
+00:06:18.055 --> 00:06:19.975
+<v Speaker 1>and so kind of, like, how I got
+
+00:06:19.975 --> 00:06:22.775
+<v Speaker 1>here. So with async programming, like, the main
+
+00:06:22.775 --> 00:06:25.830
+<v Speaker 1>idea is to solve, let's say, a class
+
+00:06:25.830 --> 00:06:28.070
+<v Speaker 1>of problems that allow your
+
+00:06:28.230 --> 00:06:30.470
+<v Speaker 1>code or applications to be more scalable.
+
+00:06:31.350 --> 00:06:33.670
+<v Speaker 1>And so you basically wanna run like concurrent
+
+00:06:33.670 --> 00:06:36.630
+<v Speaker 1>software. So you wanna handle multiple tasks all
+
+00:06:36.630 --> 00:06:38.595
+<v Speaker 1>at one time. Mhmm.
+
+00:06:38.835 --> 00:06:41.155
+<v Speaker 1>And this is good for things like web
+
+00:06:41.155 --> 00:06:43.155
+<v Speaker 1>service. So I I guess that's like the
+
+00:06:43.155 --> 00:06:44.515
+<v Speaker 1>canonical use case
+
+00:06:46.435 --> 00:06:47.155
+<v Speaker 1>where,
+
+00:06:47.955 --> 00:06:49.955
+<v Speaker 1>you know, you have like multiple in flight
+
+00:06:49.955 --> 00:06:52.115
+<v Speaker 1>requests and you wanna be able to handle
+
+00:06:52.115 --> 00:06:54.560
+<v Speaker 1>them all. Obviously, if somewhat taking
+
+00:06:54.720 --> 00:06:57.039
+<v Speaker 1>extremely long or your concurrency model isn't that
+
+00:06:57.039 --> 00:06:57.600
+<v Speaker 1>great,
+
+00:06:58.479 --> 00:06:59.600
+<v Speaker 1>you're gonna have,
+
+00:07:00.400 --> 00:07:03.599
+<v Speaker 1>like, request backlog and then just start getting
+
+00:07:03.599 --> 00:07:04.240
+<v Speaker 1>500.
+
+00:07:07.135 --> 00:07:10.335
+<v Speaker 1>Yeah, async async programming programming kinda, like, came
+
+00:07:10.335 --> 00:07:12.175
+<v Speaker 1>in to fit that void as far as
+
+00:07:12.175 --> 00:07:13.615
+<v Speaker 1>I understand. And so
+
+00:07:14.095 --> 00:07:15.695
+<v Speaker 1>the the main
+
+00:07:17.055 --> 00:07:18.574
+<v Speaker 1>use case or way it fits in the
+
+00:07:18.574 --> 00:07:22.160
+<v Speaker 1>basis with IO bound tasks. So that's with
+
+00:07:23.360 --> 00:07:25.680
+<v Speaker 1>most of the time taken for their, like,
+
+00:07:25.680 --> 00:07:28.400
+<v Speaker 1>execution is or what's dominated by waiting. So
+
+00:07:28.400 --> 00:07:30.160
+<v Speaker 1>if you can think about it like
+
+00:07:30.320 --> 00:07:33.040
+<v Speaker 1>making a a database call, for instance,
+
+00:07:33.760 --> 00:07:35.040
+<v Speaker 1>you do a bunch of work, make a
+
+00:07:35.040 --> 00:07:35.840
+<v Speaker 1>database call,
+
+00:07:36.715 --> 00:07:39.275
+<v Speaker 1>wait until it it resolves, until you get
+
+00:07:39.275 --> 00:07:41.195
+<v Speaker 1>in your information back, and then you can
+
+00:07:41.195 --> 00:07:43.675
+<v Speaker 1>continue working. So there's, a big span of
+
+00:07:43.675 --> 00:07:44.235
+<v Speaker 1>time
+
+00:07:44.555 --> 00:07:45.995
+<v Speaker 1>that's spent waiting.
+
+00:07:46.235 --> 00:07:48.315
+<v Speaker 1>And so, effectively, what you wanna do is
+
+00:07:48.315 --> 00:07:50.155
+<v Speaker 1>kind of, like, maximize the amount of time
+
+00:07:50.155 --> 00:07:52.270
+<v Speaker 1>that the CPU is being utilized. So you
+
+00:07:52.270 --> 00:07:53.870
+<v Speaker 1>don't wanna keep wait you don't wanna have
+
+00:07:53.870 --> 00:07:55.150
+<v Speaker 1>this dead time where
+
+00:07:56.270 --> 00:07:57.949
+<v Speaker 1>a request comes in and then you've gotta
+
+00:07:57.949 --> 00:08:00.430
+<v Speaker 1>wait, and then nothing happens between when you
+
+00:08:00.430 --> 00:08:02.190
+<v Speaker 1>make that request to the database and when
+
+00:08:02.190 --> 00:08:03.950
+<v Speaker 1>you get the information back.
+
+00:08:04.350 --> 00:08:06.474
+<v Speaker 1>And so async programming kind of fits in
+
+00:08:06.474 --> 00:08:09.115
+<v Speaker 1>that way by allowing tasks to
+
+00:08:10.555 --> 00:08:11.675
+<v Speaker 1>basically, like,
+
+00:08:13.675 --> 00:08:16.555
+<v Speaker 1>give up the or, like, yield the execution
+
+00:08:16.555 --> 00:08:19.514
+<v Speaker 1>to the CPU at points in time and
+
+00:08:19.514 --> 00:08:21.820
+<v Speaker 1>say, like, I've made a request.
+
+00:08:22.060 --> 00:08:24.380
+<v Speaker 1>I'm gonna be busy waiting. So something else
+
+00:08:24.380 --> 00:08:26.540
+<v Speaker 1>can run-in the meantime. And then when that
+
+00:08:26.540 --> 00:08:28.220
+<v Speaker 1>thing finishes right or, like, when I'm ready
+
+00:08:28.220 --> 00:08:29.500
+<v Speaker 1>to run again, I'll let you know, and
+
+00:08:29.500 --> 00:08:31.820
+<v Speaker 1>then I'll proceed to run. And so that
+
+00:08:31.900 --> 00:08:33.820
+<v Speaker 1>it's just kind of, like, unlocked a lot
+
+00:08:33.820 --> 00:08:34.539
+<v Speaker 1>of
+
+00:08:34.695 --> 00:08:35.655
+<v Speaker 1>performance.
+
+00:08:36.215 --> 00:08:36.934
+<v Speaker 1>And so
+
+00:08:37.335 --> 00:08:39.735
+<v Speaker 1>yeah. I mean, yeah, that's pretty much pretty
+
+00:08:39.735 --> 00:08:41.895
+<v Speaker 1>much it. Long long explanation.
+
+00:08:42.535 --> 00:08:44.535
+<v Speaker 0>No. That that works really well. You know,
+
+00:08:44.535 --> 00:08:46.295
+<v Speaker 0>like, I think when I when I
+
+00:08:46.790 --> 00:08:49.750
+<v Speaker 0>first started working, like, in code professionally,
+
+00:08:49.750 --> 00:08:51.270
+<v Speaker 0>and I won't give you a year because
+
+00:08:51.270 --> 00:08:52.950
+<v Speaker 0>that'll show my age, but, you know, I
+
+00:08:52.950 --> 00:08:55.430
+<v Speaker 0>was working with with parallel and PHP languages,
+
+00:08:55.430 --> 00:08:57.430
+<v Speaker 0>which doesn't actually have, like, any native concurrency
+
+00:08:57.430 --> 00:09:01.045
+<v Speaker 0>or asynchronous primitives And then Mhmm. Blocking the
+
+00:09:01.045 --> 00:09:03.285
+<v Speaker 0>the request. Well, like, you know, request comes
+
+00:09:03.285 --> 00:09:04.644
+<v Speaker 0>in and then blocking, so you make some
+
+00:09:04.644 --> 00:09:06.644
+<v Speaker 0>other external questions in the back. Yeah. It's
+
+00:09:06.644 --> 00:09:08.805
+<v Speaker 0>just not gonna ever scale. Right? Like, concurrency
+
+00:09:08.805 --> 00:09:09.925
+<v Speaker 0>and asynchronous.
+
+00:09:10.644 --> 00:09:12.805
+<v Speaker 1>I understand. Yeah. I've had, like, a quite
+
+00:09:12.805 --> 00:09:13.524
+<v Speaker 1>a bit of
+
+00:09:14.500 --> 00:09:17.140
+<v Speaker 1>experience with Tango's kind of, like, sync
+
+00:09:17.380 --> 00:09:19.300
+<v Speaker 1>model. So it's kind of like a
+
+00:09:19.779 --> 00:09:21.540
+<v Speaker 1>basically, you can think about, a thread per
+
+00:09:21.540 --> 00:09:22.260
+<v Speaker 1>request.
+
+00:09:22.579 --> 00:09:24.899
+<v Speaker 1>And so what happens if, like, if any
+
+00:09:24.899 --> 00:09:27.675
+<v Speaker 1>part of your of your request is really
+
+00:09:27.675 --> 00:09:29.514
+<v Speaker 1>slow, then all of a sudden, get this,
+
+00:09:29.514 --> 00:09:32.235
+<v Speaker 1>like, huge backlog of requests coming Exactly. Coming
+
+00:09:32.235 --> 00:09:34.634
+<v Speaker 1>back because something might take, like I don't
+
+00:09:34.634 --> 00:09:36.074
+<v Speaker 1>know. Let's say, like, in a bad, bad
+
+00:09:36.074 --> 00:09:37.834
+<v Speaker 1>example for instance, like, if something took two
+
+00:09:37.834 --> 00:09:39.755
+<v Speaker 1>seconds and your requests are coming in at,
+
+00:09:39.755 --> 00:09:39.834
+<v Speaker 1>like,
+
+00:09:40.829 --> 00:09:43.709
+<v Speaker 1>every millisecond or something, yeah, because, obviously, things
+
+00:09:43.709 --> 00:09:45.790
+<v Speaker 1>are gonna go wrong. Right? So
+
+00:09:46.029 --> 00:09:48.510
+<v Speaker 1>so, yeah, async really fits that
+
+00:09:48.910 --> 00:09:51.470
+<v Speaker 1>that specific, like, problem
+
+00:09:52.190 --> 00:09:54.670
+<v Speaker 1>space and, yeah, basically solves for that.
+
+00:09:55.345 --> 00:09:57.825
+<v Speaker 0>Yeah. I think, you know, maybe a a
+
+00:09:57.825 --> 00:09:59.185
+<v Speaker 0>lot of the people that subscribe to the
+
+00:09:59.185 --> 00:10:01.105
+<v Speaker 0>channel may be familiar with Go, which has
+
+00:10:01.105 --> 00:10:03.425
+<v Speaker 0>a relatively hands off asynchronous model and that
+
+00:10:03.425 --> 00:10:05.185
+<v Speaker 0>you never really need to worry about it.
+
+00:10:05.185 --> 00:10:06.385
+<v Speaker 0>You just say, go run this thing in
+
+00:10:06.385 --> 00:10:08.705
+<v Speaker 0>the background. Yeah. Rust doesn't quite like that.
+
+00:10:08.705 --> 00:10:10.305
+<v Speaker 0>Right? It's a bit more
+
+00:10:10.465 --> 00:10:11.025
+<v Speaker 0>complicated.
+
+00:10:11.959 --> 00:10:12.519
+<v Speaker 1>Yeah.
+
+00:10:13.000 --> 00:10:14.920
+<v Speaker 1>Yeah. I think I actually I actually think
+
+00:10:14.920 --> 00:10:16.839
+<v Speaker 1>that goes way of doing it. Like, okay.
+
+00:10:16.839 --> 00:10:18.040
+<v Speaker 1>I don't have very
+
+00:10:18.600 --> 00:10:20.920
+<v Speaker 1>informed opinions here, but I do think that
+
+00:10:20.920 --> 00:10:22.440
+<v Speaker 1>it's actually quite a nice
+
+00:10:22.839 --> 00:10:24.360
+<v Speaker 1>way of handling it in the sense that
+
+00:10:24.600 --> 00:10:26.199
+<v Speaker 1>because it effectively does
+
+00:10:26.465 --> 00:10:28.865
+<v Speaker 1>the same thing, but just behind the scenes.
+
+00:10:28.865 --> 00:10:30.865
+<v Speaker 1>So you as a as a dev don't
+
+00:10:30.865 --> 00:10:32.945
+<v Speaker 1>have to worry about actually writing, like, async
+
+00:10:32.945 --> 00:10:34.065
+<v Speaker 1>await. I
+
+00:10:34.785 --> 00:10:36.705
+<v Speaker 1>don't know actually which one's better or, like,
+
+00:10:36.705 --> 00:10:39.185
+<v Speaker 1>the economics of either. But, yeah, in Rust
+
+00:10:39.345 --> 00:10:40.945
+<v Speaker 1>I think in Rust, I think Nodes,
+
+00:10:41.610 --> 00:10:42.570
+<v Speaker 1>JS,
+
+00:10:43.130 --> 00:10:44.010
+<v Speaker 1>Python,
+
+00:10:44.810 --> 00:10:47.209
+<v Speaker 1>and a few others, yeah, it's really explicit.
+
+00:10:47.209 --> 00:10:48.570
+<v Speaker 1>So you'd have to write, like, you know,
+
+00:10:48.570 --> 00:10:48.810
+<v Speaker 1>your
+
+00:10:49.529 --> 00:10:51.770
+<v Speaker 1>your code with async await and have your
+
+00:10:52.089 --> 00:10:55.769
+<v Speaker 1>red or colored functions as as that essay
+
+00:10:55.769 --> 00:10:56.089
+<v Speaker 1>says.
+
+00:10:56.805 --> 00:10:58.885
+<v Speaker 0>The Rust model seems to be really similar
+
+00:10:58.885 --> 00:11:00.165
+<v Speaker 0>to the node one. At least I see
+
+00:11:00.165 --> 00:11:02.165
+<v Speaker 0>a lot of similarities and even just the
+
+00:11:02.165 --> 00:11:04.085
+<v Speaker 0>syntax and some of the like, for me
+
+00:11:04.085 --> 00:11:05.925
+<v Speaker 0>the problem parts is always like you have
+
+00:11:05.925 --> 00:11:08.005
+<v Speaker 0>to defend your function that says sync and
+
+00:11:08.005 --> 00:11:08.965
+<v Speaker 0>then it has to be called from an
+
+00:11:08.965 --> 00:11:10.885
+<v Speaker 0>asynchronous context. You can't just go through it
+
+00:11:10.885 --> 00:11:11.285
+<v Speaker 0>around
+
+00:11:12.260 --> 00:11:14.420
+<v Speaker 0>a waste anywhere, which in the Go world
+
+00:11:14.420 --> 00:11:16.660
+<v Speaker 0>is unheard of because in Go you'd literally
+
+00:11:16.660 --> 00:11:18.500
+<v Speaker 0>just put Go before a phone call and
+
+00:11:18.500 --> 00:11:20.740
+<v Speaker 0>that's it. Right? It just it just does
+
+00:11:20.740 --> 00:11:23.300
+<v Speaker 0>it. But with with Node and with Rust,
+
+00:11:23.300 --> 00:11:25.140
+<v Speaker 0>the similarities are there and I have to
+
+00:11:25.140 --> 00:11:27.335
+<v Speaker 0>actually think up front about where I need
+
+00:11:27.335 --> 00:11:30.295
+<v Speaker 0>the concurrency to happen or Yes. Whatever. And
+
+00:11:30.295 --> 00:11:31.815
+<v Speaker 0>then I think my first time trying to
+
+00:11:31.815 --> 00:11:34.135
+<v Speaker 0>write is synchronous Rust and realizing that I
+
+00:11:34.135 --> 00:11:35.655
+<v Speaker 0>had to have the executor
+
+00:11:35.655 --> 00:11:37.735
+<v Speaker 0>context on the main function that then delegated
+
+00:11:37.735 --> 00:11:39.255
+<v Speaker 0>the access and blah blah blah. I was
+
+00:11:39.255 --> 00:11:40.295
+<v Speaker 0>just like, ah, it's like
+
+00:11:42.350 --> 00:11:45.070
+<v Speaker 1>Yeah. Definitely. It is it is definitely difficult.
+
+00:11:45.070 --> 00:11:46.829
+<v Speaker 1>Maybe a little bit overwhelming.
+
+00:11:46.990 --> 00:11:49.230
+<v Speaker 1>I guess for me, like, that's that was
+
+00:11:49.389 --> 00:11:51.630
+<v Speaker 1>my introduction to async programming in the first
+
+00:11:51.630 --> 00:11:52.990
+<v Speaker 1>place, so I kind of missed it.
+
+00:11:53.885 --> 00:11:55.485
+<v Speaker 0>You're you're gonna make it easier for all
+
+00:11:55.485 --> 00:11:56.605
+<v Speaker 0>of us today. Right?
+
+00:11:57.645 --> 00:11:58.365
+<v Speaker 1>Hopefully.
+
+00:12:00.524 --> 00:12:01.405
+<v Speaker 1>But yeah.
+
+00:12:02.045 --> 00:12:03.885
+<v Speaker 1>Yeah. I I really enjoy, like,
+
+00:12:04.524 --> 00:12:06.205
+<v Speaker 1>so far as as much as I've as
+
+00:12:06.210 --> 00:12:09.010
+<v Speaker 1>played around with asynchronous stuff. I've enjoyed it
+
+00:12:09.010 --> 00:12:10.450
+<v Speaker 1>so far, but I have heard there are
+
+00:12:10.450 --> 00:12:12.130
+<v Speaker 1>some pain points, I think, for a lot
+
+00:12:12.130 --> 00:12:13.490
+<v Speaker 1>of people that are using it in production.
+
+00:12:13.490 --> 00:12:16.530
+<v Speaker 1>So but it's also still new. So we'll
+
+00:12:16.530 --> 00:12:17.490
+<v Speaker 1>get there.
+
+00:12:18.290 --> 00:12:20.014
+<v Speaker 0>Alright. Well, how do you wanna kick this
+
+00:12:20.014 --> 00:12:21.694
+<v Speaker 0>off? Do wanna will we move over to
+
+00:12:21.694 --> 00:12:23.695
+<v Speaker 0>the screen share and start writing some code?
+
+00:12:24.095 --> 00:12:26.495
+<v Speaker 1>Yeah. Let's do that. Let's definitely
+
+00:12:27.535 --> 00:12:30.415
+<v Speaker 1>I think that'll I think that'll be fun.
+
+00:12:30.415 --> 00:12:33.580
+<v Speaker 0>Alright. We can see Versus code, but you
+
+00:12:33.580 --> 00:12:35.339
+<v Speaker 0>may have to pump the font size up
+
+00:12:35.339 --> 00:12:37.740
+<v Speaker 0>a little bit. Okay. Cool. Cool. Yeah. Let
+
+00:12:37.740 --> 00:12:38.540
+<v Speaker 1>me do that.
+
+00:12:40.779 --> 00:12:42.300
+<v Speaker 0>I think you can just command plus a
+
+00:12:42.300 --> 00:12:43.100
+<v Speaker 0>few times
+
+00:12:44.300 --> 00:12:46.060
+<v Speaker 0>or change it earlier. That would work too.
+
+00:12:46.060 --> 00:12:46.700
+<v Speaker 1>Yeah.
+
+00:12:46.940 --> 00:12:47.660
+<v Speaker 1>Let's see.
+
+00:12:55.555 --> 00:12:57.155
+<v Speaker 0>Go 20 go 24.
+
+00:12:58.915 --> 00:12:59.955
+<v Speaker 0>That's what I use.
+
+00:13:00.355 --> 00:13:01.075
+<v Speaker 1>Okay. Cool.
+
+00:13:01.730 --> 00:13:04.770
+<v Speaker 0>Yeah. Now we're kicking. Like it. Awesome. Awesome.
+
+00:13:04.770 --> 00:13:06.370
+<v Speaker 0>I bet that's massive on your side, though.
+
+00:13:06.370 --> 00:13:07.730
+<v Speaker 0>Right? Yeah. I know. Really
+
+00:13:09.330 --> 00:13:11.330
+<v Speaker 1>is vegan and Spanish because I use, like,
+
+00:13:11.330 --> 00:13:11.890
+<v Speaker 1>10
+
+00:13:12.930 --> 00:13:15.250
+<v Speaker 1>or something ridiculous like that as my normal
+
+00:13:15.250 --> 00:13:18.315
+<v Speaker 1>font. So 24 is is huge. But it's
+
+00:13:18.315 --> 00:13:20.635
+<v Speaker 1>actually it's actually a great quality of life.
+
+00:13:22.395 --> 00:13:24.715
+<v Speaker 0>We've got a hello from Javier in the
+
+00:13:24.715 --> 00:13:26.795
+<v Speaker 0>chat. Hey. What's up, Javier? Yeah. I know.
+
+00:13:26.795 --> 00:13:27.275
+<v Speaker 1>Cool.
+
+00:13:29.115 --> 00:13:29.515
+<v Speaker 1>So,
+
+00:13:30.630 --> 00:13:32.150
+<v Speaker 1>yeah, I was thinking, like, it would be
+
+00:13:32.150 --> 00:13:34.390
+<v Speaker 1>cool to kind of, like, run through just
+
+00:13:34.390 --> 00:13:35.590
+<v Speaker 1>a bit of the
+
+00:13:37.270 --> 00:13:38.870
+<v Speaker 1>kind of, like, basics
+
+00:13:38.950 --> 00:13:39.590
+<v Speaker 1>of
+
+00:13:40.150 --> 00:13:41.990
+<v Speaker 1>async and just kind of, like,
+
+00:13:43.225 --> 00:13:45.145
+<v Speaker 1>walk through some very beginner stuff and kind
+
+00:13:45.145 --> 00:13:46.905
+<v Speaker 1>of, like, break some sort of, like, assumptions
+
+00:13:46.905 --> 00:13:49.065
+<v Speaker 1>that we might have of it or whatever.
+
+00:13:49.065 --> 00:13:50.105
+<v Speaker 1>So Perfect.
+
+00:13:51.065 --> 00:13:52.105
+<v Speaker 1>Cool. So,
+
+00:13:52.585 --> 00:13:53.145
+<v Speaker 1>firstly,
+
+00:13:54.025 --> 00:13:55.705
+<v Speaker 1>yeah, one thing I think that's become, like,
+
+00:13:55.705 --> 00:13:57.545
+<v Speaker 1>a big deal in async is, like, the
+
+00:13:57.810 --> 00:13:59.890
+<v Speaker 1>executor. So, you know, we've got like Tokyo
+
+00:13:59.890 --> 00:14:02.290
+<v Speaker 1>and async standard, and then they're not entirely
+
+00:14:02.290 --> 00:14:03.650
+<v Speaker 1>compatible and whatever.
+
+00:14:04.930 --> 00:14:06.370
+<v Speaker 1>So you basically have to choose your one
+
+00:14:06.370 --> 00:14:08.770
+<v Speaker 1>upfront and, like, ecosystems are built around each
+
+00:14:08.770 --> 00:14:11.735
+<v Speaker 1>one. For for this use case, I'm gonna
+
+00:14:11.735 --> 00:14:13.894
+<v Speaker 1>use Tokyo purely because
+
+00:14:14.855 --> 00:14:15.815
+<v Speaker 1>I know
+
+00:14:16.295 --> 00:14:17.975
+<v Speaker 1>some stuff about Tokyo and don't know too
+
+00:14:17.975 --> 00:14:20.935
+<v Speaker 1>much about ASX standards. So it's nothing nothing
+
+00:14:20.935 --> 00:14:22.694
+<v Speaker 1>against the ASX standard piece.
+
+00:14:23.550 --> 00:14:25.390
+<v Speaker 1>But, yeah, I mean, it's just basically all
+
+00:14:25.390 --> 00:14:26.270
+<v Speaker 1>I know. So
+
+00:14:28.910 --> 00:14:31.070
+<v Speaker 1>yeah. Basically, just like a quick
+
+00:14:31.550 --> 00:14:33.310
+<v Speaker 1>just running through, like, a quick
+
+00:14:34.029 --> 00:14:35.230
+<v Speaker 1>creating a quick
+
+00:14:37.005 --> 00:14:38.445
+<v Speaker 1>asynchronous function.
+
+00:14:38.845 --> 00:14:41.805
+<v Speaker 1>So Tokyo is the executor,
+
+00:14:41.885 --> 00:14:43.565
+<v Speaker 1>and then it's it's got, like, an entry
+
+00:14:43.565 --> 00:14:45.805
+<v Speaker 1>point. So in this case, this async fun
+
+00:14:45.805 --> 00:14:46.445
+<v Speaker 1>main.
+
+00:14:46.925 --> 00:14:47.485
+<v Speaker 1>And
+
+00:14:48.125 --> 00:14:49.645
+<v Speaker 1>yeah. I mean, this is basically all we
+
+00:14:49.645 --> 00:14:51.485
+<v Speaker 1>need to do to make code
+
+00:14:51.440 --> 00:14:54.160
+<v Speaker 1>asynchronous so we can actually enable, so increase
+
+00:14:54.160 --> 00:14:55.520
+<v Speaker 1>the font of my
+
+00:14:56.800 --> 00:14:59.600
+<v Speaker 1>let's
+
+00:14:59.600 --> 00:14:59.839
+<v Speaker 1>see.
+
+00:15:05.735 --> 00:15:07.334
+<v Speaker 0>I think the size of the sidebar is
+
+00:15:07.334 --> 00:15:09.014
+<v Speaker 0>okay if that's what you're worried about. Oh,
+
+00:15:09.014 --> 00:15:10.375
+<v Speaker 0>the terminal. The terminal.
+
+00:15:11.095 --> 00:15:13.735
+<v Speaker 1>Let's see. Oh, there we go. Yeah. Perfect.
+
+00:15:14.935 --> 00:15:15.255
+<v Speaker 1>Sweet.
+
+00:15:17.840 --> 00:15:20.320
+<v Speaker 1>Cool. Yeah. So this is basically all you
+
+00:15:20.320 --> 00:15:21.920
+<v Speaker 1>need to do to make a
+
+00:15:22.560 --> 00:15:23.680
+<v Speaker 1>asynchronous
+
+00:15:23.680 --> 00:15:26.320
+<v Speaker 1>or make your code asynchronous in the beginning.
+
+00:15:28.000 --> 00:15:29.920
+<v Speaker 1>For the purpose of this one, I'm I
+
+00:15:29.920 --> 00:15:31.760
+<v Speaker 1>prefer to use so
+
+00:15:32.185 --> 00:15:33.545
+<v Speaker 1>you can use a
+
+00:15:34.265 --> 00:15:37.625
+<v Speaker 1>multi threaded or single threaded async
+
+00:15:40.025 --> 00:15:40.825
+<v Speaker 1>executor.
+
+00:15:41.465 --> 00:15:42.665
+<v Speaker 1>What's going on now?
+
+00:15:45.440 --> 00:15:46.640
+<v Speaker 1>What did I do?
+
+00:15:49.520 --> 00:15:50.320
+<v Speaker 1>Yeah.
+
+00:15:52.960 --> 00:15:54.000
+<v Speaker 1>Oh, sorry.
+
+00:15:55.440 --> 00:15:57.120
+<v Speaker 1>I think that might work. Ah, yeah. There
+
+00:15:57.120 --> 00:15:59.520
+<v Speaker 1>you go. Currently. So,
+
+00:16:00.515 --> 00:16:02.755
+<v Speaker 1>yeah, you can have a multi threaded or
+
+00:16:02.755 --> 00:16:06.355
+<v Speaker 1>single threaded one. For the purposes of this
+
+00:16:07.235 --> 00:16:10.275
+<v Speaker 1>bunch of recommendation, she's a current
+
+00:16:10.675 --> 00:16:13.650
+<v Speaker 1>rate, which is just a single thread executor.
+
+00:16:13.730 --> 00:16:15.250
+<v Speaker 1>I think it's a bit easier to understand
+
+00:16:15.250 --> 00:16:16.690
+<v Speaker 1>the model. So I actually have this image
+
+00:16:16.690 --> 00:16:18.290
+<v Speaker 1>here that I was so I was actually
+
+00:16:18.290 --> 00:16:20.530
+<v Speaker 1>writing a blog post at some point that
+
+00:16:20.530 --> 00:16:22.050
+<v Speaker 1>I never got to finishing.
+
+00:16:22.370 --> 00:16:24.450
+<v Speaker 1>But you can imagine that, like, let's say
+
+00:16:24.450 --> 00:16:25.730
+<v Speaker 1>we have task a and b here,
+
+00:16:27.125 --> 00:16:30.005
+<v Speaker 1>and it's executing. So this part portion is
+
+00:16:30.005 --> 00:16:32.245
+<v Speaker 1>where it's doing some work. This part where
+
+00:16:32.245 --> 00:16:33.524
+<v Speaker 1>it's empty is it's waiting.
+
+00:16:34.245 --> 00:16:36.005
+<v Speaker 1>Similar for task b here.
+
+00:16:36.485 --> 00:16:38.165
+<v Speaker 1>All of all both of these tasks will
+
+00:16:38.165 --> 00:16:40.005
+<v Speaker 1>run on, the same thread. So task a
+
+00:16:40.005 --> 00:16:40.404
+<v Speaker 1>will run.
+
+00:16:41.459 --> 00:16:43.460
+<v Speaker 1>They will just start it with task a.
+
+00:16:43.620 --> 00:16:45.700
+<v Speaker 1>Then when it gets to this yield point,
+
+00:16:46.980 --> 00:16:49.060
+<v Speaker 1>it'll give up control. So
+
+00:16:49.459 --> 00:16:52.580
+<v Speaker 1>in async, tasks are cooperatively scheduled, which just
+
+00:16:52.580 --> 00:16:55.935
+<v Speaker 1>means that they themselves told the execute like,
+
+00:16:55.935 --> 00:16:57.774
+<v Speaker 1>the executor when they're
+
+00:16:59.535 --> 00:17:00.654
+<v Speaker 1>when they're,
+
+00:17:02.735 --> 00:17:06.015
+<v Speaker 1>like, blocked, and then they'll give up the
+
+00:17:06.015 --> 00:17:07.454
+<v Speaker 1>the CPU, basically.
+
+00:17:07.775 --> 00:17:09.680
+<v Speaker 1>And so it works on, like so you
+
+00:17:09.680 --> 00:17:11.359
+<v Speaker 1>have to have, like, basically, like, good access.
+
+00:17:11.359 --> 00:17:13.280
+<v Speaker 1>So in in this case, what'll happen is
+
+00:17:13.280 --> 00:17:15.920
+<v Speaker 1>if you had, a CPU bound task and
+
+00:17:15.920 --> 00:17:19.040
+<v Speaker 1>it never yielded the CPU, then nothing else
+
+00:17:19.040 --> 00:17:20.560
+<v Speaker 1>would be be able to run at the
+
+00:17:20.560 --> 00:17:22.159
+<v Speaker 1>wall just be blocked in essence.
+
+00:17:22.960 --> 00:17:24.240
+<v Speaker 1>But, yeah, we have this, like,
+
+00:17:25.255 --> 00:17:27.095
+<v Speaker 1>task a, which runs, and then we have
+
+00:17:27.175 --> 00:17:28.214
+<v Speaker 1>then it yields
+
+00:17:28.935 --> 00:17:31.175
+<v Speaker 1>the CPU, and then task b will start
+
+00:17:31.175 --> 00:17:32.615
+<v Speaker 1>running, but it's all on the same thread.
+
+00:17:32.615 --> 00:17:34.215
+<v Speaker 1>This is a bit easier to understand than
+
+00:17:34.215 --> 00:17:36.134
+<v Speaker 1>having it on multiple threads.
+
+00:17:36.295 --> 00:17:38.400
+<v Speaker 1>It does the same thing, but, like, on
+
+00:17:38.400 --> 00:17:39.840
+<v Speaker 1>multiple threads, basically.
+
+00:17:41.120 --> 00:17:43.600
+<v Speaker 1>Cool. So, yeah, this is basically
+
+00:17:44.080 --> 00:17:46.240
+<v Speaker 1>all we need to have an async
+
+00:17:46.400 --> 00:17:48.480
+<v Speaker 1>function. And if we can't go around this,
+
+00:17:51.674 --> 00:17:53.834
+<v Speaker 1>Actually, it will compile and work.
+
+00:17:54.154 --> 00:17:55.995
+<v Speaker 0>Yeah. I've heard the Rust compiler is really
+
+00:17:55.995 --> 00:17:56.634
+<v Speaker 0>fast.
+
+00:17:59.355 --> 00:18:02.394
+<v Speaker 0>Said nobody ever. It's it's working literally. Also,
+
+00:18:03.195 --> 00:18:05.434
+<v Speaker 1>on a MacBook, it's arguably also
+
+00:18:05.960 --> 00:18:08.920
+<v Speaker 1>not as fast as of others. Cool. So,
+
+00:18:08.920 --> 00:18:11.160
+<v Speaker 1>yeah, we've we've run this function. We've got
+
+00:18:11.160 --> 00:18:12.360
+<v Speaker 1>a hello world out.
+
+00:18:13.640 --> 00:18:16.679
+<v Speaker 1>Feels very synchronous, so nothing too crazy.
+
+00:18:17.000 --> 00:18:18.200
+<v Speaker 1>And effectively,
+
+00:18:18.920 --> 00:18:21.640
+<v Speaker 1>it's well, it's not, but effectively, it's run
+
+00:18:21.935 --> 00:18:24.335
+<v Speaker 1>a synchronous in a synchronous fashion.
+
+00:18:26.815 --> 00:18:28.255
+<v Speaker 1>And just to
+
+00:18:28.655 --> 00:18:30.575
+<v Speaker 1>just to kind of, like, unpack this, so
+
+00:18:30.575 --> 00:18:31.294
+<v Speaker 1>this
+
+00:18:31.695 --> 00:18:33.054
+<v Speaker 1>Tokyo main
+
+00:18:33.215 --> 00:18:36.895
+<v Speaker 1>flavor current thread is effectively the same as
+
+00:18:37.350 --> 00:18:40.389
+<v Speaker 1>this. So it's obviously a macro, and
+
+00:18:40.630 --> 00:18:42.230
+<v Speaker 1>it does the same
+
+00:18:42.470 --> 00:18:43.669
+<v Speaker 1>thing as
+
+00:18:45.030 --> 00:18:47.590
+<v Speaker 1>let's see. I can comment this out.
+
+00:18:48.710 --> 00:18:50.870
+<v Speaker 1>So these two things are equivalent,
+
+00:18:52.395 --> 00:18:54.794
+<v Speaker 1>barring that there's no comment. And
+
+00:18:55.435 --> 00:18:57.675
+<v Speaker 1>so, basically, what happens is it creates a
+
+00:18:57.675 --> 00:18:59.995
+<v Speaker 1>new runtime, and then it has this block
+
+00:18:59.995 --> 00:19:00.955
+<v Speaker 1>on method.
+
+00:19:01.195 --> 00:19:02.475
+<v Speaker 1>And what this does
+
+00:19:02.955 --> 00:19:03.674
+<v Speaker 1>is,
+
+00:19:04.475 --> 00:19:06.235
+<v Speaker 1>as it says here, it's
+
+00:19:08.110 --> 00:19:10.190
+<v Speaker 1>it'll run the feature and then block until
+
+00:19:10.190 --> 00:19:10.989
+<v Speaker 1>it's complete.
+
+00:19:11.950 --> 00:19:15.389
+<v Speaker 1>And so, basically, this this here is here
+
+00:19:15.389 --> 00:19:17.070
+<v Speaker 1>is your feature, and you have this read
+
+00:19:17.070 --> 00:19:19.070
+<v Speaker 1>feature. So features are often made up of
+
+00:19:19.070 --> 00:19:21.295
+<v Speaker 1>other features. And so in the case of,
+
+00:19:21.295 --> 00:19:22.895
+<v Speaker 1>like, let's say, a web server or whatever,
+
+00:19:22.895 --> 00:19:24.815
+<v Speaker 1>you'll have, like, this outmost feature and then
+
+00:19:24.815 --> 00:19:26.335
+<v Speaker 1>all of your tasks running.
+
+00:19:26.335 --> 00:19:27.615
+<v Speaker 1>Okay. Yeah. It's running.
+
+00:19:28.495 --> 00:19:31.135
+<v Speaker 1>All of your tasks running within that feature.
+
+00:19:32.720 --> 00:19:34.640
+<v Speaker 1>And then only when this root feature, so
+
+00:19:34.640 --> 00:19:36.720
+<v Speaker 1>the, like, top level feature results will this
+
+00:19:36.720 --> 00:19:37.520
+<v Speaker 1>finish.
+
+00:19:38.080 --> 00:19:40.880
+<v Speaker 1>And so, yeah, basically, we have this async
+
+00:19:41.920 --> 00:19:44.240
+<v Speaker 1>function here, which does the same thing. So
+
+00:19:44.240 --> 00:19:47.279
+<v Speaker 1>this should effectively give us the same
+
+00:19:47.760 --> 00:19:48.400
+<v Speaker 1>outputs.
+
+00:19:53.544 --> 00:19:57.145
+<v Speaker 1>Let's see. Yeah. Hello. So we've we've we've
+
+00:19:57.145 --> 00:19:58.344
+<v Speaker 1>come full circle
+
+00:19:58.825 --> 00:20:00.424
+<v Speaker 1>and pretty much got the same thing.
+
+00:20:01.840 --> 00:20:03.840
+<v Speaker 1>But yeah. Now we can try and do
+
+00:20:03.840 --> 00:20:05.840
+<v Speaker 1>some more sort of, like, useful stuff. For
+
+00:20:05.840 --> 00:20:07.920
+<v Speaker 1>instance, so let's say
+
+00:20:08.880 --> 00:20:10.160
+<v Speaker 1>we wanted to
+
+00:20:13.924 --> 00:20:14.725
+<v Speaker 1>so
+
+00:20:15.125 --> 00:20:16.885
+<v Speaker 1>let's say you wanted to just make, a
+
+00:20:16.885 --> 00:20:18.244
+<v Speaker 1>request using
+
+00:20:18.565 --> 00:20:19.445
+<v Speaker 1>request
+
+00:20:19.924 --> 00:20:21.924
+<v Speaker 1>so we can use a
+
+00:20:24.565 --> 00:20:28.179
+<v Speaker 1>the request is async, basically, it uses Tokyo
+
+00:20:29.059 --> 00:20:31.220
+<v Speaker 1>underneath. And so let's say we so we
+
+00:20:31.220 --> 00:20:32.020
+<v Speaker 1>can create a client.
+
+00:20:37.875 --> 00:20:40.914
+<v Speaker 0>The request is a h HTTP client?
+
+00:20:41.155 --> 00:20:43.235
+<v Speaker 1>Yeah. Yeah. It's a HTTP client.
+
+00:20:43.715 --> 00:20:46.195
+<v Speaker 1>So you can get a new client.
+
+00:20:46.755 --> 00:20:49.554
+<v Speaker 1>Think this is will work. Let's say,
+
+00:20:52.195 --> 00:20:52.355
+<v Speaker 1>get.
+
+00:20:56.750 --> 00:21:01.550
+<v Speaker 1>What is this? You're all gonna think. Rustling.
+
+00:21:06.110 --> 00:21:06.670
+<v Speaker 1>Okay. Cool.
+
+00:21:07.365 --> 00:21:10.005
+<v Speaker 1>So this dot send is a
+
+00:21:12.005 --> 00:21:14.565
+<v Speaker 1>this return this actually returns a feature, this
+
+00:21:14.565 --> 00:21:15.445
+<v Speaker 1>dot send.
+
+00:21:17.925 --> 00:21:20.965
+<v Speaker 1>And and then we've gotta await that feature
+
+00:21:21.809 --> 00:21:24.129
+<v Speaker 1>to basically run it. So one thing about
+
+00:21:26.450 --> 00:21:27.250
+<v Speaker 1>Rust's
+
+00:21:27.250 --> 00:21:28.210
+<v Speaker 1>async
+
+00:21:31.250 --> 00:21:32.210
+<v Speaker 1>model
+
+00:21:32.529 --> 00:21:35.725
+<v Speaker 1>is that features don't run until they're pulled,
+
+00:21:35.725 --> 00:21:37.644
+<v Speaker 1>which is basically just to say that
+
+00:21:37.885 --> 00:21:39.965
+<v Speaker 1>they do nothing. They're, like, late they're lazy
+
+00:21:39.965 --> 00:21:42.125
+<v Speaker 1>by nature. So they do nothing until
+
+00:21:43.005 --> 00:21:45.245
+<v Speaker 1>you kinda, like, force them to run or
+
+00:21:45.245 --> 00:21:47.325
+<v Speaker 1>or drive them to run, which is what
+
+00:21:47.325 --> 00:21:49.799
+<v Speaker 1>this await does. So if you don't use
+
+00:21:49.799 --> 00:21:52.520
+<v Speaker 1>start awaits, nothing will happen. So if you
+
+00:21:52.520 --> 00:21:55.160
+<v Speaker 0>create a future and never create you the
+
+00:21:55.160 --> 00:21:57.559
+<v Speaker 0>result, then that future will never run?
+
+00:21:58.039 --> 00:21:59.640
+<v Speaker 1>So, yeah, if you if you never await
+
+00:21:59.640 --> 00:22:02.280
+<v Speaker 1>a future, it'll it'll basically never run. Okay.
+
+00:22:02.280 --> 00:22:03.720
+<v Speaker 1>So we can we can actually, like,
+
+00:22:04.365 --> 00:22:07.085
+<v Speaker 1>test that out. So firstly, let let's maybe
+
+00:22:07.085 --> 00:22:08.365
+<v Speaker 1>just, like, print
+
+00:22:09.485 --> 00:22:10.365
+<v Speaker 1>a
+
+00:22:12.445 --> 00:22:14.685
+<v Speaker 1>let's just do something simple.
+
+00:22:19.090 --> 00:22:19.809
+<v Speaker 1>So
+
+00:22:20.610 --> 00:22:22.529
+<v Speaker 1>in this case, the same thing.
+
+00:22:23.010 --> 00:22:24.929
+<v Speaker 1>So we'd expect this to return, like, a
+
+00:22:24.929 --> 00:22:25.729
+<v Speaker 1>200.
+
+00:22:28.610 --> 00:22:30.450
+<v Speaker 1>It'll just be, like, response time.
+
+00:22:34.565 --> 00:22:37.124
+<v Speaker 1>I should definitely get a fast computer.
+
+00:22:38.004 --> 00:22:39.764
+<v Speaker 0>It's not good. It's the compiler.
+
+00:22:41.445 --> 00:22:43.524
+<v Speaker 1>Cool. So we got this two hundred hours.
+
+00:22:44.004 --> 00:22:45.524
+<v Speaker 1>But let's say we
+
+00:22:46.404 --> 00:22:47.764
+<v Speaker 1>didn't run this. So
+
+00:22:48.460 --> 00:22:49.580
+<v Speaker 1>instead, we
+
+00:22:50.460 --> 00:22:52.380
+<v Speaker 1>just had send here
+
+00:22:52.620 --> 00:22:54.700
+<v Speaker 1>and then did nothing with that
+
+00:22:54.940 --> 00:22:56.540
+<v Speaker 1>with this. So now you can actually see
+
+00:22:56.540 --> 00:22:57.420
+<v Speaker 1>from the
+
+00:22:57.740 --> 00:22:59.900
+<v Speaker 1>from Rust Analyzer that this output is a
+
+00:22:59.900 --> 00:23:02.140
+<v Speaker 1>future with some response in error.
+
+00:23:03.345 --> 00:23:05.345
+<v Speaker 1>And, okay, now we're getting an error here.
+
+00:23:05.345 --> 00:23:09.345
+<v Speaker 1>So this nothing will happen here, basically, but
+
+00:23:09.345 --> 00:23:10.784
+<v Speaker 1>there's nothing that's gonna get
+
+00:23:12.465 --> 00:23:14.865
+<v Speaker 1>you can't actually print a future. So Can
+
+00:23:14.865 --> 00:23:16.625
+<v Speaker 0>we can I make a suggestion?
+
+00:23:17.330 --> 00:23:18.210
+<v Speaker 0>Could
+
+00:23:18.530 --> 00:23:19.250
+<v Speaker 0>we, like,
+
+00:23:19.650 --> 00:23:21.650
+<v Speaker 0>create a a function that just touches an
+
+00:23:21.650 --> 00:23:23.410
+<v Speaker 0>empty file on the disk and then schedule
+
+00:23:23.410 --> 00:23:25.009
+<v Speaker 0>that and then
+
+00:23:25.570 --> 00:23:27.250
+<v Speaker 0>not await it and the file wouldn't be
+
+00:23:27.250 --> 00:23:28.610
+<v Speaker 0>created? But if we did await it, the
+
+00:23:28.610 --> 00:23:31.730
+<v Speaker 0>file would be created? We probably we can
+
+00:23:31.730 --> 00:23:33.895
+<v Speaker 1>do that. We can do that. Then we
+
+00:23:34.775 --> 00:23:36.375
+<v Speaker 1>figure out how to do that. I guess
+
+00:23:36.375 --> 00:23:38.135
+<v Speaker 0>even just a even a print line statement
+
+00:23:38.135 --> 00:23:40.055
+<v Speaker 0>would work. Like, if we wouldn't see the
+
+00:23:40.055 --> 00:23:42.215
+<v Speaker 0>print hello if the, you know, if the
+
+00:23:42.215 --> 00:23:44.535
+<v Speaker 0>future of the asynchronous function was to print
+
+00:23:44.535 --> 00:23:45.895
+<v Speaker 0>hello, we shouldn't see any output, I guess.
+
+00:23:46.140 --> 00:23:47.659
+<v Speaker 0>It would be the same effect. Sorry.
+
+00:23:48.380 --> 00:23:50.860
+<v Speaker 1>What what do you think? I missed that.
+
+00:23:51.180 --> 00:23:53.420
+<v Speaker 0>Yeah. We you I was just saying your
+
+00:23:53.420 --> 00:23:54.940
+<v Speaker 0>actual your idea is better. Like, if we
+
+00:23:54.940 --> 00:23:57.580
+<v Speaker 0>just do a print inside of the future
+
+00:23:57.740 --> 00:23:59.020
+<v Speaker 0>like, if we create a new function called
+
+00:23:59.020 --> 00:24:01.295
+<v Speaker 0>async, print hello. Like, it should never print
+
+00:24:01.295 --> 00:24:03.455
+<v Speaker 0>hello if we don't know where to Yeah.
+
+00:24:03.455 --> 00:24:04.975
+<v Speaker 1>Yeah. Rather than trying to remember how to
+
+00:24:04.975 --> 00:24:06.495
+<v Speaker 0>do the fail system calls because I definitely
+
+00:24:06.495 --> 00:24:07.775
+<v Speaker 0>don't remember. Yeah.
+
+00:24:08.975 --> 00:24:11.215
+<v Speaker 1>So let's say, yeah, print hello.
+
+00:24:12.140 --> 00:24:12.940
+<v Speaker 1>So
+
+00:24:14.299 --> 00:24:17.099
+<v Speaker 1>takes nothing, and then let's just close
+
+00:24:19.659 --> 00:24:20.940
+<v Speaker 1>the Rawkode.
+
+00:24:23.500 --> 00:24:23.820
+<v Speaker 1>Cool.
+
+00:24:24.365 --> 00:24:25.085
+<v Speaker 1>So
+
+00:24:25.165 --> 00:24:26.285
+<v Speaker 1>in this case,
+
+00:24:29.085 --> 00:24:30.684
+<v Speaker 1>we could actually just say
+
+00:24:32.685 --> 00:24:35.165
+<v Speaker 1>oh, so let's say, like, we'll get
+
+00:24:35.565 --> 00:24:37.325
+<v Speaker 1>feature equal
+
+00:24:44.100 --> 00:24:46.740
+<v Speaker 1>So in this case, like, we would expect
+
+00:24:48.260 --> 00:24:51.140
+<v Speaker 1>so pretty much this Hello Rawkode wouldn't run
+
+00:24:51.140 --> 00:24:52.740
+<v Speaker 1>about this print line
+
+00:24:53.455 --> 00:24:54.894
+<v Speaker 1>would. Yeah.
+
+00:24:55.215 --> 00:24:58.014
+<v Speaker 1>Yeah. So if we do that, then
+
+00:24:58.495 --> 00:25:01.134
+<v Speaker 1>that's pretty much what should happen. Okay. So
+
+00:25:01.134 --> 00:25:03.294
+<v Speaker 1>now it's telling us that we didn't use
+
+00:25:03.455 --> 00:25:05.854
+<v Speaker 0>That is just a warning. That can't So
+
+00:25:07.054 --> 00:25:09.190
+<v Speaker 1>you can see, like, you know, this hello
+
+00:25:09.190 --> 00:25:11.830
+<v Speaker 1>gets printed, but then if you go, like,
+
+00:25:12.710 --> 00:25:14.390
+<v Speaker 1>future dot await,
+
+00:25:17.350 --> 00:25:20.550
+<v Speaker 1>then you should see hello Rawkode and then
+
+00:25:22.165 --> 00:25:24.645
+<v Speaker 1>and then the hello. Right? Yeah. So that's
+
+00:25:24.645 --> 00:25:26.965
+<v Speaker 1>pretty much what we've gotten by awaiting this
+
+00:25:26.965 --> 00:25:27.525
+<v Speaker 1>feature.
+
+00:25:28.085 --> 00:25:31.205
+<v Speaker 1>An interesting thing, though, is that this
+
+00:25:31.685 --> 00:25:34.820
+<v Speaker 1>technically is still just running synchronously.
+
+00:25:34.820 --> 00:25:36.899
+<v Speaker 1>So even though we've got this, like, async
+
+00:25:36.899 --> 00:25:38.419
+<v Speaker 1>and Tokyo is running,
+
+00:25:40.659 --> 00:25:42.500
+<v Speaker 1>there's not multiple tasks being run at the
+
+00:25:42.500 --> 00:25:43.539
+<v Speaker 1>same time. So
+
+00:25:44.899 --> 00:25:45.700
+<v Speaker 1>we can
+
+00:25:46.054 --> 00:25:48.294
+<v Speaker 1>can do that just using let's say, we
+
+00:25:48.294 --> 00:25:50.134
+<v Speaker 1>can make some multiple requests.
+
+00:25:50.375 --> 00:25:52.374
+<v Speaker 1>And there are some interesting things here.
+
+00:25:53.575 --> 00:25:55.735
+<v Speaker 1>My account, so if we have
+
+00:25:59.120 --> 00:26:01.280
+<v Speaker 1>And
+
+00:26:01.280 --> 00:26:01.920
+<v Speaker 1>then
+
+00:26:04.000 --> 00:26:06.480
+<v Speaker 1>if that same request again, so
+
+00:26:06.800 --> 00:26:07.520
+<v Speaker 1>try and go.
+
+00:26:14.865 --> 00:26:16.065
+<v Speaker 1>Just give me a second.
+
+00:26:21.424 --> 00:26:23.345
+<v Speaker 1>Yeah, there's quite a few interesting things that
+
+00:26:23.345 --> 00:26:24.144
+<v Speaker 1>could happen here.
+
+00:26:27.100 --> 00:26:29.100
+<v Speaker 1>So if you've got this and we kind
+
+00:26:29.100 --> 00:26:30.299
+<v Speaker 1>of, like, duplicate
+
+00:26:32.299 --> 00:26:33.419
+<v Speaker 1>this again,
+
+00:26:33.500 --> 00:26:35.260
+<v Speaker 1>so if we have So you're gonna make
+
+00:26:35.260 --> 00:26:37.979
+<v Speaker 0>two HTTP requests? Two requests. Yeah.
+
+00:26:38.460 --> 00:26:41.285
+<v Speaker 1>So if we do that, then okay. Let's
+
+00:26:41.285 --> 00:26:44.245
+<v Speaker 1>call this, like, results or response one,
+
+00:26:44.565 --> 00:26:46.725
+<v Speaker 1>and then this response two.
+
+00:26:49.045 --> 00:26:51.285
+<v Speaker 1>What will happen is that still
+
+00:26:51.285 --> 00:26:52.565
+<v Speaker 1>in this setup
+
+00:26:55.820 --> 00:26:58.700
+<v Speaker 1>Okay. It's the right number one.
+
+00:26:59.340 --> 00:27:00.780
+<v Speaker 0>This will still be
+
+00:27:01.100 --> 00:27:02.220
+<v Speaker 0>synchronous?
+
+00:27:02.460 --> 00:27:05.340
+<v Speaker 1>Yeah. It'll still it'll still basically be synchronous.
+
+00:27:05.740 --> 00:27:06.860
+<v Speaker 1>We'll have
+
+00:27:20.315 --> 00:27:20.794
+<v Speaker 1>and then.
+
+00:27:24.810 --> 00:27:26.090
+<v Speaker 0>It's live taping.
+
+00:27:26.490 --> 00:27:27.130
+<v Speaker 1>Yeah.
+
+00:27:28.570 --> 00:27:31.210
+<v Speaker 1>Cool. So in this case, it's basically actually
+
+00:27:31.210 --> 00:27:33.370
+<v Speaker 1>still synchronous here because
+
+00:27:34.490 --> 00:27:37.210
+<v Speaker 1>parts aren't really being spawned
+
+00:27:38.645 --> 00:27:40.005
+<v Speaker 1>to run asynchronously.
+
+00:27:40.005 --> 00:27:41.364
+<v Speaker 1>So in this case,
+
+00:27:42.804 --> 00:27:44.804
+<v Speaker 1>it'll still it'll still run. So even though
+
+00:27:44.804 --> 00:27:48.325
+<v Speaker 1>this this result one will
+
+00:27:48.804 --> 00:27:50.965
+<v Speaker 1>be like an IO task, so
+
+00:27:51.700 --> 00:27:53.860
+<v Speaker 1>it has to wait for a response. It'll
+
+00:27:53.860 --> 00:27:55.940
+<v Speaker 1>just still run-in
+
+00:27:55.940 --> 00:27:58.260
+<v Speaker 1>the order that it's that it's there. And
+
+00:27:58.260 --> 00:27:58.900
+<v Speaker 1>so
+
+00:27:59.140 --> 00:28:01.059
+<v Speaker 1>we can actually get around this.
+
+00:28:02.500 --> 00:28:04.660
+<v Speaker 1>Alright. So still still in order. And if
+
+00:28:04.660 --> 00:28:06.500
+<v Speaker 1>you run it multiple times, it'll continue to
+
+00:28:06.500 --> 00:28:06.980
+<v Speaker 1>be in order.
+
+00:28:07.805 --> 00:28:08.605
+<v Speaker 1>And so
+
+00:28:09.245 --> 00:28:11.485
+<v Speaker 1>get it to actually start using
+
+00:28:11.805 --> 00:28:12.924
+<v Speaker 1>async
+
+00:28:14.125 --> 00:28:16.445
+<v Speaker 1>properly, I guess, then we can start spawning
+
+00:28:16.445 --> 00:28:19.804
+<v Speaker 1>tasks. So Tokyo has this thing called spawn,
+
+00:28:19.885 --> 00:28:21.325
+<v Speaker 1>which I think
+
+00:28:22.690 --> 00:28:23.809
+<v Speaker 1>it's Tokyo.
+
+00:28:23.890 --> 00:28:24.690
+<v Speaker 1>Yeah.
+
+00:28:26.850 --> 00:28:31.409
+<v Speaker 1>And this spawn takes, an async function, basically.
+
+00:28:34.529 --> 00:28:35.330
+<v Speaker 1>I
+
+00:28:35.330 --> 00:28:36.370
+<v Speaker 1>copy this right now.
+
+00:28:37.784 --> 00:28:38.344
+<v Speaker 1>Cool.
+
+00:28:39.304 --> 00:28:40.104
+<v Speaker 1>Alright.
+
+00:28:40.745 --> 00:28:43.385
+<v Speaker 1>Yeah. And so this will spawn another task
+
+00:28:43.385 --> 00:28:45.224
+<v Speaker 1>onto the the executor,
+
+00:28:45.945 --> 00:28:48.985
+<v Speaker 1>these will run-in
+
+00:28:51.299 --> 00:28:52.340
+<v Speaker 1>asynchronously,
+
+00:28:52.340 --> 00:28:55.220
+<v Speaker 1>basically. But we might also find some weird
+
+00:28:55.220 --> 00:28:57.220
+<v Speaker 1>behavior coming out of here, which could be
+
+00:28:57.220 --> 00:28:58.499
+<v Speaker 1>quite interesting. So
+
+00:28:59.140 --> 00:29:00.179
+<v Speaker 1>let's say
+
+00:29:03.965 --> 00:29:05.645
+<v Speaker 1>So we have that.
+
+00:29:06.045 --> 00:29:07.804
+<v Speaker 1>Then what we want
+
+00:29:08.445 --> 00:29:09.325
+<v Speaker 1>here.
+
+00:29:10.045 --> 00:29:10.365
+<v Speaker 1>Time.
+
+00:29:20.850 --> 00:29:22.050
+<v Speaker 1>Cool. So so
+
+00:29:24.050 --> 00:29:25.490
+<v Speaker 1>what did I do now?
+
+00:29:27.090 --> 00:29:27.730
+<v Speaker 1>Alright.
+
+00:29:28.850 --> 00:29:30.930
+<v Speaker 1>It doesn't matter. Cool. So now we have
+
+00:29:30.930 --> 00:29:33.730
+<v Speaker 1>these two tasks basically being spun up. So
+
+00:29:33.730 --> 00:29:37.235
+<v Speaker 1>this spawn will spawn an asynchronous task onto
+
+00:29:37.955 --> 00:29:39.955
+<v Speaker 1>onto Tokyo, and this will do. So these
+
+00:29:39.955 --> 00:29:42.595
+<v Speaker 1>weren't these weren't blocked. So what we'd expect
+
+00:29:42.595 --> 00:29:43.794
+<v Speaker 1>here is for
+
+00:29:44.115 --> 00:29:46.755
+<v Speaker 1>so because these get scheduled asynchronously,
+
+00:29:47.410 --> 00:29:49.490
+<v Speaker 1>you would expect this to run this print
+
+00:29:49.490 --> 00:29:51.970
+<v Speaker 1>line run async first and then
+
+00:29:52.370 --> 00:29:53.170
+<v Speaker 1>whichever
+
+00:29:53.170 --> 00:29:54.610
+<v Speaker 1>order is complete.
+
+00:29:54.690 --> 00:29:56.930
+<v Speaker 1>It might still complete in the same order
+
+00:29:56.930 --> 00:29:58.049
+<v Speaker 1>it's been written
+
+00:29:58.370 --> 00:29:59.330
+<v Speaker 1>purely because,
+
+00:30:01.155 --> 00:30:03.555
+<v Speaker 1>yeah, the one request happened earlier than the
+
+00:30:03.555 --> 00:30:05.155
+<v Speaker 1>other. But sometimes it doesn't. I had fun
+
+00:30:05.155 --> 00:30:06.675
+<v Speaker 1>yesterday figuring that out.
+
+00:30:06.995 --> 00:30:07.635
+<v Speaker 1>So
+
+00:30:08.675 --> 00:30:09.875
+<v Speaker 1>if you run that,
+
+00:30:10.995 --> 00:30:11.315
+<v Speaker 1>then
+
+00:30:17.580 --> 00:30:18.539
+<v Speaker 1>cool. So
+
+00:30:19.260 --> 00:30:21.820
+<v Speaker 1>yeah. So this is actually an interesting an
+
+00:30:21.820 --> 00:30:24.940
+<v Speaker 1>interesting outcome here. And so this has to
+
+00:30:25.420 --> 00:30:27.100
+<v Speaker 1>actually do with the fact that, like,
+
+00:30:27.915 --> 00:30:28.955
+<v Speaker 1>there's
+
+00:30:29.275 --> 00:30:30.715
+<v Speaker 1>when I was talking about
+
+00:30:31.115 --> 00:30:33.195
+<v Speaker 1>having root features and features
+
+00:30:34.395 --> 00:30:36.635
+<v Speaker 1>or a root task and then task being
+
+00:30:36.635 --> 00:30:38.395
+<v Speaker 1>spawned within sort of, like, this root task
+
+00:30:38.395 --> 00:30:41.275
+<v Speaker 1>or being a combination of other features,
+
+00:30:41.675 --> 00:30:44.649
+<v Speaker 1>what's technically happened here is that that block
+
+00:30:44.649 --> 00:30:47.210
+<v Speaker 1>on function that I had earlier
+
+00:30:47.850 --> 00:30:49.369
+<v Speaker 1>or that I showed earlier,
+
+00:30:50.809 --> 00:30:52.649
+<v Speaker 1>it only waits for the top level feature
+
+00:30:52.649 --> 00:30:55.850
+<v Speaker 1>to resolve. And so what's happened is that
+
+00:30:55.265 --> 00:30:57.505
+<v Speaker 1>these two tasks have spun off, but then
+
+00:30:57.505 --> 00:30:59.985
+<v Speaker 1>the top level feature is basically like
+
+00:31:00.385 --> 00:31:01.105
+<v Speaker 1>this
+
+00:31:01.825 --> 00:31:02.865
+<v Speaker 1>in essence.
+
+00:31:02.865 --> 00:31:05.025
+<v Speaker 1>Yeah. And so when when it got here,
+
+00:31:05.025 --> 00:31:07.105
+<v Speaker 1>then it's finished. The top level feature is
+
+00:31:07.105 --> 00:31:07.665
+<v Speaker 1>finished,
+
+00:31:08.065 --> 00:31:08.865
+<v Speaker 1>and so
+
+00:31:09.105 --> 00:31:10.465
+<v Speaker 1>it just doesn't
+
+00:31:10.960 --> 00:31:13.840
+<v Speaker 1>complete the rest. So a quick way of
+
+00:31:13.840 --> 00:31:16.080
+<v Speaker 1>actually handling this is to is to use
+
+00:31:16.080 --> 00:31:17.280
+<v Speaker 1>Tokyo joint.
+
+00:31:18.400 --> 00:31:18.960
+<v Speaker 1>And
+
+00:31:20.080 --> 00:31:22.480
+<v Speaker 1>this basically just says it waits for each
+
+00:31:23.105 --> 00:31:26.545
+<v Speaker 1>task to finish before completing, basically. So it'll
+
+00:31:26.545 --> 00:31:29.265
+<v Speaker 1>wait for a lead. And spawn returns, like,
+
+00:31:29.265 --> 00:31:30.705
+<v Speaker 1>these things called join handle.
+
+00:31:35.360 --> 00:31:37.120
+<v Speaker 0>Yeah. I think I've had this problem before
+
+00:31:37.120 --> 00:31:38.800
+<v Speaker 0>when I've been doing asynchronous.
+
+00:31:38.800 --> 00:31:40.160
+<v Speaker 0>I'm like, why is it not running?
+
+00:31:41.280 --> 00:31:42.080
+<v Speaker 1>Yeah.
+
+00:31:42.240 --> 00:31:43.280
+<v Speaker 1>It's a bit of it's a bit of
+
+00:31:43.280 --> 00:31:45.440
+<v Speaker 1>interesting one. So, yeah, in this case, now
+
+00:31:45.440 --> 00:31:46.720
+<v Speaker 1>we've got this, like,
+
+00:31:47.760 --> 00:31:50.605
+<v Speaker 1>Tokyo joint, and then this will basically wait
+
+00:31:50.605 --> 00:31:51.965
+<v Speaker 1>for these two to finish. So I don't
+
+00:31:51.965 --> 00:31:53.965
+<v Speaker 1>know which order they'll finish in. It say
+
+00:31:54.045 --> 00:31:55.725
+<v Speaker 1>it can change. It could be in the
+
+00:31:55.725 --> 00:31:57.804
+<v Speaker 1>same order. But now we'd expect to see
+
+00:31:57.804 --> 00:32:00.284
+<v Speaker 1>run async and then the status
+
+00:32:00.365 --> 00:32:02.045
+<v Speaker 1>of these two things being printed.
+
+00:32:10.130 --> 00:32:10.850
+<v Speaker 1>Cool.
+
+00:32:10.930 --> 00:32:13.090
+<v Speaker 1>There you go. Oh, two first. Oh, two
+
+00:32:13.090 --> 00:32:14.130
+<v Speaker 1>first. Cool.
+
+00:32:14.610 --> 00:32:15.410
+<v Speaker 1>So
+
+00:32:16.065 --> 00:32:17.585
+<v Speaker 1>so yeah. So now you can see that
+
+00:32:17.585 --> 00:32:20.945
+<v Speaker 1>now this is actually all running asynchronously,
+
+00:32:23.345 --> 00:32:24.705
+<v Speaker 1>yeah. I mean, which is the call and
+
+00:32:24.705 --> 00:32:26.624
+<v Speaker 1>and exactly what we wanted
+
+00:32:26.945 --> 00:32:27.904
+<v Speaker 1>out of that system,
+
+00:32:28.799 --> 00:32:29.599
+<v Speaker 1>basically.
+
+00:32:30.159 --> 00:32:31.599
+<v Speaker 0>Okay. Can I just
+
+00:32:31.919 --> 00:32:33.519
+<v Speaker 0>summarize this so that I make sure I
+
+00:32:33.519 --> 00:32:35.119
+<v Speaker 0>understand this all correctly?
+
+00:32:35.360 --> 00:32:36.399
+<v Speaker 1>A %.
+
+00:32:36.720 --> 00:32:37.839
+<v Speaker 0>Okay. So
+
+00:32:38.320 --> 00:32:39.679
+<v Speaker 0>can you scroll up one line?
+
+00:32:41.135 --> 00:32:43.215
+<v Speaker 0>There we go. Okay. So we have this
+
+00:32:43.534 --> 00:32:44.414
+<v Speaker 0>Rust
+
+00:32:44.655 --> 00:32:45.614
+<v Speaker 0>macro,
+
+00:32:45.615 --> 00:32:47.855
+<v Speaker 0>which is the Tokyo main, and where you're
+
+00:32:47.855 --> 00:32:49.695
+<v Speaker 0>setting it to use an executor which is
+
+00:32:49.695 --> 00:32:51.294
+<v Speaker 0>current or a single threaded.
+
+00:32:51.695 --> 00:32:53.375
+<v Speaker 0>That macro
+
+00:32:53.375 --> 00:32:53.934
+<v Speaker 0>is
+
+00:32:54.180 --> 00:32:56.260
+<v Speaker 0>doing the boilerplate that you pasted earlier which
+
+00:32:56.260 --> 00:32:58.340
+<v Speaker 0>sets up a Tokyo executor
+
+00:32:58.660 --> 00:33:01.140
+<v Speaker 0>blocks on an asynchronous function which is an
+
+00:33:01.140 --> 00:33:02.740
+<v Speaker 0>essence just our main function.
+
+00:33:03.460 --> 00:33:07.620
+<v Speaker 0>Yes. Now here you have two different requests
+
+00:33:07.275 --> 00:33:10.955
+<v Speaker 0>using two different clients to the Rustlang website,
+
+00:33:10.955 --> 00:33:13.355
+<v Speaker 0>which are being blocked on using the await
+
+00:33:13.355 --> 00:33:14.155
+<v Speaker 0>syntax.
+
+00:33:14.715 --> 00:33:17.035
+<v Speaker 0>Those are both spawned asynchronously
+
+00:33:17.035 --> 00:33:20.639
+<v Speaker 0>using Tokyo spawn construct, which just a asynchronous
+
+00:33:20.639 --> 00:33:22.559
+<v Speaker 0>function and runs it in the background and
+
+00:33:22.559 --> 00:33:25.599
+<v Speaker 0>returns you a handle to that asynchronous task.
+
+00:33:26.000 --> 00:33:28.240
+<v Speaker 1>Mhmm. And then at the bottom, you are
+
+00:33:28.240 --> 00:33:31.279
+<v Speaker 0>using a Tokyo macro again, allows us to
+
+00:33:31.279 --> 00:33:33.625
+<v Speaker 0>just wait on all of those pending tasks
+
+00:33:33.625 --> 00:33:35.465
+<v Speaker 0>that we have by passing in the handle
+
+00:33:35.465 --> 00:33:38.025
+<v Speaker 0>and letting it do its thing. Yeah. Pretty
+
+00:33:38.025 --> 00:33:39.065
+<v Speaker 1>much. Okay.
+
+00:33:39.305 --> 00:33:43.145
+<v Speaker 0>I got one question then. Hello? Is the
+
+00:33:43.145 --> 00:33:45.065
+<v Speaker 0>standard procedure to then
+
+00:33:46.330 --> 00:33:47.690
+<v Speaker 0>let me see if this is right.
+
+00:33:48.010 --> 00:33:49.610
+<v Speaker 0>Do we need the two clients, or could
+
+00:33:49.610 --> 00:33:51.450
+<v Speaker 0>we create the client on a higher level
+
+00:33:51.450 --> 00:33:52.809
+<v Speaker 0>than a function and pass it into the
+
+00:33:52.809 --> 00:33:54.409
+<v Speaker 0>asynchronous functions?
+
+00:33:54.409 --> 00:33:56.090
+<v Speaker 0>Or is it would you just try and
+
+00:33:56.090 --> 00:33:57.610
+<v Speaker 0>isolate that as much as possible and have
+
+00:33:57.610 --> 00:33:58.250
+<v Speaker 0>multiple clients?
+
+00:33:59.505 --> 00:34:01.425
+<v Speaker 1>So
+
+00:34:01.425 --> 00:34:03.265
+<v Speaker 1>it's it's a bit of a difficult one,
+
+00:34:03.585 --> 00:34:04.544
+<v Speaker 1>mainly because
+
+00:34:05.105 --> 00:34:05.664
+<v Speaker 1>so
+
+00:34:06.305 --> 00:34:08.864
+<v Speaker 1>it's not, like, extremely
+
+00:34:08.864 --> 00:34:10.625
+<v Speaker 1>concrete in my mind yet.
+
+00:34:10.864 --> 00:34:11.425
+<v Speaker 1>But
+
+00:34:11.679 --> 00:34:14.080
+<v Speaker 1>in so in this case, when you spawn
+
+00:34:14.159 --> 00:34:15.600
+<v Speaker 1>something like the
+
+00:34:16.239 --> 00:34:19.760
+<v Speaker 1>the the task normally takes ownership of those
+
+00:34:20.480 --> 00:34:23.360
+<v Speaker 1>of those variables in that case. So in
+
+00:34:23.360 --> 00:34:25.120
+<v Speaker 1>this case, client, we wanted to be owned
+
+00:34:25.120 --> 00:34:27.305
+<v Speaker 1>by a certain task and and all these
+
+00:34:27.305 --> 00:34:29.465
+<v Speaker 1>tasks. And I and I'm not entirely sure
+
+00:34:31.065 --> 00:34:31.865
+<v Speaker 1>why,
+
+00:34:32.185 --> 00:34:34.665
+<v Speaker 1>though, I mean, like, just a a broad
+
+00:34:34.665 --> 00:34:35.865
+<v Speaker 1>assumption there's
+
+00:34:36.665 --> 00:34:38.825
+<v Speaker 1>you want a task to own, like, its
+
+00:34:38.825 --> 00:34:39.625
+<v Speaker 1>entire
+
+00:34:39.750 --> 00:34:41.429
+<v Speaker 1>or, like, all of the variables it uses
+
+00:34:41.429 --> 00:34:44.070
+<v Speaker 1>because task can also get, like, shipped across
+
+00:34:44.070 --> 00:34:45.430
+<v Speaker 1>threads, for instance.
+
+00:34:47.030 --> 00:34:48.790
+<v Speaker 1>So you it might let's say, in a
+
+00:34:48.790 --> 00:34:51.510
+<v Speaker 1>multithreaded context, it might start off on thread
+
+00:34:51.510 --> 00:34:54.725
+<v Speaker 1>one, but then end up on, like, thread
+
+00:34:54.805 --> 00:34:56.805
+<v Speaker 1>three, for instance. Mhmm.
+
+00:34:57.445 --> 00:34:58.245
+<v Speaker 1>And so
+
+00:34:58.565 --> 00:35:00.485
+<v Speaker 1>yeah. I'm I'm, like, pretty sure that's probably
+
+00:35:00.485 --> 00:35:01.685
+<v Speaker 1>a big reason why
+
+00:35:01.925 --> 00:35:03.925
+<v Speaker 1>it needs to needs to own
+
+00:35:04.165 --> 00:35:05.125
+<v Speaker 1>its variables.
+
+00:35:05.285 --> 00:35:07.765
+<v Speaker 1>And so I'm not sure about
+
+00:35:09.420 --> 00:35:11.580
+<v Speaker 1>kind of, like, passing in the same client
+
+00:35:11.580 --> 00:35:13.500
+<v Speaker 1>into multiple tasks. I'm pretty sure it could
+
+00:35:13.500 --> 00:35:15.339
+<v Speaker 1>probably be possible, but I I don't have
+
+00:35:15.339 --> 00:35:16.620
+<v Speaker 1>enough knowledge there.
+
+00:35:17.500 --> 00:35:20.140
+<v Speaker 0>I'll I'll I'll take that. Also, I'm curious
+
+00:35:20.140 --> 00:35:22.300
+<v Speaker 0>about the join handle. Is is that a
+
+00:35:22.300 --> 00:35:24.380
+<v Speaker 0>feature itself? Can we await the join handle
+
+00:35:24.435 --> 00:35:26.675
+<v Speaker 0>if we want to do it? I actually
+
+00:35:26.675 --> 00:35:29.475
+<v Speaker 1>don't think so. I'm not sure.
+
+00:35:30.515 --> 00:35:31.955
+<v Speaker 1>I'm not sure. I don't I don't think
+
+00:35:31.955 --> 00:35:33.955
+<v Speaker 1>it's I don't it's actually
+
+00:35:35.075 --> 00:35:37.315
+<v Speaker 1>no. It doesn't look like it. Okay. Doesn't
+
+00:35:37.315 --> 00:35:39.320
+<v Speaker 1>look like it's Alright. We have a a
+
+00:35:39.320 --> 00:35:42.280
+<v Speaker 0>question in the chat as well from Russell
+
+00:35:42.360 --> 00:35:45.720
+<v Speaker 0>who's asking, is the lazy execution mechanism the
+
+00:35:45.720 --> 00:35:48.280
+<v Speaker 0>same depending on the executor behavior?
+
+00:35:48.840 --> 00:35:51.240
+<v Speaker 0>For example, if you choose multi threads rather
+
+00:35:51.240 --> 00:35:53.515
+<v Speaker 0>than a single thread, does an async function
+
+00:35:53.515 --> 00:35:56.315
+<v Speaker 0>only get called when awaited as well?
+
+00:35:57.355 --> 00:36:00.155
+<v Speaker 1>Yeah. So that that kind of, like, model
+
+00:36:00.155 --> 00:36:01.195
+<v Speaker 1>with the
+
+00:36:01.595 --> 00:36:02.075
+<v Speaker 1>with
+
+00:36:02.475 --> 00:36:05.915
+<v Speaker 1>futures or tasks only being run when they're
+
+00:36:05.915 --> 00:36:08.380
+<v Speaker 1>awaited, that's just like a Rust construct. How
+
+00:36:08.380 --> 00:36:09.340
+<v Speaker 1>that's handled
+
+00:36:09.980 --> 00:36:11.100
+<v Speaker 1>sort of like
+
+00:36:12.700 --> 00:36:13.980
+<v Speaker 1>by your executors
+
+00:36:13.980 --> 00:36:16.460
+<v Speaker 1>is just like an implementation detail. So,
+
+00:36:16.940 --> 00:36:19.180
+<v Speaker 1>yeah, it's basically it's basically just like how
+
+00:36:19.180 --> 00:36:21.340
+<v Speaker 1>the languages are solved for that. And I
+
+00:36:21.340 --> 00:36:22.140
+<v Speaker 1>think the
+
+00:36:22.535 --> 00:36:23.895
+<v Speaker 1>the reason why
+
+00:36:24.375 --> 00:36:26.295
+<v Speaker 1>it's built like that is because
+
+00:36:27.815 --> 00:36:29.975
+<v Speaker 1>for for them to be zero cost.
+
+00:36:30.375 --> 00:36:31.255
+<v Speaker 1>And so
+
+00:36:31.575 --> 00:36:32.535
+<v Speaker 1>what's happened,
+
+00:36:32.775 --> 00:36:34.695
+<v Speaker 1>at least from what I've read, is early
+
+00:36:34.695 --> 00:36:36.775
+<v Speaker 1>on, Rust actually had its own,
+
+00:36:36.935 --> 00:36:37.255
+<v Speaker 1>like,
+
+00:36:38.540 --> 00:36:41.100
+<v Speaker 1>sort of, like, green threading library.
+
+00:36:42.620 --> 00:36:43.500
+<v Speaker 1>And so
+
+00:36:43.580 --> 00:36:45.820
+<v Speaker 1>but that had, like, global costs. So,
+
+00:36:46.060 --> 00:36:48.140
+<v Speaker 1>basically, it would put put a performance cost
+
+00:36:48.140 --> 00:36:50.940
+<v Speaker 1>on in using Rust whether you use those
+
+00:36:50.975 --> 00:36:52.975
+<v Speaker 1>that set of functionality or not.
+
+00:36:54.815 --> 00:36:55.695
+<v Speaker 1>And so
+
+00:36:56.175 --> 00:36:59.695
+<v Speaker 1>with having lazy features, it it basically means
+
+00:36:59.695 --> 00:37:02.415
+<v Speaker 1>that, like, no work actually happens before, and
+
+00:37:02.415 --> 00:37:04.575
+<v Speaker 1>they're and they're compiled down to state machine.
+
+00:37:05.109 --> 00:37:07.430
+<v Speaker 1>And so no work happens before, so you
+
+00:37:07.430 --> 00:37:09.349
+<v Speaker 1>can use them and there's or you can,
+
+00:37:09.349 --> 00:37:11.990
+<v Speaker 1>like, create them and use them freely. And
+
+00:37:11.990 --> 00:37:14.230
+<v Speaker 1>and if you don't await them or have
+
+00:37:14.230 --> 00:37:16.869
+<v Speaker 1>an executor, then you pay no performance benefits.
+
+00:37:16.869 --> 00:37:19.190
+<v Speaker 1>Obviously, then they're useless, but
+
+00:37:19.665 --> 00:37:21.905
+<v Speaker 1>that's the that's that's the premise. So I
+
+00:37:21.905 --> 00:37:23.825
+<v Speaker 1>think I think it's gotta do more with
+
+00:37:23.825 --> 00:37:24.465
+<v Speaker 1>the
+
+00:37:25.665 --> 00:37:28.065
+<v Speaker 1>with the kind of, like, design constraints that
+
+00:37:28.065 --> 00:37:30.545
+<v Speaker 1>Rust Lang imposes by having that zero cost
+
+00:37:30.545 --> 00:37:31.505
+<v Speaker 1>guarantee.
+
+00:37:32.385 --> 00:37:33.265
+<v Speaker 1>And so that's why
+
+00:37:34.299 --> 00:37:36.380
+<v Speaker 1>it's
+
+00:37:36.380 --> 00:37:38.859
+<v Speaker 1>it's set up in this way. But nothing,
+
+00:37:38.859 --> 00:37:41.260
+<v Speaker 1>like, happens automatically. Whereas, like, Python or whatever,
+
+00:37:41.260 --> 00:37:42.700
+<v Speaker 1>once you start the event loop,
+
+00:37:42.940 --> 00:37:45.420
+<v Speaker 1>it just does its thing. You know? And
+
+00:37:45.420 --> 00:37:47.260
+<v Speaker 1>same with, like, node and others.
+
+00:37:47.740 --> 00:37:48.460
+<v Speaker 1>Alright. Perfect.
+
+00:37:50.125 --> 00:37:50.925
+<v Speaker 1>Cool.
+
+00:37:54.125 --> 00:37:57.164
+<v Speaker 1>Sweet. And so yeah. So that's pretty much
+
+00:37:57.164 --> 00:37:59.325
+<v Speaker 1>on some Tokyo stuff. I was also thinking
+
+00:37:59.325 --> 00:38:00.525
+<v Speaker 1>it would be cool to kind of, like,
+
+00:38:00.525 --> 00:38:01.644
+<v Speaker 1>run through
+
+00:38:03.599 --> 00:38:07.040
+<v Speaker 1>a bunch of stuff around futures themselves just
+
+00:38:07.040 --> 00:38:09.760
+<v Speaker 1>because I pretty much find that interesting and
+
+00:38:09.760 --> 00:38:12.559
+<v Speaker 1>just talking around, like, how they're created, what
+
+00:38:12.559 --> 00:38:13.360
+<v Speaker 1>they do,
+
+00:38:14.640 --> 00:38:16.000
+<v Speaker 1>all of that jazz. Yeah.
+
+00:38:17.025 --> 00:38:18.305
+<v Speaker 1>Let's do that.
+
+00:38:19.744 --> 00:38:20.465
+<v Speaker 1>So
+
+00:38:23.905 --> 00:38:24.385
+<v Speaker 1>k.
+
+00:38:38.920 --> 00:38:39.560
+<v Speaker 1>Sweet.
+
+00:38:40.920 --> 00:38:41.640
+<v Speaker 1>So
+
+00:38:43.800 --> 00:38:45.400
+<v Speaker 1>just give me a sec. Sorry.
+
+00:38:49.265 --> 00:38:50.865
+<v Speaker 1>Cool. Yeah. So, obviously, we've been talking a
+
+00:38:50.865 --> 00:38:52.865
+<v Speaker 1>lot about features and tasks and whatever. And
+
+00:38:52.865 --> 00:38:53.425
+<v Speaker 1>so,
+
+00:38:53.984 --> 00:38:55.744
+<v Speaker 1>yeah, basically, like a feature
+
+00:38:55.984 --> 00:38:57.185
+<v Speaker 1>represents
+
+00:38:58.065 --> 00:39:00.464
+<v Speaker 1>or it's kind of like canonical definition is
+
+00:39:00.464 --> 00:39:02.224
+<v Speaker 1>it represents some work
+
+00:39:04.109 --> 00:39:05.950
+<v Speaker 1>that'll be competed in the future. So it's
+
+00:39:05.950 --> 00:39:07.869
+<v Speaker 1>like some computation that'll be competed in future.
+
+00:39:07.869 --> 00:39:09.790
+<v Speaker 1>Rust is a little bit different purely because
+
+00:39:12.910 --> 00:39:15.630
+<v Speaker 1>that feature, like, it has to be pulled
+
+00:39:15.630 --> 00:39:16.589
+<v Speaker 1>kind of like manually.
+
+00:39:17.135 --> 00:39:18.815
+<v Speaker 1>And so you can see that,
+
+00:39:19.135 --> 00:39:20.015
+<v Speaker 1>let's say
+
+00:39:20.255 --> 00:39:21.935
+<v Speaker 1>and so yeah. Then we have these like
+
+00:39:21.935 --> 00:39:22.895
+<v Speaker 1>async
+
+00:39:24.974 --> 00:39:27.454
+<v Speaker 1>keywords. And so basically, async is just a
+
+00:39:27.454 --> 00:39:28.015
+<v Speaker 1>way
+
+00:39:29.535 --> 00:39:30.415
+<v Speaker 1>to denote
+
+00:39:30.900 --> 00:39:33.299
+<v Speaker 1>a function basic, but it basically just returns
+
+00:39:33.299 --> 00:39:35.220
+<v Speaker 1>the future. So if I do like this,
+
+00:39:35.220 --> 00:39:35.780
+<v Speaker 1>like,
+
+00:39:38.420 --> 00:39:39.859
+<v Speaker 1>this future
+
+00:39:41.380 --> 00:39:42.100
+<v Speaker 1>is
+
+00:39:42.180 --> 00:39:43.859
+<v Speaker 1>some async and just some number, you can
+
+00:39:43.859 --> 00:39:45.940
+<v Speaker 1>see that this return is something that implements
+
+00:39:45.940 --> 00:39:46.420
+<v Speaker 1>future,
+
+00:39:47.355 --> 00:39:48.715
+<v Speaker 1>and its output is
+
+00:39:49.195 --> 00:39:50.315
+<v Speaker 1>is an integer.
+
+00:39:50.475 --> 00:39:52.235
+<v Speaker 1>If you make it something else like unit
+
+00:39:52.235 --> 00:39:54.475
+<v Speaker 1>type, you get this, like, unit type outputs.
+
+00:39:55.435 --> 00:39:57.275
+<v Speaker 1>Let me just use this one. Yeah.
+
+00:39:58.795 --> 00:40:00.315
+<v Speaker 1>And if you do, a string,
+
+00:40:00.635 --> 00:40:03.170
+<v Speaker 1>you'll get an string. So bay and so
+
+00:40:03.250 --> 00:40:06.130
+<v Speaker 1>yeah. A feature in Rust is basically something
+
+00:40:06.130 --> 00:40:08.530
+<v Speaker 1>that's oh, what am I saying? That is
+
+00:40:08.770 --> 00:40:09.250
+<v Speaker 1>is
+
+00:40:12.130 --> 00:40:15.170
+<v Speaker 1>basically something that implements the future traits.
+
+00:40:15.970 --> 00:40:17.250
+<v Speaker 1>And so yeah. In this case,
+
+00:40:18.605 --> 00:40:21.085
+<v Speaker 1>in this case, like, we've got this feature
+
+00:40:21.325 --> 00:40:21.965
+<v Speaker 1>that
+
+00:40:22.125 --> 00:40:24.365
+<v Speaker 1>basically just returns 16
+
+00:40:24.605 --> 00:40:25.885
+<v Speaker 1>here. Yep.
+
+00:40:26.845 --> 00:40:28.684
+<v Speaker 0>Can people that are familiar with the node
+
+00:40:28.684 --> 00:40:31.244
+<v Speaker 0>ecosystem just replace future with promise in their
+
+00:40:31.244 --> 00:40:33.730
+<v Speaker 0>head and it's like the same thing?
+
+00:40:35.010 --> 00:40:36.450
+<v Speaker 1>I think so.
+
+00:40:37.410 --> 00:40:39.090
+<v Speaker 0>It kinda looks that way, so I think
+
+00:40:39.090 --> 00:40:41.330
+<v Speaker 0>I'll I'll just try and do that. I
+
+00:40:42.130 --> 00:40:43.890
+<v Speaker 1>think so. I'm not entirely sure. I don't
+
+00:40:43.890 --> 00:40:46.050
+<v Speaker 1>I don't have too much operating experience with
+
+00:40:46.525 --> 00:40:48.605
+<v Speaker 1>JS or Node JS. Lucky you.
+
+00:40:49.005 --> 00:40:49.725
+<v Speaker 1>Yeah.
+
+00:40:49.805 --> 00:40:51.325
+<v Speaker 1>I avoided that one.
+
+00:40:54.285 --> 00:40:55.805
+<v Speaker 1>Cool. Yeah. So, I mean, we have this
+
+00:40:55.805 --> 00:40:57.165
+<v Speaker 1>feature again,
+
+00:40:57.405 --> 00:40:59.645
+<v Speaker 1>like, you know, we can go and do
+
+00:40:59.645 --> 00:41:01.405
+<v Speaker 1>some work here, and this
+
+00:41:01.890 --> 00:41:03.490
+<v Speaker 1>obviously won't do anything
+
+00:41:03.970 --> 00:41:05.570
+<v Speaker 1>until we await it.
+
+00:41:07.490 --> 00:41:08.530
+<v Speaker 1>Oh, sorry.
+
+00:41:08.930 --> 00:41:09.730
+<v Speaker 1>Cool.
+
+00:41:10.130 --> 00:41:10.930
+<v Speaker 1>So
+
+00:41:14.705 --> 00:41:16.305
+<v Speaker 1>yeah, and so we have this feature. And
+
+00:41:16.305 --> 00:41:17.185
+<v Speaker 1>so, like, a
+
+00:41:17.665 --> 00:41:19.505
+<v Speaker 1>big question I had, like, initially when I
+
+00:41:19.505 --> 00:41:22.065
+<v Speaker 1>started is, like, what exactly is going on
+
+00:41:22.065 --> 00:41:23.505
+<v Speaker 1>with the future and, like, how does it
+
+00:41:23.505 --> 00:41:24.145
+<v Speaker 1>run?
+
+00:41:24.785 --> 00:41:25.505
+<v Speaker 1>So we can actually
+
+00:41:26.170 --> 00:41:28.730
+<v Speaker 1>do some cool stuff here. So let's I
+
+00:41:28.730 --> 00:41:29.530
+<v Speaker 1>just need to
+
+00:41:32.730 --> 00:41:34.890
+<v Speaker 1>just import a bunch of stuff. So
+
+00:41:35.770 --> 00:41:37.850
+<v Speaker 1>let me actually just copy and paste this
+
+00:41:37.850 --> 00:41:39.290
+<v Speaker 1>because this just be way easier.
+
+00:41:40.695 --> 00:41:41.415
+<v Speaker 1>Cool.
+
+00:41:44.215 --> 00:41:45.015
+<v Speaker 1>So
+
+00:41:45.655 --> 00:41:47.015
+<v Speaker 1>let's say you wanted to make so we
+
+00:41:47.015 --> 00:41:49.015
+<v Speaker 1>can make our own feature. It's actually not
+
+00:41:49.015 --> 00:41:51.735
+<v Speaker 1>that difficult to make a very boring feature,
+
+00:41:51.975 --> 00:41:54.055
+<v Speaker 1>so we're gonna just do that. So let's
+
+00:41:54.055 --> 00:41:55.495
+<v Speaker 1>say we have this
+
+00:41:56.660 --> 00:41:57.780
+<v Speaker 1>ending future.
+
+00:41:57.860 --> 00:41:59.460
+<v Speaker 0>Are you gonna tell me that futures are
+
+00:41:59.460 --> 00:42:00.900
+<v Speaker 0>just a tree implementation?
+
+00:42:01.540 --> 00:42:02.580
+<v Speaker 1>Technically,
+
+00:42:02.580 --> 00:42:03.060
+<v Speaker 1>yeah.
+
+00:42:03.860 --> 00:42:06.340
+<v Speaker 0>Everything in Rust is always a tree implementation.
+
+00:42:07.620 --> 00:42:09.860
+<v Speaker 1>Trades are trades are beautiful. They're really they're
+
+00:42:09.860 --> 00:42:10.420
+<v Speaker 1>really great.
+
+00:42:11.255 --> 00:42:13.495
+<v Speaker 1>So there's no there's no wonder.
+
+00:42:13.655 --> 00:42:16.295
+<v Speaker 1>Cool. So we can create a oh, what
+
+00:42:16.295 --> 00:42:17.895
+<v Speaker 1>did I do? Yeah.
+
+00:42:18.535 --> 00:42:20.855
+<v Speaker 1>Yeah. We can create a trade by implementing
+
+00:42:20.855 --> 00:42:23.495
+<v Speaker 1>future for what this thing that we've called
+
+00:42:23.495 --> 00:42:24.375
+<v Speaker 1>pending future.
+
+00:42:27.010 --> 00:42:27.810
+<v Speaker 1>Cool.
+
+00:42:28.290 --> 00:42:30.210
+<v Speaker 1>And this is basically the
+
+00:42:30.770 --> 00:42:31.650
+<v Speaker 1>the
+
+00:42:31.970 --> 00:42:33.170
+<v Speaker 1>structure of that
+
+00:42:33.410 --> 00:42:35.490
+<v Speaker 1>of of the future traits. And so we
+
+00:42:35.490 --> 00:42:37.090
+<v Speaker 1>have to have this top output. This is
+
+00:42:37.090 --> 00:42:39.010
+<v Speaker 1>like an associated top, so we're just gonna
+
+00:42:39.010 --> 00:42:40.210
+<v Speaker 1>return basically nothing.
+
+00:42:42.585 --> 00:42:44.105
+<v Speaker 0>So it's just an implementation
+
+00:42:44.105 --> 00:42:46.185
+<v Speaker 0>of a pull function that checks to see
+
+00:42:46.185 --> 00:42:48.185
+<v Speaker 0>if the work is completed and then returns
+
+00:42:48.185 --> 00:42:48.745
+<v Speaker 0>it?
+
+00:42:49.305 --> 00:42:51.705
+<v Speaker 1>Yeah. Pretty much. Pretty much. Nice. And so
+
+00:42:51.865 --> 00:42:54.105
+<v Speaker 1>okay. Cool. So what'll happen is that when
+
+00:42:54.105 --> 00:42:55.785
+<v Speaker 1>when you pull, it'll return this kind of
+
+00:42:55.785 --> 00:42:57.890
+<v Speaker 1>like pull object here. And this can either
+
+00:42:57.890 --> 00:43:00.370
+<v Speaker 1>be pull pending or pull ready. Those are
+
+00:43:00.370 --> 00:43:02.690
+<v Speaker 1>the two, like, variants. So pending already.
+
+00:43:03.570 --> 00:43:04.370
+<v Speaker 1>And so
+
+00:43:04.690 --> 00:43:06.610
+<v Speaker 1>we're gonna do something, like, really interesting here
+
+00:43:06.610 --> 00:43:08.690
+<v Speaker 1>where we're just gonna return pull pending
+
+00:43:09.425 --> 00:43:10.705
+<v Speaker 1>and, like, prints.
+
+00:43:12.465 --> 00:43:13.745
+<v Speaker 1>I've been pulled.
+
+00:43:14.385 --> 00:43:15.025
+<v Speaker 1>Mhmm.
+
+00:43:15.585 --> 00:43:16.385
+<v Speaker 1>So
+
+00:43:18.145 --> 00:43:21.105
+<v Speaker 1>yeah. And so what'll happen is, like, basically,
+
+00:43:22.545 --> 00:43:23.105
+<v Speaker 1>when the
+
+00:43:23.829 --> 00:43:24.869
+<v Speaker 1>executor
+
+00:43:25.430 --> 00:43:27.270
+<v Speaker 1>runs in your way, the task, it'll basically
+
+00:43:27.270 --> 00:43:29.110
+<v Speaker 1>start pulling your task for you.
+
+00:43:29.750 --> 00:43:30.950
+<v Speaker 1>And then there's, like, a whole lot of
+
+00:43:30.950 --> 00:43:31.910
+<v Speaker 1>details there.
+
+00:43:32.309 --> 00:43:34.950
+<v Speaker 1>So we can make a pending future here.
+
+00:43:39.565 --> 00:43:40.685
+<v Speaker 1>That's
+
+00:43:40.685 --> 00:43:42.445
+<v Speaker 1>the other ring. And
+
+00:43:44.125 --> 00:43:45.085
+<v Speaker 1>the wait. But
+
+00:43:48.045 --> 00:43:50.685
+<v Speaker 1>the interesting thing here is that,
+
+00:43:52.590 --> 00:43:54.990
+<v Speaker 1>basically, we'll see when it runs,
+
+00:43:57.710 --> 00:44:00.590
+<v Speaker 1>whenever that is. Cool. So we've got this,
+
+00:44:00.590 --> 00:44:02.510
+<v Speaker 1>like, I've been pulled, and then now our
+
+00:44:02.510 --> 00:44:05.790
+<v Speaker 1>executors actually hang. So, like, there's nothing nothing's
+
+00:44:05.790 --> 00:44:06.430
+<v Speaker 1>happening.
+
+00:44:06.590 --> 00:44:08.795
+<v Speaker 1>And the reason why is because,
+
+00:44:08.954 --> 00:44:10.795
+<v Speaker 1>as I said earlier, like, we've got this,
+
+00:44:10.795 --> 00:44:12.155
+<v Speaker 1>like, outermost feature,
+
+00:44:12.234 --> 00:44:13.435
+<v Speaker 1>and that feature
+
+00:44:15.994 --> 00:44:17.835
+<v Speaker 1>what's the name of it for? Like
+
+00:44:18.875 --> 00:44:21.035
+<v Speaker 1>oh, it's blocked on that outermost feature. And
+
+00:44:21.035 --> 00:44:23.570
+<v Speaker 1>so this, like, feed and so this one
+
+00:44:23.570 --> 00:44:24.610
+<v Speaker 1>that we've created
+
+00:44:25.010 --> 00:44:25.970
+<v Speaker 1>internally,
+
+00:44:26.210 --> 00:44:28.530
+<v Speaker 1>it has it it never completes. So by
+
+00:44:28.530 --> 00:44:31.410
+<v Speaker 1>having this poll pending, it's basically never completes.
+
+00:44:31.410 --> 00:44:32.050
+<v Speaker 1>And so
+
+00:44:32.290 --> 00:44:35.410
+<v Speaker 1>the outermost feature won't also complete, and therefore,
+
+00:44:35.410 --> 00:44:37.330
+<v Speaker 1>it just hangs, and so nothing happens. So
+
+00:44:37.674 --> 00:44:38.795
+<v Speaker 1>we can also
+
+00:44:39.115 --> 00:44:40.234
+<v Speaker 0>And kinda curious,
+
+00:44:40.234 --> 00:44:42.875
+<v Speaker 0>like Yeah. It only pulled once. Like, I
+
+00:44:42.875 --> 00:44:44.714
+<v Speaker 0>would expect it to maybe to pull more
+
+00:44:44.714 --> 00:44:47.115
+<v Speaker 0>than once. Is that something that's then controlled
+
+00:44:47.115 --> 00:44:48.635
+<v Speaker 0>by the implementation?
+
+00:44:49.115 --> 00:44:51.035
+<v Speaker 1>Yeah. So that that's actually an interesting thing
+
+00:44:51.035 --> 00:44:52.394
+<v Speaker 1>and also like a great
+
+00:44:54.320 --> 00:44:55.600
+<v Speaker 1>or just like a
+
+00:44:56.480 --> 00:44:58.240
+<v Speaker 1>thing that Rust did. So we can actually
+
+00:44:58.240 --> 00:44:59.920
+<v Speaker 1>we can actually we can actually fix that.
+
+00:44:59.920 --> 00:45:00.960
+<v Speaker 1>So let's say,
+
+00:45:02.320 --> 00:45:03.760
+<v Speaker 1>I saw this trick the other day. It's
+
+00:45:03.760 --> 00:45:04.640
+<v Speaker 1>actually cool.
+
+00:45:05.040 --> 00:45:05.360
+<v Speaker 1>So
+
+00:45:07.285 --> 00:45:09.845
+<v Speaker 1>then I can explain it later. Okay. Cool.
+
+00:45:09.845 --> 00:45:11.285
+<v Speaker 1>So if you do this
+
+00:45:12.805 --> 00:45:13.285
+<v Speaker 1>if
+
+00:45:13.685 --> 00:45:15.445
+<v Speaker 1>I think this should work.
+
+00:45:16.565 --> 00:45:17.205
+<v Speaker 1>So
+
+00:45:17.845 --> 00:45:18.645
+<v Speaker 1>in this case,
+
+00:45:19.450 --> 00:45:22.250
+<v Speaker 1>we should see a lot of output here,
+
+00:45:22.250 --> 00:45:22.810
+<v Speaker 1>hopefully.
+
+00:45:23.690 --> 00:45:25.050
+<v Speaker 1>Yeah. You can see There we go. So
+
+00:45:25.050 --> 00:45:26.170
+<v Speaker 0>quick. Yeah. Right?
+
+00:45:28.250 --> 00:45:29.370
+<v Speaker 1>Stop. Kiggle.
+
+00:45:29.530 --> 00:45:31.770
+<v Speaker 0>That's kind of what I I actually expected
+
+00:45:31.770 --> 00:45:33.450
+<v Speaker 0>that behavior by default. So maybe you can
+
+00:45:33.530 --> 00:45:36.224
+<v Speaker 0>Yeah. Walk me through that one. Yeah. Cool.
+
+00:45:36.224 --> 00:45:36.785
+<v Speaker 1>So
+
+00:45:37.585 --> 00:45:39.744
+<v Speaker 1>that's basically like the the way
+
+00:45:42.224 --> 00:45:43.664
+<v Speaker 1>kind of like Rust has set up the
+
+00:45:43.664 --> 00:45:45.905
+<v Speaker 1>system. So the idea is that when
+
+00:45:47.585 --> 00:45:49.825
+<v Speaker 1>a task gets pulled and it doesn't complete,
+
+00:45:50.270 --> 00:45:52.589
+<v Speaker 1>you don't wanna, like, keep pulling it all
+
+00:45:52.589 --> 00:45:54.030
+<v Speaker 1>the time. So you don't wanna have you
+
+00:45:54.030 --> 00:45:55.150
+<v Speaker 1>don't want it to be like this busy
+
+00:45:55.150 --> 00:45:56.910
+<v Speaker 1>dude where it's like, hey. Have you finished?
+
+00:45:56.910 --> 00:45:58.589
+<v Speaker 1>Hey. Have you finished? Hey. Have you finished?
+
+00:45:58.589 --> 00:45:59.790
+<v Speaker 1>And then it keeps saying like, no. I
+
+00:45:59.790 --> 00:46:02.349
+<v Speaker 1>haven't finished. Right? So what it does is
+
+00:46:02.349 --> 00:46:02.990
+<v Speaker 1>that
+
+00:46:03.869 --> 00:46:06.015
+<v Speaker 1>it'll set up so we have these things
+
+00:46:06.015 --> 00:46:06.975
+<v Speaker 1>called wakers,
+
+00:46:07.375 --> 00:46:09.375
+<v Speaker 1>and wakers are basically a way to tell
+
+00:46:09.375 --> 00:46:11.775
+<v Speaker 1>the executor that, like, hey. The thing that
+
+00:46:11.775 --> 00:46:13.615
+<v Speaker 1>I've been waiting for is now complete. I'm
+
+00:46:13.615 --> 00:46:16.255
+<v Speaker 1>ready to be scheduled, so let me run
+
+00:46:16.575 --> 00:46:17.214
+<v Speaker 1>effectively.
+
+00:46:17.840 --> 00:46:20.880
+<v Speaker 1>And so what'll happen is that your task
+
+00:46:20.880 --> 00:46:22.480
+<v Speaker 1>will run and then it'll,
+
+00:46:23.120 --> 00:46:25.520
+<v Speaker 1>like, yield or say, you know, it's pending.
+
+00:46:26.080 --> 00:46:26.640
+<v Speaker 1>Then
+
+00:46:27.040 --> 00:46:29.200
+<v Speaker 1>when it's ready to run again, it will
+
+00:46:29.200 --> 00:46:31.755
+<v Speaker 1>call this, like, wake object or it'll get
+
+00:46:31.755 --> 00:46:33.595
+<v Speaker 1>this wake object and call wake,
+
+00:46:33.835 --> 00:46:36.234
+<v Speaker 1>and that'll reschedule you back onto the executor.
+
+00:46:36.234 --> 00:46:36.795
+<v Speaker 1>So
+
+00:46:37.194 --> 00:46:40.315
+<v Speaker 1>in this case, with Tokyo, for instance, because
+
+00:46:40.315 --> 00:46:41.994
+<v Speaker 1>we didn't reschedule
+
+00:46:41.994 --> 00:46:44.635
+<v Speaker 1>it, nothing happens, basically. It just
+
+00:46:45.194 --> 00:46:46.155
+<v Speaker 1>it just, like,
+
+00:46:47.079 --> 00:46:49.000
+<v Speaker 1>we've called it once, and then it never
+
+00:46:49.000 --> 00:46:51.400
+<v Speaker 1>tells Tokyo again that, like, I'm I'm ready
+
+00:46:51.400 --> 00:46:53.559
+<v Speaker 1>to be pulled again. And so nothing happens
+
+00:46:53.559 --> 00:46:55.160
+<v Speaker 1>until that happen, like, until
+
+00:46:56.680 --> 00:46:59.000
+<v Speaker 1>you you wake your task, basically, or your
+
+00:46:59.000 --> 00:46:59.319
+<v Speaker 1>future.
+
+00:47:00.545 --> 00:47:03.345
+<v Speaker 0>Okay. Got it. Thanks. That makes sense. It
+
+00:47:03.345 --> 00:47:06.545
+<v Speaker 1>does. Cool. Cool. So so yeah. So that
+
+00:47:06.545 --> 00:47:07.585
+<v Speaker 1>that basically
+
+00:47:08.705 --> 00:47:09.265
+<v Speaker 1>that's
+
+00:47:10.705 --> 00:47:11.185
+<v Speaker 1>and
+
+00:47:13.425 --> 00:47:14.145
+<v Speaker 1>where was that?
+
+00:47:14.740 --> 00:47:16.580
+<v Speaker 1>Yeah. Cool. So oh, okay. Cool. So now
+
+00:47:16.580 --> 00:47:18.340
+<v Speaker 1>we can also have, this
+
+00:47:18.740 --> 00:47:21.060
+<v Speaker 1>we can just return ready as well.
+
+00:47:21.300 --> 00:47:22.100
+<v Speaker 1>And so
+
+00:47:22.340 --> 00:47:24.100
+<v Speaker 1>this will do what you would expect it
+
+00:47:24.100 --> 00:47:25.780
+<v Speaker 1>to. Like, it'll print out this. I've been
+
+00:47:25.780 --> 00:47:27.620
+<v Speaker 1>pulled and then print hello. So
+
+00:47:33.355 --> 00:47:35.835
+<v Speaker 1>cool. Yeah. So so now we've got this
+
+00:47:35.835 --> 00:47:36.795
+<v Speaker 1>feature that
+
+00:47:36.955 --> 00:47:39.195
+<v Speaker 1>basically does exactly what we wanted to. And
+
+00:47:39.195 --> 00:47:41.435
+<v Speaker 1>it's actually not that complicated as as we've
+
+00:47:41.435 --> 00:47:43.595
+<v Speaker 1>seen here. Like, we've been able to create
+
+00:47:43.595 --> 00:47:43.835
+<v Speaker 1>one,
+
+00:47:45.410 --> 00:47:46.610
+<v Speaker 1>you know, without
+
+00:47:46.850 --> 00:47:49.010
+<v Speaker 1>without too much ceremony. Obviously,
+
+00:47:50.050 --> 00:47:52.450
+<v Speaker 1>real shooters are way more complicated.
+
+00:47:54.610 --> 00:47:56.690
+<v Speaker 1>And so yeah. And so that's pretty much
+
+00:47:56.690 --> 00:47:57.170
+<v Speaker 1>like
+
+00:47:57.744 --> 00:48:01.185
+<v Speaker 1>the that's on on on having or creating
+
+00:48:01.185 --> 00:48:02.385
+<v Speaker 1>your own features
+
+00:48:03.265 --> 00:48:04.705
+<v Speaker 1>and then wake us.
+
+00:48:05.984 --> 00:48:07.185
+<v Speaker 1>Cool. I don't know if you have any
+
+00:48:07.185 --> 00:48:07.985
+<v Speaker 1>more questions.
+
+00:48:08.945 --> 00:48:10.705
+<v Speaker 0>Yeah. I I guess so. Like,
+
+00:48:11.400 --> 00:48:13.559
+<v Speaker 0>you know, people wouldn't really be expected to
+
+00:48:13.559 --> 00:48:14.839
+<v Speaker 0>implement a few shares on their own. In
+
+00:48:14.839 --> 00:48:16.920
+<v Speaker 0>fact, it'd probably be discouraged. Right? Just use
+
+00:48:17.160 --> 00:48:17.880
+<v Speaker 0>Yeah.
+
+00:48:18.280 --> 00:48:20.280
+<v Speaker 0>Just use what is already provided.
+
+00:48:21.240 --> 00:48:22.600
+<v Speaker 1>Yeah. Pretty much.
+
+00:48:23.000 --> 00:48:23.400
+<v Speaker 0>Okay.
+
+00:48:24.275 --> 00:48:26.195
+<v Speaker 1>Yeah. And and that they I mean, there
+
+00:48:26.195 --> 00:48:28.195
+<v Speaker 1>might be there probably are cases where, like,
+
+00:48:28.195 --> 00:48:30.515
+<v Speaker 1>it makes sense to create your own. But,
+
+00:48:30.515 --> 00:48:32.675
+<v Speaker 1>like, most most likely you would just use
+
+00:48:32.675 --> 00:48:35.235
+<v Speaker 1>what's in the ecosystem already or provided by,
+
+00:48:35.235 --> 00:48:36.355
+<v Speaker 1>like, the library itself.
+
+00:48:36.990 --> 00:48:38.110
+<v Speaker 0>It's
+
+00:48:38.110 --> 00:48:40.190
+<v Speaker 0>it's nice to see how it works all
+
+00:48:40.190 --> 00:48:42.430
+<v Speaker 0>the way down. Like, you know, now, hopefully,
+
+00:48:42.430 --> 00:48:43.950
+<v Speaker 0>people have the knowledge that they can add
+
+00:48:43.950 --> 00:48:46.270
+<v Speaker 0>the Tokyo Executor to their applications.
+
+00:48:46.830 --> 00:48:48.190
+<v Speaker 0>They, you know, they know that they can
+
+00:48:48.190 --> 00:48:50.355
+<v Speaker 0>then go and create features or use functions
+
+00:48:50.355 --> 00:48:52.355
+<v Speaker 0>that return features and how to block and
+
+00:48:52.355 --> 00:48:53.955
+<v Speaker 0>away on these things or let them run
+
+00:48:53.955 --> 00:48:54.995
+<v Speaker 0>asynchronously. And
+
+00:48:55.475 --> 00:48:56.275
+<v Speaker 0>just
+
+00:48:56.275 --> 00:48:58.595
+<v Speaker 0>seeing that it's just a tree implementation with
+
+00:48:58.595 --> 00:49:00.195
+<v Speaker 0>a pull function on it was was quite
+
+00:49:00.195 --> 00:49:00.915
+<v Speaker 0>nice. Like just
+
+00:49:02.040 --> 00:49:03.640
+<v Speaker 0>I mean, I should have thought about it
+
+00:49:03.640 --> 00:49:05.160
+<v Speaker 0>and then, of course, it's Rust. Of course,
+
+00:49:05.160 --> 00:49:06.920
+<v Speaker 0>it's gonna be a trick, but, you know
+
+00:49:07.080 --> 00:49:09.320
+<v Speaker 1>Yes. Yeah. The the Seeing
+
+00:49:10.120 --> 00:49:11.720
+<v Speaker 1>it and it's just really cool. I like
+
+00:49:11.720 --> 00:49:12.520
+<v Speaker 0>that a lot.
+
+00:49:13.000 --> 00:49:15.000
+<v Speaker 1>So It really is cool. I mean, like,
+
+00:49:15.000 --> 00:49:16.600
+<v Speaker 1>I think they've done quite a
+
+00:49:17.285 --> 00:49:19.365
+<v Speaker 1>quite a good job of of the of
+
+00:49:19.365 --> 00:49:22.005
+<v Speaker 1>the implementation details and, like, I mean, like,
+
+00:49:22.005 --> 00:49:24.645
+<v Speaker 1>it works. It's also pretty exciting to to
+
+00:49:24.645 --> 00:49:26.885
+<v Speaker 1>do it yourself even if it's something, like,
+
+00:49:27.125 --> 00:49:28.645
+<v Speaker 1>very small like this.
+
+00:49:29.205 --> 00:49:30.805
+<v Speaker 1>Only because it's been seemed like
+
+00:49:31.240 --> 00:49:32.040
+<v Speaker 1>crazy.
+
+00:49:32.040 --> 00:49:33.640
+<v Speaker 1>It's, like, nice to see or to know
+
+00:49:33.640 --> 00:49:36.200
+<v Speaker 1>that it's not the craziest amount of magic.
+
+00:49:36.200 --> 00:49:38.600
+<v Speaker 1>Like, you can do something very simple and,
+
+00:49:38.600 --> 00:49:40.120
+<v Speaker 1>like, put it up your own thing.
+
+00:49:41.400 --> 00:49:42.760
+<v Speaker 1>Yeah. Which is yeah.
+
+00:49:43.160 --> 00:49:44.200
+<v Speaker 1>Which is pretty cool.
+
+00:49:44.600 --> 00:49:45.480
+<v Speaker 1>Cool. So,
+
+00:49:46.365 --> 00:49:48.925
+<v Speaker 1>like, to kind of, like, end off
+
+00:49:50.365 --> 00:49:51.805
+<v Speaker 1>well, it's not end off because it's gonna
+
+00:49:51.805 --> 00:49:54.285
+<v Speaker 1>still take some take some time, but thought
+
+00:49:54.285 --> 00:49:55.565
+<v Speaker 1>it would be cool to, like,
+
+00:49:56.365 --> 00:49:57.405
+<v Speaker 1>run through.
+
+00:49:57.725 --> 00:49:59.885
+<v Speaker 1>So Tokyo has its own
+
+00:50:01.840 --> 00:50:03.440
+<v Speaker 1>well, it has, like, a tutorial on, like,
+
+00:50:03.440 --> 00:50:04.800
+<v Speaker 1>making your own executor.
+
+00:50:04.800 --> 00:50:05.760
+<v Speaker 1>And so I thought it would be cool
+
+00:50:05.760 --> 00:50:07.520
+<v Speaker 1>to just kind of, like, walk through that
+
+00:50:08.560 --> 00:50:10.560
+<v Speaker 1>just because it, again, like, gives a bit
+
+00:50:10.560 --> 00:50:12.320
+<v Speaker 1>more context into, like, how things are put
+
+00:50:12.320 --> 00:50:12.720
+<v Speaker 1>together.
+
+00:50:13.155 --> 00:50:15.955
+<v Speaker 1>Oh, definitely. Like, kinda, like, super interesting.
+
+00:50:17.155 --> 00:50:18.035
+<v Speaker 1>Cool. So
+
+00:50:18.515 --> 00:50:20.995
+<v Speaker 1>we'll make a new file here.
+
+00:50:23.395 --> 00:50:24.115
+<v Speaker 1>Cool.
+
+00:50:24.195 --> 00:50:26.115
+<v Speaker 1>So I'm gonna be jumping back and forth
+
+00:50:26.115 --> 00:50:29.570
+<v Speaker 1>just, like, copying code from from that tutorial.
+
+00:50:29.570 --> 00:50:32.130
+<v Speaker 1>So that's on, like it's on the it's
+
+00:50:32.130 --> 00:50:33.170
+<v Speaker 1>on the website. Like, if you go to
+
+00:50:33.170 --> 00:50:34.050
+<v Speaker 1>Tokyo.rs
+
+00:50:34.050 --> 00:50:35.330
+<v Speaker 1>and you go to, like, the I think
+
+00:50:35.330 --> 00:50:36.130
+<v Speaker 1>they've got
+
+00:50:36.690 --> 00:50:39.490
+<v Speaker 1>something. Yeah. Learn. They have a, like, a
+
+00:50:41.135 --> 00:50:43.135
+<v Speaker 1>tab called learning. You go to async in-depth.
+
+00:50:43.135 --> 00:50:45.055
+<v Speaker 1>They have a tutorial there.
+
+00:50:45.375 --> 00:50:47.935
+<v Speaker 1>So yeah. I mean, it's it's really I
+
+00:50:47.935 --> 00:50:49.855
+<v Speaker 1>encourage everyone if you're, like, interested in the
+
+00:50:49.855 --> 00:50:51.535
+<v Speaker 1>topic to read through it because it's really
+
+00:50:51.535 --> 00:50:53.940
+<v Speaker 1>it's really interesting. And, I mean, it's obviously
+
+00:50:53.940 --> 00:50:56.340
+<v Speaker 1>a very simple executor, but it's
+
+00:50:56.820 --> 00:50:58.020
+<v Speaker 1>not, like,
+
+00:50:58.260 --> 00:51:00.420
+<v Speaker 1>nearly as complicated as you would have thought
+
+00:51:00.420 --> 00:51:01.860
+<v Speaker 1>it would be, surprisingly.
+
+00:51:04.260 --> 00:51:05.460
+<v Speaker 0>It's it's simple
+
+00:51:06.115 --> 00:51:08.515
+<v Speaker 0>simple examples that teach us. Right? I mean,
+
+00:51:08.515 --> 00:51:10.515
+<v Speaker 0>in a complex example, I'm gonna walk away
+
+00:51:10.515 --> 00:51:12.675
+<v Speaker 0>more confused than than I came along. But,
+
+00:51:12.675 --> 00:51:14.515
+<v Speaker 0>yeah, simple works well for me. I like
+
+00:51:14.515 --> 00:51:15.235
+<v Speaker 0>simple.
+
+00:51:15.555 --> 00:51:18.275
+<v Speaker 1>Yeah. No. Same. Yeah. Same. Yeah. Cool.
+
+00:51:18.915 --> 00:51:20.595
+<v Speaker 1>Just give me a sec. Yeah. Take your
+
+00:51:20.595 --> 00:51:20.835
+<v Speaker 0>time.
+
+00:51:21.760 --> 00:51:22.560
+<v Speaker 1>Cool.
+
+00:51:29.200 --> 00:51:30.720
+<v Speaker 1>Alright. Okay. Cool.
+
+00:51:33.120 --> 00:51:33.520
+<v Speaker 1>Sweet.
+
+00:51:44.225 --> 00:51:45.905
+<v Speaker 1>Cool. So yeah. So,
+
+00:51:46.145 --> 00:51:47.585
+<v Speaker 1>yeah, off the
+
+00:51:48.065 --> 00:51:50.625
+<v Speaker 1>off the bat, we'll have this, like so
+
+00:51:49.850 --> 00:51:51.690
+<v Speaker 1>we're gonna we're gonna start off I'll I'll
+
+00:51:51.690 --> 00:51:52.970
+<v Speaker 1>kind of go through it, like,
+
+00:51:53.690 --> 00:51:55.770
+<v Speaker 1>you start off with this, like, executor,
+
+00:51:56.490 --> 00:51:57.930
+<v Speaker 1>and then you have and then we'll kind
+
+00:51:57.930 --> 00:52:00.090
+<v Speaker 1>of, like, build all the constructs going down,
+
+00:52:01.610 --> 00:52:03.690
+<v Speaker 1>which will be fun. Let me just see
+
+00:52:03.690 --> 00:52:04.810
+<v Speaker 1>if I have everything I need here.
+
+00:52:06.224 --> 00:52:09.265
+<v Speaker 1>Cool. So, yeah, just off the cuff, we'll
+
+00:52:09.265 --> 00:52:10.225
+<v Speaker 1>have this
+
+00:52:10.464 --> 00:52:11.425
+<v Speaker 1>tequila.
+
+00:52:11.825 --> 00:52:12.305
+<v Speaker 1>And
+
+00:52:15.505 --> 00:52:16.704
+<v Speaker 1>that's
+
+00:52:17.920 --> 00:52:19.200
+<v Speaker 1>so so yeah.
+
+00:52:19.760 --> 00:52:21.600
+<v Speaker 1>First thing that we'll have is, a a
+
+00:52:21.600 --> 00:52:23.520
+<v Speaker 1>task queue, and then
+
+00:52:24.480 --> 00:52:25.440
+<v Speaker 1>let's say
+
+00:52:27.120 --> 00:52:28.800
+<v Speaker 1>trying to think of a of a descriptive
+
+00:52:28.800 --> 00:52:29.440
+<v Speaker 1>name for this.
+
+00:52:31.315 --> 00:52:32.515
+<v Speaker 1>Send to
+
+00:52:33.395 --> 00:52:34.995
+<v Speaker 1>execute a queue. Alright.
+
+00:52:35.635 --> 00:52:38.195
+<v Speaker 1>So we're just gonna use a cross beam.
+
+00:52:38.195 --> 00:52:39.315
+<v Speaker 1>So cross beam is like
+
+00:52:40.355 --> 00:52:41.155
+<v Speaker 1>actually,
+
+00:52:41.475 --> 00:52:43.155
+<v Speaker 1>I don't have a good description of cross
+
+00:52:43.155 --> 00:52:44.410
+<v Speaker 1>beam myself. I'm just
+
+00:52:45.690 --> 00:52:47.690
+<v Speaker 1>I was actually just going let's see if
+
+00:52:47.690 --> 00:52:49.290
+<v Speaker 1>it gives us no. It won't give us
+
+00:52:49.290 --> 00:52:49.930
+<v Speaker 1>anything.
+
+00:52:50.570 --> 00:52:51.130
+<v Speaker 1>Wait.
+
+00:53:04.395 --> 00:53:06.875
+<v Speaker 0>Yeah. That gets me every time we've rust
+
+00:53:06.875 --> 00:53:09.675
+<v Speaker 0>analyze. If you don't use the code, it
+
+00:53:09.675 --> 00:53:11.355
+<v Speaker 0>doesn't get all complete or anything.
+
+00:53:11.915 --> 00:53:14.280
+<v Speaker 1>Yeah. That happens throughout the time. Right. So
+
+00:53:14.680 --> 00:53:16.119
+<v Speaker 1>we've got tools
+
+00:53:16.440 --> 00:53:18.920
+<v Speaker 1>for concurrent programming. That's what cross beam is.
+
+00:53:19.160 --> 00:53:20.839
+<v Speaker 0>Okay. Perfect. I know exactly what that is
+
+00:53:20.839 --> 00:53:21.400
+<v Speaker 0>now.
+
+00:53:23.240 --> 00:53:25.640
+<v Speaker 1>Better than any description I could give you,
+
+00:53:25.640 --> 00:53:27.225
+<v Speaker 1>so we're just gonna go with that.
+
+00:53:30.185 --> 00:53:32.585
+<v Speaker 1>Cool. So, yeah, we've got this cross beam
+
+00:53:32.585 --> 00:53:35.785
+<v Speaker 1>channel, and so this will just be a
+
+00:53:36.585 --> 00:53:38.265
+<v Speaker 1>so there's gonna be some details here that
+
+00:53:38.265 --> 00:53:40.585
+<v Speaker 1>I I might just, skip over, honestly,
+
+00:53:41.225 --> 00:53:43.000
+<v Speaker 1>but it's cool.
+
+00:53:43.400 --> 00:53:44.119
+<v Speaker 1>So
+
+00:53:48.920 --> 00:53:51.720
+<v Speaker 1>awesome. Let me put this, like, send the
+
+00:53:54.279 --> 00:53:55.480
+<v Speaker 0>So it's starting to look a bit more
+
+00:53:55.480 --> 00:53:56.039
+<v Speaker 0>like go now.
+
+00:53:57.255 --> 00:53:58.615
+<v Speaker 1>Yeah. Yeah.
+
+00:53:59.414 --> 00:54:00.695
+<v Speaker 1>Oh, in channels.
+
+00:54:01.015 --> 00:54:01.655
+<v Speaker 1>So
+
+00:54:02.775 --> 00:54:03.815
+<v Speaker 1>yeah. So we have this.
+
+00:54:24.575 --> 00:54:27.215
+<v Speaker 1>Cool. So yeah. So for this executor,
+
+00:54:27.375 --> 00:54:28.735
+<v Speaker 1>basically, we have
+
+00:54:29.215 --> 00:54:31.135
+<v Speaker 1>so this task will will kind of, like,
+
+00:54:31.135 --> 00:54:31.775
+<v Speaker 1>create
+
+00:54:32.575 --> 00:54:34.255
+<v Speaker 1>a thing next. But,
+
+00:54:35.055 --> 00:54:36.815
+<v Speaker 1>basically, the idea here is that you have
+
+00:54:36.815 --> 00:54:38.495
+<v Speaker 1>an executor. And in our case,
+
+00:54:39.080 --> 00:54:40.920
+<v Speaker 1>we have this task queue. So this is
+
+00:54:40.920 --> 00:54:42.840
+<v Speaker 1>the the, like, queue of task that the
+
+00:54:42.840 --> 00:54:45.080
+<v Speaker 1>executor has to run. So when task gets
+
+00:54:45.080 --> 00:54:47.960
+<v Speaker 1>scheduled on, obviously, backlog the queue, and then,
+
+00:54:50.200 --> 00:54:51.880
+<v Speaker 1>you know, it'll just go through here to
+
+00:54:51.880 --> 00:54:53.785
+<v Speaker 1>figure out, like, what to run next. And
+
+00:54:53.785 --> 00:54:56.105
+<v Speaker 1>then this send to execute a queue, I'm
+
+00:54:56.105 --> 00:54:58.025
+<v Speaker 1>just calling it this just because it's easy
+
+00:54:58.025 --> 00:54:59.945
+<v Speaker 1>to understand, like, exactly what it does. But,
+
+00:54:59.945 --> 00:55:00.505
+<v Speaker 1>basically,
+
+00:55:00.745 --> 00:55:02.585
+<v Speaker 1>we're gonna this is the sending
+
+00:55:02.745 --> 00:55:04.425
+<v Speaker 1>side of this of the channel.
+
+00:55:05.305 --> 00:55:07.145
+<v Speaker 1>And so what we want is for a
+
+00:55:07.145 --> 00:55:08.985
+<v Speaker 1>task to be able to, like, send
+
+00:55:10.000 --> 00:55:10.960
+<v Speaker 1>itself
+
+00:55:11.200 --> 00:55:12.000
+<v Speaker 1>onto
+
+00:55:12.080 --> 00:55:13.360
+<v Speaker 1>the task queue.
+
+00:55:14.320 --> 00:55:16.320
+<v Speaker 1>And so we're gonna just, like, pass this
+
+00:55:16.320 --> 00:55:18.080
+<v Speaker 1>down into the task itself
+
+00:55:18.480 --> 00:55:20.400
+<v Speaker 1>in essence. And so that's kind of, like,
+
+00:55:20.400 --> 00:55:21.360
+<v Speaker 1>why it's there.
+
+00:55:21.840 --> 00:55:22.560
+<v Speaker 1>So
+
+00:55:22.755 --> 00:55:26.914
+<v Speaker 1>just adding, like, some methods here. So we're
+
+00:55:26.914 --> 00:55:28.915
+<v Speaker 1>gonna add this in.
+
+00:55:30.194 --> 00:55:31.234
+<v Speaker 1>Cool. So
+
+00:55:31.634 --> 00:55:33.234
+<v Speaker 1>just creating a new
+
+00:55:33.875 --> 00:55:35.154
+<v Speaker 1>new executor.
+
+00:55:38.870 --> 00:55:39.750
+<v Speaker 1>Also
+
+00:55:45.510 --> 00:55:46.870
+<v Speaker 1>so send
+
+00:55:46.870 --> 00:55:48.230
+<v Speaker 1>to executed key.
+
+00:55:55.244 --> 00:55:55.885
+<v Speaker 1>So
+
+00:56:00.045 --> 00:56:01.565
+<v Speaker 1>this just created your
+
+00:56:02.765 --> 00:56:05.325
+<v Speaker 1>so this just creates the
+
+00:56:06.050 --> 00:56:08.050
+<v Speaker 1>unbounded channel, so there's
+
+00:56:08.050 --> 00:56:09.490
+<v Speaker 1>no, like, capacity
+
+00:56:11.010 --> 00:56:13.410
+<v Speaker 1>or yeah. No, like, set capacity for it,
+
+00:56:13.410 --> 00:56:14.050
+<v Speaker 1>basically.
+
+00:56:14.610 --> 00:56:16.210
+<v Speaker 1>And then we're just gonna
+
+00:56:17.810 --> 00:56:18.770
+<v Speaker 1>turn that. So
+
+00:56:24.424 --> 00:56:26.425
+<v Speaker 1>Then
+
+00:56:30.984 --> 00:56:33.144
+<v Speaker 1>we have this function called run,
+
+00:56:38.310 --> 00:56:39.190
+<v Speaker 1>which
+
+00:56:39.670 --> 00:56:42.069
+<v Speaker 1>basically was the it's gonna be our entry
+
+00:56:42.069 --> 00:56:44.550
+<v Speaker 1>point. So we're gonna go, like, execute a
+
+00:56:44.550 --> 00:56:47.270
+<v Speaker 1>dot run, and it should basically run all
+
+00:56:47.270 --> 00:56:48.710
+<v Speaker 1>the parts that are there.
+
+00:56:49.270 --> 00:56:50.310
+<v Speaker 1>So
+
+00:56:50.615 --> 00:56:52.295
+<v Speaker 1>this looks
+
+00:56:52.295 --> 00:56:53.095
+<v Speaker 1>like
+
+00:56:54.135 --> 00:56:55.255
+<v Speaker 1>task queue.
+
+00:56:59.015 --> 00:57:00.135
+<v Speaker 1>Even then,
+
+00:57:00.694 --> 00:57:04.090
+<v Speaker 1>they're gonna pull the task itself. So here,
+
+00:57:04.090 --> 00:57:06.490
+<v Speaker 1>all we're gonna do is just, like, run
+
+00:57:06.490 --> 00:57:09.370
+<v Speaker 1>through each task once it's received
+
+00:57:10.330 --> 00:57:12.410
+<v Speaker 1>in the queue and then just pull that
+
+00:57:12.410 --> 00:57:13.050
+<v Speaker 1>task
+
+00:57:13.930 --> 00:57:14.890
+<v Speaker 1>until
+
+00:57:14.890 --> 00:57:16.410
+<v Speaker 1>until it resolves, basically.
+
+00:57:18.565 --> 00:57:19.605
+<v Speaker 1>And then
+
+00:57:22.005 --> 00:57:23.125
+<v Speaker 1>last function.
+
+00:57:37.390 --> 00:57:38.190
+<v Speaker 1>Stuff
+
+00:57:38.190 --> 00:57:39.470
+<v Speaker 1>here. So this
+
+00:57:41.710 --> 00:57:44.190
+<v Speaker 1>actually, you need to figure out exactly why.
+
+00:57:57.955 --> 00:57:59.315
+<v Speaker 1>Oh, so for
+
+00:57:59.475 --> 00:58:01.235
+<v Speaker 1>I mean, this is just a tutorial, so
+
+00:58:01.235 --> 00:58:03.599
+<v Speaker 1>I'm just kinda, like, copying it from there.
+
+00:58:03.760 --> 00:58:05.920
+<v Speaker 1>I'm just typing it up just so everyone
+
+00:58:05.920 --> 00:58:08.880
+<v Speaker 1>can can play along or follow along.
+
+00:58:10.160 --> 00:58:12.319
+<v Speaker 1>But, yeah, it's got, like, the so this
+
+00:58:12.319 --> 00:58:13.599
+<v Speaker 1>is the kinda, like, the one that trade
+
+00:58:13.599 --> 00:58:15.519
+<v Speaker 1>bounce sort of well, yeah, the trade bounce.
+
+00:58:15.615 --> 00:58:18.175
+<v Speaker 1>It's gonna be sent, I think, because of
+
+00:58:18.175 --> 00:58:20.815
+<v Speaker 1>cross beam channel needs to be sent. And
+
+00:58:20.815 --> 00:58:21.455
+<v Speaker 1>then
+
+00:58:22.015 --> 00:58:24.255
+<v Speaker 1>this static, I'm not entirely sure. I'm not
+
+00:58:24.255 --> 00:58:26.975
+<v Speaker 1>gonna lie. That's something I haven't I haven't
+
+00:58:26.975 --> 00:58:29.215
+<v Speaker 1>wrapped my head around entirely,
+
+00:58:29.215 --> 00:58:32.020
+<v Speaker 1>but I have a very strong feeling
+
+00:58:32.660 --> 00:58:33.300
+<v Speaker 1>that
+
+00:58:35.059 --> 00:58:36.420
+<v Speaker 1>it's got to do with
+
+00:58:38.420 --> 00:58:39.940
+<v Speaker 1>actually, it probably doesn't have to do with
+
+00:58:39.940 --> 00:58:42.900
+<v Speaker 1>penny. It might. It might. But, yeah, that
+
+00:58:43.059 --> 00:58:45.059
+<v Speaker 1>that's something I'm yet to
+
+00:58:45.405 --> 00:58:47.965
+<v Speaker 1>yet to figure out entirely. And so Yeah.
+
+00:58:47.965 --> 00:58:50.525
+<v Speaker 0>I just throw lifelines around whenever things don't
+
+00:58:50.525 --> 00:58:52.365
+<v Speaker 0>compare and offer the best. I'm just like,
+
+00:58:52.365 --> 00:58:54.445
+<v Speaker 0>yeah. Sure. Static. Go for it. Does it
+
+00:58:54.445 --> 00:58:55.725
+<v Speaker 0>work? Yeah. Done.
+
+00:58:57.645 --> 00:58:58.605
+<v Speaker 1>Literally.
+
+00:58:59.245 --> 00:59:01.790
+<v Speaker 1>Oh, no. This is the wrong thing to
+
+00:59:04.590 --> 00:59:05.310
+<v Speaker 0>So
+
+00:59:06.590 --> 00:59:08.030
+<v Speaker 0>it seems here, like,
+
+00:59:08.990 --> 00:59:11.550
+<v Speaker 0>what an executor is is is send and
+
+00:59:11.550 --> 00:59:14.030
+<v Speaker 0>receive channel with a couple of functions to
+
+00:59:14.030 --> 00:59:16.190
+<v Speaker 0>add stuff to the queue and then to
+
+00:59:16.190 --> 00:59:18.494
+<v Speaker 0>run the queue. Yeah. Like yeah. When you
+
+00:59:18.494 --> 00:59:20.255
+<v Speaker 0>break it down like this, you're kinda like,
+
+00:59:20.255 --> 00:59:22.015
+<v Speaker 0>this this makes sense. Like
+
+00:59:24.175 --> 00:59:26.415
+<v Speaker 1>That's really cool. It's really cool. Obviously, this
+
+00:59:26.415 --> 00:59:28.895
+<v Speaker 1>is very watered down, but nonetheless, I mean,
+
+00:59:28.895 --> 00:59:30.575
+<v Speaker 1>that's it's basically like the premise
+
+00:59:31.880 --> 00:59:33.800
+<v Speaker 1>of what's going on. So so yeah. So
+
+00:59:33.800 --> 00:59:34.680
+<v Speaker 1>now we have
+
+00:59:36.200 --> 00:59:38.360
+<v Speaker 1>our executor, yeah, with the queue.
+
+00:59:38.600 --> 00:59:40.120
+<v Speaker 1>And then you can see here in the
+
+00:59:40.120 --> 00:59:41.240
+<v Speaker 1>spawn function,
+
+00:59:41.560 --> 00:59:42.600
+<v Speaker 1>we basically
+
+00:59:43.320 --> 00:59:46.125
+<v Speaker 1>pass this, like, send to exit. So, okay,
+
+00:59:46.125 --> 00:59:48.205
+<v Speaker 1>a task firstly, like, wraps a feature and
+
+00:59:48.205 --> 00:59:49.965
+<v Speaker 1>adds a little bit of functionality to it
+
+00:59:49.965 --> 00:59:52.125
+<v Speaker 1>on, like, state management, I guess. And then
+
+00:59:52.125 --> 00:59:54.365
+<v Speaker 1>we're passing this, like, send to execute a
+
+00:59:54.365 --> 00:59:54.765
+<v Speaker 1>queue.
+
+00:59:58.740 --> 01:00:00.020
+<v Speaker 1>What's the number for?
+
+01:00:02.820 --> 01:00:04.180
+<v Speaker 1>Like, sender, I guess.
+
+01:00:05.300 --> 01:00:05.860
+<v Speaker 1>And
+
+01:00:06.180 --> 01:00:08.020
+<v Speaker 1>this the task will be able to use
+
+01:00:08.020 --> 01:00:10.100
+<v Speaker 1>to basically, like, reschedule
+
+01:00:10.100 --> 01:00:11.300
+<v Speaker 1>itself onto the queue.
+
+01:00:11.895 --> 01:00:12.535
+<v Speaker 1>So
+
+01:00:13.095 --> 01:00:14.535
+<v Speaker 1>cool. So that's that.
+
+01:00:14.935 --> 01:00:17.655
+<v Speaker 1>We can then go on to, like, implementing
+
+01:00:17.655 --> 01:00:20.855
+<v Speaker 1>our task. So, yeah, I'm also just gonna
+
+01:00:20.855 --> 01:00:22.535
+<v Speaker 1>copy this
+
+01:00:22.535 --> 01:00:23.575
+<v Speaker 1>in. So
+
+01:00:26.130 --> 01:00:26.850
+<v Speaker 1>cool.
+
+01:00:29.650 --> 01:00:30.210
+<v Speaker 1>Alright.
+
+01:00:31.089 --> 01:00:32.770
+<v Speaker 1>Alright. Let me actually just make a
+
+01:00:36.465 --> 01:00:55.745
+<v Speaker 1>So
+
+01:00:53.830 --> 01:00:55.670
+<v Speaker 0>Will that use statement work with a mod
+
+01:00:55.670 --> 01:00:56.390
+<v Speaker 0>statement?
+
+01:00:58.390 --> 01:00:59.190
+<v Speaker 1>Sorry?
+
+01:00:59.670 --> 01:01:02.710
+<v Speaker 0>You said use create task task, but without
+
+01:01:02.710 --> 01:01:03.190
+<v Speaker 0>a mod.
+
+01:01:04.265 --> 01:01:05.785
+<v Speaker 0>Does that work? Yeah.
+
+01:01:05.785 --> 01:01:07.305
+<v Speaker 1>It does work. As far, I mean, as
+
+01:01:07.305 --> 01:01:08.185
+<v Speaker 1>far as I know.
+
+01:01:08.985 --> 01:01:09.785
+<v Speaker 1>I think
+
+01:01:11.865 --> 01:01:14.345
+<v Speaker 1>it should work. Well, we'll see. We'll see.
+
+01:01:14.345 --> 01:01:14.985
+<v Speaker 0>Yeah. Yeah.
+
+01:01:16.585 --> 01:01:18.105
+<v Speaker 1>If it doesn't, then we can just use
+
+01:01:18.105 --> 01:01:18.425
+<v Speaker 1>mod.
+
+01:01:22.130 --> 01:01:23.410
+<v Speaker 1>Cool. So
+
+01:01:24.210 --> 01:01:26.529
+<v Speaker 1>so, yeah, we have this task. The task
+
+01:01:26.529 --> 01:01:28.049
+<v Speaker 1>is just gonna be a feature, and then
+
+01:01:28.049 --> 01:01:30.130
+<v Speaker 1>that, like, send to
+
+01:01:32.049 --> 01:01:33.170
+<v Speaker 1>execute a queue,
+
+01:01:34.095 --> 01:01:34.975
+<v Speaker 1>basically,
+
+01:01:36.095 --> 01:01:36.655
+<v Speaker 1>which
+
+01:01:43.615 --> 01:01:46.575
+<v Speaker 1>which will be the same as
+
+01:01:47.840 --> 01:01:50.160
+<v Speaker 1>one form. So we've got this
+
+01:01:51.440 --> 01:01:53.760
+<v Speaker 1>and then that takes in a task. And
+
+01:01:53.760 --> 01:01:56.880
+<v Speaker 1>then this feature is it's just complicated.
+
+01:01:56.880 --> 01:01:57.440
+<v Speaker 1>But
+
+01:01:58.960 --> 01:01:59.600
+<v Speaker 1>basically
+
+01:01:59.840 --> 01:02:01.645
+<v Speaker 1>so it's basically
+
+01:02:02.285 --> 01:02:04.125
+<v Speaker 0>Yeah. A pen and a box.
+
+01:02:04.444 --> 01:02:06.205
+<v Speaker 0>Damn it. Yeah. I don't know.
+
+01:02:06.765 --> 01:02:08.605
+<v Speaker 1>And the and the mutex. And the mutex.
+
+01:02:08.605 --> 01:02:10.765
+<v Speaker 0>Yeah. And the mutex. Yeah. It's The only
+
+01:02:10.765 --> 01:02:12.285
+<v Speaker 0>thing that's missing is ARC, and then it's
+
+01:02:12.285 --> 01:02:13.085
+<v Speaker 0>got pretty much every
+
+01:02:14.365 --> 01:02:15.244
+<v Speaker 0>all the words I hate.
+
+01:02:17.040 --> 01:02:20.160
+<v Speaker 1>So the mutex is to make it sync
+
+01:02:20.160 --> 01:02:22.640
+<v Speaker 1>because cross beam channel requires
+
+01:02:22.640 --> 01:02:24.400
+<v Speaker 1>things to be send and sync.
+
+01:02:25.200 --> 01:02:27.280
+<v Speaker 1>And I think sync is a market trait.
+
+01:02:27.280 --> 01:02:29.360
+<v Speaker 1>Sync and sender market trait. So that means
+
+01:02:29.360 --> 01:02:30.080
+<v Speaker 1>that if
+
+01:02:30.474 --> 01:02:31.675
+<v Speaker 1>all of it's
+
+01:02:31.835 --> 01:02:32.475
+<v Speaker 1>like
+
+01:02:34.795 --> 01:02:36.315
+<v Speaker 1>I forgot what the what the right word
+
+01:02:36.315 --> 01:02:39.515
+<v Speaker 1>is. Like, variables or or whatever that belong
+
+01:02:39.515 --> 01:02:40.795
+<v Speaker 1>to to task,
+
+01:02:41.035 --> 01:02:43.195
+<v Speaker 1>if they are all synced, then task will
+
+01:02:43.195 --> 01:02:45.130
+<v Speaker 1>be synced. If they're all synced, then task
+
+01:02:45.130 --> 01:02:46.890
+<v Speaker 1>will be sent. And, like, if, you know,
+
+01:02:46.890 --> 01:02:48.330
+<v Speaker 1>one of them isn't synced, then the whole
+
+01:02:48.330 --> 01:02:50.090
+<v Speaker 1>thing's not synced, basically. So it's like a
+
+01:02:50.090 --> 01:02:51.610
+<v Speaker 1>it's a auto trade, basically.
+
+01:02:51.850 --> 01:02:54.090
+<v Speaker 1>So this mutex is needed to make it
+
+01:02:54.090 --> 01:02:54.730
+<v Speaker 1>synced.
+
+01:02:56.170 --> 01:02:57.130
+<v Speaker 1>And then
+
+01:02:57.515 --> 01:02:59.035
+<v Speaker 1>on on pinning,
+
+01:02:59.115 --> 01:03:00.155
+<v Speaker 1>pinning is
+
+01:03:00.395 --> 01:03:02.955
+<v Speaker 1>something I'm still also just learning.
+
+01:03:04.155 --> 01:03:04.715
+<v Speaker 1>But
+
+01:03:05.675 --> 01:03:08.715
+<v Speaker 1>in effect, it's it's because Rust features
+
+01:03:08.795 --> 01:03:11.755
+<v Speaker 1>or or yeah. Rust Rust features are
+
+01:03:12.170 --> 01:03:13.770
+<v Speaker 1>they need to be self referential. They need
+
+01:03:13.770 --> 01:03:15.770
+<v Speaker 1>to have the capability of being self referential
+
+01:03:15.770 --> 01:03:19.450
+<v Speaker 1>so they can refer to their own, like,
+
+01:03:19.450 --> 01:03:22.490
+<v Speaker 1>variables that they constitute of. And so if
+
+01:03:22.490 --> 01:03:24.090
+<v Speaker 1>they if they've moved,
+
+01:03:25.535 --> 01:03:27.295
+<v Speaker 1>then you can imagine, like, let's say you
+
+01:03:27.295 --> 01:03:30.335
+<v Speaker 1>have something sitting at, like, location x
+
+01:03:30.335 --> 01:03:32.575
+<v Speaker 1>and the feature then is moved in memory
+
+01:03:32.575 --> 01:03:34.255
+<v Speaker 1>and it's pointing to itself,
+
+01:03:34.655 --> 01:03:35.855
+<v Speaker 1>then that
+
+01:03:36.415 --> 01:03:38.175
+<v Speaker 1>that part where it's pointing to itself gets
+
+01:03:38.175 --> 01:03:40.730
+<v Speaker 1>invalidated because it's moved in memory. So you
+
+01:03:40.730 --> 01:03:42.490
+<v Speaker 1>wanna pin them so that they don't get
+
+01:03:42.490 --> 01:03:44.970
+<v Speaker 1>moved, basically. So can you remove the move
+
+01:03:44.970 --> 01:03:47.690
+<v Speaker 0>semantics then? Like, keeps it in the same
+
+01:03:47.849 --> 01:03:50.250
+<v Speaker 0>that have been Yeah. Yeah. So it it
+
+01:03:50.250 --> 01:03:53.210
+<v Speaker 1>basically it basically disallows certain
+
+01:03:53.210 --> 01:03:55.289
+<v Speaker 1>operations from happening on
+
+01:03:55.595 --> 01:03:56.875
+<v Speaker 1>something that's
+
+01:03:57.275 --> 01:03:58.395
+<v Speaker 1>pinned, basically.
+
+01:03:58.714 --> 01:03:59.275
+<v Speaker 1>So
+
+01:03:59.674 --> 01:04:01.835
+<v Speaker 1>yeah. So it it doesn't actually, like,
+
+01:04:02.714 --> 01:04:05.515
+<v Speaker 1>stop anything from technically happening. It just disallows
+
+01:04:05.515 --> 01:04:08.090
+<v Speaker 1>certain functions from from a like, I mean,
+
+01:04:08.090 --> 01:04:10.490
+<v Speaker 1>using certain functions on those on those objects,
+
+01:04:10.490 --> 01:04:12.010
+<v Speaker 1>basically. There you go. There that's the most
+
+01:04:12.010 --> 01:04:13.370
+<v Speaker 0>important thing I think I've learned today. So
+
+01:04:13.370 --> 01:04:15.290
+<v Speaker 0>now we know that we've got this dynamic
+
+01:04:15.290 --> 01:04:18.250
+<v Speaker 0>trait thing of dynamic size thing in memory.
+
+01:04:18.250 --> 01:04:19.530
+<v Speaker 0>So we wrap it in a box. We
+
+01:04:19.530 --> 01:04:21.050
+<v Speaker 0>use a pen to keep it at the
+
+01:04:21.050 --> 01:04:22.565
+<v Speaker 0>same point of memory. So that you refer
+
+01:04:22.565 --> 01:04:24.484
+<v Speaker 0>to itself with a mutex
+
+01:04:24.484 --> 01:04:26.244
+<v Speaker 0>so that we can control what speaks to
+
+01:04:26.244 --> 01:04:28.805
+<v Speaker 0>it in order. Yeah. Got it. Pretty much.
+
+01:04:30.085 --> 01:04:30.885
+<v Speaker 1>That's
+
+01:04:30.885 --> 01:04:33.285
+<v Speaker 1>pretty much it. Cool. So, yeah. So then
+
+01:04:33.285 --> 01:04:35.125
+<v Speaker 1>we have this task and then we're just
+
+01:04:35.125 --> 01:04:35.605
+<v Speaker 1>gonna
+
+01:04:36.190 --> 01:04:37.150
+<v Speaker 1>implement
+
+01:04:37.870 --> 01:04:39.790
+<v Speaker 1>some of some of its stuff. So
+
+01:04:41.070 --> 01:04:43.470
+<v Speaker 1>okay. First, actually, what could be more interesting
+
+01:04:43.470 --> 01:04:44.670
+<v Speaker 1>is to have this
+
+01:04:46.030 --> 01:04:46.750
+<v Speaker 1>did I
+
+01:04:49.015 --> 01:04:51.175
+<v Speaker 1>I import this? I don't know. Okay. No.
+
+01:04:51.175 --> 01:04:51.895
+<v Speaker 1>I haven't.
+
+01:04:55.735 --> 01:04:56.135
+<v Speaker 1>K.
+
+01:05:07.880 --> 01:05:09.560
+<v Speaker 1>I don't know if I've got this.
+
+01:05:12.680 --> 01:05:14.440
+<v Speaker 1>I can't get added. So let's see.
+
+01:05:23.855 --> 01:05:25.455
+<v Speaker 1>Sweet. So we have this
+
+01:05:28.815 --> 01:05:32.415
+<v Speaker 1>thing called Arc Wake, which
+
+01:05:31.890 --> 01:05:35.410
+<v Speaker 1>basically allows us to implement the that that
+
+01:05:35.410 --> 01:05:36.690
+<v Speaker 1>wake and
+
+01:05:37.170 --> 01:05:38.450
+<v Speaker 1>wake by ref
+
+01:05:39.329 --> 01:05:40.130
+<v Speaker 1>functionality.
+
+01:05:40.130 --> 01:05:42.770
+<v Speaker 1>So that's also a trait. No
+
+01:05:43.010 --> 01:05:43.490
+<v Speaker 1>surprise.
+
+01:05:44.424 --> 01:05:47.305
+<v Speaker 1>And that's and that's needed for for us
+
+01:05:47.305 --> 01:05:49.145
+<v Speaker 1>being able to, like, wake a task and
+
+01:05:49.145 --> 01:05:52.105
+<v Speaker 1>just basically reschedule it back onto the executor.
+
+01:05:52.265 --> 01:05:55.385
+<v Speaker 1>So in our case, we're just gonna implement
+
+01:05:55.385 --> 01:05:56.825
+<v Speaker 1>this wake by red
+
+01:05:58.589 --> 01:05:59.310
+<v Speaker 1>one.
+
+01:05:59.789 --> 01:06:02.030
+<v Speaker 0>May I ask an adjacent question just now?
+
+01:06:02.269 --> 01:06:03.070
+<v Speaker 1>Gotcha.
+
+01:06:03.390 --> 01:06:06.190
+<v Speaker 0>What's the difference between the standard future feature
+
+01:06:06.190 --> 01:06:06.990
+<v Speaker 0>and
+
+01:06:07.069 --> 01:06:08.670
+<v Speaker 0>the creates features?
+
+01:06:08.829 --> 01:06:09.710
+<v Speaker 1>I don't know. Cool.
+
+01:06:11.125 --> 01:06:13.445
+<v Speaker 1>So I I would at least again, from
+
+01:06:13.445 --> 01:06:16.005
+<v Speaker 1>what I know. So when they stabilized,
+
+01:06:16.805 --> 01:06:18.965
+<v Speaker 1>like, the future traits and everything, that's obviously
+
+01:06:18.965 --> 01:06:21.525
+<v Speaker 1>what's in standard in the standard
+
+01:06:23.365 --> 01:06:24.325
+<v Speaker 1>library.
+
+01:06:24.405 --> 01:06:27.570
+<v Speaker 1>And a lot of the, like, design and,
+
+01:06:28.130 --> 01:06:31.089
+<v Speaker 1>I guess, API development and all that happened
+
+01:06:31.089 --> 01:06:32.049
+<v Speaker 1>externally,
+
+01:06:32.049 --> 01:06:33.970
+<v Speaker 1>similar to, let's say, like, how Tokyo and
+
+01:06:33.970 --> 01:06:35.970
+<v Speaker 1>ASIC standard are kind of, like,
+
+01:06:36.529 --> 01:06:39.490
+<v Speaker 1>core functionalities of how you'd use async Rust,
+
+01:06:39.490 --> 01:06:41.089
+<v Speaker 1>but they're not provided by the standard library.
+
+01:06:42.625 --> 01:06:45.105
+<v Speaker 1>And so that was initially all in this,
+
+01:06:45.105 --> 01:06:46.865
+<v Speaker 1>like, futures crate.
+
+01:06:47.744 --> 01:06:49.664
+<v Speaker 1>But then some of it got stabilized and
+
+01:06:49.664 --> 01:06:51.424
+<v Speaker 1>put into standard. But then there's still a
+
+01:06:51.424 --> 01:06:53.904
+<v Speaker 1>bunch of functionality that's only available
+
+01:06:53.904 --> 01:06:57.059
+<v Speaker 1>in, like, the actual features crate. And so
+
+01:06:57.059 --> 01:06:59.780
+<v Speaker 1>you'd you'd basically use that to add, like,
+
+01:06:59.780 --> 01:07:01.220
+<v Speaker 1>the additional functionality
+
+01:07:01.220 --> 01:07:03.460
+<v Speaker 1>in essence. Yeah. Okay. Pretty
+
+01:07:04.420 --> 01:07:06.980
+<v Speaker 1>much. So we have this
+
+01:07:08.285 --> 01:07:09.645
+<v Speaker 1>schedule here. And
+
+01:07:10.365 --> 01:07:13.405
+<v Speaker 1>so, basically, what's gonna happen or the premise
+
+01:07:13.405 --> 01:07:15.485
+<v Speaker 1>here is that when
+
+01:07:17.325 --> 01:07:19.485
+<v Speaker 1>we call this wake bar ref
+
+01:07:20.550 --> 01:07:23.190
+<v Speaker 1>or wake, we're basically just gonna schedule it
+
+01:07:23.190 --> 01:07:25.670
+<v Speaker 1>back onto the executor here using this function,
+
+01:07:25.670 --> 01:07:27.030
+<v Speaker 1>which we'll implement now.
+
+01:07:27.830 --> 01:07:28.550
+<v Speaker 1>So
+
+01:07:28.790 --> 01:07:30.470
+<v Speaker 1>so that's scheduled.
+
+01:07:31.750 --> 01:07:32.470
+<v Speaker 1>Oh,
+
+01:07:32.550 --> 01:07:33.430
+<v Speaker 1>so
+
+01:07:34.145 --> 01:07:35.025
+<v Speaker 1>yeah,
+
+01:07:38.305 --> 01:07:40.625
+<v Speaker 1>cool. So we've got this function
+
+01:07:43.585 --> 01:07:45.825
+<v Speaker 1>schedule
+
+01:07:46.990 --> 01:07:47.790
+<v Speaker 1>fix.
+
+01:07:48.270 --> 01:07:50.670
+<v Speaker 1>Oh, and so a weird thing, like,
+
+01:07:51.070 --> 01:07:53.070
+<v Speaker 1>also like a gory implementation
+
+01:07:53.230 --> 01:07:54.590
+<v Speaker 1>sort of like detail.
+
+01:07:55.070 --> 01:07:55.710
+<v Speaker 1>But
+
+01:07:56.910 --> 01:07:58.830
+<v Speaker 1>setting up these, like, wake functions
+
+01:07:59.355 --> 01:08:02.075
+<v Speaker 1>requires kind of, like, some low level unsafe
+
+01:08:02.075 --> 01:08:03.515
+<v Speaker 1>code. And so
+
+01:08:03.915 --> 01:08:05.515
+<v Speaker 1>an easy way to kind of, like, avoid
+
+01:08:05.515 --> 01:08:08.075
+<v Speaker 1>that is to use this arc wake. I
+
+01:08:08.075 --> 01:08:09.675
+<v Speaker 1>don't I don't understand, like,
+
+01:08:12.090 --> 01:08:14.810
+<v Speaker 1>how it negates or how it solves that
+
+01:08:14.810 --> 01:08:16.330
+<v Speaker 1>problem for you in effect.
+
+01:08:17.370 --> 01:08:19.050
+<v Speaker 1>But, yeah, it's basically kind of like a
+
+01:08:19.050 --> 01:08:20.970
+<v Speaker 1>shortcut from having to deal with routing that,
+
+01:08:20.970 --> 01:08:22.090
+<v Speaker 1>like, unsafe
+
+01:08:23.050 --> 01:08:24.250
+<v Speaker 1>code yourself,
+
+01:08:24.490 --> 01:08:24.810
+<v Speaker 1>basically.
+
+01:08:26.785 --> 01:08:29.425
+<v Speaker 1>Oh, so then we're just gonna
+
+01:08:38.465 --> 01:08:40.944
+<v Speaker 1>also then when when you wanna schedule a
+
+01:08:40.944 --> 01:08:43.430
+<v Speaker 1>task, we basically call the schedule, which will
+
+01:08:43.430 --> 01:08:45.350
+<v Speaker 1>get called by, like, these wakers.
+
+01:08:46.070 --> 01:08:48.390
+<v Speaker 1>And this will this is basically sending it
+
+01:08:48.390 --> 01:08:50.150
+<v Speaker 1>to what what I call this executor
+
+01:08:50.550 --> 01:08:52.310
+<v Speaker 1>send to executor. Yeah. I was gonna say,
+
+01:08:52.310 --> 01:08:54.470
+<v Speaker 0>where's executor coming from? You just threw me
+
+01:08:54.470 --> 01:08:54.550
+<v Speaker 0>for
+
+01:08:57.875 --> 01:08:59.715
+<v Speaker 1>Just threw away a bunch of it.
+
+01:09:00.675 --> 01:09:01.554
+<v Speaker 1>And so,
+
+01:09:01.795 --> 01:09:04.114
+<v Speaker 1>yeah, we've got the center executed queue, and
+
+01:09:04.114 --> 01:09:06.915
+<v Speaker 1>then we send ourselves basically all this task
+
+01:09:06.915 --> 01:09:08.194
+<v Speaker 1>to that queue.
+
+01:09:08.515 --> 01:09:09.395
+<v Speaker 1>And then
+
+01:09:10.194 --> 01:09:11.795
+<v Speaker 1>I'm actually just gonna
+
+01:09:12.279 --> 01:09:14.119
+<v Speaker 1>copy and paste this.
+
+01:09:15.080 --> 01:09:16.840
+<v Speaker 1>So I'm so then and then we also
+
+01:09:16.840 --> 01:09:17.719
+<v Speaker 1>have this
+
+01:09:17.960 --> 01:09:19.719
+<v Speaker 1>poll functionality here, which
+
+01:09:23.479 --> 01:09:25.080
+<v Speaker 1>yeah. And so
+
+01:09:25.484 --> 01:09:26.284
+<v Speaker 1>effectively,
+
+01:09:26.604 --> 01:09:28.364
+<v Speaker 1>when we when we pull this
+
+01:09:28.685 --> 01:09:31.645
+<v Speaker 1>task also because I've got twenty minutes left.
+
+01:09:31.645 --> 01:09:32.124
+<v Speaker 1>When
+
+01:09:33.085 --> 01:09:35.324
+<v Speaker 1>we pull this task, we basically create a
+
+01:09:35.324 --> 01:09:37.404
+<v Speaker 1>waker and a context, and that context is
+
+01:09:37.404 --> 01:09:39.725
+<v Speaker 1>used when you pull the future internally.
+
+01:09:40.260 --> 01:09:43.620
+<v Speaker 1>So we've got we've we have, you know,
+
+01:09:43.620 --> 01:09:45.779
+<v Speaker 1>a feature attached to the task.
+
+01:09:47.060 --> 01:09:49.140
+<v Speaker 1>This will never fail purely because no other
+
+01:09:49.140 --> 01:09:51.140
+<v Speaker 1>thread is actually trying to unlock it, so
+
+01:09:51.140 --> 01:09:52.420
+<v Speaker 1>we can just unwrap it.
+
+01:09:53.465 --> 01:09:55.304
+<v Speaker 1>And then we pass that context
+
+01:09:56.105 --> 01:09:56.905
+<v Speaker 1>into
+
+01:09:57.465 --> 01:09:59.065
+<v Speaker 1>into the future itself,
+
+01:09:59.465 --> 01:10:01.465
+<v Speaker 1>which is that which will then get called
+
+01:10:01.465 --> 01:10:03.625
+<v Speaker 1>by that, like, future when when it wants
+
+01:10:03.625 --> 01:10:05.304
+<v Speaker 1>to wake itself up, basically,
+
+01:10:05.945 --> 01:10:06.345
+<v Speaker 1>as well.
+
+01:10:07.210 --> 01:10:09.530
+<v Speaker 1>And then the last part also, I'm just
+
+01:10:09.530 --> 01:10:11.370
+<v Speaker 1>gonna also copy and paste this in,
+
+01:10:16.330 --> 01:10:16.890
+<v Speaker 1>which
+
+01:10:17.530 --> 01:10:19.130
+<v Speaker 1>is that spawning function
+
+01:10:19.770 --> 01:10:20.409
+<v Speaker 1>functionality.
+
+01:10:20.570 --> 01:10:22.225
+<v Speaker 1>So this is actually this is actually quite
+
+01:10:22.225 --> 01:10:24.705
+<v Speaker 1>simple way. When you wanna spawn a task,
+
+01:10:26.705 --> 01:10:27.425
+<v Speaker 1>we
+
+01:10:27.505 --> 01:10:29.345
+<v Speaker 1>basically create a new
+
+01:10:32.545 --> 01:10:34.225
+<v Speaker 1>yeah. So when you wanna spawn a task,
+
+01:10:34.225 --> 01:10:35.505
+<v Speaker 1>we basically create a new,
+
+01:10:37.470 --> 01:10:39.230
+<v Speaker 1>well, a new task
+
+01:10:39.390 --> 01:10:40.190
+<v Speaker 1>object,
+
+01:10:40.830 --> 01:10:42.830
+<v Speaker 1>and then we send it to
+
+01:10:43.790 --> 01:10:45.870
+<v Speaker 1>oh, this is not sender. This oh, yeah.
+
+01:10:45.870 --> 01:10:47.070
+<v Speaker 1>I thought it is. And
+
+01:10:47.710 --> 01:10:49.630
+<v Speaker 1>then we send this to the the task
+
+01:10:49.630 --> 01:10:53.434
+<v Speaker 1>queue, basically. So that's what gets passed in
+
+01:10:53.434 --> 01:10:54.155
+<v Speaker 1>here.
+
+01:10:54.795 --> 01:10:56.954
+<v Speaker 1>This send to execute a queue. So every
+
+01:10:56.954 --> 01:10:59.034
+<v Speaker 1>time we spawn a task, a task will
+
+01:10:59.034 --> 01:11:01.994
+<v Speaker 1>just basically send itself or or send it
+
+01:11:01.994 --> 01:11:03.114
+<v Speaker 1>a a task
+
+01:11:03.994 --> 01:11:06.954
+<v Speaker 1>to the executed to get to run, basically.
+
+01:11:07.355 --> 01:11:08.315
+<v Speaker 1>So that's
+
+01:11:08.660 --> 01:11:10.980
+<v Speaker 1>that's basically that. And those are the two
+
+01:11:10.980 --> 01:11:12.659
+<v Speaker 1>kind of, like, big
+
+01:11:12.900 --> 01:11:13.860
+<v Speaker 1>components.
+
+01:11:15.140 --> 01:11:16.660
+<v Speaker 1>And then all we have to all that's
+
+01:11:16.660 --> 01:11:19.380
+<v Speaker 1>left to do is create our own
+
+01:11:21.220 --> 01:11:21.860
+<v Speaker 1>what is this?
+
+01:11:26.635 --> 01:11:28.315
+<v Speaker 1>I have no idea.
+
+01:11:28.555 --> 01:11:30.475
+<v Speaker 1>I will figure that out this time.
+
+01:11:31.195 --> 01:11:31.915
+<v Speaker 1>So,
+
+01:11:33.435 --> 01:11:35.115
+<v Speaker 1>yeah, all that's left to do is, like,
+
+01:11:35.115 --> 01:11:36.955
+<v Speaker 1>create our own future. I also
+
+01:11:37.400 --> 01:11:39.000
+<v Speaker 1>for the sake of time, also just copy
+
+01:11:39.000 --> 01:11:40.599
+<v Speaker 1>and paste that and and just kinda, like,
+
+01:11:40.599 --> 01:11:41.479
+<v Speaker 1>talk through it,
+
+01:11:41.960 --> 01:11:44.280
+<v Speaker 1>which would just be, like, a lot faster.
+
+01:11:44.440 --> 01:11:45.559
+<v Speaker 0>Yeah. Go for it.
+
+01:11:46.040 --> 01:11:46.760
+<v Speaker 1>Cool.
+
+01:11:48.760 --> 01:11:50.599
+<v Speaker 1>But I also need to solve this issue
+
+01:11:50.599 --> 01:11:50.920
+<v Speaker 1>now.
+
+01:11:56.105 --> 01:11:58.745
+<v Speaker 1>This is you're probably right. Yeah. Let's see.
+
+01:12:01.225 --> 01:12:02.985
+<v Speaker 0>I think you still need to use, but
+
+01:12:02.985 --> 01:12:04.985
+<v Speaker 0>you need to mod Yeah. Yeah. Yeah.
+
+01:12:07.560 --> 01:12:10.199
+<v Speaker 1>I don't see what's going on here.
+
+01:12:11.320 --> 01:12:12.280
+<v Speaker 1>What's
+
+01:12:12.360 --> 01:12:14.599
+<v Speaker 1>going on? And this whole module.
+
+01:12:15.800 --> 01:12:17.320
+<v Speaker 1>That is super weird.
+
+01:12:18.119 --> 01:12:19.400
+<v Speaker 1>Okay. We'll get back to that.
+
+01:12:22.185 --> 01:12:24.184
+<v Speaker 1>That's probably why. K.
+
+01:12:24.425 --> 01:12:25.385
+<v Speaker 1>Let's see.
+
+01:12:29.545 --> 01:12:29.864
+<v Speaker 1>So
+
+01:12:30.744 --> 01:12:31.545
+<v Speaker 1>oh,
+
+01:12:33.545 --> 01:12:34.905
+<v Speaker 1>I've got a lot of errors coming.
+
+01:12:39.369 --> 01:12:40.650
+<v Speaker 1>It's unresolved
+
+01:12:40.650 --> 01:12:41.610
+<v Speaker 1>import.
+
+01:12:44.170 --> 01:12:45.849
+<v Speaker 1>That should be fine.
+
+01:12:47.290 --> 01:12:48.489
+<v Speaker 1>Cool. Just give me a sec.
+
+01:13:02.115 --> 01:13:03.875
+<v Speaker 0>So what's the error on your used future
+
+01:13:03.875 --> 01:13:04.355
+<v Speaker 0>statement?
+
+01:13:06.330 --> 01:13:08.489
+<v Speaker 1>Oh, it just says unresolved imports.
+
+01:13:08.889 --> 01:13:10.570
+<v Speaker 1>I think it's just not picking up that
+
+01:13:10.570 --> 01:13:12.330
+<v Speaker 1>it's there. Let me see if I can
+
+01:13:12.330 --> 01:13:14.810
+<v Speaker 1>just, like, reload my window and see if
+
+01:13:14.810 --> 01:13:16.730
+<v Speaker 1>that solves any of my issue, which I
+
+01:13:16.730 --> 01:13:19.705
+<v Speaker 1>doubt, but let's see. Yeah. Yeah. Rust analyzer
+
+01:13:19.705 --> 01:13:21.225
+<v Speaker 0>does seem to flick after a while, and
+
+01:13:21.225 --> 01:13:24.345
+<v Speaker 0>I usually restart Versus code. So Yeah. It
+
+01:13:24.345 --> 01:13:26.665
+<v Speaker 1>does happen every now and again sometimes,
+
+01:13:26.745 --> 01:13:27.625
+<v Speaker 1>but we'll see.
+
+01:13:37.620 --> 01:13:38.980
+<v Speaker 0>Think it's still building?
+
+01:13:39.460 --> 01:13:40.180
+<v Speaker 1>Yeah.
+
+01:13:40.340 --> 01:13:41.780
+<v Speaker 1>Yeah. It's still building a bit.
+
+01:13:49.415 --> 01:13:50.054
+<v Speaker 1>Well
+
+01:13:52.375 --> 01:13:52.934
+<v Speaker 1>k.
+
+01:13:54.614 --> 01:13:55.655
+<v Speaker 1>So
+
+01:13:59.619 --> 01:14:02.260
+<v Speaker 1>It's still giving me ill. I know it's
+
+01:14:02.260 --> 01:14:02.500
+<v Speaker 1>changed.
+
+01:14:14.315 --> 01:14:18.075
+<v Speaker 1>Cool. So that's fine. Here? Yeah. That's definitely
+
+01:14:18.075 --> 01:14:20.315
+<v Speaker 1>happier. Let's see if this works now.
+
+01:14:23.435 --> 01:14:25.755
+<v Speaker 1>Ah, there you go. Ta da. There we
+
+01:14:25.755 --> 01:14:25.915
+<v Speaker 0>go.
+
+01:14:27.390 --> 01:14:29.230
+<v Speaker 1>Back in business. Cool.
+
+01:14:30.030 --> 01:14:31.469
+<v Speaker 1>Sweet. So
+
+01:14:34.110 --> 01:14:35.230
+<v Speaker 1>alright. And then
+
+01:14:37.150 --> 01:14:38.910
+<v Speaker 1>k. We can actually kinda get rid of
+
+01:14:38.910 --> 01:14:39.470
+<v Speaker 1>all of this.
+
+01:14:44.145 --> 01:14:45.665
+<v Speaker 1>And
+
+01:14:45.985 --> 01:14:48.865
+<v Speaker 1>then there's just this last piece where we
+
+01:14:48.865 --> 01:14:50.225
+<v Speaker 1>have a
+
+01:14:56.400 --> 01:14:58.880
+<v Speaker 1>Let me just get that solved.
+
+01:15:04.960 --> 01:15:05.760
+<v Speaker 1>Curation.
+
+01:15:07.840 --> 01:15:09.840
+<v Speaker 1>Cool. So we have this, like,
+
+01:15:11.514 --> 01:15:12.794
+<v Speaker 1>future delay,
+
+01:15:14.074 --> 01:15:16.234
+<v Speaker 1>which is kind it's almost like a sleep
+
+01:15:16.315 --> 01:15:17.274
+<v Speaker 1>in effect.
+
+01:15:17.675 --> 01:15:19.594
+<v Speaker 1>And so, basically, what happens is
+
+01:15:20.315 --> 01:15:22.074
+<v Speaker 1>I should probably should have written this one
+
+01:15:22.074 --> 01:15:23.434
+<v Speaker 1>out. But,
+
+01:15:23.434 --> 01:15:23.675
+<v Speaker 1>basically,
+
+01:15:25.260 --> 01:15:27.739
+<v Speaker 1>what's happening is we basically wanna delay for
+
+01:15:27.739 --> 01:15:29.340
+<v Speaker 1>a certain amount of time. So we have
+
+01:15:29.340 --> 01:15:31.500
+<v Speaker 1>this thing called the instant. Instant just gives
+
+01:15:31.500 --> 01:15:33.099
+<v Speaker 1>us, like, an instant in time right now.
+
+01:15:33.099 --> 01:15:34.699
+<v Speaker 1>Basically, these are comparisons.
+
+01:15:35.019 --> 01:15:36.940
+<v Speaker 1>And so we wanna say, you know, we
+
+01:15:36.940 --> 01:15:37.980
+<v Speaker 1>want our delay to be,
+
+01:15:41.465 --> 01:15:42.585
+<v Speaker 1>what's the like,
+
+01:15:42.825 --> 01:15:44.665
+<v Speaker 1>from now plus two seconds, and then only
+
+01:15:44.665 --> 01:15:47.145
+<v Speaker 1>after two seconds will be finished. So in
+
+01:15:47.145 --> 01:15:49.864
+<v Speaker 1>this case, what we have here is if
+
+01:15:50.265 --> 01:15:52.665
+<v Speaker 1>the current time or, like, this current instant
+
+01:15:52.665 --> 01:15:55.119
+<v Speaker 1>is larger than when we specified it to
+
+01:15:55.119 --> 01:15:56.479
+<v Speaker 1>be. So, like, maybe, like, instant
+
+01:15:57.280 --> 01:16:00.079
+<v Speaker 1>plus two seconds from wherever we are, then
+
+01:16:00.079 --> 01:16:02.079
+<v Speaker 1>return call ready. Otherwise,
+
+01:16:02.960 --> 01:16:04.800
+<v Speaker 1>we then go ahead and set it up
+
+01:16:04.800 --> 01:16:07.440
+<v Speaker 1>to basically tell us when to reschedule itself.
+
+01:16:08.725 --> 01:16:11.125
+<v Speaker 1>Here, what happens is, k, we've gotten this
+
+01:16:11.205 --> 01:16:13.045
+<v Speaker 1>the waker from the context,
+
+01:16:14.885 --> 01:16:18.565
+<v Speaker 1>and then we're kind of using, a a
+
+01:16:19.445 --> 01:16:21.525
+<v Speaker 1>semi hackish way, I guess. I don't I
+
+01:16:21.525 --> 01:16:21.845
+<v Speaker 1>don't know.
+
+01:16:22.630 --> 01:16:24.950
+<v Speaker 1>But we basically spawn a new thread, and
+
+01:16:24.950 --> 01:16:27.590
+<v Speaker 1>then we we sleep that thread for that
+
+01:16:27.590 --> 01:16:29.830
+<v Speaker 1>period of time that's left. So,
+
+01:16:30.710 --> 01:16:33.030
+<v Speaker 1>you know, if we wanted two seconds ahead
+
+01:16:33.030 --> 01:16:35.270
+<v Speaker 1>and we're actually one second ahead, then we
+
+01:16:35.270 --> 01:16:37.324
+<v Speaker 1>wanna sleep for one second. And then once
+
+01:16:37.324 --> 01:16:39.324
+<v Speaker 1>that's done, then we call this waker dot
+
+01:16:39.324 --> 01:16:41.725
+<v Speaker 1>wake. And this is important because if you
+
+01:16:41.725 --> 01:16:45.005
+<v Speaker 1>don't call waker.wake at some point, then your
+
+01:16:45.005 --> 01:16:47.965
+<v Speaker 1>executor will basically hang. Or this task will
+
+01:16:47.965 --> 01:16:48.844
+<v Speaker 1>never get finished
+
+01:16:49.750 --> 01:16:51.750
+<v Speaker 1>or run to completion, purely because it never
+
+01:16:51.750 --> 01:16:54.150
+<v Speaker 1>gets working. It never gets, like, rescheduled
+
+01:16:54.630 --> 01:16:56.389
+<v Speaker 1>onto the executor to run.
+
+01:16:56.790 --> 01:16:59.670
+<v Speaker 1>And then we have this, like, poll pending
+
+01:16:59.670 --> 01:17:00.790
+<v Speaker 1>in this case. So
+
+01:17:02.005 --> 01:17:03.845
+<v Speaker 1>this will return poll pending, and then once
+
+01:17:03.845 --> 01:17:05.764
+<v Speaker 1>this wake up at wake runs,
+
+01:17:05.925 --> 01:17:07.445
+<v Speaker 1>it'll get executed
+
+01:17:07.605 --> 01:17:10.165
+<v Speaker 1>all again rescheduled and then executed. So that's
+
+01:17:10.165 --> 01:17:12.005
+<v Speaker 1>basically you can ignore those.
+
+01:17:14.260 --> 01:17:14.900
+<v Speaker 1>So
+
+01:17:16.900 --> 01:17:19.540
+<v Speaker 1>this waker. Wake is basically what gets called
+
+01:17:19.540 --> 01:17:20.260
+<v Speaker 1>here,
+
+01:17:20.900 --> 01:17:23.380
+<v Speaker 1>the self dot schedule, which then again
+
+01:17:23.699 --> 01:17:25.219
+<v Speaker 1>sends it to the execute queue.
+
+01:17:26.435 --> 01:17:29.155
+<v Speaker 1>And then I think we're pretty much good
+
+01:17:29.155 --> 01:17:31.554
+<v Speaker 1>to go. So we can go
+
+01:17:39.155 --> 01:17:40.595
+<v Speaker 1>let's actually do this.
+
+01:17:45.809 --> 01:17:47.969
+<v Speaker 1>And
+
+01:17:49.170 --> 01:18:00.130
+<v Speaker 1>then
+
+01:18:08.570 --> 01:18:10.570
+<v Speaker 1>Cool. So we get a new executor,
+
+01:18:10.969 --> 01:18:11.449
+<v Speaker 1>then
+
+01:18:11.770 --> 01:18:12.409
+<v Speaker 1>we
+
+01:18:12.650 --> 01:18:15.050
+<v Speaker 1>gotta create a new feature.
+
+01:18:15.050 --> 01:18:15.849
+<v Speaker 1>So
+
+01:18:16.409 --> 01:18:17.929
+<v Speaker 1>this delay,
+
+01:18:19.449 --> 01:18:21.929
+<v Speaker 1>then we want back an instance.
+
+01:18:30.235 --> 01:18:31.835
+<v Speaker 1>Think you can do this plus.
+
+01:18:37.730 --> 01:18:38.370
+<v Speaker 1>K.
+
+01:18:40.210 --> 01:18:42.450
+<v Speaker 1>I think that should be fine. Cool.
+
+01:18:42.850 --> 01:18:43.810
+<v Speaker 1>And then
+
+01:18:45.970 --> 01:18:48.690
+<v Speaker 1>then we wanna spawn that task, basically. So
+
+01:18:48.690 --> 01:18:49.890
+<v Speaker 1>you wanna spawn
+
+01:18:50.365 --> 01:18:51.405
+<v Speaker 1>the future,
+
+01:18:52.045 --> 01:18:54.685
+<v Speaker 1>and then we want to run, basically.
+
+01:18:56.845 --> 01:18:58.364
+<v Speaker 1>And I think
+
+01:18:59.485 --> 01:19:02.605
+<v Speaker 1>that should do the trick. So this should
+
+01:19:03.380 --> 01:19:05.619
+<v Speaker 0>and when you do a cargo run, create
+
+01:19:05.619 --> 01:19:06.900
+<v Speaker 0>your new executor,
+
+01:19:06.900 --> 01:19:08.900
+<v Speaker 0>create a future that we just created with
+
+01:19:08.900 --> 01:19:10.980
+<v Speaker 0>the delay which just looks for the timestamp
+
+01:19:10.980 --> 01:19:11.780
+<v Speaker 0>offset.
+
+01:19:11.940 --> 01:19:14.659
+<v Speaker 0>You then spawn the future and then hopefully
+
+01:19:14.659 --> 01:19:17.375
+<v Speaker 0>wait and what we should see is yeah.
+
+01:19:17.375 --> 01:19:18.575
+<v Speaker 0>I was gonna say, yeah. Let's get some
+
+01:19:18.575 --> 01:19:22.255
+<v Speaker 0>principles. Let's
+
+01:19:22.255 --> 01:19:24.735
+<v Speaker 1>say, pending, cool, and then we'll say,
+
+01:19:27.935 --> 01:19:28.895
+<v Speaker 1>we are done.
+
+01:19:30.860 --> 01:19:32.540
+<v Speaker 0>Don't forget the emoji. I think we need,
+
+01:19:32.540 --> 01:19:34.460
+<v Speaker 0>like, a confetti emoji or something. Let
+
+01:19:35.740 --> 01:19:37.260
+<v Speaker 1>me go grab one quickly.
+
+01:19:37.500 --> 01:19:39.580
+<v Speaker 1>Okay. Cool. And then this year, we can
+
+01:19:39.580 --> 01:19:41.340
+<v Speaker 1>actually this will be cool because then we
+
+01:19:41.340 --> 01:19:43.820
+<v Speaker 1>can say, like, we can see that the
+
+01:19:43.820 --> 01:19:44.300
+<v Speaker 1>task
+
+01:19:46.015 --> 01:19:48.255
+<v Speaker 1>was yeah. Making the task back up. I
+
+01:19:48.255 --> 01:19:48.895
+<v Speaker 1>don't know what the
+
+01:19:49.695 --> 01:19:52.175
+<v Speaker 1>k. Let me go get this great
+
+01:19:52.175 --> 01:19:53.775
+<v Speaker 1>emoji from someone.
+
+01:19:54.575 --> 01:19:55.695
+<v Speaker 1>Emojipedia.
+
+01:19:55.695 --> 01:19:56.655
+<v Speaker 1>That's a good one.
+
+01:20:02.380 --> 01:20:04.540
+<v Speaker 0>There's a shortcut on the Mac for emojis,
+
+01:20:04.540 --> 01:20:06.220
+<v Speaker 0>and I can't remember. Oh, really? Yeah. I
+
+01:20:06.220 --> 01:20:07.660
+<v Speaker 0>can't remember what it is because I've got
+
+01:20:07.660 --> 01:20:09.705
+<v Speaker 0>mine set up as the function key, but
+
+01:20:09.705 --> 01:20:10.905
+<v Speaker 0>I think that's option.
+
+01:20:11.945 --> 01:20:13.385
+<v Speaker 0>But I think you can do the
+
+01:20:14.265 --> 01:20:16.905
+<v Speaker 0>command shift and something. I'm gonna look it
+
+01:20:16.905 --> 01:20:19.785
+<v Speaker 1>up. Completely irrelevant though, but I'm gonna look
+
+01:20:19.785 --> 01:20:20.265
+<v Speaker 0>it up.
+
+01:20:21.145 --> 01:20:22.825
+<v Speaker 1>K. Cool. Yeah. So we should expect
+
+01:20:23.570 --> 01:20:26.610
+<v Speaker 1>it to pin then to complete that, say,
+
+01:20:26.610 --> 01:20:27.650
+<v Speaker 1>waiting the task,
+
+01:20:27.890 --> 01:20:29.090
+<v Speaker 1>then we are ready.
+
+01:20:29.490 --> 01:20:30.369
+<v Speaker 1>Hopefully,
+
+01:20:30.370 --> 01:20:31.730
+<v Speaker 1>let's see how it goes.
+
+01:20:33.170 --> 01:20:34.130
+<v Speaker 0>If you had a drum roll.
+
+01:20:36.815 --> 01:20:40.255
+<v Speaker 1>Where in the what happened to my which
+
+01:20:40.815 --> 01:20:42.735
+<v Speaker 1>I don't know where I am in my
+
+01:20:42.735 --> 01:20:43.535
+<v Speaker 1>computer.
+
+01:20:46.575 --> 01:20:48.655
+<v Speaker 1>K. I think we're at the right place
+
+01:20:48.655 --> 01:20:51.260
+<v Speaker 1>now. It's control command and space bar for
+
+01:20:51.260 --> 01:20:54.139
+<v Speaker 0>future reference. There we go. Cool. Cool.
+
+01:20:56.700 --> 01:20:57.820
+<v Speaker 1>Oh, oh,
+
+01:20:58.700 --> 01:21:00.540
+<v Speaker 1>now just to wait. I know.
+
+01:21:03.180 --> 01:21:04.940
+<v Speaker 1>The fastest compiler ever.
+
+01:21:05.475 --> 01:21:07.315
+<v Speaker 0>It's it's I do like that they do
+
+01:21:07.315 --> 01:21:09.555
+<v Speaker 0>make speed improvements. I do it's it's easy
+
+01:21:09.555 --> 01:21:11.075
+<v Speaker 0>to make fun of the Rust compiler, and
+
+01:21:11.075 --> 01:21:13.155
+<v Speaker 0>I do it often. But I also appreciate
+
+01:21:13.155 --> 01:21:15.395
+<v Speaker 0>that it's a complex piece of software, and
+
+01:21:15.395 --> 01:21:16.755
+<v Speaker 0>people are content. They're trying to make it
+
+01:21:16.755 --> 01:21:19.730
+<v Speaker 0>better. So %. I mean, there's that also.
+
+01:21:19.730 --> 01:21:21.730
+<v Speaker 1>It gives you a lot of guarantees. Like,
+
+01:21:21.810 --> 01:21:23.330
+<v Speaker 1>it's a it's a basically a kind of
+
+01:21:23.330 --> 01:21:25.250
+<v Speaker 1>like trade off between what it offers you
+
+01:21:25.250 --> 01:21:28.530
+<v Speaker 1>versus like how fast Yeah. Definitely. It compiles.
+
+01:21:28.530 --> 01:21:28.929
+<v Speaker 1>So
+
+01:21:29.330 --> 01:21:30.610
+<v Speaker 1>yeah. It's it's alright.
+
+01:21:33.675 --> 01:21:35.275
+<v Speaker 1>Let's see what happens.
+
+01:21:36.315 --> 01:21:36.955
+<v Speaker 1>K.
+
+01:21:37.115 --> 01:21:39.755
+<v Speaker 1>Alright. Pending my task ready. Cool. But then
+
+01:21:40.155 --> 01:21:42.235
+<v Speaker 0>It's still hot. I don't know. It's still
+
+01:21:42.235 --> 01:21:44.555
+<v Speaker 1>hot. I have no idea why. Oh, no.
+
+01:21:44.555 --> 01:21:46.075
+<v Speaker 1>That makes no. That makes sense because
+
+01:21:46.510 --> 01:21:48.030
+<v Speaker 1>this is this is a blocking
+
+01:21:48.590 --> 01:21:50.830
+<v Speaker 1>this thing is still running. Alright. Alright. Okay.
+
+01:21:50.830 --> 01:21:52.750
+<v Speaker 1>And this blocks and this blocks. So it
+
+01:21:52.750 --> 01:21:54.510
+<v Speaker 1>worked, basically. So I guess if we added
+
+01:21:54.510 --> 01:21:55.870
+<v Speaker 0>that I mean, we don't need to do
+
+01:21:55.870 --> 01:21:57.470
+<v Speaker 0>it. But if if we checked in the
+
+01:21:57.470 --> 01:21:59.230
+<v Speaker 0>task queue is empty, we could just exit.
+
+01:21:59.230 --> 01:21:59.390
+<v Speaker 0>Right?
+
+01:22:00.605 --> 01:22:02.125
+<v Speaker 0>Yeah. Yeah. Something like that. Yeah. We could
+
+01:22:02.125 --> 01:22:03.885
+<v Speaker 1>we could do that. But in theory, like,
+
+01:22:03.885 --> 01:22:05.245
+<v Speaker 1>let's say if you're running a a web
+
+01:22:05.245 --> 01:22:06.845
+<v Speaker 1>server, you wouldn't wanna do that for instance
+
+01:22:06.845 --> 01:22:07.565
+<v Speaker 1>because
+
+01:22:07.805 --> 01:22:09.485
+<v Speaker 1>you can get traffic at any point in
+
+01:22:09.485 --> 01:22:10.845
+<v Speaker 1>time. Yeah. May not be a very good
+
+01:22:10.845 --> 01:22:11.325
+<v Speaker 0>web server.
+
+01:22:14.020 --> 01:22:16.900
+<v Speaker 1>Cool. So, yeah, that's basically that's basically that.
+
+01:22:17.219 --> 01:22:19.699
+<v Speaker 1>Yeah. That's that's everything from my side.
+
+01:22:20.580 --> 01:22:23.219
+<v Speaker 0>I'll pop with I hope that was enjoyable.
+
+01:22:23.619 --> 01:22:25.460
+<v Speaker 0>No. That was that was great. Like, I
+
+01:22:25.460 --> 01:22:25.940
+<v Speaker 0>I think,
+
+01:22:26.535 --> 01:22:28.455
+<v Speaker 0>you know, going over all the primitives and
+
+01:22:28.455 --> 01:22:30.535
+<v Speaker 0>then seeing how they're actually implemented under the
+
+01:22:30.535 --> 01:22:34.055
+<v Speaker 0>hood is, you know, like, it's not wildly
+
+01:22:34.055 --> 01:22:35.815
+<v Speaker 0>complicated even though it can feel like it.
+
+01:22:35.815 --> 01:22:37.015
+<v Speaker 0>And I think you did a very great
+
+01:22:37.015 --> 01:22:38.855
+<v Speaker 0>job of just breaking it down and showing
+
+01:22:38.855 --> 01:22:40.375
+<v Speaker 0>us the primitives that we have to work
+
+01:22:40.375 --> 01:22:40.535
+<v Speaker 0>with.
+
+01:22:41.239 --> 01:22:43.480
+<v Speaker 0>And it really for me personally just cemented
+
+01:22:43.480 --> 01:22:44.679
+<v Speaker 0>a lot of those things that I had
+
+01:22:44.679 --> 01:22:46.840
+<v Speaker 0>big question marks on. And I'm like, oh,
+
+01:22:47.000 --> 01:22:48.520
+<v Speaker 0>those now make a lot more sense to
+
+01:22:48.520 --> 01:22:51.080
+<v Speaker 0>me. To me that was a really valuable
+
+01:22:51.080 --> 01:22:52.760
+<v Speaker 0>demo. I thought that was great. And I
+
+01:22:52.760 --> 01:22:53.480
+<v Speaker 0>know Awesome.
+
+01:22:54.095 --> 01:22:56.095
+<v Speaker 0>How the executors work. It used to be
+
+01:22:56.095 --> 01:22:57.614
+<v Speaker 0>something I would try away from.
+
+01:22:57.935 --> 01:23:00.015
+<v Speaker 0>Yeah. That's like the best function that has
+
+01:23:00.015 --> 01:23:01.215
+<v Speaker 0>a pull on it and stuff like that.
+
+01:23:01.215 --> 01:23:04.255
+<v Speaker 0>So very, useful. Thank you. Awesome.
+
+01:23:04.575 --> 01:23:05.215
+<v Speaker 1>Thanks.
+
+01:23:05.535 --> 01:23:08.510
+<v Speaker 0>Alright. Well, we are approaching time.
+
+01:23:08.829 --> 01:23:10.590
+<v Speaker 0>We got a lovely comment there from Russell
+
+01:23:10.590 --> 01:23:12.349
+<v Speaker 0>saying that was an awesome demo. Thank you
+
+01:23:12.349 --> 01:23:13.949
+<v Speaker 0>very much, Samuel and David. I mean, I'll
+
+01:23:13.949 --> 01:23:15.389
+<v Speaker 0>take some of the credit for sure, but
+
+01:23:15.389 --> 01:23:16.829
+<v Speaker 0>it was definitely a
+
+01:23:17.869 --> 01:23:20.429
+<v Speaker 0>% all Samuel there. So thank you for
+
+01:23:20.429 --> 01:23:22.755
+<v Speaker 0>taking time out of your day, for joining
+
+01:23:22.755 --> 01:23:23.395
+<v Speaker 0>us,
+
+01:23:23.555 --> 01:23:25.475
+<v Speaker 0>and for doing live coding, which I know
+
+01:23:25.475 --> 01:23:28.035
+<v Speaker 0>is no easy feat. So Not at all.
+
+01:23:28.035 --> 01:23:29.475
+<v Speaker 1>Especially my first time, so it wasn't too
+
+01:23:29.475 --> 01:23:30.995
+<v Speaker 1>long. Oh, damn it. Oh, well, you did
+
+01:23:30.995 --> 01:23:33.074
+<v Speaker 0>great. Thank you very much. Thank you. Alright.
+
+01:23:33.555 --> 01:23:34.594
+<v Speaker 0>Well, I'll let you get back to your
+
+01:23:34.594 --> 01:23:36.275
+<v Speaker 0>day. Any final words before we say goodbye?
+
+01:23:37.130 --> 01:23:38.570
+<v Speaker 1>Cool. I'm
+
+01:23:38.570 --> 01:23:39.130
+<v Speaker 1>good.
+
+01:23:39.610 --> 01:23:41.610
+<v Speaker 1>That's awesome. Alright. Awesome. I'll speak to you
+
+01:23:41.610 --> 01:23:43.050
+<v Speaker 0>again soon. Have a wonderful day. Thank you
+
+01:23:43.050 --> 01:23:44.250
+<v Speaker 0>all for watching. Bye.
+
+01:23:44.650 --> 01:23:44.970
+<v Speaker 1>Yeah.

@@ -35,6 +35,26 @@ onMounted(() => {
 	const playerEl = document.querySelector("media-player");
 	if (!playerEl) return;
 
+	// Force poster to fill container
+	setTimeout(() => {
+		// Find the poster image specifically
+		const posterImg = playerEl.querySelector('media-poster img') as HTMLImageElement;
+		if (posterImg) {
+			posterImg.style.objectFit = 'cover';
+			posterImg.style.width = '100%';
+			posterImg.style.height = '100%';
+			posterImg.style.objectPosition = 'center center';
+		}
+		
+		// Also target the media-poster element
+		const mediaPoster = playerEl.querySelector('media-poster') as HTMLElement;
+		if (mediaPoster) {
+			mediaPoster.style.display = 'block';
+			mediaPoster.style.width = '100%';
+			mediaPoster.style.height = '100%';
+		}
+	}, 200);
+
 	// Handle media events
 	playerEl.addEventListener("play", () => {
 		const mediaEl = playerEl.querySelector("video");
@@ -108,12 +128,13 @@ onMounted(() => {
 			:autoplay="!!autoPlay" 
 			class="w-full h-full"
 			playsinline
+			:style="{ '--media-object-fit': 'cover', '--media-object-position': 'center' }"
 		>
 			<media-provider>
 				<source :src="`https://content.rawkode.academy/videos/${video}/stream.m3u8`" type="application/x-mpegurl" />
 				<track :src="`https://content.rawkode.academy/videos/${video}/captions/en.vtt`" kind="subtitles" label="English" lang="en-US" default />
 				<track kind="chapters" :src="`/api/chapters/${video}`" label="Chapters" default />
-				<media-poster class="vds-poster" :src="thumbnailUrl" :alt="`Thumbnail for ${video}`"></media-poster>
+				<media-poster class="vds-poster" :src="thumbnailUrl" :alt="`Thumbnail for ${video}`" fit="cover"></media-poster>
 			</media-provider>
 			<media-video-layout></media-video-layout>
 		</media-player>
@@ -130,6 +151,30 @@ onMounted(() => {
 /* Ensure video stays in its container on mobile */
 :deep(media-player) {
 	position: relative !important;
+	background-color: transparent !important;
+}
+
+/* Fix poster black bars - target all possible selectors */
+:deep(.vds-poster),
+:deep(media-poster),
+:deep(media-poster img),
+:deep([data-media-poster]),
+:deep(.vds-video-layout media-poster),
+:deep(media-provider media-poster) {
+	object-fit: cover !important;
+	width: 100% !important;
+	height: 100% !important;
+}
+
+/* Remove any background color from poster container */
+:deep(media-poster),
+:deep([data-media-poster]) {
+	background-color: transparent !important;
+}
+
+/* Ensure the provider doesn't have black background */
+:deep(media-provider) {
+	background-color: transparent !important;
 }
 
 /* Override any fullscreen styles on mobile */
@@ -141,5 +186,46 @@ onMounted(() => {
 	:deep(.vds-fullscreen) {
 		position: relative !important;
 	}
+}
+</style>
+
+<style>
+/* Global styles for Vidstack poster fix */
+media-player {
+	--media-object-fit: cover !important;
+	--media-object-position: center !important;
+}
+
+/* Target the video layout background */
+.vds-video-layout {
+	background-color: transparent !important;
+}
+
+/* Ensure no black bars in the buffering container */
+.vds-buffering-container {
+	background-color: transparent !important;
+}
+
+/* Target poster with attribute selector */
+[data-media-poster] {
+	object-fit: cover !important;
+	background-color: transparent !important;
+}
+
+/* Video provider background */
+[data-media-provider] {
+	background-color: transparent !important;
+}
+
+/* Ensure video element has no black background */
+video {
+	background-color: transparent !important;
+}
+
+/* Target media-poster img directly */
+media-poster img {
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
 }
 </style>

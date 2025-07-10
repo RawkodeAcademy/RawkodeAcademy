@@ -1,0 +1,5876 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 4e4e87fa-b441-40a2-a938-a50b89e524b8
+Created: 2025-04-29T17:58:36.029Z
+Duration: 4097.76
+Channels: 1
+
+00:01:10.854 --> 00:01:14.055
+<v Speaker 0>Hello, and welcome to another episode of Rawkode
+
+00:01:14.055 --> 00:01:15.415
+<v Speaker 0>Live at the Rawkode Academy.
+
+00:01:16.030 --> 00:01:17.710
+<v Speaker 0>My name is David Flanagan, and I am
+
+00:01:17.710 --> 00:01:19.630
+<v Speaker 0>your host. You may know me as Rawkode
+
+00:01:19.630 --> 00:01:20.990
+<v Speaker 0>across the Internet.
+
+00:01:21.710 --> 00:01:23.549
+<v Speaker 0>First, we got a little bit of housekeeping
+
+00:01:23.549 --> 00:01:27.229
+<v Speaker 0>before we dive into project sigstore supply chain
+
+00:01:27.229 --> 00:01:29.229
+<v Speaker 0>for Kubernetes containers and other things.
+
+00:01:29.925 --> 00:01:32.405
+<v Speaker 0>Now the housekeeping involves, first, subscribe into the
+
+00:01:32.405 --> 00:01:34.245
+<v Speaker 0>channel. If you're not already subscribed to the
+
+00:01:34.245 --> 00:01:36.085
+<v Speaker 0>Rawkode Academy, please do so now.
+
+00:01:36.565 --> 00:01:38.405
+<v Speaker 0>Tick the bell, and you will get notifications
+
+00:01:38.405 --> 00:01:40.405
+<v Speaker 0>and alerts for all new episodes as we
+
+00:01:40.405 --> 00:01:42.325
+<v Speaker 0>explore the cloud native landscape together.
+
+00:01:42.930 --> 00:01:45.410
+<v Speaker 0>If you wanna join and chat with other
+
+00:01:45.410 --> 00:01:47.490
+<v Speaker 0>members of the Rawkode Academy about all things
+
+00:01:47.490 --> 00:01:49.730
+<v Speaker 0>cloud native, Kubernetes, and everything in between, join
+
+00:01:49.730 --> 00:01:52.290
+<v Speaker 0>us on the Discord at Rawkode.chat.
+
+00:01:52.450 --> 00:01:54.370
+<v Speaker 0>And if you want to support this channel,
+
+00:01:54.370 --> 00:01:58.770
+<v Speaker 0>please take a look at the membership options
+
+00:01:57.905 --> 00:02:00.465
+<v Speaker 0>options available at the Rawkode Academy on the
+
+00:02:00.465 --> 00:02:02.465
+<v Speaker 0>YouTube page. You can subscribe for as little
+
+00:02:02.465 --> 00:02:04.945
+<v Speaker 0>as a single dollar a month and get
+
+00:02:04.945 --> 00:02:06.385
+<v Speaker 0>loads more cool goodies.
+
+00:02:07.185 --> 00:02:09.585
+<v Speaker 0>Nailed the intro. Thanks. I'm getting assaulted already
+
+00:02:09.585 --> 00:02:11.700
+<v Speaker 0>before we even started. Thanks, man.
+
+00:02:12.740 --> 00:02:14.580
+<v Speaker 0>I do my best. Alright.
+
+00:02:14.660 --> 00:02:16.820
+<v Speaker 0>Today, we're taking a look at sigstore.
+
+00:02:16.820 --> 00:02:18.500
+<v Speaker 0>I am not smart enough or wise enough
+
+00:02:18.500 --> 00:02:20.420
+<v Speaker 0>to guide us through this journey, so I
+
+00:02:20.420 --> 00:02:21.540
+<v Speaker 0>am going to introduce
+
+00:02:21.780 --> 00:02:23.300
+<v Speaker 0>Dan Lawrence. Hey, man. How's it going?
+
+00:02:24.625 --> 00:02:26.865
+<v Speaker 1>Great. How are you? Well,
+
+00:02:26.865 --> 00:02:28.385
+<v Speaker 0>I mean, I was better until I fluffed
+
+00:02:28.385 --> 00:02:29.745
+<v Speaker 0>the intro a couple of times, but other
+
+00:02:29.745 --> 00:02:31.985
+<v Speaker 0>than that, I'm doing pretty well. Can you,
+
+00:02:31.985 --> 00:02:33.585
+<v Speaker 0>for the audience, if they're not familiar, just
+
+00:02:33.585 --> 00:02:35.265
+<v Speaker 0>tell us a little bit about you, please?
+
+00:02:35.825 --> 00:02:38.540
+<v Speaker 1>Sure. Yeah. I'm a software engineering lead at
+
+00:02:38.540 --> 00:02:40.460
+<v Speaker 1>Google. I work on our open source security
+
+00:02:40.460 --> 00:02:41.020
+<v Speaker 1>team.
+
+00:02:41.420 --> 00:02:42.940
+<v Speaker 1>So my job for the past couple of
+
+00:02:42.940 --> 00:02:44.940
+<v Speaker 1>years has been trying to make it easier
+
+00:02:44.940 --> 00:02:47.260
+<v Speaker 1>to build open source software securely and make
+
+00:02:47.260 --> 00:02:48.780
+<v Speaker 1>it easier for Google and all of our
+
+00:02:48.780 --> 00:02:50.460
+<v Speaker 1>customers to use it securely and not have
+
+00:02:50.460 --> 00:02:52.780
+<v Speaker 1>to worry about these nasty supply chain attacks
+
+00:02:52.235 --> 00:02:53.675
+<v Speaker 1>that keep happening in there all over the
+
+00:02:53.675 --> 00:02:54.235
+<v Speaker 1>news.
+
+00:02:55.355 --> 00:02:56.235
+<v Speaker 0>Nice.
+
+00:02:57.194 --> 00:02:59.115
+<v Speaker 0>So we're gonna be taking a look at
+
+00:02:59.115 --> 00:03:02.235
+<v Speaker 0>sigstore and the multiple components of it today.
+
+00:03:02.315 --> 00:03:02.555
+<v Speaker 0>Like
+
+00:03:03.115 --> 00:03:05.515
+<v Speaker 0>so how would you describe the project to
+
+00:03:05.515 --> 00:03:05.755
+<v Speaker 0>people?
+
+00:03:06.989 --> 00:03:09.150
+<v Speaker 1>Yeah. It's a good question. So sigstore is
+
+00:03:09.150 --> 00:03:10.909
+<v Speaker 1>a little complicated of a project. It's got
+
+00:03:10.909 --> 00:03:12.829
+<v Speaker 1>a bunch of different components and a bunch
+
+00:03:12.829 --> 00:03:15.150
+<v Speaker 1>of different entry points depending on exactly what
+
+00:03:15.150 --> 00:03:16.830
+<v Speaker 1>type of software you're trying to build
+
+00:03:17.230 --> 00:03:19.695
+<v Speaker 1>or consume or anything like that. So we're
+
+00:03:19.695 --> 00:03:21.615
+<v Speaker 1>gonna start with all of these intros with
+
+00:03:21.615 --> 00:03:24.415
+<v Speaker 1>the cosign tool. The cosign tool is spelled
+
+00:03:24.415 --> 00:03:26.735
+<v Speaker 1>c o s I g n, and it's
+
+00:03:26.735 --> 00:03:28.975
+<v Speaker 1>designed to make signing and verification of container
+
+00:03:28.975 --> 00:03:31.215
+<v Speaker 1>images really, really easy. Here, we'll start there
+
+00:03:31.215 --> 00:03:33.375
+<v Speaker 1>because this is a cloud native stream.
+
+00:03:33.890 --> 00:03:35.810
+<v Speaker 1>Mean, containers and Kubernetes should be pretty familiar
+
+00:03:35.810 --> 00:03:36.610
+<v Speaker 1>to most people.
+
+00:03:37.810 --> 00:03:39.330
+<v Speaker 1>All the different components, we'll kind of explain
+
+00:03:39.330 --> 00:03:41.170
+<v Speaker 1>as we get through them, going through some
+
+00:03:41.170 --> 00:03:42.050
+<v Speaker 1>of the demos.
+
+00:03:42.290 --> 00:03:44.370
+<v Speaker 1>But at a high level, the overall goal
+
+00:03:44.370 --> 00:03:46.210
+<v Speaker 1>for sigstore is to kind of do what
+
+00:03:46.210 --> 00:03:48.050
+<v Speaker 1>Let's Encrypt did for HTTPS
+
+00:03:48.050 --> 00:03:49.170
+<v Speaker 1>and certificates,
+
+00:03:49.170 --> 00:03:49.855
+<v Speaker 1>but for
+
+00:03:50.095 --> 00:03:52.575
+<v Speaker 1>open source code and signing instead of encryption
+
+00:03:52.575 --> 00:03:53.695
+<v Speaker 1>and web traffic.
+
+00:03:54.254 --> 00:03:56.334
+<v Speaker 1>So Let's Encrypt set out a few years
+
+00:03:56.334 --> 00:03:59.055
+<v Speaker 1>ago to make it easy and free to
+
+00:03:59.055 --> 00:04:02.409
+<v Speaker 1>get SSL certificates because before that, they were
+
+00:04:02.409 --> 00:04:04.090
+<v Speaker 1>expensive and hard to get, and so people
+
+00:04:04.090 --> 00:04:07.370
+<v Speaker 1>weren't doing it. So web traffic was insecure.
+
+00:04:07.530 --> 00:04:09.769
+<v Speaker 1>They made it free, easy, and automatic, and
+
+00:04:09.769 --> 00:04:11.849
+<v Speaker 1>now something like 98% of all web traffic
+
+00:04:11.849 --> 00:04:13.689
+<v Speaker 1>is encrypted because people wanna do the right
+
+00:04:13.689 --> 00:04:15.875
+<v Speaker 1>thing if it's easy and free. We see
+
+00:04:15.875 --> 00:04:17.714
+<v Speaker 1>the same thing in open source code and
+
+00:04:17.714 --> 00:04:19.794
+<v Speaker 1>software supply chains today where there are some
+
+00:04:19.794 --> 00:04:22.275
+<v Speaker 1>kind of existing code signing systems, but they're
+
+00:04:22.275 --> 00:04:24.355
+<v Speaker 1>really expensive. It's like $500 to get a
+
+00:04:24.355 --> 00:04:25.955
+<v Speaker 1>certificate to sign your code to ship it
+
+00:04:25.955 --> 00:04:27.955
+<v Speaker 1>for different operating systems and platforms.
+
+00:04:28.035 --> 00:04:29.699
+<v Speaker 1>So most people just don't do it, especially
+
+00:04:29.699 --> 00:04:31.699
+<v Speaker 1>in large open source projects where, you know,
+
+00:04:31.699 --> 00:04:33.460
+<v Speaker 1>there's not even a business that could be
+
+00:04:33.460 --> 00:04:35.220
+<v Speaker 1>verified and that kind of thing behind these
+
+00:04:35.220 --> 00:04:35.780
+<v Speaker 1>projects.
+
+00:04:36.819 --> 00:04:38.580
+<v Speaker 1>So we've got a certificate authority that we're
+
+00:04:38.580 --> 00:04:39.780
+<v Speaker 1>gonna be playing around with today to get
+
+00:04:39.780 --> 00:04:42.099
+<v Speaker 1>some code signing certificates issued based on your
+
+00:04:42.099 --> 00:04:44.055
+<v Speaker 1>email address. There's a bunch of different tools
+
+00:04:44.055 --> 00:04:45.975
+<v Speaker 1>inside of cosign two to assign images with
+
+00:04:45.975 --> 00:04:49.575
+<v Speaker 1>YubiKeys and KMS systems and Kubernetes secrets and
+
+00:04:49.575 --> 00:04:52.135
+<v Speaker 1>all that fun stuff. So depending on exactly
+
+00:04:52.135 --> 00:04:53.975
+<v Speaker 1>how you're getting the image, who's producing it,
+
+00:04:53.975 --> 00:04:56.295
+<v Speaker 1>who's signing it, we've got tools and flags
+
+00:04:56.295 --> 00:04:58.530
+<v Speaker 1>and features for all of that here that
+
+00:04:58.530 --> 00:04:59.810
+<v Speaker 1>we'll be walking through, and then we'll be
+
+00:04:59.810 --> 00:05:01.729
+<v Speaker 1>explaining how kind of the sigstore infrastructure makes
+
+00:05:01.729 --> 00:05:02.770
+<v Speaker 1>all of this possible.
+
+00:05:03.650 --> 00:05:05.729
+<v Speaker 0>Awesome. Quite a lot there. We could probably
+
+00:05:05.729 --> 00:05:07.569
+<v Speaker 0>dive into. But I think the the first
+
+00:05:07.569 --> 00:05:09.650
+<v Speaker 0>thing I wanted to see, like, what the
+
+00:05:09.650 --> 00:05:11.729
+<v Speaker 0>fuck the deal with prices of search ten
+
+00:05:11.729 --> 00:05:13.555
+<v Speaker 0>years ago? I mean,
+
+00:05:13.955 --> 00:05:15.875
+<v Speaker 0>I remember working for sorry. Don't mean to
+
+00:05:15.875 --> 00:05:17.955
+<v Speaker 0>swear. It's only afternoon here. But I
+
+00:05:18.514 --> 00:05:20.675
+<v Speaker 0>remember working, you know, ten years ago, even
+
+00:05:20.675 --> 00:05:22.115
+<v Speaker 0>longer, and you had to go buy all
+
+00:05:22.115 --> 00:05:24.034
+<v Speaker 0>of these search, and they were, like, $500
+
+00:05:24.034 --> 00:05:26.835
+<v Speaker 0>plus if you went with a reputable company
+
+00:05:26.370 --> 00:05:29.169
+<v Speaker 0>to get your website delivered over SSL as
+
+00:05:29.169 --> 00:05:30.610
+<v Speaker 0>it was back then. But
+
+00:05:30.930 --> 00:05:32.850
+<v Speaker 0>and now it's just something that if anyone
+
+00:05:32.850 --> 00:05:35.410
+<v Speaker 0>new to development has less encrypt available, it's
+
+00:05:35.410 --> 00:05:37.090
+<v Speaker 0>just an absolute game changer. So it's really
+
+00:05:37.090 --> 00:05:37.570
+<v Speaker 0>cool.
+
+00:05:38.370 --> 00:05:40.225
+<v Speaker 0>I won't complain about I I won't run
+
+00:05:40.225 --> 00:05:41.905
+<v Speaker 0>about EV certs either. I'll leave that for
+
+00:05:41.905 --> 00:05:42.625
+<v Speaker 0>another day. But
+
+00:05:44.545 --> 00:05:46.545
+<v Speaker 1>And, actually, the EV certs are the super
+
+00:05:46.545 --> 00:05:47.985
+<v Speaker 1>expensive ones. That's kinda what you need to
+
+00:05:47.985 --> 00:05:49.665
+<v Speaker 1>get for doing code signing today. So it's
+
+00:05:49.665 --> 00:05:51.420
+<v Speaker 1>it's really bad. Yeah. But
+
+00:05:52.380 --> 00:05:54.380
+<v Speaker 0>we are talking about supply chain. Right? And
+
+00:05:54.380 --> 00:05:56.139
+<v Speaker 0>that's one of the I I think we've
+
+00:05:56.139 --> 00:05:57.340
+<v Speaker 0>seen that a lot over the last twelve
+
+00:05:57.340 --> 00:05:58.860
+<v Speaker 0>months. I mean, how many supply chain checks
+
+00:05:59.099 --> 00:06:00.300
+<v Speaker 0>I mean, I only know what I've seen
+
+00:06:00.300 --> 00:06:01.740
+<v Speaker 0>in the news, which is probably the more
+
+00:06:01.740 --> 00:06:03.740
+<v Speaker 0>high profile one. But I'm assuming you may
+
+00:06:03.740 --> 00:06:05.979
+<v Speaker 0>have more visibility into what's actually going on
+
+00:06:05.979 --> 00:06:07.794
+<v Speaker 0>in the ecosystem right now. Like, this is
+
+00:06:07.794 --> 00:06:09.794
+<v Speaker 0>a really prominent problem. Right?
+
+00:06:11.074 --> 00:06:13.235
+<v Speaker 1>Yeah. They've they've been happening for years.
+
+00:06:13.634 --> 00:06:14.914
+<v Speaker 1>They've been accelerating,
+
+00:06:15.155 --> 00:06:17.155
+<v Speaker 1>I think, for a couple reasons. Open source
+
+00:06:17.155 --> 00:06:18.835
+<v Speaker 1>is getting more and more widely used, which
+
+00:06:18.835 --> 00:06:20.995
+<v Speaker 1>is great for open source, but more companies
+
+00:06:20.995 --> 00:06:21.555
+<v Speaker 1>are using it.
+
+00:06:22.570 --> 00:06:24.570
+<v Speaker 1>Not all open source has a lot of
+
+00:06:24.570 --> 00:06:25.930
+<v Speaker 1>people working on it, a lot of people
+
+00:06:25.930 --> 00:06:28.170
+<v Speaker 1>looking at it, unfortunately. There's kind of this
+
+00:06:28.170 --> 00:06:29.850
+<v Speaker 1>misconception that if it's on GitHub and the
+
+00:06:29.850 --> 00:06:31.130
+<v Speaker 1>project has a bunch of stars, then there
+
+00:06:31.130 --> 00:06:32.650
+<v Speaker 1>are gonna be no bugs inside of it.
+
+00:06:33.370 --> 00:06:34.905
+<v Speaker 1>As maintainer of a bunch of projects with
+
+00:06:34.905 --> 00:06:36.104
+<v Speaker 1>a bunch of GitHub stars, I can tell
+
+00:06:36.104 --> 00:06:37.625
+<v Speaker 1>you that's incorrect. All of my code has
+
+00:06:37.625 --> 00:06:39.384
+<v Speaker 1>bugs. All of the code you're using has
+
+00:06:39.384 --> 00:06:41.944
+<v Speaker 1>bugs in it. And so, yeah, the the
+
+00:06:41.944 --> 00:06:44.025
+<v Speaker 1>supply chain attacks either through, you know, bugs
+
+00:06:44.025 --> 00:06:46.344
+<v Speaker 1>that are put in unintentionally or the scarier
+
+00:06:46.344 --> 00:06:48.104
+<v Speaker 1>ones where people kind of take over GitHub
+
+00:06:48.104 --> 00:06:51.510
+<v Speaker 1>accounts. They steal credentials to container registries
+
+00:06:52.150 --> 00:06:54.230
+<v Speaker 1>are are coming. They're coming quick.
+
+00:06:54.949 --> 00:06:57.190
+<v Speaker 1>Thankfully, there are actually some huge ones over
+
+00:06:57.190 --> 00:06:58.070
+<v Speaker 1>late
+
+00:06:58.070 --> 00:06:59.750
+<v Speaker 1>last week over the weekend that thankfully were
+
+00:06:59.750 --> 00:07:02.389
+<v Speaker 1>a researcher who reported them rather than an
+
+00:07:02.389 --> 00:07:02.790
+<v Speaker 1>attacker.
+
+00:07:03.245 --> 00:07:05.965
+<v Speaker 1>But somebody threw some misconfigured GitHub actions,
+
+00:07:06.045 --> 00:07:08.445
+<v Speaker 1>managed to get write permissions to the entire
+
+00:07:08.445 --> 00:07:11.245
+<v Speaker 1>PyPy package index. Oh, damn. Could've tampered with
+
+00:07:11.245 --> 00:07:12.845
+<v Speaker 1>change any of those packages in there. They're
+
+00:07:12.845 --> 00:07:14.365
+<v Speaker 1>not really signed today, so nobody would have
+
+00:07:14.365 --> 00:07:17.169
+<v Speaker 1>known. Thankfully, he reported it and got these
+
+00:07:17.169 --> 00:07:19.010
+<v Speaker 1>issues fixed, got the GitHub actions locked down
+
+00:07:19.010 --> 00:07:19.970
+<v Speaker 1>a little bit, but that would have been
+
+00:07:19.970 --> 00:07:21.330
+<v Speaker 1>a really, really scary one.
+
+00:07:22.530 --> 00:07:23.970
+<v Speaker 1>There's a similar one. I think it was
+
+00:07:23.970 --> 00:07:26.610
+<v Speaker 1>even the same person actually with Microsoft Versus
+
+00:07:26.610 --> 00:07:27.889
+<v Speaker 1>Code's GitHub repository.
+
+00:07:28.985 --> 00:07:31.065
+<v Speaker 1>Got write permissions to branches there that would
+
+00:07:31.065 --> 00:07:32.825
+<v Speaker 1>have triggered releases and pushed out, you know,
+
+00:07:32.825 --> 00:07:34.505
+<v Speaker 1>malicious versions of Versus Code.
+
+00:07:34.985 --> 00:07:37.385
+<v Speaker 1>Anybody that's kind of thinking about this and
+
+00:07:37.385 --> 00:07:40.185
+<v Speaker 1>paying attention now would realize how terrifying and
+
+00:07:40.185 --> 00:07:41.865
+<v Speaker 1>scary that would be if somebody compromised the
+
+00:07:41.865 --> 00:07:43.760
+<v Speaker 1>IDE that 99%
+
+00:07:43.760 --> 00:07:45.360
+<v Speaker 1>of other developers use, you know, what kind
+
+00:07:45.360 --> 00:07:46.800
+<v Speaker 1>of backdoor can they get put into all
+
+00:07:46.800 --> 00:07:48.240
+<v Speaker 1>the code build? That's why I only had
+
+00:07:48.240 --> 00:07:50.320
+<v Speaker 0>a code with said. So you know?
+
+00:07:50.800 --> 00:07:52.000
+<v Speaker 1>I just write it on a piece of
+
+00:07:52.000 --> 00:07:53.200
+<v Speaker 1>paper and hand it to somebody else.
+
+00:07:55.115 --> 00:07:55.915
+<v Speaker 0>Nice.
+
+00:07:55.915 --> 00:07:58.715
+<v Speaker 0>Alright. That was terrifying. There's now been, you
+
+00:07:58.715 --> 00:08:00.635
+<v Speaker 1>know, executive orders in The United States to
+
+00:08:00.635 --> 00:08:01.915
+<v Speaker 1>help start locking a lot of this stuff
+
+00:08:01.915 --> 00:08:03.595
+<v Speaker 1>down and securing it because governments are getting
+
+00:08:03.595 --> 00:08:04.715
+<v Speaker 1>hit with ransomware.
+
+00:08:05.115 --> 00:08:06.315
+<v Speaker 1>A lot of scary things.
+
+00:08:07.195 --> 00:08:09.115
+<v Speaker 0>Yeah. It is very scary.
+
+00:08:09.195 --> 00:08:11.810
+<v Speaker 0>And sigstore and its components
+
+00:08:11.889 --> 00:08:13.970
+<v Speaker 0>help alleviate a lot of these concerns. Is
+
+00:08:13.970 --> 00:08:15.490
+<v Speaker 0>that is that the best way to describe
+
+00:08:15.490 --> 00:08:15.970
+<v Speaker 0>it?
+
+00:08:16.850 --> 00:08:18.850
+<v Speaker 1>Good idea. Yeah. I think when we talk
+
+00:08:18.850 --> 00:08:20.210
+<v Speaker 1>about open source security,
+
+00:08:20.450 --> 00:08:22.935
+<v Speaker 1>there are kind of two high level problems
+
+00:08:22.935 --> 00:08:25.335
+<v Speaker 1>that I think are orthogonal. They're they're different,
+
+00:08:25.335 --> 00:08:26.935
+<v Speaker 1>and we've got to address both of them.
+
+00:08:27.975 --> 00:08:29.895
+<v Speaker 1>The first one is that all the code
+
+00:08:30.055 --> 00:08:30.775
+<v Speaker 1>is
+
+00:08:30.935 --> 00:08:31.815
+<v Speaker 1>open source,
+
+00:08:32.455 --> 00:08:34.455
+<v Speaker 1>which is great, but it means, you know,
+
+00:08:34.455 --> 00:08:36.135
+<v Speaker 1>anybody's writing it, anybody's working on it. You
+
+00:08:36.135 --> 00:08:37.735
+<v Speaker 1>might not have any idea who the maintainers
+
+00:08:37.735 --> 00:08:37.975
+<v Speaker 1>are.
+
+00:08:39.150 --> 00:08:41.390
+<v Speaker 1>That's pretty cool in some ways, but it's
+
+00:08:41.390 --> 00:08:43.309
+<v Speaker 1>also scary because anybody that spent time on
+
+00:08:43.309 --> 00:08:44.910
+<v Speaker 1>the Internet knows that not everybody on the
+
+00:08:44.910 --> 00:08:46.910
+<v Speaker 1>Internet is a nice person. So you're taking
+
+00:08:46.910 --> 00:08:48.990
+<v Speaker 1>code from, you know, potentially bad people and
+
+00:08:48.990 --> 00:08:49.870
+<v Speaker 1>running it.
+
+00:08:50.430 --> 00:08:51.585
+<v Speaker 1>Even worse, you don't even know where the
+
+00:08:51.585 --> 00:08:52.945
+<v Speaker 1>code is coming from for the most part.
+
+00:08:52.945 --> 00:08:54.785
+<v Speaker 1>If your Docker pulls some container, you have
+
+00:08:54.785 --> 00:08:56.145
+<v Speaker 1>no idea where that came from. If the
+
+00:08:56.145 --> 00:08:57.985
+<v Speaker 1>code even actually came from the repo, will
+
+00:08:57.985 --> 00:08:59.825
+<v Speaker 1>it it's paired to the, you know, Docker
+
+00:08:59.825 --> 00:09:01.025
+<v Speaker 1>registry or anything.
+
+00:09:01.345 --> 00:09:03.105
+<v Speaker 1>And so that's kind of around transparency and
+
+00:09:03.105 --> 00:09:05.105
+<v Speaker 1>not actually understanding what our supply chains are.
+
+00:09:05.570 --> 00:09:07.170
+<v Speaker 1>And that's the angle we're trying to address
+
+00:09:07.170 --> 00:09:09.570
+<v Speaker 1>with sigstore. So if you've got a container,
+
+00:09:09.650 --> 00:09:10.930
+<v Speaker 1>you can figure out exactly how it was
+
+00:09:10.930 --> 00:09:12.530
+<v Speaker 1>built, what code went into it,
+
+00:09:13.090 --> 00:09:15.090
+<v Speaker 1>what build steps were run, that kind of
+
+00:09:15.090 --> 00:09:15.570
+<v Speaker 1>thing.
+
+00:09:16.770 --> 00:09:18.450
+<v Speaker 1>That doesn't make it secure. It just means
+
+00:09:18.450 --> 00:09:20.050
+<v Speaker 1>you understand the supply chain. That's kind of
+
+00:09:20.050 --> 00:09:22.405
+<v Speaker 1>the first step in securing your supply chain.
+
+00:09:23.125 --> 00:09:25.045
+<v Speaker 1>There could still be malware checked into that
+
+00:09:25.045 --> 00:09:26.725
+<v Speaker 1>GitHub repo. But today, you can't even find
+
+00:09:26.725 --> 00:09:28.325
+<v Speaker 1>the GitHub repo to look for malware in
+
+00:09:28.325 --> 00:09:29.285
+<v Speaker 1>most of these cases.
+
+00:09:29.685 --> 00:09:32.165
+<v Speaker 1>So the second half of open source software
+
+00:09:32.165 --> 00:09:34.165
+<v Speaker 1>and security is that it's software, it has
+
+00:09:34.165 --> 00:09:36.085
+<v Speaker 1>bugs, some intentional, some unintentional.
+
+00:09:36.779 --> 00:09:39.340
+<v Speaker 1>So sigstore isn't gonna secure everything completely. Right?
+
+00:09:39.340 --> 00:09:40.940
+<v Speaker 1>There could still be bugs. There could still
+
+00:09:40.940 --> 00:09:43.100
+<v Speaker 1>be CVEs, but at least we're hoping to
+
+00:09:43.100 --> 00:09:45.020
+<v Speaker 1>give you the tools to understand what versions
+
+00:09:45.020 --> 00:09:46.460
+<v Speaker 1>of code you're running, where it came from,
+
+00:09:46.460 --> 00:09:47.820
+<v Speaker 1>that kind of thing. So you can start
+
+00:09:47.820 --> 00:09:48.860
+<v Speaker 1>addressing that second problem.
+
+00:09:49.585 --> 00:09:52.385
+<v Speaker 0>Okay. Let me try and phrase this in
+
+00:09:52.385 --> 00:09:53.985
+<v Speaker 0>my own words so I kind of understand
+
+00:09:53.985 --> 00:09:55.825
+<v Speaker 0>Sure. Where sigstore can fit. Right? But I
+
+00:09:55.825 --> 00:09:57.425
+<v Speaker 0>like to think of it as the problem.
+
+00:09:57.425 --> 00:09:58.945
+<v Speaker 0>Like, we all consume open source code in
+
+00:09:58.945 --> 00:10:00.465
+<v Speaker 0>our projects. And what we can do is
+
+00:10:00.465 --> 00:10:01.985
+<v Speaker 0>we can audit the code that we use
+
+00:10:01.985 --> 00:10:04.250
+<v Speaker 0>and never update it, which is usually the
+
+00:10:04.250 --> 00:10:06.970
+<v Speaker 0>enterprise approach. Right? Or we can always be
+
+00:10:06.970 --> 00:10:08.490
+<v Speaker 0>pulling in the latest one and trying to
+
+00:10:08.490 --> 00:10:10.650
+<v Speaker 0>avoid all those security conflicts, and there's very
+
+00:10:10.650 --> 00:10:13.450
+<v Speaker 0>little in the middle. Does sigstore help us
+
+00:10:13.450 --> 00:10:16.205
+<v Speaker 0>bridge these two different approaches and have more
+
+00:10:16.205 --> 00:10:18.845
+<v Speaker 0>confidence and frequently updating our packages and our
+
+00:10:18.845 --> 00:10:19.645
+<v Speaker 0>dependencies?
+
+00:10:20.205 --> 00:10:21.725
+<v Speaker 1>That's a really, really good way to put
+
+00:10:21.725 --> 00:10:23.725
+<v Speaker 1>it. Yeah. And it that's controversial, it comes
+
+00:10:23.725 --> 00:10:25.245
+<v Speaker 1>up a lot about, you know, that strategy
+
+00:10:25.245 --> 00:10:27.165
+<v Speaker 1>of how often should I be updating and
+
+00:10:27.165 --> 00:10:27.805
+<v Speaker 1>that kind of thing.
+
+00:10:29.360 --> 00:10:31.200
+<v Speaker 1>I'm on the the opinion that, yeah, you've
+
+00:10:31.200 --> 00:10:32.480
+<v Speaker 1>gotta be updating frequently.
+
+00:10:32.800 --> 00:10:34.240
+<v Speaker 1>It does put you at risk. In some
+
+00:10:34.240 --> 00:10:35.920
+<v Speaker 1>cases, it's a lot of work. It's tough,
+
+00:10:35.920 --> 00:10:36.959
+<v Speaker 1>but I think you just have to be
+
+00:10:36.959 --> 00:10:38.400
+<v Speaker 1>doing these updates. Otherwise,
+
+00:10:38.640 --> 00:10:39.520
+<v Speaker 1>you're behind.
+
+00:10:40.320 --> 00:10:42.435
+<v Speaker 1>You're gonna get hit with these CVs that
+
+00:10:42.435 --> 00:10:43.875
+<v Speaker 1>are found years later, and and you can
+
+00:10:43.875 --> 00:10:45.315
+<v Speaker 1>get yourself into a position where you've got
+
+00:10:45.315 --> 00:10:46.915
+<v Speaker 1>years of code to try to update all
+
+00:10:46.915 --> 00:10:48.515
+<v Speaker 1>at the same time, which is really tough.
+
+00:10:48.515 --> 00:10:50.275
+<v Speaker 1>It's it's really bad. It's embarrassing when you
+
+00:10:50.275 --> 00:10:51.635
+<v Speaker 1>get hit with one of those two.
+
+00:10:52.035 --> 00:10:53.955
+<v Speaker 1>Forgot to update struts that's been running here,
+
+00:10:53.955 --> 00:10:55.795
+<v Speaker 1>and now everybody's credit card data's been leaked,
+
+00:10:55.795 --> 00:10:57.529
+<v Speaker 1>that kind of thing. So I think you've
+
+00:10:57.529 --> 00:10:58.490
+<v Speaker 1>gotta get to a point where you can
+
+00:10:58.490 --> 00:11:01.050
+<v Speaker 1>be updating frequently. You know, shift it left
+
+00:11:01.050 --> 00:11:02.970
+<v Speaker 1>if you wanna use buzzwords. Update your dependencies
+
+00:11:02.970 --> 00:11:05.370
+<v Speaker 1>as often as possible with stuff like Dependabot.
+
+00:11:06.330 --> 00:11:07.930
+<v Speaker 1>And then the scary part there is, you
+
+00:11:07.930 --> 00:11:09.450
+<v Speaker 1>know, the whole wall, it wasn't broken. Why
+
+00:11:09.450 --> 00:11:11.290
+<v Speaker 1>would I fix it? Now I'm, you know,
+
+00:11:11.185 --> 00:11:12.865
+<v Speaker 1>putting myself at a bigger risk, pulling in
+
+00:11:12.865 --> 00:11:14.305
+<v Speaker 1>all these new changes constantly.
+
+00:11:14.625 --> 00:11:16.305
+<v Speaker 1>And that's where since we're we're hoping to
+
+00:11:16.305 --> 00:11:18.225
+<v Speaker 1>make that easier and safer and less scary
+
+00:11:18.225 --> 00:11:20.465
+<v Speaker 1>to do by making it you confident, basically,
+
+00:11:20.465 --> 00:11:22.465
+<v Speaker 1>in all the code you're pulling in constantly,
+
+00:11:22.465 --> 00:11:25.180
+<v Speaker 1>knowing where it came from. Nice. Well, easier
+
+00:11:25.180 --> 00:11:27.020
+<v Speaker 0>and less scary sounds good to me. So
+
+00:11:27.020 --> 00:11:28.780
+<v Speaker 0>why don't we dive in and get started
+
+00:11:28.780 --> 00:11:29.340
+<v Speaker 0>then?
+
+00:11:29.900 --> 00:11:32.300
+<v Speaker 0>Let me pop up my screen share. We're
+
+00:11:32.300 --> 00:11:35.180
+<v Speaker 0>still here. We've got the sigstore website here.
+
+00:11:35.980 --> 00:11:37.980
+<v Speaker 0>You suggested that we're gonna start by taking
+
+00:11:37.980 --> 00:11:39.900
+<v Speaker 0>a look at the cosign project first
+
+00:11:40.195 --> 00:11:42.915
+<v Speaker 0>to play around with some container image scanning.
+
+00:11:43.075 --> 00:11:45.714
+<v Speaker 0>So we'll do that right away. To the
+
+00:11:45.714 --> 00:11:47.154
+<v Speaker 0>people that are watching, thank you for all
+
+00:11:47.154 --> 00:11:48.675
+<v Speaker 0>the comments so far. If you have any
+
+00:11:48.675 --> 00:11:50.435
+<v Speaker 0>questions for Dan, feel free to drop them
+
+00:11:50.435 --> 00:11:51.475
+<v Speaker 0>in the chat. We'll do our best to
+
+00:11:51.475 --> 00:11:52.435
+<v Speaker 0>tackle them as we go.
+
+00:11:53.820 --> 00:11:55.500
+<v Speaker 0>Alright. Step one,
+
+00:11:57.260 --> 00:11:58.140
+<v Speaker 0>cosign.
+
+00:11:58.860 --> 00:11:59.820
+<v Speaker 0>This is
+
+00:12:00.300 --> 00:12:03.420
+<v Speaker 0>container signing, verification, and storage, and an OCI
+
+00:12:03.420 --> 00:12:05.660
+<v Speaker 0>registry. You wanna break that down for us
+
+00:12:05.660 --> 00:12:06.060
+<v Speaker 0>a little bit?
+
+00:12:07.135 --> 00:12:09.214
+<v Speaker 1>Sure. Yeah. So what Incosign lets you do
+
+00:12:09.214 --> 00:12:11.055
+<v Speaker 1>is yeah. Just kinda stay right there. You
+
+00:12:11.055 --> 00:12:13.135
+<v Speaker 1>can sign container images that you built.
+
+00:12:13.454 --> 00:12:14.895
+<v Speaker 1>You can verify those,
+
+00:12:15.375 --> 00:12:16.415
+<v Speaker 1>signatures,
+
+00:12:16.415 --> 00:12:18.654
+<v Speaker 1>and everything for it is stored in an
+
+00:12:18.654 --> 00:12:20.334
+<v Speaker 1>OCI registry. You don't need to run any
+
+00:12:20.334 --> 00:12:20.975
+<v Speaker 1>extra services.
+
+00:12:21.540 --> 00:12:23.380
+<v Speaker 1>This all just works with any Docker registry
+
+00:12:23.380 --> 00:12:25.140
+<v Speaker 1>you're gonna be playing around with today.
+
+00:12:25.779 --> 00:12:27.540
+<v Speaker 1>There's a quick little demo that, you know,
+
+00:12:27.540 --> 00:12:29.300
+<v Speaker 1>kinda scrolls there showing the simplest way, but
+
+00:12:29.300 --> 00:12:31.779
+<v Speaker 1>there's about 37 different ways to kinda generate
+
+00:12:31.779 --> 00:12:33.459
+<v Speaker 1>and manage the keys that we're gonna be
+
+00:12:33.459 --> 00:12:35.855
+<v Speaker 1>using for signing stuff here. This is the
+
+00:12:35.855 --> 00:12:37.295
+<v Speaker 1>simplest one. It just kinda throws one in
+
+00:12:37.295 --> 00:12:39.055
+<v Speaker 1>a file on your disk. So that's probably
+
+00:12:39.055 --> 00:12:40.255
+<v Speaker 1>the one we should start out with if
+
+00:12:40.255 --> 00:12:41.935
+<v Speaker 1>you wanna give it a try. But we've
+
+00:12:41.935 --> 00:12:43.214
+<v Speaker 1>got some other cool ones that I'll show
+
+00:12:43.214 --> 00:12:45.375
+<v Speaker 1>you once you get cosign set up and
+
+00:12:45.375 --> 00:12:46.495
+<v Speaker 1>get some stuff signing.
+
+00:12:47.550 --> 00:12:49.710
+<v Speaker 0>Okay. So I guess my step one is
+
+00:12:49.710 --> 00:12:51.550
+<v Speaker 0>to install the cosign
+
+00:12:51.870 --> 00:12:52.830
+<v Speaker 0>application.
+
+00:12:53.630 --> 00:12:55.150
+<v Speaker 1>Yeah. We do have a we just got
+
+00:12:55.150 --> 00:12:56.270
+<v Speaker 1>a brew release.
+
+00:12:56.510 --> 00:12:58.190
+<v Speaker 1>Maybe it didn't make it into the docs
+
+00:12:58.190 --> 00:12:59.470
+<v Speaker 1>yet. So if you've got go, you could
+
+00:12:59.470 --> 00:13:00.750
+<v Speaker 1>go install. That might take a little while
+
+00:13:00.750 --> 00:13:02.350
+<v Speaker 1>or you can just do brew install cosign.
+
+00:13:02.535 --> 00:13:03.495
+<v Speaker 1>It should work.
+
+00:13:04.214 --> 00:13:06.214
+<v Speaker 0>Yeah. I'm happy with the brew install approach.
+
+00:13:06.214 --> 00:13:07.415
+<v Speaker 0>Let me just drag the bottom of this
+
+00:13:07.415 --> 00:13:08.055
+<v Speaker 0>window.
+
+00:13:12.055 --> 00:13:14.375
+<v Speaker 0>Oh, maybe it says it's on tap.
+
+00:13:15.149 --> 00:13:16.990
+<v Speaker 1>Yeah. I'm just forgetting how this works.
+
+00:13:17.870 --> 00:13:18.910
+<v Speaker 1>Here we go.
+
+00:13:20.509 --> 00:13:22.509
+<v Speaker 0>Is there a tap repository
+
+00:13:22.509 --> 00:13:23.870
+<v Speaker 0>on sigstore?
+
+00:13:24.589 --> 00:13:25.870
+<v Speaker 1>Yeah. Cosign
+
+00:13:25.870 --> 00:13:26.990
+<v Speaker 1>and wait.
+
+00:13:27.389 --> 00:13:27.790
+<v Speaker 1>Tap.
+
+00:13:31.024 --> 00:13:32.625
+<v Speaker 0>And I can always pull down the banner.
+
+00:13:32.625 --> 00:13:33.825
+<v Speaker 0>Right? But if we know the
+
+00:13:34.144 --> 00:13:34.545
+<v Speaker 0>brew
+
+00:13:34.945 --> 00:13:36.464
+<v Speaker 0>What is it called?
+
+00:13:36.704 --> 00:13:37.825
+<v Speaker 1>Homebrew
+
+00:13:37.825 --> 00:13:39.105
+<v Speaker 1>tap. There we go.
+
+00:13:39.505 --> 00:13:41.024
+<v Speaker 1>Yep. Brew tap
+
+00:13:41.930 --> 00:13:42.730
+<v Speaker 1>sigstore
+
+00:13:42.730 --> 00:13:44.570
+<v Speaker 1>slash tap. Here we go.
+
+00:13:45.450 --> 00:13:47.130
+<v Speaker 0>And then brew install goes in.
+
+00:13:48.090 --> 00:13:49.530
+<v Speaker 0>You can do it all on one command.
+
+00:13:49.530 --> 00:13:51.370
+<v Speaker 0>I learned this, like, last week, and I'm
+
+00:13:51.370 --> 00:13:53.130
+<v Speaker 0>just obsessed with doing it on one command.
+
+00:13:53.130 --> 00:13:53.850
+<v Speaker 1>Oh, nice.
+
+00:13:54.490 --> 00:13:56.250
+<v Speaker 1>So, actually, there's a really cool little
+
+00:13:56.485 --> 00:13:58.645
+<v Speaker 1>history I'll show while this is downloading.
+
+00:14:00.805 --> 00:14:03.045
+<v Speaker 1>Yeah. Okay. So this just downloads directly from
+
+00:14:03.045 --> 00:14:04.565
+<v Speaker 1>our repo. But at some point over the
+
+00:14:04.565 --> 00:14:06.485
+<v Speaker 1>last year, Homebrew switched
+
+00:14:07.045 --> 00:14:09.045
+<v Speaker 1>the packages that are stored in, you know,
+
+00:14:09.045 --> 00:14:10.085
+<v Speaker 1>their default Homebrew
+
+00:14:11.100 --> 00:14:11.660
+<v Speaker 1>repo
+
+00:14:11.900 --> 00:14:12.940
+<v Speaker 1>Yeah. From
+
+00:14:13.420 --> 00:14:15.180
+<v Speaker 1>something I can't remember what it was, but
+
+00:14:15.180 --> 00:14:17.100
+<v Speaker 1>they switched it over to GHCR.
+
+00:14:17.100 --> 00:14:19.100
+<v Speaker 1>Yep. So the GitHub Container Registry.
+
+00:14:19.580 --> 00:14:22.300
+<v Speaker 1>So Homebrew uses an OCI registry to store
+
+00:14:22.300 --> 00:14:24.824
+<v Speaker 1>all of the binaries for Mac stuff just
+
+00:14:24.824 --> 00:14:26.745
+<v Speaker 1>because it's free and it's everywhere and it's
+
+00:14:26.745 --> 00:14:28.185
+<v Speaker 1>really easy to put stuff in it. So
+
+00:14:28.185 --> 00:14:30.024
+<v Speaker 1>these aren't containers you're installing at Homebrew for
+
+00:14:30.024 --> 00:14:31.625
+<v Speaker 1>the most part, but they're just kind of
+
+00:14:31.865 --> 00:14:34.584
+<v Speaker 1>hijacking and using OCI registries anyway, which is
+
+00:14:34.584 --> 00:14:35.065
+<v Speaker 1>cool.
+
+00:14:35.545 --> 00:14:37.144
+<v Speaker 0>Yeah. I've I've noticed that with a lot
+
+00:14:37.144 --> 00:14:38.665
+<v Speaker 0>of brew packages coming from g
+
+00:14:39.420 --> 00:14:40.540
+<v Speaker 0>GHCR.
+
+00:14:40.620 --> 00:14:42.860
+<v Speaker 0>It's really cool the way they're using the
+
+00:14:42.860 --> 00:14:45.020
+<v Speaker 0>OCI format there for that, definitely. But I
+
+00:14:45.020 --> 00:14:47.260
+<v Speaker 0>think because this is your own tap,
+
+00:14:47.420 --> 00:14:49.580
+<v Speaker 0>you would have to upload to that yourself
+
+00:14:49.580 --> 00:14:51.100
+<v Speaker 0>rather than anything else.
+
+00:14:51.580 --> 00:14:53.339
+<v Speaker 0>So we've got a couple of comments already.
+
+00:14:54.575 --> 00:14:57.535
+<v Speaker 0>So Kevin the Fireflash
+
+00:14:57.615 --> 00:14:59.535
+<v Speaker 0>saying it looks really similar to how RPM
+
+00:14:59.535 --> 00:15:00.255
+<v Speaker 0>works.
+
+00:15:00.415 --> 00:15:01.455
+<v Speaker 0>I'm
+
+00:15:01.455 --> 00:15:03.455
+<v Speaker 0>not sure how RPM works myself, but I'll
+
+00:15:03.455 --> 00:15:05.135
+<v Speaker 0>trust your take your judgment there.
+
+00:15:05.695 --> 00:15:07.615
+<v Speaker 0>Kelly Jack was telling me to use Nix.
+
+00:15:07.615 --> 00:15:10.130
+<v Speaker 0>I can't because I stupidly upgraded to the
+
+00:15:10.130 --> 00:15:12.210
+<v Speaker 0>Mac OS beta and now nothing works except
+
+00:15:12.210 --> 00:15:13.570
+<v Speaker 0>my streaming software. So
+
+00:15:14.370 --> 00:15:16.130
+<v Speaker 0>stay tuned for lots more. Sorry.
+
+00:15:16.530 --> 00:15:18.290
+<v Speaker 1>There's a next formula or whatever it's called
+
+00:15:18.290 --> 00:15:19.890
+<v Speaker 1>for cosine too. I got it running in
+
+00:15:19.890 --> 00:15:22.165
+<v Speaker 1>a container, which is awesome. Sweet.
+
+00:15:22.964 --> 00:15:24.725
+<v Speaker 0>And there's a a first question there for
+
+00:15:24.725 --> 00:15:27.125
+<v Speaker 0>you. So is cosine admission controller going to
+
+00:15:27.125 --> 00:15:29.125
+<v Speaker 0>be adopted into sext or or stay in
+
+00:15:29.125 --> 00:15:30.324
+<v Speaker 0>your personal GitHub?
+
+00:15:31.444 --> 00:15:33.285
+<v Speaker 1>Good question. Yeah. So it's probably referring to
+
+00:15:33.605 --> 00:15:35.125
+<v Speaker 1>I have a little toy admission controller I
+
+00:15:35.125 --> 00:15:38.245
+<v Speaker 1>was I wrote to just kinda learn how
+
+00:15:37.050 --> 00:15:39.130
+<v Speaker 1>builder and the new admission controller stuff, the
+
+00:15:39.130 --> 00:15:41.770
+<v Speaker 1>SDK is all put work together.
+
+00:15:42.170 --> 00:15:44.570
+<v Speaker 1>I called it cosigned, c o s I
+
+00:15:44.570 --> 00:15:46.089
+<v Speaker 1>g n e d, to check the make
+
+00:15:46.089 --> 00:15:47.290
+<v Speaker 1>sure everything is resigned.
+
+00:15:47.450 --> 00:15:48.330
+<v Speaker 1>I,
+
+00:15:48.330 --> 00:15:50.345
+<v Speaker 1>you know, didn't write tests. The code barely
+
+00:15:50.345 --> 00:15:52.185
+<v Speaker 1>works. I I stuck it up there. Didn't
+
+00:15:52.185 --> 00:15:53.785
+<v Speaker 1>wanna put it into the real sigstore thing.
+
+00:15:53.785 --> 00:15:55.305
+<v Speaker 1>I wasn't sure if people would use it
+
+00:15:55.305 --> 00:15:57.305
+<v Speaker 1>if it was worth spending more time on.
+
+00:15:57.865 --> 00:15:59.705
+<v Speaker 1>But then people started filing bugs, of course,
+
+00:15:59.705 --> 00:16:01.545
+<v Speaker 1>which happens with open source and running in
+
+00:16:01.545 --> 00:16:03.380
+<v Speaker 1>production and all that scary stuff. I gotta
+
+00:16:03.380 --> 00:16:04.740
+<v Speaker 1>figure out if I wanna take it down
+
+00:16:04.740 --> 00:16:06.900
+<v Speaker 1>or actually move it over into the org.
+
+00:16:07.220 --> 00:16:08.900
+<v Speaker 1>There's some other policy engines now that are
+
+00:16:08.900 --> 00:16:10.580
+<v Speaker 1>adding support, so I don't know how much
+
+00:16:10.580 --> 00:16:11.940
+<v Speaker 1>we're gonna keep needing mine.
+
+00:16:12.420 --> 00:16:14.660
+<v Speaker 1>Stuff like and gatekeeper
+
+00:16:14.660 --> 00:16:16.260
+<v Speaker 1>and other support
+
+00:16:16.260 --> 00:16:17.700
+<v Speaker 1>for cosign signatures.
+
+00:16:17.940 --> 00:16:19.385
+<v Speaker 0>Yeah. It doesn't matter how much you put
+
+00:16:19.385 --> 00:16:20.904
+<v Speaker 0>a warning in the read me saying, do
+
+00:16:20.904 --> 00:16:23.464
+<v Speaker 0>not use this. People are quick because it's
+
+00:16:23.464 --> 00:16:24.584
+<v Speaker 0>got to use a net to solve the
+
+00:16:24.584 --> 00:16:26.105
+<v Speaker 0>problem. They wanna get it in the product
+
+00:16:26.105 --> 00:16:27.225
+<v Speaker 0>and fix that. Yeah.
+
+00:16:28.425 --> 00:16:30.185
+<v Speaker 1>Yeah. So it's there.
+
+00:16:31.225 --> 00:16:32.904
+<v Speaker 1>I don't have a perfect answer. Sorry about
+
+00:16:32.904 --> 00:16:33.065
+<v Speaker 1>that.
+
+00:16:34.720 --> 00:16:35.920
+<v Speaker 0>Alright.
+
+00:16:35.920 --> 00:16:38.160
+<v Speaker 0>So we got cosign CLI. Do you want
+
+00:16:38.160 --> 00:16:39.360
+<v Speaker 0>me to jump back over to the repo
+
+00:16:39.360 --> 00:16:40.800
+<v Speaker 0>and type in that command? Are we just
+
+00:16:40.800 --> 00:16:41.360
+<v Speaker 0>gonna
+
+00:16:41.680 --> 00:16:43.760
+<v Speaker 0>tap complete through it? Live from here. Yeah.
+
+00:16:43.760 --> 00:16:45.440
+<v Speaker 1>Yeah. So actually, real quick first. Do you
+
+00:16:45.440 --> 00:16:47.295
+<v Speaker 1>have a container we can work with? Do
+
+00:16:47.295 --> 00:16:48.654
+<v Speaker 1>have a container set up in some registry
+
+00:16:48.654 --> 00:16:51.214
+<v Speaker 1>somewhere? It doesn't have to be super
+
+00:16:52.095 --> 00:16:54.495
+<v Speaker 0>Hey. Yeah. I've I've I've got the clustered
+
+00:16:54.495 --> 00:16:56.894
+<v Speaker 0>demo application, which we could sign, which runs
+
+00:16:57.134 --> 00:16:59.214
+<v Speaker 0>which is stored on GHCR.
+
+00:16:59.214 --> 00:17:01.630
+<v Speaker 0>So is that that work? Perfect. Yeah. As
+
+00:17:01.630 --> 00:17:03.070
+<v Speaker 1>long as you get right permissions set up
+
+00:17:03.070 --> 00:17:05.309
+<v Speaker 1>for that, that should be perfect. Alright.
+
+00:17:05.869 --> 00:17:08.270
+<v Speaker 1>So, yeah, let's we'll start by generating a
+
+00:17:08.270 --> 00:17:09.550
+<v Speaker 1>key pair. So you can just type generate
+
+00:17:09.550 --> 00:17:11.230
+<v Speaker 1>hyphen key hyphen pair.
+
+00:17:12.775 --> 00:17:14.214
+<v Speaker 0>Try out the hyphens right now. Should I
+
+00:17:14.214 --> 00:17:15.894
+<v Speaker 0>spend docker up just now, actually?
+
+00:17:16.935 --> 00:17:19.095
+<v Speaker 1>Nope. Nothing docker. Okay.
+
+00:17:21.175 --> 00:17:23.015
+<v Speaker 0>Alright. So generate key pair.
+
+00:17:23.575 --> 00:17:24.935
+<v Speaker 0>Got a whole bunch of options.
+
+00:17:28.339 --> 00:17:30.180
+<v Speaker 0>We're just doing it vanilla, so it's gonna
+
+00:17:30.180 --> 00:17:32.100
+<v Speaker 0>generate a private key for us. Is that
+
+00:17:32.100 --> 00:17:32.659
+<v Speaker 0>correct?
+
+00:17:33.060 --> 00:17:34.820
+<v Speaker 1>Yep. And you can type you should type
+
+00:17:34.820 --> 00:17:35.779
+<v Speaker 1>in a password.
+
+00:17:37.300 --> 00:17:38.500
+<v Speaker 0>Should or must? I
+
+00:17:40.020 --> 00:17:41.540
+<v Speaker 1>don't I don't remember what happens if you
+
+00:17:41.540 --> 00:17:42.980
+<v Speaker 1>just hit enter, but
+
+00:17:45.635 --> 00:17:46.995
+<v Speaker 1>hopefully, it'll match.
+
+00:17:47.315 --> 00:17:49.315
+<v Speaker 0>Yeah. There we go. Cool.
+
+00:17:49.395 --> 00:17:51.715
+<v Speaker 1>Alright. So now you've got two new files
+
+00:17:51.715 --> 00:17:54.195
+<v Speaker 1>on disk here, which I'll explain quickly and
+
+00:17:54.195 --> 00:17:54.915
+<v Speaker 1>we can show to people.
+
+00:17:55.980 --> 00:17:59.179
+<v Speaker 1>This uses Cosign uses digital signatures,
+
+00:17:59.340 --> 00:18:01.100
+<v Speaker 1>which means you get two different keys. There's
+
+00:18:01.100 --> 00:18:03.420
+<v Speaker 1>a public key and a private key. The
+
+00:18:03.420 --> 00:18:05.659
+<v Speaker 1>public key is the one you publish.
+
+00:18:05.980 --> 00:18:07.820
+<v Speaker 1>You distribute that one widely. Anybody who wants
+
+00:18:07.820 --> 00:18:09.900
+<v Speaker 1>to check your images can check the signatures
+
+00:18:09.900 --> 00:18:11.955
+<v Speaker 1>against that public key. So if you just
+
+00:18:11.955 --> 00:18:13.235
+<v Speaker 1>wanna cap that, we can see what it
+
+00:18:13.235 --> 00:18:13.955
+<v Speaker 0>looks like.
+
+00:18:18.195 --> 00:18:19.875
+<v Speaker 1>Cool. Yep. So that this is the public
+
+00:18:19.875 --> 00:18:21.955
+<v Speaker 1>key. That's it. It uses
+
+00:18:22.115 --> 00:18:24.595
+<v Speaker 1>elliptic curve cryptography if you're into that and
+
+00:18:24.595 --> 00:18:27.559
+<v Speaker 1>some details here. But, yeah, we picked
+
+00:18:27.800 --> 00:18:29.720
+<v Speaker 1>some good defaults. There are no real flags
+
+00:18:29.720 --> 00:18:31.960
+<v Speaker 1>here. We only support a couple different algorithm
+
+00:18:31.960 --> 00:18:34.600
+<v Speaker 1>combinations and stuff like that. That's the public
+
+00:18:34.600 --> 00:18:35.960
+<v Speaker 1>key. It's pretty small. That's the thing you
+
+00:18:35.960 --> 00:18:37.640
+<v Speaker 1>have to publish and send around to let
+
+00:18:37.640 --> 00:18:38.360
+<v Speaker 1>people check against.
+
+00:18:39.284 --> 00:18:40.725
+<v Speaker 1>Now let's take a look at the secret
+
+00:18:40.725 --> 00:18:42.245
+<v Speaker 1>key too. So I said this is secret,
+
+00:18:42.245 --> 00:18:44.085
+<v Speaker 1>but it's encrypted with that password. So it's
+
+00:18:44.085 --> 00:18:45.365
+<v Speaker 1>actually okay to show as long as you
+
+00:18:45.365 --> 00:18:46.724
+<v Speaker 1>don't tell us the password too.
+
+00:18:47.044 --> 00:18:49.764
+<v Speaker 1>So says begin encrypted cosign private key. So
+
+00:18:49.764 --> 00:18:51.044
+<v Speaker 1>nobody can do anything with this unless they
+
+00:18:51.044 --> 00:18:52.804
+<v Speaker 1>also have your password. So hopefully, it's not
+
+00:18:52.804 --> 00:18:52.965
+<v Speaker 1>just
+
+00:18:53.710 --> 00:18:55.790
+<v Speaker 1>Rawkode one or something like that. No. It's
+
+00:18:55.790 --> 00:18:57.310
+<v Speaker 0>a b c one two three.
+
+00:18:57.630 --> 00:18:59.470
+<v Speaker 1>Perfect. Yeah. Hunter one two or whatever it
+
+00:18:59.470 --> 00:19:01.870
+<v Speaker 1>is. Hunter two. Yeah. That's the Yeah. Everybody
+
+00:19:01.870 --> 00:19:04.270
+<v Speaker 1>type your type your passwords into the chat
+
+00:19:04.270 --> 00:19:04.750
+<v Speaker 1>here.
+
+00:19:06.190 --> 00:19:07.710
+<v Speaker 1>Yeah. So that's the that's the one we're
+
+00:19:07.710 --> 00:19:08.910
+<v Speaker 1>gonna be using to sign stuff with.
+
+00:19:09.845 --> 00:19:12.005
+<v Speaker 1>So we are ready to go now with
+
+00:19:12.005 --> 00:19:13.044
+<v Speaker 1>these two files.
+
+00:19:14.165 --> 00:19:17.285
+<v Speaker 1>Now you can sign your container image. Cool.
+
+00:19:17.285 --> 00:19:19.285
+<v Speaker 1>So If you remember the URL, you just
+
+00:19:19.285 --> 00:19:21.285
+<v Speaker 1>do cosign sign. Oh, it's saying. I was
+
+00:19:21.285 --> 00:19:23.045
+<v Speaker 0>just making it out. Right? Okay. Oh, yep.
+
+00:19:23.045 --> 00:19:23.605
+<v Speaker 1>That's right, though.
+
+00:19:24.360 --> 00:19:26.040
+<v Speaker 1>Yeah. There's bunch of different flags here. As
+
+00:19:26.040 --> 00:19:27.320
+<v Speaker 1>you can see at the top, we support,
+
+00:19:27.320 --> 00:19:29.080
+<v Speaker 1>like, all the different cloud providers have a
+
+00:19:29.080 --> 00:19:30.680
+<v Speaker 1>KMS system that you can use so you
+
+00:19:30.680 --> 00:19:31.880
+<v Speaker 1>don't have to have the keys locally if
+
+00:19:31.880 --> 00:19:34.280
+<v Speaker 1>you wanna use that stuff. HashiCorp Vault has
+
+00:19:34.280 --> 00:19:35.000
+<v Speaker 1>that too.
+
+00:19:35.640 --> 00:19:37.000
+<v Speaker 1>But if you've got the file, you can
+
+00:19:37.000 --> 00:19:39.075
+<v Speaker 1>just do dash key and pass in the
+
+00:19:39.075 --> 00:19:41.235
+<v Speaker 1>cosign dot key the secret key,
+
+00:19:43.315 --> 00:19:44.515
+<v Speaker 1>and then the name of the image you
+
+00:19:44.515 --> 00:19:46.115
+<v Speaker 1>wanna assign. So the g h c r
+
+00:19:46.115 --> 00:19:46.915
+<v Speaker 1>clustered thing.
+
+00:19:50.720 --> 00:19:52.880
+<v Speaker 0>We'll send we'll send you to it. Why
+
+00:19:52.880 --> 00:19:55.600
+<v Speaker 0>not? You've
+
+00:19:55.600 --> 00:19:57.120
+<v Speaker 1>gotta remember the password.
+
+00:20:01.040 --> 00:20:03.120
+<v Speaker 1>So you're not authenticated. You might have to
+
+00:20:03.120 --> 00:20:04.400
+<v Speaker 1>refresh or do something there.
+
+00:20:07.185 --> 00:20:08.705
+<v Speaker 0>I should have g h.
+
+00:20:09.505 --> 00:20:11.505
+<v Speaker 0>Let's see. I'll log in.
+
+00:20:14.225 --> 00:20:16.305
+<v Speaker 0>I'm already logged in. I wonder if I
+
+00:20:16.305 --> 00:20:17.425
+<v Speaker 0>need to do something.
+
+00:20:19.090 --> 00:20:19.729
+<v Speaker 0>Your
+
+00:20:19.970 --> 00:20:21.249
+<v Speaker 0>g h c r.
+
+00:20:23.809 --> 00:20:25.330
+<v Speaker 0>When in doubt, Google it.
+
+00:20:27.409 --> 00:20:28.369
+<v Speaker 0>Login.
+
+00:20:28.370 --> 00:20:30.049
+<v Speaker 0>Yeah. I don't think I've ever actually tried
+
+00:20:30.049 --> 00:20:31.570
+<v Speaker 1>g h c r from my laptop. I
+
+00:20:31.570 --> 00:20:33.330
+<v Speaker 1>know they give you those tokens automatically from
+
+00:20:33.330 --> 00:20:34.744
+<v Speaker 1>inside of Git Hub actions.
+
+00:20:35.144 --> 00:20:37.144
+<v Speaker 0>Yeah. I just assumed because I use the
+
+00:20:37.144 --> 00:20:38.504
+<v Speaker 0>GitHub CLI
+
+00:20:38.505 --> 00:20:39.784
+<v Speaker 0>that it would
+
+00:20:41.304 --> 00:20:43.144
+<v Speaker 0>oh, you just use a personal access token.
+
+00:20:48.710 --> 00:20:50.710
+<v Speaker 0>But how would that work with cosign?
+
+00:20:51.430 --> 00:20:53.270
+<v Speaker 1>It'll it'll figure it all out.
+
+00:20:53.830 --> 00:20:55.750
+<v Speaker 1>Yeah. You do the Docker login or whatever.
+
+00:20:55.750 --> 00:20:57.750
+<v Speaker 0>Alright. Okay. So let's And cosign, it'll just
+
+00:20:57.750 --> 00:20:59.590
+<v Speaker 1>work once you do that. Okay. So there's
+
+00:20:59.590 --> 00:21:02.525
+<v Speaker 0>Docker spinning up. I'm gonna create a personal
+
+00:21:02.525 --> 00:21:04.845
+<v Speaker 0>access token and then I'll log in.
+
+00:21:09.645 --> 00:21:11.085
+<v Speaker 0>I'll do that over here.
+
+00:21:11.804 --> 00:21:14.124
+<v Speaker 0>Set up flashing credentials on this stream.
+
+00:21:15.164 --> 00:21:15.565
+<v Speaker 0>Perfect.
+
+00:21:18.730 --> 00:21:20.810
+<v Speaker 0>So I'm assuming you would not encourage people
+
+00:21:20.810 --> 00:21:21.850
+<v Speaker 0>to use
+
+00:21:21.850 --> 00:21:23.770
+<v Speaker 0>the the way that we generated the key
+
+00:21:23.770 --> 00:21:25.850
+<v Speaker 0>and instead to use, like, a cloud KMS
+
+00:21:25.850 --> 00:21:27.210
+<v Speaker 0>provider or something. Right?
+
+00:21:28.170 --> 00:21:30.425
+<v Speaker 1>It depends what you have access to and
+
+00:21:30.425 --> 00:21:32.265
+<v Speaker 1>what you're trying to convey,
+
+00:21:32.265 --> 00:21:34.105
+<v Speaker 1>I guess. There are bunch of different, you
+
+00:21:34.105 --> 00:21:36.505
+<v Speaker 1>know, reasons to sign things, and it's but
+
+00:21:36.505 --> 00:21:38.184
+<v Speaker 1>there's a lot of confusion around exactly what
+
+00:21:38.184 --> 00:21:39.945
+<v Speaker 1>you're trying to express with the signature.
+
+00:21:40.825 --> 00:21:42.265
+<v Speaker 1>Really, at the at the base level, all
+
+00:21:42.265 --> 00:21:43.945
+<v Speaker 1>it means is that whoever had access to
+
+00:21:43.945 --> 00:21:45.225
+<v Speaker 1>that private key
+
+00:21:46.150 --> 00:21:48.070
+<v Speaker 1>signed the thing. It doesn't mean it's good.
+
+00:21:48.070 --> 00:21:49.430
+<v Speaker 1>It doesn't mean it's safe. It just means
+
+00:21:49.430 --> 00:21:51.030
+<v Speaker 1>that they use the private key to sign
+
+00:21:51.030 --> 00:21:51.830
+<v Speaker 1>the thing.
+
+00:21:52.310 --> 00:21:53.750
+<v Speaker 1>And so if you wanna keep it locally
+
+00:21:53.750 --> 00:21:55.430
+<v Speaker 1>and you're sure you can protect it and
+
+00:21:55.430 --> 00:21:57.190
+<v Speaker 1>not lose that password, that's a fine approach.
+
+00:21:58.575 --> 00:22:00.495
+<v Speaker 1>You can also use something like a YubiKey.
+
+00:22:00.495 --> 00:22:01.775
+<v Speaker 1>There are some commands for that if you've
+
+00:22:01.775 --> 00:22:04.415
+<v Speaker 1>got one instead, which means that people can't
+
+00:22:04.415 --> 00:22:06.095
+<v Speaker 1>steal that from you unless they actually take
+
+00:22:06.095 --> 00:22:07.294
+<v Speaker 1>the token, so you don't have to worry
+
+00:22:07.294 --> 00:22:08.174
+<v Speaker 1>about losing it.
+
+00:22:08.575 --> 00:22:10.335
+<v Speaker 1>The KMS stuff is great if you're in
+
+00:22:10.335 --> 00:22:12.960
+<v Speaker 1>a cloud environment. It's better than storing the
+
+00:22:12.960 --> 00:22:14.960
+<v Speaker 1>password somewhere else in the secret manager or
+
+00:22:14.960 --> 00:22:15.919
+<v Speaker 1>that kind of thing.
+
+00:22:16.559 --> 00:22:18.480
+<v Speaker 1>But there's some downsides there too, which is,
+
+00:22:18.480 --> 00:22:20.400
+<v Speaker 1>like, you know, many times have people screwed
+
+00:22:20.400 --> 00:22:23.040
+<v Speaker 1>up IAM on their AWS cluster or, you
+
+00:22:23.040 --> 00:22:25.595
+<v Speaker 1>know, their GCP environment or whatever. You're kind
+
+00:22:25.595 --> 00:22:26.554
+<v Speaker 1>of trading off
+
+00:22:27.115 --> 00:22:28.635
+<v Speaker 1>not having to lose the key with making
+
+00:22:28.635 --> 00:22:29.995
+<v Speaker 1>sure that you get the IAM and the
+
+00:22:29.995 --> 00:22:31.755
+<v Speaker 1>RBAC and all those roles right so that,
+
+00:22:31.755 --> 00:22:33.355
+<v Speaker 1>you know, you don't make it too broad
+
+00:22:33.355 --> 00:22:35.195
+<v Speaker 1>so people can start using the key.
+
+00:22:35.435 --> 00:22:37.035
+<v Speaker 1>So there's some some trade offs either way.
+
+00:22:38.280 --> 00:22:41.160
+<v Speaker 0>Alright. I'm just doing a Docker login.
+
+00:22:44.520 --> 00:22:45.480
+<v Speaker 1>Okay.
+
+00:22:50.520 --> 00:22:51.560
+<v Speaker 0>I'm logged in.
+
+00:22:53.115 --> 00:22:55.275
+<v Speaker 0>I say that as a question rather than
+
+00:22:55.275 --> 00:22:56.555
+<v Speaker 0>a statement. But
+
+00:22:57.435 --> 00:22:59.995
+<v Speaker 1>Yeah. So now it should just work, hopefully.
+
+00:23:05.140 --> 00:23:06.980
+<v Speaker 0>Well, that seems promising. There we go.
+
+00:23:07.780 --> 00:23:08.659
+<v Speaker 0>Awesome.
+
+00:23:08.980 --> 00:23:10.900
+<v Speaker 1>Yeah. So all the credentials that Docker uses
+
+00:23:10.900 --> 00:23:12.740
+<v Speaker 1>are set up in this kinda global credential
+
+00:23:12.740 --> 00:23:14.740
+<v Speaker 1>helper file. It's pretty well understood. So most
+
+00:23:14.740 --> 00:23:16.260
+<v Speaker 1>tools know how to work with that once
+
+00:23:16.260 --> 00:23:18.500
+<v Speaker 1>you've done the Docker login stuff. Awesome. So
+
+00:23:18.500 --> 00:23:19.059
+<v Speaker 1>that's signed.
+
+00:23:20.515 --> 00:23:21.315
+<v Speaker 1>Let's
+
+00:23:21.875 --> 00:23:22.434
+<v Speaker 1>well,
+
+00:23:22.835 --> 00:23:24.755
+<v Speaker 1>naturally, we should probably just verify that first
+
+00:23:24.755 --> 00:23:26.115
+<v Speaker 1>before we move on and jump in and
+
+00:23:26.115 --> 00:23:27.395
+<v Speaker 1>show exactly what happened.
+
+00:23:27.635 --> 00:23:29.155
+<v Speaker 1>Yeah. So let's try the other half there.
+
+00:23:29.155 --> 00:23:31.235
+<v Speaker 1>You can type cosign verify, and then you'll
+
+00:23:31.235 --> 00:23:32.675
+<v Speaker 1>see all the different options we have here.
+
+00:23:35.910 --> 00:23:37.590
+<v Speaker 1>Yep. You now you pass in the public
+
+00:23:37.590 --> 00:23:39.350
+<v Speaker 1>one. Step to private.
+
+00:23:44.950 --> 00:23:46.645
+<v Speaker 0>I know I picked a different version there.
+
+00:23:46.645 --> 00:23:47.845
+<v Speaker 0>I just wanted to see
+
+00:23:49.125 --> 00:23:50.085
+<v Speaker 0>what happened.
+
+00:23:51.205 --> 00:23:52.005
+<v Speaker 0>Alright.
+
+00:23:54.325 --> 00:23:56.485
+<v Speaker 0>So it says so first of all, when
+
+00:23:56.485 --> 00:23:58.325
+<v Speaker 0>I use the version that wasn't signed, we
+
+00:23:58.325 --> 00:24:00.380
+<v Speaker 0>just get some sort of name unknown. So
+
+00:24:00.380 --> 00:24:01.580
+<v Speaker 0>it doesn't know that
+
+00:24:02.380 --> 00:24:05.580
+<v Speaker 0>something in this OCI registry exists a signature.
+
+00:24:07.179 --> 00:24:09.020
+<v Speaker 0>I'm not sure how those signatures work with
+
+00:24:09.020 --> 00:24:10.620
+<v Speaker 0>the registry, but maybe it's not important.
+
+00:24:11.345 --> 00:24:13.025
+<v Speaker 0>When we use a tag that does exist,
+
+00:24:13.025 --> 00:24:14.625
+<v Speaker 0>we get some checks performed.
+
+00:24:15.025 --> 00:24:16.784
+<v Speaker 0>So there's closing claims,
+
+00:24:17.425 --> 00:24:19.265
+<v Speaker 0>the signature matches the key,
+
+00:24:20.465 --> 00:24:22.865
+<v Speaker 0>and that's the actual version. Right?
+
+00:24:23.425 --> 00:24:25.265
+<v Speaker 1>Yep. So that's the actual signature that got
+
+00:24:25.265 --> 00:24:26.545
+<v Speaker 1>stored there at the bottom.
+
+00:24:27.480 --> 00:24:29.880
+<v Speaker 1>Do you happen to have the crane tool?
+
+00:24:29.880 --> 00:24:31.240
+<v Speaker 1>There are couple different tools to work with,
+
+00:24:31.240 --> 00:24:33.480
+<v Speaker 1>kinda debugging registries. If you have that, we
+
+00:24:33.480 --> 00:24:35.080
+<v Speaker 1>can show exactly how the signatures work and
+
+00:24:35.080 --> 00:24:35.720
+<v Speaker 1>everything.
+
+00:24:37.320 --> 00:24:39.480
+<v Speaker 0>The crane with a c, isn't it? Yeah.
+
+00:24:39.480 --> 00:24:41.800
+<v Speaker 1>C r a n e, like for lifting
+
+00:24:41.825 --> 00:24:44.225
+<v Speaker 0>containers up and down. Yeah. Familiar of the
+
+00:24:44.225 --> 00:24:46.144
+<v Speaker 0>tool, but it's not something I keep
+
+00:24:46.305 --> 00:24:49.585
+<v Speaker 0>at hand. Yeah. It's it's the easiest way
+
+00:24:49.585 --> 00:24:51.105
+<v Speaker 0>to do some debugging here.
+
+00:24:52.865 --> 00:24:54.065
+<v Speaker 0>Cool. This is working. Nice.
+
+00:24:55.000 --> 00:24:56.119
+<v Speaker 0>And it came from
+
+00:24:56.360 --> 00:24:57.799
+<v Speaker 0>no. It didn't. No. It did.
+
+00:24:58.120 --> 00:24:59.640
+<v Speaker 1>Yep. It came from GHCR.
+
+00:24:59.640 --> 00:25:00.200
+<v Speaker 1>Nice.
+
+00:25:02.840 --> 00:25:03.559
+<v Speaker 0>Okay.
+
+00:25:05.559 --> 00:25:06.999
+<v Speaker 0>So do we want to
+
+00:25:09.145 --> 00:25:11.385
+<v Speaker 1>Yeah. So now we've got crane.
+
+00:25:12.265 --> 00:25:13.625
+<v Speaker 1>We want let's take a look at what
+
+00:25:13.625 --> 00:25:14.505
+<v Speaker 1>the signature
+
+00:25:14.665 --> 00:25:15.304
+<v Speaker 1>is
+
+00:25:15.625 --> 00:25:18.265
+<v Speaker 1>in here. So first, crane.
+
+00:25:19.225 --> 00:25:21.465
+<v Speaker 1>Actually, there's a fundamental command first. We have
+
+00:25:21.465 --> 00:25:22.825
+<v Speaker 1>to run do cosign
+
+00:25:22.825 --> 00:25:23.785
+<v Speaker 1>triangulate.
+
+00:25:25.030 --> 00:25:27.110
+<v Speaker 1>Oh, some trigonometry comes in here
+
+00:25:27.510 --> 00:25:29.590
+<v Speaker 1>of the the image name we signed.
+
+00:25:29.990 --> 00:25:31.830
+<v Speaker 1>So we hide these things inside of the
+
+00:25:31.830 --> 00:25:34.070
+<v Speaker 1>registry, the signatures. And the way we do
+
+00:25:34.070 --> 00:25:36.230
+<v Speaker 1>it is with a cool little naming convention,
+
+00:25:36.870 --> 00:25:37.190
+<v Speaker 1>which
+
+00:25:37.695 --> 00:25:39.695
+<v Speaker 1>should make sense in a second. So the
+
+00:25:39.695 --> 00:25:41.855
+<v Speaker 1>image we signed was clustered colon v one
+
+00:25:42.174 --> 00:25:43.294
+<v Speaker 1>sorry, v two.
+
+00:25:43.934 --> 00:25:46.015
+<v Speaker 1>And the way a registry works is that
+
+00:25:46.015 --> 00:25:48.495
+<v Speaker 1>there are tags and digests there for to
+
+00:25:48.495 --> 00:25:50.255
+<v Speaker 1>an image. The tag is kinda mutable. It's
+
+00:25:50.255 --> 00:25:51.534
+<v Speaker 1>just a string, but it points to a
+
+00:25:51.534 --> 00:25:54.020
+<v Speaker 1>fixed SHA two five six digest for that
+
+00:25:54.020 --> 00:25:55.460
+<v Speaker 1>image that can't move around.
+
+00:25:56.580 --> 00:25:58.340
+<v Speaker 1>The way we find the
+
+00:25:58.660 --> 00:26:00.900
+<v Speaker 1>signature for an image is that we take
+
+00:26:00.900 --> 00:26:02.980
+<v Speaker 1>that digest, the thing that can't move, and
+
+00:26:02.980 --> 00:26:04.580
+<v Speaker 1>we turn that into a tag and then
+
+00:26:04.580 --> 00:26:06.260
+<v Speaker 1>tack a little suffix there at the end
+
+00:26:06.260 --> 00:26:08.095
+<v Speaker 1>of the dot sig. So if we wanna
+
+00:26:08.095 --> 00:26:11.134
+<v Speaker 1>find the signature for clustered colon v two,
+
+00:26:11.294 --> 00:26:13.455
+<v Speaker 1>we first resolve that to a digest, and
+
+00:26:13.455 --> 00:26:15.855
+<v Speaker 1>that's what the cosine triangular command did. And
+
+00:26:15.855 --> 00:26:17.855
+<v Speaker 1>then we turn that digest into a tag
+
+00:26:17.855 --> 00:26:19.695
+<v Speaker 1>with a colon instead of the at sha
+
+00:26:19.695 --> 00:26:20.815
+<v Speaker 1>two five six thing there.
+
+00:26:21.940 --> 00:26:23.860
+<v Speaker 1>And then we add the dot sig. So
+
+00:26:23.860 --> 00:26:25.220
+<v Speaker 1>the signature itself,
+
+00:26:25.620 --> 00:26:27.700
+<v Speaker 1>sorry, is stored in this image. It's not
+
+00:26:27.700 --> 00:26:29.700
+<v Speaker 1>an image you can docker pull or run.
+
+00:26:29.940 --> 00:26:31.780
+<v Speaker 1>But just like Homebrew stores other things in
+
+00:26:31.780 --> 00:26:33.300
+<v Speaker 1>a registry, that's what we do here too.
+
+00:26:34.655 --> 00:26:36.335
+<v Speaker 1>So if you do crane
+
+00:26:37.055 --> 00:26:39.455
+<v Speaker 1>manifest and then that thing, this is gonna
+
+00:26:39.455 --> 00:26:40.575
+<v Speaker 1>download the,
+
+00:26:41.215 --> 00:26:42.415
+<v Speaker 1>you know, bytes that we've stored in the
+
+00:26:42.415 --> 00:26:45.775
+<v Speaker 0>registry. Remove the chat 256. Right? No. So
+
+00:26:45.775 --> 00:26:47.295
+<v Speaker 1>leave that. Just add the dot sig at
+
+00:26:47.295 --> 00:26:48.575
+<v Speaker 1>the end, actually. Alright. Okay.
+
+00:26:49.429 --> 00:26:50.470
+<v Speaker 1>Yeah. Cool.
+
+00:26:50.789 --> 00:26:52.470
+<v Speaker 1>And then if you have j q, you
+
+00:26:52.470 --> 00:26:53.830
+<v Speaker 1>could pipe it to that so it's more
+
+00:26:53.830 --> 00:26:54.950
+<v Speaker 1>readable. Cool.
+
+00:26:55.510 --> 00:26:56.230
+<v Speaker 1>Perfect.
+
+00:26:56.470 --> 00:26:58.870
+<v Speaker 1>So this looks like a normal Docker image
+
+00:26:58.870 --> 00:27:00.950
+<v Speaker 1>or an OCI image. You can see it's
+
+00:27:00.950 --> 00:27:01.590
+<v Speaker 1>got the layers,
+
+00:27:02.215 --> 00:27:04.455
+<v Speaker 1>except instead of having a
+
+00:27:04.455 --> 00:27:06.854
+<v Speaker 1>tarball that would unpack into your system,
+
+00:27:07.095 --> 00:27:08.934
+<v Speaker 1>we just cram a little signature in there
+
+00:27:08.934 --> 00:27:09.574
+<v Speaker 1>instead.
+
+00:27:09.735 --> 00:27:12.774
+<v Speaker 1>Except that annotation is, the signature is just
+
+00:27:12.774 --> 00:27:14.455
+<v Speaker 1>that base 64 encoded string.
+
+00:27:15.580 --> 00:27:17.659
+<v Speaker 1>The MEQ thing, if you take that and
+
+00:27:17.659 --> 00:27:18.700
+<v Speaker 1>look at it, it's just, you know, random
+
+00:27:18.700 --> 00:27:20.219
+<v Speaker 1>bytes that were generated by the
+
+00:27:21.419 --> 00:27:22.539
+<v Speaker 1>signing algorithm.
+
+00:27:22.779 --> 00:27:25.500
+<v Speaker 1>And then the layer itself is a blob.
+
+00:27:25.500 --> 00:27:26.700
+<v Speaker 1>You can see the digest for it. And
+
+00:27:26.700 --> 00:27:28.795
+<v Speaker 1>that is the little payload we signed. So
+
+00:27:28.795 --> 00:27:30.555
+<v Speaker 1>when we did verify up above, we got
+
+00:27:30.555 --> 00:27:32.955
+<v Speaker 1>that JSON that spit out on that last
+
+00:27:32.955 --> 00:27:35.034
+<v Speaker 1>line. That is the thing we signed.
+
+00:27:36.315 --> 00:27:38.075
+<v Speaker 1>So we store the signature and then the
+
+00:27:38.075 --> 00:27:39.595
+<v Speaker 1>little thing we signed here in the registry.
+
+00:27:39.595 --> 00:27:41.675
+<v Speaker 1>That's how that all works. So the verify
+
+00:27:41.675 --> 00:27:41.995
+<v Speaker 1>step,
+
+00:27:42.870 --> 00:27:44.630
+<v Speaker 1>when you typed in the wrong tag, gave
+
+00:27:44.630 --> 00:27:45.910
+<v Speaker 1>you that error saying it couldn't find a
+
+00:27:45.910 --> 00:27:46.630
+<v Speaker 1>signature.
+
+00:27:47.190 --> 00:27:48.630
+<v Speaker 1>So that's what that was. It was looking
+
+00:27:48.630 --> 00:27:50.710
+<v Speaker 1>in this location for an image. Couldn't find
+
+00:27:50.710 --> 00:27:51.190
+<v Speaker 1>it.
+
+00:27:52.230 --> 00:27:54.710
+<v Speaker 1>But then we did find it, downloaded this
+
+00:27:54.710 --> 00:27:56.310
+<v Speaker 1>thing, checked all of it, and it was
+
+00:27:56.310 --> 00:27:56.550
+<v Speaker 1>good.
+
+00:27:57.275 --> 00:27:58.794
+<v Speaker 1>There are a couple other little features we
+
+00:27:58.794 --> 00:28:00.554
+<v Speaker 1>can show here with sign and verify
+
+00:28:00.635 --> 00:28:01.914
+<v Speaker 1>if you wanna see.
+
+00:28:02.635 --> 00:28:04.075
+<v Speaker 1>The first one is you can add in
+
+00:28:04.075 --> 00:28:05.835
+<v Speaker 1>little random key value pairs when you sign,
+
+00:28:05.835 --> 00:28:07.195
+<v Speaker 1>and you can check those too.
+
+00:28:07.755 --> 00:28:09.034
+<v Speaker 1>So if you go back to your sign
+
+00:28:09.034 --> 00:28:11.515
+<v Speaker 1>command, you can add in dash a and
+
+00:28:11.515 --> 00:28:12.875
+<v Speaker 1>just make up a little
+
+00:28:14.529 --> 00:28:16.210
+<v Speaker 1>probably have to put it before the image
+
+00:28:16.210 --> 00:28:18.529
+<v Speaker 1>name because that's just a positional.
+
+00:28:19.330 --> 00:28:21.570
+<v Speaker 1>Yeah. Perfect. You just do foo equals bar,
+
+00:28:21.570 --> 00:28:22.769
+<v Speaker 1>whatever you wanna do. You could put in
+
+00:28:22.769 --> 00:28:23.970
+<v Speaker 1>a git commit. You could put in a
+
+00:28:23.970 --> 00:28:25.809
+<v Speaker 1>release version here. You could put in
+
+00:28:26.865 --> 00:28:28.865
+<v Speaker 1>anything kind of more meaningful than just signing
+
+00:28:28.865 --> 00:28:31.825
+<v Speaker 1>the image itself. You could say LGTM equals
+
+00:28:31.825 --> 00:28:33.185
+<v Speaker 1>yes, you know, whatever you wanna do and
+
+00:28:33.185 --> 00:28:34.065
+<v Speaker 1>just hit enter.
+
+00:28:35.185 --> 00:28:36.305
+<v Speaker 1>So this is gonna show we can actually
+
+00:28:36.305 --> 00:28:38.305
+<v Speaker 1>sign images multiple times. So we're gonna have
+
+00:28:38.305 --> 00:28:40.225
+<v Speaker 1>two signatures on this image now. One doesn't
+
+00:28:40.225 --> 00:28:42.220
+<v Speaker 1>have any of these annotations. This one will
+
+00:28:42.220 --> 00:28:43.820
+<v Speaker 1>have the foo equals bar.
+
+00:28:45.340 --> 00:28:47.419
+<v Speaker 1>Now if you verify again, we should see
+
+00:28:47.419 --> 00:28:49.659
+<v Speaker 1>both signatures this time, one with it and
+
+00:28:49.659 --> 00:28:50.220
+<v Speaker 1>one without.
+
+00:28:53.655 --> 00:28:55.815
+<v Speaker 1>Cool. So you see these two JSON blobs
+
+00:28:55.815 --> 00:28:57.735
+<v Speaker 1>get spit out, and the second one has
+
+00:28:57.735 --> 00:28:59.414
+<v Speaker 1>that foo equals bar thing.
+
+00:28:59.975 --> 00:29:02.135
+<v Speaker 1>Nice. When you verify now, pretend you wanna,
+
+00:29:02.135 --> 00:29:04.055
+<v Speaker 1>you know, only check things with foo equals
+
+00:29:04.055 --> 00:29:05.735
+<v Speaker 1>bar, you can add that into the dash
+
+00:29:05.735 --> 00:29:07.655
+<v Speaker 1>a, and it'll only show you ones with
+
+00:29:07.655 --> 00:29:10.400
+<v Speaker 1>that matching thing. So people built up, you
+
+00:29:10.400 --> 00:29:12.080
+<v Speaker 1>know, pretty good workflows with this to sign
+
+00:29:12.080 --> 00:29:14.159
+<v Speaker 1>specific releases and then check
+
+00:29:14.480 --> 00:29:15.919
+<v Speaker 1>specific releases,
+
+00:29:16.080 --> 00:29:18.400
+<v Speaker 1>or you can put in container vulnerability scans
+
+00:29:18.400 --> 00:29:19.760
+<v Speaker 1>or anything else you kinda wanna write up
+
+00:29:19.760 --> 00:29:20.800
+<v Speaker 1>in your policy engine.
+
+00:29:21.535 --> 00:29:24.255
+<v Speaker 0>I'm curious. Right? Like, this this is a
+
+00:29:24.255 --> 00:29:26.095
+<v Speaker 0>random image that I pushed to a registry
+
+00:29:26.095 --> 00:29:27.775
+<v Speaker 0>in the past, but, I mean, I have
+
+00:29:27.775 --> 00:29:29.455
+<v Speaker 0>no idea really if that is even still
+
+00:29:29.455 --> 00:29:31.935
+<v Speaker 0>my image. Like, what would be the actual
+
+00:29:31.935 --> 00:29:33.775
+<v Speaker 0>workflow that we would encourage people to use
+
+00:29:33.775 --> 00:29:34.415
+<v Speaker 0>with cosignation?
+
+00:29:34.880 --> 00:29:37.280
+<v Speaker 0>Should they build it, sign it, and then
+
+00:29:37.280 --> 00:29:39.040
+<v Speaker 0>push it to the registry, or do they
+
+00:29:39.040 --> 00:29:40.400
+<v Speaker 0>build it, push it to the registry, and
+
+00:29:40.400 --> 00:29:42.160
+<v Speaker 0>then sign it? Like, what do you recommend
+
+00:29:42.160 --> 00:29:42.720
+<v Speaker 0>there?
+
+00:29:43.840 --> 00:29:46.160
+<v Speaker 1>Yeah. So there there's a couple different workflows
+
+00:29:46.160 --> 00:29:47.520
+<v Speaker 1>that make that make sense here.
+
+00:29:49.264 --> 00:29:49.984
+<v Speaker 1>The
+
+00:29:50.544 --> 00:29:51.825
+<v Speaker 1>first one is trying to make sure that
+
+00:29:51.825 --> 00:29:53.345
+<v Speaker 1>the image came from the source and was
+
+00:29:53.345 --> 00:29:54.384
+<v Speaker 1>built the right way.
+
+00:29:54.784 --> 00:29:56.065
+<v Speaker 1>And so the best thing to do there
+
+00:29:56.065 --> 00:29:57.825
+<v Speaker 1>is to sign it in your build system,
+
+00:29:57.825 --> 00:29:59.424
+<v Speaker 1>like, as close as possible to when it
+
+00:29:59.424 --> 00:30:00.144
+<v Speaker 1>was built.
+
+00:30:00.625 --> 00:30:02.945
+<v Speaker 1>Your build system usually knows the digest of
+
+00:30:02.945 --> 00:30:04.550
+<v Speaker 1>the image, and so you just have the
+
+00:30:04.550 --> 00:30:06.470
+<v Speaker 1>build system sign in at the same time.
+
+00:30:06.790 --> 00:30:08.310
+<v Speaker 1>So if your build system gets hacked or
+
+00:30:08.310 --> 00:30:09.830
+<v Speaker 1>something like that, you're not really protected. But
+
+00:30:09.830 --> 00:30:11.270
+<v Speaker 1>as soon as it leaves that build system,
+
+00:30:11.270 --> 00:30:12.790
+<v Speaker 1>you at least know that that image is
+
+00:30:12.790 --> 00:30:14.950
+<v Speaker 1>the same one that left the build system.
+
+00:30:15.270 --> 00:30:17.990
+<v Speaker 1>There's a GitHub action that we have, the
+
+00:30:17.535 --> 00:30:19.615
+<v Speaker 1>cosign installer that throws it into a GitHub
+
+00:30:19.615 --> 00:30:21.455
+<v Speaker 1>action if you can use that. And then
+
+00:30:21.455 --> 00:30:24.495
+<v Speaker 1>because GitHub actions gives you those cool personal
+
+00:30:24.495 --> 00:30:25.935
+<v Speaker 1>access tokens, then you don't even need to
+
+00:30:25.935 --> 00:30:27.215
+<v Speaker 1>set up auth or anything like that if
+
+00:30:27.215 --> 00:30:29.135
+<v Speaker 1>you're pushing and signing stuff in GHCR.
+
+00:30:30.059 --> 00:30:31.580
+<v Speaker 1>Depending on your build system, you can plug
+
+00:30:31.580 --> 00:30:32.459
+<v Speaker 1>in other stuff.
+
+00:30:32.700 --> 00:30:33.580
+<v Speaker 1>Tekton
+
+00:30:33.580 --> 00:30:36.700
+<v Speaker 1>CD is a Kubernetes native c I c
+
+00:30:36.700 --> 00:30:38.779
+<v Speaker 1>d platform that actually has built in support
+
+00:30:38.779 --> 00:30:40.220
+<v Speaker 1>now where you can just kinda say sign
+
+00:30:40.220 --> 00:30:41.740
+<v Speaker 1>all the images that get built with this
+
+00:30:41.740 --> 00:30:43.179
+<v Speaker 1>directly from the build system.
+
+00:30:43.855 --> 00:30:45.214
+<v Speaker 1>So to
+
+00:30:45.695 --> 00:30:47.855
+<v Speaker 1>kinda protect against that, making sure that the
+
+00:30:47.855 --> 00:30:49.375
+<v Speaker 1>thing is actually what was built, signing it
+
+00:30:49.375 --> 00:30:50.815
+<v Speaker 1>in the build system is the best way
+
+00:30:50.815 --> 00:30:51.534
+<v Speaker 1>to do it.
+
+00:30:52.255 --> 00:30:54.174
+<v Speaker 1>Some other companies in, you know, kinda regulated
+
+00:30:54.174 --> 00:30:57.294
+<v Speaker 1>industries and financial stuff and health care need
+
+00:30:57.294 --> 00:30:58.815
+<v Speaker 1>to make sure that, you know, two people
+
+00:30:58.815 --> 00:31:01.250
+<v Speaker 1>have approved each change that goes to prod.
+
+00:31:01.330 --> 00:31:03.090
+<v Speaker 1>So it's kind of a different flow. And
+
+00:31:03.090 --> 00:31:04.530
+<v Speaker 1>a lot of people there use, like, two
+
+00:31:04.530 --> 00:31:06.610
+<v Speaker 1>different YubiKeys, and two different people have to
+
+00:31:06.610 --> 00:31:08.290
+<v Speaker 1>sign the image as the very last step.
+
+00:31:08.290 --> 00:31:09.970
+<v Speaker 1>So that's kind of like it's been built.
+
+00:31:09.970 --> 00:31:11.410
+<v Speaker 1>It's been tested. It's been in our QA
+
+00:31:11.410 --> 00:31:12.770
+<v Speaker 1>environment for a while. Now we have to
+
+00:31:12.770 --> 00:31:14.130
+<v Speaker 1>have two out of these, you know, seven
+
+00:31:14.130 --> 00:31:14.610
+<v Speaker 1>people
+
+00:31:14.995 --> 00:31:17.315
+<v Speaker 1>sign it with their own Yuba keys as
+
+00:31:17.315 --> 00:31:18.914
+<v Speaker 1>the last step. So you can kinda build
+
+00:31:18.914 --> 00:31:21.235
+<v Speaker 1>up workflows with, you know, different levels of
+
+00:31:21.235 --> 00:31:23.395
+<v Speaker 1>signatures coming from different places. There's no real
+
+00:31:23.395 --> 00:31:24.354
+<v Speaker 1>one size
+
+00:31:24.914 --> 00:31:26.434
+<v Speaker 1>fits all approach. But I think for most
+
+00:31:26.434 --> 00:31:27.875
+<v Speaker 1>people, they want that first one of just
+
+00:31:27.875 --> 00:31:29.554
+<v Speaker 1>signing the stuff that left their build system.
+
+00:31:30.440 --> 00:31:31.639
+<v Speaker 0>Alright. Perfect.
+
+00:31:31.880 --> 00:31:33.880
+<v Speaker 0>We've got a few questions if you're happy
+
+00:31:33.880 --> 00:31:35.560
+<v Speaker 0>for me to Yeah. Look for them now.
+
+00:31:35.560 --> 00:31:36.200
+<v Speaker 0>Sure.
+
+00:31:36.520 --> 00:31:37.960
+<v Speaker 0>So let's see.
+
+00:31:40.280 --> 00:31:41.880
+<v Speaker 0>I think we may be covered the first
+
+00:31:41.880 --> 00:31:44.195
+<v Speaker 0>one here. O six says,
+
+00:31:44.195 --> 00:31:46.195
+<v Speaker 0>how is signing done in automation?
+
+00:31:46.835 --> 00:31:48.675
+<v Speaker 0>Do you put no password, or is the
+
+00:31:48.675 --> 00:31:50.835
+<v Speaker 0>position that real humans should sign releases?
+
+00:31:52.755 --> 00:31:54.195
+<v Speaker 1>Yeah. So that's that's the one we kinda
+
+00:31:54.195 --> 00:31:56.195
+<v Speaker 1>just talked about. I've got a little demo
+
+00:31:56.195 --> 00:31:58.970
+<v Speaker 1>app called, like, sign container on GitHub. It
+
+00:31:58.970 --> 00:32:00.409
+<v Speaker 1>shows how to do it in GitHub actions
+
+00:32:00.409 --> 00:32:02.490
+<v Speaker 1>where you don't really need the password. You
+
+00:32:02.490 --> 00:32:03.929
+<v Speaker 1>can kinda use it. And then there are
+
+00:32:03.929 --> 00:32:06.009
+<v Speaker 1>even some different flows we'll get to next
+
+00:32:06.889 --> 00:32:08.570
+<v Speaker 1>Okay. Using things like
+
+00:32:08.889 --> 00:32:09.769
+<v Speaker 1>OIDC
+
+00:32:09.769 --> 00:32:11.769
+<v Speaker 1>and different protocols to sign things inside of
+
+00:32:11.769 --> 00:32:14.505
+<v Speaker 1>a build system. So, yeah, I think humans
+
+00:32:14.505 --> 00:32:16.265
+<v Speaker 1>and systems should sign it, not one or
+
+00:32:16.265 --> 00:32:17.304
+<v Speaker 1>the other, I guess.
+
+00:32:18.105 --> 00:32:18.825
+<v Speaker 0>Okay.
+
+00:32:19.705 --> 00:32:22.585
+<v Speaker 0>Next question is, does the token have permission
+
+00:32:22.825 --> 00:32:24.105
+<v Speaker 0>or I guess, does the token that we
+
+00:32:24.105 --> 00:32:25.865
+<v Speaker 0>use need to have permission to push to
+
+00:32:25.865 --> 00:32:26.585
+<v Speaker 0>GHCR?
+
+00:32:27.910 --> 00:32:30.470
+<v Speaker 1>Yeah. That's another good question. With this flow,
+
+00:32:30.470 --> 00:32:31.830
+<v Speaker 1>what we did is we stored the signatures
+
+00:32:31.830 --> 00:32:34.230
+<v Speaker 1>right in the same repository as the image,
+
+00:32:34.230 --> 00:32:35.750
+<v Speaker 1>so literally right next to them when we
+
+00:32:35.750 --> 00:32:37.190
+<v Speaker 1>did the triangular command.
+
+00:32:37.270 --> 00:32:38.870
+<v Speaker 1>So, yeah, you need that permissions to push
+
+00:32:38.870 --> 00:32:39.350
+<v Speaker 1>to that one.
+
+00:32:40.155 --> 00:32:41.835
+<v Speaker 1>That doesn't work for some people where they
+
+00:32:41.835 --> 00:32:43.355
+<v Speaker 1>don't want their developers to have permissions to
+
+00:32:43.355 --> 00:32:45.275
+<v Speaker 1>these registries, only their build systems. So there
+
+00:32:45.275 --> 00:32:47.115
+<v Speaker 1>are some flags to kinda redirect and store
+
+00:32:47.115 --> 00:32:48.955
+<v Speaker 1>them in a different one. So it still
+
+00:32:48.955 --> 00:32:51.115
+<v Speaker 1>uses that same naming convention, except instead of,
+
+00:32:51.115 --> 00:32:52.315
+<v Speaker 1>you know, g h c r slash raw
+
+00:32:52.315 --> 00:32:53.595
+<v Speaker 1>code, it would be something like g h
+
+00:32:53.595 --> 00:32:55.035
+<v Speaker 1>c r slash raw code signatures.
+
+00:32:55.370 --> 00:32:56.730
+<v Speaker 1>You would say, I'm gonna store all my
+
+00:32:56.730 --> 00:32:57.690
+<v Speaker 1>signatures here
+
+00:32:57.850 --> 00:32:59.530
+<v Speaker 1>so my devs can push to there, but
+
+00:32:59.530 --> 00:33:00.490
+<v Speaker 1>not to the,
+
+00:33:00.970 --> 00:33:03.050
+<v Speaker 1>you know, bucket where the containers themselves are
+
+00:33:03.050 --> 00:33:04.330
+<v Speaker 1>stored. Okay.
+
+00:33:05.690 --> 00:33:07.850
+<v Speaker 0>Am I correct in thinking that cosign executable
+
+00:33:07.850 --> 00:33:09.850
+<v Speaker 0>needs to be built with the YubiKey feature
+
+00:33:09.850 --> 00:33:10.330
+<v Speaker 0>enabled?
+
+00:33:11.865 --> 00:33:14.745
+<v Speaker 1>Yeah. Another good question. The YubiKey stuff, depending
+
+00:33:14.745 --> 00:33:17.145
+<v Speaker 1>on your OS and your platform, sometimes needs
+
+00:33:17.145 --> 00:33:19.145
+<v Speaker 1>some native c libraries to actually work correctly
+
+00:33:19.145 --> 00:33:20.025
+<v Speaker 1>with the drivers.
+
+00:33:20.265 --> 00:33:22.585
+<v Speaker 1>On Mac and Windows, I believe it just
+
+00:33:22.585 --> 00:33:23.465
+<v Speaker 1>kinda works.
+
+00:33:24.105 --> 00:33:26.025
+<v Speaker 1>There are some go build tags
+
+00:33:26.450 --> 00:33:27.970
+<v Speaker 1>for Linux where you do need to have
+
+00:33:27.970 --> 00:33:29.730
+<v Speaker 1>some special dependencies installed.
+
+00:33:30.050 --> 00:33:32.210
+<v Speaker 1>It doesn't run by default on stuff like
+
+00:33:32.210 --> 00:33:34.210
+<v Speaker 1>Alpine, so we publish two different builds for
+
+00:33:34.210 --> 00:33:35.650
+<v Speaker 1>Linux. If you're not gonna use the EBAQ
+
+00:33:35.650 --> 00:33:37.010
+<v Speaker 1>one, you can just do a native Go
+
+00:33:37.010 --> 00:33:38.850
+<v Speaker 1>build with no CEO. But if you want
+
+00:33:38.850 --> 00:33:40.450
+<v Speaker 1>that, then you've gotta use the CEO version,
+
+00:33:40.450 --> 00:33:41.970
+<v Speaker 1>which is a little harder to cross compile.
+
+00:33:42.825 --> 00:33:45.225
+<v Speaker 0>Alright. One more question, and then we'll carry
+
+00:33:45.225 --> 00:33:46.664
+<v Speaker 0>on. Asks,
+
+00:33:46.664 --> 00:33:49.865
+<v Speaker 0>what does triangulate do with multiple signatures? I'm
+
+00:33:49.865 --> 00:33:51.544
+<v Speaker 0>guessing it provides them all.
+
+00:33:52.345 --> 00:33:53.865
+<v Speaker 1>Yeah. So we actually store all the signatures
+
+00:33:53.865 --> 00:33:54.825
+<v Speaker 1>in the same
+
+00:33:55.145 --> 00:33:58.265
+<v Speaker 1>blob. So, yeah, triangulate just points to the
+
+00:33:57.630 --> 00:33:59.790
+<v Speaker 1>blob thing that has all the signatures. When
+
+00:33:59.790 --> 00:34:01.630
+<v Speaker 1>we saw the if you do the crane
+
+00:34:01.630 --> 00:34:02.429
+<v Speaker 1>manifest
+
+00:34:02.590 --> 00:34:04.750
+<v Speaker 1>again command, we'll see now that there are
+
+00:34:04.750 --> 00:34:05.789
+<v Speaker 1>gonna be two layers.
+
+00:34:06.190 --> 00:34:08.030
+<v Speaker 1>The first time, there was just one layer.
+
+00:34:08.270 --> 00:34:10.030
+<v Speaker 1>Yep. So all the layers just kind of
+
+00:34:10.030 --> 00:34:11.389
+<v Speaker 1>get appended up into this list.
+
+00:34:12.094 --> 00:34:13.775
+<v Speaker 1>So it shows you the address for all
+
+00:34:13.775 --> 00:34:14.895
+<v Speaker 1>of those, and then we kinda go through
+
+00:34:14.895 --> 00:34:17.214
+<v Speaker 1>and verify them against the key. We did
+
+00:34:17.214 --> 00:34:19.054
+<v Speaker 1>both of these signatures using the same key,
+
+00:34:19.054 --> 00:34:20.815
+<v Speaker 1>but you could imagine two different people with
+
+00:34:20.815 --> 00:34:22.734
+<v Speaker 1>two different keys signing it, and you would
+
+00:34:22.734 --> 00:34:24.174
+<v Speaker 1>kinda see all of those appended up, and
+
+00:34:24.174 --> 00:34:25.694
+<v Speaker 1>we'd filter through them as we do verify.
+
+00:34:26.920 --> 00:34:27.640
+<v Speaker 0>Nice.
+
+00:34:28.280 --> 00:34:31.320
+<v Speaker 0>Okay. So we have taken a container image.
+
+00:34:31.639 --> 00:34:33.000
+<v Speaker 0>We have signed it.
+
+00:34:33.639 --> 00:34:35.560
+<v Speaker 0>Is the next step that we want to
+
+00:34:35.560 --> 00:34:39.000
+<v Speaker 0>restrict our runtime to only run images that
+
+00:34:39.000 --> 00:34:41.000
+<v Speaker 0>are signed, or is there something in between?
+
+00:34:42.335 --> 00:34:44.255
+<v Speaker 1>Yeah. Let's do a couple more things first.
+
+00:34:44.255 --> 00:34:46.174
+<v Speaker 1>Also, I screwed up trying to get the
+
+00:34:46.174 --> 00:34:47.934
+<v Speaker 1>policy engine set up this morning, so I'm
+
+00:34:47.934 --> 00:34:49.775
+<v Speaker 1>stalling a bit too. But
+
+00:34:50.014 --> 00:34:51.614
+<v Speaker 1>yeah. So let's let's let's show some of
+
+00:34:51.614 --> 00:34:53.375
+<v Speaker 1>the cooler fancy stuff that'll actually kind of
+
+00:34:53.375 --> 00:34:55.454
+<v Speaker 1>pivot and explain so that the rest of
+
+00:34:55.454 --> 00:34:56.974
+<v Speaker 1>sigstore and how that works.
+
+00:34:58.470 --> 00:35:00.870
+<v Speaker 1>Let's do this is the cool experimental
+
+00:35:00.870 --> 00:35:02.870
+<v Speaker 1>keyless mode that I like to call it.
+
+00:35:02.950 --> 00:35:05.430
+<v Speaker 1>We just did some signing with keys, but
+
+00:35:05.430 --> 00:35:07.190
+<v Speaker 1>now we're gonna be signing without keys.
+
+00:35:07.750 --> 00:35:10.390
+<v Speaker 1>So we need to turn on the experimental
+
+00:35:10.390 --> 00:35:10.950
+<v Speaker 1>flag
+
+00:35:11.225 --> 00:35:13.785
+<v Speaker 1>first. I don't why it's experimental still in
+
+00:35:13.785 --> 00:35:15.945
+<v Speaker 1>a minute and all that stuff. But it's
+
+00:35:15.945 --> 00:35:18.985
+<v Speaker 1>an environment variable. So do export
+
+00:35:19.145 --> 00:35:23.305
+<v Speaker 1>cosign underscore experimental equals one. Yep. All caps.
+
+00:35:23.305 --> 00:35:23.865
+<v Speaker 1>Perfect.
+
+00:35:24.505 --> 00:35:24.985
+<v Speaker 1>Alright.
+
+00:35:25.950 --> 00:35:29.310
+<v Speaker 1>Now we're gonna do a sign again, except
+
+00:35:29.310 --> 00:35:30.750
+<v Speaker 1>let's not pass in a key. So just
+
+00:35:30.750 --> 00:35:32.350
+<v Speaker 1>do cosign sign.
+
+00:35:33.070 --> 00:35:34.590
+<v Speaker 1>You can leave on the annotations if want.
+
+00:35:34.590 --> 00:35:36.270
+<v Speaker 1>It doesn't matter. Yep. Just the image now.
+
+00:35:36.270 --> 00:35:37.710
+<v Speaker 1>No keys. The same image or a different
+
+00:35:37.710 --> 00:35:38.350
+<v Speaker 0>image?
+
+00:35:38.910 --> 00:35:40.109
+<v Speaker 1>Up to you. Okay.
+
+00:35:42.494 --> 00:35:43.615
+<v Speaker 1>That's it? Yep.
+
+00:35:44.095 --> 00:35:46.095
+<v Speaker 1>Just hit enter. It's magic.
+
+00:35:46.895 --> 00:35:48.415
+<v Speaker 1>There are no keys. We're gonna we're gonna
+
+00:35:48.415 --> 00:35:50.255
+<v Speaker 1>see some logs, and now you're
+
+00:35:50.494 --> 00:35:52.175
+<v Speaker 1>ah, yeah. You're only sharing your terminal. But
+
+00:35:52.175 --> 00:35:53.855
+<v Speaker 1>what just happened here Sorry. There we go.
+
+00:35:54.180 --> 00:35:56.260
+<v Speaker 1>Oh, perfect. Yeah. It popped open on browser
+
+00:35:56.260 --> 00:35:58.500
+<v Speaker 1>window. So we're gonna go through here and
+
+00:35:58.500 --> 00:36:00.420
+<v Speaker 1>do kind of the the OpenID
+
+00:36:01.059 --> 00:36:02.500
+<v Speaker 1>dance. And if you see what was back
+
+00:36:02.500 --> 00:36:04.020
+<v Speaker 1>in the terminal sorry to make you keep
+
+00:36:04.020 --> 00:36:04.660
+<v Speaker 1>switching.
+
+00:36:04.900 --> 00:36:06.260
+<v Speaker 1>But what we actually did here is we
+
+00:36:06.260 --> 00:36:07.619
+<v Speaker 1>generated a key
+
+00:36:08.095 --> 00:36:10.735
+<v Speaker 1>in memory. This is generating ephemeral keys. And
+
+00:36:10.735 --> 00:36:12.495
+<v Speaker 1>now this is the CA piece, the certificate
+
+00:36:12.495 --> 00:36:14.815
+<v Speaker 1>authority thing we were talking about before. So
+
+00:36:14.815 --> 00:36:16.415
+<v Speaker 1>we're gonna get a certificate
+
+00:36:16.415 --> 00:36:19.215
+<v Speaker 1>from the sigstore CA tied to the email
+
+00:36:19.215 --> 00:36:19.535
+<v Speaker 1>address,
+
+00:36:20.750 --> 00:36:23.069
+<v Speaker 1>whichever email address you click on in that
+
+00:36:23.069 --> 00:36:24.030
+<v Speaker 1>browser window.
+
+00:36:24.270 --> 00:36:25.869
+<v Speaker 1>So if you're you're familiar with Let's Encrypt,
+
+00:36:25.869 --> 00:36:27.069
+<v Speaker 1>the way they do it is they, you
+
+00:36:27.069 --> 00:36:29.230
+<v Speaker 1>know, give you an automatic certificate by proving
+
+00:36:29.230 --> 00:36:30.590
+<v Speaker 1>you own a domain name,
+
+00:36:31.230 --> 00:36:32.430
+<v Speaker 1>and they do that with
+
+00:36:33.085 --> 00:36:34.765
+<v Speaker 1>Acme challenge thing where they give you a
+
+00:36:34.765 --> 00:36:36.125
+<v Speaker 1>little token you have to display on the
+
+00:36:36.125 --> 00:36:37.645
+<v Speaker 1>domain names, so then they're sure you own
+
+00:36:37.645 --> 00:36:38.125
+<v Speaker 1>it.
+
+00:36:39.165 --> 00:36:40.525
+<v Speaker 1>We do the same thing here except for
+
+00:36:40.525 --> 00:36:42.445
+<v Speaker 1>an email address. There's already a bunch of
+
+00:36:42.445 --> 00:36:44.445
+<v Speaker 1>protocols for that. OpenID Connect is the one
+
+00:36:44.445 --> 00:36:46.859
+<v Speaker 1>we use here. So we approve you have
+
+00:36:46.859 --> 00:36:48.780
+<v Speaker 1>that email address, and we give you a
+
+00:36:48.780 --> 00:36:51.020
+<v Speaker 1>certificate for that email address instead of a
+
+00:36:51.020 --> 00:36:52.859
+<v Speaker 1>domain name. So whatever the email is on
+
+00:36:52.859 --> 00:36:53.820
+<v Speaker 1>the GitHub
+
+00:36:54.140 --> 00:36:56.140
+<v Speaker 1>login you just did will be in a
+
+00:36:56.140 --> 00:36:57.740
+<v Speaker 1>certificate. So instead of signing with a key
+
+00:36:57.740 --> 00:36:59.660
+<v Speaker 1>now, we sign with an email address.
+
+00:37:00.140 --> 00:37:02.485
+<v Speaker 1>So if we do verify now again with
+
+00:37:02.485 --> 00:37:03.445
+<v Speaker 1>no key,
+
+00:37:04.885 --> 00:37:07.125
+<v Speaker 1>we will see the signature and the email
+
+00:37:07.125 --> 00:37:07.605
+<v Speaker 1>address.
+
+00:37:13.580 --> 00:37:14.700
+<v Speaker 1>Yeah. The
+
+00:37:14.860 --> 00:37:18.060
+<v Speaker 1>magic keyless mode. David@rawkode.com.
+
+00:37:18.140 --> 00:37:20.540
+<v Speaker 1>That's the subject of the certificate.
+
+00:37:21.820 --> 00:37:23.180
+<v Speaker 1>Cool. You got some questions?
+
+00:37:23.980 --> 00:37:24.860
+<v Speaker 0>Just
+
+00:37:25.260 --> 00:37:28.165
+<v Speaker 0>that's super cool from Noel and Sean there.
+
+00:37:28.885 --> 00:37:29.925
+<v Speaker 1>Okay. Cool.
+
+00:37:30.805 --> 00:37:32.965
+<v Speaker 1>Yeah. So I'll explain kinda what happened there
+
+00:37:32.965 --> 00:37:35.285
+<v Speaker 1>because there's some magic behind the scenes. It's
+
+00:37:35.685 --> 00:37:37.205
+<v Speaker 1>kinda subtle to make all of that work,
+
+00:37:38.040 --> 00:37:40.840
+<v Speaker 1>including that last line, the TLOG entry created
+
+00:37:40.840 --> 00:37:42.280
+<v Speaker 1>with index line.
+
+00:37:42.920 --> 00:37:45.560
+<v Speaker 1>So the way this works, if you've heard
+
+00:37:45.560 --> 00:37:48.360
+<v Speaker 1>of Let's Encrypt and certificate transparency,
+
+00:37:48.760 --> 00:37:50.040
+<v Speaker 1>we kinda copy that same thing.
+
+00:37:50.984 --> 00:37:53.464
+<v Speaker 1>All of the certificates that we issue through
+
+00:37:53.464 --> 00:37:56.105
+<v Speaker 1>the service get logged to a transparency log,
+
+00:37:56.744 --> 00:37:58.585
+<v Speaker 1>which is a really cool data structure where
+
+00:37:58.585 --> 00:38:00.744
+<v Speaker 1>it's append only and people can kinda verify
+
+00:38:00.744 --> 00:38:03.530
+<v Speaker 1>that and check and monitor it. So the
+
+00:38:03.530 --> 00:38:06.410
+<v Speaker 1>entry there is 33319.
+
+00:38:06.730 --> 00:38:09.210
+<v Speaker 1>That'll only ever go up. Your certificate is
+
+00:38:09.770 --> 00:38:10.330
+<v Speaker 1>in
+
+00:38:10.570 --> 00:38:13.050
+<v Speaker 1>that log. The signature is in that log,
+
+00:38:13.050 --> 00:38:14.250
+<v Speaker 1>and you can look at it, and it
+
+00:38:14.250 --> 00:38:15.610
+<v Speaker 1>will never get tampered with. And it will
+
+00:38:15.610 --> 00:38:17.994
+<v Speaker 1>be there forever the way the Merkle trees
+
+00:38:17.994 --> 00:38:19.835
+<v Speaker 1>and fancy computer science works.
+
+00:38:20.395 --> 00:38:21.994
+<v Speaker 1>And so what that lets you is it
+
+00:38:21.994 --> 00:38:23.994
+<v Speaker 1>protects you against our service getting hacked. Right?
+
+00:38:23.994 --> 00:38:25.994
+<v Speaker 1>If our service got compromised or hacked, we
+
+00:38:25.994 --> 00:38:28.555
+<v Speaker 1>could start issuing certificates for your email,
+
+00:38:28.795 --> 00:38:30.555
+<v Speaker 1>that you didn't request. We could just kind
+
+00:38:30.555 --> 00:38:33.100
+<v Speaker 1>of bypass the open ID thing, which proves
+
+00:38:33.100 --> 00:38:35.740
+<v Speaker 1>you requested it. So this lets people monitor
+
+00:38:35.740 --> 00:38:38.460
+<v Speaker 1>the log for any certificates issued for their
+
+00:38:38.460 --> 00:38:40.220
+<v Speaker 1>email address. If they see something in there,
+
+00:38:40.220 --> 00:38:41.500
+<v Speaker 1>they say, hey. I didn't sign a container
+
+00:38:41.500 --> 00:38:44.225
+<v Speaker 1>that day. They know something bad happened. They
+
+00:38:44.225 --> 00:38:46.065
+<v Speaker 1>also know the exact container that got signed
+
+00:38:46.065 --> 00:38:48.225
+<v Speaker 1>too. So it's not just something bad happened.
+
+00:38:48.225 --> 00:38:50.225
+<v Speaker 1>They know, hey, somebody stole my email account.
+
+00:38:50.225 --> 00:38:52.305
+<v Speaker 1>They stole my password because I accidentally broadcast
+
+00:38:52.305 --> 00:38:54.065
+<v Speaker 1>it live on the stream. And they started
+
+00:38:54.065 --> 00:38:55.825
+<v Speaker 1>assigning containers with my name. And you can
+
+00:38:55.825 --> 00:38:57.505
+<v Speaker 1>figure out the exact ones that they signed
+
+00:38:57.505 --> 00:38:59.185
+<v Speaker 1>and tell people not to use those.
+
+00:39:01.140 --> 00:39:03.619
+<v Speaker 1>So the keys were generated at the top
+
+00:39:03.619 --> 00:39:05.460
+<v Speaker 1>there in memory. They never touched disk. They
+
+00:39:05.460 --> 00:39:06.820
+<v Speaker 1>were deleted right after.
+
+00:39:07.140 --> 00:39:08.980
+<v Speaker 1>And so it'd be pretty hard for somebody
+
+00:39:08.980 --> 00:39:10.180
+<v Speaker 1>to get those keys,
+
+00:39:10.420 --> 00:39:12.675
+<v Speaker 1>but there's some other kind of fancy stuff
+
+00:39:12.675 --> 00:39:14.995
+<v Speaker 1>we do there to protect against that too.
+
+00:39:14.995 --> 00:39:16.115
+<v Speaker 1>We got another question?
+
+00:39:16.435 --> 00:39:18.595
+<v Speaker 0>Just another. That's really cool. A
+
+00:39:19.555 --> 00:39:21.475
+<v Speaker 0>lot of love for this approach, definitely.
+
+00:39:21.635 --> 00:39:22.115
+<v Speaker 1>Yeah.
+
+00:39:23.235 --> 00:39:24.835
+<v Speaker 1>So this is a really good way to
+
+00:39:24.835 --> 00:39:27.075
+<v Speaker 1>do it as a user if you're trying
+
+00:39:27.075 --> 00:39:28.990
+<v Speaker 1>to sign with an email address.
+
+00:39:29.309 --> 00:39:31.150
+<v Speaker 1>It's a little harder to set up for
+
+00:39:31.150 --> 00:39:32.829
+<v Speaker 1>demos here today. But if you're familiar with
+
+00:39:32.829 --> 00:39:34.670
+<v Speaker 1>projects like Spiffy and Spire,
+
+00:39:35.150 --> 00:39:37.470
+<v Speaker 1>they use that same protocol, the OpenID Connect
+
+00:39:37.470 --> 00:39:38.990
+<v Speaker 1>one, to do certificates
+
+00:39:38.990 --> 00:39:40.509
+<v Speaker 1>and keys for machines.
+
+00:39:41.255 --> 00:39:43.495
+<v Speaker 1>You set up, you know, nodes and pods
+
+00:39:43.495 --> 00:39:45.655
+<v Speaker 1>in your cluster with those identities that instead
+
+00:39:45.655 --> 00:39:47.255
+<v Speaker 1>of an email address, it looks like spiffy
+
+00:39:47.255 --> 00:39:49.255
+<v Speaker 1>colon slash slash and then some name you
+
+00:39:49.255 --> 00:39:50.695
+<v Speaker 1>make up for your domain name and then
+
+00:39:50.695 --> 00:39:53.335
+<v Speaker 1>the machine and everything itself. So those services
+
+00:39:53.335 --> 00:39:54.775
+<v Speaker 1>can go through the same flow too, where
+
+00:39:54.775 --> 00:39:55.895
+<v Speaker 1>every time they wanna sign something,
+
+00:39:56.510 --> 00:39:59.150
+<v Speaker 1>they authenticate with their SPIFI ID, and we
+
+00:39:59.150 --> 00:40:01.069
+<v Speaker 1>give that machine a certificate. So we can
+
+00:40:01.069 --> 00:40:02.910
+<v Speaker 1>use that to sign stuff in that short
+
+00:40:02.910 --> 00:40:03.790
+<v Speaker 1>time window.
+
+00:40:04.430 --> 00:40:06.190
+<v Speaker 1>So for build systems and everything,
+
+00:40:06.589 --> 00:40:09.150
+<v Speaker 1>that's if you don't have a fancy HSM
+
+00:40:09.150 --> 00:40:11.310
+<v Speaker 1>or hardware security module or
+
+00:40:11.855 --> 00:40:14.414
+<v Speaker 1>KMS system, then this approach works great too
+
+00:40:14.414 --> 00:40:16.335
+<v Speaker 1>if you're fine with storing these certificates in
+
+00:40:16.335 --> 00:40:17.535
+<v Speaker 1>a transparency log.
+
+00:40:18.174 --> 00:40:20.174
+<v Speaker 0>So I've got a, I guess, then a
+
+00:40:20.174 --> 00:40:22.415
+<v Speaker 0>couple of questions. So Yeah. The first one,
+
+00:40:22.895 --> 00:40:23.615
+<v Speaker 0>experimental.
+
+00:40:24.380 --> 00:40:26.220
+<v Speaker 0>Yeah. What is the status of this, and
+
+00:40:26.220 --> 00:40:28.060
+<v Speaker 0>when is that likely to change and become
+
+00:40:28.060 --> 00:40:29.180
+<v Speaker 0>generally available?
+
+00:40:31.980 --> 00:40:34.780
+<v Speaker 1>Out that, you know, transparency logs and immutable
+
+00:40:34.780 --> 00:40:37.260
+<v Speaker 1>ledgers and storing data in something that can't
+
+00:40:37.260 --> 00:40:38.860
+<v Speaker 1>be deleted and bring out a lot of,
+
+00:40:38.860 --> 00:40:41.265
+<v Speaker 1>you know, GDPR and legal and, you know,
+
+00:40:41.265 --> 00:40:43.185
+<v Speaker 1>what happens if people sneak bad stuff in
+
+00:40:43.185 --> 00:40:44.705
+<v Speaker 1>there that, you know, we're not allowed to
+
+00:40:44.705 --> 00:40:46.465
+<v Speaker 1>host and that kind of thing, those risks.
+
+00:40:46.785 --> 00:40:48.705
+<v Speaker 1>So it's it's good from a code and
+
+00:40:48.705 --> 00:40:50.305
+<v Speaker 1>a stability standpoint. We're just trying to work
+
+00:40:50.305 --> 00:40:51.585
+<v Speaker 1>through and get approvals from all of the
+
+00:40:51.585 --> 00:40:53.290
+<v Speaker 1>lawyers and stuff like that to stand this
+
+00:40:53.290 --> 00:40:55.210
+<v Speaker 1>up and let that data stay around and
+
+00:40:55.210 --> 00:40:56.569
+<v Speaker 1>figure out what we would do if something
+
+00:40:56.569 --> 00:40:58.970
+<v Speaker 1>really, really bad ended up in there. There's
+
+00:40:58.970 --> 00:41:00.730
+<v Speaker 1>nothing brand new to solve. Right? The certificate
+
+00:41:00.730 --> 00:41:02.490
+<v Speaker 1>transparency people have been dealing with this for
+
+00:41:02.490 --> 00:41:04.329
+<v Speaker 1>years. We just gotta get through that. So
+
+00:41:04.329 --> 00:41:05.609
+<v Speaker 1>we're hoping in the next couple of months,
+
+00:41:05.609 --> 00:41:06.809
+<v Speaker 1>we can take that off once we figure
+
+00:41:06.809 --> 00:41:08.805
+<v Speaker 1>out the playbooks for what we do in
+
+00:41:08.805 --> 00:41:10.165
+<v Speaker 1>some really bad situations.
+
+00:41:10.885 --> 00:41:11.525
+<v Speaker 0>Okay.
+
+00:41:12.244 --> 00:41:13.525
+<v Speaker 0>How do I
+
+00:41:14.405 --> 00:41:14.885
+<v Speaker 0>like,
+
+00:41:15.205 --> 00:41:16.965
+<v Speaker 0>I've got this index number.
+
+00:41:17.525 --> 00:41:20.405
+<v Speaker 1>Yeah. Like, how do I check for entries
+
+00:41:20.405 --> 00:41:22.165
+<v Speaker 0>with my email address and and and things
+
+00:41:22.165 --> 00:41:22.484
+<v Speaker 0>like that?
+
+00:41:23.480 --> 00:41:25.079
+<v Speaker 1>Yes. We're gonna have to get another tool
+
+00:41:25.079 --> 00:41:27.079
+<v Speaker 1>that I don't think is in Brew yet,
+
+00:41:27.079 --> 00:41:28.359
+<v Speaker 1>but we can download it and build it
+
+00:41:28.359 --> 00:41:29.560
+<v Speaker 1>and everything like that.
+
+00:41:30.200 --> 00:41:31.559
+<v Speaker 1>But yeah. So you'll see when you did
+
+00:41:31.559 --> 00:41:32.360
+<v Speaker 1>that check,
+
+00:41:32.520 --> 00:41:34.040
+<v Speaker 1>cosigned, did the verification.
+
+00:41:36.035 --> 00:41:38.195
+<v Speaker 1>Yeah. Existence of the claims and the transparency
+
+00:41:38.195 --> 00:41:40.515
+<v Speaker 1>log is verified offline. So cosign did it
+
+00:41:40.515 --> 00:41:42.035
+<v Speaker 1>automatically when we did the verify, but we
+
+00:41:42.035 --> 00:41:43.235
+<v Speaker 1>can kinda walk through the steps to do
+
+00:41:43.235 --> 00:41:44.995
+<v Speaker 1>it manually if you wanna get the Recore
+
+00:41:44.995 --> 00:41:46.115
+<v Speaker 1>tool installed.
+
+00:41:47.235 --> 00:41:48.755
+<v Speaker 1>See if we have I think we have
+
+00:41:48.755 --> 00:41:49.635
+<v Speaker 1>proof for this yet.
+
+00:41:50.589 --> 00:41:52.990
+<v Speaker 1>Your binary is published. It's in a bunch
+
+00:41:52.990 --> 00:41:55.150
+<v Speaker 1>of different pack parameters, but not brew.
+
+00:41:55.710 --> 00:41:57.630
+<v Speaker 1>Or you can clone the repo, build it,
+
+00:41:57.630 --> 00:41:59.630
+<v Speaker 1>or grab the binary yourself, whichever you wanna
+
+00:41:59.630 --> 00:41:59.869
+<v Speaker 1>do.
+
+00:42:03.335 --> 00:42:04.214
+<v Speaker 0>The Darwin
+
+00:42:04.375 --> 00:42:06.055
+<v Speaker 0>Just get in. And the This stuff is
+
+00:42:07.255 --> 00:42:09.335
+<v Speaker 1>you'll see these binaries are all signed too
+
+00:42:09.335 --> 00:42:10.775
+<v Speaker 1>with cosign, so that's cool.
+
+00:42:19.270 --> 00:42:20.230
+<v Speaker 1>Perfect.
+
+00:42:21.589 --> 00:42:22.790
+<v Speaker 0>And I download.
+
+00:42:23.030 --> 00:42:23.910
+<v Speaker 0>That's it.
+
+00:42:28.550 --> 00:42:29.030
+<v Speaker 1>Alright.
+
+00:42:29.545 --> 00:42:31.945
+<v Speaker 1>So let's let's scroll back up and find
+
+00:42:31.945 --> 00:42:33.545
+<v Speaker 1>that index that it printed out, and we'll
+
+00:42:33.545 --> 00:42:35.225
+<v Speaker 1>just grab that one right away.
+
+00:42:35.945 --> 00:42:37.785
+<v Speaker 0>Yep. Just the number? Cool. Yep.
+
+00:42:38.105 --> 00:42:39.465
+<v Speaker 1>I do Recore
+
+00:42:39.465 --> 00:42:42.665
+<v Speaker 1>get dash dash log hyphen index,
+
+00:42:42.665 --> 00:42:44.505
+<v Speaker 1>I think it is, and pass in that.
+
+00:42:44.990 --> 00:42:46.670
+<v Speaker 1>Cool. And we'll get a bunch of hard
+
+00:42:46.670 --> 00:42:47.950
+<v Speaker 1>to read data back out.
+
+00:42:48.270 --> 00:42:50.350
+<v Speaker 1>So this is the entry for that specific
+
+00:42:50.589 --> 00:42:53.070
+<v Speaker 1>signature we did in the transparency log.
+
+00:42:53.230 --> 00:42:55.470
+<v Speaker 1>We store the thing we signed,
+
+00:42:55.789 --> 00:42:57.710
+<v Speaker 1>the hash of it. So that's the data
+
+00:42:57.710 --> 00:42:59.069
+<v Speaker 1>hash value thingy.
+
+00:43:00.295 --> 00:43:02.215
+<v Speaker 1>That's the hash of that JSON object we
+
+00:43:02.215 --> 00:43:02.775
+<v Speaker 1>signed.
+
+00:43:03.495 --> 00:43:05.335
+<v Speaker 1>Excuse me. There's that signature there, and then
+
+00:43:05.335 --> 00:43:06.935
+<v Speaker 1>there's the public key. So that is gonna
+
+00:43:06.935 --> 00:43:08.855
+<v Speaker 1>be the certificate. So you copy paste out
+
+00:43:08.855 --> 00:43:09.735
+<v Speaker 1>that long thing.
+
+00:43:11.780 --> 00:43:14.180
+<v Speaker 1>It's base 64 encoded. You can touch from
+
+00:43:14.180 --> 00:43:16.340
+<v Speaker 1>the equal sign. So that's my trick.
+
+00:43:17.380 --> 00:43:19.940
+<v Speaker 1>You should be able to see some more
+
+00:43:19.940 --> 00:43:20.660
+<v Speaker 1>stuff.
+
+00:43:21.140 --> 00:43:23.140
+<v Speaker 0>Don't think it copied right. It didn't work.
+
+00:43:23.140 --> 00:43:23.380
+<v Speaker 1>Yeah.
+
+00:43:29.355 --> 00:43:30.395
+<v Speaker 1>What's happening?
+
+00:43:30.795 --> 00:43:32.395
+<v Speaker 1>Yeah. You're losing the equal signs at the
+
+00:43:32.395 --> 00:43:34.555
+<v Speaker 1>end somehow. Right? It's losing much more than
+
+00:43:34.555 --> 00:43:36.155
+<v Speaker 0>that. So let's
+
+00:43:36.475 --> 00:43:37.195
+<v Speaker 0>do that.
+
+00:43:41.530 --> 00:43:43.610
+<v Speaker 0>Tap in difficult. Try again.
+
+00:43:44.410 --> 00:43:46.569
+<v Speaker 0>There we go. Okay. So that is the
+
+00:43:46.569 --> 00:43:48.809
+<v Speaker 1>certificate that we issued for you. If you've
+
+00:43:48.809 --> 00:43:50.730
+<v Speaker 1>got open SSL, I can never remember the
+
+00:43:50.730 --> 00:43:51.609
+<v Speaker 1>commands for this.
+
+00:43:53.225 --> 00:43:55.385
+<v Speaker 1>Open SSL. You can type that to open
+
+00:43:55.385 --> 00:43:56.185
+<v Speaker 1>SSL
+
+00:43:56.185 --> 00:43:58.505
+<v Speaker 1>x five zero nine
+
+00:44:00.185 --> 00:44:01.865
+<v Speaker 1>dash text
+
+00:44:03.225 --> 00:44:03.705
+<v Speaker 1>dash
+
+00:44:04.265 --> 00:44:05.945
+<v Speaker 1>maybe that's all you need. Let me see
+
+00:44:05.945 --> 00:44:06.505
+<v Speaker 1>what happens.
+
+00:44:12.170 --> 00:44:14.810
+<v Speaker 1>It's a million different OpenSSL versions. There's some
+
+00:44:14.810 --> 00:44:16.090
+<v Speaker 1>tool that'll show you
+
+00:44:19.130 --> 00:44:20.410
+<v Speaker 1>maybe
+
+00:44:21.345 --> 00:44:23.425
+<v Speaker 1>no out. That's another one I have on
+
+00:44:23.425 --> 00:44:25.665
+<v Speaker 1>here. Oh, sorry. Not dash x 509. Just
+
+00:44:25.665 --> 00:44:27.505
+<v Speaker 1>x 509. Alright. Okay.
+
+00:44:27.745 --> 00:44:28.705
+<v Speaker 1>There we go.
+
+00:44:29.105 --> 00:44:31.905
+<v Speaker 1>Oh, and then do dash text maybe to
+
+00:44:31.905 --> 00:44:34.290
+<v Speaker 1>stick that on. We'll see So if you
+
+00:44:34.290 --> 00:44:35.650
+<v Speaker 1>scroll up, you'll see the all the info
+
+00:44:35.650 --> 00:44:37.810
+<v Speaker 1>in there where everything is stored, the algorithm,
+
+00:44:37.810 --> 00:44:39.490
+<v Speaker 1>the key, your email address is there too
+
+00:44:39.490 --> 00:44:41.490
+<v Speaker 1>at the bottom. That's the subject thing.
+
+00:44:43.890 --> 00:44:46.575
+<v Speaker 0>There you go. Perfect. Yep. So
+
+00:44:46.575 --> 00:44:48.335
+<v Speaker 1>if you're you can kinda tell this log
+
+00:44:48.335 --> 00:44:49.775
+<v Speaker 1>there's new entries that come in. You can
+
+00:44:49.775 --> 00:44:51.855
+<v Speaker 1>just keep grabbing the index and verify it.
+
+00:44:52.015 --> 00:44:53.455
+<v Speaker 1>And the whole thing only works if people
+
+00:44:53.455 --> 00:44:55.055
+<v Speaker 1>are doing that, which is nice because people
+
+00:44:55.055 --> 00:44:56.895
+<v Speaker 1>are. So there are people that constantly verify
+
+00:44:56.895 --> 00:44:58.335
+<v Speaker 1>our log and make sure that we haven't
+
+00:44:58.335 --> 00:44:59.295
+<v Speaker 1>tampered with stuff.
+
+00:44:59.695 --> 00:45:02.290
+<v Speaker 1>In fact, if you do do recall log
+
+00:45:02.290 --> 00:45:03.250
+<v Speaker 1>info,
+
+00:45:03.250 --> 00:45:04.849
+<v Speaker 1>and now you're actually helping, and you'll be
+
+00:45:04.849 --> 00:45:05.730
+<v Speaker 1>a verifier
+
+00:45:05.890 --> 00:45:07.490
+<v Speaker 1>of our log to make sure stuff doesn't
+
+00:45:07.490 --> 00:45:08.530
+<v Speaker 0>get tampered with.
+
+00:45:09.490 --> 00:45:12.290
+<v Speaker 0>Log info. One word. Yeah.
+
+00:45:13.010 --> 00:45:14.735
+<v Speaker 1>Cool. Yeah. So this is the first time
+
+00:45:14.735 --> 00:45:16.095
+<v Speaker 1>you hit the log. You now stored stuff
+
+00:45:16.095 --> 00:45:17.535
+<v Speaker 1>at that length. If you ever hit it
+
+00:45:17.535 --> 00:45:18.895
+<v Speaker 1>again in, you know, a couple years from
+
+00:45:18.895 --> 00:45:19.375
+<v Speaker 1>now,
+
+00:45:20.655 --> 00:45:22.495
+<v Speaker 1>then it'll make sure that nothing in the
+
+00:45:22.495 --> 00:45:24.655
+<v Speaker 1>log up until now was tampered with. So
+
+00:45:24.655 --> 00:45:27.580
+<v Speaker 1>you're helping. You're doing your part. For searching,
+
+00:45:27.580 --> 00:45:29.500
+<v Speaker 1>though, we can do this is kinda what
+
+00:45:29.500 --> 00:45:30.619
+<v Speaker 1>you might wanna do to look through it
+
+00:45:30.619 --> 00:45:32.300
+<v Speaker 1>for things with your email address. There's a
+
+00:45:32.300 --> 00:45:33.260
+<v Speaker 1>search command.
+
+00:45:35.500 --> 00:45:37.660
+<v Speaker 1>Can search dash dash email. You can search
+
+00:45:37.660 --> 00:45:40.060
+<v Speaker 1>on a couple different fields. That should work,
+
+00:45:40.060 --> 00:45:40.140
+<v Speaker 1>hopefully.
+
+00:45:41.575 --> 00:45:43.975
+<v Speaker 1>And that is just the one? Yep.
+
+00:45:44.215 --> 00:45:45.415
+<v Speaker 1>Perfect. So
+
+00:45:45.895 --> 00:45:48.535
+<v Speaker 1>nobody's been stealing your password, you know, before.
+
+00:45:49.015 --> 00:45:51.175
+<v Speaker 1>Yeah. So that's how all that stuff works.
+
+00:45:51.175 --> 00:45:52.935
+<v Speaker 1>There's a bunch of cool stuff with time
+
+00:45:52.935 --> 00:45:54.950
+<v Speaker 1>stamps and everything to also help protect and
+
+00:45:54.950 --> 00:45:56.630
+<v Speaker 1>limit the blast radius if you do lose
+
+00:45:56.630 --> 00:45:57.589
+<v Speaker 1>your signatures.
+
+00:45:58.470 --> 00:46:00.630
+<v Speaker 1>But it starts to get pretty complicated.
+
+00:46:01.670 --> 00:46:03.510
+<v Speaker 1>Okay. So that was all the three parts
+
+00:46:03.510 --> 00:46:05.430
+<v Speaker 1>of sigstore. Just the plain keys,
+
+00:46:05.990 --> 00:46:08.069
+<v Speaker 1>KMS systems, or you can start using transparency
+
+00:46:08.069 --> 00:46:09.510
+<v Speaker 1>logs and certificate authorities.
+
+00:46:10.595 --> 00:46:12.994
+<v Speaker 0>Okay. So we've got cosign, which is a
+
+00:46:12.994 --> 00:46:14.915
+<v Speaker 0>tool for signing and verifying
+
+00:46:15.075 --> 00:46:16.115
+<v Speaker 0>artifacts,
+
+00:46:16.115 --> 00:46:17.875
+<v Speaker 0>one of which could be a container image.
+
+00:46:18.115 --> 00:46:19.795
+<v Speaker 0>We've got rakor,
+
+00:46:19.795 --> 00:46:22.035
+<v Speaker 0>which allows us to work with the transparency
+
+00:46:22.035 --> 00:46:24.835
+<v Speaker 0>log, get information over to searches against it.
+
+00:46:25.240 --> 00:46:27.640
+<v Speaker 0>And those are the two major components of
+
+00:46:27.640 --> 00:46:28.520
+<v Speaker 0>sigstore.
+
+00:46:29.320 --> 00:46:31.320
+<v Speaker 1>Yeah. There's the the third one, which is
+
+00:46:31.320 --> 00:46:32.680
+<v Speaker 1>the one kinda behind the scenes, the one
+
+00:46:32.680 --> 00:46:35.480
+<v Speaker 1>that actually issues those certificates, that's called Foolsio.
+
+00:46:35.640 --> 00:46:37.640
+<v Speaker 1>You should never really need to interact with
+
+00:46:37.640 --> 00:46:39.240
+<v Speaker 1>it yourself. That's just the tools to get
+
+00:46:39.240 --> 00:46:40.520
+<v Speaker 1>the certificates for you.
+
+00:46:42.895 --> 00:46:44.494
+<v Speaker 0>We we got a a couple of questions
+
+00:46:44.494 --> 00:46:46.015
+<v Speaker 0>there if you wanna tackle them, and and
+
+00:46:46.015 --> 00:46:47.375
+<v Speaker 0>then we can Let's go for it. And
+
+00:46:47.375 --> 00:46:48.734
+<v Speaker 1>then there's kinda one other thing we'll do
+
+00:46:48.734 --> 00:46:50.175
+<v Speaker 1>now. We've got recourse set up after these
+
+00:46:50.175 --> 00:46:51.455
+<v Speaker 1>questions. Sweet.
+
+00:46:52.655 --> 00:46:55.310
+<v Speaker 0>Is okay. So CPP for life. Is there
+
+00:46:55.310 --> 00:46:57.710
+<v Speaker 0>any info about what service was used to
+
+00:46:57.710 --> 00:46:59.470
+<v Speaker 0>help Microsoft or something else to verify the
+
+00:46:59.470 --> 00:47:01.470
+<v Speaker 0>email address? I'm assuming I added that last
+
+00:47:01.470 --> 00:47:02.110
+<v Speaker 0>bound.
+
+00:47:04.110 --> 00:47:05.390
+<v Speaker 1>Yeah. So
+
+00:47:05.675 --> 00:47:07.195
+<v Speaker 1>that's a that's a tricky one we're trying
+
+00:47:07.195 --> 00:47:08.715
+<v Speaker 1>to figure out too. We we store that.
+
+00:47:08.715 --> 00:47:11.115
+<v Speaker 1>Right? We have those three OIDC providers. That's
+
+00:47:11.115 --> 00:47:13.755
+<v Speaker 1>GitHub, Microsoft, Google. Those are the only three
+
+00:47:13.755 --> 00:47:16.075
+<v Speaker 1>we support. They're pretty big and trustworthy, we
+
+00:47:16.075 --> 00:47:17.755
+<v Speaker 1>hope. But we do wanna figure out how
+
+00:47:17.755 --> 00:47:19.195
+<v Speaker 1>to log that info and make it available
+
+00:47:19.195 --> 00:47:21.380
+<v Speaker 1>just in case something bad does happen. The
+
+00:47:21.380 --> 00:47:23.620
+<v Speaker 1>problem there is that the info they give
+
+00:47:23.620 --> 00:47:25.940
+<v Speaker 1>you back usually has some long number in
+
+00:47:25.940 --> 00:47:28.500
+<v Speaker 1>there, which is kinda fixed and can be
+
+00:47:28.500 --> 00:47:29.700
+<v Speaker 1>a privacy concern.
+
+00:47:30.020 --> 00:47:31.540
+<v Speaker 1>Also, if you change your email address on
+
+00:47:31.540 --> 00:47:33.380
+<v Speaker 1>Google, that number usually stays the same, and
+
+00:47:33.380 --> 00:47:34.660
+<v Speaker 1>you can start to peep and start to
+
+00:47:34.660 --> 00:47:35.860
+<v Speaker 1>do some scary stuff like
+
+00:47:36.405 --> 00:47:39.045
+<v Speaker 1>correlate things across email addresses. So we've gotta
+
+00:47:39.045 --> 00:47:40.085
+<v Speaker 1>figure out how to store it and make
+
+00:47:40.085 --> 00:47:42.485
+<v Speaker 1>it available without leaking people's privacy.
+
+00:47:42.725 --> 00:47:44.085
+<v Speaker 1>So we store it ourselves for a retention
+
+00:47:44.085 --> 00:47:45.685
+<v Speaker 1>period just in case something goes wrong to
+
+00:47:45.685 --> 00:47:47.445
+<v Speaker 1>do some incident response, but we don't publish
+
+00:47:47.445 --> 00:47:48.965
+<v Speaker 1>that in the logs yet because it's a
+
+00:47:48.965 --> 00:47:49.605
+<v Speaker 1>little bit scary.
+
+00:47:50.770 --> 00:47:51.570
+<v Speaker 0>Alright.
+
+00:47:51.970 --> 00:47:54.130
+<v Speaker 0>We got another question asking.
+
+00:47:54.370 --> 00:47:56.690
+<v Speaker 0>So is keyless option using hosted
+
+00:47:56.690 --> 00:47:57.810
+<v Speaker 0>by sigstoreorg
+
+00:47:57.810 --> 00:48:00.450
+<v Speaker 0>and the transparency log handled by Rawkode?
+
+00:48:01.490 --> 00:48:03.970
+<v Speaker 1>Yeah. So we run those two services, the
+
+00:48:03.970 --> 00:48:06.690
+<v Speaker 1>CA and the transparency log kind of as
+
+00:48:06.325 --> 00:48:08.565
+<v Speaker 1>a public good instance. So the sigstore community
+
+00:48:08.565 --> 00:48:09.925
+<v Speaker 1>hosts and manages those.
+
+00:48:11.205 --> 00:48:13.445
+<v Speaker 1>Set up as a transparency log, you don't
+
+00:48:13.445 --> 00:48:14.805
+<v Speaker 1>really have to trust it. You can audit
+
+00:48:14.805 --> 00:48:16.485
+<v Speaker 1>it. You can't really do anything bad without
+
+00:48:16.485 --> 00:48:18.245
+<v Speaker 1>it going on to that log in case
+
+00:48:18.245 --> 00:48:20.760
+<v Speaker 1>something does happen. But it does require you
+
+00:48:20.760 --> 00:48:22.680
+<v Speaker 1>to hit these external services. So there's some
+
+00:48:22.680 --> 00:48:24.040
+<v Speaker 1>other modes you can set up inside of,
+
+00:48:24.040 --> 00:48:26.040
+<v Speaker 1>like, an organization to host parts of that
+
+00:48:26.040 --> 00:48:27.640
+<v Speaker 1>yourself so you don't need to be constantly
+
+00:48:27.640 --> 00:48:29.880
+<v Speaker 1>going outside of your firewall to get certificates
+
+00:48:29.880 --> 00:48:30.680
+<v Speaker 1>or to
+
+00:48:31.320 --> 00:48:33.405
+<v Speaker 1>log data to the log. The most part,
+
+00:48:33.405 --> 00:48:35.085
+<v Speaker 1>it's just hashes, so you're not really leaking
+
+00:48:35.085 --> 00:48:37.325
+<v Speaker 1>tons of proprietary information in a SHA two
+
+00:48:37.325 --> 00:48:39.485
+<v Speaker 1>five six hash. But still, sometimes you don't
+
+00:48:39.485 --> 00:48:42.285
+<v Speaker 1>wanna be even allowing outgoing network connections. You
+
+00:48:42.285 --> 00:48:43.965
+<v Speaker 1>can run parts of it yourself too.
+
+00:48:44.445 --> 00:48:47.245
+<v Speaker 0>Sweet. I'm curious. But you did as
+
+00:48:47.650 --> 00:48:50.050
+<v Speaker 0>a signing episode with Pop on Cloud Native
+
+00:48:50.050 --> 00:48:53.410
+<v Speaker 0>TV. Right? Was that for this hosted Brazil?
+
+00:48:54.450 --> 00:48:56.290
+<v Speaker 1>Yeah. So that that was a that was
+
+00:48:56.290 --> 00:48:59.170
+<v Speaker 1>our root key ceremony, basically. So, yeah, the
+
+00:48:59.170 --> 00:49:01.570
+<v Speaker 1>full COCA and even the Recore log itself
+
+00:49:01.570 --> 00:49:03.255
+<v Speaker 1>has to assign a bunch of things to
+
+00:49:03.255 --> 00:49:04.855
+<v Speaker 1>make the proofs work and everything.
+
+00:49:05.575 --> 00:49:07.255
+<v Speaker 1>And we need a bunch of our own
+
+00:49:07.255 --> 00:49:09.815
+<v Speaker 1>keys in order to do that. And so
+
+00:49:10.454 --> 00:49:12.295
+<v Speaker 1>keys are hard to manage. They're scary. People
+
+00:49:12.295 --> 00:49:14.055
+<v Speaker 1>lose them. And so what we we did
+
+00:49:14.055 --> 00:49:16.855
+<v Speaker 1>is we followed the protocol defined by the
+
+00:49:16.855 --> 00:49:19.390
+<v Speaker 1>update framework or TUF, which is another graduated
+
+00:49:19.390 --> 00:49:20.670
+<v Speaker 1>CNCF project.
+
+00:49:21.070 --> 00:49:22.510
+<v Speaker 1>It's not really a code base. You can
+
+00:49:22.510 --> 00:49:23.950
+<v Speaker 1>kinda just grab and start using. They do
+
+00:49:23.950 --> 00:49:25.390
+<v Speaker 1>have some libraries and everything, but it's more
+
+00:49:25.390 --> 00:49:28.030
+<v Speaker 1>of, a framework for managing keys in a,
+
+00:49:28.030 --> 00:49:29.950
+<v Speaker 1>you know, distributed setup like this.
+
+00:49:30.270 --> 00:49:32.465
+<v Speaker 1>And so there are five key holders as
+
+00:49:32.465 --> 00:49:33.985
+<v Speaker 1>part of the sigstore project now, and we
+
+00:49:33.985 --> 00:49:35.745
+<v Speaker 1>have, like, a rotation setup so people don't
+
+00:49:35.745 --> 00:49:36.785
+<v Speaker 1>have to do it forever.
+
+00:49:37.345 --> 00:49:39.505
+<v Speaker 1>And we each have Yuba keys, and it
+
+00:49:39.505 --> 00:49:41.505
+<v Speaker 1>takes three out of the five to actually,
+
+00:49:41.505 --> 00:49:44.225
+<v Speaker 1>you know, sign things or delegate new roles
+
+00:49:44.225 --> 00:49:46.145
+<v Speaker 1>or replace keys and that kind of thing.
+
+00:49:46.430 --> 00:49:47.950
+<v Speaker 1>So if any one of us loses ours,
+
+00:49:47.950 --> 00:49:49.150
+<v Speaker 1>the other four can
+
+00:49:49.630 --> 00:49:51.230
+<v Speaker 1>fix it for them and, you know, sign
+
+00:49:51.230 --> 00:49:52.590
+<v Speaker 1>a new key. So as long as we
+
+00:49:52.590 --> 00:49:53.950
+<v Speaker 1>still have three of them at any given
+
+00:49:53.950 --> 00:49:55.950
+<v Speaker 1>time, we're good. So that was that event
+
+00:49:55.950 --> 00:49:57.550
+<v Speaker 1>we did. It was the the first one
+
+00:49:57.550 --> 00:49:59.150
+<v Speaker 1>where we all had to kind of take
+
+00:49:59.150 --> 00:50:00.350
+<v Speaker 1>them out of the box the first time
+
+00:50:00.350 --> 00:50:02.435
+<v Speaker 1>and establish that root of trust And now
+
+00:50:02.435 --> 00:50:03.955
+<v Speaker 1>we can use the update framework to make
+
+00:50:03.955 --> 00:50:05.795
+<v Speaker 1>changes to and iterate on going forward.
+
+00:50:06.515 --> 00:50:07.395
+<v Speaker 0>Awesome.
+
+00:50:08.115 --> 00:50:11.155
+<v Speaker 0>Alright. This is all very, very cool. What
+
+00:50:11.155 --> 00:50:12.675
+<v Speaker 0>have we what have we got next?
+
+00:50:13.235 --> 00:50:14.995
+<v Speaker 1>Alright. There's one more thing here. Right? I
+
+00:50:14.995 --> 00:50:17.000
+<v Speaker 1>talked about the signatures. They're kinda they can
+
+00:50:17.000 --> 00:50:19.559
+<v Speaker 1>just store basic information about the container, which
+
+00:50:19.559 --> 00:50:21.640
+<v Speaker 1>is cool. If you sign in a build
+
+00:50:21.640 --> 00:50:23.160
+<v Speaker 1>system, that's nice.
+
+00:50:23.880 --> 00:50:25.319
+<v Speaker 1>But what we can actually do is store
+
+00:50:25.319 --> 00:50:27.319
+<v Speaker 1>more than just the container name. We can
+
+00:50:27.319 --> 00:50:29.000
+<v Speaker 1>store stuff about how it was built.
+
+00:50:29.795 --> 00:50:32.275
+<v Speaker 1>So let me get you a quick
+
+00:50:32.515 --> 00:50:34.035
+<v Speaker 1>command to run.
+
+00:50:34.835 --> 00:50:36.435
+<v Speaker 1>And this works with our integration in the
+
+00:50:36.435 --> 00:50:39.075
+<v Speaker 1>Tekton build system, but there's nothing really
+
+00:50:40.435 --> 00:50:41.635
+<v Speaker 1>about Tekton
+
+00:50:41.795 --> 00:50:42.915
+<v Speaker 1>that's special here.
+
+00:50:44.210 --> 00:50:47.170
+<v Speaker 1>We have the Tecton build system generate payloads,
+
+00:50:47.170 --> 00:50:49.730
+<v Speaker 1>basically, that explain exactly how something got built,
+
+00:50:49.730 --> 00:50:50.770
+<v Speaker 1>like a container.
+
+00:50:51.010 --> 00:50:53.170
+<v Speaker 1>So it's not just the container now. It
+
+00:50:53.170 --> 00:50:54.850
+<v Speaker 1>has the exact commit
+
+00:50:55.250 --> 00:50:57.245
+<v Speaker 1>that was fetched to do the build, the
+
+00:50:57.245 --> 00:50:59.565
+<v Speaker 1>exact containers that were using the build steps,
+
+00:50:59.565 --> 00:51:00.925
+<v Speaker 1>all of that cool stuff. And it writes
+
+00:51:00.925 --> 00:51:02.845
+<v Speaker 1>it in a payload and stores that in
+
+00:51:02.845 --> 00:51:04.525
+<v Speaker 1>a transparency log too.
+
+00:51:05.565 --> 00:51:06.365
+<v Speaker 1>Let me
+
+00:51:08.205 --> 00:51:09.965
+<v Speaker 1>find the easiest number to send you so
+
+00:51:09.965 --> 00:51:11.405
+<v Speaker 1>you can do this check quickly.
+
+00:51:16.599 --> 00:51:17.640
+<v Speaker 1>It's
+
+00:51:17.640 --> 00:51:19.320
+<v Speaker 1>not working here.
+
+00:51:22.759 --> 00:51:24.200
+<v Speaker 0>I got a blog post where you could
+
+00:51:24.200 --> 00:51:25.240
+<v Speaker 0>follow along.
+
+00:51:25.559 --> 00:51:26.119
+<v Speaker 0>Yeah. Sure.
+
+00:51:26.755 --> 00:51:28.355
+<v Speaker 1>There's a typo.
+
+00:51:29.555 --> 00:51:31.075
+<v Speaker 1>Alright. Yeah. So the blog post is here.
+
+00:51:31.075 --> 00:51:33.234
+<v Speaker 1>It's called the it's a the CD foundation
+
+00:51:33.234 --> 00:51:34.835
+<v Speaker 1>blog, and the title is called the meta
+
+00:51:34.835 --> 00:51:36.115
+<v Speaker 1>chain. If you wanna search for that, you
+
+00:51:36.115 --> 00:51:38.515
+<v Speaker 1>should find it. Of course. Oh. For some
+
+00:51:38.515 --> 00:51:40.595
+<v Speaker 1>reason, the command is not working. Meta chain
+
+00:51:40.595 --> 00:51:41.875
+<v Speaker 0>CD
+
+00:51:42.640 --> 00:51:43.520
+<v Speaker 0>This
+
+00:51:48.480 --> 00:51:49.120
+<v Speaker 0>one?
+
+00:51:50.160 --> 00:51:52.880
+<v Speaker 0>Yeah. Verifiable supply chain metadata for Tekton.
+
+00:51:54.080 --> 00:51:54.960
+<v Speaker 1>Exactly.
+
+00:51:55.440 --> 00:51:56.640
+<v Speaker 1>So
+
+00:51:56.915 --> 00:51:59.395
+<v Speaker 1>we did a release of Tecton that was
+
+00:51:59.395 --> 00:52:01.715
+<v Speaker 1>signed with Tecton itself. That's why it's called
+
+00:52:01.715 --> 00:52:02.435
+<v Speaker 1>Meta.
+
+00:52:02.675 --> 00:52:04.515
+<v Speaker 1>And then it stored all of that in
+
+00:52:04.515 --> 00:52:06.755
+<v Speaker 1>the transparency log. Oh, sorry. That's actually the
+
+00:52:06.755 --> 00:52:07.555
+<v Speaker 1>wrong one.
+
+00:52:08.195 --> 00:52:10.349
+<v Speaker 1>There's a more recent one. But I gotta
+
+00:52:10.349 --> 00:52:11.549
+<v Speaker 1>work it here. I'm gonna send you the
+
+00:52:11.549 --> 00:52:12.670
+<v Speaker 1>number to grab.
+
+00:52:15.710 --> 00:52:16.270
+<v Speaker 1>Oh,
+
+00:52:16.510 --> 00:52:18.670
+<v Speaker 0>sorry. I've I've got it. July 29.
+
+00:52:19.069 --> 00:52:19.950
+<v Speaker 1>Cool.
+
+00:52:19.950 --> 00:52:21.230
+<v Speaker 1>So this is the last release we just
+
+00:52:21.230 --> 00:52:22.910
+<v Speaker 1>did last week. So instead of just signing
+
+00:52:22.910 --> 00:52:24.345
+<v Speaker 1>the containers that were part of this tech
+
+00:52:24.345 --> 00:52:25.785
+<v Speaker 1>hunt release, you can see that we signed
+
+00:52:25.785 --> 00:52:27.945
+<v Speaker 1>these giant they're called attestations.
+
+00:52:28.185 --> 00:52:30.025
+<v Speaker 1>And this shows all the info about how
+
+00:52:30.025 --> 00:52:31.465
+<v Speaker 1>the thing was built, and that goes into
+
+00:52:31.465 --> 00:52:32.985
+<v Speaker 1>the transparency log too.
+
+00:52:33.705 --> 00:52:35.065
+<v Speaker 1>So if you start there at the top,
+
+00:52:35.065 --> 00:52:36.665
+<v Speaker 1>if all you have is the container ID
+
+00:52:36.665 --> 00:52:38.345
+<v Speaker 1>for the tech hunt release, that's the SHA
+
+00:52:38.345 --> 00:52:41.570
+<v Speaker 1>256 thing, Show you the next text box.
+
+00:52:42.610 --> 00:52:43.890
+<v Speaker 1>Yeah. So if you if you got that
+
+00:52:43.890 --> 00:52:45.330
+<v Speaker 1>running, you've got the SHA256
+
+00:52:45.330 --> 00:52:47.010
+<v Speaker 1>for a container. You can search that in
+
+00:52:47.010 --> 00:52:48.370
+<v Speaker 1>the transparency log
+
+00:52:49.570 --> 00:52:51.170
+<v Speaker 1>using that search command. So instead of an
+
+00:52:51.170 --> 00:52:52.770
+<v Speaker 1>email now, we're just gonna look up everything
+
+00:52:52.770 --> 00:52:54.845
+<v Speaker 1>we know about that SHA. Mhmm.
+
+00:52:55.005 --> 00:52:57.085
+<v Speaker 1>We get these entries here, and then you
+
+00:52:57.085 --> 00:52:59.165
+<v Speaker 1>can download one, and you can see all
+
+00:52:59.165 --> 00:53:01.405
+<v Speaker 1>the information that's used, all the parameters,
+
+00:53:01.885 --> 00:53:03.244
+<v Speaker 1>the version information,
+
+00:53:03.565 --> 00:53:04.285
+<v Speaker 1>the
+
+00:53:04.525 --> 00:53:06.285
+<v Speaker 1>exact batch script that was used to build
+
+00:53:06.285 --> 00:53:08.140
+<v Speaker 1>this thing. I'm assuming I could just run
+
+00:53:08.140 --> 00:53:09.820
+<v Speaker 0>this on my own machine as well. Yeah.
+
+00:53:09.820 --> 00:53:11.420
+<v Speaker 1>Yeah. I didn't wanna try to read that
+
+00:53:11.420 --> 00:53:12.700
+<v Speaker 1>UUID out to you.
+
+00:53:15.580 --> 00:53:17.420
+<v Speaker 0>Alright. So this is everything that we need
+
+00:53:17.420 --> 00:53:19.500
+<v Speaker 0>to know about this build. Yeah. That's exactly
+
+00:53:19.500 --> 00:53:21.385
+<v Speaker 1>how it was built. See the parameters that
+
+00:53:21.385 --> 00:53:23.305
+<v Speaker 1>went into the text on task run. These
+
+00:53:23.305 --> 00:53:25.224
+<v Speaker 1>are all the strings, the key value pairs,
+
+00:53:27.065 --> 00:53:27.865
+<v Speaker 1>or the
+
+00:53:28.424 --> 00:53:30.585
+<v Speaker 1>thing we fetch from in the Kubernetes cluster,
+
+00:53:30.585 --> 00:53:33.880
+<v Speaker 1>that long bash script. It's native technology is
+
+00:53:33.880 --> 00:53:36.120
+<v Speaker 1>based on bash and tarballs
+
+00:53:36.520 --> 00:53:37.720
+<v Speaker 1>and YAML.
+
+00:53:38.600 --> 00:53:40.440
+<v Speaker 1>The exact container steps that were used, we
+
+00:53:40.440 --> 00:53:41.880
+<v Speaker 1>had crane running in there. You can see
+
+00:53:41.880 --> 00:53:43.640
+<v Speaker 1>the digest, all that stuff. So if something
+
+00:53:43.640 --> 00:53:46.120
+<v Speaker 1>got compromised in any of these things, we
+
+00:53:46.120 --> 00:53:47.885
+<v Speaker 1>we have all the tools to kinda trace
+
+00:53:47.885 --> 00:53:48.925
+<v Speaker 1>all the way back.
+
+00:53:50.925 --> 00:53:52.365
+<v Speaker 0>Cool. So this is all set up. You
+
+00:53:52.365 --> 00:53:54.685
+<v Speaker 1>just install this in your Tecton cluster, you
+
+00:53:54.685 --> 00:53:56.204
+<v Speaker 1>just kinda get this out of the box.
+
+00:53:56.204 --> 00:53:57.885
+<v Speaker 1>Everything gets signed and logged.
+
+00:53:59.005 --> 00:54:00.125
+<v Speaker 0>Nice. I like that.
+
+00:54:00.740 --> 00:54:03.460
+<v Speaker 0>I'm curious. Like, this transparency log, you said,
+
+00:54:03.460 --> 00:54:05.539
+<v Speaker 0>is append only. It's it's gonna continue to
+
+00:54:05.539 --> 00:54:07.859
+<v Speaker 0>grow. Like, does that mean that the data
+
+00:54:07.859 --> 00:54:10.260
+<v Speaker 0>lives forever? Will it ever be trimmed? Do
+
+00:54:10.260 --> 00:54:12.579
+<v Speaker 0>you deprecate or time to live older entries?
+
+00:54:12.579 --> 00:54:15.059
+<v Speaker 0>Is that impossible because of the Merkle tree?
+
+00:54:16.835 --> 00:54:18.674
+<v Speaker 1>Yes. So the way people normally do this
+
+00:54:18.674 --> 00:54:20.755
+<v Speaker 1>is they kind of time bound stuff. If
+
+00:54:20.755 --> 00:54:22.355
+<v Speaker 1>you look at, like, the Let's Encrypt Transparency
+
+00:54:22.355 --> 00:54:24.115
+<v Speaker 1>logs, they have a different one every year.
+
+00:54:24.115 --> 00:54:25.875
+<v Speaker 1>They keep the old ones for some amount
+
+00:54:25.875 --> 00:54:26.435
+<v Speaker 1>of time.
+
+00:54:27.714 --> 00:54:29.555
+<v Speaker 1>It's not a huge, huge, huge amount of
+
+00:54:29.555 --> 00:54:32.060
+<v Speaker 1>data. Right? It's not, you know, petabytes of
+
+00:54:32.060 --> 00:54:33.420
+<v Speaker 1>data that we've got in here.
+
+00:54:33.980 --> 00:54:36.300
+<v Speaker 1>So it's it's nothing that's kinda gonna push
+
+00:54:36.300 --> 00:54:38.620
+<v Speaker 1>the bounds of SQL technologies.
+
+00:54:38.700 --> 00:54:39.740
+<v Speaker 1>But, yeah, we do need to set up
+
+00:54:39.740 --> 00:54:41.180
+<v Speaker 1>ways to kind of rotate and cut off
+
+00:54:41.180 --> 00:54:41.980
+<v Speaker 1>the log
+
+00:54:42.140 --> 00:54:43.820
+<v Speaker 1>and then start a new fresh one, but
+
+00:54:43.820 --> 00:54:45.500
+<v Speaker 1>still let you kinda search back through the
+
+00:54:45.500 --> 00:54:46.300
+<v Speaker 1>historical ones.
+
+00:54:47.295 --> 00:54:49.055
+<v Speaker 1>Supply chain stuff is a little different because,
+
+00:54:49.055 --> 00:54:50.895
+<v Speaker 1>yeah, you run code that's, know, maybe a
+
+00:54:50.895 --> 00:54:52.895
+<v Speaker 1>couple years old. You might probably shouldn't be,
+
+00:54:52.895 --> 00:54:55.214
+<v Speaker 1>but people do that. So we can't deprecate
+
+00:54:55.214 --> 00:54:56.895
+<v Speaker 1>things as quickly as you can with certificates
+
+00:54:56.895 --> 00:54:58.575
+<v Speaker 1>where once they expire, you don't care about
+
+00:54:58.575 --> 00:54:58.974
+<v Speaker 1>them anymore.
+
+00:55:00.330 --> 00:55:02.330
+<v Speaker 1>Yeah. It'll grow until we, you know, freeze
+
+00:55:02.330 --> 00:55:04.650
+<v Speaker 1>it and stick them, publish the archives, that
+
+00:55:04.650 --> 00:55:05.450
+<v Speaker 1>kind of thing.
+
+00:55:05.690 --> 00:55:08.410
+<v Speaker 0>Should people ever run their own log?
+
+00:55:09.850 --> 00:55:12.010
+<v Speaker 1>Yeah. A lot of organizations
+
+00:55:12.250 --> 00:55:14.410
+<v Speaker 1>do or are trying to figure out how
+
+00:55:14.410 --> 00:55:15.610
+<v Speaker 1>to or to to run them.
+
+00:55:16.845 --> 00:55:18.765
+<v Speaker 1>It's not always the best fit. Right?
+
+00:55:19.165 --> 00:55:21.165
+<v Speaker 1>Mirroring our log and verifying it is great.
+
+00:55:21.165 --> 00:55:22.685
+<v Speaker 1>That's awesome because we can get kind of
+
+00:55:22.685 --> 00:55:24.445
+<v Speaker 1>multiple copies of it that are independent around
+
+00:55:24.445 --> 00:55:26.205
+<v Speaker 1>the world. But a lot of organizations trying
+
+00:55:26.205 --> 00:55:27.325
+<v Speaker 1>to run them internally
+
+00:55:27.485 --> 00:55:29.485
+<v Speaker 1>doesn't necessarily make the most sense because the
+
+00:55:29.485 --> 00:55:31.080
+<v Speaker 1>log only works if you have, you know,
+
+00:55:31.080 --> 00:55:33.640
+<v Speaker 1>people auditing it and checking you. And if
+
+00:55:33.640 --> 00:55:34.920
+<v Speaker 1>you're all on the same team, you're kinda
+
+00:55:34.920 --> 00:55:36.680
+<v Speaker 1>checking yourself, and you're not really getting any
+
+00:55:36.680 --> 00:55:38.280
+<v Speaker 1>of those benefits. It's easier to just use
+
+00:55:38.280 --> 00:55:40.200
+<v Speaker 1>a plain database in that in that case
+
+00:55:40.280 --> 00:55:41.640
+<v Speaker 1>because you do get a bunch of complexity
+
+00:55:41.640 --> 00:55:43.160
+<v Speaker 1>that only makes sense if you do have
+
+00:55:43.160 --> 00:55:45.320
+<v Speaker 1>people that are kinda being skeptical and making
+
+00:55:45.320 --> 00:55:46.280
+<v Speaker 1>sure you're not screwed up.
+
+00:55:47.635 --> 00:55:50.115
+<v Speaker 0>K. Awesome. Alright. I'll throw two quick questions
+
+00:55:50.115 --> 00:55:52.355
+<v Speaker 0>at you, and then we'll we'll carry on.
+
+00:55:52.355 --> 00:55:53.795
+<v Speaker 0>So we got a question saying, is the
+
+00:55:53.795 --> 00:55:56.835
+<v Speaker 0>Tekton integration through chains or something else?
+
+00:55:58.275 --> 00:55:59.954
+<v Speaker 1>Yeah. So it's done through the there's a
+
+00:55:59.954 --> 00:56:01.970
+<v Speaker 1>little sub project called Tekton chains. So to
+
+00:56:01.970 --> 00:56:03.890
+<v Speaker 1>install next to your Tekton cluster, you just
+
+00:56:03.890 --> 00:56:05.330
+<v Speaker 1>start getting this stuff signed.
+
+00:56:05.970 --> 00:56:07.410
+<v Speaker 1>It can store stuff in, you know, any
+
+00:56:07.410 --> 00:56:09.089
+<v Speaker 1>database you want to. It doesn't necessarily have
+
+00:56:09.089 --> 00:56:10.690
+<v Speaker 1>to be the transparency logs, so you can
+
+00:56:10.690 --> 00:56:13.569
+<v Speaker 1>throw it into BigQuery or DynamoDB
+
+00:56:13.569 --> 00:56:15.569
+<v Speaker 1>or any of those document databases to do
+
+00:56:15.569 --> 00:56:16.770
+<v Speaker 1>kind of more querying on later.
+
+00:56:17.805 --> 00:56:20.845
+<v Speaker 1>Right. Is it similar to Intoto? Yeah. So
+
+00:56:20.845 --> 00:56:22.845
+<v Speaker 1>that format is actually from Intoto.
+
+00:56:22.845 --> 00:56:26.045
+<v Speaker 1>That's another CNCF project. The Intoto project defines
+
+00:56:26.045 --> 00:56:28.125
+<v Speaker 1>a bunch of formats for kind of describing
+
+00:56:28.605 --> 00:56:30.205
+<v Speaker 1>the supply chain step.
+
+00:56:30.445 --> 00:56:31.750
+<v Speaker 1>If you think of a a build step
+
+00:56:31.750 --> 00:56:34.070
+<v Speaker 1>as a bunch of inputs came in, did
+
+00:56:34.070 --> 00:56:35.590
+<v Speaker 1>a bunch of stuff on those inputs, and
+
+00:56:35.590 --> 00:56:37.030
+<v Speaker 1>then a bunch of outputs came out, you
+
+00:56:37.030 --> 00:56:38.150
+<v Speaker 1>know, those three things.
+
+00:56:39.190 --> 00:56:41.510
+<v Speaker 1>And TOTO is a really good set of
+
+00:56:41.510 --> 00:56:43.670
+<v Speaker 1>formats for describing those things in ways that
+
+00:56:43.670 --> 00:56:45.270
+<v Speaker 1>you can link back together and check.
+
+00:56:46.685 --> 00:56:48.045
+<v Speaker 0>Sweet. Thanks for that.
+
+00:56:48.365 --> 00:56:50.205
+<v Speaker 0>Alright. What what do we what do we
+
+00:56:50.205 --> 00:56:50.925
+<v Speaker 0>do next?
+
+00:56:52.765 --> 00:56:55.085
+<v Speaker 1>Good question. I could not get my
+
+00:56:55.485 --> 00:56:58.285
+<v Speaker 1>cluster and Kiverno and policy engine all set
+
+00:56:58.285 --> 00:56:59.369
+<v Speaker 1>up. That was kinda what I wanted to
+
+00:56:59.369 --> 00:57:02.089
+<v Speaker 1>do next. Sure. You can set up verification
+
+00:57:02.089 --> 00:57:04.170
+<v Speaker 1>there. Yeah. Not quite sure what's going on.
+
+00:57:04.170 --> 00:57:05.849
+<v Speaker 1>My cluster got all screwed up over the
+
+00:57:05.849 --> 00:57:07.769
+<v Speaker 1>weekend, and I didn't get it working in
+
+00:57:07.769 --> 00:57:08.250
+<v Speaker 1>time.
+
+00:57:08.569 --> 00:57:10.089
+<v Speaker 1>But if you look at the maybe you
+
+00:57:10.089 --> 00:57:11.210
+<v Speaker 1>could see the docs. I know they're working
+
+00:57:11.210 --> 00:57:12.410
+<v Speaker 1>on a release that's supposed to go out
+
+00:57:12.410 --> 00:57:13.930
+<v Speaker 1>any day now to explain how all of
+
+00:57:13.930 --> 00:57:14.250
+<v Speaker 1>that works.
+
+00:57:15.555 --> 00:57:17.475
+<v Speaker 1>Maybe we can find the stuff.
+
+00:57:17.714 --> 00:57:19.714
+<v Speaker 1>But, yeah, basically, you just write a YAML
+
+00:57:19.714 --> 00:57:21.555
+<v Speaker 1>file with so this should be under k
+
+00:57:21.555 --> 00:57:23.715
+<v Speaker 1>y v e r n o there, GitHub.
+
+00:57:24.994 --> 00:57:26.275
+<v Speaker 0>Oh, so this is the okay. So this
+
+00:57:26.275 --> 00:57:27.795
+<v Speaker 0>is the Kibernal one? Yeah. This is what
+
+00:57:27.795 --> 00:57:29.000
+<v Speaker 1>I was gonna get set up to show
+
+00:57:29.000 --> 00:57:31.079
+<v Speaker 1>how you can block deployments unless the signatures
+
+00:57:31.079 --> 00:57:31.880
+<v Speaker 1>are matched
+
+00:57:32.680 --> 00:57:34.359
+<v Speaker 1>with a little CRD they have set up
+
+00:57:34.359 --> 00:57:35.640
+<v Speaker 1>so you can put the public key right
+
+00:57:35.640 --> 00:57:36.120
+<v Speaker 1>there.
+
+00:57:37.000 --> 00:57:38.520
+<v Speaker 1>Yeah. It's it's right in the main On
+
+00:57:38.520 --> 00:57:39.880
+<v Speaker 0>the main one. Cavernote.
+
+00:57:39.880 --> 00:57:41.400
+<v Speaker 1>Yeah. I don't actually know where the their
+
+00:57:41.400 --> 00:57:43.160
+<v Speaker 1>docs forward are. I had
+
+00:57:43.955 --> 00:57:45.315
+<v Speaker 1>a setup a while ago.
+
+00:57:46.275 --> 00:57:47.875
+<v Speaker 1>It is in the release notes, though. We
+
+00:57:47.875 --> 00:57:49.075
+<v Speaker 1>should be able to see it if you
+
+00:57:49.075 --> 00:57:50.435
+<v Speaker 1>click on releases.
+
+00:57:53.555 --> 00:57:55.475
+<v Speaker 1>Maybe somebody in chat will know where it
+
+00:57:55.475 --> 00:57:55.635
+<v Speaker 1>is.
+
+00:58:01.160 --> 00:58:02.440
+<v Speaker 1>Image verification.
+
+00:58:02.440 --> 00:58:04.840
+<v Speaker 1>So if you scroll down yeah. There we
+
+00:58:04.840 --> 00:58:06.360
+<v Speaker 1>go with cosign. So,
+
+00:58:06.760 --> 00:58:08.440
+<v Speaker 1>yeah, if you get this installed and set
+
+00:58:08.440 --> 00:58:10.200
+<v Speaker 1>up from ahead because I haven't quite done
+
+00:58:10.200 --> 00:58:11.880
+<v Speaker 1>the release yet, I think that's where I
+
+00:58:11.445 --> 00:58:13.205
+<v Speaker 1>screwed up. I was installing an actual release
+
+00:58:13.205 --> 00:58:14.645
+<v Speaker 1>instead of this draft.
+
+00:58:15.365 --> 00:58:17.285
+<v Speaker 1>Then you can kinda define a new verific
+
+00:58:17.365 --> 00:58:19.365
+<v Speaker 1>image verification CRD
+
+00:58:20.325 --> 00:58:22.005
+<v Speaker 1>and put in some public keys, and it'll
+
+00:58:22.005 --> 00:58:23.525
+<v Speaker 1>block you from deploying.
+
+00:58:24.980 --> 00:58:26.819
+<v Speaker 1>If you click that Google Doc link, that's
+
+00:58:26.819 --> 00:58:28.339
+<v Speaker 1>what I was going off of. Ah, okay.
+
+00:58:28.339 --> 00:58:28.900
+<v Speaker 0>Cool.
+
+00:58:32.579 --> 00:58:34.339
+<v Speaker 1>Yeah. So this shows what the CRD looks
+
+00:58:34.339 --> 00:58:34.900
+<v Speaker 1>like.
+
+00:58:37.220 --> 00:58:39.555
+<v Speaker 1>Install kabrino, and then you just kinda stick
+
+00:58:39.555 --> 00:58:41.315
+<v Speaker 1>a public key into some YAML.
+
+00:58:42.595 --> 00:58:44.275
+<v Speaker 1>That's just a normal cosign key, and then
+
+00:58:44.275 --> 00:58:45.875
+<v Speaker 1>it would block all images that don't have
+
+00:58:45.875 --> 00:58:46.675
+<v Speaker 1>that set.
+
+00:58:47.155 --> 00:58:48.595
+<v Speaker 1>I did have this working at one point.
+
+00:58:48.595 --> 00:58:49.555
+<v Speaker 1>I even made a full GIF.
+
+00:58:51.869 --> 00:58:53.950
+<v Speaker 0>Okay. So when
+
+00:58:54.109 --> 00:58:56.910
+<v Speaker 0>I've got cosign running in my CI environment,
+
+00:58:56.910 --> 00:58:59.630
+<v Speaker 0>sending all my images Yep. We can with
+
+00:58:59.630 --> 00:59:02.109
+<v Speaker 0>Kivernal installed to a cluster, add a new
+
+00:59:02.109 --> 00:59:04.670
+<v Speaker 0>cluster policy that monitors your pods
+
+00:59:04.670 --> 00:59:07.335
+<v Speaker 0>and checks that there's checks the images that
+
+00:59:07.335 --> 00:59:08.695
+<v Speaker 0>match a certain pattern
+
+00:59:09.015 --> 00:59:11.255
+<v Speaker 0>assigned by a specific key.
+
+00:59:11.975 --> 00:59:13.495
+<v Speaker 1>Yeah. And so then you can set it
+
+00:59:13.495 --> 00:59:15.575
+<v Speaker 1>up to there's the enforce
+
+00:59:15.575 --> 00:59:17.895
+<v Speaker 1>or alert, you know, failure action. So you
+
+00:59:17.895 --> 00:59:19.255
+<v Speaker 1>might wanna block it. You might just wanna
+
+00:59:19.255 --> 00:59:21.095
+<v Speaker 1>send an email to someone and warn them,
+
+00:59:21.540 --> 00:59:23.460
+<v Speaker 1>I just wanna log it. There's a couple
+
+00:59:23.460 --> 00:59:25.220
+<v Speaker 1>different setups you can do there, but that
+
+00:59:25.300 --> 00:59:27.460
+<v Speaker 1>because you can't accidentally you know, there have
+
+00:59:27.460 --> 00:59:28.900
+<v Speaker 1>been a bunch of kind of typo attacks
+
+00:59:28.900 --> 00:59:31.060
+<v Speaker 1>where you've fat finger and type the wrong
+
+00:59:31.060 --> 00:59:32.340
+<v Speaker 1>name of an image from Docker Hub, and
+
+00:59:32.340 --> 00:59:34.100
+<v Speaker 1>now you're grabbing something from somebody you don't
+
+00:59:34.100 --> 00:59:36.215
+<v Speaker 1>know because you put two o's in the
+
+00:59:36.215 --> 00:59:38.535
+<v Speaker 1>MongoDB container instead of one, and people set
+
+00:59:38.535 --> 00:59:40.375
+<v Speaker 1>up coin mining and all sorts of terrible
+
+00:59:40.375 --> 00:59:41.255
+<v Speaker 1>stuff like that.
+
+00:59:42.295 --> 00:59:43.815
+<v Speaker 1>So Okay. A bunch of different reasons you
+
+00:59:43.815 --> 00:59:45.335
+<v Speaker 1>might wanna do this type of policy. But
+
+00:59:45.335 --> 00:59:46.295
+<v Speaker 1>if you get that set up in your
+
+00:59:46.295 --> 00:59:47.815
+<v Speaker 1>CI system, it's all signed, then you know
+
+00:59:47.815 --> 00:59:49.575
+<v Speaker 1>that your prod environment is locked down to
+
+00:59:49.575 --> 00:59:51.450
+<v Speaker 1>stuff that came from that CI system.
+
+00:59:52.570 --> 00:59:54.170
+<v Speaker 0>Yeah. This was
+
+00:59:54.410 --> 00:59:57.370
+<v Speaker 0>merged twenty five days ago. I'm assuming this
+
+00:59:57.370 --> 00:59:59.930
+<v Speaker 0>maybe hasn't quite had a release yet. Yeah.
+
+00:59:59.930 --> 01:00:01.610
+<v Speaker 1>It's r c three now. I saw it
+
+01:00:01.610 --> 01:00:03.345
+<v Speaker 1>in the draft. So any day now, it'll
+
+01:00:03.345 --> 01:00:04.785
+<v Speaker 1>it'll come out and I think yeah. I
+
+01:00:04.785 --> 01:00:06.785
+<v Speaker 1>screwed up and didn't quite get the release
+
+01:00:06.785 --> 01:00:07.905
+<v Speaker 1>candidate running.
+
+01:00:08.705 --> 01:00:10.785
+<v Speaker 0>Well, it says that it's released. Right? One
+
+01:00:10.785 --> 01:00:11.585
+<v Speaker 0>four two?
+
+01:00:11.985 --> 01:00:13.665
+<v Speaker 1>It's still a draft though if you click
+
+01:00:13.665 --> 01:00:15.920
+<v Speaker 1>on the Oh, yeah. 14 one's the latest.
+
+01:00:15.920 --> 01:00:16.800
+<v Speaker 0>So okay.
+
+01:00:17.200 --> 01:00:18.880
+<v Speaker 1>Alright. So really
+
+01:00:18.880 --> 01:00:19.520
+<v Speaker 1>soon.
+
+01:00:20.319 --> 01:00:21.920
+<v Speaker 1>The latest is 141.
+
+01:00:21.920 --> 01:00:22.400
+<v Speaker 1>Yeah.
+
+01:00:23.680 --> 01:00:26.319
+<v Speaker 1>Anyway Definitely something cool to play with later.
+
+01:00:26.319 --> 01:00:28.435
+<v Speaker 0>And I I like this. I wonder, though,
+
+01:00:28.435 --> 01:00:30.915
+<v Speaker 0>like, this wouldn't technically work with the
+
+01:00:31.395 --> 01:00:35.075
+<v Speaker 0>keyless approach. Right? Okay. Nope. So, yeah, they
+
+01:00:35.474 --> 01:00:36.435
+<v Speaker 1>I don't know if we made it into
+
+01:00:36.435 --> 01:00:37.955
+<v Speaker 1>this version, but you can see some discussion
+
+01:00:37.955 --> 01:00:39.875
+<v Speaker 1>around it. You can put email or OITC
+
+01:00:39.875 --> 01:00:41.910
+<v Speaker 1>accounts somewhere too and lock down to that
+
+01:00:41.910 --> 01:00:44.710
+<v Speaker 1>rather than just the keys.
+
+01:00:45.510 --> 01:00:47.750
+<v Speaker 1>And I think my little admission controller people
+
+01:00:47.750 --> 01:00:49.349
+<v Speaker 1>were talking about earlier can do that too
+
+01:00:49.349 --> 01:00:51.109
+<v Speaker 1>with a config map, or you can put
+
+01:00:51.109 --> 01:00:53.270
+<v Speaker 1>in keys or email addresses, whatever kind of
+
+01:00:53.270 --> 01:00:54.950
+<v Speaker 1>combination there you wanna verify against.
+
+01:00:56.145 --> 01:00:59.265
+<v Speaker 0>Alright. Awesome. Very cool feature. I'm assuming that
+
+01:00:59.345 --> 01:01:01.425
+<v Speaker 0>I think you mentioned Gatekeeper earlier, so the
+
+01:01:01.425 --> 01:01:03.745
+<v Speaker 0>OPA projects are probably working on similar support.
+
+01:01:03.745 --> 01:01:05.265
+<v Speaker 0>I'm assuming Cube Warden
+
+01:01:05.665 --> 01:01:08.305
+<v Speaker 0>probably gonna have another policy and that works
+
+01:01:08.305 --> 01:01:09.585
+<v Speaker 0>with all of this. It's nice to see
+
+01:01:09.585 --> 01:01:11.980
+<v Speaker 0>that support coming from the broader cloud native
+
+01:01:11.980 --> 01:01:13.100
+<v Speaker 0>ecosystem as well.
+
+01:01:13.740 --> 01:01:14.940
+<v Speaker 1>Yeah. I've been trying to get it working
+
+01:01:14.940 --> 01:01:16.620
+<v Speaker 1>in KubeBoard, and I thought it was gonna
+
+01:01:16.620 --> 01:01:17.740
+<v Speaker 1>be so easy because this is all written
+
+01:01:17.740 --> 01:01:19.100
+<v Speaker 1>in Go, and you can compile Go to
+
+01:01:19.100 --> 01:01:20.780
+<v Speaker 1>Wasm, and you can get that running in
+
+01:01:20.780 --> 01:01:21.820
+<v Speaker 1>KubeBoard.
+
+01:01:21.820 --> 01:01:24.300
+<v Speaker 1>But the the Go Wasm support isn't quite
+
+01:01:24.300 --> 01:01:25.905
+<v Speaker 1>there yet, and you can't do a bunch
+
+01:01:25.905 --> 01:01:28.145
+<v Speaker 1>of stuff you need in in that. So
+
+01:01:28.305 --> 01:01:30.305
+<v Speaker 1>Yeah. It's soon it's not Kubarden. It's it's
+
+01:01:30.305 --> 01:01:31.905
+<v Speaker 1>Go and WASM, unfortunately.
+
+01:01:32.465 --> 01:01:34.225
+<v Speaker 1>So the the spec that we have for
+
+01:01:34.225 --> 01:01:36.065
+<v Speaker 1>cosign explaining how this works is stable too,
+
+01:01:36.065 --> 01:01:37.425
+<v Speaker 1>so you could go implement it in something
+
+01:01:37.425 --> 01:01:40.010
+<v Speaker 1>else like Rust that does compile down to
+
+01:01:40.010 --> 01:01:41.450
+<v Speaker 1>Wasm a little bit better.
+
+01:01:41.850 --> 01:01:43.290
+<v Speaker 1>But I was disappointed. I thought it would
+
+01:01:43.290 --> 01:01:45.050
+<v Speaker 1>just be adding some compiler flags, and then
+
+01:01:45.050 --> 01:01:46.010
+<v Speaker 1>we'd have support.
+
+01:01:46.170 --> 01:01:47.930
+<v Speaker 0>Yeah. Just change the target to Wasm and
+
+01:01:47.930 --> 01:01:49.930
+<v Speaker 0>hope for the best. Right? Exactly.
+
+01:01:49.930 --> 01:01:51.850
+<v Speaker 1>Yeah. You just can't do reflection,
+
+01:01:51.850 --> 01:01:54.250
+<v Speaker 1>which turns out is needed for JSON parsing.
+
+01:01:54.250 --> 01:01:55.645
+<v Speaker 1>So doing any kind of
+
+01:01:56.845 --> 01:01:59.405
+<v Speaker 1>well, I'm in the Kubernetes ecosystem is tough
+
+01:01:59.405 --> 01:02:02.045
+<v Speaker 1>because it's all kind of reflection based. Yeah.
+
+01:02:03.005 --> 01:02:04.365
+<v Speaker 0>I I think you should just jump on
+
+01:02:04.365 --> 01:02:06.125
+<v Speaker 0>the Rust trend. It's a it's a it's
+
+01:02:06.125 --> 01:02:07.805
+<v Speaker 0>a fun trend to be on, especially with
+
+01:02:07.805 --> 01:02:10.045
+<v Speaker 0>the WebAssembly report. It's it's pretty sweet.
+
+01:02:10.820 --> 01:02:12.740
+<v Speaker 0>Yeah. Alright. And is there anything else you
+
+01:02:12.740 --> 01:02:14.980
+<v Speaker 0>wanna show, or will we is that a
+
+01:02:15.140 --> 01:02:15.620
+<v Speaker 0>that is
+
+01:02:16.580 --> 01:02:18.260
+<v Speaker 1>Yeah. I think that's a that's a good
+
+01:02:18.260 --> 01:02:18.980
+<v Speaker 1>overview,
+
+01:02:19.380 --> 01:02:20.900
+<v Speaker 1>especially if you're working with containers. You can
+
+01:02:20.900 --> 01:02:22.820
+<v Speaker 1>just grab cosign and then start to play
+
+01:02:22.820 --> 01:02:24.420
+<v Speaker 1>with the rest of the transparency logs and
+
+01:02:24.420 --> 01:02:25.700
+<v Speaker 1>the CA and all of those features.
+
+01:02:26.525 --> 01:02:27.965
+<v Speaker 0>So, I mean, that
+
+01:02:28.765 --> 01:02:30.925
+<v Speaker 0>was all pretty self explanatory. Like, running those
+
+01:02:30.925 --> 01:02:32.765
+<v Speaker 0>commands, there was nothing too daunting there. It
+
+01:02:32.765 --> 01:02:34.605
+<v Speaker 0>was all pretty nice, which just shows that
+
+01:02:34.605 --> 01:02:36.445
+<v Speaker 0>it's a pretty great developer experience.
+
+01:02:36.925 --> 01:02:38.845
+<v Speaker 0>Is this can I use cosign for
+
+01:02:39.560 --> 01:02:41.320
+<v Speaker 0>like, it doesn't have to be container images?
+
+01:02:41.320 --> 01:02:42.840
+<v Speaker 0>Right? I'm thinking of other open source projects
+
+01:02:42.840 --> 01:02:44.840
+<v Speaker 0>I've got where we release binaries. Can I
+
+01:02:44.840 --> 01:02:47.640
+<v Speaker 0>sign these binaries and publish to that log?
+
+01:02:48.600 --> 01:02:49.560
+<v Speaker 1>Yeah. Yeah.
+
+01:02:50.040 --> 01:02:51.560
+<v Speaker 1>Don't know how we blanked on that. Yeah.
+
+01:02:51.560 --> 01:02:53.880
+<v Speaker 1>The all the cosign stuff itself on the
+
+01:02:53.880 --> 01:02:55.935
+<v Speaker 1>GitHub repo is signed with cosign. So instead
+
+01:02:55.935 --> 01:02:58.255
+<v Speaker 1>of sign container, there's a sign block command
+
+01:02:58.255 --> 01:03:00.335
+<v Speaker 1>where it just kinda spits out the signature.
+
+01:03:00.495 --> 01:03:02.095
+<v Speaker 1>It's really easy to do that. The challenge
+
+01:03:02.095 --> 01:03:03.135
+<v Speaker 1>is, like, how do where do you put
+
+01:03:03.135 --> 01:03:04.015
+<v Speaker 1>those signatures?
+
+01:03:04.415 --> 01:03:06.335
+<v Speaker 1>There's no standard great place for it. So
+
+01:03:06.335 --> 01:03:07.375
+<v Speaker 1>for us, we just put them in, you
+
+01:03:07.375 --> 01:03:08.975
+<v Speaker 1>know, that GitHub releases page, and you can
+
+01:03:08.975 --> 01:03:10.335
+<v Speaker 1>check those with cosign too.
+
+01:03:11.000 --> 01:03:11.560
+<v Speaker 1>Yeah.
+
+01:03:12.280 --> 01:03:13.560
+<v Speaker 1>The cool part is a lot of things
+
+01:03:13.560 --> 01:03:15.720
+<v Speaker 1>are moving to the container registries like we
+
+01:03:15.720 --> 01:03:17.560
+<v Speaker 1>talked about. You know, OPA lets you put
+
+01:03:17.560 --> 01:03:18.520
+<v Speaker 1>bundles there.
+
+01:03:19.000 --> 01:03:21.000
+<v Speaker 1>Envoy and Istio now lets you put Wasm
+
+01:03:21.000 --> 01:03:23.160
+<v Speaker 1>modules into a container registry.
+
+01:03:23.240 --> 01:03:25.415
+<v Speaker 1>So, yeah, you can sign binaries. You can
+
+01:03:25.415 --> 01:03:27.255
+<v Speaker 1>sign all sorts of other packages, but it's
+
+01:03:27.255 --> 01:03:29.095
+<v Speaker 1>kinda cool to see everything moving and converging
+
+01:03:29.095 --> 01:03:31.175
+<v Speaker 1>on the container registries anyway at the same
+
+01:03:31.175 --> 01:03:31.655
+<v Speaker 1>time.
+
+01:03:32.055 --> 01:03:33.655
+<v Speaker 1>The other one, though, I think, you mentioned
+
+01:03:33.655 --> 01:03:35.015
+<v Speaker 1>in your tweet today to chat about was
+
+01:03:35.015 --> 01:03:37.495
+<v Speaker 1>the SBOMs, the software building materials and stuff.
+
+01:03:37.980 --> 01:03:39.420
+<v Speaker 1>So there's a ton of different tools and
+
+01:03:39.420 --> 01:03:41.900
+<v Speaker 1>formats for generating those and working with those.
+
+01:03:42.060 --> 01:03:43.900
+<v Speaker 1>They're huge, you know, documents that you've gotta
+
+01:03:43.900 --> 01:03:47.100
+<v Speaker 1>upload, store, and sign somehow too. So cosign
+
+01:03:47.100 --> 01:03:48.780
+<v Speaker 1>has some commands for working with those.
+
+01:03:49.180 --> 01:03:51.455
+<v Speaker 1>And you can upload those. Works the same
+
+01:03:51.455 --> 01:03:53.215
+<v Speaker 1>as our signatures. There's a just a funny
+
+01:03:53.215 --> 01:03:54.735
+<v Speaker 1>little naming convention where you just put a
+
+01:03:54.735 --> 01:03:56.095
+<v Speaker 1>dot s bomb at the end instead of
+
+01:03:56.095 --> 01:03:57.135
+<v Speaker 1>a dot signature.
+
+01:03:57.375 --> 01:03:59.375
+<v Speaker 1>And then it looks like an image, so
+
+01:03:59.375 --> 01:04:00.655
+<v Speaker 1>you can sign that too, and you can
+
+01:04:00.655 --> 01:04:02.415
+<v Speaker 1>point that at an image and download the
+
+01:04:02.415 --> 01:04:03.215
+<v Speaker 1>s bombs
+
+01:04:03.455 --> 01:04:04.815
+<v Speaker 1>for your image and that kind of thing.
+
+01:04:05.670 --> 01:04:06.390
+<v Speaker 0>Alright.
+
+01:04:06.630 --> 01:04:08.470
+<v Speaker 0>Okay. I'll ask you one more question. If
+
+01:04:08.470 --> 01:04:09.910
+<v Speaker 0>anyone in the chat has anything they wanna
+
+01:04:09.910 --> 01:04:11.830
+<v Speaker 0>ask Dan before we finish up for today,
+
+01:04:12.070 --> 01:04:13.349
+<v Speaker 0>it on the comments. You've got a couple
+
+01:04:13.349 --> 01:04:13.990
+<v Speaker 0>of minutes.
+
+01:04:14.710 --> 01:04:16.310
+<v Speaker 0>In fact, I'll I'll throw two questions at
+
+01:04:16.310 --> 01:04:16.950
+<v Speaker 0>you then.
+
+01:04:17.349 --> 01:04:18.945
+<v Speaker 0>So the first one would be, like, do
+
+01:04:18.945 --> 01:04:20.545
+<v Speaker 0>you see this being something that would be
+
+01:04:20.545 --> 01:04:23.665
+<v Speaker 0>integrated with a platform like Snyk? They do
+
+01:04:23.665 --> 01:04:26.225
+<v Speaker 0>a lot of code scanning, dependency scanning, and
+
+01:04:26.225 --> 01:04:27.425
+<v Speaker 0>it feels like they should be able to
+
+01:04:27.425 --> 01:04:29.345
+<v Speaker 0>maybe pick up on these signatures and the
+
+01:04:29.345 --> 01:04:30.945
+<v Speaker 0>s bombs and be able to give us
+
+01:04:30.945 --> 01:04:32.990
+<v Speaker 0>more details as well. Is that something that
+
+01:04:32.990 --> 01:04:34.750
+<v Speaker 0>already works or you know is in progress
+
+01:04:34.750 --> 01:04:35.390
+<v Speaker 0>or
+
+01:04:35.790 --> 01:04:36.750
+<v Speaker 0>any info there?
+
+01:04:37.550 --> 01:04:39.150
+<v Speaker 1>Yeah. That's I hadn't thought of it that
+
+01:04:39.150 --> 01:04:40.670
+<v Speaker 1>way. Yeah. Once the stuff is stored, you
+
+01:04:40.670 --> 01:04:42.510
+<v Speaker 1>know, things like sneaking, you know, show it
+
+01:04:42.510 --> 01:04:44.190
+<v Speaker 1>and render it in the UI. Actually, the
+
+01:04:44.190 --> 01:04:46.510
+<v Speaker 1>CNCF Harbor registry is working on that now,
+
+01:04:46.510 --> 01:04:48.885
+<v Speaker 1>kinda rendering these and putting little lock green
+
+01:04:48.885 --> 01:04:50.245
+<v Speaker 1>check marks next to things that are signed
+
+01:04:50.245 --> 01:04:52.325
+<v Speaker 1>and aren't signed at the registry level.
+
+01:04:52.645 --> 01:04:54.405
+<v Speaker 1>We didn't we just started working, I think,
+
+01:04:54.405 --> 01:04:56.165
+<v Speaker 1>last week on kind of the reverse integration,
+
+01:04:56.165 --> 01:04:57.845
+<v Speaker 1>though, which is how you might store these
+
+01:04:57.845 --> 01:05:00.325
+<v Speaker 1>sneak or trivia scans in a registry for
+
+01:05:00.325 --> 01:05:00.805
+<v Speaker 1>a container.
+
+01:05:01.310 --> 01:05:02.670
+<v Speaker 1>It's a little bit different than something like
+
+01:05:02.670 --> 01:05:04.350
+<v Speaker 1>an SBOM because they go out of date.
+
+01:05:04.350 --> 01:05:06.190
+<v Speaker 1>Right? If you just because something had no
+
+01:05:06.190 --> 01:05:08.510
+<v Speaker 1>vulnerabilities today, it doesn't mean nine months from
+
+01:05:08.510 --> 01:05:10.350
+<v Speaker 1>now, it has no vulnerabilities.
+
+01:05:10.590 --> 01:05:12.270
+<v Speaker 1>These things get found over time.
+
+01:05:12.590 --> 01:05:13.950
+<v Speaker 1>So there's kinda like a
+
+01:05:14.785 --> 01:05:16.545
+<v Speaker 1>timestamp approach that you would put in there
+
+01:05:16.545 --> 01:05:18.385
+<v Speaker 1>saying, it had no vulnerabilities today.
+
+01:05:18.625 --> 01:05:20.145
+<v Speaker 1>And then you might have an admission controller
+
+01:05:20.145 --> 01:05:22.785
+<v Speaker 1>that says, I wanna only allow stuff to
+
+01:05:22.785 --> 01:05:24.465
+<v Speaker 1>run that I've checked within the last thirty
+
+01:05:24.465 --> 01:05:27.345
+<v Speaker 1>days or something like that. So you can
+
+01:05:26.430 --> 01:05:28.990
+<v Speaker 1>kinda combine those scanners with time stamps and
+
+01:05:28.990 --> 01:05:30.910
+<v Speaker 1>signatures to make sure that you're constantly checking
+
+01:05:30.910 --> 01:05:33.390
+<v Speaker 1>them. You don't have to worry about forgetting
+
+01:05:33.390 --> 01:05:35.069
+<v Speaker 1>an image that's sitting and running in your
+
+01:05:35.069 --> 01:05:35.710
+<v Speaker 1>cluster.
+
+01:05:36.670 --> 01:05:37.230
+<v Speaker 0>Cool.
+
+01:05:37.630 --> 01:05:40.190
+<v Speaker 0>And what's what's coming next then? What's the
+
+01:05:40.190 --> 01:05:42.985
+<v Speaker 0>the next major deliverables for the project? Yeah.
+
+01:05:44.185 --> 01:05:45.385
+<v Speaker 1>The next one is really just getting rid
+
+01:05:45.385 --> 01:05:47.865
+<v Speaker 1>of that experimental. That's scary thing. So there
+
+01:05:47.865 --> 01:05:49.224
+<v Speaker 1>shouldn't be a huge change in the UX
+
+01:05:49.224 --> 01:05:50.505
+<v Speaker 1>at all. You'll just you just won't have
+
+01:05:50.505 --> 01:05:52.105
+<v Speaker 1>to set those flags, and that stuff will
+
+01:05:52.105 --> 01:05:54.025
+<v Speaker 1>just be turned on and working by default.
+
+01:05:54.345 --> 01:05:55.705
+<v Speaker 1>So you don't have to use keys if
+
+01:05:55.705 --> 01:05:57.230
+<v Speaker 1>you don't want to. I mean, that's really
+
+01:05:57.230 --> 01:05:59.390
+<v Speaker 1>just more making sure we have a playbook
+
+01:05:59.390 --> 01:06:01.869
+<v Speaker 1>to do if something syncs its way into
+
+01:06:01.869 --> 01:06:03.150
+<v Speaker 1>that log, and we do have to delete
+
+01:06:03.150 --> 01:06:05.550
+<v Speaker 1>and move things forward for other reasons.
+
+01:06:06.349 --> 01:06:07.869
+<v Speaker 1>Couple weeks ago, actually, there was a fun
+
+01:06:07.869 --> 01:06:10.430
+<v Speaker 1>issue with certificate transparency where a cosmic ray
+
+01:06:10.430 --> 01:06:12.135
+<v Speaker 1>flipped a bit and screwed up the Merkle
+
+01:06:12.135 --> 01:06:13.895
+<v Speaker 1>tree. I don't if anybody saw that. Yep.
+
+01:06:13.895 --> 01:06:15.415
+<v Speaker 1>Yeah. They traced it down. The right data
+
+01:06:15.415 --> 01:06:16.695
+<v Speaker 1>went into the log, and one bit was
+
+01:06:16.695 --> 01:06:18.215
+<v Speaker 1>flipped, and it kind of invalidated the whole
+
+01:06:18.215 --> 01:06:19.175
+<v Speaker 1>Merkle tree.
+
+01:06:19.735 --> 01:06:21.655
+<v Speaker 1>And so people pieced it together and figured
+
+01:06:21.655 --> 01:06:22.455
+<v Speaker 1>it all out.
+
+01:06:23.095 --> 01:06:24.455
+<v Speaker 1>We gotta figure out what to do in
+
+01:06:24.455 --> 01:06:24.855
+<v Speaker 1>those cases.
+
+01:06:25.850 --> 01:06:28.090
+<v Speaker 0>Yeah. I'm glad other people are solving those
+
+01:06:28.090 --> 01:06:28.730
+<v Speaker 0>problems.
+
+01:06:29.610 --> 01:06:31.930
+<v Speaker 0>Alright. One question from the chat and
+
+01:06:32.330 --> 01:06:34.570
+<v Speaker 0>a little from pop as well. Hey, pop.
+
+01:06:34.970 --> 01:06:36.810
+<v Speaker 0>CPP for life is asking,
+
+01:06:37.130 --> 01:06:39.770
+<v Speaker 0>is there any cosign integration with GoReleaser?
+
+01:06:41.965 --> 01:06:43.965
+<v Speaker 1>No. Not yet. I don't think so. Nothing
+
+01:06:43.965 --> 01:06:46.365
+<v Speaker 1>direct. Carlos has been working on a bunch
+
+01:06:46.365 --> 01:06:48.365
+<v Speaker 1>of our release engineering stuff. Carlos is awesome.
+
+01:06:48.365 --> 01:06:49.885
+<v Speaker 1>I don't know if he's listening today. Oh,
+
+01:06:49.885 --> 01:06:52.445
+<v Speaker 1>actually, he's on vacation. But, yeah, GoReleaser has
+
+01:06:52.445 --> 01:06:54.365
+<v Speaker 1>some scripting modes where you can kind of,
+
+01:06:54.365 --> 01:06:55.805
+<v Speaker 1>you know, an escape hatch to do other
+
+01:06:55.805 --> 01:06:57.880
+<v Speaker 1>stuff. So he's got some of those demos
+
+01:06:57.880 --> 01:06:59.720
+<v Speaker 1>working. But, yeah, it would be awesome to
+
+01:06:59.720 --> 01:07:01.560
+<v Speaker 1>get some GoReleaser support,
+
+01:07:01.640 --> 01:07:04.680
+<v Speaker 1>especially if people start storing random binaries in
+
+01:07:04.680 --> 01:07:06.200
+<v Speaker 1>the GHCR
+
+01:07:06.200 --> 01:07:08.600
+<v Speaker 1>registries rather than little releases page inside of
+
+01:07:08.600 --> 01:07:09.880
+<v Speaker 1>GitHub. I think that would be a huge
+
+01:07:09.880 --> 01:07:10.680
+<v Speaker 1>one for everybody.
+
+01:07:12.285 --> 01:07:13.805
+<v Speaker 1>Sweet. Kinda Homer style.
+
+01:07:14.525 --> 01:07:16.925
+<v Speaker 0>Alright. And of course, people, it's open source.
+
+01:07:16.925 --> 01:07:18.765
+<v Speaker 0>You can all contribute. Go check out the
+
+01:07:18.765 --> 01:07:22.125
+<v Speaker 0>organization on GitHub at github.com/techstore.
+
+01:07:22.765 --> 01:07:24.440
+<v Speaker 0>Alright, Dan. Thanks for having me on. That
+
+01:07:24.440 --> 01:07:26.360
+<v Speaker 0>was awesome. Thank you so much for taking
+
+01:07:26.360 --> 01:07:27.800
+<v Speaker 0>time out of your day and and kinda
+
+01:07:27.800 --> 01:07:28.920
+<v Speaker 0>guiding us through
+
+01:07:29.240 --> 01:07:31.560
+<v Speaker 0>sigstore, cosign, rakor,
+
+01:07:31.800 --> 01:07:33.960
+<v Speaker 0>and keyless stuff is all very, very cool,
+
+01:07:33.960 --> 01:07:35.480
+<v Speaker 0>all very exciting, and we can't wait to
+
+01:07:35.480 --> 01:07:38.200
+<v Speaker 0>see what happens next. So have a a
+
+01:07:38.200 --> 01:07:40.244
+<v Speaker 0>great day, and I'll hopefully speak to again
+
+01:07:40.244 --> 01:07:40.805
+<v Speaker 0>soon.
+
+01:07:41.045 --> 01:07:43.125
+<v Speaker 1>Yeah. Thanks for having me on. Bye. Bye
+
+01:07:43.125 --> 01:07:43.285
+<v Speaker 0>all.

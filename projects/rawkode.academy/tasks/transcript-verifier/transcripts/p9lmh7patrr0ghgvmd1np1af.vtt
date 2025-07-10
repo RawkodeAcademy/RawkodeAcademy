@@ -1,0 +1,725 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 5800a9a8-f2b7-4837-b081-46f91e678bbc
+Created: 2025-04-29T19:15:20.535Z
+Duration: 602.55273
+Channels: 1
+
+00:00:00.320 --> 00:00:01.040
+<v Speaker 0>Hello.
+
+00:00:01.599 --> 00:00:03.519
+<v Speaker 0>Welcome to my session today.
+
+00:00:04.240 --> 00:00:06.080
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:00:06.080 --> 00:00:07.040
+<v Speaker 0>securing
+
+00:00:07.279 --> 00:00:08.080
+<v Speaker 0>the
+
+00:00:08.080 --> 00:00:10.799
+<v Speaker 0>continuous integration and delivery infrastructure
+
+00:00:10.800 --> 00:00:12.160
+<v Speaker 0>for the Tinkerbell
+
+00:00:12.160 --> 00:00:12.719
+<v Speaker 0>project.
+
+00:00:13.455 --> 00:00:15.135
+<v Speaker 0>My name is David Mackay,
+
+00:00:15.455 --> 00:00:17.695
+<v Speaker 0>and I am a senior developer advocate for
+
+00:00:17.695 --> 00:00:18.895
+<v Speaker 0>Equinix Metal.
+
+00:00:19.295 --> 00:00:21.695
+<v Speaker 0>I am also a CNCF ambassador,
+
+00:00:22.575 --> 00:00:24.494
+<v Speaker 0>and I do quite a lot of live
+
+00:00:24.494 --> 00:00:27.375
+<v Speaker 0>streaming. You can find my streams at Rawkode.live.
+
+00:00:28.340 --> 00:00:31.620
+<v Speaker 0>My goal with streaming is to provide educational
+
+00:00:31.620 --> 00:00:33.860
+<v Speaker 0>resources for all of us to learn the
+
+00:00:33.860 --> 00:00:36.340
+<v Speaker 0>vast cloud native landscape together.
+
+00:00:38.660 --> 00:00:41.135
+<v Speaker 0>And today, wanna introduce you to Tinkerbell, a
+
+00:00:41.135 --> 00:00:43.934
+<v Speaker 0>bare metal provisioning system open sourced by Equinix
+
+00:00:43.934 --> 00:00:46.975
+<v Speaker 0>Metal, now a CNCF sandbox project
+
+00:00:47.454 --> 00:00:49.614
+<v Speaker 0>that aims to solve some challenges
+
+00:00:49.695 --> 00:00:51.695
+<v Speaker 0>that have been difficult for a long time,
+
+00:00:51.934 --> 00:00:54.495
+<v Speaker 0>and that is commoditizing bare metal,
+
+00:00:54.815 --> 00:00:55.934
+<v Speaker 0>which is no easy task.
+
+00:00:56.690 --> 00:00:58.770
+<v Speaker 0>So before we dive right in, let me
+
+00:00:58.770 --> 00:01:00.610
+<v Speaker 0>just shrink myself down.
+
+00:01:05.570 --> 00:01:07.250
+<v Speaker 0>So Tinkerbell isn't your run of the mill
+
+00:01:07.250 --> 00:01:09.490
+<v Speaker 0>project. When we're working directly with the mill,
+
+00:01:09.490 --> 00:01:10.850
+<v Speaker 0>there are a lot of things that are
+
+00:01:10.850 --> 00:01:13.170
+<v Speaker 0>a little bit harder than working with virtual
+
+00:01:12.585 --> 00:01:13.305
+<v Speaker 0>machines.
+
+00:01:13.784 --> 00:01:14.424
+<v Speaker 0>First,
+
+00:01:14.905 --> 00:01:17.545
+<v Speaker 0>Tinkerbell has to run an in memory operating
+
+00:01:17.545 --> 00:01:18.345
+<v Speaker 0>system
+
+00:01:19.065 --> 00:01:23.305
+<v Speaker 0>that can handle partitioning disks, encrypting disks, writing
+
+00:01:23.305 --> 00:01:26.185
+<v Speaker 0>and installing operating system through container based workflows.
+
+00:01:27.840 --> 00:01:28.720
+<v Speaker 0>There's
+
+00:01:28.880 --> 00:01:30.400
+<v Speaker 0>multiple microservices
+
+00:01:30.560 --> 00:01:33.360
+<v Speaker 0>that are responsible for understanding which bare metal
+
+00:01:33.360 --> 00:01:36.159
+<v Speaker 0>devices are coming online through MAC address identification.
+
+00:01:36.560 --> 00:01:39.920
+<v Speaker 0>There is IPXC for booting the operating system
+
+00:01:39.525 --> 00:01:42.245
+<v Speaker 0>and streaming the operating systems over the network,
+
+00:01:42.325 --> 00:01:44.165
+<v Speaker 0>and, of course, there's IP address management too
+
+00:01:44.165 --> 00:01:45.365
+<v Speaker 0>in DHCP.
+
+00:01:46.645 --> 00:01:49.205
+<v Speaker 0>And whether you can use traditional CI systems,
+
+00:01:49.205 --> 00:01:52.165
+<v Speaker 0>you probably you definitely have to provide your
+
+00:01:52.165 --> 00:01:52.805
+<v Speaker 0>own runners.
+
+00:01:55.570 --> 00:01:57.650
+<v Speaker 0>So in order to build out our continuous
+
+00:01:57.650 --> 00:02:00.530
+<v Speaker 0>integration and delivery system for the Tinkerbell project,
+
+00:02:00.530 --> 00:02:02.530
+<v Speaker 0>we need access to some metal.
+
+00:02:03.010 --> 00:02:03.890
+<v Speaker 0>Personally,
+
+00:02:04.210 --> 00:02:06.450
+<v Speaker 0>I worked for Equinix Metal and Equinix Metal
+
+00:02:06.450 --> 00:02:09.065
+<v Speaker 0>do donate a substantial amount of infrastructure and
+
+00:02:09.065 --> 00:02:12.105
+<v Speaker 0>inventory to the Cloud Data Foundation for projects
+
+00:02:12.105 --> 00:02:12.905
+<v Speaker 0>like this.
+
+00:02:14.825 --> 00:02:16.825
+<v Speaker 0>My go to tool for spinning up
+
+00:02:17.225 --> 00:02:19.945
+<v Speaker 0>brand new machines on any cloud provider of
+
+00:02:19.945 --> 00:02:20.985
+<v Speaker 0>choice is Pulumi.
+
+00:02:21.750 --> 00:02:23.590
+<v Speaker 0>And there are a few reasons I wanna
+
+00:02:23.590 --> 00:02:24.870
+<v Speaker 0>talk about Pulumi
+
+00:02:24.950 --> 00:02:26.070
+<v Speaker 0>for this session.
+
+00:02:27.190 --> 00:02:30.230
+<v Speaker 0>One, Pulumi very graciously gave us a free
+
+00:02:30.230 --> 00:02:32.870
+<v Speaker 0>access to Pulumi Cloud for the Tinkerbell project.
+
+00:02:33.190 --> 00:02:35.190
+<v Speaker 0>This comes with a whole bunch of benefits.
+
+00:02:35.190 --> 00:02:37.455
+<v Speaker 0>From the security side, it meant that we
+
+00:02:37.455 --> 00:02:39.055
+<v Speaker 0>could commoditize access
+
+00:02:39.135 --> 00:02:40.735
+<v Speaker 0>through their RBAC system.
+
+00:02:41.215 --> 00:02:42.815
+<v Speaker 0>It also meant we could take advantage of
+
+00:02:42.815 --> 00:02:44.575
+<v Speaker 0>their secrets management as well.
+
+00:02:45.775 --> 00:02:48.415
+<v Speaker 0>Something that Pulumi does really well is allow
+
+00:02:48.415 --> 00:02:51.295
+<v Speaker 0>us to really adhere and adopt GetOps
+
+00:02:51.810 --> 00:02:54.290
+<v Speaker 0>by having everything that we need, including secrets
+
+00:02:54.290 --> 00:02:56.290
+<v Speaker 0>and the repository and pushed.
+
+00:02:57.250 --> 00:02:59.970
+<v Speaker 0>They are, of course, encrypted using the Pulumi
+
+00:02:59.970 --> 00:03:00.770
+<v Speaker 0>cloud
+
+00:03:00.770 --> 00:03:01.570
+<v Speaker 0>back end.
+
+00:03:02.130 --> 00:03:02.930
+<v Speaker 0>However,
+
+00:03:03.090 --> 00:03:04.965
+<v Speaker 0>if you want to use Pulumi and you
+
+00:03:04.965 --> 00:03:07.045
+<v Speaker 0>wanna stick to the open source, you can
+
+00:03:07.045 --> 00:03:09.765
+<v Speaker 0>use any Cloud KMS as a backend as
+
+00:03:09.765 --> 00:03:10.165
+<v Speaker 0>well.
+
+00:03:12.004 --> 00:03:14.724
+<v Speaker 0>And this is our actual production stack fail,
+
+00:03:14.724 --> 00:03:16.644
+<v Speaker 0>which is open source on github.com.
+
+00:03:16.644 --> 00:03:19.125
+<v Speaker 0>You can see we have AWS credentials here
+
+00:03:19.650 --> 00:03:22.130
+<v Speaker 0>and we also have our Equinix METL credentials.
+
+00:03:26.370 --> 00:03:27.330
+<v Speaker 0>And next,
+
+00:03:27.730 --> 00:03:29.890
+<v Speaker 0>it's not we can't just spin up METL
+
+00:03:29.890 --> 00:03:31.730
+<v Speaker 0>and magically does something. Right? We have to
+
+00:03:31.730 --> 00:03:33.695
+<v Speaker 0>go through some professional stage. So we need
+
+00:03:33.695 --> 00:03:35.615
+<v Speaker 0>some software on the devices too.
+
+00:03:35.935 --> 00:03:38.015
+<v Speaker 0>My go to tool for this is SaltStack.
+
+00:03:38.095 --> 00:03:41.455
+<v Speaker 0>Again, focusing on the security reasons of why
+
+00:03:41.535 --> 00:03:44.495
+<v Speaker 0>I'm using SaltStack is one, there's no SSH
+
+00:03:44.495 --> 00:03:47.455
+<v Speaker 0>as a transport protocol. SaltStack uses zero MQ
+
+00:03:47.455 --> 00:03:48.255
+<v Speaker 0>based messaging.
+
+00:03:48.870 --> 00:03:50.070
+<v Speaker 0>Pass messages,
+
+00:03:50.150 --> 00:03:52.230
+<v Speaker 0>which the minions are subscribing to from the
+
+00:03:52.230 --> 00:03:54.710
+<v Speaker 0>master and executing those states.
+
+00:03:56.470 --> 00:03:58.710
+<v Speaker 0>Salt also has a concept of pillars,
+
+00:03:58.790 --> 00:04:01.190
+<v Speaker 0>which allows us to have secret information available
+
+00:04:01.190 --> 00:04:04.644
+<v Speaker 0>on the salt master node and selectively distributing
+
+00:04:04.644 --> 00:04:06.564
+<v Speaker 0>the keys that we want to each individual
+
+00:04:06.564 --> 00:04:09.125
+<v Speaker 0>machine or menu based on a whole bunch
+
+00:04:09.125 --> 00:04:10.565
+<v Speaker 0>of grains and parameters.
+
+00:04:12.965 --> 00:04:15.125
+<v Speaker 0>One final thing about the messaging system here
+
+00:04:15.125 --> 00:04:17.285
+<v Speaker 0>is that it simplifies all of our network
+
+00:04:17.285 --> 00:04:19.490
+<v Speaker 0>policies. The minions only have to be able
+
+00:04:19.490 --> 00:04:21.329
+<v Speaker 0>to speak to the salt master. We're not
+
+00:04:21.329 --> 00:04:22.930
+<v Speaker 0>opening up ports for the salt master to
+
+00:04:22.930 --> 00:04:24.850
+<v Speaker 0>reach all of our minions, and that's a
+
+00:04:24.850 --> 00:04:25.810
+<v Speaker 0>big win too.
+
+00:04:29.090 --> 00:04:30.770
+<v Speaker 0>And the way that we are consuming
+
+00:04:31.235 --> 00:04:34.275
+<v Speaker 0>SaltStack or provisioning SaltStack on these machines
+
+00:04:34.675 --> 00:04:37.635
+<v Speaker 0>is leveraging Pulumi's secret store,
+
+00:04:38.675 --> 00:04:40.595
+<v Speaker 0>writing the secrets that we need to cloud
+
+00:04:40.595 --> 00:04:41.395
+<v Speaker 0>in it,
+
+00:04:42.435 --> 00:04:44.115
+<v Speaker 0>and then they'll come available to Salt.
+
+00:04:45.310 --> 00:04:47.390
+<v Speaker 0>And the secrets being stored in pillars means
+
+00:04:47.390 --> 00:04:49.390
+<v Speaker 0>that we can selectively distribute them based on
+
+00:04:49.390 --> 00:04:51.470
+<v Speaker 0>grain data to each of the menus.
+
+00:04:51.710 --> 00:04:53.470
+<v Speaker 0>So the menus only get the secrets that
+
+00:04:53.470 --> 00:04:54.670
+<v Speaker 0>we allow them to see.
+
+00:04:57.485 --> 00:04:59.324
+<v Speaker 0>And it's worth pointing out that
+
+00:04:59.645 --> 00:05:01.724
+<v Speaker 0>while Tinkerbell was open sourced by Equinix Metal
+
+00:05:01.724 --> 00:05:03.245
+<v Speaker 0>and a majority of the team comes from
+
+00:05:03.245 --> 00:05:05.405
+<v Speaker 0>Equinix Metal, that it is a CNCF sandbox
+
+00:05:05.405 --> 00:05:06.125
+<v Speaker 0>project.
+
+00:05:06.845 --> 00:05:09.164
+<v Speaker 0>This means that we're using hardware not on
+
+00:05:09.164 --> 00:05:11.884
+<v Speaker 0>our Equinix Metal accounts, but on our CNCF
+
+00:05:11.884 --> 00:05:12.284
+<v Speaker 0>accounts.
+
+00:05:12.820 --> 00:05:15.460
+<v Speaker 0>It also means that any maintainer or contributor,
+
+00:05:15.460 --> 00:05:18.020
+<v Speaker 0>regardless of where they where they are employed,
+
+00:05:18.980 --> 00:05:20.100
+<v Speaker 0>should be able to have the same amount
+
+00:05:20.100 --> 00:05:22.020
+<v Speaker 0>of access. We wanna protect against the bus
+
+00:05:22.020 --> 00:05:23.620
+<v Speaker 0>factor, of course, as well.
+
+00:05:25.935 --> 00:05:27.935
+<v Speaker 0>So we need to commoditize the access to
+
+00:05:27.935 --> 00:05:28.895
+<v Speaker 0>the machines.
+
+00:05:31.535 --> 00:05:33.455
+<v Speaker 0>And for that, I'm falling back on one
+
+00:05:33.455 --> 00:05:35.695
+<v Speaker 0>of my other favorite tools, Teleport.
+
+00:05:36.495 --> 00:05:38.735
+<v Speaker 0>Teleport allows us to disable
+
+00:05:38.735 --> 00:05:39.935
+<v Speaker 0>open
+
+00:05:40.520 --> 00:05:42.440
+<v Speaker 0>We don't need to rely
+
+00:05:43.560 --> 00:05:46.520
+<v Speaker 0>on giving people access to the machines
+
+00:05:46.680 --> 00:05:47.400
+<v Speaker 0>by
+
+00:05:47.720 --> 00:05:50.120
+<v Speaker 0>reaching out and getting their SSH keys or
+
+00:05:50.120 --> 00:05:51.640
+<v Speaker 0>scraping them from GitHub.
+
+00:05:52.440 --> 00:05:54.680
+<v Speaker 0>We don't need to add everybody to the
+
+00:05:54.680 --> 00:05:56.120
+<v Speaker 0>project on Equinix Medal.
+
+00:05:58.015 --> 00:06:00.575
+<v Speaker 0>We can use Teleport's SSH server,
+
+00:06:00.895 --> 00:06:03.455
+<v Speaker 0>which is backed by GitHub SSO,
+
+00:06:04.095 --> 00:06:06.655
+<v Speaker 0>and restrict access to these machines based on
+
+00:06:06.655 --> 00:06:08.895
+<v Speaker 0>a group that we create within the Tinkerbell
+
+00:06:08.895 --> 00:06:10.015
+<v Speaker 0>organization on GitHub.
+
+00:06:11.520 --> 00:06:13.280
+<v Speaker 0>So in order to give people access to
+
+00:06:13.280 --> 00:06:15.600
+<v Speaker 0>the runners or to the salt master itself,
+
+00:06:15.919 --> 00:06:17.280
+<v Speaker 0>we just have to add them to a
+
+00:06:17.280 --> 00:06:18.320
+<v Speaker 0>group on GitHub,
+
+00:06:18.960 --> 00:06:19.919
+<v Speaker 0>and that's pretty cool.
+
+00:06:24.045 --> 00:06:27.725
+<v Speaker 0>We're keeping teleport secure by only allowing private
+
+00:06:27.725 --> 00:06:30.685
+<v Speaker 0>IPV four access for other nodes to join
+
+00:06:30.685 --> 00:06:31.565
+<v Speaker 0>the cluster.
+
+00:06:31.885 --> 00:06:33.965
+<v Speaker 0>And again, the tokens are all stored in
+
+00:06:33.965 --> 00:06:36.530
+<v Speaker 0>the Pulumi store or encrypted by Pulumi and
+
+00:06:36.530 --> 00:06:38.850
+<v Speaker 0>distributed via cloud and to SaltStack to the
+
+00:06:38.850 --> 00:06:40.530
+<v Speaker 0>runners as needed.
+
+00:06:43.250 --> 00:06:44.850
+<v Speaker 0>So what does that all look like?
+
+00:06:50.210 --> 00:06:50.610
+<v Speaker 0>Okay.
+
+00:06:51.705 --> 00:06:53.865
+<v Speaker 0>So first, you can see all of the
+
+00:06:53.865 --> 00:06:56.745
+<v Speaker 0>code to provision this infrastructure and the applications
+
+00:06:56.745 --> 00:07:01.705
+<v Speaker 0>running on top of the machines at github.com/tinkerbell/infrastructure.
+
+00:07:02.505 --> 00:07:04.985
+<v Speaker 0>We have the Pulumi directory, which is responsible
+
+00:07:04.985 --> 00:07:08.320
+<v Speaker 0>for running the Pulumi app, provisioning the bare
+
+00:07:08.320 --> 00:07:10.640
+<v Speaker 0>metal, rating everything that we need to cloud
+
+00:07:10.640 --> 00:07:13.600
+<v Speaker 0>in it to self bootstrap the SALT setup.
+
+00:07:13.600 --> 00:07:16.080
+<v Speaker 0>From there, SALT takes over and installs everything
+
+00:07:16.080 --> 00:07:18.000
+<v Speaker 0>else that we need on itself
+
+00:07:18.240 --> 00:07:19.760
+<v Speaker 0>and the runner devices.
+
+00:07:21.985 --> 00:07:25.025
+<v Speaker 0>Using Pulumi's cloud, we have access to see
+
+00:07:25.025 --> 00:07:28.305
+<v Speaker 0>when Pulumi commands were run against a stack.
+
+00:07:28.625 --> 00:07:31.825
+<v Speaker 0>We can just click on Tinkerbell infrastructure production.
+
+00:07:32.865 --> 00:07:34.385
+<v Speaker 0>We can see the outputs.
+
+00:07:35.160 --> 00:07:37.560
+<v Speaker 0>We can see the configuration used, including the
+
+00:07:37.560 --> 00:07:38.280
+<v Speaker 0>secrets,
+
+00:07:38.520 --> 00:07:40.360
+<v Speaker 0>although they are nicely sophisticated.
+
+00:07:41.480 --> 00:07:43.240
+<v Speaker 0>And what else is cool is that we
+
+00:07:43.240 --> 00:07:45.320
+<v Speaker 0>have the activity view that shows us every
+
+00:07:45.320 --> 00:07:47.875
+<v Speaker 0>time someone ran the Pulumi stack. So we
+
+00:07:47.875 --> 00:07:50.275
+<v Speaker 0>got really good visibility into when any of
+
+00:07:50.275 --> 00:07:52.275
+<v Speaker 0>these secrets were accessed, the state was changed
+
+00:07:52.275 --> 00:07:53.795
+<v Speaker 0>and nodes were spun up.
+
+00:07:56.675 --> 00:07:58.355
+<v Speaker 0>Now in order to get access to the
+
+00:07:58.355 --> 00:08:01.395
+<v Speaker 0>machines, we can browse to teleport.TinkerBuild.org.
+
+00:08:01.830 --> 00:08:03.910
+<v Speaker 0>There's only one option to log in, and
+
+00:08:03.910 --> 00:08:05.510
+<v Speaker 0>that is through GitHub.
+
+00:08:06.070 --> 00:08:08.070
+<v Speaker 0>I click the magic button, and I now
+
+00:08:08.070 --> 00:08:09.990
+<v Speaker 0>have access to all of the machines within
+
+00:08:09.990 --> 00:08:10.870
+<v Speaker 0>the infrastructure.
+
+00:08:11.830 --> 00:08:14.150
+<v Speaker 0>I think what is really cool about Teleport
+
+00:08:14.150 --> 00:08:15.830
+<v Speaker 0>as our SSH means
+
+00:08:16.145 --> 00:08:18.785
+<v Speaker 0>is that we can have the ability to
+
+00:08:18.785 --> 00:08:20.705
+<v Speaker 0>see active sessions. And in fact, we can
+
+00:08:20.705 --> 00:08:22.465
+<v Speaker 0>even join them if they were in progress
+
+00:08:22.465 --> 00:08:24.145
+<v Speaker 0>and see what the people are typing or
+
+00:08:24.145 --> 00:08:25.265
+<v Speaker 0>doing or whatever.
+
+00:08:25.985 --> 00:08:28.065
+<v Speaker 0>And the sessions are also recorded.
+
+00:08:28.385 --> 00:08:29.585
+<v Speaker 0>So let's take a look at that.
+
+00:08:31.300 --> 00:08:34.580
+<v Speaker 0>We can jump on to our salt master,
+
+00:08:37.539 --> 00:08:39.380
+<v Speaker 0>and I can just run a nice simple
+
+00:08:39.380 --> 00:08:41.460
+<v Speaker 0>salt command to ensure that all of my
+
+00:08:41.460 --> 00:08:42.419
+<v Speaker 0>devices are online.
+
+00:08:44.535 --> 00:08:46.295
+<v Speaker 0>If we pop back over here,
+
+00:08:47.495 --> 00:08:49.255
+<v Speaker 0>we can click on active sessions, and we
+
+00:08:49.255 --> 00:08:51.575
+<v Speaker 0>can see that I have an SSH session
+
+00:08:51.575 --> 00:08:52.535
+<v Speaker 0>in progress.
+
+00:08:52.774 --> 00:08:54.375
+<v Speaker 0>And I have a join button,
+
+00:08:55.415 --> 00:08:57.015
+<v Speaker 0>which if I type echo,
+
+00:08:57.095 --> 00:08:57.575
+<v Speaker 0>hello,
+
+00:08:59.360 --> 00:09:02.240
+<v Speaker 0>I can see both of my terminals.
+
+00:09:02.400 --> 00:09:03.600
+<v Speaker 0>Very, very cool.
+
+00:09:04.240 --> 00:09:06.240
+<v Speaker 0>Let's end both of these sessions.
+
+00:09:08.480 --> 00:09:10.720
+<v Speaker 0>Hit refresh, and that'll end in just a
+
+00:09:10.720 --> 00:09:12.480
+<v Speaker 0>moment. Hopefully, it shows up here.
+
+00:09:19.715 --> 00:09:21.715
+<v Speaker 0>And now our session is gone.
+
+00:09:22.115 --> 00:09:23.715
+<v Speaker 0>We can go to our audit log. We
+
+00:09:23.715 --> 00:09:25.635
+<v Speaker 0>can see that sessions were started. We can
+
+00:09:25.635 --> 00:09:27.395
+<v Speaker 0>see the single sign on from GitHub.
+
+00:09:27.830 --> 00:09:30.150
+<v Speaker 0>We can see that someone joined a session,
+
+00:09:30.150 --> 00:09:31.910
+<v Speaker 0>and we can see the user disconnected.
+
+00:09:32.550 --> 00:09:33.910
+<v Speaker 0>We can come back here
+
+00:09:34.230 --> 00:09:37.350
+<v Speaker 0>and click play on a recorded session and
+
+00:09:37.350 --> 00:09:39.430
+<v Speaker 0>see all of those commands that were executed.
+
+00:09:39.430 --> 00:09:41.670
+<v Speaker 0>We got the cell we have the cell
+
+00:09:41.670 --> 00:09:42.790
+<v Speaker 0>test dot ping
+
+00:09:43.375 --> 00:09:45.375
+<v Speaker 0>followed by our echo.
+
+00:09:50.735 --> 00:09:52.495
+<v Speaker 0>Thank you for watching this session.
+
+00:09:53.307 --> 00:09:55.467
+<v Speaker 0>I hope you get as much value out
+
+00:09:55.467 --> 00:09:57.627
+<v Speaker 0>of Pulumi, Solstack, and Teleport
+
+00:09:57.707 --> 00:10:00.187
+<v Speaker 0>as I, the Tinkerbell, and Equinix.
+
+00:10:01.387 --> 00:10:01.947
+<v Speaker 0>A great day.

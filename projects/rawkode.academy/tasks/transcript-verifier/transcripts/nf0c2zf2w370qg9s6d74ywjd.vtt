@@ -1,0 +1,3884 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: fff6e8f3-966b-437d-a9bd-e9f1ffc5df88
+Created: 2025-04-29T19:09:38.303Z
+Duration: 3200.1575
+Channels: 1
+
+00:00:36.400 --> 00:00:39.280
+<v Speaker 0>Hello. Welcome to today's episode of Rawkode live.
+
+00:00:39.280 --> 00:00:40.975
+<v Speaker 0>I'm your host, Rawkode.
+
+00:00:41.215 --> 00:00:42.735
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:00:42.735 --> 00:00:45.375
+<v Speaker 0>Kaniko, a tool for building container images in
+
+00:00:45.375 --> 00:00:46.254
+<v Speaker 0>Kubernetes.
+
+00:00:46.655 --> 00:00:48.254
+<v Speaker 0>Now before we get started, this is a
+
+00:00:48.254 --> 00:00:50.415
+<v Speaker 0>little bit of housekeeping. First, if you're not
+
+00:00:50.415 --> 00:00:51.295
+<v Speaker 0>already subscribed,
+
+00:00:51.950 --> 00:00:54.190
+<v Speaker 0>rude, but you should subscribe now and click
+
+00:00:54.190 --> 00:00:55.870
+<v Speaker 0>that bell. This helps other people find the
+
+00:00:55.870 --> 00:00:58.110
+<v Speaker 0>content, plus you'll get notifications for each of
+
+00:00:58.110 --> 00:00:59.629
+<v Speaker 0>the new episodes coming up.
+
+00:01:00.110 --> 00:01:01.949
+<v Speaker 0>Also, if you're not watching live and you
+
+00:01:01.949 --> 00:01:03.550
+<v Speaker 0>have questions or you want to make suggestions
+
+00:01:03.550 --> 00:01:04.830
+<v Speaker 0>for new technologies to
+
+00:01:05.354 --> 00:01:07.274
+<v Speaker 0>cover on Rawkode Live, then you can join
+
+00:01:07.274 --> 00:01:09.195
+<v Speaker 0>the Discord. There's a few hundred people that
+
+00:01:09.195 --> 00:01:11.435
+<v Speaker 0>a few hundred people that are now talking
+
+00:01:11.435 --> 00:01:13.835
+<v Speaker 0>about cloud native Kubernetes and everything in between.
+
+00:01:13.835 --> 00:01:15.115
+<v Speaker 0>So come and say hello.
+
+00:01:15.674 --> 00:01:17.994
+<v Speaker 0>And lastly, I wanna thank Equinix Metal, my
+
+00:01:17.994 --> 00:01:19.960
+<v Speaker 0>employer, for allowing me to do this. You
+
+00:01:19.960 --> 00:01:21.719
+<v Speaker 0>can check out Equinix Medal
+
+00:01:22.119 --> 00:01:24.040
+<v Speaker 0>using the code Rawkode. This will get you
+
+00:01:24.040 --> 00:01:24.920
+<v Speaker 0>$200
+
+00:01:24.920 --> 00:01:27.640
+<v Speaker 0>of compute. That's anywhere from fifty hours to
+
+00:01:27.640 --> 00:01:29.479
+<v Speaker 0>four hundred hours depending on the machine that
+
+00:01:29.479 --> 00:01:31.159
+<v Speaker 0>you choose. So, you know, have fun or
+
+00:01:31.159 --> 00:01:32.759
+<v Speaker 0>use it wisely. That is up to you.
+
+00:01:33.905 --> 00:01:36.545
+<v Speaker 0>Now today, to introduce us to Kaniko, I
+
+00:01:36.545 --> 00:01:38.225
+<v Speaker 0>am joined by from
+
+00:01:38.225 --> 00:01:40.145
+<v Speaker 0>the Google Container team. Hi there.
+
+00:01:41.825 --> 00:01:43.025
+<v Speaker 1>Hi, David.
+
+00:01:43.745 --> 00:01:46.400
+<v Speaker 1>Thank you for having me. No. The pleasure
+
+00:01:46.400 --> 00:01:48.160
+<v Speaker 0>is all mine. I'm looking forward to playing
+
+00:01:48.160 --> 00:01:50.560
+<v Speaker 0>mechanical today and showing that to our to
+
+00:01:50.560 --> 00:01:52.560
+<v Speaker 0>the people that are watching. Do you wanna
+
+00:01:52.560 --> 00:01:53.920
+<v Speaker 0>just take a moment to tell us a
+
+00:01:53.920 --> 00:01:55.680
+<v Speaker 0>little bit about yourself, and then we'll get
+
+00:01:55.680 --> 00:01:55.920
+<v Speaker 0>started?
+
+00:01:57.455 --> 00:01:58.415
+<v Speaker 1>Yeah. Sure.
+
+00:01:58.735 --> 00:02:00.255
+<v Speaker 1>So my name is Tejal.
+
+00:02:00.495 --> 00:02:03.615
+<v Speaker 1>I was born and raised in India.
+
+00:02:03.855 --> 00:02:06.655
+<v Speaker 1>I came to United States for my master's
+
+00:02:06.975 --> 00:02:08.575
+<v Speaker 1>a decade ago maybe.
+
+00:02:09.535 --> 00:02:12.510
+<v Speaker 1>And after completing my masters, I've been working
+
+00:02:12.510 --> 00:02:13.950
+<v Speaker 1>as a software engineer.
+
+00:02:14.670 --> 00:02:17.150
+<v Speaker 1>I've been working at Google since pretty much
+
+00:02:17.150 --> 00:02:18.030
+<v Speaker 1>last
+
+00:02:18.590 --> 00:02:19.630
+<v Speaker 1>five years,
+
+00:02:20.670 --> 00:02:23.150
+<v Speaker 1>mostly in container developer experience
+
+00:02:23.150 --> 00:02:23.870
+<v Speaker 1>and
+
+00:02:23.950 --> 00:02:25.070
+<v Speaker 1>container tools.
+
+00:02:26.565 --> 00:02:28.885
+<v Speaker 1>I'm currently the maintainer of Kaniko,
+
+00:02:29.525 --> 00:02:33.125
+<v Speaker 1>and I'm actually working on another awesome container
+
+00:02:33.125 --> 00:02:35.125
+<v Speaker 1>development tool, which is Scaffold.
+
+00:02:35.125 --> 00:02:36.004
+<v Speaker 1>I
+
+00:02:36.004 --> 00:02:38.084
+<v Speaker 1>manage Scaffold at Google now.
+
+00:02:39.159 --> 00:02:40.680
+<v Speaker 0>Awesome. I'm
+
+00:02:41.080 --> 00:02:42.840
+<v Speaker 0>a big fan of Scaffold as well, actually.
+
+00:02:42.840 --> 00:02:43.960
+<v Speaker 0>It's a really cool tool
+
+00:02:44.200 --> 00:02:46.280
+<v Speaker 0>and Kaniko. So I'm looking forward to Yeah.
+
+00:02:46.360 --> 00:02:48.120
+<v Speaker 0>Pulling both these tools off. I actually have
+
+00:02:48.120 --> 00:02:50.120
+<v Speaker 0>someone from the Scaffold team joining me next
+
+00:02:50.120 --> 00:02:51.879
+<v Speaker 0>week to do an episode there. Yes. That'll
+
+00:02:51.879 --> 00:02:52.439
+<v Speaker 0>be awesome too.
+
+00:02:53.335 --> 00:02:55.895
+<v Speaker 1>Yes. Alright. Do you want to just will
+
+00:02:55.895 --> 00:02:57.095
+<v Speaker 0>we start with a a little bit of
+
+00:02:57.095 --> 00:02:59.015
+<v Speaker 0>a brief introduction? It's just like what is
+
+00:02:59.015 --> 00:03:01.255
+<v Speaker 0>Kaniko and and what is it for?
+
+00:03:02.615 --> 00:03:03.335
+<v Speaker 1>Sure.
+
+00:03:03.575 --> 00:03:04.535
+<v Speaker 1>So Kaniko
+
+00:03:04.535 --> 00:03:06.215
+<v Speaker 1>was
+
+00:03:05.840 --> 00:03:09.040
+<v Speaker 1>started at Google maybe around three years ago
+
+00:03:09.040 --> 00:03:10.160
+<v Speaker 1>as a way
+
+00:03:10.799 --> 00:03:11.840
+<v Speaker 1>to build
+
+00:03:11.920 --> 00:03:14.640
+<v Speaker 1>images in your cluster securely.
+
+00:03:15.280 --> 00:03:16.640
+<v Speaker 1>Before Kaniko,
+
+00:03:16.640 --> 00:03:19.519
+<v Speaker 1>people used to actually install Docker inside their
+
+00:03:19.519 --> 00:03:19.920
+<v Speaker 1>cluster.
+
+00:03:21.095 --> 00:03:21.735
+<v Speaker 1>And,
+
+00:03:22.215 --> 00:03:23.575
+<v Speaker 1>you know, Docker
+
+00:03:23.575 --> 00:03:25.655
+<v Speaker 1>inside the cluster is not a great idea.
+
+00:03:25.655 --> 00:03:27.415
+<v Speaker 1>It has a lot of, you know, security
+
+00:03:27.415 --> 00:03:30.215
+<v Speaker 1>concerns because you expose the Docker socket. So
+
+00:03:30.455 --> 00:03:31.255
+<v Speaker 1>anybody
+
+00:03:31.255 --> 00:03:34.215
+<v Speaker 1>could tap in and, you know, just just
+
+00:03:33.660 --> 00:03:34.380
+<v Speaker 1>take
+
+00:03:34.460 --> 00:03:35.980
+<v Speaker 1>advantage
+
+00:03:36.620 --> 00:03:39.020
+<v Speaker 1>of the Docker socket and
+
+00:03:39.420 --> 00:03:42.300
+<v Speaker 1>end up, you know, corrupting your Kubernetes
+
+00:03:42.300 --> 00:03:45.420
+<v Speaker 1>cluster or, you know, send a malicious
+
+00:03:45.740 --> 00:03:47.580
+<v Speaker 1>run malicious code or anything like that.
+
+00:03:49.105 --> 00:03:51.745
+<v Speaker 1>So for that reason, Kaniko
+
+00:03:51.745 --> 00:03:52.945
+<v Speaker 1>started as
+
+00:03:53.425 --> 00:03:54.305
+<v Speaker 1>starter project
+
+00:03:54.545 --> 00:03:56.065
+<v Speaker 1>one of the projects that, you know, in
+
+00:03:56.065 --> 00:03:57.665
+<v Speaker 1>Google, you end up giving to a new
+
+00:03:57.665 --> 00:03:58.385
+<v Speaker 1>engineer.
+
+00:03:58.945 --> 00:04:00.705
+<v Speaker 1>But we found out that it has a
+
+00:04:00.705 --> 00:04:02.390
+<v Speaker 1>lot of potential. That was something that was
+
+00:04:02.390 --> 00:04:05.349
+<v Speaker 1>missing in the market, and people adopted it
+
+00:04:05.349 --> 00:04:08.070
+<v Speaker 1>and became one of the popular tools now.
+
+00:04:09.190 --> 00:04:12.310
+<v Speaker 1>So Kaniko lets you help build container images
+
+00:04:12.310 --> 00:04:13.670
+<v Speaker 1>inside the cluster
+
+00:04:13.830 --> 00:04:15.269
+<v Speaker 1>without the need of Docker.
+
+00:04:16.805 --> 00:04:17.445
+<v Speaker 1>So
+
+00:04:17.845 --> 00:04:19.925
+<v Speaker 1>what it does is,
+
+00:04:20.245 --> 00:04:23.285
+<v Speaker 1>it spins up a a container
+
+00:04:23.285 --> 00:04:27.205
+<v Speaker 1>and runs all the commands in your Dockerfile.
+
+00:04:27.764 --> 00:04:31.190
+<v Speaker 1>It'll run it on the operating sys on
+
+00:04:31.190 --> 00:04:32.870
+<v Speaker 1>the container itself
+
+00:04:33.270 --> 00:04:34.630
+<v Speaker 1>and detect
+
+00:04:34.630 --> 00:04:36.310
+<v Speaker 1>what changes
+
+00:04:36.389 --> 00:04:39.110
+<v Speaker 1>a particular command run ended up doing to
+
+00:04:39.110 --> 00:04:40.150
+<v Speaker 1>your file system
+
+00:04:40.470 --> 00:04:42.230
+<v Speaker 1>and would build
+
+00:04:42.310 --> 00:04:44.150
+<v Speaker 1>image layers
+
+00:04:43.514 --> 00:04:45.035
+<v Speaker 1>based on those changes
+
+00:04:45.354 --> 00:04:46.795
+<v Speaker 1>and then produce
+
+00:04:47.275 --> 00:04:48.315
+<v Speaker 1>Docker image.
+
+00:04:49.915 --> 00:04:52.555
+<v Speaker 0>Okay. I think I understand some of that.
+
+00:04:52.555 --> 00:04:53.995
+<v Speaker 0>So let me try and repeat some of
+
+00:04:53.995 --> 00:04:55.354
+<v Speaker 0>that back. So
+
+00:04:55.830 --> 00:04:59.350
+<v Speaker 0>I I understand that running Docker inside of
+
+00:04:59.350 --> 00:05:01.190
+<v Speaker 0>Kubernetes is is not a good idea because
+
+00:05:01.190 --> 00:05:03.030
+<v Speaker 0>we have the Docker socket that allows people
+
+00:05:03.030 --> 00:05:05.510
+<v Speaker 0>to do bad things with their containers, particularly
+
+00:05:05.510 --> 00:05:07.350
+<v Speaker 0>in the older days where Docker had to
+
+00:05:07.350 --> 00:05:09.270
+<v Speaker 0>run its root. I know there's some changes
+
+00:05:09.270 --> 00:05:10.229
+<v Speaker 0>and advancements there.
+
+00:05:10.775 --> 00:05:12.615
+<v Speaker 0>Then Kaniko came along and tried to provide
+
+00:05:12.615 --> 00:05:14.615
+<v Speaker 0>a a secure way to do this.
+
+00:05:14.935 --> 00:05:15.575
+<v Speaker 0>Now
+
+00:05:16.375 --> 00:05:19.495
+<v Speaker 0>so does Kaniko still launch containers for each
+
+00:05:19.495 --> 00:05:21.975
+<v Speaker 0>of the layers or is it doing something
+
+00:05:21.975 --> 00:05:24.455
+<v Speaker 0>magic within the existing container? Like, I'm I
+
+00:05:24.455 --> 00:05:26.455
+<v Speaker 0>don't think I understand exactly what's happening there.
+
+00:05:27.630 --> 00:05:30.190
+<v Speaker 1>That's a good point. So let let's dig
+
+00:05:30.190 --> 00:05:32.670
+<v Speaker 1>into the internals of Kaniko. So
+
+00:05:32.910 --> 00:05:35.470
+<v Speaker 1>you actually spin up as
+
+00:05:35.950 --> 00:05:37.470
+<v Speaker 1>a bill as someone who wants to build
+
+00:05:37.470 --> 00:05:39.390
+<v Speaker 1>image, you would spin up a pod,
+
+00:05:40.030 --> 00:05:43.485
+<v Speaker 1>which runs a Kaniko container image.
+
+00:05:43.965 --> 00:05:44.765
+<v Speaker 1>Kaniko
+
+00:05:44.765 --> 00:05:47.645
+<v Speaker 1>itself does not spin up any container images
+
+00:05:47.645 --> 00:05:51.485
+<v Speaker 1>or or any containers to build individual layers.
+
+00:05:52.125 --> 00:05:55.405
+<v Speaker 1>What it does is on your container, executes
+
+00:05:55.240 --> 00:05:57.240
+<v Speaker 1>the commands in your Dockerfile.
+
+00:05:58.040 --> 00:05:58.760
+<v Speaker 1>So
+
+00:05:59.240 --> 00:06:01.880
+<v Speaker 1>if there is the first command of your,
+
+00:06:02.120 --> 00:06:05.080
+<v Speaker 1>Dockerfile is from, then it'll go and,
+
+00:06:05.720 --> 00:06:08.840
+<v Speaker 1>given that the Kaniko container has access to
+
+00:06:08.840 --> 00:06:09.960
+<v Speaker 1>your image repository,
+
+00:06:10.354 --> 00:06:11.955
+<v Speaker 1>will go pull
+
+00:06:12.195 --> 00:06:14.595
+<v Speaker 1>the image, the base image, and then,
+
+00:06:15.155 --> 00:06:15.795
+<v Speaker 1>you know,
+
+00:06:16.354 --> 00:06:18.355
+<v Speaker 1>untar it and extract it.
+
+00:06:19.155 --> 00:06:21.155
+<v Speaker 1>Then it'll take a snapshot of your file
+
+00:06:21.155 --> 00:06:21.875
+<v Speaker 1>systems.
+
+00:06:22.115 --> 00:06:24.835
+<v Speaker 1>Now we'll run the next command in your
+
+00:06:24.835 --> 00:06:25.794
+<v Speaker 1>Docker file
+
+00:06:26.270 --> 00:06:27.470
+<v Speaker 1>If it is
+
+00:06:27.790 --> 00:06:29.630
+<v Speaker 1>meta command, which is just like, you know,
+
+00:06:29.630 --> 00:06:32.270
+<v Speaker 1>sending work directory or setting user permissions,
+
+00:06:33.150 --> 00:06:34.830
+<v Speaker 1>then it doesn't do anything
+
+00:06:35.230 --> 00:06:36.110
+<v Speaker 1>much.
+
+00:06:36.670 --> 00:06:38.750
+<v Speaker 1>It'll only update the
+
+00:06:38.990 --> 00:06:40.830
+<v Speaker 1>image manifest
+
+00:06:40.455 --> 00:06:42.134
+<v Speaker 1>and metadata in the image.
+
+00:06:42.375 --> 00:06:44.775
+<v Speaker 1>But if it is a docker run command,
+
+00:06:44.775 --> 00:06:47.655
+<v Speaker 1>which actually ends up manipulating the file system
+
+00:06:47.655 --> 00:06:50.215
+<v Speaker 1>and adding new files or generating new files,
+
+00:06:50.215 --> 00:06:53.574
+<v Speaker 1>Kaniko will run that. It's as
+
+00:06:54.080 --> 00:06:56.639
+<v Speaker 1>whatever user you've set it to run as,
+
+00:06:56.960 --> 00:06:59.440
+<v Speaker 1>and then it'll take a snapshot of your
+
+00:06:59.440 --> 00:07:01.440
+<v Speaker 1>file system now. So with
+
+00:07:01.440 --> 00:07:03.919
+<v Speaker 1>the snapshotting mechanism, it can detect
+
+00:07:04.240 --> 00:07:07.915
+<v Speaker 1>what were the changes that happened between your
+
+00:07:07.915 --> 00:07:10.955
+<v Speaker 1>first command Dockerfile command and the next Dockerfile
+
+00:07:10.955 --> 00:07:11.515
+<v Speaker 1>command.
+
+00:07:11.835 --> 00:07:14.715
+<v Speaker 1>And then it'll pull up all those changes,
+
+00:07:15.595 --> 00:07:17.515
+<v Speaker 1>create a image layer
+
+00:07:17.835 --> 00:07:18.475
+<v Speaker 1>out of it.
+
+00:07:19.560 --> 00:07:20.600
+<v Speaker 0>Okay.
+
+00:07:21.000 --> 00:07:21.640
+<v Speaker 0>So
+
+00:07:21.880 --> 00:07:24.360
+<v Speaker 0>in my naive understanding then, is it fair
+
+00:07:24.360 --> 00:07:26.600
+<v Speaker 0>to say that Kaniko is, like, doing a
+
+00:07:26.600 --> 00:07:28.520
+<v Speaker 0>char root and with the layer file and
+
+00:07:28.520 --> 00:07:30.680
+<v Speaker 0>then running a command? Is that in a
+
+00:07:30.680 --> 00:07:32.600
+<v Speaker 0>really simple term? I'm sure there's more going
+
+00:07:32.600 --> 00:07:33.320
+<v Speaker 0>on. But
+
+00:07:34.565 --> 00:07:36.725
+<v Speaker 1>In the simple term, yes. It is actually
+
+00:07:36.725 --> 00:07:39.525
+<v Speaker 1>executing the commands in your Docker file
+
+00:07:40.165 --> 00:07:42.645
+<v Speaker 1>and figuring out what changed.
+
+00:07:43.125 --> 00:07:43.765
+<v Speaker 0>Okay.
+
+00:07:43.925 --> 00:07:44.485
+<v Speaker 0>Cool.
+
+00:07:44.885 --> 00:07:46.645
+<v Speaker 0>That actually helps a lot with just the
+
+00:07:46.645 --> 00:07:48.805
+<v Speaker 0>the basic understanding of of how it's putting
+
+00:07:48.805 --> 00:07:50.770
+<v Speaker 0>this together. I think it maybe is important
+
+00:07:50.770 --> 00:07:52.210
+<v Speaker 0>to note for the the viewers at home
+
+00:07:52.210 --> 00:07:54.370
+<v Speaker 0>then is that there's nothing particularly special about
+
+00:07:54.370 --> 00:07:57.170
+<v Speaker 0>a container image. Right? They're just literally what
+
+00:07:57.170 --> 00:07:59.330
+<v Speaker 0>you said is a bunch of tarballs that
+
+00:07:59.330 --> 00:08:01.250
+<v Speaker 0>happen to have some JSON manifest data to
+
+00:08:01.250 --> 00:08:01.810
+<v Speaker 0>tell it
+
+00:08:02.605 --> 00:08:05.645
+<v Speaker 0>ordering and semantics and metadata and that's it.
+
+00:08:05.645 --> 00:08:08.205
+<v Speaker 0>There's nothing particularly special. Cool.
+
+00:08:09.965 --> 00:08:11.885
+<v Speaker 0>Awesome. Then I think what we'll do is
+
+00:08:11.885 --> 00:08:13.885
+<v Speaker 0>we'll jump over to the screen share
+
+00:08:14.045 --> 00:08:16.125
+<v Speaker 0>and we'll try and build a container image.
+
+00:08:17.550 --> 00:08:19.470
+<v Speaker 0>I say try. I should have more confidence,
+
+00:08:19.470 --> 00:08:20.750
+<v Speaker 0>shouldn't I? It's like, we will build a
+
+00:08:20.750 --> 00:08:22.190
+<v Speaker 0>container image. Alright.
+
+00:08:23.470 --> 00:08:26.590
+<v Speaker 0>So this is the Kaniko GitHub repository.
+
+00:08:26.590 --> 00:08:30.990
+<v Speaker 0>It's available at github.com/googlecontainertools/kaniko.
+
+00:08:32.034 --> 00:08:34.914
+<v Speaker 0>There is lots of documentation. I noticed as
+
+00:08:34.914 --> 00:08:36.434
+<v Speaker 0>I was kinda poking around
+
+00:08:36.914 --> 00:08:37.875
+<v Speaker 0>earlier.
+
+00:08:38.515 --> 00:08:40.434
+<v Speaker 0>I'm assuming we're just gonna go to the
+
+00:08:40.434 --> 00:08:43.154
+<v Speaker 0>tutorial to get started. Does that sound fair?
+
+00:08:44.070 --> 00:08:45.910
+<v Speaker 1>Let's do that. Alright.
+
+00:08:46.230 --> 00:08:47.430
+<v Speaker 0>Okay. So
+
+00:08:48.470 --> 00:08:50.550
+<v Speaker 0>the getting started tutorial or are we scrolling
+
+00:08:50.550 --> 00:08:51.670
+<v Speaker 0>down this page?
+
+00:08:52.470 --> 00:08:54.470
+<v Speaker 1>I think let's get to the getting started
+
+00:08:54.470 --> 00:08:55.030
+<v Speaker 1>tutorial.
+
+00:08:57.125 --> 00:08:59.445
+<v Speaker 0>Okay. So prerequisites.
+
+00:09:00.165 --> 00:09:03.045
+<v Speaker 0>Kubernetes cluster, check. I have
+
+00:09:03.845 --> 00:09:05.365
+<v Speaker 0>a Kubernetes cluster.
+
+00:09:05.605 --> 00:09:07.045
+<v Speaker 0>I also have Docker for Mac if we
+
+00:09:07.045 --> 00:09:08.645
+<v Speaker 0>need to fall back on that for whatever
+
+00:09:08.645 --> 00:09:08.965
+<v Speaker 0>reason.
+
+00:09:09.870 --> 00:09:12.110
+<v Speaker 0>I do have a Docker Hub account if
+
+00:09:12.110 --> 00:09:13.550
+<v Speaker 0>we need to get the token for that.
+
+00:09:13.550 --> 00:09:15.390
+<v Speaker 0>I'll do that sneakily over here.
+
+00:09:16.190 --> 00:09:19.630
+<v Speaker 0>But I think two texts on the prereqs,
+
+00:09:19.870 --> 00:09:20.270
+<v Speaker 0>which
+
+00:09:20.830 --> 00:09:22.830
+<v Speaker 0>means we can just go jump straight out
+
+00:09:22.830 --> 00:09:24.350
+<v Speaker 0>and build a container image.
+
+00:09:25.634 --> 00:09:26.115
+<v Speaker 1>Yeah.
+
+00:09:26.435 --> 00:09:28.675
+<v Speaker 1>Before that, we need to actually
+
+00:09:29.074 --> 00:09:30.834
+<v Speaker 1>mount your source code
+
+00:09:31.875 --> 00:09:32.675
+<v Speaker 1>onto,
+
+00:09:33.795 --> 00:09:36.514
+<v Speaker 1>you know, your Kubernetes clusters. So I think
+
+00:09:36.514 --> 00:09:37.795
+<v Speaker 1>the several
+
+00:09:37.954 --> 00:09:40.115
+<v Speaker 1>next configuration
+
+00:09:39.450 --> 00:09:40.650
+<v Speaker 1>files that are there,
+
+00:09:40.970 --> 00:09:42.810
+<v Speaker 1>the pod dot yaml, the volume, and the
+
+00:09:42.810 --> 00:09:45.370
+<v Speaker 1>volume claim helps you do that.
+
+00:09:47.450 --> 00:09:48.250
+<v Speaker 0>Okay.
+
+00:09:48.330 --> 00:09:50.330
+<v Speaker 0>So let's see what this is. Let me
+
+00:09:50.330 --> 00:09:51.610
+<v Speaker 0>just zoom in on that a little bit.
+
+00:09:52.295 --> 00:09:55.014
+<v Speaker 0>So this is just a part called Kaniko
+
+00:09:55.014 --> 00:09:57.095
+<v Speaker 0>that runs the Kaniko executor.
+
+00:09:59.574 --> 00:10:01.975
+<v Speaker 1>Just looking for some volume there. Yes. So,
+
+00:10:01.975 --> 00:10:03.014
+<v Speaker 0>Kaniko, go for it.
+
+00:10:03.415 --> 00:10:06.730
+<v Speaker 1>The interesting part is from line eight onwards
+
+00:10:06.730 --> 00:10:10.090
+<v Speaker 1>where we are actually mounting your secret as
+
+00:10:10.090 --> 00:10:12.330
+<v Speaker 1>well as we are also mounting
+
+00:10:13.450 --> 00:10:14.170
+<v Speaker 1>storage
+
+00:10:14.410 --> 00:10:16.330
+<v Speaker 1>where you would end up
+
+00:10:17.210 --> 00:10:19.210
+<v Speaker 1>mounting the source code that you wanna build.
+
+00:10:23.425 --> 00:10:24.385
+<v Speaker 0>Okay.
+
+00:10:26.705 --> 00:10:29.345
+<v Speaker 0>So if I'm using a remote Kubernetes cluster,
+
+00:10:29.345 --> 00:10:30.385
+<v Speaker 0>is that a problem?
+
+00:10:31.745 --> 00:10:33.265
+<v Speaker 1>No. It shouldn't be.
+
+00:10:34.305 --> 00:10:34.785
+<v Speaker 0>Alright.
+
+00:10:35.820 --> 00:10:37.660
+<v Speaker 0>Okay. So you just want me to copy
+
+00:10:37.660 --> 00:10:39.180
+<v Speaker 0>this and save it locally. Right?
+
+00:10:39.580 --> 00:10:41.820
+<v Speaker 0>Yeah. Yeah. Okay. And this is just gonna
+
+00:10:41.820 --> 00:10:43.820
+<v Speaker 0>be our pod dot yama. I did pop
+
+00:10:43.820 --> 00:10:45.580
+<v Speaker 0>open codes so we can just
+
+00:10:46.620 --> 00:10:47.420
+<v Speaker 0>the new file.
+
+00:10:50.375 --> 00:10:51.975
+<v Speaker 0>Save as pod
+
+00:10:51.975 --> 00:10:53.095
+<v Speaker 0>dot yama.
+
+00:10:56.295 --> 00:10:58.535
+<v Speaker 0>And we need the two other ones. So
+
+00:10:58.535 --> 00:11:00.215
+<v Speaker 0>here is my volume.
+
+00:11:09.320 --> 00:11:10.280
+<v Speaker 0>So just
+
+00:11:10.600 --> 00:11:12.360
+<v Speaker 0>so that I understand.
+
+00:11:12.360 --> 00:11:13.080
+<v Speaker 0>Mhmm.
+
+00:11:14.120 --> 00:11:15.080
+<v Speaker 0>So I understand.
+
+00:11:16.215 --> 00:11:18.615
+<v Speaker 0>Is there a CLI element to Kaniko that
+
+00:11:18.615 --> 00:11:20.375
+<v Speaker 0>I execute on my local machine?
+
+00:11:22.135 --> 00:11:24.615
+<v Speaker 1>No. Kaniko cannot be executed
+
+00:11:24.935 --> 00:11:26.775
+<v Speaker 1>in your local machine.
+
+00:11:28.215 --> 00:11:29.575
+<v Speaker 1>It has a binary,
+
+00:11:30.135 --> 00:11:33.170
+<v Speaker 1>but the the Kaniko
+
+00:11:33.730 --> 00:11:35.890
+<v Speaker 1>design is based on the fact that you're
+
+00:11:35.890 --> 00:11:38.130
+<v Speaker 1>running it inside a container, and it ends
+
+00:11:38.130 --> 00:11:40.850
+<v Speaker 1>up entering your root file system,
+
+00:11:41.170 --> 00:11:43.330
+<v Speaker 1>manipulating your root file systems,
+
+00:11:43.650 --> 00:11:47.524
+<v Speaker 1>and deleting certain things and, you know, registering
+
+00:11:47.524 --> 00:11:49.125
+<v Speaker 1>certain special directories.
+
+00:11:49.125 --> 00:11:50.725
+<v Speaker 1>And if you run Kaniko
+
+00:11:51.045 --> 00:11:52.084
+<v Speaker 1>on your
+
+00:11:52.485 --> 00:11:54.644
+<v Speaker 1>local machine, we might end up
+
+00:11:55.125 --> 00:11:56.084
+<v Speaker 1>deleting
+
+00:11:56.324 --> 00:11:59.365
+<v Speaker 1>certain files, which is something that you would
+
+00:11:59.365 --> 00:12:01.370
+<v Speaker 1>not wanna do. Yeah. That is, like, a
+
+00:12:01.370 --> 00:12:04.250
+<v Speaker 0>terrible idea. Okay. So I do see that
+
+00:12:04.250 --> 00:12:06.330
+<v Speaker 0>we're using host path here in a persistent
+
+00:12:06.330 --> 00:12:07.210
+<v Speaker 0>volume.
+
+00:12:07.210 --> 00:12:09.450
+<v Speaker 0>So if I'm working with a remote cluster,
+
+00:12:09.450 --> 00:12:11.450
+<v Speaker 0>how do we get the data into that
+
+00:12:11.690 --> 00:12:12.250
+<v Speaker 0>location?
+
+00:12:16.715 --> 00:12:18.875
+<v Speaker 1>That is a good question.
+
+00:12:20.395 --> 00:12:22.075
+<v Speaker 1>I think this
+
+00:12:23.035 --> 00:12:24.795
+<v Speaker 1>this tutorial actually
+
+00:12:25.435 --> 00:12:27.435
+<v Speaker 1>assumes that you are
+
+00:12:27.920 --> 00:12:29.839
+<v Speaker 1>running in a remote cluster.
+
+00:12:30.160 --> 00:12:32.000
+<v Speaker 1>Let me go back and check.
+
+00:12:37.680 --> 00:12:39.120
+<v Speaker 0>Oh, no. Okay. So once we get the
+
+00:12:39.120 --> 00:12:40.319
+<v Speaker 0>SSH into the cluster,
+
+00:12:40.775 --> 00:12:42.855
+<v Speaker 0>I think, just to provide the build. Yeah.
+
+00:12:42.855 --> 00:12:44.375
+<v Speaker 0>Okay. We can do that. Yeah. That's not
+
+00:12:44.375 --> 00:12:45.575
+<v Speaker 0>a problem. Okay.
+
+00:12:47.815 --> 00:12:49.255
+<v Speaker 0>And it wants me to create the secret.
+
+00:12:49.255 --> 00:12:50.695
+<v Speaker 0>I'll do that when we get there then.
+
+00:12:50.695 --> 00:12:52.775
+<v Speaker 0>So first things first is we just want
+
+00:12:52.775 --> 00:12:56.055
+<v Speaker 0>to go on to one of the machine.
+
+00:12:57.230 --> 00:12:58.029
+<v Speaker 0>Mhmm.
+
+00:12:58.110 --> 00:12:58.830
+<v Speaker 0>Okay.
+
+00:13:01.790 --> 00:13:03.389
+<v Speaker 0>I guess if I use Docker for Mac,
+
+00:13:03.389 --> 00:13:04.589
+<v Speaker 0>that's not really a problem.
+
+00:13:04.910 --> 00:13:06.110
+<v Speaker 1>No.
+
+00:13:07.149 --> 00:13:10.485
+<v Speaker 1>If if you wanna run Kaniko in right
+
+00:13:10.485 --> 00:13:12.645
+<v Speaker 1>now as a docker container, it's just one
+
+00:13:12.645 --> 00:13:13.845
+<v Speaker 1>docker in command.
+
+00:13:14.405 --> 00:13:16.325
+<v Speaker 1>It's not part of the tutorial,
+
+00:13:16.725 --> 00:13:18.965
+<v Speaker 1>but it is on the read me, and
+
+00:13:18.965 --> 00:13:21.765
+<v Speaker 1>we could try that first and then switch
+
+00:13:21.765 --> 00:13:22.980
+<v Speaker 1>to this flow.
+
+00:13:23.140 --> 00:13:24.820
+<v Speaker 0>I I think we can just use the
+
+00:13:24.900 --> 00:13:26.340
+<v Speaker 0>so the Docker for Mac shops with a
+
+00:13:26.340 --> 00:13:28.580
+<v Speaker 0>Kubernetes API that handles all the volume as
+
+00:13:28.580 --> 00:13:30.020
+<v Speaker 0>far as. I reckon we just go with
+
+00:13:30.020 --> 00:13:32.420
+<v Speaker 0>that and see what happens. Okay. So we'll
+
+00:13:32.420 --> 00:13:33.780
+<v Speaker 0>we'll stick with the tutorial. I'll just pop
+
+00:13:33.780 --> 00:13:35.300
+<v Speaker 0>up in Docker. I'll make sure I'm on
+
+00:13:35.300 --> 00:13:35.940
+<v Speaker 0>the right context.
+
+00:13:36.815 --> 00:13:38.735
+<v Speaker 0>I'm just gonna try it as it is.
+
+00:13:38.735 --> 00:13:40.095
+<v Speaker 0>So if I just
+
+00:13:42.175 --> 00:13:43.695
+<v Speaker 0>that also means I won't have to set
+
+00:13:43.695 --> 00:13:44.175
+<v Speaker 0>up
+
+00:13:44.815 --> 00:13:47.375
+<v Speaker 0>the registered token secrets either. So, you know,
+
+00:13:47.375 --> 00:13:48.015
+<v Speaker 0>double win.
+
+00:13:49.470 --> 00:13:51.550
+<v Speaker 0>So what we want here is
+
+00:13:51.950 --> 00:13:53.950
+<v Speaker 0>oh, I don't know the MAC pass. I
+
+00:13:53.950 --> 00:13:55.950
+<v Speaker 0>really should know that. Let me get that.
+
+00:13:58.830 --> 00:14:00.510
+<v Speaker 0>So I'll call this context.
+
+00:14:00.510 --> 00:14:02.910
+<v Speaker 0>I think that's what the tutorial roughly said
+
+00:14:02.910 --> 00:14:04.190
+<v Speaker 0>and then I'll copy this.
+
+00:14:10.965 --> 00:14:12.005
+<v Speaker 0>And that should
+
+00:14:12.245 --> 00:14:13.365
+<v Speaker 0>just work.
+
+00:14:14.005 --> 00:14:15.765
+<v Speaker 0>I'm saying that as a question and a
+
+00:14:15.765 --> 00:14:17.205
+<v Speaker 0>statement at the same time. So you can
+
+00:14:17.205 --> 00:14:18.405
+<v Speaker 0>tell how confident I am. But
+
+00:14:19.510 --> 00:14:21.350
+<v Speaker 0>I reckon we'll be okay. And if not,
+
+00:14:21.350 --> 00:14:24.390
+<v Speaker 0>we'll work around it. Okay. So Okay. This
+
+00:14:24.390 --> 00:14:26.550
+<v Speaker 0>says okay. It says create Kaniko. I've got
+
+00:14:26.550 --> 00:14:28.470
+<v Speaker 0>context. That's fine. And then wants me to
+
+00:14:28.470 --> 00:14:30.230
+<v Speaker 0>create a very simple Docker file
+
+00:14:30.790 --> 00:14:31.750
+<v Speaker 0>that I can do.
+
+00:14:38.015 --> 00:14:38.975
+<v Speaker 0>Command
+
+00:14:42.495 --> 00:14:43.455
+<v Speaker 0>forgot how to Docker.
+
+00:14:45.650 --> 00:14:46.610
+<v Speaker 0>There you go.
+
+00:14:47.570 --> 00:14:48.690
+<v Speaker 0>Entry Docker.
+
+00:14:50.690 --> 00:14:53.330
+<v Speaker 0>I'm doing well today. Alright. This this is
+
+00:14:53.330 --> 00:14:54.370
+<v Speaker 0>my context.
+
+00:14:54.690 --> 00:14:55.730
+<v Speaker 0>Docker.
+
+00:14:56.290 --> 00:14:56.610
+<v Speaker 0>Well,
+
+00:14:58.825 --> 00:15:01.545
+<v Speaker 0>I created a context there. There we go.
+
+00:15:03.545 --> 00:15:04.745
+<v Speaker 0>That looks better.
+
+00:15:04.985 --> 00:15:08.825
+<v Speaker 0>That's actually suggesting Ubuntu bash echo hello. I
+
+00:15:08.825 --> 00:15:11.029
+<v Speaker 0>think we'll be okay with mine. If not,
+
+00:15:11.029 --> 00:15:12.389
+<v Speaker 0>we can blame me for breaking.
+
+00:15:12.949 --> 00:15:15.110
+<v Speaker 0>Okay. Now it wants a secret. Now because
+
+00:15:15.110 --> 00:15:17.350
+<v Speaker 0>we're using Docker for Mac, I think
+
+00:15:18.949 --> 00:15:20.870
+<v Speaker 0>I can just sneakily log in over here.
+
+00:15:27.785 --> 00:15:29.145
+<v Speaker 0>I was worried that when I take my
+
+00:15:29.145 --> 00:15:31.305
+<v Speaker 0>password into one password, it's magically just gonna
+
+00:15:31.305 --> 00:15:32.905
+<v Speaker 0>show up somewhere because I'm on the wrong
+
+00:15:32.905 --> 00:15:34.265
+<v Speaker 0>box. But I think I was okay.
+
+00:15:36.230 --> 00:15:37.750
+<v Speaker 1>It's not showing up.
+
+00:15:39.029 --> 00:15:41.510
+<v Speaker 0>It's just I I think I've I've flashed
+
+00:15:41.510 --> 00:15:43.829
+<v Speaker 0>a password twice on this show now. It
+
+00:15:43.829 --> 00:15:45.910
+<v Speaker 0>wouldn't be the end of the world. Okay.
+
+00:15:47.350 --> 00:15:50.070
+<v Speaker 0>So let's confirm my hypothesis before we move
+
+00:15:50.070 --> 00:15:50.310
+<v Speaker 0>on.
+
+00:15:53.235 --> 00:15:54.835
+<v Speaker 0>Oh, I'm in the wrong context.
+
+00:15:57.315 --> 00:15:58.195
+<v Speaker 0>Oh, no.
+
+00:16:01.155 --> 00:16:03.555
+<v Speaker 0>Oh, I probably have with this.
+
+00:16:05.630 --> 00:16:07.310
+<v Speaker 0>Even I I said that things go wrong
+
+00:16:07.310 --> 00:16:08.910
+<v Speaker 0>and it's always me, that was no word
+
+00:16:08.910 --> 00:16:09.790
+<v Speaker 0>of a lie.
+
+00:16:10.510 --> 00:16:11.230
+<v Speaker 0>Okay.
+
+00:16:12.510 --> 00:16:13.470
+<v Speaker 0>Here we have.
+
+00:16:19.795 --> 00:16:21.875
+<v Speaker 0>No. Okay. We'll see what happens.
+
+00:16:24.195 --> 00:16:26.355
+<v Speaker 0>Okay. Let's let's assume that I've got maybe
+
+00:16:26.355 --> 00:16:29.875
+<v Speaker 0>everything working and it may work.
+
+00:16:30.275 --> 00:16:30.595
+<v Speaker 0>Now
+
+00:16:31.220 --> 00:16:32.900
+<v Speaker 0>are we just moving straight down to the
+
+00:16:32.900 --> 00:16:35.540
+<v Speaker 0>create resources in Kubernetes section, which is just
+
+00:16:35.540 --> 00:16:38.580
+<v Speaker 0>to create, I guess, those three YAML files
+
+00:16:38.580 --> 00:16:40.580
+<v Speaker 0>that we've set locally inside of our Kubernetes
+
+00:16:40.580 --> 00:16:41.220
+<v Speaker 0>cluster?
+
+00:16:41.940 --> 00:16:42.260
+<v Speaker 1>Yep.
+
+00:16:51.155 --> 00:16:51.715
+<v Speaker 0>Oh,
+
+00:16:52.595 --> 00:16:54.355
+<v Speaker 0>it should really be in the right directory.
+
+00:16:54.355 --> 00:16:55.075
+<v Speaker 0>Okay.
+
+00:16:56.835 --> 00:16:58.515
+<v Speaker 0>No. I wish I'd given them better names
+
+00:16:58.515 --> 00:16:58.835
+<v Speaker 0>too.
+
+00:17:07.500 --> 00:17:09.180
+<v Speaker 0>Oh, it's three f's isn't it when you
+
+00:17:09.180 --> 00:17:09.500
+<v Speaker 0>do it.
+
+00:17:13.395 --> 00:17:14.595
+<v Speaker 0>There. Okay.
+
+00:17:14.835 --> 00:17:15.554
+<v Speaker 0>So
+
+00:17:17.715 --> 00:17:19.155
+<v Speaker 0>get pods.
+
+00:17:19.395 --> 00:17:20.035
+<v Speaker 0>And
+
+00:17:20.675 --> 00:17:22.835
+<v Speaker 0>I'll assume Kaniko was just
+
+00:17:23.395 --> 00:17:26.035
+<v Speaker 0>pending because we're pulling the image and not
+
+00:17:26.035 --> 00:17:27.875
+<v Speaker 0>because I've made a mistake.
+
+00:17:30.460 --> 00:17:32.620
+<v Speaker 1>No. It could be because there is something
+
+00:17:32.620 --> 00:17:33.259
+<v Speaker 1>wrong
+
+00:17:33.660 --> 00:17:34.379
+<v Speaker 1>going.
+
+00:17:35.179 --> 00:17:36.140
+<v Speaker 1>So it's still
+
+00:17:38.059 --> 00:17:40.379
+<v Speaker 0>Oh, okay. It's complaining about my
+
+00:17:40.780 --> 00:17:42.379
+<v Speaker 0>volume claim.
+
+00:17:43.260 --> 00:17:43.660
+<v Speaker 0>Mhmm.
+
+00:17:49.154 --> 00:17:51.955
+<v Speaker 0>Alright. I guess I'm debugging already. Okay.
+
+00:17:52.434 --> 00:17:53.475
+<v Speaker 0>Docker fail.
+
+00:17:58.669 --> 00:18:00.029
+<v Speaker 1>Local storage.
+
+00:18:06.830 --> 00:18:08.510
+<v Speaker 0>Oh, come on, Docker for Mac. Why are
+
+00:18:08.510 --> 00:18:09.070
+<v Speaker 0>you being mean?
+
+00:18:13.195 --> 00:18:15.195
+<v Speaker 0>Well, it's just bound now. Was it just
+
+00:18:15.195 --> 00:18:15.994
+<v Speaker 0>slow?
+
+00:18:17.515 --> 00:18:18.234
+<v Speaker 1>Yeah.
+
+00:18:19.275 --> 00:18:20.315
+<v Speaker 1>Oh, great.
+
+00:18:21.034 --> 00:18:23.595
+<v Speaker 0>Yeah. I was I I wasn't worried. No.
+
+00:18:23.595 --> 00:18:24.155
+<v Speaker 0>Not at all.
+
+00:18:25.500 --> 00:18:27.020
+<v Speaker 0>Yeah. Container creating
+
+00:18:27.020 --> 00:18:29.180
+<v Speaker 0>would mean we're pulling an image hopefully. So
+
+00:18:29.180 --> 00:18:30.540
+<v Speaker 0>we'll give that just a few seconds and
+
+00:18:30.540 --> 00:18:31.580
+<v Speaker 0>we'll see what happens.
+
+00:18:35.100 --> 00:18:36.059
+<v Speaker 0>And
+
+00:18:36.380 --> 00:18:38.380
+<v Speaker 0>we'll see what the tutorial tells us to
+
+00:18:38.380 --> 00:18:38.620
+<v Speaker 0>do.
+
+00:18:39.535 --> 00:18:41.775
+<v Speaker 0>Mhmm. So it's suggesting we just take a
+
+00:18:41.775 --> 00:18:43.294
+<v Speaker 0>look at the
+
+00:18:43.775 --> 00:18:46.014
+<v Speaker 0>Kaniko logs. Oh, so well,
+
+00:18:46.335 --> 00:18:48.894
+<v Speaker 0>there's something I hadn't realized then. So
+
+00:18:49.295 --> 00:18:51.135
+<v Speaker 0>by applying the pod dot yaml, we have
+
+00:18:51.135 --> 00:18:53.455
+<v Speaker 0>now actually triggered a build. Is that correct?
+
+00:18:54.350 --> 00:18:56.910
+<v Speaker 1>That is correct. So Kaniko
+
+00:18:56.910 --> 00:18:59.710
+<v Speaker 1>executor is the entry point for the container
+
+00:18:59.710 --> 00:19:00.830
+<v Speaker 1>image that
+
+00:19:01.070 --> 00:19:03.230
+<v Speaker 1>you just created a container for,
+
+00:19:03.950 --> 00:19:05.390
+<v Speaker 1>and it's gonna start executing
+
+00:19:07.245 --> 00:19:08.125
+<v Speaker 1>the build.
+
+00:19:09.885 --> 00:19:12.845
+<v Speaker 0>Okay. Let's see if it's still pulling orbit.
+
+00:19:12.845 --> 00:19:13.405
+<v Speaker 0>Maybe.
+
+00:19:15.885 --> 00:19:17.804
+<v Speaker 0>Yeah. Successfully assigned.
+
+00:19:18.045 --> 00:19:20.610
+<v Speaker 0>Oh, the volume. Oh, the red grid.
+
+00:19:21.170 --> 00:19:22.930
+<v Speaker 0>Alright. I was hoping Docker for Mac was
+
+00:19:22.930 --> 00:19:24.450
+<v Speaker 0>just gonna take care of that for me.
+
+00:19:24.450 --> 00:19:26.530
+<v Speaker 0>But we I should learn by now never
+
+00:19:26.530 --> 00:19:28.450
+<v Speaker 0>to skip a step in the tutorial.
+
+00:19:31.090 --> 00:19:33.250
+<v Speaker 0>Alright. I will also do that in secret.
+
+00:19:38.735 --> 00:19:40.574
+<v Speaker 0>And you said that as our
+
+00:19:40.815 --> 00:19:43.215
+<v Speaker 0>the push into a container registry isn't our
+
+00:19:43.215 --> 00:19:44.654
+<v Speaker 0>only option as well. There's a few other
+
+00:19:44.654 --> 00:19:46.495
+<v Speaker 0>ways that we can work with the built
+
+00:19:46.495 --> 00:19:47.134
+<v Speaker 0>image?
+
+00:19:47.774 --> 00:19:51.030
+<v Speaker 1>Correct. We can. We can create a tar,
+
+00:19:52.230 --> 00:19:53.190
+<v Speaker 1>and then,
+
+00:19:53.590 --> 00:19:57.190
+<v Speaker 1>you know, skip pushing by using a flag.
+
+00:19:58.390 --> 00:19:59.830
+<v Speaker 1>No called no push.
+
+00:20:01.910 --> 00:20:03.190
+<v Speaker 0>And is that something
+
+00:20:03.304 --> 00:20:04.985
+<v Speaker 0>that you see often,
+
+00:20:04.985 --> 00:20:06.905
+<v Speaker 0>or is that pretty much standard just to
+
+00:20:06.905 --> 00:20:09.544
+<v Speaker 0>push it straight to a registry of Kin?
+
+00:20:11.065 --> 00:20:13.945
+<v Speaker 1>There are a few folks who requested that
+
+00:20:14.345 --> 00:20:15.945
+<v Speaker 1>plot. I'm not sure what the use case
+
+00:20:15.945 --> 00:20:18.184
+<v Speaker 1>was, but the standard use case is pushing.
+
+00:20:22.860 --> 00:20:23.820
+<v Speaker 0>Okay.
+
+00:20:24.300 --> 00:20:24.860
+<v Speaker 0>So
+
+00:20:25.660 --> 00:20:28.860
+<v Speaker 0>I have created the secret, the Docker server.
+
+00:20:28.860 --> 00:20:29.740
+<v Speaker 0>I don't know if it said it in
+
+00:20:29.740 --> 00:20:31.500
+<v Speaker 0>the docs. Is that just Docker? No. No.
+
+00:20:31.500 --> 00:20:32.300
+<v Speaker 0>I have to use this.
+
+00:20:33.065 --> 00:20:34.505
+<v Speaker 0>It's gonna say, of course, it says in
+
+00:20:34.505 --> 00:20:35.225
+<v Speaker 0>the docs.
+
+00:20:35.545 --> 00:20:36.745
+<v Speaker 0>Let me fix that.
+
+00:20:38.825 --> 00:20:40.185
+<v Speaker 0>Edit secret.
+
+00:20:47.860 --> 00:20:50.100
+<v Speaker 0>It's all weird. Alright. I need to just
+
+00:20:50.100 --> 00:20:51.139
+<v Speaker 0>recreate it.
+
+00:20:56.179 --> 00:20:57.700
+<v Speaker 0>That's what I get for just thinking. I
+
+00:20:57.700 --> 00:20:58.980
+<v Speaker 0>could type docker.io
+
+00:20:58.980 --> 00:20:59.940
+<v Speaker 0>and get away with it.
+
+00:21:01.895 --> 00:21:03.894
+<v Speaker 0>Okay. I've created a new secret.
+
+00:21:05.015 --> 00:21:05.815
+<v Speaker 0>So
+
+00:21:06.695 --> 00:21:08.215
+<v Speaker 0>I don't know if I'll need to
+
+00:21:09.575 --> 00:21:11.095
+<v Speaker 0>should I maybe delete the pod or do
+
+00:21:11.095 --> 00:21:12.135
+<v Speaker 0>you think we can just give it a
+
+00:21:12.135 --> 00:21:13.575
+<v Speaker 0>little bit of time and it'll
+
+00:21:13.895 --> 00:21:15.254
+<v Speaker 0>work out what's going on?
+
+00:21:15.815 --> 00:21:17.869
+<v Speaker 1>Let's give it a little bit of time.
+
+00:21:18.590 --> 00:21:20.350
+<v Speaker 1>Think it should be recovering.
+
+00:21:21.070 --> 00:21:21.789
+<v Speaker 1>Maybe
+
+00:21:21.950 --> 00:21:23.549
+<v Speaker 1>the scheduler will just
+
+00:21:25.070 --> 00:21:27.070
+<v Speaker 1>be, you know, delay
+
+00:21:27.309 --> 00:21:28.190
+<v Speaker 1>the retrial.
+
+00:21:30.655 --> 00:21:32.654
+<v Speaker 1>It's still saying not found.
+
+00:21:33.695 --> 00:21:34.335
+<v Speaker 0>The
+
+00:21:38.335 --> 00:21:41.375
+<v Speaker 0>secret Rashgrid does exist.
+
+00:21:41.375 --> 00:21:41.535
+<v Speaker 0>Yeah.
+
+00:21:47.070 --> 00:21:47.870
+<v Speaker 1>K.
+
+00:21:47.950 --> 00:21:48.670
+<v Speaker 1>Forty
+
+00:21:49.550 --> 00:21:50.510
+<v Speaker 1>seconds ago.
+
+00:21:54.030 --> 00:21:56.510
+<v Speaker 0>You're much more you're much more patient than
+
+00:21:56.510 --> 00:21:58.350
+<v Speaker 0>I. I would have deleted this part of
+
+00:21:58.350 --> 00:21:58.590
+<v Speaker 1>my
+
+00:22:04.005 --> 00:22:06.805
+<v Speaker 1>Start again. Yeah. Why not? Just apply in
+
+00:22:06.805 --> 00:22:08.485
+<v Speaker 0>a pod. Well, in theory, we should see
+
+00:22:08.485 --> 00:22:10.245
+<v Speaker 0>it spin up pretty quickly because it has
+
+00:22:10.245 --> 00:22:12.325
+<v Speaker 0>already pulled the image and the secret should
+
+00:22:12.325 --> 00:22:12.885
+<v Speaker 0>exist.
+
+00:22:15.880 --> 00:22:18.440
+<v Speaker 1>I think also in the pod definition, was
+
+00:22:18.440 --> 00:22:20.840
+<v Speaker 1>there few things that we had to substitute?
+
+00:22:24.440 --> 00:22:26.519
+<v Speaker 1>Yeah. Here, the destination
+
+00:22:26.840 --> 00:22:30.679
+<v Speaker 1>needs to be substituted with your username and
+
+00:22:30.915 --> 00:22:31.715
+<v Speaker 1>repo,
+
+00:22:31.715 --> 00:22:32.915
+<v Speaker 1>line number 11.
+
+00:22:33.635 --> 00:22:34.835
+<v Speaker 0>Uh-huh. Okay.
+
+00:22:37.075 --> 00:22:38.755
+<v Speaker 0>Rawkode,
+
+00:22:38.835 --> 00:22:41.395
+<v Speaker 0>Kaniko demo. Would that work this time?
+
+00:22:42.035 --> 00:22:42.355
+<v Speaker 1>Yeah.
+
+00:22:44.549 --> 00:22:46.389
+<v Speaker 0>I don't think we need to change anything
+
+00:22:46.389 --> 00:22:48.630
+<v Speaker 0>else. Yeah. It's even nicely commented for me.
+
+00:22:48.630 --> 00:22:51.109
+<v Speaker 0>Again, just not paying enough attention.
+
+00:22:51.590 --> 00:22:52.389
+<v Speaker 0>And
+
+00:22:53.269 --> 00:22:55.110
+<v Speaker 0>this allow just works. This is the name
+
+00:22:55.110 --> 00:22:56.549
+<v Speaker 0>of my secret. Okay. Let's
+
+00:22:57.395 --> 00:22:58.674
+<v Speaker 0>let's try that one more time then.
+
+00:23:10.430 --> 00:23:13.149
+<v Speaker 1>There it is. It is pulling the image.
+
+00:23:14.670 --> 00:23:15.389
+<v Speaker 0>Yeah.
+
+00:23:15.550 --> 00:23:16.990
+<v Speaker 0>It looks much better. There we go. It's
+
+00:23:16.990 --> 00:23:18.110
+<v Speaker 0>running and everything.
+
+00:23:18.270 --> 00:23:18.909
+<v Speaker 0>I
+
+00:23:20.510 --> 00:23:22.510
+<v Speaker 0>guess we expect because this is just a
+
+00:23:22.510 --> 00:23:25.155
+<v Speaker 0>pod executing a single task. It's either gonna
+
+00:23:25.155 --> 00:23:26.995
+<v Speaker 0>say complete and I've not messed anything else
+
+00:23:26.995 --> 00:23:29.315
+<v Speaker 0>up. Yeah. Also would have said error and
+
+00:23:29.315 --> 00:23:30.355
+<v Speaker 0>I probably
+
+00:23:31.475 --> 00:23:33.555
+<v Speaker 0>had a little tear, but we're okay.
+
+00:23:33.955 --> 00:23:34.595
+<v Speaker 0>So
+
+00:23:35.475 --> 00:23:36.995
+<v Speaker 0>this is now built.
+
+00:23:37.955 --> 00:23:38.835
+<v Speaker 1>Correct. So file.
+
+00:23:40.049 --> 00:23:40.849
+<v Speaker 1>Right.
+
+00:23:41.409 --> 00:23:43.730
+<v Speaker 1>We could now look at the Kaniko Podlogs
+
+00:23:43.730 --> 00:23:45.570
+<v Speaker 1>to see what got build and what was
+
+00:23:45.570 --> 00:23:47.730
+<v Speaker 1>the image pushed and if there were any
+
+00:23:47.730 --> 00:23:48.690
+<v Speaker 1>issues in the build.
+
+00:23:53.985 --> 00:23:55.424
+<v Speaker 0>All info. I
+
+00:23:55.745 --> 00:23:58.625
+<v Speaker 0>mean, I'm pretty confident that worked.
+
+00:23:59.665 --> 00:24:01.745
+<v Speaker 1>It should work. You should see a image.
+
+00:24:01.985 --> 00:24:03.585
+<v Speaker 1>You should be able to pull it.
+
+00:24:05.345 --> 00:24:06.945
+<v Speaker 0>Oh, yeah. I could just run it. Right?
+
+00:24:06.945 --> 00:24:08.465
+<v Speaker 0>Docker run
+
+00:24:09.550 --> 00:24:11.309
+<v Speaker 0>RM Rawkode
+
+00:24:12.750 --> 00:24:13.950
+<v Speaker 0>Rawkode.
+
+00:24:14.270 --> 00:24:15.470
+<v Speaker 0>Kaniko
+
+00:24:16.110 --> 00:24:17.070
+<v Speaker 0>demo.
+
+00:24:18.190 --> 00:24:20.830
+<v Speaker 0>And I'm assuming because I never specified or
+
+00:24:20.830 --> 00:24:22.670
+<v Speaker 0>tag, is it using latest or is that
+
+00:24:22.670 --> 00:24:23.710
+<v Speaker 0>something I should have specified?
+
+00:24:24.685 --> 00:24:26.445
+<v Speaker 1>No. It should push to latest.
+
+00:24:31.725 --> 00:24:32.845
+<v Speaker 0>I
+
+00:24:37.325 --> 00:24:38.525
+<v Speaker 0>think it kinda worked.
+
+00:24:39.645 --> 00:24:40.045
+<v Speaker 0>Okay.
+
+00:24:40.500 --> 00:24:43.060
+<v Speaker 0>Except for I didn't get my actual echo
+
+00:24:43.060 --> 00:24:44.340
+<v Speaker 0>hello. Yeah.
+
+00:24:45.140 --> 00:24:46.980
+<v Speaker 1>I was confused about that too.
+
+00:24:47.460 --> 00:24:49.140
+<v Speaker 0>So that could just again,
+
+00:24:49.300 --> 00:24:52.740
+<v Speaker 0>me not doing things very correctly. So why
+
+00:24:52.740 --> 00:24:54.500
+<v Speaker 0>don't we make them change to our Docker
+
+00:24:54.500 --> 00:24:54.900
+<v Speaker 0>file?
+
+00:24:56.795 --> 00:24:57.994
+<v Speaker 0>So
+
+00:24:58.875 --> 00:25:00.634
+<v Speaker 0>Alpine uses ash,
+
+00:25:00.955 --> 00:25:02.875
+<v Speaker 0>dash c is the same as bash, and
+
+00:25:02.875 --> 00:25:04.075
+<v Speaker 0>then o echo.
+
+00:25:06.875 --> 00:25:07.835
+<v Speaker 0>Okay.
+
+00:25:07.915 --> 00:25:08.475
+<v Speaker 0>So
+
+00:25:08.870 --> 00:25:11.190
+<v Speaker 0>I can just well, I can't reapply this
+
+00:25:11.190 --> 00:25:12.790
+<v Speaker 0>because we'll have an existing pod. Is that
+
+00:25:12.790 --> 00:25:14.230
+<v Speaker 0>right? So I'd probably just have to delete
+
+00:25:14.230 --> 00:25:15.190
+<v Speaker 0>that anyway.
+
+00:25:15.430 --> 00:25:17.670
+<v Speaker 0>Oh, no. It doesn't seem to Oh.
+
+00:25:17.910 --> 00:25:19.510
+<v Speaker 0>Oh, I haven't changed anything.
+
+00:25:20.550 --> 00:25:21.350
+<v Speaker 0>Yeah.
+
+00:25:21.350 --> 00:25:22.470
+<v Speaker 0>I'll clean it up. Oh, yeah.
+
+00:25:25.015 --> 00:25:25.735
+<v Speaker 0>Zero
+
+00:25:26.295 --> 00:25:27.815
+<v Speaker 0>force and
+
+00:25:29.735 --> 00:25:31.014
+<v Speaker 0>apply again.
+
+00:25:31.815 --> 00:25:33.655
+<v Speaker 0>And I'm assuming if we just watch that,
+
+00:25:33.655 --> 00:25:34.534
+<v Speaker 0>we'll see it.
+
+00:25:35.015 --> 00:25:36.375
+<v Speaker 0>Can I just I can just watch the
+
+00:25:36.375 --> 00:25:38.389
+<v Speaker 0>logs from there, right? Yeah.
+
+00:25:40.710 --> 00:25:43.109
+<v Speaker 0>I see the Docker file is now pushing.
+
+00:25:45.110 --> 00:25:45.909
+<v Speaker 0>Okay.
+
+00:25:47.190 --> 00:25:48.710
+<v Speaker 0>Let's try again.
+
+00:25:53.585 --> 00:25:54.225
+<v Speaker 0>Oh,
+
+00:25:54.785 --> 00:25:55.905
+<v Speaker 0>docker image.
+
+00:26:09.170 --> 00:26:10.770
+<v Speaker 0>I don't know why my container is not
+
+00:26:10.770 --> 00:26:13.650
+<v Speaker 0>talking to me. But I'm feeling slightly hurt
+
+00:26:13.650 --> 00:26:14.769
+<v Speaker 0>because of it.
+
+00:26:16.210 --> 00:26:17.090
+<v Speaker 0>Should I I
+
+00:26:18.770 --> 00:26:20.530
+<v Speaker 0>think what I'll I'll just copy this one.
+
+00:26:20.530 --> 00:26:21.730
+<v Speaker 0>Maybe that would be a good idea.
+
+00:26:22.665 --> 00:26:24.985
+<v Speaker 1>Okay. Let's I'm not sure. Oh, no. You
+
+00:26:24.985 --> 00:26:27.145
+<v Speaker 0>know what? I am just being really silly
+
+00:26:27.145 --> 00:26:29.545
+<v Speaker 0>today. We're not gonna see the output if
+
+00:26:29.545 --> 00:26:31.305
+<v Speaker 0>we don't assign it to you to why.
+
+00:26:33.145 --> 00:26:33.865
+<v Speaker 0>Maybe?
+
+00:26:34.025 --> 00:26:34.345
+<v Speaker 0>No.
+
+00:26:36.280 --> 00:26:37.960
+<v Speaker 0>Okay. Clearly, I just have no idea what
+
+00:26:37.960 --> 00:26:39.080
+<v Speaker 0>I'm doing. Okay.
+
+00:26:39.960 --> 00:26:41.640
+<v Speaker 0>Let's try it one more time.
+
+00:26:42.200 --> 00:26:42.600
+<v Speaker 0>I
+
+00:26:43.240 --> 00:26:44.920
+<v Speaker 0>will have a container say hello to me
+
+00:26:44.920 --> 00:26:46.280
+<v Speaker 0>if it's the last thing I do today.
+
+00:26:48.725 --> 00:26:49.845
+<v Speaker 0>Logs.
+
+00:26:51.445 --> 00:26:52.325
+<v Speaker 0>Started
+
+00:26:52.325 --> 00:26:53.045
+<v Speaker 0>yet.
+
+00:27:00.005 --> 00:27:00.325
+<v Speaker 1>There.
+
+00:27:02.480 --> 00:27:03.759
+<v Speaker 0>Still
+
+00:27:03.840 --> 00:27:06.799
+<v Speaker 0>pretty quick considering it was pulling an Ubuntu
+
+00:27:06.799 --> 00:27:08.400
+<v Speaker 0>image. That was a lot faster than I
+
+00:27:08.400 --> 00:27:09.999
+<v Speaker 0>was actually expecting that to be.
+
+00:27:12.480 --> 00:27:15.200
+<v Speaker 0>Let's just pull the latest
+
+00:27:14.924 --> 00:27:16.684
+<v Speaker 0>tag. Yeah. It's a bit bigger now.
+
+00:27:20.524 --> 00:27:22.044
+<v Speaker 0>I guess they've been to images. It must
+
+00:27:22.044 --> 00:27:24.924
+<v Speaker 0>be available for some weird reason. I
+
+00:27:28.365 --> 00:27:29.590
+<v Speaker 0>guess. And I said There it is.
+
+00:27:30.550 --> 00:27:32.790
+<v Speaker 0>I have I don't know what's wrong with
+
+00:27:32.790 --> 00:27:34.310
+<v Speaker 0>the Alpine one. I'm I'm I'm not gonna
+
+00:27:34.310 --> 00:27:35.669
+<v Speaker 0>dwell on it but
+
+00:27:36.070 --> 00:27:37.990
+<v Speaker 0>I'll bet I lose sleep over it later.
+
+00:27:37.990 --> 00:27:38.630
+<v Speaker 0>Okay.
+
+00:27:39.190 --> 00:27:39.670
+<v Speaker 1>Cool.
+
+00:27:40.505 --> 00:27:42.184
+<v Speaker 0>That's it. We built an image.
+
+00:27:42.585 --> 00:27:45.144
+<v Speaker 1>Yeah. So I think one of the mostly
+
+00:27:45.144 --> 00:27:48.344
+<v Speaker 1>used feature of Kaniko is the caching feature.
+
+00:27:48.424 --> 00:27:49.544
+<v Speaker 1>Kaniko
+
+00:27:49.544 --> 00:27:53.065
+<v Speaker 1>caches images and only runs command
+
+00:27:53.225 --> 00:27:55.304
+<v Speaker 1>if the command has changed.
+
+00:27:57.309 --> 00:27:57.950
+<v Speaker 1>So
+
+00:27:58.990 --> 00:28:01.629
+<v Speaker 1>when I say caches images, it means it'll
+
+00:28:01.710 --> 00:28:04.269
+<v Speaker 1>end up caching the intermediate layers
+
+00:28:04.270 --> 00:28:07.070
+<v Speaker 1>based on your command and then few other
+
+00:28:07.070 --> 00:28:08.029
+<v Speaker 1>things that we
+
+00:28:09.684 --> 00:28:11.924
+<v Speaker 1>find out if the previous commands of previous
+
+00:28:11.924 --> 00:28:14.005
+<v Speaker 1>lines have changed, which could end up affecting
+
+00:28:14.005 --> 00:28:17.284
+<v Speaker 1>the current Dockerfile command or not. And then
+
+00:28:17.284 --> 00:28:20.485
+<v Speaker 1>based on that, we will either use the
+
+00:28:20.485 --> 00:28:21.844
+<v Speaker 1>image from
+
+00:28:22.085 --> 00:28:23.125
+<v Speaker 1>the layer cache
+
+00:28:24.580 --> 00:28:25.619
+<v Speaker 1>if it's
+
+00:28:25.780 --> 00:28:27.619
+<v Speaker 1>something that we think that nothing
+
+00:28:28.179 --> 00:28:30.340
+<v Speaker 1>has changed. If things have changed, then we'll
+
+00:28:30.340 --> 00:28:31.220
+<v Speaker 1>rebuild it.
+
+00:28:32.419 --> 00:28:34.179
+<v Speaker 1>So a lot of folks,
+
+00:28:34.659 --> 00:28:35.860
+<v Speaker 1>you know, use that feature.
+
+00:28:36.475 --> 00:28:39.355
+<v Speaker 1>We cache the copy command and the run
+
+00:28:39.355 --> 00:28:39.994
+<v Speaker 1>command.
+
+00:28:41.434 --> 00:28:43.835
+<v Speaker 1>Run command has the greatest advantage because that
+
+00:28:43.835 --> 00:28:45.754
+<v Speaker 1>just means that if you're actually,
+
+00:28:46.394 --> 00:28:47.355
+<v Speaker 1>you know, installing
+
+00:28:48.240 --> 00:28:49.440
+<v Speaker 1>things from,
+
+00:28:49.840 --> 00:28:52.400
+<v Speaker 1>you know, PIP install or anything crazy with
+
+00:28:52.400 --> 00:28:53.200
+<v Speaker 1>AppGet,
+
+00:28:53.600 --> 00:28:56.080
+<v Speaker 1>then if we already know that a particular
+
+00:28:56.080 --> 00:28:59.120
+<v Speaker 1>layer is cached, then we'll not run AppGet
+
+00:28:59.120 --> 00:29:01.725
+<v Speaker 1>blah blah blah and, you know, install. We'll
+
+00:29:01.725 --> 00:29:03.485
+<v Speaker 1>just take it from the cache.
+
+00:29:05.325 --> 00:29:06.845
+<v Speaker 1>So we could try that command
+
+00:29:07.005 --> 00:29:08.605
+<v Speaker 1>with a more complex,
+
+00:29:08.925 --> 00:29:09.965
+<v Speaker 1>Docker file.
+
+00:29:10.925 --> 00:29:11.965
+<v Speaker 0>Yeah. So
+
+00:29:12.765 --> 00:29:15.085
+<v Speaker 0>where is that cache part of either of
+
+00:29:15.085 --> 00:29:15.565
+<v Speaker 0>these
+
+00:29:16.750 --> 00:29:18.830
+<v Speaker 0>volume claims, or is that doing something else
+
+00:29:18.830 --> 00:29:20.269
+<v Speaker 0>there? Like, where does that
+
+00:29:20.510 --> 00:29:23.070
+<v Speaker 0>caching information live within the cluster?
+
+00:29:23.790 --> 00:29:26.750
+<v Speaker 1>That's a good question. We currently
+
+00:29:26.750 --> 00:29:30.595
+<v Speaker 1>support remote caches only. So Ah. We you
+
+00:29:30.595 --> 00:29:31.635
+<v Speaker 1>can specify
+
+00:29:31.955 --> 00:29:33.235
+<v Speaker 1>what your
+
+00:29:33.555 --> 00:29:34.595
+<v Speaker 1>cache
+
+00:29:35.075 --> 00:29:36.675
+<v Speaker 1>you know, where you would want your cache
+
+00:29:36.675 --> 00:29:37.955
+<v Speaker 1>to live on the remote.
+
+00:29:38.915 --> 00:29:40.835
+<v Speaker 1>We if you do not specify it, we
+
+00:29:40.835 --> 00:29:41.475
+<v Speaker 1>make a guess.
+
+00:29:42.050 --> 00:29:44.769
+<v Speaker 1>It's just based on your destination
+
+00:29:45.410 --> 00:29:47.090
+<v Speaker 1>and then slash cache.
+
+00:29:47.650 --> 00:29:49.809
+<v Speaker 1>That's where all the caches would be.
+
+00:29:50.530 --> 00:29:53.490
+<v Speaker 1>There is an outstanding feature to support,
+
+00:29:53.970 --> 00:29:54.690
+<v Speaker 1>you know,
+
+00:29:55.010 --> 00:29:55.889
+<v Speaker 1>caches
+
+00:29:56.695 --> 00:29:58.054
+<v Speaker 1>persistent caches,
+
+00:29:58.055 --> 00:29:58.615
+<v Speaker 1>but
+
+00:29:59.495 --> 00:30:01.975
+<v Speaker 1>we just haven't had time to actually go
+
+00:30:01.975 --> 00:30:03.015
+<v Speaker 1>implement it.
+
+00:30:03.655 --> 00:30:05.735
+<v Speaker 0>Okay. Yeah. That makes a lot of sense.
+
+00:30:05.735 --> 00:30:07.735
+<v Speaker 0>So is it fair to kind of
+
+00:30:09.000 --> 00:30:11.480
+<v Speaker 0>is is it like the cache from parameter
+
+00:30:11.480 --> 00:30:13.320
+<v Speaker 0>where you can specify another image when if
+
+00:30:13.320 --> 00:30:15.000
+<v Speaker 0>I were using, like, the Docker CLI? Is
+
+00:30:15.000 --> 00:30:16.360
+<v Speaker 0>that kind of what the remote cache is
+
+00:30:16.360 --> 00:30:17.399
+<v Speaker 0>like with Kaniko?
+
+00:30:18.280 --> 00:30:19.880
+<v Speaker 1>So you have to specify,
+
+00:30:20.120 --> 00:30:22.200
+<v Speaker 1>it as a flag for the Kaniko executors.
+
+00:30:22.200 --> 00:30:23.880
+<v Speaker 1>So if you look at the pod right
+
+00:30:23.880 --> 00:30:27.135
+<v Speaker 1>now here, like, you have dash dash destination,
+
+00:30:27.455 --> 00:30:30.575
+<v Speaker 1>there is a flag called cache destination probably,
+
+00:30:30.575 --> 00:30:32.815
+<v Speaker 1>and then minus minus cache, which is which
+
+00:30:32.815 --> 00:30:35.775
+<v Speaker 1>will turn on, caching true. I might be
+
+00:30:35.775 --> 00:30:38.015
+<v Speaker 1>wrong on the cache destination. Maybe you'll have
+
+00:30:38.015 --> 00:30:40.230
+<v Speaker 1>to go to the read me.
+
+00:30:40.710 --> 00:30:43.190
+<v Speaker 1>Yeah. Oh, yeah. Let's see. Forget it. Let's
+
+00:30:43.350 --> 00:30:45.030
+<v Speaker 0>you're right. Let's get a slightly more advanced
+
+00:30:45.030 --> 00:30:46.150
+<v Speaker 0>Dockerfile,
+
+00:30:46.230 --> 00:30:49.030
+<v Speaker 0>and we'll try out the caching. Is that
+
+00:30:49.350 --> 00:30:50.870
+<v Speaker 0>let's see. Is that gonna show up here
+
+00:30:50.870 --> 00:30:53.030
+<v Speaker 0>in this tutorial, or should we need to
+
+00:30:53.675 --> 00:30:55.515
+<v Speaker 0>No. Okay. No. We have to go to
+
+00:30:56.795 --> 00:30:57.434
+<v Speaker 0>Okay.
+
+00:30:58.635 --> 00:31:00.634
+<v Speaker 0>So if I just search for cache,
+
+00:31:01.355 --> 00:31:02.634
+<v Speaker 0>we get all of these flags. Okay.
+
+00:31:05.595 --> 00:31:08.955
+<v Speaker 0>So we've added cache through. I'm assuming cache
+
+00:31:09.570 --> 00:31:10.369
+<v Speaker 0>repo
+
+00:31:10.929 --> 00:31:12.129
+<v Speaker 0>or cash dir.
+
+00:31:15.169 --> 00:31:18.130
+<v Speaker 1>So again, cash dir and cash repo
+
+00:31:18.130 --> 00:31:19.490
+<v Speaker 1>are optional.
+
+00:31:21.394 --> 00:31:23.394
+<v Speaker 1>If it's not provided, then we just make
+
+00:31:23.394 --> 00:31:25.954
+<v Speaker 1>a best guess based on your image repository.
+
+00:31:26.514 --> 00:31:27.714
+<v Speaker 0>Right. Okay.
+
+00:31:28.274 --> 00:31:30.195
+<v Speaker 0>So I I don't even need this parameter
+
+00:31:30.195 --> 00:31:31.794
+<v Speaker 0>then. I can just do dash dash cache,
+
+00:31:31.794 --> 00:31:33.794
+<v Speaker 0>and it's gonna work out the best way
+
+00:31:33.794 --> 00:31:34.595
+<v Speaker 0>to do this probably.
+
+00:31:35.299 --> 00:31:35.940
+<v Speaker 0>Okay.
+
+00:31:36.419 --> 00:31:38.500
+<v Speaker 0>So if I grab my Dockerfile and that
+
+00:31:38.500 --> 00:31:40.340
+<v Speaker 0>it probably helps that it moves to Ubuntu
+
+00:31:40.340 --> 00:31:41.780
+<v Speaker 0>now, so we can do something in which
+
+00:31:41.780 --> 00:31:43.700
+<v Speaker 0>we would consider relatively
+
+00:31:44.980 --> 00:31:45.860
+<v Speaker 0>heavy,
+
+00:31:45.860 --> 00:31:47.620
+<v Speaker 0>which would be like an app installed then.
+
+00:31:48.665 --> 00:31:50.585
+<v Speaker 0>I'll just make it in fact, we'll bring
+
+00:31:50.585 --> 00:31:52.345
+<v Speaker 0>this one in next. Let's let's run this
+
+00:31:52.345 --> 00:31:54.345
+<v Speaker 0>first one first. Does that make sense? And
+
+00:31:54.345 --> 00:31:56.505
+<v Speaker 0>then we'll add in your app commands and
+
+00:31:56.505 --> 00:31:58.105
+<v Speaker 0>I guess what you're saying is if we
+
+00:31:58.105 --> 00:32:00.585
+<v Speaker 0>view the logs of the Kaniko build executor,
+
+00:32:01.080 --> 00:32:02.840
+<v Speaker 0>we'll just see it saying skipping the step
+
+00:32:02.840 --> 00:32:04.919
+<v Speaker 0>or using the cache or something similar.
+
+00:32:05.320 --> 00:32:06.039
+<v Speaker 1>Yep.
+
+00:32:06.919 --> 00:32:07.719
+<v Speaker 0>Okay.
+
+00:32:09.640 --> 00:32:11.399
+<v Speaker 0>Let's apply that.
+
+00:32:11.720 --> 00:32:12.919
+<v Speaker 0>Run get pods.
+
+00:32:14.625 --> 00:32:15.585
+<v Speaker 0>And
+
+00:32:16.305 --> 00:32:17.585
+<v Speaker 0>not quite yet.
+
+00:32:17.905 --> 00:32:18.465
+<v Speaker 0>There we go.
+
+00:32:27.100 --> 00:32:28.299
+<v Speaker 0>Well, it looks like did it
+
+00:32:29.020 --> 00:32:30.539
+<v Speaker 0>you have a cache there?
+
+00:32:31.419 --> 00:32:33.340
+<v Speaker 1>No. In this case, it did not because
+
+00:32:33.340 --> 00:32:35.100
+<v Speaker 1>this is the first time you're building. So
+
+00:32:35.100 --> 00:32:37.739
+<v Speaker 1>we only have a cache per
+
+00:32:37.740 --> 00:32:39.179
+<v Speaker 1>image. So if
+
+00:32:39.664 --> 00:32:40.705
+<v Speaker 1>if you
+
+00:32:41.184 --> 00:32:43.345
+<v Speaker 1>it's this is not a global cache. It's
+
+00:32:43.345 --> 00:32:45.904
+<v Speaker 1>just for your repository. Right? Yeah.
+
+00:32:46.945 --> 00:32:48.705
+<v Speaker 0>Yes. So it just says it was checking
+
+00:32:48.705 --> 00:32:50.625
+<v Speaker 0>for a cache, but it doesn't find one.
+
+00:32:50.625 --> 00:32:51.825
+<v Speaker 0>We can now see it running.
+
+00:32:53.060 --> 00:32:54.980
+<v Speaker 1>Mhmm. Oh,
+
+00:32:54.980 --> 00:32:56.259
+<v Speaker 0>I didn't specify
+
+00:32:56.500 --> 00:32:57.220
+<v Speaker 0>the
+
+00:32:58.420 --> 00:32:59.539
+<v Speaker 0>the yes flag.
+
+00:32:59.700 --> 00:33:00.179
+<v Speaker 0>Let
+
+00:33:02.420 --> 00:33:04.659
+<v Speaker 0>me delete and apply one more time.
+
+00:33:05.060 --> 00:33:06.900
+<v Speaker 0>So I I'm curious then,
+
+00:33:07.895 --> 00:33:09.335
+<v Speaker 0>Are there any
+
+00:33:10.135 --> 00:33:11.815
+<v Speaker 0>based on the way that the executor works
+
+00:33:11.815 --> 00:33:14.374
+<v Speaker 0>where it's fetching the image, extracting it,
+
+00:33:14.774 --> 00:33:16.934
+<v Speaker 0>doing some sort of chirou in a command
+
+00:33:16.934 --> 00:33:17.734
+<v Speaker 0>run.
+
+00:33:18.695 --> 00:33:20.215
+<v Speaker 0>Mhmm. Does that mean that if I want
+
+00:33:20.215 --> 00:33:21.494
+<v Speaker 0>to build the
+
+00:33:22.054 --> 00:33:23.760
+<v Speaker 0>an ARM image, I have to use an
+
+00:33:23.760 --> 00:33:24.559
+<v Speaker 0>ARM
+
+00:33:24.720 --> 00:33:26.879
+<v Speaker 0>Kubernetes node to do that?
+
+00:33:29.039 --> 00:33:29.759
+<v Speaker 1>Yes.
+
+00:33:29.840 --> 00:33:30.639
+<v Speaker 1>Currently,
+
+00:33:30.640 --> 00:33:31.359
+<v Speaker 1>we
+
+00:33:31.760 --> 00:33:34.320
+<v Speaker 1>do not support cross platform builds.
+
+00:33:37.745 --> 00:33:39.025
+<v Speaker 1>Again,
+
+00:33:39.105 --> 00:33:40.865
+<v Speaker 1>a lot of people ask for it.
+
+00:33:41.265 --> 00:33:44.625
+<v Speaker 1>We also have multi arch Kaniko images. So
+
+00:33:44.625 --> 00:33:46.305
+<v Speaker 1>right now, if you look at our release
+
+00:33:46.305 --> 00:33:49.585
+<v Speaker 1>page, we end up publishing Kaniko images for
+
+00:33:49.585 --> 00:33:50.865
+<v Speaker 1>ARM and
+
+00:33:51.649 --> 00:33:52.609
+<v Speaker 1>AMD,
+
+00:33:52.850 --> 00:33:53.889
+<v Speaker 1>64,
+
+00:33:54.210 --> 00:33:56.369
+<v Speaker 1>and then maybe one more that I'm missing.
+
+00:33:57.009 --> 00:33:59.570
+<v Speaker 1>But, yeah, you could you basically need to
+
+00:33:59.570 --> 00:34:03.090
+<v Speaker 1>run on a cluster of that target type.
+
+00:34:04.405 --> 00:34:07.365
+<v Speaker 1>If you are building Go images, then we
+
+00:34:07.365 --> 00:34:10.645
+<v Speaker 1>have a way to specify the arcs,
+
+00:34:10.885 --> 00:34:12.324
+<v Speaker 1>like custom platform,
+
+00:34:12.405 --> 00:34:12.885
+<v Speaker 1>and
+
+00:34:13.525 --> 00:34:15.125
+<v Speaker 1>then you would have to add that. Write
+
+00:34:15.125 --> 00:34:17.125
+<v Speaker 1>a Docker file where you said the Go
+
+00:34:17.125 --> 00:34:18.405
+<v Speaker 1>OS and, you know,
+
+00:34:19.420 --> 00:34:21.020
+<v Speaker 1>Go Arch, the right
+
+00:34:21.659 --> 00:34:24.060
+<v Speaker 1>ARC and operating systems, and do a cross
+
+00:34:24.060 --> 00:34:25.260
+<v Speaker 1>platform build
+
+00:34:26.300 --> 00:34:27.900
+<v Speaker 1>support which is supported by Go.
+
+00:34:30.875 --> 00:34:33.034
+<v Speaker 0>Okay. I think we had a small problem
+
+00:34:33.034 --> 00:34:35.434
+<v Speaker 0>there, and I don't think Docker Hub, like,
+
+00:34:35.434 --> 00:34:37.994
+<v Speaker 0>was trying to push to slash cache.
+
+00:34:39.674 --> 00:34:40.795
+<v Speaker 1>Oh, okay.
+
+00:34:43.610 --> 00:34:46.090
+<v Speaker 0>I I I don't know if that's expected,
+
+00:34:46.090 --> 00:34:47.850
+<v Speaker 0>but I I see the yellow one. I'm
+
+00:34:47.850 --> 00:34:49.770
+<v Speaker 0>kind of like, oh, maybe not. And it
+
+00:34:49.770 --> 00:34:50.650
+<v Speaker 0>says fail to push.
+
+00:34:55.335 --> 00:34:57.815
+<v Speaker 1>Oh, is it because
+
+00:34:57.815 --> 00:35:01.255
+<v Speaker 1>you already have something over there or it
+
+00:35:02.775 --> 00:35:05.175
+<v Speaker 1>shouldn't happen? Never seen this.
+
+00:35:05.895 --> 00:35:08.295
+<v Speaker 0>Well, I don't think Docker supports
+
+00:35:08.000 --> 00:35:11.440
+<v Speaker 0>the slash username slash repo slash something else.
+
+00:35:11.440 --> 00:35:13.360
+<v Speaker 0>At least I've never seen that before.
+
+00:35:14.319 --> 00:35:15.440
+<v Speaker 1>Oh, okay.
+
+00:35:16.640 --> 00:35:19.760
+<v Speaker 1>Then you could use the destination
+
+00:35:19.760 --> 00:35:20.400
+<v Speaker 1>parameter,
+
+00:35:21.215 --> 00:35:24.175
+<v Speaker 1>the cache d I r or let's see.
+
+00:35:28.095 --> 00:35:29.455
+<v Speaker 0>Oh, yes. So I can set a flag
+
+00:35:29.455 --> 00:35:31.455
+<v Speaker 0>to specify a local directory for cache for
+
+00:35:31.455 --> 00:35:32.335
+<v Speaker 0>patient issues.
+
+00:35:40.370 --> 00:35:42.210
+<v Speaker 1>So this cache d I r is just
+
+00:35:42.210 --> 00:35:43.730
+<v Speaker 1>for caching base images.
+
+00:35:44.895 --> 00:35:46.255
+<v Speaker 1>So a lot of people,
+
+00:35:46.495 --> 00:35:49.455
+<v Speaker 1>especially in CICD case, you know, you your
+
+00:35:49.455 --> 00:35:51.455
+<v Speaker 1>base image is the same. Right? You don't
+
+00:35:51.455 --> 00:35:53.535
+<v Speaker 1>have to pull it every single time. So
+
+00:35:53.535 --> 00:35:55.215
+<v Speaker 1>you could we also provide
+
+00:35:55.695 --> 00:35:57.695
+<v Speaker 1>we could get into that later, but we
+
+00:35:57.695 --> 00:36:00.015
+<v Speaker 1>also provide a way to load your base
+
+00:36:00.015 --> 00:36:00.335
+<v Speaker 1>images.
+
+00:36:01.040 --> 00:36:04.000
+<v Speaker 1>And then instead of pulling it during your
+
+00:36:04.000 --> 00:36:05.200
+<v Speaker 1>build, we'll just
+
+00:36:05.680 --> 00:36:07.360
+<v Speaker 1>reference it from that
+
+00:36:08.000 --> 00:36:10.800
+<v Speaker 1>destination directory cache d a DIR.
+
+00:36:10.880 --> 00:36:13.440
+<v Speaker 1>What we need for caching is the cache
+
+00:36:13.440 --> 00:36:14.240
+<v Speaker 1>repo flag.
+
+00:36:18.454 --> 00:36:19.974
+<v Speaker 0>Alright. Okay. So we can actually
+
+00:36:21.494 --> 00:36:22.775
+<v Speaker 0>dash dash cache.
+
+00:36:22.855 --> 00:36:24.775
+<v Speaker 0>We can just override where it's gonna store
+
+00:36:24.775 --> 00:36:26.615
+<v Speaker 0>the cache for that. Right.
+
+00:36:27.974 --> 00:36:29.335
+<v Speaker 0>Oh, let me do that. See.
+
+00:36:36.910 --> 00:36:40.270
+<v Speaker 0>I could just say Rawkode mechanical demo cache.
+
+00:36:41.230 --> 00:36:41.550
+<v Speaker 1>Yeah.
+
+00:36:43.155 --> 00:36:44.035
+<v Speaker 0>Okay.
+
+00:36:44.035 --> 00:36:46.515
+<v Speaker 0>Cool. That makes sense. So let's delete our
+
+00:36:46.515 --> 00:36:47.475
+<v Speaker 0>old pod.
+
+00:36:49.155 --> 00:36:50.195
+<v Speaker 0>But I'm
+
+00:36:50.355 --> 00:36:52.835
+<v Speaker 0>gonna assume just with the delete pod, create
+
+00:36:52.835 --> 00:36:54.675
+<v Speaker 0>pod, delete pod. Can is it Kaniko a
+
+00:36:54.675 --> 00:36:56.849
+<v Speaker 0>tool that you expect people to run-in a
+
+00:36:56.849 --> 00:36:59.010
+<v Speaker 0>local dev environment, or is it targeted more
+
+00:36:59.010 --> 00:37:02.450
+<v Speaker 0>at machine automated CICD kind of processes?
+
+00:37:05.730 --> 00:37:07.010
+<v Speaker 1>Mostly for
+
+00:37:07.170 --> 00:37:09.890
+<v Speaker 1>it's it's used mostly in GitHub workflows and
+
+00:37:09.890 --> 00:37:13.185
+<v Speaker 1>Tekton CD pipeline for CICD cases.
+
+00:37:13.585 --> 00:37:16.865
+<v Speaker 1>For local, usually, you know, Docker build
+
+00:37:18.065 --> 00:37:19.505
+<v Speaker 1>is fastest.
+
+00:37:20.065 --> 00:37:22.625
+<v Speaker 1>Enterprise users who don't allow Docker
+
+00:37:23.184 --> 00:37:25.505
+<v Speaker 1>to be built on developer machines can also
+
+00:37:25.505 --> 00:37:26.224
+<v Speaker 1>use Kaniko.
+
+00:37:27.630 --> 00:37:28.910
+<v Speaker 0>Yeah. I can see how this has worked
+
+00:37:28.910 --> 00:37:30.910
+<v Speaker 0>really well with with Tekton actually just with
+
+00:37:30.910 --> 00:37:33.550
+<v Speaker 0>its ability to kind of create
+
+00:37:33.710 --> 00:37:35.790
+<v Speaker 0>those pods as the the workflows or the
+
+00:37:35.790 --> 00:37:38.270
+<v Speaker 0>jobs come in and then build those. Yeah.
+
+00:37:40.829 --> 00:37:41.230
+<v Speaker 0>Right.
+
+00:37:42.095 --> 00:37:44.175
+<v Speaker 0>I definitely picked something that was
+
+00:37:44.414 --> 00:37:46.335
+<v Speaker 0>time intensive to cache because
+
+00:37:46.654 --> 00:37:48.335
+<v Speaker 0>it's a bit longer than I expected it
+
+00:37:48.335 --> 00:37:49.055
+<v Speaker 0>to be.
+
+00:37:51.535 --> 00:37:53.455
+<v Speaker 1>Nice. Pushing it now.
+
+00:37:55.295 --> 00:37:55.694
+<v Speaker 0>Perfect.
+
+00:37:57.110 --> 00:37:59.110
+<v Speaker 0>Yeah. It seems a lot happier this time.
+
+00:38:07.430 --> 00:38:09.430
+<v Speaker 0>Maybe. I guess my upload is not as
+
+00:38:09.430 --> 00:38:10.630
+<v Speaker 0>fast as my download speed.
+
+00:38:12.505 --> 00:38:13.545
+<v Speaker 1>Yeah. We go.
+
+00:38:16.905 --> 00:38:18.905
+<v Speaker 1>Think you're building a big image.
+
+00:38:19.465 --> 00:38:21.785
+<v Speaker 0>Yeah. I'm I'm I'm really regretting my decision
+
+00:38:21.785 --> 00:38:23.785
+<v Speaker 0>to to say to install them into this.
+
+00:38:23.785 --> 00:38:24.425
+<v Speaker 0>However,
+
+00:38:24.665 --> 00:38:26.425
+<v Speaker 0>I feel like we're committed now. So.
+
+00:38:28.880 --> 00:38:29.760
+<v Speaker 1>We could
+
+00:38:29.920 --> 00:38:32.960
+<v Speaker 1>install something light next time and see. Make
+
+00:38:32.960 --> 00:38:34.640
+<v Speaker 1>sure that it's not cached.
+
+00:38:36.560 --> 00:38:37.680
+<v Speaker 0>Alright. So
+
+00:38:37.920 --> 00:38:40.640
+<v Speaker 0>does that mean if I delete our pod
+
+00:38:40.640 --> 00:38:43.440
+<v Speaker 0>and I just create that as is, is
+
+00:38:43.355 --> 00:38:44.875
+<v Speaker 0>it it's just gonna use the cache and
+
+00:38:44.875 --> 00:38:46.075
+<v Speaker 0>not do anything. Is that kind of what
+
+00:38:46.075 --> 00:38:47.275
+<v Speaker 0>we would expect to see?
+
+00:38:48.234 --> 00:38:50.154
+<v Speaker 1>Yes. That is that should be what
+
+00:38:51.194 --> 00:38:53.115
+<v Speaker 1>that should happen. Let's see if it happens
+
+00:38:53.115 --> 00:38:53.915
+<v Speaker 1>or not.
+
+00:38:54.395 --> 00:38:56.234
+<v Speaker 0>Should is is my favorite word on this
+
+00:38:56.234 --> 00:38:57.035
+<v Speaker 0>show. That's for sure.
+
+00:39:06.910 --> 00:39:08.510
+<v Speaker 0>And cache there. There we go.
+
+00:39:10.645 --> 00:39:10.965
+<v Speaker 1>So
+
+00:39:11.525 --> 00:39:14.805
+<v Speaker 1>This was much faster than our previous run.
+
+00:39:17.925 --> 00:39:20.405
+<v Speaker 0>So we can delete that. We could continue
+
+00:39:20.405 --> 00:39:22.485
+<v Speaker 0>to iterate on our Dockerfile
+
+00:39:22.830 --> 00:39:25.710
+<v Speaker 0>knowing that Mhmm. As long as we don't
+
+00:39:25.710 --> 00:39:26.430
+<v Speaker 0>modify
+
+00:39:27.070 --> 00:39:28.830
+<v Speaker 0>these cached layers
+
+00:39:28.990 --> 00:39:30.670
+<v Speaker 0>and only add stuff to the bottom, we
+
+00:39:30.670 --> 00:39:32.990
+<v Speaker 0>should always be able to leverage that cache
+
+00:39:32.990 --> 00:39:34.110
+<v Speaker 0>for faster builds.
+
+00:39:35.230 --> 00:39:37.470
+<v Speaker 0>Right. Just the cache is based on I
+
+00:39:37.470 --> 00:39:38.750
+<v Speaker 0>mean, is this just like
+
+00:39:40.325 --> 00:39:42.565
+<v Speaker 0>you just create a a shasham or something
+
+00:39:42.565 --> 00:39:44.165
+<v Speaker 0>of each of these instructions? I think you
+
+00:39:44.165 --> 00:39:45.605
+<v Speaker 0>said earlier that Right.
+
+00:39:46.724 --> 00:39:47.525
+<v Speaker 1>Internally,
+
+00:39:47.525 --> 00:39:49.845
+<v Speaker 1>we do create, like, a
+
+00:39:49.925 --> 00:39:50.805
+<v Speaker 1>shasham
+
+00:39:51.140 --> 00:39:53.620
+<v Speaker 1>of what the instruction is, and it's also
+
+00:39:54.020 --> 00:39:55.620
+<v Speaker 1>keyed on the
+
+00:39:56.340 --> 00:39:57.540
+<v Speaker 1>commands above.
+
+00:39:57.940 --> 00:40:01.060
+<v Speaker 1>Because sometimes, you know, a previous run
+
+00:40:01.140 --> 00:40:04.580
+<v Speaker 1>could end up, you know, changing the
+
+00:40:05.125 --> 00:40:07.605
+<v Speaker 1>files the consequences for the next following run
+
+00:40:07.605 --> 00:40:09.685
+<v Speaker 1>up. So if the previous cache
+
+00:40:09.765 --> 00:40:12.565
+<v Speaker 1>previous command also changes, we take that into
+
+00:40:12.565 --> 00:40:14.085
+<v Speaker 1>account by, you know, keying
+
+00:40:14.485 --> 00:40:17.205
+<v Speaker 1>the cache the hash keys for command seen
+
+00:40:17.205 --> 00:40:17.685
+<v Speaker 1>so far.
+
+00:40:18.740 --> 00:40:19.380
+<v Speaker 0>Awesome.
+
+00:40:19.940 --> 00:40:22.020
+<v Speaker 0>I think that's all very cool to know
+
+00:40:22.020 --> 00:40:23.700
+<v Speaker 0>that I can do this safely
+
+00:40:23.700 --> 00:40:27.059
+<v Speaker 0>inside of my Kubernetes cluster without resorting to
+
+00:40:27.059 --> 00:40:27.700
+<v Speaker 0>any,
+
+00:40:28.020 --> 00:40:30.900
+<v Speaker 0>you know, privileged containers or any Docker sockets
+
+00:40:30.900 --> 00:40:32.984
+<v Speaker 0>or anything like that. Just have something that
+
+00:40:32.984 --> 00:40:34.744
+<v Speaker 0>I know is is secure and safe.
+
+00:40:35.224 --> 00:40:37.385
+<v Speaker 0>Is there any other features of Kaniko you'd
+
+00:40:37.385 --> 00:40:39.385
+<v Speaker 0>like us to quickly take a look at?
+
+00:40:41.305 --> 00:40:43.305
+<v Speaker 1>Sure. So we could go to,
+
+00:40:43.785 --> 00:40:45.224
+<v Speaker 1>the read me.
+
+00:40:45.464 --> 00:40:46.345
+<v Speaker 1>So like I said,
+
+00:40:47.010 --> 00:40:49.970
+<v Speaker 1>you know, Kaniko ends up taking a snapshot
+
+00:40:49.970 --> 00:40:51.730
+<v Speaker 1>before the command run,
+
+00:40:52.370 --> 00:40:54.610
+<v Speaker 1>after the command run to figure out, like,
+
+00:40:54.610 --> 00:40:55.890
+<v Speaker 1>what file changed.
+
+00:40:56.610 --> 00:40:58.210
+<v Speaker 1>The default snapshotting
+
+00:40:58.210 --> 00:41:00.130
+<v Speaker 1>strategy, I think if you could go at
+
+00:41:00.130 --> 00:41:00.370
+<v Speaker 1>the
+
+00:41:01.655 --> 00:41:03.575
+<v Speaker 1>end of the read. Maybe explain a little
+
+00:41:03.575 --> 00:41:04.135
+<v Speaker 1>bit about,
+
+00:41:05.095 --> 00:41:07.734
+<v Speaker 1>what are the snapshotting strategies,
+
+00:41:07.895 --> 00:41:09.335
+<v Speaker 1>in the snapshot mode.
+
+00:41:10.535 --> 00:41:12.055
+<v Speaker 1>There is a full snapshot,
+
+00:41:12.295 --> 00:41:14.695
+<v Speaker 1>which actually ends up also
+
+00:41:15.530 --> 00:41:18.250
+<v Speaker 1>hashing the file contents of all the files,
+
+00:41:18.810 --> 00:41:20.170
+<v Speaker 1>which could be
+
+00:41:21.130 --> 00:41:22.170
+<v Speaker 1>time consuming.
+
+00:41:22.490 --> 00:41:24.730
+<v Speaker 1>So we have three snapshot strategies.
+
+00:41:25.050 --> 00:41:27.050
+<v Speaker 1>This is something that we ended up doing,
+
+00:41:27.210 --> 00:41:28.330
+<v Speaker 1>especially for
+
+00:41:28.615 --> 00:41:31.175
+<v Speaker 1>projects like, if you're building,
+
+00:41:31.815 --> 00:41:33.895
+<v Speaker 1>no n p if you're running NPS,
+
+00:41:34.295 --> 00:41:37.095
+<v Speaker 1>or node install and it or app,
+
+00:41:37.495 --> 00:41:39.735
+<v Speaker 1>you end up generating a lot of files.
+
+00:41:39.735 --> 00:41:42.215
+<v Speaker 1>Right? And then we are actually hashing the
+
+00:41:42.215 --> 00:41:43.975
+<v Speaker 1>contents of these thousand files.
+
+00:41:45.580 --> 00:41:46.220
+<v Speaker 1>So
+
+00:41:46.780 --> 00:41:48.140
+<v Speaker 1>snapshot full
+
+00:41:48.859 --> 00:41:50.220
+<v Speaker 1>wasn't very,
+
+00:41:50.780 --> 00:41:52.460
+<v Speaker 1>you know, fast
+
+00:41:52.460 --> 00:41:54.460
+<v Speaker 1>enough for users. Like, it would end up
+
+00:41:54.460 --> 00:41:57.740
+<v Speaker 1>snapshotting for maybe fourteen or fifteen minutes. So
+
+00:41:57.740 --> 00:41:58.300
+<v Speaker 1>we ended up,
+
+00:41:59.214 --> 00:42:02.255
+<v Speaker 1>you know, introducing another snapshot mode, is redo,
+
+00:42:02.734 --> 00:42:05.295
+<v Speaker 1>which ends up actually only
+
+00:42:06.415 --> 00:42:09.775
+<v Speaker 1>hashing the metadata about the file, like the
+
+00:42:09.775 --> 00:42:12.974
+<v Speaker 1>time, the size it was motivate size
+
+00:42:12.974 --> 00:42:15.530
+<v Speaker 1>and time it was created or modified,
+
+00:42:15.850 --> 00:42:18.090
+<v Speaker 1>owners and blah blah blah. So,
+
+00:42:18.650 --> 00:42:20.170
+<v Speaker 1>it is big it has proved to be
+
+00:42:20.170 --> 00:42:21.370
+<v Speaker 1>50% faster.
+
+00:42:23.290 --> 00:42:25.610
+<v Speaker 0>Nice. And then there is another one which
+
+00:42:25.610 --> 00:42:27.705
+<v Speaker 1>is just time based on m time, but,
+
+00:42:27.705 --> 00:42:30.185
+<v Speaker 1>again, there are certain, you know, limitations related
+
+00:42:30.185 --> 00:42:31.785
+<v Speaker 1>to m time because, you know, time can
+
+00:42:31.785 --> 00:42:34.105
+<v Speaker 1>move forward and pad like, time can jump
+
+00:42:34.105 --> 00:42:34.665
+<v Speaker 1>around.
+
+00:42:35.625 --> 00:42:36.425
+<v Speaker 1>So
+
+00:42:36.665 --> 00:42:38.105
+<v Speaker 1>those are a few things that you could
+
+00:42:38.185 --> 00:42:40.825
+<v Speaker 1>if you see, like, your build is slower,
+
+00:42:41.065 --> 00:42:44.270
+<v Speaker 1>I would suggest try the snapshot mode.
+
+00:42:46.670 --> 00:42:47.550
+<v Speaker 0>Cool.
+
+00:42:47.790 --> 00:42:50.110
+<v Speaker 0>So is the snapshot filled yeah. That is
+
+00:42:50.110 --> 00:42:52.430
+<v Speaker 0>the default. It says here. Okay. Yeah. It
+
+00:42:52.430 --> 00:42:54.430
+<v Speaker 1>is the default. It works for most of
+
+00:42:54.430 --> 00:42:57.070
+<v Speaker 1>the cases, but only for Node. Js projects.
+
+00:42:57.070 --> 00:43:00.165
+<v Speaker 1>We've seen, like, peep people have complained about
+
+00:43:00.165 --> 00:43:01.525
+<v Speaker 1>the snapshotting time.
+
+00:43:01.845 --> 00:43:04.005
+<v Speaker 0>I guess that's because of that huge Node
+
+00:43:04.005 --> 00:43:05.925
+<v Speaker 0>modules directory that a lot of these Node.
+
+00:43:05.925 --> 00:43:07.365
+<v Speaker 0>Js projects have. Correct.
+
+00:43:07.925 --> 00:43:11.285
+<v Speaker 1>Yeah. Yeah. I I I think that's just
+
+00:43:10.260 --> 00:43:12.020
+<v Speaker 0>a a general problem I hear when I
+
+00:43:12.020 --> 00:43:14.020
+<v Speaker 0>speak to people at conferences when that was
+
+00:43:14.020 --> 00:43:16.260
+<v Speaker 0>a thing is that working with
+
+00:43:16.660 --> 00:43:18.820
+<v Speaker 0>it was always kind of interpreted languages never
+
+00:43:18.820 --> 00:43:20.740
+<v Speaker 0>compiled and the amount of files and vendor
+
+00:43:20.740 --> 00:43:22.674
+<v Speaker 0>stuff that they have going on was always
+
+00:43:22.674 --> 00:43:24.675
+<v Speaker 0>kind of difficult in Docker build steps.
+
+00:43:24.835 --> 00:43:26.195
+<v Speaker 0>Yeah, I understand that.
+
+00:43:27.075 --> 00:43:29.474
+<v Speaker 0>Yeah. Is there anything else you wanna cover?
+
+00:43:32.035 --> 00:43:33.234
+<v Speaker 1>Sure. I think
+
+00:43:33.954 --> 00:43:34.994
+<v Speaker 1>one thing,
+
+00:43:35.395 --> 00:43:37.875
+<v Speaker 1>we have we support a bunch of registries.
+
+00:43:38.570 --> 00:43:39.690
+<v Speaker 1>We also
+
+00:43:39.930 --> 00:43:42.570
+<v Speaker 1>support something called as reproducible flag,
+
+00:43:42.970 --> 00:43:43.610
+<v Speaker 1>which is
+
+00:43:44.090 --> 00:43:46.250
+<v Speaker 1>a lot of people do end up using
+
+00:43:46.250 --> 00:43:46.970
+<v Speaker 1>it
+
+00:43:47.770 --> 00:43:48.570
+<v Speaker 1>in
+
+00:43:48.570 --> 00:43:50.970
+<v Speaker 1>production if they would want to make sure
+
+00:43:50.970 --> 00:43:52.570
+<v Speaker 1>that the image is reproducible.
+
+00:43:53.424 --> 00:43:54.065
+<v Speaker 1>So
+
+00:43:54.305 --> 00:43:57.025
+<v Speaker 1>we end up stripping the time stamps of
+
+00:43:57.025 --> 00:43:59.665
+<v Speaker 1>the built images so you could exactly
+
+00:44:00.385 --> 00:44:02.545
+<v Speaker 1>compare two images and understand if there are
+
+00:44:02.545 --> 00:44:03.905
+<v Speaker 1>any file changes or not.
+
+00:44:05.025 --> 00:44:05.585
+<v Speaker 1>So
+
+00:44:05.904 --> 00:44:07.690
+<v Speaker 1>I think Google,
+
+00:44:08.250 --> 00:44:10.730
+<v Speaker 1>we have a base image repository project
+
+00:44:10.970 --> 00:44:11.770
+<v Speaker 1>where
+
+00:44:11.850 --> 00:44:14.010
+<v Speaker 1>we end up publishing,
+
+00:44:14.010 --> 00:44:14.890
+<v Speaker 1>like, you know,
+
+00:44:16.010 --> 00:44:17.530
+<v Speaker 1>images that you could use
+
+00:44:17.850 --> 00:44:18.490
+<v Speaker 1>with
+
+00:44:18.744 --> 00:44:21.145
+<v Speaker 1>just, like, minimal things, and we use the
+
+00:44:21.145 --> 00:44:22.105
+<v Speaker 1>reproducible
+
+00:44:23.224 --> 00:44:26.025
+<v Speaker 1>flag over there, to create those images so
+
+00:44:26.025 --> 00:44:26.665
+<v Speaker 1>people,
+
+00:44:27.464 --> 00:44:29.385
+<v Speaker 1>can end up understanding,
+
+00:44:29.545 --> 00:44:30.744
+<v Speaker 1>what were,
+
+00:44:31.224 --> 00:44:34.490
+<v Speaker 1>the differences, and it's always reproducible.
+
+00:44:34.490 --> 00:44:34.970
+<v Speaker 1>The
+
+00:44:35.450 --> 00:44:37.130
+<v Speaker 1>time doesn't change for the image,
+
+00:44:37.609 --> 00:44:38.410
+<v Speaker 1>built.
+
+00:44:39.530 --> 00:44:41.609
+<v Speaker 1>There's single snapshot. You could create, like, one
+
+00:44:41.609 --> 00:44:43.210
+<v Speaker 1>snapshot of the entire,
+
+00:44:43.690 --> 00:44:46.490
+<v Speaker 1>Docker file, instead of, like, having those intermediate
+
+00:44:46.490 --> 00:44:47.290
+<v Speaker 1>image layers.
+
+00:44:48.085 --> 00:44:49.445
+<v Speaker 1>There are a bunch of flags that, you
+
+00:44:49.445 --> 00:44:50.725
+<v Speaker 1>know, you could just
+
+00:44:51.285 --> 00:44:53.125
+<v Speaker 1>go and see. But the interesting thing is
+
+00:44:53.125 --> 00:44:55.205
+<v Speaker 1>about the cache warmer. So we have if
+
+00:44:55.205 --> 00:44:57.205
+<v Speaker 1>you go to our release page
+
+00:45:00.405 --> 00:45:03.525
+<v Speaker 1>it's a little bit out
+
+00:45:03.200 --> 00:45:03.840
+<v Speaker 1>here.
+
+00:45:04.960 --> 00:45:06.320
+<v Speaker 1>So we have
+
+00:45:07.200 --> 00:45:09.280
+<v Speaker 1>a bunch of images available.
+
+00:45:10.160 --> 00:45:12.080
+<v Speaker 1>There is executor, which what which is what
+
+00:45:12.080 --> 00:45:14.400
+<v Speaker 1>we're trying right now. There is a debug
+
+00:45:14.400 --> 00:45:18.320
+<v Speaker 1>image, which only has the busy box
+
+00:45:19.605 --> 00:45:21.845
+<v Speaker 1>installed in it, so you get the shell.
+
+00:45:21.925 --> 00:45:24.005
+<v Speaker 1>So if you wanna debug your Dockerfile or
+
+00:45:24.005 --> 00:45:26.085
+<v Speaker 1>debug your builds, you might end up using
+
+00:45:26.085 --> 00:45:27.685
+<v Speaker 1>the demig debug image.
+
+00:45:28.325 --> 00:45:31.045
+<v Speaker 1>So you could run all the, shell commands
+
+00:45:31.045 --> 00:45:31.525
+<v Speaker 1>available.
+
+00:45:33.050 --> 00:45:34.090
+<v Speaker 1>There is slim,
+
+00:45:34.330 --> 00:45:35.369
+<v Speaker 1>which is something that,
+
+00:45:35.930 --> 00:45:37.610
+<v Speaker 1>was requested with Tekton.
+
+00:45:38.330 --> 00:45:39.770
+<v Speaker 1>I think with the executor,
+
+00:45:40.010 --> 00:45:42.490
+<v Speaker 1>image, we bundle a bunch of binaries. Like,
+
+00:45:42.490 --> 00:45:45.050
+<v Speaker 1>we support different types of context, not just
+
+00:45:45.050 --> 00:45:47.585
+<v Speaker 1>local store local file, but even, like, you
+
+00:45:47.585 --> 00:45:49.265
+<v Speaker 1>could pull a git context,
+
+00:45:49.585 --> 00:45:50.464
+<v Speaker 1>Azure,
+
+00:45:50.464 --> 00:45:51.265
+<v Speaker 1>GCS,
+
+00:45:51.265 --> 00:45:52.785
+<v Speaker 1>and we end up, like, bundling a lot
+
+00:45:52.785 --> 00:45:53.744
+<v Speaker 1>of binaries,
+
+00:45:54.385 --> 00:45:57.825
+<v Speaker 1>for those. For Tekton, usually, like, the the
+
+00:45:57.825 --> 00:45:59.505
+<v Speaker 1>code is checked out and everything
+
+00:46:00.150 --> 00:46:03.030
+<v Speaker 1>needed is already present. So slim,
+
+00:46:03.270 --> 00:46:05.990
+<v Speaker 1>works for the for them, because all you
+
+00:46:05.990 --> 00:46:07.670
+<v Speaker 1>need is the Kaniko
+
+00:46:07.829 --> 00:46:08.630
+<v Speaker 1>binary.
+
+00:46:10.309 --> 00:46:12.789
+<v Speaker 1>And then we have if you go down,
+
+00:46:16.855 --> 00:46:17.734
+<v Speaker 1>actually,
+
+00:46:17.894 --> 00:46:21.255
+<v Speaker 1>warmer image. This is the cache warmer. It's
+
+00:46:21.255 --> 00:46:23.015
+<v Speaker 1>not on the release page. But the cache
+
+00:46:23.015 --> 00:46:26.454
+<v Speaker 1>warmer could be used to download
+
+00:46:26.454 --> 00:46:27.575
+<v Speaker 1>your base images.
+
+00:46:28.670 --> 00:46:31.150
+<v Speaker 1>So when you are perform and mount them,
+
+00:46:31.150 --> 00:46:32.350
+<v Speaker 1>store them
+
+00:46:33.150 --> 00:46:33.870
+<v Speaker 1>in
+
+00:46:34.110 --> 00:46:37.150
+<v Speaker 1>volume storage for your Kubernetes cluster. And then
+
+00:46:37.230 --> 00:46:39.870
+<v Speaker 1>when performing build, all the base images
+
+00:46:40.110 --> 00:46:41.950
+<v Speaker 1>would be extracted from
+
+00:46:42.815 --> 00:46:44.895
+<v Speaker 1>that one mount and wouldn't be pulled. So
+
+00:46:44.895 --> 00:46:47.535
+<v Speaker 1>you could again make your CI build faster
+
+00:46:47.535 --> 00:46:49.855
+<v Speaker 1>because, generally, your base images
+
+00:46:50.575 --> 00:46:51.695
+<v Speaker 1>remain same.
+
+00:46:52.255 --> 00:46:54.735
+<v Speaker 1>You know, you would upgrade them once in
+
+00:46:54.735 --> 00:46:56.420
+<v Speaker 1>a while. So you would first, whenever you
+
+00:46:56.420 --> 00:46:58.420
+<v Speaker 1>wanna upgrade your base image, just suppose you
+
+00:46:58.420 --> 00:47:00.740
+<v Speaker 1>were on go 10 and now you're increasing
+
+00:47:00.740 --> 00:47:02.580
+<v Speaker 1>the version, then you run the egg the
+
+00:47:02.580 --> 00:47:04.740
+<v Speaker 1>cache warmer executor once
+
+00:47:04.900 --> 00:47:07.300
+<v Speaker 1>to download your new base images in a
+
+00:47:07.300 --> 00:47:10.575
+<v Speaker 1>cache directory. And then from then on, you
+
+00:47:10.575 --> 00:47:13.775
+<v Speaker 1>just use the executor to reference those base
+
+00:47:13.775 --> 00:47:14.495
+<v Speaker 1>images.
+
+00:47:15.855 --> 00:47:17.455
+<v Speaker 0>Yeah. That makes sense as well.
+
+00:47:17.935 --> 00:47:18.575
+<v Speaker 0>So
+
+00:47:18.735 --> 00:47:20.495
+<v Speaker 0>I guess this is something that if I'm
+
+00:47:20.495 --> 00:47:21.935
+<v Speaker 0>running if I, you know, if I wanna
+
+00:47:21.935 --> 00:47:23.535
+<v Speaker 0>use my Kubernetes cluster to be building
+
+00:47:24.520 --> 00:47:26.200
+<v Speaker 0>all of my container images in a in
+
+00:47:26.200 --> 00:47:27.640
+<v Speaker 0>a CI step, like,
+
+00:47:28.280 --> 00:47:30.920
+<v Speaker 0>because this is all, like, mechanical executors can
+
+00:47:30.920 --> 00:47:32.600
+<v Speaker 0>find a single part and it is working
+
+00:47:32.600 --> 00:47:34.120
+<v Speaker 0>on its own and it's pushing to remote
+
+00:47:34.120 --> 00:47:36.200
+<v Speaker 0>caching and stuff, like, I could scale these
+
+00:47:36.200 --> 00:47:38.440
+<v Speaker 0>just horizontally by as however many bells I
+
+00:47:38.440 --> 00:47:39.885
+<v Speaker 0>need to run at any one point in
+
+00:47:39.885 --> 00:47:40.445
+<v Speaker 0>time?
+
+00:47:42.205 --> 00:47:43.565
+<v Speaker 1>Yes. You can.
+
+00:47:44.205 --> 00:47:46.845
+<v Speaker 1>If you have a lot of notes,
+
+00:47:47.085 --> 00:47:49.085
+<v Speaker 1>there shouldn't be a scheduling problem. You could
+
+00:47:49.085 --> 00:47:51.325
+<v Speaker 1>run as many, as you want in parallel.
+
+00:47:52.270 --> 00:47:54.750
+<v Speaker 0>And is Tekton the approach that you encourage
+
+00:47:54.750 --> 00:47:56.030
+<v Speaker 0>people to use to
+
+00:47:56.350 --> 00:47:58.910
+<v Speaker 0>to use Kaniko? Or, you know, are you
+
+00:47:58.910 --> 00:48:01.070
+<v Speaker 0>using just a a straight up Kaniko? Like,
+
+00:48:01.070 --> 00:48:03.230
+<v Speaker 0>is there is there a decision to be
+
+00:48:03.230 --> 00:48:04.670
+<v Speaker 0>made there, how do I make that decision?
+
+00:48:06.995 --> 00:48:09.475
+<v Speaker 1>So Tekton, I think, is more of an
+
+00:48:09.475 --> 00:48:10.435
+<v Speaker 1>orchestrator.
+
+00:48:10.755 --> 00:48:12.755
+<v Speaker 1>So you could end up
+
+00:48:13.155 --> 00:48:14.675
+<v Speaker 1>designing your pipeline.
+
+00:48:15.155 --> 00:48:17.955
+<v Speaker 1>For the build step in your Tekton pipeline,
+
+00:48:17.955 --> 00:48:19.475
+<v Speaker 1>Kaniko is recommended
+
+00:48:19.920 --> 00:48:21.359
+<v Speaker 1>or one of the builders that you could
+
+00:48:21.359 --> 00:48:21.920
+<v Speaker 1>use.
+
+00:48:23.040 --> 00:48:23.599
+<v Speaker 1>Kaniko
+
+00:48:24.000 --> 00:48:27.280
+<v Speaker 1>GCB, Google Cloud Build, also support Kaniko. So
+
+00:48:27.680 --> 00:48:29.119
+<v Speaker 1>you could run
+
+00:48:29.599 --> 00:48:32.240
+<v Speaker 1>a Kaniko build on GCB
+
+00:48:33.285 --> 00:48:34.005
+<v Speaker 1>and
+
+00:48:34.085 --> 00:48:36.005
+<v Speaker 1>take advantage of all the caching.
+
+00:48:37.285 --> 00:48:39.845
+<v Speaker 1>I know a lot of users, Kaniko users
+
+00:48:39.845 --> 00:48:40.565
+<v Speaker 1>use
+
+00:48:40.645 --> 00:48:42.165
+<v Speaker 1>GitLab workflow.
+
+00:48:42.165 --> 00:48:44.005
+<v Speaker 1>I haven't looked into it personally,
+
+00:48:44.325 --> 00:48:46.724
+<v Speaker 1>but there is a tutorial dedicated to Kaniko
+
+00:48:46.724 --> 00:48:47.445
+<v Speaker 1>on
+
+00:48:47.765 --> 00:48:48.484
+<v Speaker 1>the GitLab.
+
+00:48:50.220 --> 00:48:52.780
+<v Speaker 1>People fix a bunch of issues related to
+
+00:48:52.780 --> 00:48:54.220
+<v Speaker 1>that in Kaniko.
+
+00:48:56.140 --> 00:48:58.860
+<v Speaker 0>Yeah. As someone who has used Gitlab CI
+
+00:48:58.860 --> 00:49:01.555
+<v Speaker 0>an awful lot over the last however many
+
+00:49:01.555 --> 00:49:02.115
+<v Speaker 0>years,
+
+00:49:02.435 --> 00:49:04.355
+<v Speaker 0>getting the Docker builds to work on it
+
+00:49:04.355 --> 00:49:06.435
+<v Speaker 0>was always an absolute pain. And looking for
+
+00:49:06.435 --> 00:49:07.875
+<v Speaker 0>something like this would have made my life
+
+00:49:07.875 --> 00:49:08.835
+<v Speaker 0>a lot easier.
+
+00:49:09.235 --> 00:49:10.835
+<v Speaker 0>Definitely for sure. Okay.
+
+00:49:11.795 --> 00:49:13.475
+<v Speaker 0>I think I've got like one more question
+
+00:49:13.475 --> 00:49:14.915
+<v Speaker 0>and then if there's anything else you wanna
+
+00:49:14.915 --> 00:49:16.275
+<v Speaker 0>cover, we'll do that.
+
+00:49:17.049 --> 00:49:19.690
+<v Speaker 0>Mentioned Sure. During our chat just a little
+
+00:49:19.690 --> 00:49:20.730
+<v Speaker 0>bit ago that
+
+00:49:20.890 --> 00:49:23.210
+<v Speaker 0>can I you said a git context for
+
+00:49:23.210 --> 00:49:24.250
+<v Speaker 0>the build?
+
+00:49:24.329 --> 00:49:25.770
+<v Speaker 0>I can use a git repository for the
+
+00:49:25.770 --> 00:49:27.609
+<v Speaker 0>build context. So I guess that would remove
+
+00:49:27.609 --> 00:49:30.490
+<v Speaker 0>that persistent volume claim mounting thing. That something
+
+00:49:30.490 --> 00:49:32.984
+<v Speaker 0>that's just supported in Vanilla Kaniko, or there's
+
+00:49:32.984 --> 00:49:34.665
+<v Speaker 0>nothing else I need to do there?
+
+00:49:36.265 --> 00:49:38.825
+<v Speaker 1>Well, you need to provide your Git credentials
+
+00:49:38.905 --> 00:49:41.065
+<v Speaker 1>so that we could check out your Git
+
+00:49:41.065 --> 00:49:43.224
+<v Speaker 1>repository. But if you go a little bit
+
+00:49:43.224 --> 00:49:44.505
+<v Speaker 1>up
+
+00:49:44.910 --> 00:49:48.350
+<v Speaker 1>in the read me, there is a section.
+
+00:49:48.829 --> 00:49:49.869
+<v Speaker 1>If you go to the top of the
+
+00:49:49.869 --> 00:49:50.670
+<v Speaker 1>read me,
+
+00:49:52.190 --> 00:49:54.750
+<v Speaker 1>you would see the link for
+
+00:49:55.710 --> 00:49:56.910
+<v Speaker 1>Kaniko build context.
+
+00:49:58.244 --> 00:49:59.045
+<v Speaker 1>And
+
+00:49:59.045 --> 00:50:00.005
+<v Speaker 1>there are
+
+00:50:00.565 --> 00:50:02.805
+<v Speaker 1>these are the context that we end up
+
+00:50:02.805 --> 00:50:04.485
+<v Speaker 1>supporting, GCS,
+
+00:50:04.805 --> 00:50:06.085
+<v Speaker 1>s three, Azure.
+
+00:50:07.285 --> 00:50:08.805
+<v Speaker 1>Because Kaniko is open source,
+
+00:50:09.320 --> 00:50:11.160
+<v Speaker 1>you know, a lot of developers who are
+
+00:50:11.160 --> 00:50:11.800
+<v Speaker 1>using
+
+00:50:12.119 --> 00:50:12.840
+<v Speaker 1>Amazon,
+
+00:50:12.920 --> 00:50:13.720
+<v Speaker 1>AWS,
+
+00:50:13.720 --> 00:50:15.320
+<v Speaker 1>or Azure, Microsoft,
+
+00:50:15.640 --> 00:50:17.480
+<v Speaker 1>they end up they have ended up contributing
+
+00:50:17.480 --> 00:50:18.440
+<v Speaker 1>these
+
+00:50:18.440 --> 00:50:19.720
+<v Speaker 1>features to Kaniko.
+
+00:50:23.204 --> 00:50:24.405
+<v Speaker 0>Okay. So
+
+00:50:24.724 --> 00:50:26.964
+<v Speaker 0>that means let me just okay. So I
+
+00:50:26.964 --> 00:50:29.605
+<v Speaker 0>could just drop a get URL into
+
+00:50:32.005 --> 00:50:33.204
+<v Speaker 1>new Your part.
+
+00:50:37.230 --> 00:50:40.990
+<v Speaker 0>This yeah. Yeah. That's it. Right? Yeah. Yeah.
+
+00:50:41.869 --> 00:50:44.910
+<v Speaker 0>Oh, awesome. Yeah. Okay. That actually helps just
+
+00:50:44.910 --> 00:50:46.910
+<v Speaker 0>understand how I would actually use this I
+
+00:50:46.910 --> 00:50:48.270
+<v Speaker 0>think a bit more. But
+
+00:50:48.910 --> 00:50:51.390
+<v Speaker 0>I can provide a secret for private get
+
+00:50:50.745 --> 00:50:53.145
+<v Speaker 0>repositories. I'm assuming for open source repositories. I
+
+00:50:53.145 --> 00:50:55.145
+<v Speaker 0>don't hopefully maybe need to provide anything there.
+
+00:50:55.145 --> 00:50:57.065
+<v Speaker 0>Could just drop in my Git URL and
+
+00:50:57.065 --> 00:50:58.905
+<v Speaker 0>see build this and then it would just
+
+00:50:58.905 --> 00:51:00.825
+<v Speaker 0>go away, work, and I'd be quite happy.
+
+00:51:00.825 --> 00:51:01.465
+<v Speaker 0>Okay.
+
+00:51:02.185 --> 00:51:03.705
+<v Speaker 1>Yeah. That that makes a lot of sense.
+
+00:51:05.710 --> 00:51:06.350
+<v Speaker 0>Cool.
+
+00:51:06.590 --> 00:51:08.110
+<v Speaker 0>We covered quite a lot there. Is there
+
+00:51:08.110 --> 00:51:10.030
+<v Speaker 0>anything else you wanna cover before I let
+
+00:51:10.030 --> 00:51:11.310
+<v Speaker 0>you go back to your day?
+
+00:51:14.270 --> 00:51:14.910
+<v Speaker 1>No.
+
+00:51:15.630 --> 00:51:17.390
+<v Speaker 1>Nothing that I can think of.
+
+00:51:18.430 --> 00:51:20.190
+<v Speaker 0>No. That's quite alright. I think what we've
+
+00:51:20.190 --> 00:51:22.110
+<v Speaker 0>what we've done is we've had a really
+
+00:51:21.525 --> 00:51:23.365
+<v Speaker 0>good look at Kaniko and how it works.
+
+00:51:23.365 --> 00:51:25.365
+<v Speaker 0>I love the the simplicity of it, the
+
+00:51:25.365 --> 00:51:27.285
+<v Speaker 0>way that it works, and it it's the
+
+00:51:27.525 --> 00:51:29.444
+<v Speaker 0>caching thing I think is really cool and
+
+00:51:29.444 --> 00:51:31.924
+<v Speaker 0>having the flexibility to tweak those cache parameters
+
+00:51:31.924 --> 00:51:32.964
+<v Speaker 0>and how I want them to work to
+
+00:51:32.964 --> 00:51:34.724
+<v Speaker 0>speed up build teams is particularly useful as
+
+00:51:34.724 --> 00:51:37.250
+<v Speaker 0>well. So let me just move
+
+00:51:37.250 --> 00:51:38.290
+<v Speaker 0>my screen.
+
+00:51:40.130 --> 00:51:41.010
+<v Speaker 0>Awesome.
+
+00:51:41.730 --> 00:51:43.410
+<v Speaker 0>Well, thank you very much for joining me
+
+00:51:43.410 --> 00:51:45.810
+<v Speaker 0>today. It was nice to kinda be guided
+
+00:51:45.810 --> 00:51:47.170
+<v Speaker 0>through Kaniko,
+
+00:51:47.170 --> 00:51:49.250
+<v Speaker 0>show people how to get involved, how to
+
+00:51:49.250 --> 00:51:49.810
+<v Speaker 0>get started.
+
+00:51:50.715 --> 00:51:53.195
+<v Speaker 0>I'm assuming as it's an open source project
+
+00:51:53.195 --> 00:51:55.355
+<v Speaker 0>that people can come to the repository,
+
+00:51:55.355 --> 00:51:58.315
+<v Speaker 0>find some simple issues, help contribute, and and
+
+00:51:58.875 --> 00:52:00.715
+<v Speaker 0>be a part of the community? Yeah.
+
+00:52:01.195 --> 00:52:04.475
+<v Speaker 1>Yeah. We I am the maintainer. I end
+
+00:52:04.475 --> 00:52:04.955
+<v Speaker 1>up, like,
+
+00:52:05.700 --> 00:52:06.579
+<v Speaker 1>releasing
+
+00:52:06.579 --> 00:52:07.460
+<v Speaker 1>every month.
+
+00:52:07.940 --> 00:52:09.060
+<v Speaker 1>So I look for
+
+00:52:09.619 --> 00:52:12.420
+<v Speaker 1>maybe today, third week of every month, I
+
+00:52:12.420 --> 00:52:14.900
+<v Speaker 1>go through pull request. I help people get
+
+00:52:14.900 --> 00:52:16.820
+<v Speaker 1>those over the finish line if needed.
+
+00:52:17.140 --> 00:52:20.695
+<v Speaker 1>And, again, like, we have issues, triage, and,
+
+00:52:20.695 --> 00:52:22.375
+<v Speaker 1>you know, what labels help one day, like
+
+00:52:22.375 --> 00:52:23.815
+<v Speaker 1>the general open source
+
+00:52:26.375 --> 00:52:28.215
+<v Speaker 1>logistics. And then, you know, you get anyone
+
+00:52:28.215 --> 00:52:29.975
+<v Speaker 1>can pick any any
+
+00:52:30.055 --> 00:52:31.575
+<v Speaker 1>issue they want and
+
+00:52:32.870 --> 00:52:35.030
+<v Speaker 1>add features to Kaniko.
+
+00:52:35.430 --> 00:52:38.230
+<v Speaker 0>Awesome. Alright. Well, people should definitely get involved.
+
+00:52:38.230 --> 00:52:39.670
+<v Speaker 0>Check that out. Have a play and let
+
+00:52:39.670 --> 00:52:41.430
+<v Speaker 0>us know how you get on. Tajal, thank
+
+00:52:41.430 --> 00:52:42.790
+<v Speaker 0>you for joining me today. I hope you
+
+00:52:42.790 --> 00:52:44.390
+<v Speaker 0>have a great rest of your day, and
+
+00:52:44.390 --> 00:52:45.830
+<v Speaker 0>I will speak to you again soon.
+
+00:52:46.550 --> 00:52:48.765
+<v Speaker 1>Yep. Thank you so much for having me.

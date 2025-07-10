@@ -1,0 +1,1919 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 079e9b5a-4a30-4556-830f-7d439420968a
+Created: 2025-04-29T13:25:23.871Z
+Duration: 1416.1799
+Channels: 1
+
+00:00:00.000 --> 00:00:02.720
+<v Speaker 0>Hello and welcome back to the Rawkode Academy.
+
+00:00:02.720 --> 00:00:04.960
+<v Speaker 0>I'm your host David Flanagan.
+
+00:00:05.279 --> 00:00:07.279
+<v Speaker 0>Today we're taking a look at Dagger dot
+
+00:00:07.279 --> 00:00:09.440
+<v Speaker 0>I o. Dagger is a tool for building
+
+00:00:09.440 --> 00:00:10.240
+<v Speaker 0>CICD
+
+00:00:10.240 --> 00:00:12.240
+<v Speaker 0>pipelines. Go check out Dagger.i0
+
+00:00:12.240 --> 00:00:14.320
+<v Speaker 0>to learn more and of course keep watching
+
+00:00:14.320 --> 00:00:16.255
+<v Speaker 0>this video. I'm going to show you how
+
+00:00:16.255 --> 00:00:18.975
+<v Speaker 0>to use Dagger in a model repository context
+
+00:00:19.135 --> 00:00:20.255
+<v Speaker 0>with secrets,
+
+00:00:20.255 --> 00:00:23.455
+<v Speaker 0>composable builds that you can run anywhere
+
+00:00:23.535 --> 00:00:26.335
+<v Speaker 0>including local host. As we see here on
+
+00:00:26.335 --> 00:00:27.455
+<v Speaker 0>the Dagger website,
+
+00:00:27.615 --> 00:00:30.015
+<v Speaker 0>you can run your Dagger pipelines anywhere.
+
+00:00:30.600 --> 00:00:31.240
+<v Speaker 0>Why?
+
+00:00:31.560 --> 00:00:34.280
+<v Speaker 0>Well, because they're just orchestrated containers.
+
+00:00:34.280 --> 00:00:35.480
+<v Speaker 0>So as long as you can run a
+
+00:00:35.480 --> 00:00:37.000
+<v Speaker 0>container on your local machine,
+
+00:00:37.240 --> 00:00:40.360
+<v Speaker 0>in GitHub actions, CircleCI or even in production
+
+00:00:40.360 --> 00:00:42.040
+<v Speaker 0>or on a Kubernetes cluster,
+
+00:00:42.360 --> 00:00:43.960
+<v Speaker 0>you can run your Dagger pipelines.
+
+00:00:44.454 --> 00:00:46.295
+<v Speaker 0>One of the main selling points or what
+
+00:00:46.295 --> 00:00:47.734
+<v Speaker 0>makes Dagger unique
+
+00:00:47.894 --> 00:00:50.214
+<v Speaker 0>is that Dagger pipelines don't require you to
+
+00:00:50.214 --> 00:00:52.774
+<v Speaker 0>write any YAML. You can define your Dagger
+
+00:00:52.774 --> 00:00:55.495
+<v Speaker 0>pipelines as code. Today, we will be using
+
+00:00:55.495 --> 00:00:57.894
+<v Speaker 0>Go, but you can also use Python,
+
+00:00:57.975 --> 00:00:58.774
+<v Speaker 0>JavaScript,
+
+00:00:58.854 --> 00:00:59.495
+<v Speaker 0>TypeScript
+
+00:00:59.660 --> 00:01:00.780
+<v Speaker 0>and realistically
+
+00:01:00.780 --> 00:01:03.340
+<v Speaker 0>any programming language. While these are the main
+
+00:01:03.340 --> 00:01:05.340
+<v Speaker 0>ones supported by Dagger, as we can see
+
+00:01:05.340 --> 00:01:07.420
+<v Speaker 0>on the homepage here, GraphQL
+
+00:01:07.500 --> 00:01:09.500
+<v Speaker 0>is what makes all of this work. So
+
+00:01:09.500 --> 00:01:11.900
+<v Speaker 0>provided you can take a GraphQL schema, you
+
+00:01:11.900 --> 00:01:14.855
+<v Speaker 0>could probably generate some sort of SDK or
+
+00:01:14.855 --> 00:01:16.935
+<v Speaker 0>you could just write GraphQL and use your
+
+00:01:16.935 --> 00:01:19.495
+<v Speaker 0>favorite programming language to execute it. That's up
+
+00:01:19.495 --> 00:01:21.175
+<v Speaker 0>to you and maybe something we'll play around
+
+00:01:21.175 --> 00:01:23.255
+<v Speaker 0>with on another video. But today, we're gonna
+
+00:01:23.255 --> 00:01:25.255
+<v Speaker 0>focus on Go, where I'm gonna show you
+
+00:01:25.255 --> 00:01:28.055
+<v Speaker 0>how to build your classic three tier application.
+
+00:01:28.135 --> 00:01:30.140
+<v Speaker 0>The back end service written in Go, the
+
+00:01:30.140 --> 00:01:32.140
+<v Speaker 0>front end service running in JavaScript,
+
+00:01:32.460 --> 00:01:35.100
+<v Speaker 0>a database which could be either SQLite or
+
+00:01:35.100 --> 00:01:36.140
+<v Speaker 0>Postgres and
+
+00:01:36.860 --> 00:01:38.620
+<v Speaker 0>consumption of secrets.
+
+00:01:38.620 --> 00:01:40.620
+<v Speaker 0>So let's dive in. Alright.
+
+00:01:40.860 --> 00:01:42.940
+<v Speaker 0>So before we go into the code, before
+
+00:01:42.940 --> 00:01:45.235
+<v Speaker 0>I show you Dagger, let's see what our
+
+00:01:45.235 --> 00:01:48.034
+<v Speaker 0>local dev experience looks like without Dagger. That
+
+00:01:48.034 --> 00:01:50.674
+<v Speaker 0>is pretty good and local dev experiences usually
+
+00:01:50.674 --> 00:01:51.235
+<v Speaker 0>are.
+
+00:01:51.555 --> 00:01:54.915
+<v Speaker 0>However, they're not repeatable and other machines and
+
+00:01:54.915 --> 00:01:57.875
+<v Speaker 0>other infrastructure and especially not in production. So
+
+00:01:57.875 --> 00:01:59.475
+<v Speaker 0>I can go into the back end surface
+
+00:01:59.910 --> 00:02:02.470
+<v Speaker 0>where I can do go run main. Go.
+
+00:02:02.470 --> 00:02:05.030
+<v Speaker 0>That's a pretty hard dev experience to be.
+
+00:02:05.110 --> 00:02:06.630
+<v Speaker 0>You know, they're using native tooling on a
+
+00:02:06.630 --> 00:02:09.270
+<v Speaker 0>native machine and go makes it pretty easy.
+
+00:02:09.270 --> 00:02:10.630
+<v Speaker 0>We can then jump down here where we
+
+00:02:10.630 --> 00:02:13.430
+<v Speaker 0>do a curl to local host on eighty
+
+00:02:13.430 --> 00:02:14.070
+<v Speaker 0>eighty
+
+00:02:14.375 --> 00:02:16.215
+<v Speaker 0>or we can have the ping endpoint and
+
+00:02:16.215 --> 00:02:17.495
+<v Speaker 0>we get pong back.
+
+00:02:18.215 --> 00:02:21.095
+<v Speaker 0>This API also has an ask endpoint where
+
+00:02:21.095 --> 00:02:22.135
+<v Speaker 0>we can provide
+
+00:02:22.295 --> 00:02:25.175
+<v Speaker 0>a post request with curl that means just
+
+00:02:25.175 --> 00:02:27.495
+<v Speaker 0>providing a JSON body or anybody
+
+00:02:28.610 --> 00:02:30.770
+<v Speaker 0>where we can provide a JSON request
+
+00:02:31.730 --> 00:02:33.250
+<v Speaker 0>where we pass in
+
+00:02:33.410 --> 00:02:35.810
+<v Speaker 0>a question. The question could be
+
+00:02:36.690 --> 00:02:37.810
+<v Speaker 0>translate
+
+00:02:37.810 --> 00:02:38.610
+<v Speaker 0>hello
+
+00:02:38.690 --> 00:02:39.810
+<v Speaker 0>from English
+
+00:02:40.849 --> 00:02:41.569
+<v Speaker 0>to German
+
+00:02:42.265 --> 00:02:45.065
+<v Speaker 0>and hit return. Now we get an error
+
+00:02:45.065 --> 00:02:48.665
+<v Speaker 0>and that's because we need a secret value.
+
+00:02:48.745 --> 00:02:50.505
+<v Speaker 0>However, I've got that covered.
+
+00:02:50.825 --> 00:02:52.745
+<v Speaker 0>Inside my top level directory,
+
+00:02:52.985 --> 00:02:54.025
+<v Speaker 0>I have an ENVRC.
+
+00:02:54.760 --> 00:02:57.240
+<v Speaker 0>Inside of this, I have the OpenAI token.
+
+00:02:57.320 --> 00:02:59.080
+<v Speaker 0>However, I have it set to this funny
+
+00:02:59.080 --> 00:03:00.040
+<v Speaker 0>looking string.
+
+00:03:00.600 --> 00:03:02.920
+<v Speaker 0>This funny looking string is a one password
+
+00:03:02.920 --> 00:03:04.200
+<v Speaker 0>secret reference.
+
+00:03:04.520 --> 00:03:06.520
+<v Speaker 0>Now I can use this here because I
+
+00:03:06.520 --> 00:03:08.680
+<v Speaker 0>have one password on my machine. Whatever your
+
+00:03:08.680 --> 00:03:12.055
+<v Speaker 0>secrets management is, use that. One password is
+
+00:03:12.055 --> 00:03:13.735
+<v Speaker 0>a good choice. You can run the operator
+
+00:03:13.735 --> 00:03:15.975
+<v Speaker 0>and production and still consume secrets in the
+
+00:03:15.975 --> 00:03:16.935
+<v Speaker 0>exact same way.
+
+00:03:17.335 --> 00:03:20.375
+<v Speaker 0>Other notable options are Doppler from doppler.com.
+
+00:03:20.455 --> 00:03:21.975
+<v Speaker 0>So that's up to you.
+
+00:03:22.455 --> 00:03:23.335
+<v Speaker 0>Locally,
+
+00:03:23.335 --> 00:03:24.535
+<v Speaker 0>I can do op run,
+
+00:03:25.489 --> 00:03:26.850
+<v Speaker 0>go run main,
+
+00:03:27.090 --> 00:03:29.090
+<v Speaker 0>where it will pop up on my watch
+
+00:03:29.090 --> 00:03:31.569
+<v Speaker 0>and approve the request. And if I run
+
+00:03:31.569 --> 00:03:32.850
+<v Speaker 0>our command again,
+
+00:03:33.250 --> 00:03:35.890
+<v Speaker 0>we get the answer. Hello and dosh is
+
+00:03:35.890 --> 00:03:38.370
+<v Speaker 0>hello. So now we have a pretty good
+
+00:03:38.370 --> 00:03:39.010
+<v Speaker 0>dev experience.
+
+00:03:40.275 --> 00:03:41.795
+<v Speaker 0>We can now go into our front end
+
+00:03:41.795 --> 00:03:42.675
+<v Speaker 0>application
+
+00:03:43.395 --> 00:03:44.995
+<v Speaker 0>where we do a PMPM
+
+00:03:44.995 --> 00:03:45.955
+<v Speaker 0>run dev.
+
+00:03:46.275 --> 00:03:48.355
+<v Speaker 0>I can pop this open in my browser
+
+00:03:48.995 --> 00:03:52.275
+<v Speaker 0>where I get my wonderful developer focused UI,
+
+00:03:52.275 --> 00:03:53.955
+<v Speaker 0>which just means black text on a white
+
+00:03:53.955 --> 00:03:54.275
+<v Speaker 0>background,
+
+00:03:54.950 --> 00:03:57.110
+<v Speaker 0>where I can ask questions of Dagger AI.
+
+00:03:57.190 --> 00:03:59.510
+<v Speaker 0>So let's see if we can translate
+
+00:03:59.510 --> 00:04:00.470
+<v Speaker 0>hello
+
+00:04:01.830 --> 00:04:02.870
+<v Speaker 0>to Polish.
+
+00:04:03.750 --> 00:04:04.870
+<v Speaker 0>And voila.
+
+00:04:05.270 --> 00:04:07.190
+<v Speaker 0>I'm gonna trust ChatGPT.
+
+00:04:08.225 --> 00:04:10.705
+<v Speaker 0>So that's pretty good. But we're having to
+
+00:04:10.705 --> 00:04:13.505
+<v Speaker 0>manage the back end, run the front end,
+
+00:04:13.825 --> 00:04:15.745
+<v Speaker 0>and we're consuming secrets in a pretty good
+
+00:04:15.745 --> 00:04:18.225
+<v Speaker 0>way, but still a little bit too much
+
+00:04:18.225 --> 00:04:18.705
+<v Speaker 0>work.
+
+00:04:19.185 --> 00:04:20.865
+<v Speaker 0>There's one other thing we haven't done yet
+
+00:04:20.865 --> 00:04:22.980
+<v Speaker 0>and that is run our test suite. So
+
+00:04:22.980 --> 00:04:24.180
+<v Speaker 0>we're gonna come out of the front end
+
+00:04:24.180 --> 00:04:26.900
+<v Speaker 0>where we go into build test. Here, I
+
+00:04:26.900 --> 00:04:29.540
+<v Speaker 0>have a test dot huddl file. If you're
+
+00:04:29.540 --> 00:04:31.540
+<v Speaker 0>not familiar with huddle, go to huddle dot
+
+00:04:31.540 --> 00:04:34.100
+<v Speaker 0>dev. That is h u r l dot
+
+00:04:34.100 --> 00:04:36.065
+<v Speaker 0>dev. Gives you a text based format to
+
+00:04:36.065 --> 00:04:38.705
+<v Speaker 0>describe HTTP requests where you can build assertions
+
+00:04:38.705 --> 00:04:40.865
+<v Speaker 0>against their response. Here, I do a get
+
+00:04:40.865 --> 00:04:43.265
+<v Speaker 0>on back end eighty eighty ping where I
+
+00:04:43.265 --> 00:04:44.465
+<v Speaker 0>expect a 200.
+
+00:04:44.865 --> 00:04:46.545
+<v Speaker 0>I also do a post to back end
+
+00:04:46.545 --> 00:04:49.770
+<v Speaker 0>eighty eighty ask, sending in my JSON payload
+
+00:04:49.770 --> 00:04:52.170
+<v Speaker 0>with a question and asserting that I get
+
+00:04:52.170 --> 00:04:55.290
+<v Speaker 0>the German word for hello back end response.
+
+00:04:55.290 --> 00:04:57.850
+<v Speaker 0>We can now do hurl, test dot hurl
+
+00:04:57.850 --> 00:05:00.570
+<v Speaker 0>and we see that it fails because we
+
+00:05:00.570 --> 00:05:02.570
+<v Speaker 0>need to speak to something called back end.
+
+00:05:02.974 --> 00:05:05.294
+<v Speaker 0>Now I could use local host here but
+
+00:05:05.294 --> 00:05:08.014
+<v Speaker 0>that's not gonna work repeatably in other machines
+
+00:05:08.014 --> 00:05:09.294
+<v Speaker 0>and other environments.
+
+00:05:10.335 --> 00:05:12.495
+<v Speaker 0>So for this, I have created a just
+
+00:05:12.495 --> 00:05:14.895
+<v Speaker 0>target where we can run just test and
+
+00:05:14.895 --> 00:05:15.854
+<v Speaker 0>our tests pass.
+
+00:05:16.540 --> 00:05:17.820
+<v Speaker 0>If we take a look at our just
+
+00:05:17.820 --> 00:05:20.460
+<v Speaker 0>fail, we're using a nifty feature of hurl
+
+00:05:20.460 --> 00:05:22.700
+<v Speaker 0>where we can pass dash dash connect to
+
+00:05:22.700 --> 00:05:24.300
+<v Speaker 0>where we swap out the back end eighty
+
+00:05:24.300 --> 00:05:26.860
+<v Speaker 0>eighty tuple for local host eighty eighty tuple.
+
+00:05:27.260 --> 00:05:29.785
+<v Speaker 0>This is a decent developer environment at the
+
+00:05:29.785 --> 00:05:31.465
+<v Speaker 0>moment. We have a just failed to handle
+
+00:05:31.465 --> 00:05:33.225
+<v Speaker 0>the edge case where we can run the
+
+00:05:33.225 --> 00:05:35.625
+<v Speaker 0>tests and where there could be a container
+
+00:05:35.625 --> 00:05:38.185
+<v Speaker 0>based environment. But we wanna pull more automation
+
+00:05:38.185 --> 00:05:39.865
+<v Speaker 0>into this. We want to be able to
+
+00:05:39.865 --> 00:05:41.785
+<v Speaker 0>run it anywhere and we wanna be able
+
+00:05:41.785 --> 00:05:44.070
+<v Speaker 0>to expand on this. If you started down
+
+00:05:44.070 --> 00:05:46.470
+<v Speaker 0>a service oriented architecture or you're using a
+
+00:05:46.470 --> 00:05:49.270
+<v Speaker 0>mono repository, it doesn't stop at three services
+
+00:05:49.270 --> 00:05:51.830
+<v Speaker 0>or two services. It's potentially going to grow
+
+00:05:51.830 --> 00:05:53.430
+<v Speaker 0>and using composition
+
+00:05:53.430 --> 00:05:56.150
+<v Speaker 0>of our CICD system, being able to reference
+
+00:05:56.150 --> 00:05:57.910
+<v Speaker 0>other modules and actions
+
+00:05:58.245 --> 00:05:59.685
+<v Speaker 0>and chain them together
+
+00:06:00.005 --> 00:06:02.165
+<v Speaker 0>is gonna be paramount to your success. So
+
+00:06:02.165 --> 00:06:04.485
+<v Speaker 0>let's see how we can take this three
+
+00:06:04.485 --> 00:06:05.525
+<v Speaker 0>tier application,
+
+00:06:05.845 --> 00:06:08.165
+<v Speaker 0>automate it with Dagger with a pipeline we
+
+00:06:08.165 --> 00:06:10.405
+<v Speaker 0>can run anywhere that's extensible,
+
+00:06:10.780 --> 00:06:12.540
+<v Speaker 0>cacheable and performant.
+
+00:06:12.780 --> 00:06:14.940
+<v Speaker 0>So let's take a look at some code.
+
+00:06:14.940 --> 00:06:16.780
+<v Speaker 0>Let's go through the back end first. This
+
+00:06:16.780 --> 00:06:19.260
+<v Speaker 0>is a very simple Go application using the
+
+00:06:19.260 --> 00:06:20.780
+<v Speaker 0>Gen web framework.
+
+00:06:21.580 --> 00:06:23.945
+<v Speaker 0>As you can see here, we rely on
+
+00:06:23.945 --> 00:06:27.945
+<v Speaker 0>an environment variable called open ai underscore token.
+
+00:06:27.945 --> 00:06:30.425
+<v Speaker 0>This is how we provide that secret to
+
+00:06:30.425 --> 00:06:32.185
+<v Speaker 0>the back end to speak to the chat
+
+00:06:32.185 --> 00:06:34.985
+<v Speaker 0>GPT service. There's one other environment detail that
+
+00:06:34.985 --> 00:06:36.665
+<v Speaker 0>is required for this application to work.
+
+00:06:37.300 --> 00:06:39.460
+<v Speaker 0>When it's submitted, it's going to use an
+
+00:06:39.460 --> 00:06:41.460
+<v Speaker 0>in memory SQLite database.
+
+00:06:41.780 --> 00:06:42.980
+<v Speaker 0>Great for dev,
+
+00:06:43.300 --> 00:06:45.860
+<v Speaker 0>but doesn't resemble production. So we wanna be
+
+00:06:45.860 --> 00:06:48.260
+<v Speaker 0>able to provide this database URI with the
+
+00:06:48.260 --> 00:06:50.740
+<v Speaker 0>same production environment that we use when we
+
+00:06:50.740 --> 00:06:51.780
+<v Speaker 0>run our CI system.
+
+00:06:52.534 --> 00:06:55.175
+<v Speaker 0>For today's example, we're going to use Postgres.
+
+00:06:55.175 --> 00:06:56.775
+<v Speaker 0>I'm also a big believer
+
+00:06:57.014 --> 00:06:59.175
+<v Speaker 0>that when you write code, the code that
+
+00:06:59.175 --> 00:07:01.495
+<v Speaker 0>you use to orchestrate it, manage it, build
+
+00:07:01.495 --> 00:07:03.574
+<v Speaker 0>it and run it should live right next
+
+00:07:03.574 --> 00:07:05.574
+<v Speaker 0>to it. We shouldn't be shipping this stuff
+
+00:07:05.574 --> 00:07:08.930
+<v Speaker 0>away to another repository or another directory.
+
+00:07:09.169 --> 00:07:11.569
+<v Speaker 0>It just doesn't make sense. So you'll see
+
+00:07:11.569 --> 00:07:13.970
+<v Speaker 0>here, I have a build directory with a
+
+00:07:13.970 --> 00:07:16.690
+<v Speaker 0>build dot go. This contains the Dagger code
+
+00:07:16.690 --> 00:07:18.690
+<v Speaker 0>and function that are specific
+
+00:07:18.690 --> 00:07:20.530
+<v Speaker 0>to this individual service.
+
+00:07:21.014 --> 00:07:23.095
+<v Speaker 0>As you'll see here, we pull in the
+
+00:07:23.095 --> 00:07:25.735
+<v Speaker 0>Dagger API or the Dagger SDK
+
+00:07:25.735 --> 00:07:28.695
+<v Speaker 0>and we expose two functions. One called build
+
+00:07:28.695 --> 00:07:31.655
+<v Speaker 0>container image, which is consumed by the export
+
+00:07:31.655 --> 00:07:34.550
+<v Speaker 0>container image. If you've been writing code for
+
+00:07:34.550 --> 00:07:36.950
+<v Speaker 0>one year, five years, ten years, twenty years,
+
+00:07:36.950 --> 00:07:37.750
+<v Speaker 0>or longer,
+
+00:07:37.990 --> 00:07:39.190
+<v Speaker 0>you have accumulated
+
+00:07:39.190 --> 00:07:40.150
+<v Speaker 0>experience.
+
+00:07:40.150 --> 00:07:42.790
+<v Speaker 0>You've learned how to write more code in
+
+00:07:42.790 --> 00:07:44.790
+<v Speaker 0>a better fashion. Why do we throw this
+
+00:07:44.790 --> 00:07:46.550
+<v Speaker 0>away when it comes to CICD
+
+00:07:46.550 --> 00:07:48.735
+<v Speaker 0>when we just write YAML? Let's take all
+
+00:07:48.735 --> 00:07:49.855
+<v Speaker 0>of that experience
+
+00:07:50.175 --> 00:07:51.935
+<v Speaker 0>and build composable,
+
+00:07:51.935 --> 00:07:54.975
+<v Speaker 0>extensible, maintainable build pipelines. Now this is a
+
+00:07:54.975 --> 00:07:57.695
+<v Speaker 0>contrived example right now. I'm consuming a function
+
+00:07:57.695 --> 00:07:58.975
+<v Speaker 0>from another function,
+
+00:07:59.375 --> 00:08:00.815
+<v Speaker 0>but still is just the tip of the
+
+00:08:00.815 --> 00:08:03.135
+<v Speaker 0>iceberg. So our export container function
+
+00:08:04.090 --> 00:08:07.690
+<v Speaker 0>calls build and then publishes it to GHCR
+
+00:08:07.930 --> 00:08:08.970
+<v Speaker 0>and that's it.
+
+00:08:09.450 --> 00:08:10.730
+<v Speaker 0>Our build function
+
+00:08:11.530 --> 00:08:14.250
+<v Speaker 0>because this is just Go code can use
+
+00:08:14.250 --> 00:08:15.290
+<v Speaker 0>just Go code.
+
+00:08:15.735 --> 00:08:17.655
+<v Speaker 0>We can just use format dot print to
+
+00:08:17.655 --> 00:08:20.215
+<v Speaker 0>stick something into the console or logs.
+
+00:08:20.215 --> 00:08:22.455
+<v Speaker 0>It's just that simple. Now because this is
+
+00:08:22.455 --> 00:08:23.655
+<v Speaker 0>a mono repository,
+
+00:08:24.055 --> 00:08:25.814
+<v Speaker 0>you're gonna see some funny little bits of
+
+00:08:25.814 --> 00:08:27.574
+<v Speaker 0>lines of code here where I use runtime
+
+00:08:27.574 --> 00:08:29.574
+<v Speaker 0>caller to get the current directory of this
+
+00:08:29.574 --> 00:08:31.014
+<v Speaker 0>specific source file
+
+00:08:31.349 --> 00:08:33.429
+<v Speaker 0>so that I can pluck out small parts
+
+00:08:33.429 --> 00:08:35.429
+<v Speaker 0>of the mono repository to consume them in
+
+00:08:35.429 --> 00:08:37.510
+<v Speaker 0>other parts of the system. I'm gonna skip
+
+00:08:37.510 --> 00:08:38.870
+<v Speaker 0>over it for now but if you want
+
+00:08:38.870 --> 00:08:41.029
+<v Speaker 0>to learn more, ask questions or just find
+
+00:08:41.029 --> 00:08:42.549
+<v Speaker 0>the code, the links are in the show
+
+00:08:42.549 --> 00:08:44.709
+<v Speaker 0>notes below. Once we have the source directory
+
+00:08:44.709 --> 00:08:47.345
+<v Speaker 0>for this individual service, we can use the
+
+00:08:47.345 --> 00:08:49.825
+<v Speaker 0>Dagger client to get a container.
+
+00:08:50.625 --> 00:08:52.625
+<v Speaker 0>We're gonna start with Golang latest
+
+00:08:52.785 --> 00:08:55.024
+<v Speaker 0>where we mount our source directory to slash
+
+00:08:55.024 --> 00:08:55.745
+<v Speaker 0>source.
+
+00:08:56.145 --> 00:08:58.545
+<v Speaker 0>We set the working directory to slash source
+
+00:08:58.705 --> 00:09:00.785
+<v Speaker 0>and look, we run a go build and
+
+00:09:00.785 --> 00:09:02.970
+<v Speaker 0>that's it. Now this could be done with
+
+00:09:02.970 --> 00:09:05.770
+<v Speaker 0>a Dockerfile. Sure. And can Dagger use a
+
+00:09:05.770 --> 00:09:08.650
+<v Speaker 0>Dockerfile? Yes, it can. However, when we do
+
+00:09:08.650 --> 00:09:10.570
+<v Speaker 0>it as code, it just becomes a little
+
+00:09:10.570 --> 00:09:12.810
+<v Speaker 0>bit more maintainable and composable.
+
+00:09:12.890 --> 00:09:15.210
+<v Speaker 0>We can reuse these step definitions.
+
+00:09:15.875 --> 00:09:17.635
+<v Speaker 0>I can actually stop here,
+
+00:09:18.755 --> 00:09:21.154
+<v Speaker 0>assign this to a variable like build output
+
+00:09:21.154 --> 00:09:23.154
+<v Speaker 0>and then do something else with it multiple
+
+00:09:23.154 --> 00:09:23.795
+<v Speaker 0>times.
+
+00:09:24.195 --> 00:09:25.954
+<v Speaker 0>Or maybe I run go build here for
+
+00:09:25.954 --> 00:09:27.954
+<v Speaker 0>one architecture but then run it again for
+
+00:09:27.954 --> 00:09:28.355
+<v Speaker 0>a different.
+
+00:09:29.509 --> 00:09:31.750
+<v Speaker 0>I'm not gonna cover multi architecture right now
+
+00:09:31.750 --> 00:09:34.470
+<v Speaker 0>because Dagger cover that really well in the
+
+00:09:34.470 --> 00:09:35.350
+<v Speaker 0>documentation.
+
+00:09:35.589 --> 00:09:37.750
+<v Speaker 0>So remember, dagger.io.
+
+00:09:37.750 --> 00:09:39.990
+<v Speaker 0>Check out the docs, check out the cookbooks
+
+00:09:40.149 --> 00:09:41.269
+<v Speaker 0>and the guides.
+
+00:09:41.785 --> 00:09:44.185
+<v Speaker 0>Now, we all know that multistage builds are
+
+00:09:44.185 --> 00:09:46.185
+<v Speaker 0>how we should be shipping things to production.
+
+00:09:46.345 --> 00:09:48.665
+<v Speaker 0>We don't want to ship the entire Golang
+
+00:09:48.665 --> 00:09:50.985
+<v Speaker 0>tool chain to a production image. So let's
+
+00:09:50.985 --> 00:09:54.105
+<v Speaker 0>get a new container from Ubuntu 22
+
+00:09:54.105 --> 00:09:56.825
+<v Speaker 0>where we grab a file from the previous
+
+00:09:56.825 --> 00:09:59.279
+<v Speaker 0>build. You can see here we're seeing web
+
+00:09:59.279 --> 00:10:02.720
+<v Speaker 0>fail store to slash entry point and what
+
+00:10:02.720 --> 00:10:05.120
+<v Speaker 0>we're gonna store there? Well, it's the output
+
+00:10:05.120 --> 00:10:08.240
+<v Speaker 0>or the fail output from another build, notably
+
+00:10:08.240 --> 00:10:09.440
+<v Speaker 0>our build output
+
+00:10:09.600 --> 00:10:12.254
+<v Speaker 0>where the fail is slash source slash back
+
+00:10:12.254 --> 00:10:14.574
+<v Speaker 0>end which is the fail we built. We
+
+00:10:14.574 --> 00:10:16.415
+<v Speaker 0>can then set the entry point and wipe
+
+00:10:16.415 --> 00:10:18.815
+<v Speaker 0>out the default args. This is now an
+
+00:10:18.815 --> 00:10:20.574
+<v Speaker 0>image that we can publish
+
+00:10:20.815 --> 00:10:23.295
+<v Speaker 0>as we do with the export container image
+
+00:10:23.295 --> 00:10:23.615
+<v Speaker 0>function.
+
+00:10:24.460 --> 00:10:25.260
+<v Speaker 0>Voila.
+
+00:10:25.340 --> 00:10:27.660
+<v Speaker 0>There's no other Dagger code here other than
+
+00:10:27.660 --> 00:10:29.900
+<v Speaker 0>these two helper functions next to the back
+
+00:10:29.900 --> 00:10:32.460
+<v Speaker 0>end. That's just for today's example and not
+
+00:10:32.460 --> 00:10:34.940
+<v Speaker 0>necessarily something you would do in a real
+
+00:10:34.940 --> 00:10:35.820
+<v Speaker 0>application,
+
+00:10:35.820 --> 00:10:37.900
+<v Speaker 0>but we'll cover that in another video. So
+
+00:10:37.900 --> 00:10:38.860
+<v Speaker 0>for today's example,
+
+00:10:39.425 --> 00:10:41.345
+<v Speaker 0>all of the code or the build pipeline
+
+00:10:41.345 --> 00:10:43.105
+<v Speaker 0>that we're going to work with lives inside
+
+00:10:43.105 --> 00:10:44.225
+<v Speaker 0>the build directory.
+
+00:10:44.384 --> 00:10:46.865
+<v Speaker 0>If we open our test package,
+
+00:10:47.024 --> 00:10:48.944
+<v Speaker 0>we have a main dot go. This just
+
+00:10:48.944 --> 00:10:51.105
+<v Speaker 0>means that I can run main dot go
+
+00:10:51.105 --> 00:10:54.639
+<v Speaker 0>here to test the service oriented architecture, which
+
+00:10:54.639 --> 00:10:56.880
+<v Speaker 0>I'm pushing with that definition. This three tier
+
+00:10:56.880 --> 00:10:57.760
+<v Speaker 0>application
+
+00:10:58.079 --> 00:10:59.839
+<v Speaker 0>with a single endpoint.
+
+00:10:59.920 --> 00:11:02.560
+<v Speaker 0>Consider this like an acceptance test. Okay. So
+
+00:11:02.560 --> 00:11:04.079
+<v Speaker 0>the first thing we have in here is
+
+00:11:04.079 --> 00:11:06.565
+<v Speaker 0>our main function. This just allows us to
+
+00:11:06.565 --> 00:11:09.125
+<v Speaker 0>run go run on this file and run
+
+00:11:09.125 --> 00:11:10.885
+<v Speaker 0>the entire test harness.
+
+00:11:11.125 --> 00:11:13.365
+<v Speaker 0>That is just handing off to a build
+
+00:11:13.365 --> 00:11:14.085
+<v Speaker 0>function
+
+00:11:14.405 --> 00:11:17.045
+<v Speaker 0>which creates a Dagger client.
+
+00:11:17.205 --> 00:11:19.045
+<v Speaker 0>Now we know that our back end service
+
+00:11:19.045 --> 00:11:21.129
+<v Speaker 0>has a few inputs that are required for
+
+00:11:21.129 --> 00:11:22.490
+<v Speaker 0>it to run successfully.
+
+00:11:22.649 --> 00:11:25.370
+<v Speaker 0>Notably, it needs an OpenAI token so that
+
+00:11:25.370 --> 00:11:28.009
+<v Speaker 0>it can speak to the chat GPT API.
+
+00:11:28.089 --> 00:11:30.730
+<v Speaker 0>Here we have a dev tool dot get
+
+00:11:30.730 --> 00:11:31.529
+<v Speaker 0>secret.
+
+00:11:31.689 --> 00:11:33.930
+<v Speaker 0>This is a helper function that I provide
+
+00:11:33.930 --> 00:11:35.449
+<v Speaker 0>in a dev tool library
+
+00:11:35.615 --> 00:11:37.694
+<v Speaker 0>that can be used anywhere in their Dagger
+
+00:11:37.694 --> 00:11:38.415
+<v Speaker 0>pipelines.
+
+00:11:38.495 --> 00:11:40.975
+<v Speaker 0>It takes a secret reference which is a
+
+00:11:40.975 --> 00:11:43.774
+<v Speaker 0>string and returns a string or an error.
+
+00:11:43.774 --> 00:11:45.694
+<v Speaker 0>The error being if the secret reference could
+
+00:11:45.694 --> 00:11:46.654
+<v Speaker 0>not be resolved.
+
+00:11:46.815 --> 00:11:49.055
+<v Speaker 0>It's important to note that we do not
+
+00:11:49.055 --> 00:11:51.910
+<v Speaker 0>pass the Dagger client into this function. Why
+
+00:11:51.910 --> 00:11:53.830
+<v Speaker 0>is that important? I'll get to in just
+
+00:11:53.830 --> 00:11:55.510
+<v Speaker 0>a moment. So let's pop in and take
+
+00:11:55.510 --> 00:11:56.790
+<v Speaker 0>a look at get secret.
+
+00:11:58.150 --> 00:12:00.870
+<v Speaker 0>It takes the string and returns a string.
+
+00:12:01.350 --> 00:12:03.750
+<v Speaker 0>We can see that it's actually just executing
+
+00:12:03.750 --> 00:12:06.265
+<v Speaker 0>a command on my host. That's why it's
+
+00:12:06.265 --> 00:12:09.225
+<v Speaker 0>important that there's no Dagger client. Why is
+
+00:12:09.225 --> 00:12:11.385
+<v Speaker 0>that even more important when it refers to
+
+00:12:11.385 --> 00:12:12.105
+<v Speaker 0>secrets?
+
+00:12:12.265 --> 00:12:15.065
+<v Speaker 0>Because we execute this command on the host
+
+00:12:15.065 --> 00:12:18.425
+<v Speaker 0>as me. I am ambiently authenticated as me
+
+00:12:18.425 --> 00:12:20.425
+<v Speaker 0>to speak to one password.
+
+00:12:20.910 --> 00:12:22.990
+<v Speaker 0>In fact, when the op read hits my
+
+00:12:22.990 --> 00:12:24.510
+<v Speaker 0>host, you've seen that it popped up on
+
+00:12:24.510 --> 00:12:27.310
+<v Speaker 0>my watch for me to approve. It's important
+
+00:12:27.310 --> 00:12:29.470
+<v Speaker 0>that this is not happening in a container
+
+00:12:29.470 --> 00:12:30.430
+<v Speaker 0>context
+
+00:12:30.589 --> 00:12:33.230
+<v Speaker 0>because the minute it does, we have that
+
+00:12:33.230 --> 00:12:33.870
+<v Speaker 0>potential
+
+00:12:34.305 --> 00:12:37.265
+<v Speaker 0>that our container or CI cache could have
+
+00:12:37.265 --> 00:12:38.945
+<v Speaker 0>sensitive information
+
+00:12:39.024 --> 00:12:41.425
+<v Speaker 0>and we want to minimize that risk whenever
+
+00:12:41.425 --> 00:12:42.225
+<v Speaker 0>possible.
+
+00:12:42.464 --> 00:12:45.265
+<v Speaker 0>So our get secret speaks to one password
+
+00:12:45.265 --> 00:12:48.230
+<v Speaker 0>on the host, returns a string. So of
+
+00:12:48.230 --> 00:12:50.709
+<v Speaker 0>course, once we have this string here and
+
+00:12:50.709 --> 00:12:52.310
+<v Speaker 0>assuming there's no error,
+
+00:12:52.550 --> 00:12:54.470
+<v Speaker 0>the first thing we want to do is
+
+00:12:54.470 --> 00:12:56.310
+<v Speaker 0>to sanitize this in a way that we
+
+00:12:56.310 --> 00:12:58.630
+<v Speaker 0>can use it in our container context without
+
+00:12:58.950 --> 00:13:02.055
+<v Speaker 0>it being leaked into the build cache or
+
+00:13:02.055 --> 00:13:04.055
+<v Speaker 0>even out in the logs. So you'll see
+
+00:13:04.055 --> 00:13:06.615
+<v Speaker 0>here that we call client a Dagger client
+
+00:13:06.615 --> 00:13:09.175
+<v Speaker 0>dot set secret where we say that we
+
+00:13:09.175 --> 00:13:11.815
+<v Speaker 0>want to name the secret OpenAI token
+
+00:13:11.975 --> 00:13:14.455
+<v Speaker 0>and the value is our value from one
+
+00:13:14.455 --> 00:13:17.160
+<v Speaker 0>password. This now means that we have enough
+
+00:13:17.160 --> 00:13:17.960
+<v Speaker 0>guarantees
+
+00:13:17.960 --> 00:13:19.480
+<v Speaker 0>that this will not end up in our
+
+00:13:19.480 --> 00:13:21.080
+<v Speaker 0>logs and we'll do a demo to prove
+
+00:13:21.080 --> 00:13:23.560
+<v Speaker 0>that before the end of this video. Next,
+
+00:13:23.560 --> 00:13:26.120
+<v Speaker 0>we call dev tool dot get database.
+
+00:13:26.520 --> 00:13:27.880
+<v Speaker 0>This is a function that is going to
+
+00:13:27.880 --> 00:13:31.535
+<v Speaker 0>return our production like configured postgres instance so
+
+00:13:31.535 --> 00:13:33.615
+<v Speaker 0>that we're not using SQLite in our test
+
+00:13:33.615 --> 00:13:34.334
+<v Speaker 0>harness.
+
+00:13:34.654 --> 00:13:38.495
+<v Speaker 0>Again, trying to minimize the variance between production
+
+00:13:38.735 --> 00:13:42.334
+<v Speaker 0>and test. That get database looks like this.
+
+00:13:42.415 --> 00:13:44.415
+<v Speaker 0>This does take a Dagger client,
+
+00:13:44.829 --> 00:13:47.070
+<v Speaker 0>so we know there's a container involved
+
+00:13:47.550 --> 00:13:50.270
+<v Speaker 0>and in fact we get a container,
+
+00:13:50.589 --> 00:13:53.070
+<v Speaker 0>we start with Postgres 15 as a base,
+
+00:13:53.070 --> 00:13:54.910
+<v Speaker 0>we set the environment variables that we know
+
+00:13:54.910 --> 00:13:57.070
+<v Speaker 0>need to exist in order for this container
+
+00:13:57.070 --> 00:13:59.705
+<v Speaker 0>to run healthily, which is the user, the
+
+00:13:59.705 --> 00:14:02.905
+<v Speaker 0>password and a database name and because we're
+
+00:14:02.905 --> 00:14:05.225
+<v Speaker 0>going to use this in our Dagger context,
+
+00:14:05.225 --> 00:14:06.985
+<v Speaker 0>we're just gonna say that this exposes port
+
+00:14:06.985 --> 00:14:09.065
+<v Speaker 0>five four three two so that when we
+
+00:14:09.065 --> 00:14:11.145
+<v Speaker 0>run this as a dependent service,
+
+00:14:11.385 --> 00:14:14.339
+<v Speaker 0>the networking will work. Now it's important to
+
+00:14:14.339 --> 00:14:17.220
+<v Speaker 0>know that this is code. Right? Dagger pipelines
+
+00:14:17.220 --> 00:14:18.899
+<v Speaker 0>are code which means we can do code
+
+00:14:18.899 --> 00:14:21.060
+<v Speaker 0>like things. It may be
+
+00:14:21.300 --> 00:14:23.779
+<v Speaker 0>that you don't always want Postgres 15.
+
+00:14:24.019 --> 00:14:25.779
+<v Speaker 0>It may be that you don't always want
+
+00:14:25.779 --> 00:14:28.745
+<v Speaker 0>to just support Postgres. Perhaps as an organization,
+
+00:14:28.745 --> 00:14:31.225
+<v Speaker 0>you're starting to test MySQL,
+
+00:14:31.305 --> 00:14:32.584
+<v Speaker 0>CockroachDB,
+
+00:14:32.584 --> 00:14:33.625
+<v Speaker 0>MongoDB,
+
+00:14:33.785 --> 00:14:36.265
+<v Speaker 0>your toolchain, you decide. But you still want
+
+00:14:36.265 --> 00:14:38.265
+<v Speaker 0>to provide helpers that allow people to test
+
+00:14:38.265 --> 00:14:40.745
+<v Speaker 0>their applications with good velocity. So
+
+00:14:41.330 --> 00:14:42.130
+<v Speaker 0>obviously,
+
+00:14:42.210 --> 00:14:44.690
+<v Speaker 0>the simple approach would be just to say,
+
+00:14:44.690 --> 00:14:46.610
+<v Speaker 0>you know, get 14
+
+00:14:47.090 --> 00:14:49.250
+<v Speaker 0>and then we have a video. Right? But
+
+00:14:49.250 --> 00:14:51.250
+<v Speaker 0>there's a lot of shared code between this
+
+00:14:51.250 --> 00:14:52.210
+<v Speaker 0>and again,
+
+00:14:52.850 --> 00:14:54.690
+<v Speaker 0>because we're using code for our pipelines, we
+
+00:14:54.690 --> 00:14:56.834
+<v Speaker 0>can do code like things. So instead of
+
+00:14:56.834 --> 00:14:59.395
+<v Speaker 0>just duplicating the code, why don't we do
+
+00:15:00.595 --> 00:15:02.755
+<v Speaker 0>struct config DB
+
+00:15:02.755 --> 00:15:03.475
+<v Speaker 0>version
+
+00:15:03.955 --> 00:15:05.714
+<v Speaker 0>is string. Now I could have called that
+
+00:15:05.714 --> 00:15:07.714
+<v Speaker 0>post credit version and I was about to,
+
+00:15:07.714 --> 00:15:09.714
+<v Speaker 0>but we could prepare for the future. We
+
+00:15:09.714 --> 00:15:12.060
+<v Speaker 0>may support multiple drivers at one point. We
+
+00:15:12.060 --> 00:15:13.900
+<v Speaker 0>can then say that this 14 is actually
+
+00:15:13.900 --> 00:15:16.460
+<v Speaker 0>get database with a config where
+
+00:15:17.260 --> 00:15:19.740
+<v Speaker 0>we have a config. That now means that
+
+00:15:19.740 --> 00:15:21.100
+<v Speaker 0>this Postgres
+
+00:15:21.500 --> 00:15:23.580
+<v Speaker 0>can become a formatted string
+
+00:15:23.740 --> 00:15:27.340
+<v Speaker 0>like so. And we're formatting this with config
+
+00:15:28.055 --> 00:15:29.495
+<v Speaker 0>dot db version
+
+00:15:29.815 --> 00:15:31.575
+<v Speaker 0>and then we save that to resolve the
+
+00:15:31.575 --> 00:15:33.575
+<v Speaker 0>format import. Now we still have a lot
+
+00:15:33.575 --> 00:15:36.135
+<v Speaker 0>of duplication and again, you've got experience of
+
+00:15:36.135 --> 00:15:38.935
+<v Speaker 0>writing code, I've got experience with writing code.
+
+00:15:39.095 --> 00:15:41.895
+<v Speaker 0>We have patterns that we use for composition.
+
+00:15:42.610 --> 00:15:44.770
+<v Speaker 0>We have patterns that we use for maintainable
+
+00:15:44.770 --> 00:15:45.490
+<v Speaker 0>code.
+
+00:15:45.650 --> 00:15:48.610
+<v Speaker 0>Those all apply to your Dagger pipelines.
+
+00:15:48.690 --> 00:15:50.610
+<v Speaker 0>But we still have a lot of duplication.
+
+00:15:50.850 --> 00:15:53.250
+<v Speaker 0>So what we can actually do is remove
+
+00:15:53.250 --> 00:15:55.410
+<v Speaker 0>that and just say that actually,
+
+00:15:55.815 --> 00:15:58.055
+<v Speaker 0>we're just going to call get database of
+
+00:15:58.055 --> 00:16:01.415
+<v Speaker 0>config with a default config where that database
+
+00:16:01.415 --> 00:16:04.455
+<v Speaker 0>version is 15. Now this is backwards compatible,
+
+00:16:04.455 --> 00:16:05.495
+<v Speaker 0>it's maintainable,
+
+00:16:05.495 --> 00:16:08.215
+<v Speaker 0>and it's extensible. We can now modify and
+
+00:16:08.215 --> 00:16:10.779
+<v Speaker 0>expand our config, making sure the default case
+
+00:16:10.779 --> 00:16:13.899
+<v Speaker 0>is always what was the default case, but
+
+00:16:13.980 --> 00:16:16.540
+<v Speaker 0>have a function that can return whatever we
+
+00:16:16.540 --> 00:16:18.779
+<v Speaker 0>need. And that is pretty cool. So now
+
+00:16:18.779 --> 00:16:20.459
+<v Speaker 0>that we have our database, we can start
+
+00:16:20.459 --> 00:16:22.700
+<v Speaker 0>to build up the services that we need
+
+00:16:22.700 --> 00:16:24.895
+<v Speaker 0>to run our test harness. You can see
+
+00:16:24.895 --> 00:16:27.135
+<v Speaker 0>here that we're pulling on something called backend
+
+00:16:27.135 --> 00:16:29.615
+<v Speaker 0>builder dot build container image. And if you
+
+00:16:29.615 --> 00:16:32.415
+<v Speaker 0>remember looking at the Dagger code for each
+
+00:16:32.415 --> 00:16:33.135
+<v Speaker 0>service,
+
+00:16:33.295 --> 00:16:35.855
+<v Speaker 0>the backend service, it had a function called
+
+00:16:35.855 --> 00:16:38.870
+<v Speaker 0>build container image, which we're now using. We're
+
+00:16:38.870 --> 00:16:41.910
+<v Speaker 0>then enriching it with a database URI
+
+00:16:41.990 --> 00:16:44.630
+<v Speaker 0>and we're setting this to postgres postgres postgres
+
+00:16:44.630 --> 00:16:46.709
+<v Speaker 0>database five four three two postgres.
+
+00:16:46.709 --> 00:16:48.790
+<v Speaker 0>We're just setting up based on the information
+
+00:16:48.790 --> 00:16:50.230
+<v Speaker 0>that we have from here.
+
+00:16:51.175 --> 00:16:53.495
+<v Speaker 0>Now this could get smarter yet. Again, it's
+
+00:16:53.495 --> 00:16:55.575
+<v Speaker 0>code and you can do code like things.
+
+00:16:55.895 --> 00:16:57.815
+<v Speaker 0>What if the return type here
+
+00:16:57.975 --> 00:16:59.735
+<v Speaker 0>was actually a database
+
+00:17:00.455 --> 00:17:01.495
+<v Speaker 0>credentials
+
+00:17:01.495 --> 00:17:03.815
+<v Speaker 0>which had a host, a username,
+
+00:17:03.815 --> 00:17:04.855
+<v Speaker 0>a password
+
+00:17:05.494 --> 00:17:07.369
+<v Speaker 0>and a port. We can now start to
+
+00:17:07.369 --> 00:17:09.690
+<v Speaker 0>consume all of these details
+
+00:17:10.329 --> 00:17:11.049
+<v Speaker 0>here
+
+00:17:11.210 --> 00:17:13.529
+<v Speaker 0>and remove the hard coded strings. Now I'm
+
+00:17:13.529 --> 00:17:15.210
+<v Speaker 0>not gonna do all of this today,
+
+00:17:15.369 --> 00:17:18.089
+<v Speaker 0>but hopefully I'm showing you that again, Dagger,
+
+00:17:18.424 --> 00:17:19.304
+<v Speaker 0>code,
+
+00:17:19.464 --> 00:17:20.505
+<v Speaker 0>maintainability,
+
+00:17:20.505 --> 00:17:22.825
+<v Speaker 0>extensibility and composability
+
+00:17:23.065 --> 00:17:25.145
+<v Speaker 0>all give you a lot of power to
+
+00:17:25.145 --> 00:17:26.825
+<v Speaker 0>treat your Dagger pipelines
+
+00:17:26.905 --> 00:17:30.265
+<v Speaker 0>like real software projects, improve them, maintain them
+
+00:17:30.265 --> 00:17:32.429
+<v Speaker 0>and make them faster. Once we've configured the
+
+00:17:32.429 --> 00:17:35.390
+<v Speaker 0>database UI, we pass in our OpenAI token.
+
+00:17:35.390 --> 00:17:37.630
+<v Speaker 0>Now because this is a secret, we're passing
+
+00:17:37.630 --> 00:17:40.269
+<v Speaker 0>this in as web secret variable.
+
+00:17:40.270 --> 00:17:41.950
+<v Speaker 0>Why are we doing this? Because we never
+
+00:17:41.950 --> 00:17:44.590
+<v Speaker 0>want this to leak. I'm feeling bold enough
+
+00:17:44.235 --> 00:17:45.755
+<v Speaker 0>that I'm gonna go to our back end
+
+00:17:45.755 --> 00:17:47.914
+<v Speaker 0>service and paste in a printf.
+
+00:17:47.915 --> 00:17:51.595
+<v Speaker 0>The prints are token to the log output.
+
+00:17:51.915 --> 00:17:53.835
+<v Speaker 0>Now because we mount this end to the
+
+00:17:53.835 --> 00:17:56.154
+<v Speaker 0>container as a secret reference,
+
+00:17:56.395 --> 00:17:58.235
+<v Speaker 0>it should be redacted
+
+00:17:58.235 --> 00:17:59.195
+<v Speaker 0>in the log output.
+
+00:17:59.850 --> 00:18:01.850
+<v Speaker 0>We then say that the port is eighty
+
+00:18:01.850 --> 00:18:03.930
+<v Speaker 0>eighty and we expose this port to be
+
+00:18:03.930 --> 00:18:06.409
+<v Speaker 0>consumed by the test harness container
+
+00:18:06.730 --> 00:18:09.530
+<v Speaker 0>and of course our backend has a dependent
+
+00:18:09.530 --> 00:18:11.690
+<v Speaker 0>service. So we're going to do web service
+
+00:18:11.690 --> 00:18:14.945
+<v Speaker 0>binding under the DNS host name database to
+
+00:18:14.945 --> 00:18:16.705
+<v Speaker 0>the database container.
+
+00:18:16.785 --> 00:18:19.185
+<v Speaker 0>We're just connecting these two together so that
+
+00:18:19.185 --> 00:18:21.345
+<v Speaker 0>our back end can make requests over the
+
+00:18:21.345 --> 00:18:24.305
+<v Speaker 0>DNS name database to the Postgres instance. And
+
+00:18:24.305 --> 00:18:26.545
+<v Speaker 0>then we set a web exec as empty
+
+00:18:26.545 --> 00:18:29.025
+<v Speaker 0>which just means trigger that entry point that
+
+00:18:29.025 --> 00:18:29.665
+<v Speaker 0>we configured
+
+00:18:30.480 --> 00:18:32.640
+<v Speaker 0>production image. Now I am using a little
+
+00:18:32.640 --> 00:18:35.040
+<v Speaker 0>bit of runtime caller just to get again
+
+00:18:35.040 --> 00:18:38.399
+<v Speaker 0>a specific subset of our mono repository.
+
+00:18:38.799 --> 00:18:39.840
+<v Speaker 0>In this case,
+
+00:18:40.160 --> 00:18:42.960
+<v Speaker 0>I'm grabbing the test dot hull directory or
+
+00:18:42.960 --> 00:18:45.200
+<v Speaker 0>the directory that contains the test dot hull
+
+00:18:45.575 --> 00:18:47.655
+<v Speaker 0>and I'm mounting that into a container which
+
+00:18:47.655 --> 00:18:50.134
+<v Speaker 0>is using the hull three point o image.
+
+00:18:50.295 --> 00:18:52.375
+<v Speaker 0>This has a back end, this has a
+
+00:18:52.375 --> 00:18:55.415
+<v Speaker 0>dependent service too. The hull test suite needs
+
+00:18:55.415 --> 00:18:56.695
+<v Speaker 0>to be able to speak to the back
+
+00:18:56.695 --> 00:18:59.370
+<v Speaker 0>end over the DNS name backend.
+
+00:18:59.610 --> 00:19:02.490
+<v Speaker 0>We've seen this in the hull file itself
+
+00:19:02.730 --> 00:19:04.970
+<v Speaker 0>and the workaround and the just file for
+
+00:19:04.970 --> 00:19:06.169
+<v Speaker 0>local execution.
+
+00:19:06.490 --> 00:19:07.929
+<v Speaker 0>We mount the directory,
+
+00:19:07.930 --> 00:19:11.530
+<v Speaker 0>we set the entry point and we pass
+
+00:19:11.025 --> 00:19:13.585
+<v Speaker 0>exec which is the command in the Dockerfile
+
+00:19:13.585 --> 00:19:15.905
+<v Speaker 0>or the arguments to the entry point. Now
+
+00:19:15.905 --> 00:19:18.385
+<v Speaker 0>because of these can pass or fail, we
+
+00:19:18.385 --> 00:19:20.065
+<v Speaker 0>grab the exit code
+
+00:19:20.385 --> 00:19:23.185
+<v Speaker 0>and we grab standard error. I could grab
+
+00:19:23.185 --> 00:19:25.265
+<v Speaker 0>standard error but I don't need it in
+
+00:19:25.265 --> 00:19:27.800
+<v Speaker 0>this particular instance. As the exit code is
+
+00:19:27.800 --> 00:19:30.280
+<v Speaker 0>not zero, this means that a failure happened,
+
+00:19:30.280 --> 00:19:32.280
+<v Speaker 0>failure occurred. So let's print out a red
+
+00:19:32.280 --> 00:19:34.680
+<v Speaker 0>goblin or devil, whatever that is. With test
+
+00:19:34.680 --> 00:19:37.000
+<v Speaker 0>fails, we'll print the exit code and we'll
+
+00:19:37.000 --> 00:19:38.440
+<v Speaker 0>print the error output.
+
+00:19:38.840 --> 00:19:40.280
+<v Speaker 0>And if things worked successfully,
+
+00:19:40.774 --> 00:19:42.934
+<v Speaker 0>green tick and passed.
+
+00:19:43.255 --> 00:19:45.974
+<v Speaker 0>So we're going to run this again.
+
+00:19:46.215 --> 00:19:48.375
+<v Speaker 0>What we expect to see is a redacted
+
+00:19:48.375 --> 00:19:51.255
+<v Speaker 0>secret inside of our log output and our
+
+00:19:51.255 --> 00:19:52.374
+<v Speaker 0>test passing
+
+00:19:52.615 --> 00:19:56.460
+<v Speaker 0>using two dependent services powered by Dagger. Now
+
+00:19:56.460 --> 00:19:57.899
+<v Speaker 0>because this is Go code,
+
+00:19:58.140 --> 00:20:00.460
+<v Speaker 0>I can and we will in a moment
+
+00:20:00.460 --> 00:20:02.620
+<v Speaker 0>run the test main dot go as a
+
+00:20:02.620 --> 00:20:04.220
+<v Speaker 0>straight up file. However,
+
+00:20:04.380 --> 00:20:06.780
+<v Speaker 0>only feedback you're going to get from Dagger
+
+00:20:06.780 --> 00:20:08.700
+<v Speaker 0>is the format dot print lines that you
+
+00:20:08.700 --> 00:20:11.020
+<v Speaker 0>do unless you configure the debug
+
+00:20:11.265 --> 00:20:12.784
+<v Speaker 0>on the Dagger connection.
+
+00:20:13.345 --> 00:20:15.745
+<v Speaker 0>However, there's an experimental UI
+
+00:20:16.625 --> 00:20:19.025
+<v Speaker 0>which you may remember as set inside the
+
+00:20:19.025 --> 00:20:20.145
+<v Speaker 0>ENVRC.
+
+00:20:21.185 --> 00:20:23.585
+<v Speaker 0>To use that experimental UI, we can do
+
+00:20:23.585 --> 00:20:25.740
+<v Speaker 0>Dagger run, go run
+
+00:20:25.980 --> 00:20:26.940
+<v Speaker 0>build
+
+00:20:27.100 --> 00:20:28.059
+<v Speaker 0>test
+
+00:20:28.380 --> 00:20:30.700
+<v Speaker 0>main. When I run this, we're going to
+
+00:20:30.700 --> 00:20:33.820
+<v Speaker 0>see the complete graph of all the steps
+
+00:20:33.820 --> 00:20:35.580
+<v Speaker 0>that Dagger is going to run
+
+00:20:36.060 --> 00:20:37.660
+<v Speaker 0>and whether they're successful,
+
+00:20:38.255 --> 00:20:40.895
+<v Speaker 0>whether they're in progress or whether they have
+
+00:20:40.895 --> 00:20:41.535
+<v Speaker 0>failed.
+
+00:20:41.935 --> 00:20:44.095
+<v Speaker 0>So the UI should pop up and right
+
+00:20:44.095 --> 00:20:46.015
+<v Speaker 0>away because one of the first things that
+
+00:20:46.015 --> 00:20:47.855
+<v Speaker 0>we do is a host call
+
+00:20:47.935 --> 00:20:49.375
+<v Speaker 0>to get my password.
+
+00:20:49.775 --> 00:20:51.615
+<v Speaker 0>We can actually see the only step in
+
+00:20:51.615 --> 00:20:53.640
+<v Speaker 0>the DAG right now is the go run.
+
+00:20:53.640 --> 00:20:56.760
+<v Speaker 0>There are no container executions at all. Let's
+
+00:20:56.760 --> 00:20:57.720
+<v Speaker 0>approve that
+
+00:20:58.520 --> 00:21:01.960
+<v Speaker 0>and now we're pulling Golang latest and Postgres.
+
+00:21:02.440 --> 00:21:03.960
+<v Speaker 0>A lot of this will be cash because
+
+00:21:03.960 --> 00:21:06.985
+<v Speaker 0>I've run this demo many many times. However,
+
+00:21:06.985 --> 00:21:08.905
+<v Speaker 0>we did make a modification to the go
+
+00:21:08.905 --> 00:21:11.225
+<v Speaker 0>binary which may trigger the build. So we're
+
+00:21:11.225 --> 00:21:12.985
+<v Speaker 0>gonna give that just a few seconds to
+
+00:21:12.985 --> 00:21:15.705
+<v Speaker 0>finish. Okay. So our test suite has now
+
+00:21:15.705 --> 00:21:17.705
+<v Speaker 0>finished. If we go to the very top,
+
+00:21:18.105 --> 00:21:20.730
+<v Speaker 0>we'll see that the build has passed. But
+
+00:21:20.730 --> 00:21:22.970
+<v Speaker 0>what we're interested in seeing is a redacted
+
+00:21:22.970 --> 00:21:26.249
+<v Speaker 0>secret and the dependent service output.
+
+00:21:26.490 --> 00:21:28.809
+<v Speaker 0>So let's scroll down to the dependent service
+
+00:21:28.890 --> 00:21:30.889
+<v Speaker 0>where we have the entry point here.
+
+00:21:31.610 --> 00:21:33.130
+<v Speaker 0>And as you'll see, we have our output
+
+00:21:33.130 --> 00:21:35.450
+<v Speaker 0>of API token is here where it's just
+
+00:21:35.450 --> 00:21:37.924
+<v Speaker 0>replaced with three stars. Sweet.
+
+00:21:38.485 --> 00:21:40.885
+<v Speaker 0>Now the Dagger UI is great, you can
+
+00:21:40.885 --> 00:21:42.485
+<v Speaker 0>use that as much as you want. It's
+
+00:21:42.485 --> 00:21:44.245
+<v Speaker 0>great for debugging observability
+
+00:21:44.245 --> 00:21:47.125
+<v Speaker 0>into what's actually happening now with part of
+
+00:21:47.125 --> 00:21:49.045
+<v Speaker 0>the pipeline. But of course, because this is
+
+00:21:49.045 --> 00:21:50.165
+<v Speaker 0>all just go code,
+
+00:21:50.820 --> 00:21:52.899
+<v Speaker 0>we can also just do Go run build
+
+00:21:52.899 --> 00:21:55.700
+<v Speaker 0>test where build test is the module name
+
+00:21:55.700 --> 00:21:57.700
+<v Speaker 0>of where my test runner is and the
+
+00:21:57.700 --> 00:21:58.659
+<v Speaker 0>main dot go.
+
+00:21:59.059 --> 00:22:01.299
+<v Speaker 0>I run this like this. When it finishes,
+
+00:22:01.299 --> 00:22:03.139
+<v Speaker 0>all we're going to see is any print
+
+00:22:03.139 --> 00:22:04.899
+<v Speaker 0>statements that I have such as build a
+
+00:22:04.899 --> 00:22:07.715
+<v Speaker 0>container image And the last print statement will
+
+00:22:07.715 --> 00:22:10.595
+<v Speaker 0>either be test pass or test fail.
+
+00:22:10.995 --> 00:22:12.274
+<v Speaker 0>Enter test pass.
+
+00:22:12.434 --> 00:22:14.115
+<v Speaker 0>Of course, never trust a test suite that
+
+00:22:14.115 --> 00:22:16.835
+<v Speaker 0>passes twice in a row, especially mine. Let's
+
+00:22:16.835 --> 00:22:18.760
+<v Speaker 0>come on to our test dot huddle. Now
+
+00:22:18.760 --> 00:22:20.840
+<v Speaker 0>I'm not going to change any Go code
+
+00:22:20.840 --> 00:22:23.880
+<v Speaker 0>or cache within the build system should still
+
+00:22:23.880 --> 00:22:26.360
+<v Speaker 0>be pretty good. Meaning even if I change
+
+00:22:26.600 --> 00:22:28.840
+<v Speaker 0>the test suite, it should run against the
+
+00:22:28.840 --> 00:22:30.600
+<v Speaker 0>cached and built artifacts.
+
+00:22:30.825 --> 00:22:32.744
+<v Speaker 0>Meaning, it should be really fast.
+
+00:22:33.065 --> 00:22:33.624
+<v Speaker 0>So
+
+00:22:34.585 --> 00:22:36.505
+<v Speaker 0>I'm pretty sure ChatGPT is not going to
+
+00:22:36.505 --> 00:22:38.664
+<v Speaker 0>see Rawkode in response to our question.
+
+00:22:39.304 --> 00:22:41.945
+<v Speaker 0>So let's run this one more time and
+
+00:22:41.945 --> 00:22:43.625
+<v Speaker 0>see the tests fail.
+
+00:22:44.340 --> 00:22:46.660
+<v Speaker 0>And at nine seconds as opposed to over
+
+00:22:46.660 --> 00:22:48.179
+<v Speaker 0>a minute, we see
+
+00:22:48.580 --> 00:22:51.460
+<v Speaker 0>that we do not get Rawkode
+
+00:22:51.460 --> 00:22:53.619
+<v Speaker 0>as part of our response.
+
+00:22:53.940 --> 00:22:54.659
+<v Speaker 0>Nice.
+
+00:22:54.820 --> 00:22:57.140
+<v Speaker 0>So that's it for this video. Hopefully, you
+
+00:22:57.140 --> 00:22:58.419
+<v Speaker 0>have a good taste for the things you
+
+00:22:58.419 --> 00:23:00.325
+<v Speaker 0>can do with Dagger now. The key takeaways
+
+00:23:00.325 --> 00:23:03.445
+<v Speaker 0>are one, Dagger is awesome. You can write
+
+00:23:03.445 --> 00:23:06.645
+<v Speaker 0>complete CICD pipelines and whatever programming language you
+
+00:23:06.645 --> 00:23:09.125
+<v Speaker 0>want. Taking advantage of all the years of
+
+00:23:09.125 --> 00:23:11.365
+<v Speaker 0>experience you have of writing code and applying
+
+00:23:11.365 --> 00:23:13.580
+<v Speaker 0>them to your build system. We can pull
+
+00:23:13.580 --> 00:23:15.980
+<v Speaker 0>in secrets. We can have dependent services.
+
+00:23:16.220 --> 00:23:18.140
+<v Speaker 0>We can have a CI system that is
+
+00:23:18.140 --> 00:23:19.660
+<v Speaker 0>truly composable.
+
+00:23:19.820 --> 00:23:21.820
+<v Speaker 0>And that is worth its weight in gold.
+
+00:23:21.820 --> 00:23:23.820
+<v Speaker 0>So go check out Dagger now. Remember to
+
+00:23:23.820 --> 00:23:25.260
+<v Speaker 0>check out dagger.i0
+
+00:23:25.260 --> 00:23:27.664
+<v Speaker 0>for all the latest news and announcements as
+
+00:23:27.664 --> 00:23:29.584
+<v Speaker 0>well as some great documentation.
+
+00:23:29.584 --> 00:23:31.024
+<v Speaker 0>I'll see you next time. Have a great
+
+00:23:31.024 --> 00:23:31.264
+<v Speaker 0>day.

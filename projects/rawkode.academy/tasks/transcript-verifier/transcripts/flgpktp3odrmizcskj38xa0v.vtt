@@ -1,0 +1,5105 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 4ac8adc7-2335-44a6-a683-af6a72ff9643
+Created: 2025-04-29T21:47:35.993Z
+Duration: 4030.0225
+Channels: 1
+
+00:01:12.725 --> 00:01:15.525
+<v Speaker 0>Hello and welcome to today's episode of Rawkode
+
+00:01:15.525 --> 00:01:16.245
+<v Speaker 0>live.
+
+00:01:17.285 --> 00:01:19.925
+<v Speaker 0>I'm your host, David McKay, who also forgot
+
+00:01:19.925 --> 00:01:21.925
+<v Speaker 0>his name. I'm known across the internet as
+
+00:01:21.925 --> 00:01:22.565
+<v Speaker 0>Rawkode,
+
+00:01:22.980 --> 00:01:24.820
+<v Speaker 0>mostly because all the other good handles were
+
+00:01:24.820 --> 00:01:26.740
+<v Speaker 0>taken. Now today,
+
+00:01:26.740 --> 00:01:28.660
+<v Speaker 0>we are taking a look at WebAssembly and
+
+00:01:28.660 --> 00:01:29.620
+<v Speaker 0>WASC and
+
+00:01:30.420 --> 00:01:32.740
+<v Speaker 0>we quite literally have the person that wrote
+
+00:01:32.740 --> 00:01:34.900
+<v Speaker 0>the book on this joining us today. Kevin
+
+00:01:34.900 --> 00:01:38.125
+<v Speaker 0>Hoffman is a distinguished engineer at Capital One,
+
+00:01:38.284 --> 00:01:41.325
+<v Speaker 0>the author of programming WebAssembly with Rust and
+
+00:01:41.325 --> 00:01:43.805
+<v Speaker 0>the technical lead for the WASC project.
+
+00:01:44.525 --> 00:01:47.325
+<v Speaker 0>Hello, Kevin. How are you? I'm doing good.
+
+00:01:47.325 --> 00:01:49.805
+<v Speaker 1>Thanks for having me here. No. This is
+
+00:01:49.230 --> 00:01:51.150
+<v Speaker 0>gonna be awesome. I'm really looking forward to
+
+00:01:51.150 --> 00:01:51.710
+<v Speaker 0>this.
+
+00:01:51.950 --> 00:01:54.990
+<v Speaker 0>WebAssembly is a very very cool technology
+
+00:01:55.790 --> 00:01:57.550
+<v Speaker 0>that I will do my best
+
+00:01:58.510 --> 00:02:01.390
+<v Speaker 0>to explain it and then you can you
+
+00:02:01.390 --> 00:02:02.830
+<v Speaker 0>know, come on and just let me know
+
+00:02:02.830 --> 00:02:04.750
+<v Speaker 0>what I got wrong or hopefully I got
+
+00:02:04.750 --> 00:02:06.325
+<v Speaker 0>it all right. But anything you wanna add
+
+00:02:06.325 --> 00:02:08.324
+<v Speaker 0>to that, feel free to go. So my
+
+00:02:08.324 --> 00:02:10.245
+<v Speaker 0>understanding of WebAssembly
+
+00:02:10.725 --> 00:02:12.965
+<v Speaker 0>is that it is a big code not
+
+00:02:12.965 --> 00:02:15.525
+<v Speaker 0>too dissimilar to what the JVM has, I
+
+00:02:15.525 --> 00:02:17.685
+<v Speaker 0>really hate to make that comparison, but you
+
+00:02:17.685 --> 00:02:19.680
+<v Speaker 0>know, we work with anyone who writes Java,
+
+00:02:19.680 --> 00:02:21.200
+<v Speaker 0>works with Java and it get compiled to
+
+00:02:21.200 --> 00:02:22.080
+<v Speaker 0>a big code.
+
+00:02:22.400 --> 00:02:24.319
+<v Speaker 0>WebAssembly I think is the same on there's
+
+00:02:24.319 --> 00:02:25.920
+<v Speaker 0>a runtime isn't a JVM,
+
+00:02:25.920 --> 00:02:28.319
+<v Speaker 0>it's VA or something within our browsers to
+
+00:02:28.319 --> 00:02:29.600
+<v Speaker 0>execute that code.
+
+00:02:30.319 --> 00:02:32.560
+<v Speaker 0>The reason I am quite interested in WebAssembly
+
+00:02:32.560 --> 00:02:34.799
+<v Speaker 0>is that it comes with a whole bunch
+
+00:02:34.075 --> 00:02:34.715
+<v Speaker 0>of
+
+00:02:34.875 --> 00:02:37.435
+<v Speaker 0>sandboxing things that keep it safe from the
+
+00:02:37.435 --> 00:02:38.555
+<v Speaker 0>rest of the browser.
+
+00:02:39.915 --> 00:02:41.035
+<v Speaker 0>Is that right?
+
+00:02:42.635 --> 00:02:44.555
+<v Speaker 1>Yeah. So by and large, it's it's right.
+
+00:02:44.555 --> 00:02:47.750
+<v Speaker 1>I think whenever whenever I ask someone, you
+
+00:02:47.750 --> 00:02:49.270
+<v Speaker 1>know, what is WebAssembly,
+
+00:02:49.270 --> 00:02:51.670
+<v Speaker 1>the first thing they they invariably say is
+
+00:02:51.670 --> 00:02:52.390
+<v Speaker 1>that it's
+
+00:02:52.870 --> 00:02:54.790
+<v Speaker 1>a VM that runs in the browser.
+
+00:02:55.670 --> 00:02:56.230
+<v Speaker 1>And
+
+00:02:56.709 --> 00:02:58.150
+<v Speaker 1>my for my own
+
+00:02:58.390 --> 00:03:00.310
+<v Speaker 1>personal purposes, I have no intention
+
+00:03:00.725 --> 00:03:02.565
+<v Speaker 1>of doing anything with the browser.
+
+00:03:03.125 --> 00:03:04.485
+<v Speaker 1>All of the stuff that I do with
+
+00:03:04.485 --> 00:03:05.445
+<v Speaker 1>WebAssembly
+
+00:03:05.605 --> 00:03:06.405
+<v Speaker 1>is
+
+00:03:06.645 --> 00:03:09.125
+<v Speaker 1>servers and in the cloud and on the
+
+00:03:09.125 --> 00:03:09.685
+<v Speaker 1>edge.
+
+00:03:10.565 --> 00:03:12.805
+<v Speaker 1>So it is a virtual machine,
+
+00:03:13.445 --> 00:03:15.445
+<v Speaker 1>but the browser is just one of many
+
+00:03:15.445 --> 00:03:15.845
+<v Speaker 1>hosts.
+
+00:03:16.510 --> 00:03:18.590
+<v Speaker 1>As long as the the as long as
+
+00:03:18.590 --> 00:03:20.750
+<v Speaker 1>the host knows how to read that bytecode,
+
+00:03:20.750 --> 00:03:22.750
+<v Speaker 1>it can be anywhere from
+
+00:03:23.230 --> 00:03:25.310
+<v Speaker 1>VM running in the cloud to
+
+00:03:25.630 --> 00:03:27.790
+<v Speaker 1>Raspberry Pi or something even smaller.
+
+00:03:28.995 --> 00:03:30.515
+<v Speaker 0>Yeah. That's a that's a great point. Like,
+
+00:03:30.515 --> 00:03:32.035
+<v Speaker 0>well, the WebAssembly,
+
+00:03:32.595 --> 00:03:34.595
+<v Speaker 0>if I code and APIs and all that
+
+00:03:34.595 --> 00:03:37.555
+<v Speaker 0>were initially defined to maybe, you know, speed
+
+00:03:37.555 --> 00:03:39.715
+<v Speaker 0>up the computational aspect of browser
+
+00:03:39.955 --> 00:03:40.355
+<v Speaker 0>stuff.
+
+00:03:40.940 --> 00:03:42.700
+<v Speaker 0>Is that there's no reason run times for
+
+00:03:42.700 --> 00:03:45.020
+<v Speaker 0>that can't exist outside of the browser, which
+
+00:03:45.020 --> 00:03:46.940
+<v Speaker 0>is what the WASC project does, if I'm
+
+00:03:46.940 --> 00:03:48.540
+<v Speaker 0>not mistaken. Do you wanna just give us
+
+00:03:48.540 --> 00:03:50.140
+<v Speaker 0>the the, you know, the ten second pitch
+
+00:03:50.140 --> 00:03:51.340
+<v Speaker 0>of what WASC is?
+
+00:03:51.660 --> 00:03:53.980
+<v Speaker 1>Sure. So the the ten second pitch is
+
+00:03:53.980 --> 00:03:55.915
+<v Speaker 1>that, like you said, in your in your
+
+00:03:55.915 --> 00:03:57.755
+<v Speaker 1>definition of WebAssembly,
+
+00:03:57.995 --> 00:04:00.795
+<v Speaker 1>it has things like it's small, it's portable,
+
+00:04:00.795 --> 00:04:02.475
+<v Speaker 1>it's secure, it's fast.
+
+00:04:02.954 --> 00:04:04.555
+<v Speaker 1>And those things are all great in the
+
+00:04:04.555 --> 00:04:06.954
+<v Speaker 1>browser, but those are also qualities that we
+
+00:04:06.954 --> 00:04:08.394
+<v Speaker 1>want in the
+
+00:04:08.730 --> 00:04:11.290
+<v Speaker 1>workloads that we're deploying in the cloud. And
+
+00:04:11.290 --> 00:04:14.409
+<v Speaker 1>so WASP aims to give us that ability.
+
+00:04:14.409 --> 00:04:14.970
+<v Speaker 1>So
+
+00:04:15.209 --> 00:04:15.930
+<v Speaker 1>it
+
+00:04:17.050 --> 00:04:19.529
+<v Speaker 1>acts as a broker between
+
+00:04:19.769 --> 00:04:20.729
+<v Speaker 1>WebAssembly
+
+00:04:20.729 --> 00:04:23.130
+<v Speaker 1>actors or WebAssembly modules
+
+00:04:23.945 --> 00:04:27.785
+<v Speaker 1>and the nonfunctional requirements that you normally have
+
+00:04:27.785 --> 00:04:29.865
+<v Speaker 1>in cloud environments or
+
+00:04:30.185 --> 00:04:31.305
+<v Speaker 1>capabilities.
+
+00:04:33.145 --> 00:04:35.385
+<v Speaker 0>Alright. Nice. That sounds awesome.
+
+00:04:35.705 --> 00:04:37.545
+<v Speaker 0>What I'm gonna do first is just pop
+
+00:04:37.545 --> 00:04:38.345
+<v Speaker 0>up my screen
+
+00:04:39.490 --> 00:04:40.290
+<v Speaker 0>here.
+
+00:04:40.849 --> 00:04:43.090
+<v Speaker 0>So we have the WebAssembly
+
+00:04:43.090 --> 00:04:45.009
+<v Speaker 0>page here. If people wanna check that out,
+
+00:04:45.009 --> 00:04:46.690
+<v Speaker 0>they can go to webassembly.org.
+
+00:04:47.090 --> 00:04:49.650
+<v Speaker 0>The WASC homepage and also where the documentation
+
+00:04:49.650 --> 00:04:51.650
+<v Speaker 0>lies is at WASC.dev.
+
+00:04:52.655 --> 00:04:54.815
+<v Speaker 0>And if anyone is curious about the actual
+
+00:04:54.815 --> 00:04:57.055
+<v Speaker 0>book that Kevin has written, it is on
+
+00:04:57.055 --> 00:04:59.375
+<v Speaker 0>the pragmatic bookshelf available here.
+
+00:05:00.335 --> 00:05:02.175
+<v Speaker 0>So we have our first comment from a
+
+00:05:02.175 --> 00:05:05.055
+<v Speaker 0>familiar face, Brian Kesselson is saying hello. Hello,
+
+00:05:05.055 --> 00:05:06.495
+<v Speaker 1>Brian. Thanks for tuning in.
+
+00:05:07.375 --> 00:05:09.590
+<v Speaker 0>So today we're gonna get hands on with
+
+00:05:09.590 --> 00:05:11.830
+<v Speaker 0>these technologies and and try to understand, you
+
+00:05:11.830 --> 00:05:13.669
+<v Speaker 0>know, what the first steps are for someone
+
+00:05:13.669 --> 00:05:15.509
+<v Speaker 0>who is new to WebAssembly and to ask
+
+00:05:15.509 --> 00:05:17.270
+<v Speaker 0>and just how they get involved, how they
+
+00:05:17.270 --> 00:05:18.150
+<v Speaker 0>get started.
+
+00:05:18.629 --> 00:05:19.830
+<v Speaker 0>And when we spoke
+
+00:05:20.385 --> 00:05:22.545
+<v Speaker 0>just before we we started the session and
+
+00:05:22.545 --> 00:05:24.145
+<v Speaker 0>and keeping with how this stream works is
+
+00:05:24.145 --> 00:05:25.425
+<v Speaker 0>I tried to do it as little as
+
+00:05:25.425 --> 00:05:26.465
+<v Speaker 0>possible upfront.
+
+00:05:27.505 --> 00:05:29.025
+<v Speaker 0>But you did say that I I need
+
+00:05:29.025 --> 00:05:30.865
+<v Speaker 0>rust and cargo and fortunately I have those
+
+00:05:30.865 --> 00:05:32.465
+<v Speaker 0>tools installed, so I do have,
+
+00:05:33.400 --> 00:05:35.160
+<v Speaker 0>this will be its version, I do have
+
+00:05:35.160 --> 00:05:37.320
+<v Speaker 0>cargo. I do have rust. So as someone
+
+00:05:37.320 --> 00:05:40.920
+<v Speaker 0>completely new this, I mean, is step one?
+
+00:05:42.120 --> 00:05:44.360
+<v Speaker 1>So it depends on what level you wanna
+
+00:05:44.360 --> 00:05:47.080
+<v Speaker 1>start working at. So I can share my
+
+00:05:47.080 --> 00:05:48.905
+<v Speaker 1>screen and and I can show what some
+
+00:05:48.905 --> 00:05:51.944
+<v Speaker 1>of the raw WebAssembly looks like without anybody
+
+00:05:51.944 --> 00:05:55.145
+<v Speaker 1>else's tooling. So what what WebAssembly looks like
+
+00:05:55.145 --> 00:05:55.945
+<v Speaker 1>without
+
+00:05:56.745 --> 00:05:58.264
+<v Speaker 1>any bells and whistles.
+
+00:05:58.425 --> 00:06:00.585
+<v Speaker 0>Oh, yeah. Let's do that. Go for it.
+
+00:06:02.104 --> 00:06:02.905
+<v Speaker 1>Alright. So
+
+00:06:06.510 --> 00:06:06.750
+<v Speaker 1>okay.
+
+00:06:16.564 --> 00:06:18.245
+<v Speaker 1>Alright. I had to go through an awful
+
+00:06:18.245 --> 00:06:19.525
+<v Speaker 1>lot of security
+
+00:06:19.525 --> 00:06:20.565
+<v Speaker 1>prompts there.
+
+00:06:21.284 --> 00:06:23.844
+<v Speaker 1>Can you see the the tools here? The
+
+00:06:23.844 --> 00:06:25.125
+<v Speaker 1>the window? Alright.
+
+00:06:25.365 --> 00:06:25.925
+<v Speaker 1>So
+
+00:06:26.245 --> 00:06:28.724
+<v Speaker 1>like you said, WebAssembly is a byte code
+
+00:06:28.724 --> 00:06:32.020
+<v Speaker 1>format and there is a low level language
+
+00:06:32.020 --> 00:06:33.220
+<v Speaker 1>that you can use
+
+00:06:33.540 --> 00:06:36.260
+<v Speaker 1>to to write raw WebAssembly.
+
+00:06:36.260 --> 00:06:38.420
+<v Speaker 1>And so I've got a a little bit
+
+00:06:38.420 --> 00:06:39.300
+<v Speaker 1>of it here.
+
+00:06:42.500 --> 00:06:44.100
+<v Speaker 1>So this
+
+00:06:44.255 --> 00:06:47.055
+<v Speaker 1>is the the low level raw WebAssembly.
+
+00:06:47.695 --> 00:06:51.055
+<v Speaker 1>And in this one function here, if
+
+00:06:51.695 --> 00:06:54.335
+<v Speaker 1>you squint past all the parentheses, you can
+
+00:06:54.335 --> 00:06:56.655
+<v Speaker 1>see that it's adding two numbers together.
+
+00:06:57.580 --> 00:07:00.060
+<v Speaker 1>And there's a if you really want to
+
+00:07:00.060 --> 00:07:01.740
+<v Speaker 1>to work with WebAssembly,
+
+00:07:02.060 --> 00:07:03.340
+<v Speaker 1>there's a toolkit,
+
+00:07:03.500 --> 00:07:07.660
+<v Speaker 1>pronounced Webit or the WebAssembly binary toolkit.
+
+00:07:08.060 --> 00:07:10.300
+<v Speaker 1>And that has all the tools that you
+
+00:07:10.300 --> 00:07:14.525
+<v Speaker 1>need for inspecting WebAssembly files, verifying them,
+
+00:07:15.085 --> 00:07:16.365
+<v Speaker 1>trimming them down,
+
+00:07:17.165 --> 00:07:19.245
+<v Speaker 1>other types of analysis,
+
+00:07:20.125 --> 00:07:22.285
+<v Speaker 1>as well as compiling and decompiling.
+
+00:07:22.685 --> 00:07:24.285
+<v Speaker 1>So I can do,
+
+00:07:25.080 --> 00:07:27.000
+<v Speaker 1>I can use a funk a a tool
+
+00:07:27.000 --> 00:07:28.360
+<v Speaker 1>called WAT2WASM
+
+00:07:29.240 --> 00:07:30.600
+<v Speaker 1>on this file,
+
+00:07:30.919 --> 00:07:32.120
+<v Speaker 1>and it will
+
+00:07:32.840 --> 00:07:34.360
+<v Speaker 1>and it produces my,
+
+00:07:35.560 --> 00:07:38.120
+<v Speaker 1>my my WebAssembly file. And
+
+00:07:38.605 --> 00:07:40.765
+<v Speaker 1>there's another tool called WasmTime,
+
+00:07:40.765 --> 00:07:42.205
+<v Speaker 1>which is a
+
+00:07:42.445 --> 00:07:44.125
+<v Speaker 1>it's a couple of things all rolled into
+
+00:07:44.125 --> 00:07:46.205
+<v Speaker 1>one. It's a library that you can use
+
+00:07:46.205 --> 00:07:49.325
+<v Speaker 1>in Rust to run WebAssembly modules, but it's
+
+00:07:49.325 --> 00:07:50.845
+<v Speaker 1>also a a command line tool.
+
+00:07:55.020 --> 00:07:57.020
+<v Speaker 1>So I think it
+
+00:07:57.900 --> 00:07:59.180
+<v Speaker 1>it's in invoke.
+
+00:08:04.915 --> 00:08:06.835
+<v Speaker 1>Didn't prepare, so I'm I think it's just
+
+00:08:06.835 --> 00:08:08.515
+<v Speaker 0>the the the end of the wasm file
+
+00:08:08.515 --> 00:08:09.635
+<v Speaker 0>I was looking for.
+
+00:08:18.995 --> 00:08:19.635
+<v Speaker 1>There we go.
+
+00:08:20.350 --> 00:08:20.830
+<v Speaker 1>That's
+
+00:08:26.350 --> 00:08:28.590
+<v Speaker 1>oh, it's run, not invoke. Right.
+
+00:08:29.150 --> 00:08:31.070
+<v Speaker 0>Because we have had the examples and the
+
+00:08:31.070 --> 00:08:33.390
+<v Speaker 0>documentation below that did not have any reference
+
+00:08:33.390 --> 00:08:34.590
+<v Speaker 0>to that run command whatsoever.
+
+00:08:46.645 --> 00:08:47.765
+<v Speaker 1>Okay.
+
+00:08:47.765 --> 00:08:50.005
+<v Speaker 1>So we'll just pretend that that works
+
+00:08:51.365 --> 00:08:52.580
+<v Speaker 1>and move along from there. I don't wanna
+
+00:08:52.580 --> 00:08:53.860
+<v Speaker 1>waste too much time, but
+
+00:08:54.340 --> 00:08:56.020
+<v Speaker 1>It's not what is WebAssembly
+
+00:08:56.020 --> 00:08:58.500
+<v Speaker 0>text. Right? I mean Yes. So the Sorry.
+
+00:08:59.220 --> 00:09:01.540
+<v Speaker 0>I didn't go. Yeah. So the the the
+
+00:09:01.620 --> 00:09:04.180
+<v Speaker 1>WebAssembly text is the low level
+
+00:09:05.315 --> 00:09:06.195
+<v Speaker 1>language.
+
+00:09:06.755 --> 00:09:09.475
+<v Speaker 1>You can as long as your language supports
+
+00:09:09.475 --> 00:09:12.275
+<v Speaker 1>targeting WebAssembly, you can write in whatever whatever
+
+00:09:12.275 --> 00:09:13.875
+<v Speaker 1>your favorite language is.
+
+00:09:14.195 --> 00:09:15.635
+<v Speaker 1>And I certainly wouldn't recommend
+
+00:09:16.910 --> 00:09:18.030
+<v Speaker 1>people writing
+
+00:09:18.270 --> 00:09:19.070
+<v Speaker 1>in
+
+00:09:19.550 --> 00:09:21.390
+<v Speaker 1>raw WebAssembly for
+
+00:09:22.270 --> 00:09:25.390
+<v Speaker 1>anything other than really specialized purposes or just
+
+00:09:25.390 --> 00:09:26.830
+<v Speaker 1>for educational
+
+00:09:26.830 --> 00:09:28.110
+<v Speaker 1>use. But
+
+00:09:28.910 --> 00:09:31.470
+<v Speaker 1>so here's just some more functions, add, subtract,
+
+00:09:31.470 --> 00:09:32.110
+<v Speaker 1>and multiply.
+
+00:09:33.885 --> 00:09:35.325
+<v Speaker 1>But that that's
+
+00:09:37.085 --> 00:09:38.605
+<v Speaker 1>the gist of what it looks like at
+
+00:09:38.605 --> 00:09:40.045
+<v Speaker 1>the lowest level. So
+
+00:09:40.205 --> 00:09:42.845
+<v Speaker 1>no matter what tooling you're using
+
+00:09:43.245 --> 00:09:44.045
+<v Speaker 1>or
+
+00:09:44.765 --> 00:09:47.640
+<v Speaker 1>however fancy it is, Ultimately, it all boils
+
+00:09:47.640 --> 00:09:48.520
+<v Speaker 1>down to
+
+00:09:49.160 --> 00:09:52.040
+<v Speaker 1>the the the binary version of of this
+
+00:09:52.040 --> 00:09:52.760
+<v Speaker 1>text.
+
+00:09:54.120 --> 00:09:55.960
+<v Speaker 0>Okay. So the the was
+
+00:09:57.240 --> 00:09:59.400
+<v Speaker 0>the what to wasm command you run is
+
+00:09:59.400 --> 00:10:01.725
+<v Speaker 0>a compiler that takes the what format, the
+
+00:10:01.725 --> 00:10:03.565
+<v Speaker 0>WebAssembly text, and compiles that to the same
+
+00:10:03.565 --> 00:10:05.725
+<v Speaker 0>bytecode. The same as whether we use other
+
+00:10:05.725 --> 00:10:08.205
+<v Speaker 0>tools to compile rust or, you know,
+
+00:10:09.805 --> 00:10:12.845
+<v Speaker 0>TypeScript, etcetera, down into the Python bytecode.
+
+00:10:13.860 --> 00:10:16.020
+<v Speaker 1>Sure. I mean, you can call it compiling,
+
+00:10:16.020 --> 00:10:18.100
+<v Speaker 1>but it's more translation.
+
+00:10:18.100 --> 00:10:18.980
+<v Speaker 1>It's not
+
+00:10:20.980 --> 00:10:21.300
+<v Speaker 1>the
+
+00:10:21.860 --> 00:10:24.020
+<v Speaker 1>this syntax here is is
+
+00:10:26.435 --> 00:10:30.035
+<v Speaker 1>I guess, it's it's probably not worth debating
+
+00:10:30.035 --> 00:10:32.035
+<v Speaker 1>over whether you need to call it compilation
+
+00:10:32.035 --> 00:10:34.355
+<v Speaker 1>or or translation or not. But, yeah, it'll
+
+00:10:34.435 --> 00:10:36.515
+<v Speaker 1>it will convert this text into a a
+
+00:10:36.515 --> 00:10:38.435
+<v Speaker 1>binary executable WASM file.
+
+00:10:39.650 --> 00:10:41.650
+<v Speaker 0>Alright. That makes sense to me. So I
+
+00:10:41.650 --> 00:10:43.170
+<v Speaker 0>get the vibes just by looking at the
+
+00:10:43.170 --> 00:10:45.650
+<v Speaker 0>format of WebAssembly text. You kind of set
+
+00:10:45.650 --> 00:10:47.490
+<v Speaker 0>that as well as it people aren't expected
+
+00:10:47.490 --> 00:10:49.570
+<v Speaker 0>to be able to write in this format.
+
+00:10:49.570 --> 00:10:51.250
+<v Speaker 0>You know, they'll they'll be using higher level
+
+00:10:51.250 --> 00:10:53.605
+<v Speaker 0>languages that are more natural to them. Yeah.
+
+00:10:53.605 --> 00:10:55.685
+<v Speaker 1>But it's I think it's worth knowing
+
+00:10:56.084 --> 00:10:58.165
+<v Speaker 1>that this that this is what it all
+
+00:10:59.444 --> 00:11:00.565
+<v Speaker 1>you know, it's
+
+00:11:01.125 --> 00:11:03.685
+<v Speaker 1>it it it's this on the bottom because
+
+00:11:04.165 --> 00:11:07.204
+<v Speaker 1>whether you get somebody else's WebAssembly module from
+
+00:11:07.204 --> 00:11:08.245
+<v Speaker 1>the browser or
+
+00:11:09.420 --> 00:11:12.140
+<v Speaker 1>anywhere else, it it's worth knowing that
+
+00:11:12.700 --> 00:11:15.260
+<v Speaker 1>there there's nothing sacred or hidden about the
+
+00:11:15.260 --> 00:11:17.740
+<v Speaker 1>contents of a WebAssembly module. You can
+
+00:11:17.980 --> 00:11:21.420
+<v Speaker 1>anyone can examine the inside. So it's
+
+00:11:22.245 --> 00:11:24.165
+<v Speaker 1>it's not a place to put trade secrets,
+
+00:11:24.165 --> 00:11:26.565
+<v Speaker 1>especially if you're putting those out in a
+
+00:11:26.565 --> 00:11:27.205
+<v Speaker 1>browser.
+
+00:11:28.645 --> 00:11:30.645
+<v Speaker 0>Okay. That makes sense to me. Got
+
+00:11:31.605 --> 00:11:32.325
+<v Speaker 0>it. So
+
+00:11:33.285 --> 00:11:35.125
+<v Speaker 0>tell me a little bit about WASP. There
+
+00:11:35.125 --> 00:11:36.885
+<v Speaker 0>was something really interesting that you said when
+
+00:11:36.885 --> 00:11:38.370
+<v Speaker 0>you were going over the description about it,
+
+00:11:38.370 --> 00:11:39.970
+<v Speaker 0>and that's what you said it was capability
+
+00:11:39.970 --> 00:11:40.850
+<v Speaker 0>secure?
+
+00:11:41.410 --> 00:11:43.010
+<v Speaker 0>Yeah. What what does that mean?
+
+00:11:44.050 --> 00:11:45.810
+<v Speaker 1>So there's a couple of problems that WASP
+
+00:11:45.810 --> 00:11:47.970
+<v Speaker 1>is trying to solve. The first one is
+
+00:11:47.970 --> 00:11:50.050
+<v Speaker 1>to get rid of the boilerplate that we
+
+00:11:50.050 --> 00:11:52.370
+<v Speaker 1>usually write when we build microservices
+
+00:11:52.370 --> 00:11:55.465
+<v Speaker 1>and and functions in the cloud. So every
+
+00:11:55.465 --> 00:11:58.345
+<v Speaker 1>time we build a a microservice,
+
+00:11:58.425 --> 00:12:01.625
+<v Speaker 1>we have to take a dependency on some
+
+00:12:01.625 --> 00:12:02.825
+<v Speaker 1>some library
+
+00:12:03.145 --> 00:12:05.385
+<v Speaker 1>that allows us to start up an HTTP
+
+00:12:05.385 --> 00:12:08.265
+<v Speaker 1>endpoint. And we have JSON parsing and we
+
+00:12:08.265 --> 00:12:08.665
+<v Speaker 1>have
+
+00:12:09.209 --> 00:12:12.010
+<v Speaker 1>access to a database and a cache and
+
+00:12:12.010 --> 00:12:13.290
+<v Speaker 1>all this other stuff.
+
+00:12:13.690 --> 00:12:16.250
+<v Speaker 1>And we only usually end up spending five
+
+00:12:16.250 --> 00:12:19.130
+<v Speaker 1>or ten percent of our our code of
+
+00:12:19.290 --> 00:12:20.810
+<v Speaker 1>our time writing
+
+00:12:21.449 --> 00:12:23.209
+<v Speaker 1>the actual logic for our service.
+
+00:12:24.355 --> 00:12:26.115
+<v Speaker 1>So the first goal is to try and
+
+00:12:26.115 --> 00:12:26.995
+<v Speaker 1>strip away
+
+00:12:27.395 --> 00:12:30.515
+<v Speaker 1>all of those nonfunctional requirements and abstract them
+
+00:12:30.515 --> 00:12:33.555
+<v Speaker 1>into things that are satisfied outside your WebAssembly
+
+00:12:33.555 --> 00:12:34.275
+<v Speaker 1>module.
+
+00:12:35.635 --> 00:12:35.795
+<v Speaker 1>And
+
+00:12:36.510 --> 00:12:38.990
+<v Speaker 1>so those nonfunctional requirements,
+
+00:12:38.990 --> 00:12:40.670
+<v Speaker 1>we call them capabilities.
+
+00:12:40.670 --> 00:12:41.470
+<v Speaker 1>And so
+
+00:12:42.270 --> 00:12:44.030
+<v Speaker 1>your WebAssembly module
+
+00:12:44.670 --> 00:12:46.590
+<v Speaker 1>writes to an abstraction
+
+00:12:46.990 --> 00:12:47.870
+<v Speaker 1>around
+
+00:12:48.030 --> 00:12:50.910
+<v Speaker 1>a particular type of capability. So
+
+00:12:51.365 --> 00:12:54.245
+<v Speaker 1>an abstraction or an abstract contract to talk
+
+00:12:54.245 --> 00:12:55.765
+<v Speaker 1>to a key value store
+
+00:12:55.925 --> 00:12:58.565
+<v Speaker 1>or a web server, a web client,
+
+00:12:58.725 --> 00:13:00.885
+<v Speaker 1>graph database, those types of things.
+
+00:13:01.445 --> 00:13:03.445
+<v Speaker 1>And the runtime,
+
+00:13:03.685 --> 00:13:04.805
+<v Speaker 1>WASC itself
+
+00:13:05.270 --> 00:13:08.470
+<v Speaker 1>is responsible for loading your actor, your WebAssembly
+
+00:13:08.470 --> 00:13:09.270
+<v Speaker 1>module,
+
+00:13:09.350 --> 00:13:10.870
+<v Speaker 1>loading the capabilities,
+
+00:13:10.870 --> 00:13:13.990
+<v Speaker 1>and then making sure that the WebAssembly module
+
+00:13:14.630 --> 00:13:17.670
+<v Speaker 1>is allowed to communicate with that capability.
+
+00:13:18.204 --> 00:13:21.245
+<v Speaker 1>And so there's there's security embedded inside those
+
+00:13:21.245 --> 00:13:22.524
+<v Speaker 1>WebAssembly modules.
+
+00:13:24.445 --> 00:13:25.645
+<v Speaker 0>Okay. Cool.
+
+00:13:26.445 --> 00:13:28.204
+<v Speaker 0>I I just like to summarize things again
+
+00:13:28.204 --> 00:13:29.964
+<v Speaker 0>so I make sure I understand them correctly.
+
+00:13:29.964 --> 00:13:32.830
+<v Speaker 0>Mhmm. So capabilities from a WASP point of
+
+00:13:32.830 --> 00:13:35.470
+<v Speaker 0>view are the a way to enrich our
+
+00:13:35.470 --> 00:13:38.030
+<v Speaker 0>wasm code with new functionality like running a
+
+00:13:38.030 --> 00:13:38.830
+<v Speaker 0>web server.
+
+00:13:39.230 --> 00:13:40.750
+<v Speaker 0>But the bonus side of doing it in
+
+00:13:40.750 --> 00:13:42.270
+<v Speaker 0>this fashion is that you've also picked in
+
+00:13:42.270 --> 00:13:43.790
+<v Speaker 0>all of these security concerns that make sure
+
+00:13:43.790 --> 00:13:46.525
+<v Speaker 0>that the WebAssembly models actually have the ability
+
+00:13:46.525 --> 00:13:49.245
+<v Speaker 0>to invoke or call or enter interact
+
+00:13:49.245 --> 00:13:51.485
+<v Speaker 0>with those capabilities as well. So
+
+00:13:51.965 --> 00:13:53.085
+<v Speaker 1>Yeah. So
+
+00:13:53.805 --> 00:13:55.485
+<v Speaker 1>WebAssembly on its own,
+
+00:13:56.205 --> 00:13:58.685
+<v Speaker 1>the the byte code, unlike Java byte code
+
+00:13:58.685 --> 00:13:59.485
+<v Speaker 1>that has
+
+00:13:59.990 --> 00:14:03.110
+<v Speaker 1>instructions that communicate with the operating system,
+
+00:14:03.910 --> 00:14:06.950
+<v Speaker 1>WebAssembly bytecode can do no such thing. There's
+
+00:14:07.110 --> 00:14:10.310
+<v Speaker 1>there are no instructions for reading from files.
+
+00:14:10.310 --> 00:14:12.870
+<v Speaker 1>There's no instructions for making network calls. There's
+
+00:14:12.870 --> 00:14:15.270
+<v Speaker 1>no instructions for doing IO of any kind.
+
+00:14:15.805 --> 00:14:16.445
+<v Speaker 1>So
+
+00:14:17.245 --> 00:14:19.645
+<v Speaker 1>if you want your WebAssembly module to be
+
+00:14:19.645 --> 00:14:21.565
+<v Speaker 1>able to do something, it's entirely up to
+
+00:14:21.565 --> 00:14:22.845
+<v Speaker 1>the host in order to be able to
+
+00:14:22.845 --> 00:14:24.125
+<v Speaker 1>give it that capability.
+
+00:14:24.525 --> 00:14:26.605
+<v Speaker 1>So when people first start
+
+00:14:26.845 --> 00:14:29.885
+<v Speaker 1>down the road of exploring how WebAssembly can
+
+00:14:29.885 --> 00:14:32.110
+<v Speaker 1>help them, the first thing they run into
+
+00:14:32.110 --> 00:14:33.470
+<v Speaker 1>is the problem of
+
+00:14:33.870 --> 00:14:36.430
+<v Speaker 1>WebAssembly only reads and writes numbers.
+
+00:14:36.590 --> 00:14:39.550
+<v Speaker 1>The functions don't take, rich data types. So
+
+00:14:39.550 --> 00:14:40.910
+<v Speaker 1>how do you fix that problem?
+
+00:14:41.310 --> 00:14:43.310
+<v Speaker 1>And so there's a an open source project
+
+00:14:43.310 --> 00:14:44.670
+<v Speaker 1>called WAPC
+
+00:14:44.935 --> 00:14:46.615
+<v Speaker 1>that provides a
+
+00:14:46.935 --> 00:14:47.975
+<v Speaker 1>an RPC
+
+00:14:48.215 --> 00:14:50.375
+<v Speaker 1>abstraction on top of WebAssembly.
+
+00:14:51.095 --> 00:14:53.335
+<v Speaker 1>And so that fixes that problem.
+
+00:14:53.575 --> 00:14:55.895
+<v Speaker 1>And then from there, the next problem is,
+
+00:14:55.895 --> 00:14:58.950
+<v Speaker 1>well, how do I allow these WebAssembly modules
+
+00:14:58.950 --> 00:15:01.750
+<v Speaker 1>to do something more than just math or
+
+00:15:01.750 --> 00:15:04.550
+<v Speaker 1>straight up computation? How do I give them
+
+00:15:04.870 --> 00:15:08.150
+<v Speaker 1>side effects or access to cloud, capabilities?
+
+00:15:08.630 --> 00:15:09.830
+<v Speaker 1>And that's what WASP does.
+
+00:15:11.945 --> 00:15:12.585
+<v Speaker 0>Okay.
+
+00:15:12.985 --> 00:15:13.625
+<v Speaker 0>So
+
+00:15:14.425 --> 00:15:17.465
+<v Speaker 0>shall we try and build a WASC application
+
+00:15:17.465 --> 00:15:19.225
+<v Speaker 0>using some of those capabilities?
+
+00:15:19.385 --> 00:15:20.105
+<v Speaker 1>Sure.
+
+00:15:20.585 --> 00:15:21.385
+<v Speaker 0>Alright.
+
+00:15:21.705 --> 00:15:23.145
+<v Speaker 0>Are you happy for me to share my
+
+00:15:23.145 --> 00:15:26.185
+<v Speaker 0>screen? And we'll try and let's
+
+00:15:26.185 --> 00:15:26.425
+<v Speaker 0>see.
+
+00:15:27.089 --> 00:15:29.089
+<v Speaker 0>Keep us in shot. Alright.
+
+00:15:29.490 --> 00:15:31.410
+<v Speaker 0>So so what is the step one for
+
+00:15:31.410 --> 00:15:33.250
+<v Speaker 0>working with last? I go straight into writing
+
+00:15:33.250 --> 00:15:35.329
+<v Speaker 0>a rust file. Do I need to, you
+
+00:15:35.329 --> 00:15:37.089
+<v Speaker 0>know, should I cargo in it, I guess.
+
+00:15:37.089 --> 00:15:37.570
+<v Speaker 0>Right?
+
+00:15:37.970 --> 00:15:39.009
+<v Speaker 0>Cargo in your
+
+00:15:40.515 --> 00:15:42.355
+<v Speaker 1>So there's a couple of different ways you
+
+00:15:42.355 --> 00:15:43.395
+<v Speaker 1>can get started.
+
+00:15:43.635 --> 00:15:46.275
+<v Speaker 1>I think probably the easiest is to is
+
+00:15:46.275 --> 00:15:47.715
+<v Speaker 1>to use cargo generate,
+
+00:15:48.115 --> 00:15:50.595
+<v Speaker 1>and that'll build you a scaffold.
+
+00:15:50.995 --> 00:15:52.595
+<v Speaker 1>So I don't know if you have do
+
+00:15:52.595 --> 00:15:55.315
+<v Speaker 1>you have cargo generated? Okay. So cargo install,
+
+00:15:55.650 --> 00:15:57.090
+<v Speaker 1>cargo dash generate.
+
+00:15:59.570 --> 00:16:01.410
+<v Speaker 0>So this is the cargo plug in, adds
+
+00:16:01.410 --> 00:16:02.770
+<v Speaker 0>a new sub command that allows me to
+
+00:16:02.770 --> 00:16:05.010
+<v Speaker 0>generate or scaffold out a new project. Right?
+
+00:16:05.090 --> 00:16:07.250
+<v Speaker 1>Yep. And the the cool thing about this
+
+00:16:07.250 --> 00:16:09.810
+<v Speaker 1>is that the templates for the cargo generate
+
+00:16:10.115 --> 00:16:13.394
+<v Speaker 1>are just GitHub repos. So you can
+
+00:16:14.675 --> 00:16:17.074
+<v Speaker 1>it's pretty extensible. You can build any kind
+
+00:16:17.074 --> 00:16:19.235
+<v Speaker 1>of template you want. Sweet.
+
+00:16:21.795 --> 00:16:23.660
+<v Speaker 0>Alright. So we'll give that a few seconds.
+
+00:16:23.660 --> 00:16:25.260
+<v Speaker 1>Now we get to run and wait for
+
+00:16:25.260 --> 00:16:26.700
+<v Speaker 1>the infamous
+
+00:16:26.780 --> 00:16:28.220
+<v Speaker 1>rest of the time.
+
+00:16:32.300 --> 00:16:34.460
+<v Speaker 0>Yeah. Okay. Let's take a look at these
+
+00:16:34.460 --> 00:16:37.055
+<v Speaker 0>templates. Are you gonna so in my head,
+
+00:16:37.055 --> 00:16:39.375
+<v Speaker 0>I'm thinking there's either you're gonna point me
+
+00:16:39.375 --> 00:16:40.895
+<v Speaker 0>to some sort of WASC template or are
+
+00:16:40.895 --> 00:16:42.495
+<v Speaker 0>we gonna use something more generic and then
+
+00:16:42.495 --> 00:16:44.175
+<v Speaker 0>add WASC capabilities to it?
+
+00:16:44.815 --> 00:16:46.335
+<v Speaker 1>We're we're gonna start and go
+
+00:16:47.135 --> 00:16:48.175
+<v Speaker 1>right with the WASC template.
+
+00:16:48.840 --> 00:16:50.120
+<v Speaker 0>Alright. So
+
+00:16:50.360 --> 00:16:52.520
+<v Speaker 0>is that in the WASP organization?
+
+00:16:53.080 --> 00:16:53.800
+<v Speaker 1>Yep.
+
+00:16:54.040 --> 00:16:56.040
+<v Speaker 1>I I pasted it to you in chat,
+
+00:16:56.040 --> 00:16:57.240
+<v Speaker 1>but it's you could
+
+00:16:58.040 --> 00:17:00.920
+<v Speaker 1>the the repo is called new actor template,
+
+00:17:01.274 --> 00:17:03.115
+<v Speaker 1>new dash actor dash template.
+
+00:17:05.914 --> 00:17:07.114
+<v Speaker 1>Yeah. And
+
+00:17:07.755 --> 00:17:09.515
+<v Speaker 1>so that's the the scaffolding
+
+00:17:09.515 --> 00:17:11.914
+<v Speaker 1>and, you know, there there's some files with
+
+00:17:11.914 --> 00:17:12.554
+<v Speaker 1>some templates,
+
+00:17:13.990 --> 00:17:16.469
+<v Speaker 1>you know, the the handlebar type templates.
+
+00:17:17.029 --> 00:17:20.149
+<v Speaker 0>Okay. So that generate command we're gonna run.
+
+00:17:20.149 --> 00:17:22.069
+<v Speaker 0>I think it just takes github.com
+
+00:17:22.069 --> 00:17:23.749
+<v Speaker 0>forward as, like, the parameter.
+
+00:17:24.149 --> 00:17:24.950
+<v Speaker 0>Is that right?
+
+00:17:26.230 --> 00:17:28.230
+<v Speaker 1>You can use the full URL as well,
+
+00:17:28.230 --> 00:17:28.789
+<v Speaker 1>but
+
+00:17:30.445 --> 00:17:33.485
+<v Speaker 1>when you're done still not done building. When
+
+00:17:33.485 --> 00:17:35.325
+<v Speaker 1>you're done building, we can we can walk
+
+00:17:35.325 --> 00:17:36.765
+<v Speaker 1>through what the syntax is.
+
+00:17:37.405 --> 00:17:38.365
+<v Speaker 0>Alright. Okay.
+
+00:17:40.125 --> 00:17:42.925
+<v Speaker 1>My apologies. I I forgot the cargo generating
+
+00:17:42.925 --> 00:17:44.525
+<v Speaker 1>was was an add on.
+
+00:17:45.330 --> 00:17:47.250
+<v Speaker 1>I take it for granted. Like, I I
+
+00:17:47.330 --> 00:17:49.169
+<v Speaker 0>like I said, I like this to because
+
+00:17:49.169 --> 00:17:50.049
+<v Speaker 0>it's gonna be
+
+00:17:50.370 --> 00:17:52.049
+<v Speaker 0>go go through all the motions. Right? Make
+
+00:17:52.049 --> 00:17:53.809
+<v Speaker 0>no assumptions. Like, I'm if we have to
+
+00:17:53.809 --> 00:17:55.250
+<v Speaker 0>install this, we install this. I mean, other
+
+00:17:55.250 --> 00:17:56.529
+<v Speaker 0>people are gonna have to see how that
+
+00:17:56.529 --> 00:17:58.049
+<v Speaker 0>works as well. And they may not be
+
+00:17:58.049 --> 00:17:59.890
+<v Speaker 0>familiar with cargo or or or its plug
+
+00:17:59.890 --> 00:18:00.690
+<v Speaker 0>in system, etcetera.
+
+00:18:02.345 --> 00:18:04.825
+<v Speaker 0>And we're almost there, you know. It's it's
+
+00:18:04.825 --> 00:18:05.865
+<v Speaker 0>chugging along.
+
+00:18:07.945 --> 00:18:09.705
+<v Speaker 0>I bet it slows down there.
+
+00:18:10.665 --> 00:18:12.665
+<v Speaker 0>I'm gonna take a read Let's compile a
+
+00:18:12.665 --> 00:18:14.825
+<v Speaker 1>piece of code on the Internet before giving
+
+00:18:14.825 --> 00:18:15.865
+<v Speaker 1>you the the plug in.
+
+00:18:19.260 --> 00:18:20.299
+<v Speaker 0>Alright. Okay.
+
+00:18:20.540 --> 00:18:22.059
+<v Speaker 0>So that is what I'm gonna get spat
+
+00:18:22.059 --> 00:18:23.660
+<v Speaker 0>out the other side once I run this
+
+00:18:23.660 --> 00:18:25.820
+<v Speaker 0>generate command with this template. I can kinda
+
+00:18:25.820 --> 00:18:26.460
+<v Speaker 0>see
+
+00:18:26.940 --> 00:18:28.620
+<v Speaker 0>what's happening here. Yeah.
+
+00:18:31.435 --> 00:18:33.195
+<v Speaker 1>We can kinda go through that now if
+
+00:18:33.195 --> 00:18:34.555
+<v Speaker 1>you want. We can take a look at
+
+00:18:34.555 --> 00:18:36.155
+<v Speaker 1>that, that source file.
+
+00:18:38.795 --> 00:18:39.835
+<v Speaker 0>Yeah. Right.
+
+00:18:41.515 --> 00:18:42.315
+<v Speaker 1>Too funny.
+
+00:18:44.700 --> 00:18:45.419
+<v Speaker 1>So,
+
+00:18:46.140 --> 00:18:48.059
+<v Speaker 1>basically, what we have is,
+
+00:18:49.500 --> 00:18:50.860
+<v Speaker 1>WASC treats,
+
+00:18:51.100 --> 00:18:54.860
+<v Speaker 1>WebAssembly files or WebAssembly modules as actors that
+
+00:18:54.860 --> 00:18:57.340
+<v Speaker 1>conform to the actor model. And
+
+00:18:57.955 --> 00:19:00.355
+<v Speaker 1>as a result, they are reactive.
+
+00:19:00.515 --> 00:19:01.875
+<v Speaker 1>So the way
+
+00:19:02.595 --> 00:19:05.395
+<v Speaker 1>WASP actors interact with the the rest of
+
+00:19:05.395 --> 00:19:08.035
+<v Speaker 1>the world is by handling messages. So
+
+00:19:08.355 --> 00:19:10.915
+<v Speaker 1>on line 19 there, there's a macro that
+
+00:19:11.040 --> 00:19:11.920
+<v Speaker 1>defines
+
+00:19:11.920 --> 00:19:13.920
+<v Speaker 1>the the handlers that you use.
+
+00:19:14.400 --> 00:19:14.960
+<v Speaker 1>And
+
+00:19:15.280 --> 00:19:17.680
+<v Speaker 1>that's actually gonna get everything you see here
+
+00:19:17.680 --> 00:19:19.200
+<v Speaker 1>is actually gonna get a little bit simpler
+
+00:19:19.200 --> 00:19:20.960
+<v Speaker 1>probably within the next week and a half
+
+00:19:20.960 --> 00:19:23.600
+<v Speaker 1>or so. We're we're doing a bunch of
+
+00:19:23.835 --> 00:19:25.354
+<v Speaker 1>fairly major changes.
+
+00:19:27.355 --> 00:19:27.994
+<v Speaker 1>And
+
+00:19:28.395 --> 00:19:31.034
+<v Speaker 1>so this says that it handles an HTTP
+
+00:19:31.034 --> 00:19:33.754
+<v Speaker 1>request and it handles a
+
+00:19:33.835 --> 00:19:35.195
+<v Speaker 1>a health request.
+
+00:19:35.755 --> 00:19:36.475
+<v Speaker 1>And
+
+00:19:37.169 --> 00:19:40.049
+<v Speaker 1>so the HTTP request is fairly straightforward. You
+
+00:19:40.049 --> 00:19:42.370
+<v Speaker 1>get one as input and you return one
+
+00:19:42.370 --> 00:19:43.489
+<v Speaker 1>as output,
+
+00:19:43.490 --> 00:19:45.570
+<v Speaker 1>and you return a response as output.
+
+00:19:45.809 --> 00:19:47.729
+<v Speaker 1>But what's interesting there is
+
+00:19:48.049 --> 00:19:50.129
+<v Speaker 1>nowhere in this file do you see
+
+00:19:50.924 --> 00:19:53.565
+<v Speaker 1>the creation of an HTTP server
+
+00:19:53.884 --> 00:19:56.684
+<v Speaker 1>or the configuration of an endpoint
+
+00:19:56.845 --> 00:19:59.804
+<v Speaker 1>or any nonfunctional requirements at all for that
+
+00:19:59.804 --> 00:20:02.284
+<v Speaker 1>matter. All you're doing is declaring that you
+
+00:20:02.284 --> 00:20:05.910
+<v Speaker 1>handle web requests and you return an HTTP
+
+00:20:05.910 --> 00:20:06.630
+<v Speaker 1>response.
+
+00:20:07.350 --> 00:20:10.150
+<v Speaker 1>And every time you're asked whether your actor
+
+00:20:10.150 --> 00:20:13.669
+<v Speaker 1>is healthy, you, return okay, which is
+
+00:20:15.270 --> 00:20:16.550
+<v Speaker 1>Rust speak for,
+
+00:20:17.270 --> 00:20:17.910
+<v Speaker 1>no errors.
+
+00:20:20.184 --> 00:20:20.825
+<v Speaker 0>Okay.
+
+00:20:21.465 --> 00:20:23.065
+<v Speaker 0>Alright. We've got two more to go. So
+
+00:20:23.065 --> 00:20:24.745
+<v Speaker 0>I'm gonna assume we'll be able to generate
+
+00:20:24.745 --> 00:20:26.024
+<v Speaker 0>that in just a second.
+
+00:20:31.304 --> 00:20:32.184
+<v Speaker 0>Come on, Rust.
+
+00:20:34.680 --> 00:20:36.760
+<v Speaker 0>So I do like the the brevity of
+
+00:20:36.760 --> 00:20:39.480
+<v Speaker 0>this code here, you know, using using this
+
+00:20:39.480 --> 00:20:41.480
+<v Speaker 0>macro syntax to just define and hook up
+
+00:20:41.480 --> 00:20:43.720
+<v Speaker 0>these two functions to the actual the web
+
+00:20:43.720 --> 00:20:45.880
+<v Speaker 0>server capability is is nice. Like, I wish
+
+00:20:45.880 --> 00:20:47.480
+<v Speaker 0>all my code was this simple to write.
+
+00:20:49.295 --> 00:20:50.414
+<v Speaker 1>That's good to hear.
+
+00:20:51.215 --> 00:20:51.934
+<v Speaker 1>You know,
+
+00:20:52.335 --> 00:20:54.495
+<v Speaker 1>one of the biggest goals that we have
+
+00:20:54.495 --> 00:20:56.255
+<v Speaker 1>with West is to make it easier to
+
+00:20:56.255 --> 00:20:58.654
+<v Speaker 1>write microservices and functions. And so
+
+00:20:59.295 --> 00:21:01.695
+<v Speaker 1>the the closer you can get to just
+
+00:21:01.695 --> 00:21:03.615
+<v Speaker 1>being able to declare your business logic,
+
+00:21:04.470 --> 00:21:05.269
+<v Speaker 1>the better.
+
+00:21:05.669 --> 00:21:08.470
+<v Speaker 0>I I Definitely. You know, especially with micro
+
+00:21:08.470 --> 00:21:11.270
+<v Speaker 0>services and cloud native generally just becoming so
+
+00:21:11.270 --> 00:21:13.350
+<v Speaker 0>prominent these days. Like, the amount of time
+
+00:21:13.350 --> 00:21:15.990
+<v Speaker 0>spent working with traditional web based frameworks. You
+
+00:21:15.990 --> 00:21:17.909
+<v Speaker 0>know, there's just so much boilerplate. Even just
+
+00:21:17.909 --> 00:21:20.150
+<v Speaker 0>such that, you know, simple things like routing.
+
+00:21:20.150 --> 00:21:22.005
+<v Speaker 0>Just You've got to build all this out
+
+00:21:22.005 --> 00:21:24.085
+<v Speaker 0>yourself and that's Yep. I think it gets
+
+00:21:24.085 --> 00:21:26.725
+<v Speaker 1>worse when you try and go from your
+
+00:21:26.725 --> 00:21:28.005
+<v Speaker 1>initial
+
+00:21:28.005 --> 00:21:29.764
+<v Speaker 1>experiments. I think you have to do dash
+
+00:21:29.764 --> 00:21:31.844
+<v Speaker 1>dash get before that URL.
+
+00:21:32.245 --> 00:21:32.885
+<v Speaker 0>Alright. Thanks.
+
+00:21:37.559 --> 00:21:38.600
+<v Speaker 1>There we go.
+
+00:21:39.160 --> 00:21:41.480
+<v Speaker 1>Yeah. So when you try and take your
+
+00:21:41.480 --> 00:21:43.800
+<v Speaker 1>initial experiment to production,
+
+00:21:45.985 --> 00:21:48.385
+<v Speaker 1>you end up with this problem where the
+
+00:21:48.385 --> 00:21:50.544
+<v Speaker 1>boilerplate that you started with is no longer
+
+00:21:50.544 --> 00:21:52.625
+<v Speaker 1>sufficient and you have to add more and
+
+00:21:52.625 --> 00:21:54.784
+<v Speaker 1>more boilerplate. You have to add stuff for
+
+00:21:54.784 --> 00:21:57.105
+<v Speaker 1>monitoring and and observability
+
+00:21:57.105 --> 00:21:57.664
+<v Speaker 1>and
+
+00:21:57.930 --> 00:22:01.450
+<v Speaker 1>tracing and logging and error handling and all
+
+00:22:01.450 --> 00:22:02.330
+<v Speaker 1>of that stuff.
+
+00:22:02.890 --> 00:22:04.730
+<v Speaker 1>And so by the time you're done,
+
+00:22:05.130 --> 00:22:06.730
+<v Speaker 1>you can no you you can no longer
+
+00:22:06.730 --> 00:22:09.690
+<v Speaker 1>even find your business logic in the spaghetti
+
+00:22:09.690 --> 00:22:12.010
+<v Speaker 1>pile of boilerplate that you've added.
+
+00:22:12.705 --> 00:22:15.505
+<v Speaker 1>And then after you've deployed the production, if
+
+00:22:15.505 --> 00:22:17.264
+<v Speaker 1>you wanna change your business logic,
+
+00:22:17.825 --> 00:22:20.465
+<v Speaker 1>it's a nightmare, because you're carrying with you
+
+00:22:20.465 --> 00:22:23.985
+<v Speaker 1>all of these, dependencies and the transitive dependencies.
+
+00:22:23.985 --> 00:22:25.904
+<v Speaker 1>That that rule about
+
+00:22:26.400 --> 00:22:28.320
+<v Speaker 1>you owning your dependencies
+
+00:22:28.480 --> 00:22:29.120
+<v Speaker 1>is,
+
+00:22:29.840 --> 00:22:31.679
+<v Speaker 1>very, very true and
+
+00:22:32.880 --> 00:22:34.720
+<v Speaker 1>all the pain that comes with it.
+
+00:22:36.800 --> 00:22:39.280
+<v Speaker 1>Yeah. So this is pretty I think it's
+
+00:22:39.280 --> 00:22:41.695
+<v Speaker 1>identical to the the code that that we
+
+00:22:41.695 --> 00:22:43.215
+<v Speaker 1>were looking at on GitHub.
+
+00:22:43.775 --> 00:22:46.735
+<v Speaker 0>It is. I'm kinda curious then. So
+
+00:22:47.135 --> 00:22:49.375
+<v Speaker 0>is this just regular active stuff or is
+
+00:22:49.375 --> 00:22:51.695
+<v Speaker 0>this capability stuff that the code There
+
+00:22:52.095 --> 00:22:53.855
+<v Speaker 1>is no active in this
+
+00:22:54.575 --> 00:22:55.695
+<v Speaker 1>at all. And,
+
+00:22:56.740 --> 00:22:59.380
+<v Speaker 1>you know, if you've been watching me complain
+
+00:22:59.380 --> 00:23:01.059
+<v Speaker 1>about active on Twitter,
+
+00:23:01.940 --> 00:23:03.700
+<v Speaker 1>all of the tactics that I'm using is
+
+00:23:03.700 --> 00:23:06.100
+<v Speaker 1>in the host runtime. I I would I
+
+00:23:06.100 --> 00:23:07.779
+<v Speaker 1>would never ever subject
+
+00:23:08.179 --> 00:23:10.899
+<v Speaker 1>regular developers to any of that pain. So
+
+00:23:10.899 --> 00:23:12.100
+<v Speaker 1>this is all just
+
+00:23:12.975 --> 00:23:14.575
+<v Speaker 1>straight up pure Rust.
+
+00:23:14.975 --> 00:23:18.735
+<v Speaker 1>And you can write actor modules in Rust,
+
+00:23:18.895 --> 00:23:19.695
+<v Speaker 1>TinyGo,
+
+00:23:19.695 --> 00:23:20.815
+<v Speaker 1>AssemblyScript,
+
+00:23:20.895 --> 00:23:21.774
+<v Speaker 1>or Zig.
+
+00:23:23.375 --> 00:23:25.135
+<v Speaker 0>Oh, really? I didn't know that. Okay. So
+
+00:23:25.135 --> 00:23:27.455
+<v Speaker 0>last doesn't force me to write Rust?
+
+00:23:27.960 --> 00:23:28.679
+<v Speaker 1>Nope.
+
+00:23:29.159 --> 00:23:31.720
+<v Speaker 1>That's one of the benefits of WebAssembly
+
+00:23:31.720 --> 00:23:35.320
+<v Speaker 1>is is polyglot nature. Right? So as long
+
+00:23:35.320 --> 00:23:37.480
+<v Speaker 1>as the language that you're target that you're
+
+00:23:37.480 --> 00:23:41.799
+<v Speaker 1>writing knows how to satisfy that WAPC
+
+00:23:43.195 --> 00:23:45.835
+<v Speaker 1>function call contract between the host and the
+
+00:23:45.835 --> 00:23:47.835
+<v Speaker 1>guest, you can write an actor in that
+
+00:23:47.835 --> 00:23:48.475
+<v Speaker 1>language.
+
+00:23:50.075 --> 00:23:52.315
+<v Speaker 0>Okay. So that means that the, you know,
+
+00:23:52.315 --> 00:23:55.035
+<v Speaker 0>the last team you and, you know, the
+
+00:23:55.035 --> 00:23:55.835
+<v Speaker 0>other contributors,
+
+00:23:56.080 --> 00:23:58.800
+<v Speaker 0>you're providing like SDKs or API layers or
+
+00:23:58.800 --> 00:24:00.960
+<v Speaker 0>something available for for go and for rust
+
+00:24:00.960 --> 00:24:01.760
+<v Speaker 0>and for
+
+00:24:02.080 --> 00:24:03.679
+<v Speaker 1>So yeah. Essentially.
+
+00:24:04.320 --> 00:24:04.800
+<v Speaker 1>So
+
+00:24:05.200 --> 00:24:07.360
+<v Speaker 1>one of the the things that we're we're
+
+00:24:07.360 --> 00:24:09.360
+<v Speaker 1>changing is so if you if you hover
+
+00:24:09.360 --> 00:24:11.975
+<v Speaker 1>over on I'm I'm pointing at my screen
+
+00:24:11.975 --> 00:24:13.174
+<v Speaker 1>as if you can see that.
+
+00:24:13.495 --> 00:24:14.535
+<v Speaker 1>You hover over,
+
+00:24:14.934 --> 00:24:17.414
+<v Speaker 1>one of those constants on line 19,
+
+00:24:18.775 --> 00:24:20.855
+<v Speaker 1>the, like, the the handle request,
+
+00:24:20.934 --> 00:24:22.934
+<v Speaker 1>you'll see that that's that's that thing is
+
+00:24:22.934 --> 00:24:25.495
+<v Speaker 1>defined in a create called West codec,
+
+00:24:26.350 --> 00:24:28.990
+<v Speaker 1>which holds all of these common data types
+
+00:24:28.990 --> 00:24:30.990
+<v Speaker 1>that we use for things like key value
+
+00:24:30.990 --> 00:24:33.230
+<v Speaker 1>store the the key value store abstraction, the
+
+00:24:33.230 --> 00:24:35.149
+<v Speaker 1>web server abstraction, all of that.
+
+00:24:36.350 --> 00:24:38.990
+<v Speaker 1>That's the old way of doing things. And
+
+00:24:38.990 --> 00:24:40.510
+<v Speaker 1>by old way, I mean, last week.
+
+00:24:42.215 --> 00:24:44.215
+<v Speaker 1>The what we're doing now is we're using
+
+00:24:44.215 --> 00:24:45.495
+<v Speaker 1>the WAPC
+
+00:24:45.495 --> 00:24:46.695
+<v Speaker 1>code generator.
+
+00:24:46.934 --> 00:24:49.735
+<v Speaker 1>And so we have schemas that we can
+
+00:24:49.735 --> 00:24:51.094
+<v Speaker 1>define in
+
+00:24:51.575 --> 00:24:52.134
+<v Speaker 1>standard
+
+00:24:52.375 --> 00:24:53.255
+<v Speaker 1>text format
+
+00:24:53.640 --> 00:24:55.720
+<v Speaker 1>and then generate all the data types that
+
+00:24:55.720 --> 00:24:58.520
+<v Speaker 1>we need for our actors regardless of what
+
+00:24:58.520 --> 00:25:00.520
+<v Speaker 1>language we're in. So there's a code generator
+
+00:25:00.520 --> 00:25:00.840
+<v Speaker 1>for
+
+00:25:02.360 --> 00:25:04.680
+<v Speaker 1>that will convert a schema to a a
+
+00:25:04.680 --> 00:25:05.480
+<v Speaker 1>Rust template.
+
+00:25:05.925 --> 00:25:08.245
+<v Speaker 1>There's one that will convert it into TinyGo
+
+00:25:08.245 --> 00:25:10.885
+<v Speaker 1>and one that will convert it into AssemblyScript.
+
+00:25:11.925 --> 00:25:12.725
+<v Speaker 1>And so
+
+00:25:14.405 --> 00:25:17.125
+<v Speaker 1>we no longer even need this shared codec
+
+00:25:17.125 --> 00:25:17.925
+<v Speaker 1>which becomes
+
+00:25:19.720 --> 00:25:21.399
+<v Speaker 1>we all know how much of a pain
+
+00:25:21.399 --> 00:25:23.799
+<v Speaker 1>in the butt these shared libraries are. Anytime
+
+00:25:23.799 --> 00:25:26.600
+<v Speaker 1>you you take a shared mutual dependency on
+
+00:25:26.600 --> 00:25:27.159
+<v Speaker 1>something,
+
+00:25:27.639 --> 00:25:29.559
+<v Speaker 1>that thing is invariably gonna,
+
+00:25:30.039 --> 00:25:32.519
+<v Speaker 1>catch fire and and cause all sorts of
+
+00:25:32.519 --> 00:25:32.759
+<v Speaker 1>problems.
+
+00:25:33.755 --> 00:25:37.115
+<v Speaker 1>So with the code generated version of this,
+
+00:25:38.795 --> 00:25:41.195
+<v Speaker 1>everything that's in that codec would actually just
+
+00:25:41.195 --> 00:25:43.675
+<v Speaker 1>be generated and inside your project.
+
+00:25:46.810 --> 00:25:47.450
+<v Speaker 0>Okay.
+
+00:25:47.770 --> 00:25:48.330
+<v Speaker 0>So
+
+00:25:48.570 --> 00:25:49.770
+<v Speaker 0>let's see if you can fill in a
+
+00:25:49.770 --> 00:25:51.290
+<v Speaker 0>few of the blanks for me here Mhmm.
+
+00:25:51.290 --> 00:25:53.210
+<v Speaker 0>And try and help me understand what what
+
+00:25:53.210 --> 00:25:54.650
+<v Speaker 0>is going on. So I understand that the
+
+00:25:54.650 --> 00:25:56.250
+<v Speaker 0>bank syntax here is rust. It means I've
+
+00:25:56.250 --> 00:25:58.170
+<v Speaker 0>got a macro. I can see that we're
+
+00:25:58.170 --> 00:26:00.090
+<v Speaker 0>passing in constants, which are then being, you
+
+00:26:00.090 --> 00:26:02.125
+<v Speaker 0>know, resolved to the functions that we have
+
+00:26:02.125 --> 00:26:02.605
+<v Speaker 0>here.
+
+00:26:03.005 --> 00:26:04.365
+<v Speaker 0>Yep. How
+
+00:26:06.205 --> 00:26:07.645
+<v Speaker 0>like, what what would the h t p
+
+00:26:07.645 --> 00:26:09.325
+<v Speaker 0>request look like to call this? Is this
+
+00:26:09.325 --> 00:26:10.924
+<v Speaker 0>just gonna be on slash?
+
+00:26:11.005 --> 00:26:13.485
+<v Speaker 0>Is this, you know, a head request? How
+
+00:26:13.485 --> 00:26:14.845
+<v Speaker 0>does this map to h t t p?
+
+00:26:15.230 --> 00:26:15.870
+<v Speaker 1>So
+
+00:26:16.350 --> 00:26:16.830
+<v Speaker 1>that's
+
+00:26:17.310 --> 00:26:19.070
+<v Speaker 1>and it it's a really good question. And
+
+00:26:19.070 --> 00:26:21.390
+<v Speaker 1>so what you have is
+
+00:26:22.750 --> 00:26:24.990
+<v Speaker 1>you're declaring that you're going to handle an
+
+00:26:24.990 --> 00:26:28.525
+<v Speaker 1>HTTP request with this hello world function, and
+
+00:26:28.525 --> 00:26:31.085
+<v Speaker 1>all of the information in that request is
+
+00:26:31.085 --> 00:26:33.725
+<v Speaker 1>actually contained inside that data type, the the
+
+00:26:33.725 --> 00:26:34.605
+<v Speaker 1>HTTP
+
+00:26:34.605 --> 00:26:35.404
+<v Speaker 1>request.
+
+00:26:36.285 --> 00:26:39.405
+<v Speaker 1>What you what, URLs you handle and how
+
+00:26:39.405 --> 00:26:41.405
+<v Speaker 1>you handle them is entirely up to you,
+
+00:26:41.405 --> 00:26:42.285
+<v Speaker 1>and that's inside,
+
+00:26:42.810 --> 00:26:44.810
+<v Speaker 1>And that would be done inside,
+
+00:26:45.050 --> 00:26:46.490
+<v Speaker 1>the hello world function.
+
+00:26:46.890 --> 00:26:50.250
+<v Speaker 1>So the the query string, the headers,
+
+00:26:50.490 --> 00:26:51.610
+<v Speaker 1>all of that stuff is,
+
+00:26:52.410 --> 00:26:54.650
+<v Speaker 1>just properties on the request,
+
+00:26:54.890 --> 00:26:55.370
+<v Speaker 1>struct.
+
+00:26:57.285 --> 00:26:58.325
+<v Speaker 1>But Okay.
+
+00:26:58.804 --> 00:26:59.764
+<v Speaker 1>Things like
+
+00:27:00.405 --> 00:27:02.885
+<v Speaker 1>what port number your web server is gonna
+
+00:27:02.885 --> 00:27:03.845
+<v Speaker 1>start on
+
+00:27:04.005 --> 00:27:06.165
+<v Speaker 1>and how many threads it's gonna use and
+
+00:27:06.165 --> 00:27:07.044
+<v Speaker 1>all of that other stuff,
+
+00:27:07.700 --> 00:27:09.940
+<v Speaker 1>that is all runtime configuration
+
+00:27:09.940 --> 00:27:11.860
+<v Speaker 1>that you supply to WASC. And so when
+
+00:27:11.860 --> 00:27:13.940
+<v Speaker 1>WASC binds your actor
+
+00:27:14.020 --> 00:27:15.780
+<v Speaker 1>to the HTTP
+
+00:27:15.780 --> 00:27:17.940
+<v Speaker 1>server capability provider,
+
+00:27:17.940 --> 00:27:21.059
+<v Speaker 1>it'll do so with whatever configuration you supply,
+
+00:27:21.059 --> 00:27:22.019
+<v Speaker 1>which includes
+
+00:27:22.020 --> 00:27:23.140
+<v Speaker 1>the the port number.
+
+00:27:25.315 --> 00:27:26.914
+<v Speaker 0>Okay. That's that has
+
+00:27:27.155 --> 00:27:28.434
+<v Speaker 0>just you can over that as well as
+
+00:27:28.434 --> 00:27:29.554
+<v Speaker 0>in a few blanks there. Okay. So the
+
+00:27:29.554 --> 00:27:31.554
+<v Speaker 0>actual the only HTTP request we are handling
+
+00:27:31.554 --> 00:27:33.554
+<v Speaker 0>is hello world. The health is actually a
+
+00:27:33.554 --> 00:27:35.635
+<v Speaker 0>core. It's not HTTP. So that was just
+
+00:27:35.475 --> 00:27:37.955
+<v Speaker 0>I thought we had two HTTP endpoints were
+
+00:27:37.955 --> 00:27:38.755
+<v Speaker 0>being
+
+00:27:39.049 --> 00:27:40.570
+<v Speaker 0>rooted in some fashion.
+
+00:27:40.890 --> 00:27:42.970
+<v Speaker 0>Really, what we're saying is hello world is
+
+00:27:42.970 --> 00:27:44.730
+<v Speaker 0>like an entry point to for a less
+
+00:27:44.730 --> 00:27:46.730
+<v Speaker 0>HTTP server and then Yep. I can handle
+
+00:27:46.730 --> 00:27:49.289
+<v Speaker 0>anything specific that I wanna do. Yeah. So
+
+00:27:49.289 --> 00:27:51.289
+<v Speaker 1>if you if you wanted to define routing
+
+00:27:51.289 --> 00:27:53.370
+<v Speaker 1>logic that would go inside your hello world
+
+00:27:53.370 --> 00:27:53.690
+<v Speaker 1>function.
+
+00:27:54.245 --> 00:27:56.725
+<v Speaker 1>The health function is something that the last
+
+00:27:56.725 --> 00:27:59.045
+<v Speaker 1>run time calls on your actor in order
+
+00:27:59.045 --> 00:28:00.485
+<v Speaker 1>to make sure that it's still up and
+
+00:28:00.485 --> 00:28:01.045
+<v Speaker 1>running.
+
+00:28:01.445 --> 00:28:03.765
+<v Speaker 1>And so if for whatever reason you
+
+00:28:04.165 --> 00:28:07.030
+<v Speaker 1>you either can't answer that function or that
+
+00:28:07.030 --> 00:28:10.549
+<v Speaker 1>function crashes or you explicitly return an error,
+
+00:28:10.870 --> 00:28:13.830
+<v Speaker 1>then WASP will treat your actor as as
+
+00:28:13.830 --> 00:28:15.110
+<v Speaker 1>down. And,
+
+00:28:15.510 --> 00:28:17.270
+<v Speaker 1>you know, depending on how the runtime is
+
+00:28:17.270 --> 00:28:19.750
+<v Speaker 1>configured, it'll restart it or take
+
+00:28:19.750 --> 00:28:20.870
+<v Speaker 1>whatever action it needs.
+
+00:28:22.915 --> 00:28:24.915
+<v Speaker 0>Okay. Cool. That makes sense.
+
+00:28:25.395 --> 00:28:28.115
+<v Speaker 0>Can we run this then? There's a there's
+
+00:28:28.115 --> 00:28:29.555
+<v Speaker 1>a couple more steps, but, yeah, we should
+
+00:28:29.555 --> 00:28:30.595
+<v Speaker 1>be able to run it.
+
+00:28:30.995 --> 00:28:33.635
+<v Speaker 0>Alright. What's the what's the next step? So
+
+00:28:33.635 --> 00:28:34.515
+<v Speaker 1>there's
+
+00:28:34.515 --> 00:28:36.434
+<v Speaker 1>some tooling that you need to install.
+
+00:28:36.755 --> 00:28:37.075
+<v Speaker 0>Alright.
+
+00:28:38.660 --> 00:28:40.580
+<v Speaker 1>So like I said earlier,
+
+00:28:40.980 --> 00:28:41.940
+<v Speaker 1>WASC,
+
+00:28:42.500 --> 00:28:45.620
+<v Speaker 1>is secure by default. That means that every
+
+00:28:45.620 --> 00:28:48.100
+<v Speaker 1>one of the WebAssembly modules has to have
+
+00:28:48.660 --> 00:28:52.100
+<v Speaker 1>a signed JSON web token embedded inside it
+
+00:28:52.365 --> 00:28:53.884
+<v Speaker 1>so that that module
+
+00:28:53.965 --> 00:28:55.805
+<v Speaker 1>carries with it the list of,
+
+00:28:56.285 --> 00:28:57.885
+<v Speaker 1>you can call them entitlements,
+
+00:28:57.885 --> 00:29:00.205
+<v Speaker 1>but the the thing the the capabilities that
+
+00:29:00.205 --> 00:29:01.485
+<v Speaker 1>it's allowed to use.
+
+00:29:02.045 --> 00:29:03.325
+<v Speaker 1>And so,
+
+00:29:03.565 --> 00:29:04.845
+<v Speaker 1>if you take a look at the make
+
+00:29:04.845 --> 00:29:05.485
+<v Speaker 1>file here,
+
+00:29:09.890 --> 00:29:10.690
+<v Speaker 1>you
+
+00:29:10.690 --> 00:29:11.490
+<v Speaker 1>should see
+
+00:29:12.450 --> 00:29:15.169
+<v Speaker 1>online 31 there. It's actually
+
+00:29:16.130 --> 00:29:17.090
+<v Speaker 1>using
+
+00:29:17.090 --> 00:29:19.409
+<v Speaker 1>one of the tools to sign the
+
+00:29:20.370 --> 00:29:21.490
+<v Speaker 1>WebAssembly
+
+00:29:21.490 --> 00:29:22.050
+<v Speaker 1>module.
+
+00:29:23.205 --> 00:29:23.845
+<v Speaker 1>And
+
+00:29:24.325 --> 00:29:25.845
+<v Speaker 1>that dash I
+
+00:29:27.205 --> 00:29:28.244
+<v Speaker 1>in the and
+
+00:29:30.005 --> 00:29:32.085
+<v Speaker 1>yeah. The the dash s on that command
+
+00:29:32.085 --> 00:29:32.724
+<v Speaker 1>line
+
+00:29:32.885 --> 00:29:35.605
+<v Speaker 1>entitles that module to communicate
+
+00:29:35.605 --> 00:29:37.765
+<v Speaker 1>with the HTTP server capability.
+
+00:29:39.960 --> 00:29:41.640
+<v Speaker 1>Okay. So what we need to do is
+
+00:29:41.640 --> 00:29:43.720
+<v Speaker 1>people first, we need to generate the keys,
+
+00:29:43.720 --> 00:29:45.240
+<v Speaker 1>and then we need to sign it.
+
+00:29:45.880 --> 00:29:49.160
+<v Speaker 1>And so that requires installing two tools right
+
+00:29:49.160 --> 00:29:50.039
+<v Speaker 1>now. But
+
+00:29:50.440 --> 00:29:51.975
+<v Speaker 1>like I said, we're we're right in the
+
+00:29:51.975 --> 00:29:54.295
+<v Speaker 1>middle of of changing a bunch of things.
+
+00:29:54.295 --> 00:29:55.015
+<v Speaker 1>And so
+
+00:29:55.575 --> 00:29:58.054
+<v Speaker 1>we have a bunch of little tiny tools,
+
+00:29:58.375 --> 00:30:00.535
+<v Speaker 1>and we're converting that to just one tool
+
+00:30:00.535 --> 00:30:02.215
+<v Speaker 1>so that you you can install that one
+
+00:30:02.215 --> 00:30:04.455
+<v Speaker 1>tool and do all of the development tasks.
+
+00:30:04.990 --> 00:30:06.350
+<v Speaker 1>So the the first thing you want to
+
+00:30:06.350 --> 00:30:08.349
+<v Speaker 1>install is a tool called n keys.
+
+00:30:11.230 --> 00:30:14.269
+<v Speaker 0>And so Install? Cargo install
+
+00:30:15.710 --> 00:30:18.270
+<v Speaker 1>n keys, and I think we need dash
+
+00:30:18.270 --> 00:30:19.309
+<v Speaker 1>dash features
+
+00:30:20.065 --> 00:30:21.985
+<v Speaker 1>and then quote CLI.
+
+00:30:24.145 --> 00:30:24.785
+<v Speaker 1>Space
+
+00:30:25.585 --> 00:30:27.105
+<v Speaker 1>space quote CLI. Yeah.
+
+00:30:35.050 --> 00:30:36.730
+<v Speaker 0>I'll start another one. What was the other
+
+00:30:36.730 --> 00:30:38.010
+<v Speaker 0>tool we need? And I'll get that run.
+
+00:30:38.010 --> 00:30:40.330
+<v Speaker 1>The other tool is called Westcap.
+
+00:30:40.330 --> 00:30:41.049
+<v Speaker 1>And,
+
+00:30:41.770 --> 00:30:43.930
+<v Speaker 1>again, we all we need the the CLI
+
+00:30:43.930 --> 00:30:44.330
+<v Speaker 1>features.
+
+00:30:47.215 --> 00:30:49.455
+<v Speaker 1>And that's the tool for
+
+00:30:51.695 --> 00:30:52.894
+<v Speaker 1>embedding
+
+00:30:53.294 --> 00:30:56.095
+<v Speaker 1>the signed tokens inside the WebAssembly modules.
+
+00:30:56.815 --> 00:31:00.415
+<v Speaker 1>So what happens there is that inside
+
+00:30:59.910 --> 00:31:02.230
+<v Speaker 1>every one of those WebAssembly modules when we
+
+00:31:02.230 --> 00:31:05.350
+<v Speaker 1>create this token, because it's cryptographically signed,
+
+00:31:05.670 --> 00:31:06.790
+<v Speaker 1>we can verify
+
+00:31:07.110 --> 00:31:09.830
+<v Speaker 1>that it was signed by who it claims
+
+00:31:09.830 --> 00:31:11.910
+<v Speaker 1>to have been signed by. But then the
+
+00:31:11.910 --> 00:31:13.270
+<v Speaker 1>last runtime can make,
+
+00:31:15.345 --> 00:31:17.905
+<v Speaker 1>you know, runtime security decisions so we can
+
+00:31:17.905 --> 00:31:20.784
+<v Speaker 1>verify the provenance chain of that module. So
+
+00:31:20.784 --> 00:31:22.624
+<v Speaker 1>you can do things like decide,
+
+00:31:23.505 --> 00:31:26.225
+<v Speaker 1>was this module signed by our
+
+00:31:26.784 --> 00:31:29.585
+<v Speaker 1>one valid production environment issuer?
+
+00:31:29.745 --> 00:31:32.039
+<v Speaker 1>If not, you can't run it. Or was
+
+00:31:32.039 --> 00:31:33.639
+<v Speaker 1>it signed by one of the four or
+
+00:31:33.639 --> 00:31:36.200
+<v Speaker 1>five accounts that we trust in development or
+
+00:31:36.200 --> 00:31:36.919
+<v Speaker 1>QA
+
+00:31:37.240 --> 00:31:39.399
+<v Speaker 1>or, you know, that sort of thing.
+
+00:31:41.080 --> 00:31:42.759
+<v Speaker 1>And we have a a a plug in
+
+00:31:42.759 --> 00:31:44.120
+<v Speaker 1>system so you can
+
+00:31:44.445 --> 00:31:48.205
+<v Speaker 1>you can even defer your runtime security decisions
+
+00:31:48.205 --> 00:31:48.844
+<v Speaker 1>to
+
+00:31:49.005 --> 00:31:50.445
+<v Speaker 1>Open Policy Agent.
+
+00:31:50.605 --> 00:31:51.804
+<v Speaker 0>Oh, sweet. So
+
+00:31:52.044 --> 00:31:53.404
+<v Speaker 1>the the OPA,
+
+00:31:53.725 --> 00:31:56.205
+<v Speaker 1>RIGO files, they have built into them the
+
+00:31:56.205 --> 00:31:58.125
+<v Speaker 1>ability to process JSON web tokens.
+
+00:31:58.669 --> 00:32:00.590
+<v Speaker 1>So what we do is we just send
+
+00:32:00.590 --> 00:32:03.470
+<v Speaker 1>the token from the WebAssembly module
+
+00:32:03.630 --> 00:32:05.710
+<v Speaker 1>over to OPA, and then you can write
+
+00:32:05.710 --> 00:32:07.950
+<v Speaker 1>your own policy to to to determine how
+
+00:32:07.950 --> 00:32:10.110
+<v Speaker 1>you want to to authorize
+
+00:32:10.110 --> 00:32:10.270
+<v Speaker 1>it.
+
+00:32:12.035 --> 00:32:13.235
+<v Speaker 0>Okay. I'm
+
+00:32:13.475 --> 00:32:15.315
+<v Speaker 0>definitely gonna have to take a look at
+
+00:32:15.315 --> 00:32:16.514
+<v Speaker 0>that at some point.
+
+00:32:18.275 --> 00:32:19.315
+<v Speaker 0>Let's try
+
+00:32:19.315 --> 00:32:21.715
+<v Speaker 0>and okay. We won't watch that compile. But
+
+00:32:21.715 --> 00:32:22.434
+<v Speaker 0>let's
+
+00:32:23.430 --> 00:32:24.950
+<v Speaker 0>you know, I know a little bit of
+
+00:32:24.950 --> 00:32:26.950
+<v Speaker 0>rust, you know. I'm writing rust regularly.
+
+00:32:27.110 --> 00:32:29.190
+<v Speaker 0>What how does my workflow change here then
+
+00:32:29.190 --> 00:32:30.950
+<v Speaker 0>with regards to, you know,
+
+00:32:31.350 --> 00:32:32.790
+<v Speaker 0>like logging? Like,
+
+00:32:33.190 --> 00:32:35.110
+<v Speaker 0>can I just use the standard tools? Is
+
+00:32:35.110 --> 00:32:37.110
+<v Speaker 0>there something that was provides on top of
+
+00:32:37.110 --> 00:32:38.710
+<v Speaker 0>that to simplify it?
+
+00:32:39.645 --> 00:32:41.085
+<v Speaker 0>Do I add debug messages?
+
+00:32:41.885 --> 00:32:44.285
+<v Speaker 1>So there's there's two different ways you can
+
+00:32:44.285 --> 00:32:45.325
+<v Speaker 1>do it in
+
+00:32:45.725 --> 00:32:48.045
+<v Speaker 1>in any of the languages that we support.
+
+00:32:48.045 --> 00:32:50.205
+<v Speaker 1>One is there there's always a console log
+
+00:32:50.205 --> 00:32:50.924
+<v Speaker 1>function
+
+00:32:51.405 --> 00:32:54.205
+<v Speaker 1>that's available when you write this. So
+
+00:32:58.110 --> 00:33:01.230
+<v Speaker 1>yeah. Console underscore log. I think it's
+
+00:33:03.790 --> 00:33:05.550
+<v Speaker 1>of course, you're not getting any suggestions.
+
+00:33:07.375 --> 00:33:08.895
+<v Speaker 1>Thanks. Anyway,
+
+00:33:09.054 --> 00:33:10.335
+<v Speaker 0>analyzer running.
+
+00:33:11.294 --> 00:33:13.615
+<v Speaker 0>I'm not sure why it's not Yeah. Part
+
+00:33:13.615 --> 00:33:15.215
+<v Speaker 1>of the reason why I I stopped using
+
+00:33:15.215 --> 00:33:16.734
+<v Speaker 1>Versus Code is because
+
+00:33:17.695 --> 00:33:20.015
+<v Speaker 1>it usually takes between thirty seconds and two
+
+00:33:20.015 --> 00:33:22.895
+<v Speaker 1>minutes to stop giving me auto completion help.
+
+00:33:25.560 --> 00:33:26.520
+<v Speaker 1>So
+
+00:33:26.680 --> 00:33:27.640
+<v Speaker 1>there it is.
+
+00:33:31.320 --> 00:33:33.720
+<v Speaker 1>So that function will will write to standard
+
+00:33:33.720 --> 00:33:34.360
+<v Speaker 1>out,
+
+00:33:35.080 --> 00:33:37.405
+<v Speaker 1>as long as the the last the the
+
+00:33:37.405 --> 00:33:40.365
+<v Speaker 1>runtime you're you're using allows it. There's a
+
+00:33:40.365 --> 00:33:40.924
+<v Speaker 1>more
+
+00:33:41.565 --> 00:33:45.005
+<v Speaker 1>robust logging provider that Brian Kettleson actually wrote
+
+00:33:45.005 --> 00:33:45.725
+<v Speaker 1>that
+
+00:33:46.765 --> 00:33:48.605
+<v Speaker 1>allows you to do things like log at
+
+00:33:48.605 --> 00:33:50.970
+<v Speaker 1>specific levels. So you can say, you you
+
+00:33:50.970 --> 00:33:51.770
+<v Speaker 1>can use the,
+
+00:33:52.250 --> 00:33:55.049
+<v Speaker 1>the debug and info and trace macros
+
+00:33:55.290 --> 00:33:57.210
+<v Speaker 1>directly inside your actor.
+
+00:34:00.410 --> 00:34:02.490
+<v Speaker 1>And then for that to work, your actor
+
+00:34:02.490 --> 00:34:04.570
+<v Speaker 1>needs to be entitled to use the WASC
+
+00:34:04.570 --> 00:34:05.690
+<v Speaker 1>logger, capability.
+
+00:34:08.285 --> 00:34:10.605
+<v Speaker 0>Okay. And the WASP the so okay. So
+
+00:34:10.605 --> 00:34:12.845
+<v Speaker 0>let's recover that because I think you mentioned
+
+00:34:12.925 --> 00:34:14.765
+<v Speaker 0>that in the earlier. The way I add
+
+00:34:14.765 --> 00:34:15.725
+<v Speaker 0>capabilities
+
+00:34:16.364 --> 00:34:19.405
+<v Speaker 0>is by adding new parameters to the build
+
+00:34:19.405 --> 00:34:20.045
+<v Speaker 0>step here.
+
+00:34:20.710 --> 00:34:22.550
+<v Speaker 1>Yeah. So there are a couple of well
+
+00:34:22.550 --> 00:34:25.270
+<v Speaker 1>known capabilities that Waskap will has
+
+00:34:25.510 --> 00:34:27.350
+<v Speaker 1>shortcuts for. So one of them is the
+
+00:34:27.350 --> 00:34:28.630
+<v Speaker 1>HTTP server
+
+00:34:28.790 --> 00:34:30.790
+<v Speaker 1>and so on. But you can also there's
+
+00:34:30.790 --> 00:34:33.190
+<v Speaker 1>nothing preventing you. In fact, you're encouraged to
+
+00:34:33.190 --> 00:34:36.025
+<v Speaker 1>write your own custom capability providers. And so
+
+00:34:36.025 --> 00:34:37.705
+<v Speaker 1>you can use Westcap or,
+
+00:34:39.145 --> 00:34:40.745
+<v Speaker 1>you know, next week, you'll be able to
+
+00:34:40.745 --> 00:34:41.945
+<v Speaker 1>use the new tool,
+
+00:34:42.425 --> 00:34:43.145
+<v Speaker 1>to,
+
+00:34:43.465 --> 00:34:46.745
+<v Speaker 1>sign with any capability ID. And so each
+
+00:34:47.145 --> 00:34:50.264
+<v Speaker 1>each one of these abstract contracts between actors
+
+00:34:50.310 --> 00:34:52.390
+<v Speaker 1>and a capability has,
+
+00:34:52.710 --> 00:34:54.550
+<v Speaker 1>essentially a contract ID.
+
+00:34:54.949 --> 00:34:55.510
+<v Speaker 1>And
+
+00:34:55.750 --> 00:34:58.790
+<v Speaker 1>so there's there's one called West Redis.
+
+00:34:59.270 --> 00:35:01.990
+<v Speaker 1>Sorry. Not West Redis. West key value.
+
+00:35:02.390 --> 00:35:05.665
+<v Speaker 1>And so that that contract ID says that
+
+00:35:05.665 --> 00:35:06.945
+<v Speaker 1>it's a key value
+
+00:35:07.105 --> 00:35:07.745
+<v Speaker 1>contract.
+
+00:35:08.145 --> 00:35:11.505
+<v Speaker 1>It can be satisfied by Redis or Cassandra
+
+00:35:11.505 --> 00:35:14.545
+<v Speaker 1>or Memcached or an in process
+
+00:35:14.705 --> 00:35:15.265
+<v Speaker 1>cache,
+
+00:35:16.160 --> 00:35:18.640
+<v Speaker 1>but the contract itself remains the same. And
+
+00:35:18.640 --> 00:35:21.760
+<v Speaker 1>so when we authorize actors, we authorize them
+
+00:35:21.760 --> 00:35:23.680
+<v Speaker 1>to use the abstract contract.
+
+00:35:24.240 --> 00:35:26.480
+<v Speaker 1>And then at runtime, we can decide how
+
+00:35:26.480 --> 00:35:28.640
+<v Speaker 1>to bind them to specific providers.
+
+00:35:31.125 --> 00:35:31.765
+<v Speaker 0>Okay.
+
+00:35:32.325 --> 00:35:33.685
+<v Speaker 0>I think I understood.
+
+00:35:34.485 --> 00:35:36.805
+<v Speaker 0>And I I think I understand that. Okay.
+
+00:35:37.285 --> 00:35:39.125
+<v Speaker 0>We tell our application is allowed to do
+
+00:35:39.125 --> 00:35:41.605
+<v Speaker 0>some sort of key values get and set,
+
+00:35:41.605 --> 00:35:43.205
+<v Speaker 0>and then the run time will actually will
+
+00:35:43.205 --> 00:35:46.120
+<v Speaker 0>inject its own provider specific implementation?
+
+00:35:46.520 --> 00:35:47.720
+<v Speaker 1>Yeah. So when we
+
+00:35:48.040 --> 00:35:50.280
+<v Speaker 1>when we configure the run time so we
+
+00:35:50.280 --> 00:35:52.120
+<v Speaker 1>start at West Coast, and then we tell
+
+00:35:52.120 --> 00:35:54.120
+<v Speaker 1>it to load whatever actors we want to
+
+00:35:54.120 --> 00:35:57.160
+<v Speaker 1>load. And then we tell it to load
+
+00:35:56.175 --> 00:35:57.055
+<v Speaker 1>capability
+
+00:35:57.055 --> 00:35:58.735
+<v Speaker 1>providers. So I can tell it to load
+
+00:35:58.735 --> 00:36:00.655
+<v Speaker 1>the Redis provider or,
+
+00:36:01.455 --> 00:36:03.375
+<v Speaker 1>whatever other provider I want.
+
+00:36:03.695 --> 00:36:05.935
+<v Speaker 1>And then we supply configuration
+
+00:36:05.935 --> 00:36:09.695
+<v Speaker 1>to bind an actor to a provider. So
+
+00:36:10.130 --> 00:36:12.290
+<v Speaker 1>in this case, we could we could bind
+
+00:36:12.290 --> 00:36:13.810
+<v Speaker 1>your actor to
+
+00:36:14.050 --> 00:36:16.370
+<v Speaker 1>the Redis provider, and that will allow it
+
+00:36:16.370 --> 00:36:17.650
+<v Speaker 1>to access
+
+00:36:17.730 --> 00:36:19.410
+<v Speaker 1>the the key value store.
+
+00:36:21.090 --> 00:36:23.695
+<v Speaker 0>Okay. Yeah. That that The other thing one
+
+00:36:23.695 --> 00:36:25.615
+<v Speaker 1>of the other things that we allow
+
+00:36:25.615 --> 00:36:26.175
+<v Speaker 1>is
+
+00:36:26.815 --> 00:36:29.135
+<v Speaker 1>you can actually stop the
+
+00:36:29.695 --> 00:36:32.415
+<v Speaker 1>provider at runtime and replace it with a
+
+00:36:32.415 --> 00:36:34.734
+<v Speaker 1>different one, and the actor will not will
+
+00:36:34.734 --> 00:36:37.270
+<v Speaker 1>will not know. So I could switch between
+
+00:36:37.270 --> 00:36:39.670
+<v Speaker 1>Redis and Cassandra at runtime and the actor
+
+00:36:39.670 --> 00:36:41.829
+<v Speaker 1>won't won't stop running. It won't even miss
+
+00:36:41.829 --> 00:36:42.869
+<v Speaker 1>any requests.
+
+00:36:46.549 --> 00:36:48.630
+<v Speaker 0>So how does how does that work? Like,
+
+00:36:48.630 --> 00:36:50.515
+<v Speaker 0>if the runtime is in the middle of
+
+00:36:50.515 --> 00:36:52.435
+<v Speaker 0>swapping that out and requests are coming in
+
+00:36:52.435 --> 00:36:53.875
+<v Speaker 0>and and they just paused
+
+00:36:54.195 --> 00:36:56.515
+<v Speaker 0>until the provider is satisfied again?
+
+00:36:56.675 --> 00:36:59.555
+<v Speaker 1>Yep. It just pauses it. So the requests
+
+00:36:59.555 --> 00:37:02.435
+<v Speaker 1>coming the requests coming in to the actor
+
+00:37:02.870 --> 00:37:04.710
+<v Speaker 1>will queue up while
+
+00:37:04.870 --> 00:37:08.390
+<v Speaker 1>the provider is unavailable. And then once you,
+
+00:37:09.030 --> 00:37:11.030
+<v Speaker 1>put in the new provider, the the actor
+
+00:37:11.030 --> 00:37:12.790
+<v Speaker 1>will, essentially unpause.
+
+00:37:12.790 --> 00:37:14.230
+<v Speaker 1>And we can do the same thing with
+
+00:37:14.230 --> 00:37:16.150
+<v Speaker 1>actors. We can live update them
+
+00:37:16.595 --> 00:37:19.315
+<v Speaker 1>from, you know, version one to version two
+
+00:37:19.555 --> 00:37:22.434
+<v Speaker 1>without them missing requests. So if it's bound
+
+00:37:22.434 --> 00:37:24.035
+<v Speaker 1>to an HTTP server,
+
+00:37:24.755 --> 00:37:26.355
+<v Speaker 1>that that web server
+
+00:37:26.994 --> 00:37:29.954
+<v Speaker 1>will continue sending the actor requests, but they'll
+
+00:37:29.954 --> 00:37:31.555
+<v Speaker 1>just queue up while the actor is being
+
+00:37:31.555 --> 00:37:31.954
+<v Speaker 1>updated.
+
+00:37:32.570 --> 00:37:34.650
+<v Speaker 1>And we don't need to scale out in
+
+00:37:34.650 --> 00:37:36.490
+<v Speaker 1>order to do that live update. We don't
+
+00:37:36.490 --> 00:37:38.970
+<v Speaker 1>need to provision any transient resources.
+
+00:37:39.369 --> 00:37:40.970
+<v Speaker 1>We can just do it live.
+
+00:37:42.170 --> 00:37:44.410
+<v Speaker 0>Okay. That that's that's quite impressive.
+
+00:37:45.290 --> 00:37:45.610
+<v Speaker 0>Definitely.
+
+00:37:46.475 --> 00:37:47.195
+<v Speaker 0>Alright.
+
+00:37:47.515 --> 00:37:49.195
+<v Speaker 0>I mean, I'm too scared to go look
+
+00:37:49.195 --> 00:37:50.955
+<v Speaker 0>at the Rust compilation. I'll assume it's either
+
+00:37:50.955 --> 00:37:53.595
+<v Speaker 0>done or almost done. One more question on
+
+00:37:53.595 --> 00:37:55.755
+<v Speaker 0>the capabilities then. So if I've got an
+
+00:37:55.755 --> 00:37:58.635
+<v Speaker 0>application that has access to the key value
+
+00:37:58.635 --> 00:37:59.115
+<v Speaker 0>provider,
+
+00:38:00.510 --> 00:38:02.190
+<v Speaker 0>Do I have the ability to say that
+
+00:38:02.190 --> 00:38:04.430
+<v Speaker 0>it can only read on that capability rather
+
+00:38:04.430 --> 00:38:06.030
+<v Speaker 0>than read and write? Like, can I get
+
+00:38:06.030 --> 00:38:08.190
+<v Speaker 0>really specific with what the service is able
+
+00:38:08.190 --> 00:38:08.830
+<v Speaker 0>to do?
+
+00:38:09.310 --> 00:38:11.070
+<v Speaker 1>So there's an issue in the backlog where
+
+00:38:11.070 --> 00:38:12.670
+<v Speaker 1>we're gonna add that functionality.
+
+00:38:12.670 --> 00:38:13.550
+<v Speaker 1>So right now,
+
+00:38:14.424 --> 00:38:18.345
+<v Speaker 1>you either have access to that contract or
+
+00:38:18.345 --> 00:38:20.345
+<v Speaker 1>you don't. So you can either access the
+
+00:38:20.345 --> 00:38:22.105
+<v Speaker 1>key value store or you can't.
+
+00:38:22.825 --> 00:38:25.065
+<v Speaker 1>Once we implement this feature, we'll have the
+
+00:38:25.065 --> 00:38:27.545
+<v Speaker 1>fine grained control, like you said, and and
+
+00:38:28.550 --> 00:38:30.470
+<v Speaker 1>you'll essentially be able to
+
+00:38:31.270 --> 00:38:32.950
+<v Speaker 1>so if you if you go back to,
+
+00:38:33.349 --> 00:38:34.630
+<v Speaker 1>the source file,
+
+00:38:34.869 --> 00:38:35.670
+<v Speaker 1>you'll see
+
+00:38:36.070 --> 00:38:37.110
+<v Speaker 1>the
+
+00:38:39.030 --> 00:38:40.790
+<v Speaker 1>the the lib file. If you look
+
+00:38:41.285 --> 00:38:42.325
+<v Speaker 1>the that
+
+00:38:42.645 --> 00:38:45.605
+<v Speaker 1>op handle request is a constant that just
+
+00:38:45.685 --> 00:38:46.485
+<v Speaker 1>applies
+
+00:38:46.485 --> 00:38:47.205
+<v Speaker 1>to
+
+00:38:48.085 --> 00:38:50.565
+<v Speaker 1>an operation called handle request.
+
+00:38:50.805 --> 00:38:51.765
+<v Speaker 1>And so
+
+00:38:52.165 --> 00:38:54.325
+<v Speaker 1>when we implement this new feature, we'll be
+
+00:38:54.325 --> 00:38:55.285
+<v Speaker 1>able to say
+
+00:38:55.730 --> 00:38:58.290
+<v Speaker 1>that you have access to the web server
+
+00:39:00.049 --> 00:39:01.410
+<v Speaker 1>capability provider,
+
+00:39:01.890 --> 00:39:05.089
+<v Speaker 1>and you you can invoke this operation.
+
+00:39:05.089 --> 00:39:06.849
+<v Speaker 1>And so that operation is,
+
+00:39:08.115 --> 00:39:10.355
+<v Speaker 1>in this case, it's handled request. But you
+
+00:39:10.355 --> 00:39:12.755
+<v Speaker 1>could do for the key value store, you
+
+00:39:12.755 --> 00:39:13.475
+<v Speaker 1>can say,
+
+00:39:15.155 --> 00:39:17.475
+<v Speaker 1>you have access to the key value store,
+
+00:39:18.115 --> 00:39:20.035
+<v Speaker 1>but you can only invoke
+
+00:39:20.035 --> 00:39:21.475
+<v Speaker 1>the
+
+00:39:21.870 --> 00:39:23.390
+<v Speaker 1>the set operation
+
+00:39:23.390 --> 00:39:24.190
+<v Speaker 1>or
+
+00:39:24.190 --> 00:39:25.950
+<v Speaker 1>the list members
+
+00:39:25.950 --> 00:39:26.750
+<v Speaker 1>operation.
+
+00:39:28.350 --> 00:39:29.550
+<v Speaker 1>And so you can
+
+00:39:30.670 --> 00:39:33.230
+<v Speaker 1>you can control it down to the individual
+
+00:39:33.230 --> 00:39:34.190
+<v Speaker 1>operations.
+
+00:39:35.390 --> 00:39:36.510
+<v Speaker 0>Alright. Excellent.
+
+00:39:37.455 --> 00:39:38.895
+<v Speaker 0>Rust has
+
+00:39:39.455 --> 00:39:41.535
+<v Speaker 0>graciously finished. So
+
+00:39:41.855 --> 00:39:43.855
+<v Speaker 0>I'm assuming based on the make fail we
+
+00:39:43.855 --> 00:39:46.575
+<v Speaker 0>just looked at, that should make keys. Make
+
+00:39:46.575 --> 00:39:47.535
+<v Speaker 1>keys. Yep.
+
+00:39:48.335 --> 00:39:49.855
+<v Speaker 0>See, I often when there's a make fail
+
+00:39:49.855 --> 00:39:51.970
+<v Speaker 0>in a project on their own directory. Because
+
+00:39:51.970 --> 00:39:54.210
+<v Speaker 0>it just makes everything so much easier.
+
+00:39:54.690 --> 00:39:57.170
+<v Speaker 1>Okay. So you see now we've we've created
+
+00:39:57.170 --> 00:40:00.050
+<v Speaker 1>an account key and a module key. And
+
+00:40:00.050 --> 00:40:03.330
+<v Speaker 1>so the account is the the issuer of
+
+00:40:03.330 --> 00:40:06.095
+<v Speaker 1>the module. That's the and then the module
+
+00:40:06.095 --> 00:40:07.215
+<v Speaker 1>itself is
+
+00:40:08.175 --> 00:40:09.935
+<v Speaker 1>is the actor. And so
+
+00:40:10.494 --> 00:40:13.295
+<v Speaker 1>every actor in this system has a globally
+
+00:40:13.295 --> 00:40:15.535
+<v Speaker 1>unique public key as do,
+
+00:40:15.855 --> 00:40:16.895
+<v Speaker 1>all of the accounts.
+
+00:40:18.030 --> 00:40:18.910
+<v Speaker 1>And this
+
+00:40:19.550 --> 00:40:20.590
+<v Speaker 1>that becomes
+
+00:40:20.830 --> 00:40:23.230
+<v Speaker 1>critically important when we get into
+
+00:40:23.550 --> 00:40:26.190
+<v Speaker 1>the our clustering technology called Lattice.
+
+00:40:28.990 --> 00:40:29.310
+<v Speaker 0>Okay.
+
+00:40:32.145 --> 00:40:33.505
+<v Speaker 0>Clustering technology?
+
+00:40:34.545 --> 00:40:35.265
+<v Speaker 1>So
+
+00:40:35.665 --> 00:40:38.625
+<v Speaker 1>what you're doing right now is is building
+
+00:40:40.785 --> 00:40:43.505
+<v Speaker 1>actors that are gonna run-in a West Coast.
+
+00:40:44.870 --> 00:40:46.790
+<v Speaker 1>But West Coasts can
+
+00:40:47.190 --> 00:40:50.150
+<v Speaker 1>detect each other and self form self healing
+
+00:40:50.150 --> 00:40:51.030
+<v Speaker 1>clusters.
+
+00:40:51.590 --> 00:40:53.750
+<v Speaker 1>And so when you tell it to run
+
+00:40:53.750 --> 00:40:54.710
+<v Speaker 1>an actor,
+
+00:40:55.030 --> 00:40:57.350
+<v Speaker 1>it will just run anywhere on any of
+
+00:40:57.350 --> 00:40:58.310
+<v Speaker 1>the discovered hosts.
+
+00:40:58.925 --> 00:41:00.205
+<v Speaker 1>And if you tell it to run a
+
+00:41:00.205 --> 00:41:02.605
+<v Speaker 1>capability provider, it'll run anywhere on any of
+
+00:41:02.605 --> 00:41:04.365
+<v Speaker 1>the discovered hosts. And
+
+00:41:04.765 --> 00:41:08.685
+<v Speaker 1>by discovered hosts, it this the lattice essentially
+
+00:41:09.085 --> 00:41:12.850
+<v Speaker 1>flattens any topology that it discovers. So I
+
+00:41:12.850 --> 00:41:14.690
+<v Speaker 1>could have a bunch of hosts running in
+
+00:41:14.690 --> 00:41:16.530
+<v Speaker 1>my DigitalOcean environment.
+
+00:41:17.330 --> 00:41:18.290
+<v Speaker 1>I could have,
+
+00:41:18.609 --> 00:41:21.570
+<v Speaker 1>eight of them running on Raspberry Pis,
+
+00:41:21.810 --> 00:41:23.410
+<v Speaker 1>which I actually do
+
+00:41:23.810 --> 00:41:24.609
+<v Speaker 1>over there.
+
+00:41:26.664 --> 00:41:28.424
+<v Speaker 1>And you could have them running in your
+
+00:41:28.424 --> 00:41:30.185
+<v Speaker 1>Google environment or
+
+00:41:30.825 --> 00:41:33.305
+<v Speaker 1>anywhere else, you know, on prem inside your
+
+00:41:33.305 --> 00:41:34.105
+<v Speaker 1>enterprise.
+
+00:41:34.585 --> 00:41:37.625
+<v Speaker 1>And as long as those are able to
+
+00:41:37.625 --> 00:41:38.345
+<v Speaker 1>find each other
+
+00:41:39.400 --> 00:41:42.760
+<v Speaker 1>at all, then WASP treats them as essentially
+
+00:41:42.760 --> 00:41:43.880
+<v Speaker 1>one flat
+
+00:41:45.400 --> 00:41:47.160
+<v Speaker 1>target of potential compute.
+
+00:41:49.080 --> 00:41:51.880
+<v Speaker 0>Wow. Okay. So I'm gonna summarize that again
+
+00:41:51.880 --> 00:41:52.920
+<v Speaker 0>for my own benefit here.
+
+00:41:53.664 --> 00:41:56.305
+<v Speaker 0>The WASC run time isn't just single node.
+
+00:41:56.305 --> 00:41:58.704
+<v Speaker 0>You can actually run it across multiple nodes.
+
+00:41:59.105 --> 00:42:00.865
+<v Speaker 0>I'm not sure how the discovery works. Maybe
+
+00:42:00.865 --> 00:42:02.305
+<v Speaker 0>we can talk about that later. But they
+
+00:42:02.305 --> 00:42:04.385
+<v Speaker 0>have the ability to then schedule
+
+00:42:04.464 --> 00:42:07.744
+<v Speaker 0>the WASC actors across any of those nodes,
+
+00:42:07.880 --> 00:42:09.640
+<v Speaker 0>and the messaging is all handled for me
+
+00:42:09.640 --> 00:42:11.240
+<v Speaker 0>across nodes. Like, I don't need to I
+
+00:42:11.240 --> 00:42:12.680
+<v Speaker 0>don't need to know where each actor is
+
+00:42:12.680 --> 00:42:14.840
+<v Speaker 0>running as that kind of No. No. And
+
+00:42:14.840 --> 00:42:16.760
+<v Speaker 1>in fact, because we
+
+00:42:17.080 --> 00:42:19.800
+<v Speaker 1>WASP is an an opinionated framework.
+
+00:42:19.800 --> 00:42:22.694
+<v Speaker 1>So it takes the opinion that you shouldn't
+
+00:42:22.694 --> 00:42:24.455
+<v Speaker 1>have to know or care
+
+00:42:25.255 --> 00:42:27.815
+<v Speaker 1>physically where your actors are running. All you
+
+00:42:27.815 --> 00:42:30.935
+<v Speaker 1>should care about is logically where they're running.
+
+00:42:31.255 --> 00:42:33.655
+<v Speaker 1>So you want to be able to tune
+
+00:42:34.119 --> 00:42:34.840
+<v Speaker 1>your,
+
+00:42:35.880 --> 00:42:38.920
+<v Speaker 1>your cluster of compute so that if you
+
+00:42:38.920 --> 00:42:42.440
+<v Speaker 1>want this particular actor to run-in close network
+
+00:42:42.440 --> 00:42:45.480
+<v Speaker 1>proximity to this particular capability provider,
+
+00:42:45.720 --> 00:42:48.085
+<v Speaker 1>you can do so. But you shouldn't care
+
+00:42:48.085 --> 00:42:50.245
+<v Speaker 1>that it's running on this host in DigitalOcean
+
+00:42:50.245 --> 00:42:52.405
+<v Speaker 1>and this host and this other one. Right?
+
+00:42:52.405 --> 00:42:54.565
+<v Speaker 1>Being able to do things like
+
+00:42:55.125 --> 00:42:56.085
+<v Speaker 1>when I do,
+
+00:42:56.885 --> 00:42:59.045
+<v Speaker 1>when I list my nodes in Kubernetes,
+
+00:42:59.125 --> 00:43:01.445
+<v Speaker 1>I don't care what hosts they're running on.
+
+00:43:01.860 --> 00:43:04.180
+<v Speaker 1>All I care is that they're up. And
+
+00:43:04.180 --> 00:43:06.100
+<v Speaker 1>if I want more, I should just be
+
+00:43:06.100 --> 00:43:09.140
+<v Speaker 1>able to fire up more hosts. And
+
+00:43:09.940 --> 00:43:12.420
+<v Speaker 1>it's not that simple in Kubernetes.
+
+00:43:12.420 --> 00:43:14.580
+<v Speaker 1>And so I wanted to make it that
+
+00:43:14.580 --> 00:43:17.855
+<v Speaker 1>simple with West. So if I want to
+
+00:43:17.855 --> 00:43:20.095
+<v Speaker 1>increase the size of my lattice,
+
+00:43:20.655 --> 00:43:23.695
+<v Speaker 1>I just go find some new place where
+
+00:43:23.855 --> 00:43:26.335
+<v Speaker 1>I'm not yet running a WASC coast. I
+
+00:43:26.335 --> 00:43:27.615
+<v Speaker 1>run a WASC coast
+
+00:43:27.855 --> 00:43:31.500
+<v Speaker 1>and as long as that WASC coast can
+
+00:43:31.500 --> 00:43:32.460
+<v Speaker 1>establish
+
+00:43:32.620 --> 00:43:34.940
+<v Speaker 1>a NAT's leaf node communication
+
+00:43:34.940 --> 00:43:36.940
+<v Speaker 1>with any of my other
+
+00:43:37.820 --> 00:43:40.380
+<v Speaker 1>subnets, it's all one flat topology.
+
+00:43:42.460 --> 00:43:43.100
+<v Speaker 0>Okay.
+
+00:43:43.820 --> 00:43:44.300
+<v Speaker 0>I mean,
+
+00:43:45.474 --> 00:43:47.315
+<v Speaker 0>you've thrown me for a sec here. Like,
+
+00:43:47.315 --> 00:43:48.755
+<v Speaker 0>I I I always go into these streams
+
+00:43:48.755 --> 00:43:50.915
+<v Speaker 0>thinking I understand the technology, and I I
+
+00:43:50.915 --> 00:43:53.075
+<v Speaker 0>I just realized how little I actually knew
+
+00:43:53.075 --> 00:43:54.835
+<v Speaker 0>about Wasco and just how much it actually
+
+00:43:54.835 --> 00:43:57.250
+<v Speaker 0>does for you. That is awesome. Like that
+
+00:43:57.330 --> 00:43:58.130
+<v Speaker 1>Yeah. So like
+
+00:43:58.610 --> 00:44:00.690
+<v Speaker 1>I said, the the the first problem we
+
+00:44:00.690 --> 00:44:03.570
+<v Speaker 1>wanted to solve is getting rid of boilerplate.
+
+00:44:03.810 --> 00:44:06.130
+<v Speaker 1>And by getting rid of that boilerplate,
+
+00:44:06.370 --> 00:44:08.290
+<v Speaker 1>it enables a whole bunch of other things
+
+00:44:08.290 --> 00:44:10.370
+<v Speaker 1>that we can make easier as well. So
+
+00:44:10.835 --> 00:44:12.674
+<v Speaker 1>part of the problem that we have when
+
+00:44:12.674 --> 00:44:15.954
+<v Speaker 1>building cloud services is that everything we do
+
+00:44:16.275 --> 00:44:16.994
+<v Speaker 1>is
+
+00:44:17.315 --> 00:44:20.674
+<v Speaker 1>compile time coupled to all of the services
+
+00:44:20.674 --> 00:44:21.714
+<v Speaker 1>that we consume.
+
+00:44:21.954 --> 00:44:24.450
+<v Speaker 1>And, you know, we can we can tell
+
+00:44:24.450 --> 00:44:27.730
+<v Speaker 1>ourselves that it's easy to to decouple those
+
+00:44:27.730 --> 00:44:30.130
+<v Speaker 1>things and we can write anti corruption lawyers
+
+00:44:30.130 --> 00:44:31.810
+<v Speaker 1>and all this other stuff, but
+
+00:44:32.369 --> 00:44:34.930
+<v Speaker 1>we're still tightly coupled at at runtime.
+
+00:44:35.570 --> 00:44:38.595
+<v Speaker 1>But being loosely coupled at runtime means that
+
+00:44:38.595 --> 00:44:41.395
+<v Speaker 1>we can dynamically dispatch between our actors and
+
+00:44:41.395 --> 00:44:43.075
+<v Speaker 1>the things that they need in order to
+
+00:44:43.075 --> 00:44:44.115
+<v Speaker 1>do their jobs.
+
+00:44:44.435 --> 00:44:46.675
+<v Speaker 1>And because we can dynamically dispatch,
+
+00:44:46.835 --> 00:44:49.475
+<v Speaker 1>we can make the actors and the providers
+
+00:44:49.715 --> 00:44:51.795
+<v Speaker 1>unaware of how that dispatch happens.
+
+00:44:52.350 --> 00:44:55.630
+<v Speaker 1>So that can be locally in process when
+
+00:44:55.630 --> 00:44:58.190
+<v Speaker 1>you're only wanting one node when you're only
+
+00:44:58.190 --> 00:44:59.390
+<v Speaker 1>running one node,
+
+00:44:59.710 --> 00:45:00.750
+<v Speaker 1>but it can be,
+
+00:45:01.630 --> 00:45:03.230
+<v Speaker 1>spanning multiple
+
+00:45:03.230 --> 00:45:04.430
+<v Speaker 1>cloud environments
+
+00:45:04.734 --> 00:45:07.215
+<v Speaker 1>when you're running multiple cloud environments.
+
+00:45:07.375 --> 00:45:10.095
+<v Speaker 1>And neither the providers nor the actors
+
+00:45:10.494 --> 00:45:13.775
+<v Speaker 1>need to be changed or recompiled or redeployed
+
+00:45:13.775 --> 00:45:15.454
+<v Speaker 1>in order to scale up or down.
+
+00:45:17.349 --> 00:45:19.109
+<v Speaker 1>So I can run one
+
+00:45:19.109 --> 00:45:21.750
+<v Speaker 1>actor in one host on my laptop
+
+00:45:22.150 --> 00:45:23.750
+<v Speaker 1>when I'm developing.
+
+00:45:24.150 --> 00:45:24.950
+<v Speaker 1>And then
+
+00:45:25.270 --> 00:45:27.270
+<v Speaker 1>one of the goals we have is that
+
+00:45:27.270 --> 00:45:29.349
+<v Speaker 1>I should never have to change my business
+
+00:45:29.349 --> 00:45:29.990
+<v Speaker 1>logic
+
+00:45:30.165 --> 00:45:32.805
+<v Speaker 1>to scale from experiments
+
+00:45:32.885 --> 00:45:34.325
+<v Speaker 1>to production.
+
+00:45:34.725 --> 00:45:36.165
+<v Speaker 1>So I should be able to go from
+
+00:45:36.165 --> 00:45:38.645
+<v Speaker 1>from napkin drawing to production
+
+00:45:39.045 --> 00:45:41.045
+<v Speaker 1>in one straight line. And I should just
+
+00:45:41.045 --> 00:45:42.645
+<v Speaker 1>be able to turn the knob and say,
+
+00:45:42.930 --> 00:45:44.690
+<v Speaker 1>I want one of these running or I
+
+00:45:44.690 --> 00:45:46.370
+<v Speaker 1>want 500 of them running.
+
+00:45:46.690 --> 00:45:47.250
+<v Speaker 1>And
+
+00:45:48.530 --> 00:45:50.850
+<v Speaker 1>to not have to worry about that because
+
+00:45:51.569 --> 00:45:53.329
+<v Speaker 1>it's one of the opinions that we take
+
+00:45:53.329 --> 00:45:54.770
+<v Speaker 1>on on on the framework.
+
+00:45:57.005 --> 00:45:58.204
+<v Speaker 0>Okay. Cool.
+
+00:45:59.244 --> 00:46:01.484
+<v Speaker 0>Do have another question. But before I ask
+
+00:46:01.484 --> 00:46:03.884
+<v Speaker 0>it, should I run make build? Will that
+
+00:46:03.884 --> 00:46:04.685
+<v Speaker 0>take long?
+
+00:46:05.404 --> 00:46:07.565
+<v Speaker 1>It shouldn't take any it it shouldn't take
+
+00:46:07.565 --> 00:46:08.285
+<v Speaker 1>any time at all.
+
+00:46:09.860 --> 00:46:10.900
+<v Speaker 1>Oh, yes.
+
+00:46:11.220 --> 00:46:12.340
+<v Speaker 1>You need to do
+
+00:46:12.740 --> 00:46:15.060
+<v Speaker 1>Rust up target add.
+
+00:46:17.620 --> 00:46:20.180
+<v Speaker 1>Wasm 32 dash unknown dash unknown.
+
+00:46:20.820 --> 00:46:21.860
+<v Speaker 1>So
+
+00:46:22.464 --> 00:46:23.985
+<v Speaker 1>if you're not familiar with it,
+
+00:46:24.385 --> 00:46:26.704
+<v Speaker 1>Rust come by default comes with a target
+
+00:46:26.704 --> 00:46:29.905
+<v Speaker 1>that matches your operating system and architecture.
+
+00:46:29.984 --> 00:46:32.865
+<v Speaker 1>And the WebAssembly binary file
+
+00:46:33.265 --> 00:46:35.890
+<v Speaker 1>is both architecture
+
+00:46:35.890 --> 00:46:36.610
+<v Speaker 1>and
+
+00:46:37.170 --> 00:46:38.850
+<v Speaker 1>operating system agnostic,
+
+00:46:38.850 --> 00:46:40.450
+<v Speaker 1>and so you have to install a separate
+
+00:46:40.450 --> 00:46:41.490
+<v Speaker 1>target for it.
+
+00:46:42.450 --> 00:46:43.810
+<v Speaker 0>Okay. Sweet.
+
+00:46:44.050 --> 00:46:45.490
+<v Speaker 0>Alright. Okay. I'll come back to my question
+
+00:46:45.490 --> 00:46:47.330
+<v Speaker 0>where we let that quickly run through, though.
+
+00:46:47.330 --> 00:46:49.175
+<v Speaker 0>It's like it's gonna be finished any Yeah.
+
+00:46:49.335 --> 00:46:50.135
+<v Speaker 0>Quickly.
+
+00:46:50.215 --> 00:46:51.095
+<v Speaker 0>So
+
+00:46:51.335 --> 00:46:54.055
+<v Speaker 0>see when I run so I've told Wask
+
+00:46:54.055 --> 00:46:55.575
+<v Speaker 0>that I wanna have an actor that listens
+
+00:46:55.575 --> 00:46:57.175
+<v Speaker 0>on h two two p and just spits
+
+00:46:57.175 --> 00:46:58.615
+<v Speaker 0>out some arbitrary payload.
+
+00:46:58.935 --> 00:47:00.935
+<v Speaker 0>Is that actor running all the time or
+
+00:47:00.935 --> 00:47:02.855
+<v Speaker 0>does Wask schedule that when messages hit the
+
+00:47:02.855 --> 00:47:03.175
+<v Speaker 0>mailbox?
+
+00:47:04.310 --> 00:47:08.390
+<v Speaker 1>So right now, the West Coast is operating
+
+00:47:08.630 --> 00:47:10.390
+<v Speaker 1>in a in a way where that's running
+
+00:47:10.390 --> 00:47:11.190
+<v Speaker 1>all the time.
+
+00:47:13.030 --> 00:47:14.630
+<v Speaker 1>There's
+
+00:47:14.630 --> 00:47:16.870
+<v Speaker 1>nothing preventing you from
+
+00:47:17.110 --> 00:47:17.910
+<v Speaker 1>so Wask,
+
+00:47:19.164 --> 00:47:20.765
+<v Speaker 1>long story short, is,
+
+00:47:21.164 --> 00:47:23.244
+<v Speaker 1>there is a control plane, and the protocol
+
+00:47:23.244 --> 00:47:26.125
+<v Speaker 1>for the control plane is a known thing.
+
+00:47:26.365 --> 00:47:28.285
+<v Speaker 1>So if you wanted to write
+
+00:47:28.525 --> 00:47:31.565
+<v Speaker 1>a tool that monitored the events in the
+
+00:47:31.565 --> 00:47:32.045
+<v Speaker 1>lattice
+
+00:47:32.400 --> 00:47:34.799
+<v Speaker 1>and decided when to scale something from one
+
+00:47:34.799 --> 00:47:35.599
+<v Speaker 1>to zero,
+
+00:47:35.839 --> 00:47:36.880
+<v Speaker 1>you could do so.
+
+00:47:37.200 --> 00:47:40.319
+<v Speaker 1>It's not something that's that that we ship
+
+00:47:40.319 --> 00:47:41.599
+<v Speaker 1>with out of the box,
+
+00:47:42.079 --> 00:47:42.560
+<v Speaker 1>but
+
+00:47:42.880 --> 00:47:44.640
+<v Speaker 1>all of the tools are there in order
+
+00:47:44.640 --> 00:47:45.359
+<v Speaker 1>to make that happen.
+
+00:47:46.235 --> 00:47:48.235
+<v Speaker 0>Nice. My my use case I had in
+
+00:47:48.235 --> 00:47:50.075
+<v Speaker 0>my head there is I was looking I
+
+00:47:50.075 --> 00:47:51.515
+<v Speaker 0>can't remember if it's called New Orleans or
+
+00:47:51.515 --> 00:47:53.675
+<v Speaker 0>Orleans, but the event sourcing framework and from
+
+00:47:53.675 --> 00:47:55.675
+<v Speaker 0>the the dot net world. And they have
+
+00:47:55.675 --> 00:47:57.755
+<v Speaker 0>a concept of virtual actors where the actor
+
+00:47:57.755 --> 00:47:59.595
+<v Speaker 0>isn't actually running until the message sets the
+
+00:47:59.595 --> 00:48:01.720
+<v Speaker 0>mailbox. And, like, for events or systems where
+
+00:48:01.720 --> 00:48:04.039
+<v Speaker 0>you potentially have millions of actors like that,
+
+00:48:04.039 --> 00:48:05.880
+<v Speaker 0>to me, it's a really cool approach.
+
+00:48:06.599 --> 00:48:08.440
+<v Speaker 1>One of the issues we have in our
+
+00:48:08.440 --> 00:48:09.800
+<v Speaker 1>backlog is
+
+00:48:10.200 --> 00:48:12.040
+<v Speaker 1>to build an open fast gateway.
+
+00:48:12.759 --> 00:48:13.799
+<v Speaker 1>And so
+
+00:48:14.065 --> 00:48:16.785
+<v Speaker 1>what what that'll essentially amount to is that
+
+00:48:16.785 --> 00:48:19.585
+<v Speaker 1>any actor that's bound to the open fast
+
+00:48:19.585 --> 00:48:20.385
+<v Speaker 1>capability
+
+00:48:20.385 --> 00:48:21.105
+<v Speaker 1>provider
+
+00:48:21.345 --> 00:48:23.745
+<v Speaker 1>will be exposed as though it's an open
+
+00:48:23.745 --> 00:48:24.705
+<v Speaker 1>fast function.
+
+00:48:25.105 --> 00:48:27.240
+<v Speaker 1>And in that case, we can, when we
+
+00:48:27.240 --> 00:48:29.160
+<v Speaker 1>write that gateway, we can write it in
+
+00:48:29.160 --> 00:48:30.440
+<v Speaker 1>such a way that we can
+
+00:48:31.080 --> 00:48:32.920
+<v Speaker 1>scale that actor to zero.
+
+00:48:33.640 --> 00:48:34.200
+<v Speaker 1>So,
+
+00:48:34.600 --> 00:48:36.280
+<v Speaker 1>essentially, what you'll be able to do is
+
+00:48:36.280 --> 00:48:38.280
+<v Speaker 1>use all the open fast tools
+
+00:48:38.360 --> 00:48:40.760
+<v Speaker 1>to talk to actors running in a lattice.
+
+00:48:42.475 --> 00:48:44.635
+<v Speaker 0>Now that I wanna play with. Like,
+
+00:48:45.195 --> 00:48:46.955
+<v Speaker 0>I'll subscribe to that issue in the backlog.
+
+00:48:46.955 --> 00:48:47.915
+<v Speaker 0>That sounds awesome.
+
+00:48:48.155 --> 00:48:48.555
+<v Speaker 0>Alright.
+
+00:48:49.035 --> 00:48:52.075
+<v Speaker 0>Let's go back to our code. We've
+
+00:48:52.075 --> 00:48:52.955
+<v Speaker 0>compiled it.
+
+00:48:53.755 --> 00:48:55.355
+<v Speaker 0>Let's see. If I look in the target
+
+00:48:55.355 --> 00:48:56.795
+<v Speaker 0>directory
+
+00:48:56.550 --> 00:48:57.910
+<v Speaker 0>and then the wasm
+
+00:48:59.030 --> 00:49:00.070
+<v Speaker 0>debug,
+
+00:49:01.670 --> 00:49:03.350
+<v Speaker 0>we have our wasm file.
+
+00:49:04.310 --> 00:49:06.710
+<v Speaker 1>So now if there's a command you can
+
+00:49:06.710 --> 00:49:07.350
+<v Speaker 1>run
+
+00:49:08.915 --> 00:49:11.315
+<v Speaker 1>called called Westcap, which is where all the
+
+00:49:11.315 --> 00:49:13.715
+<v Speaker 1>security comes from. So if you do Westcap,
+
+00:49:13.715 --> 00:49:14.675
+<v Speaker 1>space caps,
+
+00:49:17.474 --> 00:49:18.355
+<v Speaker 1>and then
+
+00:49:19.075 --> 00:49:21.474
+<v Speaker 1>give it the path to your signed WebAssembly
+
+00:49:21.474 --> 00:49:21.955
+<v Speaker 1>module.
+
+00:49:23.160 --> 00:49:26.040
+<v Speaker 0>K. So target debug plasm.
+
+00:49:30.440 --> 00:49:32.200
+<v Speaker 0>I got it. Oh, plasm.
+
+00:49:33.079 --> 00:49:33.960
+<v Speaker 0>Debug
+
+00:49:33.960 --> 00:49:35.079
+<v Speaker 0>and then
+
+00:49:35.365 --> 00:49:36.165
+<v Speaker 0>the
+
+00:49:36.165 --> 00:49:38.565
+<v Speaker 0>same one. Right. Okay. So main. Why did
+
+00:49:38.565 --> 00:49:40.005
+<v Speaker 0>I call it main and not my? I
+
+00:49:40.005 --> 00:49:41.605
+<v Speaker 0>don't know what what happened there.
+
+00:49:42.645 --> 00:49:44.645
+<v Speaker 1>Naming is always hard. You want the signed
+
+00:49:44.645 --> 00:49:45.925
+<v Speaker 1>version of that file?
+
+00:49:46.725 --> 00:49:47.285
+<v Speaker 0>Signed.
+
+00:49:49.760 --> 00:49:51.359
+<v Speaker 0>Alright. So this is a tool that exposes
+
+00:49:51.359 --> 00:49:53.040
+<v Speaker 0>the capabilities that are
+
+00:49:53.599 --> 00:49:56.160
+<v Speaker 0>that are part of this this afterward. Yeah.
+
+00:49:57.359 --> 00:49:59.200
+<v Speaker 1>So right now, can see that the the
+
+00:49:59.200 --> 00:49:59.920
+<v Speaker 1>account,
+
+00:50:00.160 --> 00:50:02.400
+<v Speaker 1>that's the issuer. So that's that's the thing
+
+00:50:02.400 --> 00:50:05.845
+<v Speaker 1>that that vouched for this module. And so,
+
+00:50:05.925 --> 00:50:08.325
+<v Speaker 1>you know, in in production, we could have
+
+00:50:08.325 --> 00:50:10.244
+<v Speaker 1>a very limited set of accounts that we
+
+00:50:10.244 --> 00:50:12.885
+<v Speaker 1>trust or maybe even just one.
+
+00:50:13.444 --> 00:50:16.005
+<v Speaker 1>Whereas in on our laptop, we don't really
+
+00:50:16.005 --> 00:50:17.605
+<v Speaker 1>care, and we can use any account we
+
+00:50:17.605 --> 00:50:18.790
+<v Speaker 1>want. But,
+
+00:50:19.190 --> 00:50:22.470
+<v Speaker 1>again, the the the the opinion here
+
+00:50:22.710 --> 00:50:24.710
+<v Speaker 1>is that the binary itself
+
+00:50:25.510 --> 00:50:26.790
+<v Speaker 1>doesn't change.
+
+00:50:27.750 --> 00:50:29.990
+<v Speaker 1>We don't need to make changes to our
+
+00:50:29.990 --> 00:50:31.750
+<v Speaker 1>code or to our binary
+
+00:50:32.105 --> 00:50:33.945
+<v Speaker 1>in order to go from
+
+00:50:34.505 --> 00:50:35.385
+<v Speaker 1>tinkering
+
+00:50:35.464 --> 00:50:37.705
+<v Speaker 1>in a lab to running in production.
+
+00:50:39.785 --> 00:50:41.625
+<v Speaker 1>So we can set expiration
+
+00:50:41.625 --> 00:50:43.385
+<v Speaker 1>times on these just like you could with
+
+00:50:43.385 --> 00:50:44.904
+<v Speaker 1>any other JSON web token.
+
+00:50:45.460 --> 00:50:48.340
+<v Speaker 1>So one thing you can do for
+
+00:50:49.460 --> 00:50:50.420
+<v Speaker 1>enterprise
+
+00:50:50.420 --> 00:50:52.980
+<v Speaker 1>security is make it so that that token
+
+00:50:52.980 --> 00:50:55.460
+<v Speaker 1>expires so that the modules have to be
+
+00:50:55.460 --> 00:50:57.060
+<v Speaker 1>resigned periodically,
+
+00:50:58.260 --> 00:51:00.125
+<v Speaker 1>which if you're
+
+00:51:00.605 --> 00:51:03.725
+<v Speaker 1>exceptionally paranoid about certain types of intrusion,
+
+00:51:05.165 --> 00:51:06.205
+<v Speaker 1>this would
+
+00:51:07.645 --> 00:51:10.605
+<v Speaker 1>block off that particular type of attack vector
+
+00:51:10.605 --> 00:51:13.165
+<v Speaker 1>where someone if if someone compromised one of
+
+00:51:13.165 --> 00:51:15.910
+<v Speaker 1>these modules, which is highly unlikely,
+
+00:51:16.470 --> 00:51:18.550
+<v Speaker 1>you could limit the amount of time
+
+00:51:19.030 --> 00:51:21.430
+<v Speaker 1>that that comp compromise lasts.
+
+00:51:22.950 --> 00:51:25.430
+<v Speaker 0>Okay. What's the tags at the bottom?
+
+00:51:26.150 --> 00:51:28.390
+<v Speaker 1>So tags are just arbitrary tags that you
+
+00:51:28.390 --> 00:51:30.444
+<v Speaker 1>can stick on these modules that will be
+
+00:51:30.444 --> 00:51:31.805
+<v Speaker 1>embedded in there.
+
+00:51:33.484 --> 00:51:36.605
+<v Speaker 1>It's essentially just, free form metadata that you
+
+00:51:36.605 --> 00:51:39.085
+<v Speaker 1>can put on there. You can use those
+
+00:51:39.085 --> 00:51:40.685
+<v Speaker 1>types of tags for,
+
+00:51:41.484 --> 00:51:42.525
+<v Speaker 1>informing
+
+00:51:42.765 --> 00:51:45.380
+<v Speaker 1>a custom scheduler that you write if you
+
+00:51:45.380 --> 00:51:45.860
+<v Speaker 1>want.
+
+00:51:46.340 --> 00:51:49.140
+<v Speaker 1>When we when we built an online game
+
+00:51:49.380 --> 00:51:50.420
+<v Speaker 1>out of,
+
+00:51:50.980 --> 00:51:52.180
+<v Speaker 1>WASC actors,
+
+00:51:52.580 --> 00:51:54.660
+<v Speaker 1>we used the tags to
+
+00:51:54.900 --> 00:51:56.740
+<v Speaker 1>so the the game was essentially you build
+
+00:51:56.740 --> 00:51:58.825
+<v Speaker 1>WebAssembly robots, and then,
+
+00:51:59.385 --> 00:52:01.465
+<v Speaker 1>all of these robots compete in the same
+
+00:52:01.465 --> 00:52:04.585
+<v Speaker 1>online virtual arena over a a Lattice.
+
+00:52:05.145 --> 00:52:07.545
+<v Speaker 1>And, obviously, the most important thing for that
+
+00:52:07.545 --> 00:52:09.465
+<v Speaker 1>was to have a cool avatar for each
+
+00:52:09.465 --> 00:52:10.265
+<v Speaker 1>one of the robots.
+
+00:52:10.869 --> 00:52:13.670
+<v Speaker 1>So the the tag actually represented the name
+
+00:52:13.670 --> 00:52:15.510
+<v Speaker 1>of the avatar icon that they were gonna
+
+00:52:15.510 --> 00:52:15.990
+<v Speaker 1>use.
+
+00:52:17.510 --> 00:52:20.230
+<v Speaker 0>Okay. But, again, it's it's free form, so
+
+00:52:20.230 --> 00:52:21.990
+<v Speaker 1>you can assign whatever meaning to it you
+
+00:52:21.990 --> 00:52:22.150
+<v Speaker 1>want.
+
+00:52:23.505 --> 00:52:24.305
+<v Speaker 0>Can
+
+00:52:24.865 --> 00:52:26.944
+<v Speaker 0>right. I keep getting stuff ideas that pop
+
+00:52:26.944 --> 00:52:28.545
+<v Speaker 0>into my head now. I I'm thinking if
+
+00:52:28.545 --> 00:52:30.705
+<v Speaker 0>there was like an intent based system
+
+00:52:30.944 --> 00:52:32.625
+<v Speaker 0>where I could say I wanna I wanna
+
+00:52:32.625 --> 00:52:34.385
+<v Speaker 0>send a message to an actor that fulfills
+
+00:52:34.385 --> 00:52:36.625
+<v Speaker 0>this intent, like resizing images or something. Could
+
+00:52:36.625 --> 00:52:38.760
+<v Speaker 0>I use the tags to enable that kind
+
+00:52:38.760 --> 00:52:40.440
+<v Speaker 0>of discovery of other actors?
+
+00:52:41.240 --> 00:52:42.040
+<v Speaker 1>Yep.
+
+00:52:42.360 --> 00:52:42.920
+<v Speaker 1>So
+
+00:52:43.320 --> 00:52:45.560
+<v Speaker 1>we don't we don't have the ability to
+
+00:52:45.560 --> 00:52:47.720
+<v Speaker 1>to send messages to actors
+
+00:52:48.280 --> 00:52:50.920
+<v Speaker 1>that fulfill some set of criteria
+
+00:52:51.365 --> 00:52:52.244
+<v Speaker 1>offhand.
+
+00:52:52.645 --> 00:52:55.365
+<v Speaker 1>But again, you can use that Lattice protocol
+
+00:52:55.365 --> 00:52:57.365
+<v Speaker 1>to do so. So you could query all
+
+00:52:57.365 --> 00:53:00.005
+<v Speaker 1>of the actors in the in the Lattice,
+
+00:53:00.165 --> 00:53:02.484
+<v Speaker 1>find out which ones meet your criteria. So
+
+00:53:02.484 --> 00:53:04.244
+<v Speaker 1>they could be ones tagged a certain way,
+
+00:53:04.710 --> 00:53:06.470
+<v Speaker 1>And then you get your list of actors
+
+00:53:06.470 --> 00:53:08.150
+<v Speaker 1>back, and then you could just,
+
+00:53:08.550 --> 00:53:10.390
+<v Speaker 1>you know, send those RPC calls in a
+
+00:53:10.390 --> 00:53:11.110
+<v Speaker 1>for loop.
+
+00:53:11.430 --> 00:53:13.109
+<v Speaker 0>Yeah. I I think we just invented the
+
+00:53:13.109 --> 00:53:15.270
+<v Speaker 0>service mesh for mass for WASC.
+
+00:53:16.150 --> 00:53:17.270
+<v Speaker 0>We need to build that now.
+
+00:53:18.595 --> 00:53:22.195
+<v Speaker 0>Okay. So do I use WasmTime to run
+
+00:53:22.195 --> 00:53:23.395
+<v Speaker 0>this, or do I use
+
+00:53:23.635 --> 00:53:24.515
+<v Speaker 0>WASC? So
+
+00:53:24.995 --> 00:53:27.155
+<v Speaker 1>we need we need the WASC host,
+
+00:53:27.315 --> 00:53:28.275
+<v Speaker 1>which is another
+
+00:53:28.435 --> 00:53:30.355
+<v Speaker 1>binary that we I think we have to
+
+00:53:30.355 --> 00:53:31.315
+<v Speaker 1>install through cargo.
+
+00:53:32.670 --> 00:53:34.990
+<v Speaker 1>And the features on that one is bin,
+
+00:53:34.990 --> 00:53:36.190
+<v Speaker 1>not CLI.
+
+00:53:37.150 --> 00:53:39.230
+<v Speaker 1>I'm not sure why that's inconsistent.
+
+00:53:39.230 --> 00:53:39.950
+<v Speaker 1>Probably
+
+00:53:40.510 --> 00:53:41.150
+<v Speaker 1>just
+
+00:53:41.950 --> 00:53:43.310
+<v Speaker 1>a little coffee day for me.
+
+00:53:43.965 --> 00:53:45.805
+<v Speaker 0>And is it last fast host or just
+
+00:53:45.805 --> 00:53:47.405
+<v Speaker 0>last host? Okay.
+
+00:53:48.765 --> 00:53:50.765
+<v Speaker 1>And you should, I believe, get o dot
+
+00:53:50.765 --> 00:53:51.565
+<v Speaker 1>13.
+
+00:53:52.365 --> 00:53:55.005
+<v Speaker 1>The open fast gateway is set for o
+
+00:53:55.005 --> 00:53:55.805
+<v Speaker 1>dot 15.
+
+00:53:56.870 --> 00:53:59.430
+<v Speaker 1>So it's it's right around the corner.
+
+00:54:00.870 --> 00:54:01.590
+<v Speaker 0>Excellent.
+
+00:54:01.750 --> 00:54:03.270
+<v Speaker 0>I think the open fast stuff would be
+
+00:54:03.270 --> 00:54:04.550
+<v Speaker 0>really cool, actually.
+
+00:54:05.030 --> 00:54:06.870
+<v Speaker 1>Well, the thing that I I think is
+
+00:54:06.870 --> 00:54:09.190
+<v Speaker 1>so exciting about it is that with this
+
+00:54:09.545 --> 00:54:10.345
+<v Speaker 1>this
+
+00:54:10.665 --> 00:54:12.905
+<v Speaker 1>ability to dynamically
+
+00:54:12.905 --> 00:54:15.945
+<v Speaker 1>stitch itself together to form this flat network.
+
+00:54:16.345 --> 00:54:18.745
+<v Speaker 1>And then that flat network having a control
+
+00:54:18.745 --> 00:54:20.745
+<v Speaker 1>plane that talks to the entire thing as
+
+00:54:20.745 --> 00:54:22.265
+<v Speaker 1>though we're a single topology
+
+00:54:22.700 --> 00:54:24.380
+<v Speaker 1>means that you can use it as the
+
+00:54:24.380 --> 00:54:26.780
+<v Speaker 1>foundation to build any kind of tool that
+
+00:54:26.780 --> 00:54:27.820
+<v Speaker 1>you want built.
+
+00:54:28.140 --> 00:54:29.980
+<v Speaker 1>So all of this extra stuff that you
+
+00:54:29.980 --> 00:54:31.340
+<v Speaker 1>can put on top of it, whether you
+
+00:54:31.340 --> 00:54:33.100
+<v Speaker 1>want an open fast gateway or a gateway
+
+00:54:33.100 --> 00:54:34.620
+<v Speaker 1>to some other cool thing,
+
+00:54:35.340 --> 00:54:37.260
+<v Speaker 1>really, all you need to do is just
+
+00:54:37.185 --> 00:54:37.745
+<v Speaker 1>put
+
+00:54:37.985 --> 00:54:40.385
+<v Speaker 1>something on the lattice that that speaks the
+
+00:54:40.385 --> 00:54:42.145
+<v Speaker 1>control plane and you're good to go.
+
+00:54:43.505 --> 00:54:45.345
+<v Speaker 0>So with regard it's just because we're kinda
+
+00:54:45.345 --> 00:54:47.745
+<v Speaker 0>vaguely talking about integrations and other parts of
+
+00:54:47.745 --> 00:54:49.985
+<v Speaker 0>software there. And you've also covered the fact
+
+00:54:49.985 --> 00:54:52.545
+<v Speaker 0>that last can handle HTTP requests coming in.
+
+00:54:52.960 --> 00:54:54.880
+<v Speaker 0>With regards to other providers, like, does it
+
+00:54:54.880 --> 00:54:57.280
+<v Speaker 0>support Kafka, NATs? Like, what are the other
+
+00:54:57.280 --> 00:54:59.760
+<v Speaker 0>touch points for people to get something to
+
+00:55:00.720 --> 00:55:02.160
+<v Speaker 1>There are there are a bunch of first
+
+00:55:02.160 --> 00:55:04.640
+<v Speaker 1>party providers that we wrote that that are
+
+00:55:04.800 --> 00:55:07.280
+<v Speaker 1>that we essentially are guaranteeing that we're gonna
+
+00:55:07.280 --> 00:55:09.835
+<v Speaker 1>support going forward so that those things will
+
+00:55:09.835 --> 00:55:12.075
+<v Speaker 1>always be updated. And so that's,
+
+00:55:12.715 --> 00:55:15.035
+<v Speaker 1>the web server, the web client.
+
+00:55:15.755 --> 00:55:16.475
+<v Speaker 1>There's,
+
+00:55:16.635 --> 00:55:18.555
+<v Speaker 1>Redis key value client.
+
+00:55:18.955 --> 00:55:19.675
+<v Speaker 1>There's,
+
+00:55:19.835 --> 00:55:23.950
+<v Speaker 1>an AWS Lambda provider. So if you bind
+
+00:55:23.950 --> 00:55:26.750
+<v Speaker 1>your actor to the AWS Lambda provider,
+
+00:55:27.070 --> 00:55:29.870
+<v Speaker 1>your WASP actor can essentially run as if
+
+00:55:29.870 --> 00:55:31.630
+<v Speaker 1>it were an AWS Lambda.
+
+00:55:33.870 --> 00:55:35.710
+<v Speaker 1>And there's a couple of other ones including
+
+00:55:35.710 --> 00:55:37.310
+<v Speaker 1>nets as a message broker.
+
+00:55:38.925 --> 00:55:39.565
+<v Speaker 1>But
+
+00:55:40.365 --> 00:55:41.085
+<v Speaker 1>the
+
+00:55:42.365 --> 00:55:45.325
+<v Speaker 1>the capability provider system is a plug in
+
+00:55:45.325 --> 00:55:46.125
+<v Speaker 1>system,
+
+00:55:46.205 --> 00:55:48.925
+<v Speaker 1>and the protocol that we use to
+
+00:55:49.485 --> 00:55:52.125
+<v Speaker 1>bind to the capability providers is all a
+
+00:55:52.125 --> 00:55:54.660
+<v Speaker 1>a publicly known thing, and it's just a
+
+00:55:54.660 --> 00:55:56.100
+<v Speaker 1>standard schema. So
+
+00:55:58.180 --> 00:55:59.860
+<v Speaker 1>it's designed specifically
+
+00:55:59.940 --> 00:56:00.580
+<v Speaker 1>to
+
+00:56:00.980 --> 00:56:03.619
+<v Speaker 1>encourage you to build your own capability providers.
+
+00:56:03.619 --> 00:56:06.820
+<v Speaker 1>So one of the the the key scenarios
+
+00:56:06.820 --> 00:56:09.685
+<v Speaker 1>we see for it is, you know, enterprises
+
+00:56:09.685 --> 00:56:12.885
+<v Speaker 1>often have a whole bunch of internal services
+
+00:56:12.885 --> 00:56:15.845
+<v Speaker 1>that they provide for their own application developers.
+
+00:56:16.165 --> 00:56:18.805
+<v Speaker 1>And so being able to encapsulate those
+
+00:56:19.045 --> 00:56:19.925
+<v Speaker 1>as,
+
+00:56:20.005 --> 00:56:23.845
+<v Speaker 1>say, a private enterprise only capability provider
+
+00:56:24.750 --> 00:56:27.070
+<v Speaker 1>It could be something that enterprises would use
+
+00:56:27.070 --> 00:56:27.710
+<v Speaker 1>for,
+
+00:56:28.030 --> 00:56:30.350
+<v Speaker 1>you know, making it easier to build internal
+
+00:56:30.350 --> 00:56:31.150
+<v Speaker 1>software.
+
+00:56:32.190 --> 00:56:33.870
+<v Speaker 0>Yeah. That makes sense. Okay.
+
+00:56:34.110 --> 00:56:35.710
+<v Speaker 0>And I take it the the the effort
+
+00:56:35.710 --> 00:56:37.870
+<v Speaker 0>to provide a to build your own
+
+00:56:38.315 --> 00:56:40.475
+<v Speaker 0>capability and provider, etcetera.
+
+00:56:40.795 --> 00:56:42.315
+<v Speaker 0>I mean, how much effort is there involved
+
+00:56:42.315 --> 00:56:43.595
+<v Speaker 0>in doing something like that?
+
+00:56:43.995 --> 00:56:46.315
+<v Speaker 1>In building your own capability provider,
+
+00:56:46.315 --> 00:56:47.675
+<v Speaker 1>it's not that much.
+
+00:56:48.155 --> 00:56:51.400
+<v Speaker 1>Today, you know, it probably takes well so
+
+00:56:51.400 --> 00:56:52.760
+<v Speaker 1>you saw that there was a template to
+
+00:56:52.760 --> 00:56:55.320
+<v Speaker 1>build an actor. There's a template to build
+
+00:56:55.320 --> 00:56:57.880
+<v Speaker 1>a capability provider. So you can essentially cargo
+
+00:56:57.880 --> 00:56:59.720
+<v Speaker 1>generate yourself a custom one,
+
+00:57:00.440 --> 00:57:01.800
+<v Speaker 1>and and you'll get
+
+00:57:02.440 --> 00:57:04.440
+<v Speaker 1>it's I think it's called new provider template.
+
+00:57:05.675 --> 00:57:07.355
+<v Speaker 0>I'm just gonna search template and pull them
+
+00:57:07.355 --> 00:57:08.075
+<v Speaker 0>all up.
+
+00:57:10.234 --> 00:57:12.155
+<v Speaker 1>There it is. I just alright. So provide
+
+00:57:12.315 --> 00:57:13.595
+<v Speaker 0>alright. Okay. First one.
+
+00:57:14.875 --> 00:57:16.235
+<v Speaker 1>So if you look there,
+
+00:57:17.355 --> 00:57:20.555
+<v Speaker 1>there's essentially two requirements for a capability provider.
+
+00:57:20.950 --> 00:57:23.510
+<v Speaker 1>The first is that you expose a descriptor,
+
+00:57:23.510 --> 00:57:26.630
+<v Speaker 1>which is the the metadata for which operations
+
+00:57:26.630 --> 00:57:28.230
+<v Speaker 1>that provider supports,
+
+00:57:28.470 --> 00:57:30.150
+<v Speaker 1>what direction they flow in,
+
+00:57:30.710 --> 00:57:33.990
+<v Speaker 1>and what capability contract it satisfies.
+
+00:57:34.150 --> 00:57:36.885
+<v Speaker 1>So whether it's a key value provider or
+
+00:57:36.965 --> 00:57:39.605
+<v Speaker 1>a graph database provider or whether it's a
+
+00:57:39.605 --> 00:57:42.165
+<v Speaker 1>a custom contract that you just made up
+
+00:57:42.165 --> 00:57:43.125
+<v Speaker 1>on your own.
+
+00:57:43.925 --> 00:57:46.725
+<v Speaker 1>And then you just have to implement
+
+00:57:47.670 --> 00:57:50.630
+<v Speaker 1>a function that takes the dispatcher from West,
+
+00:57:50.790 --> 00:57:53.910
+<v Speaker 1>which is, you know, that's your RPC gateway.
+
+00:57:53.910 --> 00:57:55.750
+<v Speaker 1>That's the thing that allows you to to
+
+00:57:55.750 --> 00:57:58.390
+<v Speaker 1>make function calls on actors.
+
+00:57:59.190 --> 00:58:01.829
+<v Speaker 1>And then you need to accept function calls
+
+00:58:01.829 --> 00:58:02.710
+<v Speaker 1>from actors,
+
+00:58:02.994 --> 00:58:04.355
+<v Speaker 1>and that's it.
+
+00:58:07.315 --> 00:58:09.155
+<v Speaker 0>Alright. So the sentence is only a hundred
+
+00:58:09.155 --> 00:58:10.355
+<v Speaker 0>and four lines of code.
+
+00:58:10.994 --> 00:58:12.675
+<v Speaker 1>And most of that is comments, really.
+
+00:58:14.850 --> 00:58:16.690
+<v Speaker 0>Nice. So if you see if you scroll
+
+00:58:16.690 --> 00:58:18.050
+<v Speaker 1>down to the bottom, you'll see the list
+
+00:58:18.050 --> 00:58:20.130
+<v Speaker 1>of operations that you need to support out
+
+00:58:20.130 --> 00:58:20.930
+<v Speaker 1>of the box.
+
+00:58:21.250 --> 00:58:24.770
+<v Speaker 1>There's bind actor, which as its name implies,
+
+00:58:24.770 --> 00:58:26.770
+<v Speaker 1>you get one of those when a binding
+
+00:58:26.770 --> 00:58:28.850
+<v Speaker 1>is supplied between an actor and a provider.
+
+00:58:29.115 --> 00:58:30.555
+<v Speaker 1>So the web server
+
+00:58:30.715 --> 00:58:33.275
+<v Speaker 1>will take that bind actor message, grab the
+
+00:58:33.275 --> 00:58:35.755
+<v Speaker 1>HTTP port, and then start a web server.
+
+00:58:36.955 --> 00:58:39.755
+<v Speaker 1>Remove actor, you use to dispose of the
+
+00:58:39.755 --> 00:58:42.395
+<v Speaker 1>resources that you had, that were allocated to
+
+00:58:42.395 --> 00:58:43.355
+<v Speaker 1>a given actor before.
+
+00:58:43.910 --> 00:58:46.390
+<v Speaker 1>And then get capability descriptor is the the
+
+00:58:46.390 --> 00:58:49.510
+<v Speaker 1>metadata operation that West Coast uses to to
+
+00:58:49.510 --> 00:58:50.630
+<v Speaker 1>pull data from.
+
+00:58:52.230 --> 00:58:53.830
+<v Speaker 0>Oh, cool. Okay.
+
+00:58:55.110 --> 00:58:57.755
+<v Speaker 0>Alright. Let's go back and oh, I broke
+
+00:58:57.755 --> 00:58:58.315
+<v Speaker 0>it.
+
+00:59:00.715 --> 00:59:01.995
+<v Speaker 1>Oh, yeah.
+
+00:59:03.115 --> 00:59:05.035
+<v Speaker 1>So remember earlier when I say what could
+
+00:59:05.035 --> 00:59:06.075
+<v Speaker 1>possibly happen?
+
+00:59:06.795 --> 00:59:09.755
+<v Speaker 1>So what has happened here is
+
+00:59:10.475 --> 00:59:12.955
+<v Speaker 1>the version of West that you're downloading
+
+00:59:13.220 --> 00:59:14.260
+<v Speaker 1>is using,
+
+00:59:16.660 --> 00:59:19.779
+<v Speaker 1>a dependent it's using a version of n
+
+00:59:19.779 --> 00:59:20.420
+<v Speaker 1>keys
+
+00:59:20.980 --> 00:59:22.099
+<v Speaker 1>that you have,
+
+00:59:22.420 --> 00:59:23.700
+<v Speaker 1>in your cache
+
+00:59:23.859 --> 00:59:24.820
+<v Speaker 1>that is
+
+00:59:25.415 --> 00:59:26.935
+<v Speaker 1>it's not compatible with,
+
+00:59:27.175 --> 00:59:29.095
+<v Speaker 1>an encryption library,
+
+00:59:30.455 --> 00:59:33.815
+<v Speaker 1>you know, like, grates down in that dependency
+
+00:59:33.815 --> 00:59:34.535
+<v Speaker 1>tree.
+
+00:59:35.095 --> 00:59:35.655
+<v Speaker 1>So,
+
+00:59:36.135 --> 00:59:37.974
+<v Speaker 1>I I don't think you're actually gonna be
+
+00:59:37.974 --> 00:59:39.095
+<v Speaker 1>able to show it,
+
+00:59:39.415 --> 00:59:39.815
+<v Speaker 1>here.
+
+00:59:40.420 --> 00:59:42.500
+<v Speaker 1>There's a a release I need to cut
+
+00:59:42.500 --> 00:59:44.900
+<v Speaker 1>literally today that should fix this problem.
+
+00:59:45.620 --> 00:59:46.340
+<v Speaker 1>But
+
+00:59:46.740 --> 00:59:50.100
+<v Speaker 1>long story short is the the the Rust
+
+00:59:50.100 --> 00:59:51.220
+<v Speaker 1>Nets client
+
+00:59:51.700 --> 00:59:53.860
+<v Speaker 1>needs to be o dot eight dot one.
+
+00:59:54.020 --> 00:59:54.820
+<v Speaker 1>And
+
+00:59:56.305 --> 00:59:58.865
+<v Speaker 1>so I needed to update the dependencies to
+
+00:59:58.865 --> 01:00:00.145
+<v Speaker 1>that, and I have I just haven't done
+
+01:00:00.145 --> 01:00:02.385
+<v Speaker 1>that today. So it looks like there's a
+
+01:00:02.385 --> 01:00:03.665
+<v Speaker 1>a a build
+
+01:00:03.665 --> 01:00:05.745
+<v Speaker 1>break here or at least an install break.
+
+01:00:07.020 --> 01:00:09.660
+<v Speaker 0>So can I install a different version of
+
+01:00:09.660 --> 01:00:11.980
+<v Speaker 0>last calls, like 12 for FLR? Is it
+
+01:00:11.980 --> 01:00:12.540
+<v Speaker 0>just
+
+01:00:13.020 --> 01:00:14.540
+<v Speaker 1>No. More than more
+
+01:00:14.940 --> 01:00:16.220
+<v Speaker 1>than likely, what I'm gonna have to do
+
+01:00:16.220 --> 01:00:18.620
+<v Speaker 1>is release o 13 dot one,
+
+01:00:19.180 --> 01:00:22.214
+<v Speaker 1>which fixes the dependency chain because that's that's
+
+01:00:22.214 --> 01:00:25.255
+<v Speaker 1>easier than you trying to manually figure out
+
+01:00:25.255 --> 01:00:27.175
+<v Speaker 1>how to fix o dot 12.
+
+01:00:27.255 --> 01:00:27.895
+<v Speaker 1>So
+
+01:00:30.615 --> 01:00:32.135
+<v Speaker 1>my apologies there.
+
+01:00:32.694 --> 01:00:34.535
+<v Speaker 0>No. That's okay. I I mean, I think
+
+01:00:34.535 --> 01:00:36.295
+<v Speaker 0>we've had a a really
+
+01:00:36.530 --> 01:00:39.970
+<v Speaker 0>I mean, just a conversation around the responsibilities
+
+01:00:39.970 --> 01:00:42.050
+<v Speaker 0>and what was is bringing to the table,
+
+01:00:42.050 --> 01:00:44.290
+<v Speaker 0>why it's it's, you know, killing people should
+
+01:00:44.290 --> 01:00:46.450
+<v Speaker 0>use it. It's it's been really interesting for
+
+01:00:46.450 --> 01:00:47.890
+<v Speaker 0>me. I've learned so much,
+
+01:00:48.530 --> 01:00:48.849
+<v Speaker 0>you know.
+
+01:00:50.825 --> 01:00:52.505
+<v Speaker 1>One thing I can there's one more thing
+
+01:00:52.505 --> 01:00:53.464
+<v Speaker 1>I can show,
+
+01:00:54.585 --> 01:00:56.105
+<v Speaker 1>which kind of shows you how to run
+
+01:00:56.105 --> 01:00:56.585
+<v Speaker 1>it,
+
+01:00:57.065 --> 01:00:57.545
+<v Speaker 1>which
+
+01:00:58.265 --> 01:00:59.145
+<v Speaker 1>isn't
+
+01:01:02.105 --> 01:01:04.025
+<v Speaker 1>I'm I'm a little disappointed that we can't
+
+01:01:04.025 --> 01:01:06.970
+<v Speaker 1>actually run it live, but, you know, that's
+
+01:01:08.010 --> 01:01:09.690
+<v Speaker 1>that's just how things work.
+
+01:01:10.170 --> 01:01:12.010
+<v Speaker 1>I'm trying to get a URL here for
+
+01:01:12.010 --> 01:01:12.490
+<v Speaker 1>you.
+
+01:01:13.130 --> 01:01:14.250
+<v Speaker 0>Would you be able to run it on
+
+01:01:14.250 --> 01:01:16.570
+<v Speaker 0>your machine? Do you have a working WASC?
+
+01:01:16.890 --> 01:01:18.330
+<v Speaker 1>I wish I should hope so.
+
+01:01:20.645 --> 01:01:21.765
+<v Speaker 1>Oh, you know what?
+
+01:01:22.964 --> 01:01:26.005
+<v Speaker 1>On my machine, I have the full async
+
+01:01:26.005 --> 01:01:27.365
+<v Speaker 1>rewrite of
+
+01:01:27.445 --> 01:01:29.205
+<v Speaker 1>West Coast in progress.
+
+01:01:29.845 --> 01:01:30.485
+<v Speaker 1>So,
+
+01:01:31.365 --> 01:01:32.325
+<v Speaker 1>that's
+
+01:01:33.285 --> 01:01:35.125
+<v Speaker 1>even then, I I don't think I can
+
+01:01:36.410 --> 01:01:38.730
+<v Speaker 1>I I I can't run the old demos?
+
+01:01:39.930 --> 01:01:41.610
+<v Speaker 1>Let me let me send you this URL
+
+01:01:41.610 --> 01:01:42.330
+<v Speaker 1>now.
+
+01:01:45.050 --> 01:01:45.770
+<v Speaker 1>So
+
+01:01:46.090 --> 01:01:48.250
+<v Speaker 1>when you when you start the West Coast,
+
+01:01:48.924 --> 01:01:49.724
+<v Speaker 1>you,
+
+01:01:50.365 --> 01:01:52.925
+<v Speaker 1>you you start it with a manifest file
+
+01:01:53.244 --> 01:01:55.244
+<v Speaker 1>that should look suspiciously
+
+01:01:55.244 --> 01:01:55.964
+<v Speaker 1>like,
+
+01:01:56.845 --> 01:01:59.484
+<v Speaker 1>you know, a Kubernetes type manifest or something.
+
+01:01:59.484 --> 01:01:59.644
+<v Speaker 1>But,
+
+01:02:01.420 --> 01:02:03.260
+<v Speaker 1>basically, what you do is you list off
+
+01:02:03.260 --> 01:02:05.420
+<v Speaker 1>the actors you wanna run-in the host, the
+
+01:02:05.420 --> 01:02:07.740
+<v Speaker 1>capability providers you wanna run-in the host, and
+
+01:02:07.740 --> 01:02:09.500
+<v Speaker 1>then the bindings between them.
+
+01:02:09.900 --> 01:02:12.380
+<v Speaker 1>And so in the bindings here, you'll see
+
+01:02:12.620 --> 01:02:14.940
+<v Speaker 1>the that key that starts with an m
+
+01:02:14.940 --> 01:02:17.635
+<v Speaker 1>is the actor's public key, and you can
+
+01:02:17.635 --> 01:02:20.115
+<v Speaker 1>get that by examining the the caps or
+
+01:02:20.115 --> 01:02:22.115
+<v Speaker 1>the capabilities on that module.
+
+01:02:22.995 --> 01:02:23.955
+<v Speaker 1>And so this
+
+01:02:24.195 --> 01:02:27.155
+<v Speaker 1>the binding there between thirteen and sixteen
+
+01:02:27.475 --> 01:02:30.275
+<v Speaker 1>essentially says that that actor is going to
+
+01:02:30.275 --> 01:02:33.360
+<v Speaker 1>get the Redis capability provider,
+
+01:02:33.840 --> 01:02:35.359
+<v Speaker 1>and it's going to use,
+
+01:02:35.840 --> 01:02:38.000
+<v Speaker 1>you know, that red that value for the
+
+01:02:38.000 --> 01:02:38.800
+<v Speaker 1>URL.
+
+01:02:39.840 --> 01:02:42.240
+<v Speaker 1>And it's going to set that same actor
+
+01:02:42.240 --> 01:02:44.080
+<v Speaker 1>up with an HTTP server,
+
+01:02:44.560 --> 01:02:46.080
+<v Speaker 1>running at port eighty eighty one.
+
+01:02:48.224 --> 01:02:48.945
+<v Speaker 1>And
+
+01:02:49.265 --> 01:02:50.385
+<v Speaker 1>so what's
+
+01:02:50.625 --> 01:02:51.825
+<v Speaker 1>what's happening,
+
+01:02:54.785 --> 01:02:57.585
+<v Speaker 1>as as we speak is there are issues
+
+01:02:57.585 --> 01:02:59.585
+<v Speaker 1>being worked on in the backlog where we're
+
+01:02:59.585 --> 01:03:02.410
+<v Speaker 1>essentially going to adopt the the OEM, the
+
+01:03:02.410 --> 01:03:03.850
+<v Speaker 1>open application model
+
+01:03:04.490 --> 01:03:05.290
+<v Speaker 1>for
+
+01:03:05.930 --> 01:03:08.410
+<v Speaker 1>so that you can use an OEM
+
+01:03:08.410 --> 01:03:09.370
+<v Speaker 1>YAML
+
+01:03:09.530 --> 01:03:12.730
+<v Speaker 1>to describe a distributed manifest.
+
+01:03:12.730 --> 01:03:14.805
+<v Speaker 1>So you say,
+
+01:03:14.805 --> 01:03:17.605
+<v Speaker 1>here, I want these actors and these bindings
+
+01:03:17.925 --> 01:03:21.125
+<v Speaker 1>with these host affinities and these other settings.
+
+01:03:21.765 --> 01:03:23.765
+<v Speaker 1>Go and make that happen in the Lattice.
+
+01:03:23.845 --> 01:03:25.605
+<v Speaker 1>I don't care how you do it, and
+
+01:03:25.605 --> 01:03:27.205
+<v Speaker 1>and and that's what'll happen.
+
+01:03:28.510 --> 01:03:29.310
+<v Speaker 0>Nice.
+
+01:03:29.310 --> 01:03:30.750
+<v Speaker 0>Okay. So
+
+01:03:31.230 --> 01:03:32.030
+<v Speaker 0>awesome.
+
+01:03:32.910 --> 01:03:34.510
+<v Speaker 0>I think what I'll do is I'll come
+
+01:03:34.510 --> 01:03:36.590
+<v Speaker 0>back to this once you've cut off the
+
+01:03:36.590 --> 01:03:38.990
+<v Speaker 0>the release. Will that be sometime this week
+
+01:03:38.990 --> 01:03:40.030
+<v Speaker 0>or next week? Just to
+
+01:03:40.605 --> 01:03:42.205
+<v Speaker 0>I I I wanna play with this more.
+
+01:03:42.205 --> 01:03:44.445
+<v Speaker 0>So I should be able to issue that
+
+01:03:44.445 --> 01:03:47.165
+<v Speaker 1>patch release today. So Alright.
+
+01:03:47.565 --> 01:03:48.925
+<v Speaker 0>Well, that's cool.
+
+01:03:49.165 --> 01:03:51.165
+<v Speaker 0>Let me pop off my screen.
+
+01:03:51.885 --> 01:03:53.300
+<v Speaker 1>I mean, the the the short of it
+
+01:03:53.300 --> 01:03:55.700
+<v Speaker 1>is that there some of these transitive dependencies
+
+01:03:55.700 --> 01:03:56.500
+<v Speaker 1>allow
+
+01:03:56.980 --> 01:04:00.020
+<v Speaker 1>patch version upgrades to happen automatically.
+
+01:04:00.820 --> 01:04:03.540
+<v Speaker 1>And in some cases, those patch versions are
+
+01:04:03.700 --> 01:04:06.420
+<v Speaker 1>were actually breaking changes. So people people aren't
+
+01:04:06.420 --> 01:04:07.700
+<v Speaker 1>following the Semper rules.
+
+01:04:08.394 --> 01:04:09.515
+<v Speaker 0>Alright.
+
+01:04:11.194 --> 01:04:12.795
+<v Speaker 0>Well, we'll we'll come back to that. We'll
+
+01:04:12.795 --> 01:04:14.954
+<v Speaker 0>get that running another time. Is there anything
+
+01:04:14.954 --> 01:04:16.714
+<v Speaker 0>else you wanna talk about or show just
+
+01:04:16.714 --> 01:04:18.315
+<v Speaker 0>before we finish up for today?
+
+01:04:19.755 --> 01:04:22.634
+<v Speaker 1>There are a couple YouTube videos that people
+
+01:04:22.634 --> 01:04:24.580
+<v Speaker 1>can watch that have,
+
+01:04:26.500 --> 01:04:29.380
+<v Speaker 1>you know, some some live demos of things,
+
+01:04:29.380 --> 01:04:30.580
+<v Speaker 1>you know, back in the good old days
+
+01:04:30.580 --> 01:04:31.540
+<v Speaker 1>when they worked.
+
+01:04:32.580 --> 01:04:33.859
+<v Speaker 1>Let me see if I can get a
+
+01:04:33.859 --> 01:04:35.220
+<v Speaker 1>link to the playlist.
+
+01:04:39.885 --> 01:04:40.525
+<v Speaker 1>Welcome.
+
+01:04:40.685 --> 01:04:41.485
+<v Speaker 1>Yeah.
+
+01:04:41.485 --> 01:04:42.045
+<v Speaker 1>Let's
+
+01:04:43.245 --> 01:04:45.085
+<v Speaker 1>alright. So I'll I'll let me just send
+
+01:04:45.085 --> 01:04:46.605
+<v Speaker 1>you a link to this playlist.
+
+01:04:49.725 --> 01:04:51.725
+<v Speaker 0>Alright. Let's drop that in here.
+
+01:04:52.390 --> 01:04:54.630
+<v Speaker 1>And, you know, that that goes through some
+
+01:04:54.630 --> 01:04:56.550
+<v Speaker 1>slide where but you can fast forward to
+
+01:04:56.550 --> 01:04:58.390
+<v Speaker 1>the the cool parts with the demos and
+
+01:04:58.390 --> 01:04:59.590
+<v Speaker 1>see things running.
+
+01:05:00.950 --> 01:05:03.030
+<v Speaker 0>Alright. Well, that link is now in there.
+
+01:05:03.270 --> 01:05:05.555
+<v Speaker 0>Sorry. On your go, Kevin. Sorry.
+
+01:05:05.795 --> 01:05:06.755
+<v Speaker 1>I think maybe
+
+01:05:07.474 --> 01:05:10.515
+<v Speaker 1>sometime next week, we'll be able to show
+
+01:05:10.914 --> 01:05:13.154
+<v Speaker 1>the new single tool that does all of
+
+01:05:13.154 --> 01:05:15.234
+<v Speaker 1>the CLI stuff for you without having to
+
+01:05:15.234 --> 01:05:16.835
+<v Speaker 1>install multiple different ones.
+
+01:05:17.780 --> 01:05:20.180
+<v Speaker 1>We're also gonna make that tool available through
+
+01:05:20.180 --> 01:05:21.859
+<v Speaker 1>things like brew and a p t and
+
+01:05:21.859 --> 01:05:23.460
+<v Speaker 1>whatnot so you don't have to use cargo
+
+01:05:23.460 --> 01:05:24.260
+<v Speaker 1>install
+
+01:05:24.340 --> 01:05:25.060
+<v Speaker 1>because
+
+01:05:25.540 --> 01:05:28.100
+<v Speaker 1>nobody needs to sit and watch Rust rebuild
+
+01:05:28.100 --> 01:05:28.500
+<v Speaker 1>things.
+
+01:05:31.355 --> 01:05:33.835
+<v Speaker 1>So, yeah, things are get definitely gonna get
+
+01:05:33.835 --> 01:05:35.035
+<v Speaker 1>a lot smoother
+
+01:05:35.435 --> 01:05:36.875
+<v Speaker 1>in the next week or two.
+
+01:05:37.435 --> 01:05:39.915
+<v Speaker 0>Awesome. Well, I posted that link into the
+
+01:05:39.915 --> 01:05:41.275
+<v Speaker 0>comments. I will add it to the show
+
+01:05:41.275 --> 01:05:43.195
+<v Speaker 0>notes afterwards when I go back over this.
+
+01:05:44.390 --> 01:05:47.030
+<v Speaker 0>Just to summarize, Alaska is really cool. It's
+
+01:05:47.030 --> 01:05:49.110
+<v Speaker 0>written in Rust, an active driven system for
+
+01:05:49.110 --> 01:05:51.270
+<v Speaker 0>capability secure workloads
+
+01:05:51.590 --> 01:05:52.390
+<v Speaker 0>that
+
+01:05:52.390 --> 01:05:54.630
+<v Speaker 0>works in a distributed cluster nature
+
+01:05:55.030 --> 01:05:56.630
+<v Speaker 0>with the lattice, which is amazing.
+
+01:05:58.135 --> 01:05:59.895
+<v Speaker 0>And I think there's just and and the
+
+01:05:59.895 --> 01:06:01.575
+<v Speaker 0>velocity of the project, you know, you're talking
+
+01:06:01.575 --> 01:06:02.935
+<v Speaker 0>about these things that are coming in the
+
+01:06:02.935 --> 01:06:04.775
+<v Speaker 0>in the road map, you know, open gap,
+
+01:06:04.775 --> 01:06:06.135
+<v Speaker 0>open fast gateways.
+
+01:06:06.695 --> 01:06:08.615
+<v Speaker 0>It's just all really exciting. I'm really looking
+
+01:06:08.615 --> 01:06:10.640
+<v Speaker 0>forward to seeing where this project goes. So
+
+01:06:10.640 --> 01:06:12.000
+<v Speaker 0>I'll also include all the links in the
+
+01:06:12.000 --> 01:06:14.160
+<v Speaker 0>GitHub and the show notes so people can
+
+01:06:14.160 --> 01:06:15.200
+<v Speaker 0>go and hopefully,
+
+01:06:15.360 --> 01:06:17.280
+<v Speaker 0>you know, do some hacktober hacking, you know,
+
+01:06:17.280 --> 01:06:19.200
+<v Speaker 0>find some good first issues and see if
+
+01:06:19.200 --> 01:06:20.880
+<v Speaker 0>you can contribute to the last project.
+
+01:06:21.360 --> 01:06:22.720
+<v Speaker 0>Thank you very much for joining me today,
+
+01:06:22.720 --> 01:06:24.400
+<v Speaker 0>Kevin. This is really insightful. I learned an
+
+01:06:24.400 --> 01:06:26.655
+<v Speaker 0>absolute ton and I'm looking forward to playing
+
+01:06:26.655 --> 01:06:28.575
+<v Speaker 0>with it some more. Great. Thanks for having
+
+01:06:28.575 --> 01:06:30.975
+<v Speaker 1>me. Alright. My pleasure. Have a good day.
+
+01:06:30.975 --> 01:06:31.455
+<v Speaker 1>You too.

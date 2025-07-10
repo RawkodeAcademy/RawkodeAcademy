@@ -1,0 +1,6338 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: d385baa7-9d23-4cc3-a3e7-a4ce2819e078
+Created: 2025-04-29T20:37:19.110Z
+Duration: 4894.053
+Channels: 1
+
+00:00:57.680 --> 00:01:00.480
+<v Speaker 0>Hello. And welcome to another episode of Rawkode
+
+00:01:00.480 --> 00:01:02.559
+<v Speaker 0>live. I am your host Rawkode.
+
+00:01:02.800 --> 00:01:05.759
+<v Speaker 0>Today, we're going to try and write a
+
+00:01:05.759 --> 00:01:09.465
+<v Speaker 0>kubectl plugin to rectify a very major wrongdoing
+
+00:01:09.465 --> 00:01:11.145
+<v Speaker 0>in the Kubernetes ecosystem.
+
+00:01:11.465 --> 00:01:12.905
+<v Speaker 0>We will talk a little bit about that
+
+00:01:12.905 --> 00:01:14.505
+<v Speaker 0>in just a moment. First, I want to
+
+00:01:14.505 --> 00:01:16.745
+<v Speaker 0>introduce my friend and host for today, our
+
+00:01:16.745 --> 00:01:19.065
+<v Speaker 0>co host, I guess, Matt. Hey, How's it
+
+00:01:19.065 --> 00:01:19.225
+<v Speaker 0>going?
+
+00:01:20.010 --> 00:01:22.650
+<v Speaker 1>Hey. Not bad. Thanks. Not bad. Awesome. Do
+
+00:01:22.650 --> 00:01:24.490
+<v Speaker 0>you wanna give us the quick
+
+00:01:24.650 --> 00:01:26.490
+<v Speaker 0>elevator pitch, who you are, what you do,
+
+00:01:26.490 --> 00:01:27.370
+<v Speaker 0>and why you're here?
+
+00:01:27.850 --> 00:01:28.810
+<v Speaker 1>Sure.
+
+00:01:28.810 --> 00:01:30.250
+<v Speaker 1>Pitch means I'm selling something. I don't know
+
+00:01:30.250 --> 00:01:30.730
+<v Speaker 1>why I'm selling.
+
+00:01:32.405 --> 00:01:34.005
+<v Speaker 1>I'd only start these with used to be
+
+00:01:34.005 --> 00:01:35.685
+<v Speaker 1>a software engineer. But you're about to see
+
+00:01:35.685 --> 00:01:37.284
+<v Speaker 1>my code, so I'm probably not gonna say
+
+00:01:37.284 --> 00:01:38.805
+<v Speaker 1>that. I I used to be a software
+
+00:01:38.805 --> 00:01:40.645
+<v Speaker 1>engineer. Yeah. No. I'm Matt. I I guess
+
+00:01:40.645 --> 00:01:42.564
+<v Speaker 1>I do DevOps and Kubernetes stuff.
+
+00:01:42.965 --> 00:01:44.485
+<v Speaker 1>I used to be a software engineer, then
+
+00:01:44.485 --> 00:01:46.645
+<v Speaker 1>I got into the whole containers and cloud
+
+00:01:46.645 --> 00:01:48.570
+<v Speaker 1>and Kubernetes thing.
+
+00:01:50.170 --> 00:01:51.369
+<v Speaker 1>I had a bit of a fascination with
+
+00:01:51.369 --> 00:01:52.729
+<v Speaker 1>Istio for a couple years.
+
+00:01:52.890 --> 00:01:54.329
+<v Speaker 1>Yeah. Just kinda hang around.
+
+00:01:55.930 --> 00:01:57.610
+<v Speaker 1>I've worked a bit like big big companies
+
+00:01:57.610 --> 00:01:59.689
+<v Speaker 1>and small, and and my last role was
+
+00:02:00.345 --> 00:02:02.745
+<v Speaker 1>head of platform running a team to build
+
+00:02:02.745 --> 00:02:05.225
+<v Speaker 1>a, you know, your your classic cloud native
+
+00:02:05.225 --> 00:02:07.385
+<v Speaker 1>platform for a for a fintech company.
+
+00:02:08.025 --> 00:02:08.745
+<v Speaker 0>Nice.
+
+00:02:09.384 --> 00:02:10.824
+<v Speaker 0>Well, I think, I mean, we've known each
+
+00:02:10.824 --> 00:02:12.345
+<v Speaker 0>other a while now. Probably, I think it
+
+00:02:12.345 --> 00:02:13.865
+<v Speaker 0>was true, the Kubernetes community.
+
+00:02:14.370 --> 00:02:15.890
+<v Speaker 0>I think, know, it's safe to say we're
+
+00:02:15.890 --> 00:02:18.050
+<v Speaker 0>both well versed. We use it almost daily,
+
+00:02:18.050 --> 00:02:19.970
+<v Speaker 0>if not every day, many times a day.
+
+00:02:19.970 --> 00:02:20.450
+<v Speaker 0>And
+
+00:02:20.770 --> 00:02:23.570
+<v Speaker 0>I think we decided to patch this episode
+
+00:02:23.570 --> 00:02:25.410
+<v Speaker 0>or talk about this episode just for me
+
+00:02:25.410 --> 00:02:26.530
+<v Speaker 0>ranting on Twitter
+
+00:02:27.135 --> 00:02:29.455
+<v Speaker 0>about the verb and known ordering of the
+
+00:02:29.455 --> 00:02:31.775
+<v Speaker 0>cube control command. And I I if I
+
+00:02:31.775 --> 00:02:33.615
+<v Speaker 0>remember correctly, you had an agreement with me.
+
+00:02:33.615 --> 00:02:35.535
+<v Speaker 0>Right? Like, we we were both firmly in
+
+00:02:35.535 --> 00:02:36.895
+<v Speaker 0>the camp that it's wrong.
+
+00:02:37.375 --> 00:02:38.735
+<v Speaker 1>I think we were both firmly in the
+
+00:02:38.735 --> 00:02:41.455
+<v Speaker 1>camp that it's wrong. And then I started
+
+00:02:41.455 --> 00:02:42.840
+<v Speaker 1>saying all of these things. Oh, you know,
+
+00:02:42.840 --> 00:02:43.960
+<v Speaker 1>when I was a young thing,
+
+00:02:44.280 --> 00:02:45.799
+<v Speaker 1>when I was at some some gray beard
+
+00:02:45.799 --> 00:02:48.120
+<v Speaker 1>taught me from software engineer. Right? If you're
+
+00:02:48.120 --> 00:02:50.280
+<v Speaker 1>gonna name a method because I started off
+
+00:02:50.280 --> 00:02:52.520
+<v Speaker 1>doing embedded c, and there's no
+
+00:02:53.080 --> 00:02:55.239
+<v Speaker 1>classes or anything. Right? So you end up
+
+00:02:55.239 --> 00:02:58.205
+<v Speaker 1>with sort of these these massive long function
+
+00:02:58.205 --> 00:03:02.365
+<v Speaker 1>names like it's basically package underscore component underscore
+
+00:03:02.605 --> 00:03:04.125
+<v Speaker 1>something underscore something.
+
+00:03:04.285 --> 00:03:06.125
+<v Speaker 1>And there was this perennial argument, and Graybeard
+
+00:03:06.125 --> 00:03:07.325
+<v Speaker 1>put his foot down in that first place
+
+00:03:07.325 --> 00:03:09.565
+<v Speaker 1>and said, no. It's noun noun noun noun
+
+00:03:09.890 --> 00:03:11.569
+<v Speaker 1>verb. Because you might have a bunch of
+
+00:03:11.569 --> 00:03:12.690
+<v Speaker 1>nouns. You might be in a in a
+
+00:03:12.690 --> 00:03:14.770
+<v Speaker 1>hierarchy that you'd use packages and classes for
+
+00:03:14.770 --> 00:03:16.690
+<v Speaker 1>in another language. You know, you might have
+
+00:03:16.690 --> 00:03:18.690
+<v Speaker 1>a a tree you might be in a
+
+00:03:18.690 --> 00:03:20.849
+<v Speaker 1>tree iterator. Both of those are nouns, but
+
+00:03:20.849 --> 00:03:22.905
+<v Speaker 1>then at the end, it's like get, set,
+
+00:03:22.905 --> 00:03:25.065
+<v Speaker 1>delete, create. You know? So that's that's your
+
+00:03:25.065 --> 00:03:27.065
+<v Speaker 1>verb. So I think I said, yeah, kubectl
+
+00:03:27.065 --> 00:03:28.985
+<v Speaker 1>should be maybe I'm jumping ahead, but I
+
+00:03:28.985 --> 00:03:30.265
+<v Speaker 1>think we both we both agreed it was
+
+00:03:30.265 --> 00:03:31.705
+<v Speaker 1>wrong. We both had different ideas for what
+
+00:03:31.705 --> 00:03:32.345
+<v Speaker 1>write looked like.
+
+00:03:34.570 --> 00:03:35.690
+<v Speaker 0>Yeah. So
+
+00:03:36.250 --> 00:03:38.490
+<v Speaker 0>for me, I mean, again, I spent a
+
+00:03:38.490 --> 00:03:39.690
+<v Speaker 0>lot of time in my command line. I'm
+
+00:03:39.690 --> 00:03:41.690
+<v Speaker 0>gonna assume that people working with Kubernetes generally
+
+00:03:41.690 --> 00:03:44.250
+<v Speaker 0>are anyway. You know, we are using kubectl
+
+00:03:44.250 --> 00:03:46.250
+<v Speaker 0>and helm and kind and all of these
+
+00:03:46.250 --> 00:03:47.835
+<v Speaker 0>other other tools
+
+00:03:48.555 --> 00:03:50.394
+<v Speaker 0>and I just always find it really frustrating
+
+00:03:50.394 --> 00:03:52.075
+<v Speaker 0>that I have to do
+
+00:03:52.875 --> 00:03:54.795
+<v Speaker 0>verb noun and then when I want to
+
+00:03:54.795 --> 00:03:56.474
+<v Speaker 0>change or do something else with a noun
+
+00:03:56.474 --> 00:03:58.075
+<v Speaker 0>and I got to delete twice and then
+
+00:03:58.075 --> 00:04:00.155
+<v Speaker 0>recompose my entire command and it just it
+
+00:04:00.155 --> 00:04:02.190
+<v Speaker 0>doesn't have that flow, that ergonomics that I
+
+00:04:02.190 --> 00:04:04.110
+<v Speaker 0>really want from a command line application. And
+
+00:04:04.110 --> 00:04:06.030
+<v Speaker 0>we we seem to be in a situation
+
+00:04:06.030 --> 00:04:07.470
+<v Speaker 0>where just all of the tools are now
+
+00:04:07.470 --> 00:04:11.070
+<v Speaker 0>doing this, where it's kubectl get pods and
+
+00:04:11.070 --> 00:04:12.910
+<v Speaker 0>then if you want to you know do
+
+00:04:12.910 --> 00:04:14.350
+<v Speaker 0>something else with that pod, you have to,
+
+00:04:15.385 --> 00:04:16.745
+<v Speaker 0>I guess we should show it, right? I'm
+
+00:04:16.745 --> 00:04:17.145
+<v Speaker 0>never
+
+00:04:17.545 --> 00:04:19.305
+<v Speaker 0>gonna be able to articulate it. Yeah, maybe
+
+00:04:19.305 --> 00:04:20.105
+<v Speaker 1>we should. So
+
+00:04:20.825 --> 00:04:22.265
+<v Speaker 0>let's see, let's
+
+00:04:23.705 --> 00:04:25.225
+<v Speaker 0>do my screen share.
+
+00:04:26.505 --> 00:04:28.665
+<v Speaker 0>So there's my my readme, we're starting from
+
+00:04:28.665 --> 00:04:29.385
+<v Speaker 0>nothing today.
+
+00:04:29.940 --> 00:04:32.020
+<v Speaker 0>What am I doing? I have no idea.
+
+00:04:33.060 --> 00:04:34.420
+<v Speaker 0>I do Type control.
+
+00:04:34.740 --> 00:04:36.740
+<v Speaker 0>Get pods. I was
+
+00:04:37.220 --> 00:04:39.060
+<v Speaker 0>faffing around with this cluster earlier, so there's
+
+00:04:39.060 --> 00:04:40.580
+<v Speaker 0>some random resources here.
+
+00:04:41.940 --> 00:04:44.125
+<v Speaker 0>But now if I want to do anything
+
+00:04:44.125 --> 00:04:45.805
+<v Speaker 0>else with this, I have to
+
+00:04:46.205 --> 00:04:47.565
+<v Speaker 0>delete two words.
+
+00:04:48.284 --> 00:04:49.725
+<v Speaker 1>Yep. Change.
+
+00:04:50.365 --> 00:04:50.925
+<v Speaker 0>And
+
+00:04:51.805 --> 00:04:54.205
+<v Speaker 0>the ergonomics don't feel right.
+
+00:04:54.205 --> 00:04:55.965
+<v Speaker 0>I mean, feel like I should be doing
+
+00:04:55.965 --> 00:04:57.490
+<v Speaker 0>pods get pods
+
+00:04:58.370 --> 00:04:59.330
+<v Speaker 0>to scrape
+
+00:04:59.490 --> 00:05:01.730
+<v Speaker 0>and just really working with that flow.
+
+00:05:02.050 --> 00:05:03.729
+<v Speaker 1>Your terminal's slightly off the bottom of the
+
+00:05:03.729 --> 00:05:04.770
+<v Speaker 1>screen there by the way.
+
+00:05:05.970 --> 00:05:06.610
+<v Speaker 1>It
+
+00:05:07.090 --> 00:05:08.930
+<v Speaker 1>is for me. Just that line you're typing
+
+00:05:08.930 --> 00:05:09.090
+<v Speaker 1>on.
+
+00:05:11.365 --> 00:05:12.164
+<v Speaker 0>Alrighty.
+
+00:05:12.965 --> 00:05:15.925
+<v Speaker 0>Let's see if I can change that. Yes,
+
+00:05:15.925 --> 00:05:16.645
+<v Speaker 0>I can.
+
+00:05:17.125 --> 00:05:20.245
+<v Speaker 0>So crop fell off. There. Now you just
+
+00:05:20.245 --> 00:05:21.285
+<v Speaker 0>get everything. Yeah.
+
+00:05:21.844 --> 00:05:22.164
+<v Speaker 0>Cool.
+
+00:05:23.900 --> 00:05:25.980
+<v Speaker 1>Yes. I agree. I mean, yeah, you okay.
+
+00:05:25.980 --> 00:05:27.180
+<v Speaker 1>You look at a deployment and then you're
+
+00:05:27.180 --> 00:05:28.780
+<v Speaker 1>like, right. It's, you know, it's done its
+
+00:05:28.780 --> 00:05:31.100
+<v Speaker 1>thing, but the why still my program still
+
+00:05:31.100 --> 00:05:32.780
+<v Speaker 1>isn't running, so you go and change,
+
+00:05:33.660 --> 00:05:35.340
+<v Speaker 1>you know, deployments to replica sets and then
+
+00:05:35.340 --> 00:05:37.580
+<v Speaker 1>replica sets to pods, maybe. But, yeah, more
+
+00:05:37.580 --> 00:05:39.020
+<v Speaker 1>often I end up listing pods,
+
+00:05:39.795 --> 00:05:42.515
+<v Speaker 1>describing a pod, doing get dash o YAML
+
+00:05:42.515 --> 00:05:43.475
+<v Speaker 1>on a pod.
+
+00:05:44.195 --> 00:05:45.715
+<v Speaker 1>Even things like logs, you wanna look at
+
+00:05:45.715 --> 00:05:47.155
+<v Speaker 1>the logs. You know? I mean, yes, there's
+
+00:05:47.155 --> 00:05:48.995
+<v Speaker 1>there's obviously solutions to all of this. You
+
+00:05:48.995 --> 00:05:51.955
+<v Speaker 1>know? Z Shell's got some some nice crazy
+
+00:05:51.955 --> 00:05:54.035
+<v Speaker 1>syntax involving a lot of exclamation marks where
+
+00:05:54.035 --> 00:05:56.050
+<v Speaker 1>you can go and change. But, you know,
+
+00:05:56.050 --> 00:05:57.650
+<v Speaker 1>other words in a in a previous command,
+
+00:05:57.650 --> 00:05:58.850
+<v Speaker 1>and you could learn all of your read
+
+00:05:58.850 --> 00:06:00.770
+<v Speaker 1>line stuff to, like, navigate around those words.
+
+00:06:00.770 --> 00:06:01.650
+<v Speaker 1>But it's not
+
+00:06:02.289 --> 00:06:03.810
+<v Speaker 1>what was that really good talk by Rich?
+
+00:06:03.810 --> 00:06:05.169
+<v Speaker 1>Whatever his name is. You know, simple is
+
+00:06:05.169 --> 00:06:07.570
+<v Speaker 1>not easy. Like, it's it's possible, and if
+
+00:06:07.570 --> 00:06:09.889
+<v Speaker 1>it's in your muscle memory, then it's easy.
+
+00:06:09.889 --> 00:06:12.035
+<v Speaker 1>But it's not simple, it's not intuitive, it's
+
+00:06:12.035 --> 00:06:13.555
+<v Speaker 1>not discoverable, it's not the same as the
+
+00:06:13.555 --> 00:06:14.755
+<v Speaker 1>other tools that you use.
+
+00:06:15.955 --> 00:06:17.155
+<v Speaker 0>Yeah. Definitely.
+
+00:06:18.435 --> 00:06:19.715
+<v Speaker 0>So I think
+
+00:06:20.035 --> 00:06:22.115
+<v Speaker 0>we've explained, we've set the we've set the
+
+00:06:22.115 --> 00:06:24.250
+<v Speaker 0>challenge, right? We've explained why we don't like
+
+00:06:24.250 --> 00:06:25.450
+<v Speaker 0>the way it works right now.
+
+00:06:26.570 --> 00:06:30.330
+<v Speaker 0>And Kubernetes are particularly kube control does provide
+
+00:06:30.970 --> 00:06:32.730
+<v Speaker 0>ways for us to extend the command.
+
+00:06:32.970 --> 00:06:35.370
+<v Speaker 0>It has this concept of a plugin, very
+
+00:06:35.370 --> 00:06:37.130
+<v Speaker 0>similar to the way that get plugins work.
+
+00:06:37.514 --> 00:06:40.475
+<v Speaker 0>You can find this documentation on the Kubernetes
+
+00:06:40.475 --> 00:06:41.195
+<v Speaker 0>website.
+
+00:06:42.155 --> 00:06:43.514
+<v Speaker 0>And if you're not familiar with how get
+
+00:06:43.514 --> 00:06:46.235
+<v Speaker 0>plugins work, all you really need to do
+
+00:06:46.555 --> 00:06:49.275
+<v Speaker 0>is have another command available on in your
+
+00:06:49.275 --> 00:06:52.155
+<v Speaker 0>path that starts with kubectl dash forget is
+
+00:06:52.155 --> 00:06:54.560
+<v Speaker 0>get dash. And anything after that then becomes
+
+00:06:54.560 --> 00:06:56.560
+<v Speaker 0>a new sub command and the kubectl command
+
+00:06:56.560 --> 00:06:57.919
+<v Speaker 0>and it executes it.
+
+00:06:58.560 --> 00:07:00.080
+<v Speaker 0>Nice and simple.
+
+00:07:00.560 --> 00:07:03.280
+<v Speaker 0>So we're gonna just really start with the
+
+00:07:03.280 --> 00:07:06.415
+<v Speaker 0>most crudest approach that think we're gonna that
+
+00:07:06.415 --> 00:07:07.775
+<v Speaker 0>we can get away with here and that's
+
+00:07:07.775 --> 00:07:09.375
+<v Speaker 0>just use a little bit of bash.
+
+00:07:10.015 --> 00:07:12.575
+<v Speaker 0>I guess we'll start with the developer friendly
+
+00:07:12.575 --> 00:07:14.575
+<v Speaker 0>hello world equivalent and then we'll see if
+
+00:07:14.575 --> 00:07:16.335
+<v Speaker 0>we can actually try and fulfill the verb
+
+00:07:16.335 --> 00:07:17.215
+<v Speaker 0>and noun swap page.
+
+00:07:18.590 --> 00:07:20.190
+<v Speaker 0>And then we also want to take a
+
+00:07:20.190 --> 00:07:22.270
+<v Speaker 0>look at using crew as a way to
+
+00:07:22.270 --> 00:07:22.990
+<v Speaker 0>provide
+
+00:07:23.790 --> 00:07:25.230
+<v Speaker 0>a crew as a plug in manager for
+
+00:07:25.230 --> 00:07:26.830
+<v Speaker 0>control that would make it easier for other
+
+00:07:26.830 --> 00:07:28.750
+<v Speaker 0>people to install this plug in and get
+
+00:07:28.750 --> 00:07:29.870
+<v Speaker 0>the benefits of this.
+
+00:07:31.665 --> 00:07:33.905
+<v Speaker 0>Easy. Right? Easy.
+
+00:07:34.865 --> 00:07:36.865
+<v Speaker 1>I mean, there's no it's no CNI. There's
+
+00:07:36.865 --> 00:07:38.145
+<v Speaker 1>no as you say, we can just dump
+
+00:07:38.145 --> 00:07:39.665
+<v Speaker 1>a binary on the path. We don't have
+
+00:07:39.665 --> 00:07:42.465
+<v Speaker 1>to implement a gRPC interface over loop back.
+
+00:07:42.465 --> 00:07:44.865
+<v Speaker 1>Nobody's gonna fork exec us with some, like,
+
+00:07:44.865 --> 00:07:45.585
+<v Speaker 1>great crazy,
+
+00:07:46.540 --> 00:07:48.460
+<v Speaker 1>you know, crazy set of arguments. Like, I
+
+00:07:48.620 --> 00:07:50.060
+<v Speaker 1>yeah. It could be. I tried to extend
+
+00:07:50.220 --> 00:07:51.500
+<v Speaker 1>I was trying to extend the scheduler last
+
+00:07:51.500 --> 00:07:54.460
+<v Speaker 1>week, and I'm thankful for this interface, me
+
+00:07:54.460 --> 00:07:55.020
+<v Speaker 1>tell you.
+
+00:07:56.380 --> 00:07:57.580
+<v Speaker 0>Alright. Okay. Good.
+
+00:07:59.965 --> 00:08:01.165
+<v Speaker 0>Let's just get started.
+
+00:08:01.405 --> 00:08:03.085
+<v Speaker 0>You just go down this page, there is
+
+00:08:03.085 --> 00:08:03.965
+<v Speaker 0>this really
+
+00:08:04.125 --> 00:08:07.085
+<v Speaker 0>nice, not nice, a very simple example for
+
+00:08:07.085 --> 00:08:08.925
+<v Speaker 0>bash that we're just gonna Oh, cheers. Cheers,
+
+00:08:08.925 --> 00:08:10.205
+<v Speaker 1>Tim Hawken. That's done.
+
+00:08:10.685 --> 00:08:12.365
+<v Speaker 0>We're just gonna steal this.
+
+00:08:12.925 --> 00:08:14.610
+<v Speaker 0>We're gonna start with a fail. And then
+
+00:08:14.610 --> 00:08:16.690
+<v Speaker 0>we have a live share here, which means
+
+00:08:16.690 --> 00:08:19.410
+<v Speaker 0>that I should call this kubectl.
+
+00:08:22.050 --> 00:08:23.570
+<v Speaker 0>We'll call it pods for now.
+
+00:08:25.090 --> 00:08:26.610
+<v Speaker 0>And you should be able to see this,
+
+00:08:26.610 --> 00:08:26.850
+<v Speaker 0>right?
+
+00:08:28.165 --> 00:08:30.725
+<v Speaker 0>Because the live share and can you type?
+
+00:08:30.725 --> 00:08:33.205
+<v Speaker 0>Give me a give me something.
+
+00:08:34.965 --> 00:08:37.525
+<v Speaker 0>42. There we go. Right. Perfect. Mhmm.
+
+00:08:37.924 --> 00:08:41.125
+<v Speaker 0>Now don't delete it. Oh, I didn't.
+
+00:08:41.365 --> 00:08:42.005
+<v Speaker 1>What the hell?
+
+00:08:43.820 --> 00:08:45.180
+<v Speaker 1>Yeah. Sorry.
+
+00:08:46.060 --> 00:08:47.579
+<v Speaker 0>Not off to a good start. Right.
+
+00:08:48.220 --> 00:08:48.779
+<v Speaker 0>So,
+
+00:08:49.180 --> 00:08:51.180
+<v Speaker 0>no, I I I really
+
+00:08:51.500 --> 00:08:53.980
+<v Speaker 0>don't care about argument handling right now.
+
+00:08:54.699 --> 00:08:57.355
+<v Speaker 0>I I really just want to show how
+
+00:08:57.355 --> 00:08:58.475
+<v Speaker 0>simple it is
+
+00:08:58.875 --> 00:09:01.355
+<v Speaker 0>to get started. So we just say, hey,
+
+00:09:01.355 --> 00:09:03.675
+<v Speaker 0>I'm a plugin named kubectl pods,
+
+00:09:03.995 --> 00:09:05.355
+<v Speaker 0>we save the script.
+
+00:09:05.755 --> 00:09:07.355
+<v Speaker 0>Now because this is the bash script, we
+
+00:09:07.355 --> 00:09:09.115
+<v Speaker 0>do need to make it executable.
+
+00:09:09.915 --> 00:09:11.595
+<v Speaker 0>Yeah. I'm
+
+00:09:11.595 --> 00:09:15.820
+<v Speaker 0>just gonna symlink this directly into my path.
+
+00:09:15.900 --> 00:09:17.180
+<v Speaker 1>I was gonna say.
+
+00:09:18.460 --> 00:09:20.380
+<v Speaker 0>And this is where I show my
+
+00:09:21.100 --> 00:09:23.100
+<v Speaker 0>my twenty years of Linux knowledge and still
+
+00:09:23.100 --> 00:09:25.485
+<v Speaker 0>can't remember if it's a target.
+
+00:09:26.605 --> 00:09:28.925
+<v Speaker 1>It's source first. Source first. Yeah. It's source
+
+00:09:28.925 --> 00:09:30.764
+<v Speaker 1>first. I should put a path on it.
+
+00:09:30.764 --> 00:09:32.285
+<v Speaker 0>So user
+
+00:09:32.285 --> 00:09:33.245
+<v Speaker 0>local.
+
+00:09:35.165 --> 00:09:36.524
+<v Speaker 0>Means I should now
+
+00:09:36.685 --> 00:09:37.485
+<v Speaker 0>have access.
+
+00:09:37.884 --> 00:09:38.925
+<v Speaker 0>Oh, it does not.
+
+00:09:40.600 --> 00:09:43.160
+<v Speaker 1>No. Try it. You might need hash dash
+
+00:09:43.160 --> 00:09:44.839
+<v Speaker 1>r just to make your shell
+
+00:09:46.040 --> 00:09:47.079
+<v Speaker 1>realize.
+
+00:09:47.319 --> 00:09:49.560
+<v Speaker 0>Oh, wrong one. Oh, no. Because it's got
+
+00:09:49.560 --> 00:09:51.160
+<v Speaker 0>a dot s h on it. Okay. So.
+
+00:09:53.575 --> 00:09:54.935
+<v Speaker 0>This is the wrong way around.
+
+00:09:55.975 --> 00:09:57.415
+<v Speaker 1>Is it? Did I get it wrong?
+
+00:09:58.215 --> 00:09:59.895
+<v Speaker 1>Oh, no. Oh, no. I need the fill
+
+00:09:59.895 --> 00:10:01.415
+<v Speaker 0>path. Okay. So. You you need to I
+
+00:10:01.415 --> 00:10:03.095
+<v Speaker 1>didn't think you did. I almost said something.
+
+00:10:03.095 --> 00:10:03.655
+<v Speaker 1>Yeah.
+
+00:10:04.135 --> 00:10:06.295
+<v Speaker 1>I thought it would work it out. Okay.
+
+00:10:06.295 --> 00:10:08.855
+<v Speaker 0>So, let's do this. And we actually want
+
+00:10:08.610 --> 00:10:11.250
+<v Speaker 0>to make it available just as pods.
+
+00:10:11.410 --> 00:10:13.170
+<v Speaker 0>Alright. Let's see how's that looking. We might
+
+00:10:13.170 --> 00:10:14.370
+<v Speaker 1>need a should bang line
+
+00:10:14.769 --> 00:10:17.010
+<v Speaker 1>to make it execute properly. Oh, yeah, of
+
+00:10:17.010 --> 00:10:18.450
+<v Speaker 0>course. We have one.
+
+00:10:18.769 --> 00:10:19.730
+<v Speaker 1>Oh, we do have one. We have bad
+
+00:10:19.730 --> 00:10:20.290
+<v Speaker 0>one. So,
+
+00:10:21.764 --> 00:10:23.845
+<v Speaker 0>user ben env bash.
+
+00:10:24.644 --> 00:10:26.404
+<v Speaker 0>Okay. Now we have a bearish event.
+
+00:10:26.805 --> 00:10:27.445
+<v Speaker 0>Cool.
+
+00:10:27.685 --> 00:10:30.325
+<v Speaker 0>If we run kubectl Should be should be
+
+00:10:30.325 --> 00:10:31.765
+<v Speaker 1>done then. Pods.
+
+00:10:32.404 --> 00:10:33.445
+<v Speaker 0>Which means,
+
+00:10:34.084 --> 00:10:35.764
+<v Speaker 0>because this is all really simple.
+
+00:10:36.600 --> 00:10:38.519
+<v Speaker 0>Mhmm. We now can have we now have
+
+00:10:38.519 --> 00:10:41.160
+<v Speaker 0>a new subcommand on. Done. Alright. Thanks. See
+
+00:10:41.160 --> 00:10:42.519
+<v Speaker 0>you later. I honestly I thought we'd be
+
+00:10:42.519 --> 00:10:44.120
+<v Speaker 1>fighting go dot mod files for like an
+
+00:10:44.120 --> 00:10:45.640
+<v Speaker 1>hour. Like this is really cool.
+
+00:10:47.560 --> 00:10:48.279
+<v Speaker 1>I mean,
+
+00:10:49.160 --> 00:10:50.600
+<v Speaker 0>think we're gonna be able to get quite
+
+00:10:50.600 --> 00:10:53.295
+<v Speaker 0>far with our really crude bash version
+
+00:10:53.295 --> 00:10:55.295
+<v Speaker 0>of this and well actually not because we're
+
+00:10:55.295 --> 00:10:55.615
+<v Speaker 0>trying to
+
+00:10:56.415 --> 00:10:57.695
+<v Speaker 0>here's a challenge,
+
+00:10:57.855 --> 00:10:59.455
+<v Speaker 0>We're gonna need a different one of these
+
+00:10:59.455 --> 00:11:02.255
+<v Speaker 0>bash scripts for each of the nouns that
+
+00:11:02.255 --> 00:11:03.535
+<v Speaker 0>we want to be able to drop in
+
+00:11:03.535 --> 00:11:05.135
+<v Speaker 0>as a sub command because we don't have
+
+00:11:05.135 --> 00:11:08.200
+<v Speaker 0>that encapsulation of a sub command. Oh, hadn't
+
+00:11:08.200 --> 00:11:10.440
+<v Speaker 1>thought of that. But we'll make it work
+
+00:11:10.440 --> 00:11:13.000
+<v Speaker 0>for for pods and maybe deployments and then
+
+00:11:13.320 --> 00:11:15.080
+<v Speaker 0>hopefully people will give us some pull request
+
+00:11:15.080 --> 00:11:17.080
+<v Speaker 0>with other with other names because I don't
+
+00:11:17.080 --> 00:11:18.200
+<v Speaker 0>know. Could we make our lives a bit
+
+00:11:18.200 --> 00:11:20.360
+<v Speaker 1>easier and just just call our plug in
+
+00:11:20.360 --> 00:11:22.805
+<v Speaker 1>like foo and then you you could literally
+
+00:11:22.805 --> 00:11:25.845
+<v Speaker 1>shell alias like kubectl to kubectl foo.
+
+00:11:27.205 --> 00:11:28.245
+<v Speaker 0>That's a good idea. Or maybe
+
+00:11:29.925 --> 00:11:30.965
+<v Speaker 0>we'll have a
+
+00:11:31.445 --> 00:11:33.205
+<v Speaker 0>I'm assuming we can just drop in as
+
+00:11:33.205 --> 00:11:34.725
+<v Speaker 0>many of these batch scripts as we want.
+
+00:11:34.725 --> 00:11:36.565
+<v Speaker 0>So we can have Oh, nice. Deployment replica
+
+00:11:36.565 --> 00:11:38.480
+<v Speaker 0>sets and then have an encapsulator code through
+
+00:11:38.480 --> 00:11:40.560
+<v Speaker 0>that people can use as an alias, maybe.
+
+00:11:40.639 --> 00:11:41.199
+<v Speaker 0>Anyway,
+
+00:11:42.240 --> 00:11:44.000
+<v Speaker 0>one one problem at a time, Matt. Alright.
+
+00:11:44.000 --> 00:11:46.000
+<v Speaker 0>Yeah. Fair. Good point. Good point.
+
+00:11:46.399 --> 00:11:47.279
+<v Speaker 0>So as
+
+00:11:47.600 --> 00:11:49.360
+<v Speaker 0>far as our crude implementation goes,
+
+00:11:49.785 --> 00:11:51.225
+<v Speaker 0>all we really wanna be able to do
+
+00:11:51.225 --> 00:11:52.505
+<v Speaker 0>is is execute
+
+00:11:52.665 --> 00:11:53.545
+<v Speaker 0>something
+
+00:11:53.944 --> 00:11:54.904
+<v Speaker 0>pods
+
+00:11:56.985 --> 00:11:58.024
+<v Speaker 0>that. Alright?
+
+00:11:59.065 --> 00:12:00.824
+<v Speaker 0>Where Yeah. Get pods.
+
+00:12:02.519 --> 00:12:04.920
+<v Speaker 0>So, I mean, I don't wanna sound too
+
+00:12:04.920 --> 00:12:06.200
+<v Speaker 0>confident, but that
+
+00:12:06.519 --> 00:12:09.480
+<v Speaker 0>oh, no. No. Get yeah. Get pods. Okay.
+
+00:12:09.720 --> 00:12:10.760
+<v Speaker 0>But how do I know I want to
+
+00:12:10.760 --> 00:12:12.440
+<v Speaker 0>get? So, actually, this goes here.
+
+00:12:12.839 --> 00:12:14.200
+<v Speaker 1>So, I'm trying to find a tweet where
+
+00:12:14.200 --> 00:12:16.875
+<v Speaker 1>I sort of suggested this grammar. Like, I
+
+00:12:16.875 --> 00:12:17.595
+<v Speaker 1>can't.
+
+00:12:17.915 --> 00:12:19.595
+<v Speaker 1>But I think it was something like
+
+00:12:20.875 --> 00:12:22.235
+<v Speaker 1>we we were changing the noun and verbal
+
+00:12:22.235 --> 00:12:24.475
+<v Speaker 1>audition. It was something like pods get
+
+00:12:24.635 --> 00:12:25.515
+<v Speaker 1>name
+
+00:12:25.835 --> 00:12:27.595
+<v Speaker 1>and then the arguments. And I think I
+
+00:12:27.595 --> 00:12:29.275
+<v Speaker 1>suggested, you know, as a as a bonus,
+
+00:12:29.630 --> 00:12:31.470
+<v Speaker 1>you could leave more and more
+
+00:12:32.110 --> 00:12:34.590
+<v Speaker 1>of those latter parts off.
+
+00:12:34.830 --> 00:12:37.150
+<v Speaker 1>So, you know, QPCT or pods would would
+
+00:12:37.150 --> 00:12:39.070
+<v Speaker 1>do a list essentially, like a like a
+
+00:12:39.070 --> 00:12:41.630
+<v Speaker 1>get. Yeah. You propose bringing the names based
+
+00:12:41.630 --> 00:12:42.830
+<v Speaker 0>into the
+
+00:12:43.205 --> 00:12:45.285
+<v Speaker 0>into the mix as well. We talked about
+
+00:12:45.285 --> 00:12:46.565
+<v Speaker 0>providing defaults
+
+00:12:46.565 --> 00:12:48.645
+<v Speaker 0>if you're got the cube counter. But right
+
+00:12:48.645 --> 00:12:50.965
+<v Speaker 0>now, let's let's assume that we wanna be
+
+00:12:50.965 --> 00:12:52.645
+<v Speaker 0>able to run cube control
+
+00:12:53.045 --> 00:12:54.725
+<v Speaker 0>pods get dash
+
+00:12:55.829 --> 00:12:57.589
+<v Speaker 0>a. Right? So we wanna do all namespace.
+
+00:12:57.589 --> 00:12:59.269
+<v Speaker 0>Yeah. So what we really want is to
+
+00:12:59.269 --> 00:13:00.949
+<v Speaker 0>take the first parameter and that's I don't
+
+00:13:00.949 --> 00:13:02.310
+<v Speaker 0>think this is the right bash syntax. This
+
+00:13:02.310 --> 00:13:03.510
+<v Speaker 0>is I've made this up.
+
+00:13:04.230 --> 00:13:05.110
+<v Speaker 1>No, that's
+
+00:13:05.430 --> 00:13:06.470
+<v Speaker 1>that yeah, that's not.
+
+00:13:07.555 --> 00:13:09.315
+<v Speaker 0>I was I I think there's something like
+
+00:13:09.315 --> 00:13:10.995
+<v Speaker 0>that, like where you say, maybe that's just
+
+00:13:10.995 --> 00:13:12.835
+<v Speaker 0>my ghost slipping through, like, hey, it's gonna
+
+00:13:12.835 --> 00:13:14.195
+<v Speaker 0>be the rest of the slice that's after
+
+00:13:14.195 --> 00:13:16.355
+<v Speaker 0>the first So let's try and get that
+
+00:13:16.355 --> 00:13:18.595
+<v Speaker 0>to work then. Yeah. Some something yeah. I
+
+00:13:18.595 --> 00:13:19.795
+<v Speaker 1>agree. That'll swap.
+
+00:13:20.195 --> 00:13:21.715
+<v Speaker 1>Because I mean, don't wanna be writing a
+
+00:13:21.715 --> 00:13:23.550
+<v Speaker 1>parser in bash.
+
+00:13:23.870 --> 00:13:24.670
+<v Speaker 0>No.
+
+00:13:24.910 --> 00:13:26.830
+<v Speaker 0>So let's see. Let's clutch it for now.
+
+00:13:26.830 --> 00:13:28.590
+<v Speaker 0>Bash array syntax. So
+
+00:13:30.190 --> 00:13:31.710
+<v Speaker 1>the the old fact the correct way to
+
+00:13:31.710 --> 00:13:33.390
+<v Speaker 1>do it old fashioned was
+
+00:13:33.710 --> 00:13:34.030
+<v Speaker 1>shift.
+
+00:13:34.805 --> 00:13:37.285
+<v Speaker 1>But, yeah, bash four, bash five, you've probably
+
+00:13:37.285 --> 00:13:38.885
+<v Speaker 1>got some nice erase syntax.
+
+00:13:39.605 --> 00:13:41.764
+<v Speaker 0>Yeah. Let's see. What have we got? Well,
+
+00:13:41.764 --> 00:13:42.884
+<v Speaker 1>we can definitely do it. We we should
+
+00:13:42.884 --> 00:13:44.565
+<v Speaker 1>probably do it with shift and stuff.
+
+00:13:44.964 --> 00:13:46.245
+<v Speaker 1>Do you wanna look at that? I'll knock
+
+00:13:46.245 --> 00:13:48.565
+<v Speaker 1>up, like, s h compatible something
+
+00:13:50.200 --> 00:13:52.840
+<v Speaker 1>in case we need it. Yeah. Okay. So
+
+00:13:52.840 --> 00:13:55.320
+<v Speaker 0>what you're suggesting is we actually say command
+
+00:13:55.320 --> 00:13:56.280
+<v Speaker 0>equals
+
+00:13:56.280 --> 00:13:58.520
+<v Speaker 0>and we're gonna shift this
+
+00:13:58.600 --> 00:14:00.760
+<v Speaker 0>and then extra or
+
+00:14:01.160 --> 00:14:03.274
+<v Speaker 1>else. Yeah. Basically. Okay. Yeah. You know that.
+
+00:14:03.274 --> 00:14:04.394
+<v Speaker 1>Yeah. Yeah. So
+
+00:14:05.194 --> 00:14:06.795
+<v Speaker 0>I I don't even remember the right syntax
+
+00:14:06.795 --> 00:14:08.394
+<v Speaker 0>here, but I'm gonna work it out. So
+
+00:14:09.115 --> 00:14:10.875
+<v Speaker 1>Yeah. It's not quite shift. It'll be command
+
+00:14:10.875 --> 00:14:11.995
+<v Speaker 1>equals one
+
+00:14:12.235 --> 00:14:15.860
+<v Speaker 1>and then shift does its own command, basically.
+
+00:14:15.860 --> 00:14:18.340
+<v Speaker 1>Shift just pops pops that queue.
+
+00:14:20.580 --> 00:14:22.420
+<v Speaker 1>I don't think you need an argument to
+
+00:14:22.420 --> 00:14:24.420
+<v Speaker 1>shift. I think shift literally just punch all
+
+00:14:24.420 --> 00:14:27.700
+<v Speaker 1>the positional arguments by one. Oh, really? There
+
+00:14:27.700 --> 00:14:29.894
+<v Speaker 0>we go. Yeah. I think so. You think
+
+00:14:30.055 --> 00:14:31.415
+<v Speaker 1>And then you can use and then and
+
+00:14:31.415 --> 00:14:32.935
+<v Speaker 1>then you can use app for it. Yeah.
+
+00:14:34.214 --> 00:14:35.255
+<v Speaker 0>You
+
+00:14:35.255 --> 00:14:36.695
+<v Speaker 0>know what? How do we test it? Well,
+
+00:14:36.695 --> 00:14:38.295
+<v Speaker 0>we run it in production. So let's see.
+
+00:14:38.295 --> 00:14:38.855
+<v Speaker 0>Pause. Get.
+
+00:14:42.839 --> 00:14:44.360
+<v Speaker 0>Oh. Come on. Yeah.
+
+00:14:48.120 --> 00:14:51.000
+<v Speaker 0>We're done. I mean We're done. We're done.
+
+00:14:51.000 --> 00:14:53.080
+<v Speaker 1>We're literally done. Should we default
+
+00:14:54.200 --> 00:14:55.560
+<v Speaker 1>so I think
+
+00:14:55.805 --> 00:14:56.445
+<v Speaker 1>we
+
+00:14:56.925 --> 00:14:58.365
+<v Speaker 1>can say if
+
+00:14:58.925 --> 00:15:00.445
+<v Speaker 1>one isn't provided,
+
+00:15:01.005 --> 00:15:03.005
+<v Speaker 1>I need to default to get. What are
+
+00:15:03.005 --> 00:15:03.805
+<v Speaker 0>you typing?
+
+00:15:08.445 --> 00:15:10.045
+<v Speaker 1>Do I have to save in Versus Code?
+
+00:15:10.780 --> 00:15:12.540
+<v Speaker 0>Oh, so you wanna be able to run
+
+00:15:12.620 --> 00:15:15.660
+<v Speaker 0>just a key I think literally just pods.
+
+00:15:15.820 --> 00:15:16.380
+<v Speaker 0>Yeah.
+
+00:15:16.780 --> 00:15:17.500
+<v Speaker 0>Yeah.
+
+00:15:19.100 --> 00:15:21.260
+<v Speaker 0>Okay. I like it. But I could also
+
+00:15:21.260 --> 00:15:23.340
+<v Speaker 0>do pods describe
+
+00:15:24.620 --> 00:15:27.205
+<v Speaker 0>and then pass n one and that should
+
+00:15:27.205 --> 00:15:30.405
+<v Speaker 0>still work. So good. I'm
+
+00:15:30.405 --> 00:15:32.725
+<v Speaker 0>already loving this plugin. I've got this I'm
+
+00:15:32.725 --> 00:15:34.645
+<v Speaker 1>actually yeah. This is so I've got about
+
+00:15:34.645 --> 00:15:37.205
+<v Speaker 1>three pages worth of shell aliases. I've I've
+
+00:15:37.205 --> 00:15:39.605
+<v Speaker 1>got a bash RC snippet. It's just got
+
+00:15:39.605 --> 00:15:41.970
+<v Speaker 1>so much. Like I've got bash functions that
+
+00:15:41.970 --> 00:15:45.089
+<v Speaker 1>auto generate like shell aliases. Like that's that's
+
+00:15:45.089 --> 00:15:46.850
+<v Speaker 1>how much I use Kube CTL. And this
+
+00:15:46.850 --> 00:15:49.010
+<v Speaker 1>is already better. I'm I'm pretty hungry.
+
+00:15:49.570 --> 00:15:51.889
+<v Speaker 0>Right. So now we can try and show
+
+00:15:51.889 --> 00:15:53.570
+<v Speaker 0>off the workflow that we actually want. We're
+
+00:15:53.570 --> 00:15:54.995
+<v Speaker 0>like, hey, well I just wanna be able
+
+00:15:54.995 --> 00:15:56.515
+<v Speaker 0>to push up and I wanted to scrape
+
+00:15:56.515 --> 00:15:57.555
+<v Speaker 0>this resource.
+
+00:15:57.795 --> 00:15:59.155
+<v Speaker 0>Like and I'm not deleting
+
+00:15:59.235 --> 00:16:01.235
+<v Speaker 0>any words to be able to do this.
+
+00:16:01.235 --> 00:16:02.275
+<v Speaker 0>That's awesome.
+
+00:16:04.355 --> 00:16:06.355
+<v Speaker 0>I mean, I didn't think we would get
+
+00:16:06.355 --> 00:16:07.475
+<v Speaker 0>this far in an hour and a half
+
+00:16:07.475 --> 00:16:08.035
+<v Speaker 0>and we've done it.
+
+00:16:10.570 --> 00:16:11.610
+<v Speaker 1>Did we say
+
+00:16:12.730 --> 00:16:14.650
+<v Speaker 1>what so so what is the workflow then?
+
+00:16:14.650 --> 00:16:17.130
+<v Speaker 1>What's the sort of what's the key user
+
+00:16:17.130 --> 00:16:19.130
+<v Speaker 1>journey through this? Because I often find that
+
+00:16:19.130 --> 00:16:20.250
+<v Speaker 1>I I'll get them and I'll end up
+
+00:16:20.250 --> 00:16:21.690
+<v Speaker 1>describing one like that. And then the next
+
+00:16:21.690 --> 00:16:23.290
+<v Speaker 1>thing I'll probably end up doing is like
+
+00:16:23.290 --> 00:16:24.650
+<v Speaker 1>a get dash o yaml.
+
+00:16:27.255 --> 00:16:30.535
+<v Speaker 0>Yeah, so generally you're right. So what I
+
+00:16:30.615 --> 00:16:32.135
+<v Speaker 0>I think I'm just gonna repeat exactly what
+
+00:16:32.135 --> 00:16:33.335
+<v Speaker 0>you said but I I do a lot
+
+00:16:33.335 --> 00:16:34.935
+<v Speaker 0>of pods alright, okay.
+
+00:16:35.495 --> 00:16:36.135
+<v Speaker 0>Oops.
+
+00:16:37.575 --> 00:16:39.095
+<v Speaker 0>And I said okay, what's what's wrong with
+
+00:16:39.095 --> 00:16:41.095
+<v Speaker 0>this pod and then if there's nothing here
+
+00:16:41.710 --> 00:16:43.630
+<v Speaker 0>then I would say okay, well I actually
+
+00:16:43.630 --> 00:16:44.510
+<v Speaker 0>let's
+
+00:16:45.070 --> 00:16:47.550
+<v Speaker 0>get NGINX one, it's not copied to my
+
+00:16:47.550 --> 00:16:48.590
+<v Speaker 0>buffer anymore.
+
+00:16:49.870 --> 00:16:50.990
+<v Speaker 0>Let's see if we can
+
+00:16:51.470 --> 00:16:53.390
+<v Speaker 0>find a bash way to handle that.
+
+00:16:55.715 --> 00:16:57.475
+<v Speaker 0>And then dash o. Yeah.
+
+00:16:59.795 --> 00:17:01.955
+<v Speaker 0>So the get isn't a default anymore either
+
+00:17:01.955 --> 00:17:04.115
+<v Speaker 0>because engine Right. Because yeah.
+
+00:17:04.994 --> 00:17:07.635
+<v Speaker 0>But still, I still like where this is
+
+00:17:07.635 --> 00:17:10.150
+<v Speaker 0>going, so. Yeah. No. No. Definitely. I just
+
+00:17:10.150 --> 00:17:11.510
+<v Speaker 1>wonder whether without verb
+
+00:17:11.590 --> 00:17:13.350
+<v Speaker 1>really does wanna go on the end because
+
+00:17:13.350 --> 00:17:14.869
+<v Speaker 1>I think that's what I suggested because I
+
+00:17:14.869 --> 00:17:16.630
+<v Speaker 1>was like, noun noun noun. Because I think
+
+00:17:16.630 --> 00:17:19.350
+<v Speaker 1>I I think I suggested QCTR namespace
+
+00:17:19.350 --> 00:17:20.069
+<v Speaker 1>name
+
+00:17:20.950 --> 00:17:21.589
+<v Speaker 1>verb.
+
+00:17:21.830 --> 00:17:23.174
+<v Speaker 1>No. I'm not saying that's what like, thinking
+
+00:17:23.174 --> 00:17:24.375
+<v Speaker 1>about it, I don't I think the namespace
+
+00:17:24.375 --> 00:17:25.575
+<v Speaker 1>should still just be a flag,
+
+00:17:26.694 --> 00:17:28.374
+<v Speaker 1>and that's maybe not
+
+00:17:29.015 --> 00:17:30.855
+<v Speaker 1>the most but what that would let you
+
+00:17:30.855 --> 00:17:32.375
+<v Speaker 1>do is go back up and literally just
+
+00:17:32.375 --> 00:17:34.054
+<v Speaker 1>just change the verb. So we're like, oh,
+
+00:17:34.054 --> 00:17:35.575
+<v Speaker 1>yeah. That one, it's broken. It's wedged. You
+
+00:17:35.575 --> 00:17:36.135
+<v Speaker 1>know? Delete.
+
+00:17:38.110 --> 00:17:39.710
+<v Speaker 1>Because there, I often just use delete just
+
+00:17:39.710 --> 00:17:41.150
+<v Speaker 1>to cycle. I push a new image in
+
+00:17:41.150 --> 00:17:42.590
+<v Speaker 1>another terminal from the code I'm writing and
+
+00:17:42.590 --> 00:17:44.429
+<v Speaker 1>then do a delete. Yeah. So,
+
+00:17:45.230 --> 00:17:46.990
+<v Speaker 0>what you're proposing is where we would actually
+
+00:17:46.990 --> 00:17:49.325
+<v Speaker 0>quite like the syntax where we have this
+
+00:17:49.325 --> 00:17:51.565
+<v Speaker 0>and we say describe and when that goes
+
+00:17:51.565 --> 00:17:53.325
+<v Speaker 0>together what we want, we say okay, let's
+
+00:17:53.325 --> 00:17:55.325
+<v Speaker 0>get the logs or maybe we want more
+
+00:17:55.325 --> 00:17:55.965
+<v Speaker 0>information
+
+00:17:56.685 --> 00:17:58.685
+<v Speaker 0>and but then I think we're in a
+
+00:17:58.685 --> 00:17:59.965
+<v Speaker 0>situation where we need to be able to
+
+00:17:59.965 --> 00:18:02.765
+<v Speaker 0>understand when this is a verb and when
+
+00:18:02.765 --> 00:18:03.245
+<v Speaker 0>it's
+
+00:18:04.020 --> 00:18:05.460
+<v Speaker 0>when when it's a target.
+
+00:18:05.940 --> 00:18:07.780
+<v Speaker 0>Right? Because we still wanna be able to
+
+00:18:07.780 --> 00:18:08.660
+<v Speaker 0>do pods
+
+00:18:09.060 --> 00:18:09.860
+<v Speaker 0>get
+
+00:18:10.500 --> 00:18:11.140
+<v Speaker 0>or
+
+00:18:11.300 --> 00:18:12.980
+<v Speaker 0>do we? Well, I think if we just
+
+00:18:12.980 --> 00:18:14.419
+<v Speaker 1>think if we just say pods,
+
+00:18:14.900 --> 00:18:16.100
+<v Speaker 1>well, pods
+
+00:18:17.460 --> 00:18:19.394
+<v Speaker 1>get will just work because you can just
+
+00:18:19.394 --> 00:18:20.914
+<v Speaker 1>say pods. And do we ever wanna just
+
+00:18:20.914 --> 00:18:22.434
+<v Speaker 1>do pods deletes
+
+00:18:22.674 --> 00:18:24.515
+<v Speaker 1>for all of them? We probably don't. Pods
+
+00:18:24.515 --> 00:18:26.034
+<v Speaker 1>create, edit, it doesn't make sense. But what
+
+00:18:26.034 --> 00:18:27.955
+<v Speaker 0>if I wanna do a label selector where
+
+00:18:27.955 --> 00:18:29.794
+<v Speaker 0>it's get me all of the pods where
+
+00:18:29.794 --> 00:18:31.475
+<v Speaker 0>app equals nginx,
+
+00:18:31.475 --> 00:18:32.115
+<v Speaker 0>which right
+
+00:18:32.500 --> 00:18:33.859
+<v Speaker 0>now Two.
+
+00:18:34.179 --> 00:18:35.700
+<v Speaker 0>Well, NGINX one, I think I've got it
+
+00:18:35.700 --> 00:18:36.340
+<v Speaker 0>called.
+
+00:18:36.580 --> 00:18:38.100
+<v Speaker 0>Well, that would work, but
+
+00:18:38.740 --> 00:18:40.900
+<v Speaker 0>that's no long, I mean, if we inject
+
+00:18:40.900 --> 00:18:43.460
+<v Speaker 0>some pod name here, we lose the ability
+
+00:18:43.460 --> 00:18:44.260
+<v Speaker 0>to do that.
+
+00:18:48.715 --> 00:18:50.475
+<v Speaker 0>So as much as I like your idea
+
+00:18:50.475 --> 00:18:52.955
+<v Speaker 0>of having that fluid interface where we do
+
+00:18:52.955 --> 00:18:55.755
+<v Speaker 0>have the name followed by some command to
+
+00:18:55.915 --> 00:18:57.514
+<v Speaker 0>an act on a target,
+
+00:18:58.075 --> 00:19:01.275
+<v Speaker 0>being able to understand when we actually need
+
+00:19:01.275 --> 00:19:03.570
+<v Speaker 0>to escape out for that, I think would
+
+00:19:03.570 --> 00:19:04.609
+<v Speaker 0>be quite a challenge.
+
+00:19:05.090 --> 00:19:07.650
+<v Speaker 0>Unless we unless we allow lists some specific
+
+00:19:07.650 --> 00:19:10.289
+<v Speaker 0>commands like get or etcetera.
+
+00:19:10.450 --> 00:19:11.809
+<v Speaker 1>Right. Yeah. I was thinking the name would
+
+00:19:11.809 --> 00:19:13.330
+<v Speaker 1>always be there but you're right that like
+
+00:19:13.330 --> 00:19:15.809
+<v Speaker 1>label selectors are are
+
+00:19:15.195 --> 00:19:16.634
+<v Speaker 1>very often used as a stand in for
+
+00:19:16.634 --> 00:19:17.835
+<v Speaker 1>a name on there. Yeah. And that does
+
+00:19:17.835 --> 00:19:19.434
+<v Speaker 1>make it very I'd have to wrap my
+
+00:19:19.434 --> 00:19:21.115
+<v Speaker 1>brain for far too much like you do
+
+00:19:21.115 --> 00:19:22.315
+<v Speaker 1>computer science
+
+00:19:23.034 --> 00:19:25.755
+<v Speaker 1>for whether this grammar's ambiguous or not. And
+
+00:19:25.755 --> 00:19:26.955
+<v Speaker 1>we don't really were running a parser in
+
+00:19:26.955 --> 00:19:28.394
+<v Speaker 1>Bash anyway. Yeah. Okay. No. Let's stick with
+
+00:19:28.394 --> 00:19:30.154
+<v Speaker 1>this. I'm really I'm I'm pretty happy. Well,
+
+00:19:30.154 --> 00:19:33.220
+<v Speaker 0>let me let me double advocate myself here.
+
+00:19:34.420 --> 00:19:35.620
+<v Speaker 0>What if we
+
+00:19:36.500 --> 00:19:38.179
+<v Speaker 0>check for the dash?
+
+00:19:38.580 --> 00:19:40.100
+<v Speaker 0>What if we check for flags?
+
+00:19:40.260 --> 00:19:42.660
+<v Speaker 0>And that means that we're working on no
+
+00:19:42.660 --> 00:19:44.740
+<v Speaker 0>name basis and anything else we would assume
+
+00:19:44.740 --> 00:19:45.300
+<v Speaker 0>is a name.
+
+00:19:47.155 --> 00:19:49.555
+<v Speaker 0>Yeah. Would there ever be a reason to
+
+00:19:49.555 --> 00:19:50.275
+<v Speaker 0>type
+
+00:19:50.355 --> 00:19:52.515
+<v Speaker 0>anything after pods that's not a name that
+
+00:19:52.515 --> 00:19:53.715
+<v Speaker 0>isn't a flag?
+
+00:19:55.795 --> 00:19:56.995
+<v Speaker 0>Mean what what do you do with a
+
+00:19:56.995 --> 00:19:59.315
+<v Speaker 0>list? Do you watch? You list dash w
+
+00:19:59.315 --> 00:20:00.595
+<v Speaker 0>dash l like
+
+00:20:01.900 --> 00:20:02.620
+<v Speaker 0>maybe
+
+00:20:02.860 --> 00:20:03.740
+<v Speaker 0>we're okay?
+
+00:20:04.380 --> 00:20:06.540
+<v Speaker 1>Yeah. There's no it doesn't take any other,
+
+00:20:06.540 --> 00:20:09.340
+<v Speaker 1>you know, non flag arguments, does it? It
+
+00:20:09.340 --> 00:20:10.140
+<v Speaker 1>doesn't take any other
+
+00:20:10.940 --> 00:20:12.780
+<v Speaker 1>I forgot what Python calls them. Other than
+
+00:20:13.740 --> 00:20:16.024
+<v Speaker 1>the command and the name.
+
+00:20:19.304 --> 00:20:20.345
+<v Speaker 0>Let's try it.
+
+00:20:20.745 --> 00:20:21.865
+<v Speaker 0>Let's try it. Let's try and make this
+
+00:20:21.865 --> 00:20:23.865
+<v Speaker 0>work. So what we wanna see now and
+
+00:20:23.865 --> 00:20:25.225
+<v Speaker 0>let me just sort of quote this out
+
+00:20:25.225 --> 00:20:27.945
+<v Speaker 0>a little bit is before we go shifting
+
+00:20:27.945 --> 00:20:30.345
+<v Speaker 0>and getting a command, we wanna establish
+
+00:20:30.900 --> 00:20:33.540
+<v Speaker 0>is the first parameter
+
+00:20:34.340 --> 00:20:35.540
+<v Speaker 0>a flag.
+
+00:20:36.500 --> 00:20:37.700
+<v Speaker 0>If so,
+
+00:20:38.900 --> 00:20:42.180
+<v Speaker 0>then what we're gonna say is that
+
+00:20:45.255 --> 00:20:46.215
+<v Speaker 0>something.
+
+00:20:47.975 --> 00:20:49.174
+<v Speaker 0>Otherwise, it's a Yeah.
+
+00:20:51.095 --> 00:20:51.815
+<v Speaker 1>If
+
+00:20:52.695 --> 00:20:53.655
+<v Speaker 1>it's a flag, I guess.
+
+00:20:56.760 --> 00:20:58.040
+<v Speaker 0>Now I'm trying to work out, do we
+
+00:20:58.040 --> 00:20:59.640
+<v Speaker 0>ever need to send flags to anything that's
+
+00:20:59.640 --> 00:21:01.080
+<v Speaker 0>not a get because what we're saying is
+
+00:21:01.080 --> 00:21:02.600
+<v Speaker 0>we are gonna assume that it's all worth
+
+00:21:02.600 --> 00:21:03.320
+<v Speaker 0>a get.
+
+00:21:03.960 --> 00:21:06.279
+<v Speaker 0>What if we wanna delete? I
+
+00:21:06.520 --> 00:21:08.680
+<v Speaker 1>don't think we do need to assume because
+
+00:21:08.680 --> 00:21:10.200
+<v Speaker 1>if we're rearranging them then you can just
+
+00:21:10.200 --> 00:21:12.025
+<v Speaker 1>put the verb on me. The get just
+
+00:21:12.025 --> 00:21:13.785
+<v Speaker 1>goes on the end. But if we
+
+00:21:14.745 --> 00:21:16.425
+<v Speaker 0>no. But if I wanna delete all pods
+
+00:21:16.425 --> 00:21:17.225
+<v Speaker 0>right now,
+
+00:21:18.905 --> 00:21:21.144
+<v Speaker 0>then it would be pods delete
+
+00:21:21.545 --> 00:21:22.424
+<v Speaker 0>all.
+
+00:21:22.665 --> 00:21:24.105
+<v Speaker 0>We would assume this is the name of
+
+00:21:24.105 --> 00:21:25.545
+<v Speaker 0>a pod. Does that work?
+
+00:21:26.450 --> 00:21:27.090
+<v Speaker 0>Yeah.
+
+00:21:28.130 --> 00:21:30.370
+<v Speaker 1>Is the capital a not all namespaces?
+
+00:21:30.610 --> 00:21:32.690
+<v Speaker 1>Need you need to say it's all, isn't
+
+00:21:32.690 --> 00:21:34.049
+<v Speaker 1>it? It's literally pods delete.
+
+00:21:34.770 --> 00:21:35.970
+<v Speaker 1>But which is a flag?
+
+00:21:36.690 --> 00:21:39.565
+<v Speaker 0>But the delete becomes before the flags. Are
+
+00:21:39.565 --> 00:21:41.885
+<v Speaker 0>are you are we now suggesting that, hey,
+
+00:21:41.885 --> 00:21:43.565
+<v Speaker 0>actually what we want to do is all
+
+00:21:43.565 --> 00:21:44.285
+<v Speaker 0>delete?
+
+00:21:44.445 --> 00:21:46.365
+<v Speaker 1>Yeah. It's not the most ergonomic thing, is
+
+00:21:46.365 --> 00:21:46.845
+<v Speaker 1>it?
+
+00:21:48.765 --> 00:21:50.525
+<v Speaker 1>Who does I think that write in the
+
+00:21:50.525 --> 00:21:53.650
+<v Speaker 0>the cube control wrongs be so complicated. So
+
+00:21:55.170 --> 00:21:56.610
+<v Speaker 1>Maybe the guys who wrote it, the people
+
+00:21:56.610 --> 00:21:57.970
+<v Speaker 1>who wrote it knew what they were doing.
+
+00:21:57.970 --> 00:21:59.970
+<v Speaker 0>Maybe it should just be delete.
+
+00:22:03.170 --> 00:22:05.965
+<v Speaker 0>Right. No. That's I'm I'm not gonna not
+
+00:22:05.965 --> 00:22:07.485
+<v Speaker 0>sticking with that. Should we maybe just try
+
+00:22:07.485 --> 00:22:09.245
+<v Speaker 1>and do this for GET?
+
+00:22:09.885 --> 00:22:11.725
+<v Speaker 1>Because I I mean, I do not delete
+
+00:22:11.885 --> 00:22:14.045
+<v Speaker 1>all pods that off. I think I'm happy
+
+00:22:14.045 --> 00:22:15.805
+<v Speaker 1>if this thing gives me some shortcuts. I
+
+00:22:15.805 --> 00:22:17.405
+<v Speaker 1>I I'm happy if this does not completely
+
+00:22:17.405 --> 00:22:19.269
+<v Speaker 1>replace Kube CTL, you see what I mean.
+
+00:22:19.430 --> 00:22:21.510
+<v Speaker 1>If it's useful shortcuts, and then if this
+
+00:22:21.510 --> 00:22:22.790
+<v Speaker 1>doesn't cover it, as long as it doesn't
+
+00:22:22.790 --> 00:22:23.830
+<v Speaker 1>do the wrong thing, as long as it
+
+00:22:23.830 --> 00:22:25.830
+<v Speaker 1>doesn't do anything dangerous, it just goes, I
+
+00:22:25.830 --> 00:22:26.950
+<v Speaker 1>don't know what that is.
+
+00:22:27.270 --> 00:22:29.190
+<v Speaker 1>Then I just go back to Kube CTL.
+
+00:22:29.990 --> 00:22:31.030
+<v Speaker 1>I don't know what you think. I think
+
+00:22:31.030 --> 00:22:31.830
+<v Speaker 1>I'd be happy with that.
+
+00:22:33.795 --> 00:22:35.875
+<v Speaker 0>Okay. Well, let's just make sure that we
+
+00:22:35.875 --> 00:22:38.275
+<v Speaker 0>have, you know, the target workflow that we
+
+00:22:38.275 --> 00:22:39.875
+<v Speaker 0>started with. Make sure that works. That's, I
+
+00:22:39.875 --> 00:22:41.715
+<v Speaker 0>mean, that to me is all that's important.
+
+00:22:41.715 --> 00:22:43.795
+<v Speaker 0>Is this is the ability to do pods,
+
+00:22:46.410 --> 00:22:47.290
+<v Speaker 0>delete,
+
+00:22:48.170 --> 00:22:48.809
+<v Speaker 0>get,
+
+00:22:49.210 --> 00:22:50.250
+<v Speaker 0>describe
+
+00:22:50.490 --> 00:22:52.330
+<v Speaker 0>and I really wanna make logs work here
+
+00:22:52.330 --> 00:22:52.970
+<v Speaker 0>too.
+
+00:22:53.210 --> 00:22:53.929
+<v Speaker 0>Okay.
+
+00:22:54.090 --> 00:22:56.090
+<v Speaker 0>So even though I know you can
+
+00:22:56.810 --> 00:22:58.650
+<v Speaker 0>get logs of other resources.
+
+00:22:59.450 --> 00:23:00.809
+<v Speaker 1>Does that work at the moment?
+
+00:23:01.050 --> 00:23:02.675
+<v Speaker 1>So it works with what we've Maybe we
+
+00:23:02.675 --> 00:23:04.995
+<v Speaker 0>actually should. Well, okay. You're right. Okay. So,
+
+00:23:06.675 --> 00:23:07.394
+<v Speaker 0>pods.
+
+00:23:08.275 --> 00:23:10.035
+<v Speaker 0>Just gonna Okay. Because we went in a
+
+00:23:10.035 --> 00:23:11.235
+<v Speaker 0>rabbit hole where we're like, oh, but the
+
+00:23:11.235 --> 00:23:12.915
+<v Speaker 0>name should come before so that I only
+
+00:23:12.915 --> 00:23:15.154
+<v Speaker 0>need to then do up Yeah. Delete.
+
+00:23:15.395 --> 00:23:16.835
+<v Speaker 1>The the way it is, it actually works
+
+00:23:16.835 --> 00:23:17.475
+<v Speaker 1>very nicely.
+
+00:23:19.470 --> 00:23:21.549
+<v Speaker 0>You're so annoying. Anyway, right.
+
+00:23:22.110 --> 00:23:23.550
+<v Speaker 1>That way it was me that suggested the
+
+00:23:23.550 --> 00:23:25.470
+<v Speaker 1>rabbit hole, actually I'm like, what we've got
+
+00:23:25.550 --> 00:23:27.710
+<v Speaker 1>what we've got works. Yeah. So now if
+
+00:23:27.710 --> 00:23:29.710
+<v Speaker 0>I wanna change this to be logs, I
+
+00:23:29.710 --> 00:23:32.750
+<v Speaker 0>am going back before this target. Yeah.
+
+00:23:34.245 --> 00:23:35.445
+<v Speaker 1>That's what I mean.
+
+00:23:39.285 --> 00:23:40.965
+<v Speaker 0>What if mean So we could swap.
+
+00:23:42.165 --> 00:23:42.804
+<v Speaker 1>The
+
+00:23:43.845 --> 00:23:45.524
+<v Speaker 1>problem with swapping them is the
+
+00:23:45.845 --> 00:23:47.380
+<v Speaker 1>yeah. Sometimes you don't wanna give a name,
+
+00:23:47.380 --> 00:23:48.580
+<v Speaker 1>sometimes you wanna give flags. I mean, we
+
+00:23:48.580 --> 00:23:50.500
+<v Speaker 0>can always just encourage.
+
+00:23:52.020 --> 00:23:53.700
+<v Speaker 1>Well, I can never remember that syntax, but
+
+00:23:53.700 --> 00:23:54.340
+<v Speaker 1>yeah, sure.
+
+00:23:56.180 --> 00:23:58.100
+<v Speaker 0>I I got something wrong, something like that
+
+00:23:58.100 --> 00:23:58.660
+<v Speaker 0>though.
+
+00:23:58.900 --> 00:24:00.340
+<v Speaker 0>But then that would work if I was
+
+00:24:00.340 --> 00:24:03.554
+<v Speaker 0>using the original syntax. Right? So like,
+
+00:24:03.555 --> 00:24:05.155
+<v Speaker 0>we still wanna identify
+
+00:24:05.875 --> 00:24:07.875
+<v Speaker 0>something cool about this interface.
+
+00:24:08.035 --> 00:24:10.035
+<v Speaker 0>So I I know why we tried to
+
+00:24:10.035 --> 00:24:12.835
+<v Speaker 0>put the command after the thing,
+
+00:24:13.930 --> 00:24:15.290
+<v Speaker 0>but it's gonna be tricky.
+
+00:24:15.610 --> 00:24:17.370
+<v Speaker 0>So this is this is speed one. Right?
+
+00:24:17.370 --> 00:24:18.330
+<v Speaker 0>We're just having a bit of Yeah. This
+
+00:24:18.330 --> 00:24:19.050
+<v Speaker 1>is okay.
+
+00:24:19.610 --> 00:24:21.530
+<v Speaker 1>Maybe we try to extend this to deployments
+
+00:24:21.530 --> 00:24:22.730
+<v Speaker 1>and stuff and then maybe we try and
+
+00:24:22.730 --> 00:24:24.250
+<v Speaker 1>get it up in crew. Maybe that's what
+
+00:24:24.250 --> 00:24:25.850
+<v Speaker 1>we should look at first.
+
+00:24:27.125 --> 00:24:28.644
+<v Speaker 1>Because once we got the framework, I mean,
+
+00:24:28.644 --> 00:24:30.245
+<v Speaker 1>somebody could come along and I mean, we
+
+00:24:30.245 --> 00:24:31.684
+<v Speaker 1>shouldn't be leaving this in bash. Right? We
+
+00:24:31.684 --> 00:24:33.844
+<v Speaker 1>probably should write it in a real language.
+
+00:24:33.845 --> 00:24:34.484
+<v Speaker 0>Why?
+
+00:24:35.445 --> 00:24:38.005
+<v Speaker 0>Yeah. Maybe we we maybe At which point,
+
+00:24:38.005 --> 00:24:39.524
+<v Speaker 1>we lean on a library. At which point,
+
+00:24:39.524 --> 00:24:41.125
+<v Speaker 1>we literally lean on, like, a a parser
+
+00:24:41.125 --> 00:24:43.500
+<v Speaker 1>library. Right? We we yak or whatever the
+
+00:24:43.500 --> 00:24:44.779
+<v Speaker 1>equivalent is for Go.
+
+00:24:46.059 --> 00:24:47.339
+<v Speaker 0>Okay.
+
+00:24:47.340 --> 00:24:47.979
+<v Speaker 0>So,
+
+00:24:49.100 --> 00:24:50.940
+<v Speaker 0>there's something we've not tackled.
+
+00:24:54.995 --> 00:24:55.955
+<v Speaker 0>KP
+
+00:24:56.035 --> 00:24:56.835
+<v Speaker 0>get
+
+00:24:57.715 --> 00:24:59.795
+<v Speaker 0>won't work anymore. So it gives them like,
+
+00:24:59.795 --> 00:25:02.195
+<v Speaker 0>because remember all the resources have aliases like
+
+00:25:02.195 --> 00:25:03.955
+<v Speaker 0>pods Oh, they do, don't you? Most of
+
+00:25:03.955 --> 00:25:06.675
+<v Speaker 1>them, yeah. Deploy, deploys, deployment.
+
+00:25:07.395 --> 00:25:07.795
+<v Speaker 1>Yeah.
+
+00:25:09.059 --> 00:25:10.419
+<v Speaker 1>Is that not gonna
+
+00:25:10.900 --> 00:25:12.099
+<v Speaker 1>Well, we would to
+
+00:25:12.659 --> 00:25:14.580
+<v Speaker 0>make sure. Yeah. Maybe we should jump to
+
+00:25:14.580 --> 00:25:17.299
+<v Speaker 0>crew now. Maybe crew provides some facility for
+
+00:25:17.299 --> 00:25:19.700
+<v Speaker 0>them injecting this with multiple names. I'm not
+
+00:25:19.700 --> 00:25:21.460
+<v Speaker 0>sure. I've never done this before either. So
+
+00:25:21.620 --> 00:25:23.380
+<v Speaker 1>Yeah. Okay. But if we can have to
+
+00:25:23.380 --> 00:25:25.355
+<v Speaker 0>say, take this fail and stick it in
+
+00:25:25.355 --> 00:25:29.034
+<v Speaker 0>the path as kubectl pods, kubectl po, kubectl
+
+00:25:29.514 --> 00:25:30.315
+<v Speaker 0>whatever.
+
+00:25:31.514 --> 00:25:34.075
+<v Speaker 1>Yeah. Either crew just just literally dumps out
+
+00:25:34.075 --> 00:25:37.195
+<v Speaker 1>multiple siblings or maybe even kubectl
+
+00:25:37.195 --> 00:25:37.995
+<v Speaker 1>has a
+
+00:25:38.530 --> 00:25:40.610
+<v Speaker 1>a metadata file. Like, they can find a
+
+00:25:40.610 --> 00:25:42.210
+<v Speaker 1>JSON file on the same path that tells
+
+00:25:42.210 --> 00:25:44.610
+<v Speaker 1>the aliases or something. Alright. So let's Okay.
+
+00:25:44.610 --> 00:25:45.010
+<v Speaker 0>Work
+
+00:25:45.410 --> 00:25:46.690
+<v Speaker 0>out what crew is.
+
+00:25:53.970 --> 00:25:56.505
+<v Speaker 1>Yeah. I assumed it did more, but maybe
+
+00:25:56.505 --> 00:25:57.225
+<v Speaker 1>it doesn't.
+
+00:25:58.184 --> 00:26:00.905
+<v Speaker 0>So discover plugins, install them on your machine
+
+00:26:00.905 --> 00:26:02.585
+<v Speaker 0>and keep them up to date.
+
+00:26:02.825 --> 00:26:03.544
+<v Speaker 0>So
+
+00:26:03.945 --> 00:26:06.025
+<v Speaker 0>the better no, that'll be for developing crew
+
+00:26:06.025 --> 00:26:06.664
+<v Speaker 0>itself.
+
+00:26:06.905 --> 00:26:08.265
+<v Speaker 0>No, distributing plugin. Okay.
+
+00:26:10.430 --> 00:26:12.590
+<v Speaker 0>Plugin naming game, best practices, we can skip
+
+00:26:12.590 --> 00:26:13.309
+<v Speaker 0>all that.
+
+00:26:15.390 --> 00:26:17.870
+<v Speaker 1>Best practices is not for us. No.
+
+00:26:20.910 --> 00:26:23.070
+<v Speaker 0>Okay. So, shall we just jump straight to
+
+00:26:23.070 --> 00:26:23.710
+<v Speaker 0>the manifest?
+
+00:26:28.115 --> 00:26:30.355
+<v Speaker 0>See what this is. Okay. Right. Okay. So
+
+00:26:30.355 --> 00:26:31.715
+<v Speaker 1>you do give it a manifest.
+
+00:26:33.075 --> 00:26:35.235
+<v Speaker 1>Of course, it's of course, it's Kubernetes style
+
+00:26:35.235 --> 00:26:36.515
+<v Speaker 1>API. Of course.
+
+00:26:38.470 --> 00:26:41.269
+<v Speaker 0>So let's call this crew.
+
+00:26:46.549 --> 00:26:47.269
+<v Speaker 0>Oh,
+
+00:26:48.390 --> 00:26:49.270
+<v Speaker 0>hates me today.
+
+00:26:53.085 --> 00:26:54.124
+<v Speaker 0>Rename
+
+00:26:54.125 --> 00:26:54.924
+<v Speaker 0>crew
+
+00:26:55.005 --> 00:26:56.284
+<v Speaker 0>dot yaml.
+
+00:26:57.565 --> 00:26:58.605
+<v Speaker 0>Alright.
+
+00:27:01.565 --> 00:27:02.205
+<v Speaker 0>So
+
+00:27:02.605 --> 00:27:04.764
+<v Speaker 0>crew Google container tools,
+
+00:27:04.924 --> 00:27:06.124
+<v Speaker 0>plugin.
+
+00:27:06.924 --> 00:27:09.450
+<v Speaker 0>The name must match the file name of
+
+00:27:09.450 --> 00:27:10.570
+<v Speaker 0>the manifest.
+
+00:27:10.570 --> 00:27:11.210
+<v Speaker 0>Right?
+
+00:27:12.490 --> 00:27:13.850
+<v Speaker 0>So we call this
+
+00:27:14.809 --> 00:27:16.649
+<v Speaker 0>the noun verb plugin.
+
+00:27:19.130 --> 00:27:21.130
+<v Speaker 0>Which means I need to rename my file.
+
+00:27:21.975 --> 00:27:22.695
+<v Speaker 1>Mhmm.
+
+00:27:23.174 --> 00:27:24.774
+<v Speaker 0>To be known
+
+00:27:25.415 --> 00:27:26.134
+<v Speaker 0>verb.
+
+00:27:27.255 --> 00:27:28.374
+<v Speaker 0>Thank you comment.
+
+00:27:29.335 --> 00:27:30.455
+<v Speaker 0>Version.
+
+00:27:31.735 --> 00:27:34.054
+<v Speaker 0>Yep. Zero zero one seems about right. Maybe
+
+00:27:34.054 --> 00:27:36.679
+<v Speaker 0>that's too mature. Alpha one. Alpha.
+
+00:27:37.800 --> 00:27:38.600
+<v Speaker 1>Yep.
+
+00:27:39.160 --> 00:27:40.200
+<v Speaker 0>Homepage.
+
+00:27:41.080 --> 00:27:43.400
+<v Speaker 0>Sure. Why not? Rawkode,
+
+00:27:43.800 --> 00:27:44.919
+<v Speaker 0>cube control,
+
+00:27:45.480 --> 00:27:46.600
+<v Speaker 0>and verb.
+
+00:27:48.680 --> 00:27:49.320
+<v Speaker 0>Description,
+
+00:27:51.825 --> 00:27:52.865
+<v Speaker 0>bringing
+
+00:27:53.105 --> 00:27:53.985
+<v Speaker 0>sanity
+
+00:27:54.145 --> 00:27:55.585
+<v Speaker 0>and composable
+
+00:27:55.825 --> 00:27:57.024
+<v Speaker 0>composability
+
+00:27:57.265 --> 00:27:58.544
+<v Speaker 0>to keep control.
+
+00:27:59.585 --> 00:28:01.265
+<v Speaker 0>I mean, don't wanna offer too much but
+
+00:28:01.265 --> 00:28:02.465
+<v Speaker 0>I feel that we are I was gonna
+
+00:28:02.465 --> 00:28:04.225
+<v Speaker 1>say important mission. Aspirational.
+
+00:28:06.100 --> 00:28:07.700
+<v Speaker 0>Let's see if I can learn to spell.
+
+00:28:08.100 --> 00:28:09.219
+<v Speaker 0>Maybe
+
+00:28:10.020 --> 00:28:11.379
+<v Speaker 0>that's just not a word.
+
+00:28:11.860 --> 00:28:13.139
+<v Speaker 0>As as for today.
+
+00:28:13.539 --> 00:28:16.020
+<v Speaker 1>Maybe you can't compose compose that stem and
+
+00:28:16.020 --> 00:28:19.620
+<v Speaker 1>suffix. Bring insanity and compose.
+
+00:28:20.684 --> 00:28:22.845
+<v Speaker 1>I like it. Like that we've composed
+
+00:28:23.085 --> 00:28:25.005
+<v Speaker 1>a fake word. Yeah. Yeah. I think it's
+
+00:28:25.005 --> 00:28:26.445
+<v Speaker 1>like I like the irony, we should keep
+
+00:28:26.445 --> 00:28:26.924
+<v Speaker 1>it.
+
+00:28:27.325 --> 00:28:28.845
+<v Speaker 0>Alright description.
+
+00:28:29.325 --> 00:28:30.124
+<v Speaker 0>Thanks.
+
+00:28:31.725 --> 00:28:34.125
+<v Speaker 0>Not gonna worry about that. Okay. The platforms
+
+00:28:34.125 --> 00:28:36.880
+<v Speaker 0>should work on anything that's portable POSIX compatible
+
+00:28:36.880 --> 00:28:39.279
+<v Speaker 0>bash scripts. See? Exactly.
+
+00:28:39.280 --> 00:28:41.680
+<v Speaker 0>Yeah. Go with requires to compare this multiple
+
+00:28:41.680 --> 00:28:44.000
+<v Speaker 0>times. Now we are We're even using user
+
+00:28:44.000 --> 00:28:46.640
+<v Speaker 1>user bin m. Mean, we're Yeah. Safe.
+
+00:28:47.040 --> 00:28:49.360
+<v Speaker 0>We'll even work on next, which is good.
+
+00:28:49.840 --> 00:28:50.000
+<v Speaker 0>Yeah.
+
+00:28:50.815 --> 00:28:51.695
+<v Speaker 0>URI.
+
+00:28:51.695 --> 00:28:52.895
+<v Speaker 0>Oh, we haven't really
+
+00:28:53.935 --> 00:28:55.775
+<v Speaker 1>Okay. So they're using GitHub. Yeah. They're using
+
+00:28:55.775 --> 00:28:57.455
+<v Speaker 1>GitHub releases.
+
+00:28:57.455 --> 00:28:59.135
+<v Speaker 1>That's fair enough. And there we go. We
+
+00:28:59.215 --> 00:29:01.375
+<v Speaker 0>have the ability to deploy the fails.
+
+00:29:01.935 --> 00:29:03.455
+<v Speaker 1>Oh, we we could have used that.
+
+00:29:06.020 --> 00:29:08.420
+<v Speaker 1>Yeah. Dot slash. I wonder where it's I
+
+00:29:08.420 --> 00:29:10.259
+<v Speaker 1>assume it prefixes that path.
+
+00:29:12.179 --> 00:29:14.179
+<v Speaker 1>A bin specifies the path of plug in
+
+00:29:14.179 --> 00:29:16.179
+<v Speaker 1>executable. Oh, amongst alt right.
+
+00:29:16.660 --> 00:29:17.059
+<v Speaker 1>Oh.
+
+00:29:17.875 --> 00:29:19.554
+<v Speaker 1>So I think what it's
+
+00:29:19.635 --> 00:29:22.115
+<v Speaker 1>doing is I think those are passed within,
+
+00:29:22.115 --> 00:29:23.394
+<v Speaker 1>like, a sandbox,
+
+00:29:23.635 --> 00:29:25.315
+<v Speaker 1>and then that bin key at the bottom
+
+00:29:25.315 --> 00:29:27.235
+<v Speaker 1>is telling it which one to symlink into
+
+00:29:27.235 --> 00:29:28.114
+<v Speaker 1>user local.
+
+00:29:29.955 --> 00:29:32.034
+<v Speaker 0>Does that mean we need a manifest for
+
+00:29:32.034 --> 00:29:32.754
+<v Speaker 0>every
+
+00:29:32.835 --> 00:29:33.635
+<v Speaker 0>sub command?
+
+00:29:34.330 --> 00:29:36.249
+<v Speaker 1>It doesn't look like it.
+
+00:29:37.929 --> 00:29:41.129
+<v Speaker 0>Well, I mean, that's not gonna work.
+
+00:29:41.850 --> 00:29:43.049
+<v Speaker 1>No. It's
+
+00:29:45.210 --> 00:29:47.605
+<v Speaker 0>So we would have to provide the cube
+
+00:29:47.605 --> 00:29:50.965
+<v Speaker 0>control known plug in, which then you'd have
+
+00:29:50.965 --> 00:29:53.684
+<v Speaker 0>to alias cube control known to cube control.
+
+00:29:53.684 --> 00:29:55.284
+<v Speaker 0>We we probably would have to go down
+
+00:29:55.284 --> 00:29:56.245
+<v Speaker 0>that encapsulated
+
+00:29:56.245 --> 00:29:58.325
+<v Speaker 0>route to provide this. That's all I can
+
+00:29:58.325 --> 00:29:59.765
+<v Speaker 1>think of at the moment. The problem with
+
+00:29:59.765 --> 00:30:01.280
+<v Speaker 1>that is it then needs to cover the
+
+00:30:01.280 --> 00:30:03.440
+<v Speaker 1>full surface area of cube control.
+
+00:30:04.400 --> 00:30:06.480
+<v Speaker 1>It can't just be shortcuts unless
+
+00:30:06.480 --> 00:30:08.880
+<v Speaker 1>it just unless we write the, quote, unquote,
+
+00:30:08.880 --> 00:30:10.799
+<v Speaker 1>parser fairly well so that it just like,
+
+00:30:10.799 --> 00:30:12.400
+<v Speaker 1>if it doesn't recognize the sequence, it bails
+
+00:30:12.400 --> 00:30:14.014
+<v Speaker 1>out and it calls
+
+00:30:14.335 --> 00:30:17.054
+<v Speaker 1>underlying cube control with exactly the set of
+
+00:30:17.054 --> 00:30:18.174
+<v Speaker 1>arguments you've given it.
+
+00:30:18.575 --> 00:30:20.335
+<v Speaker 0>Well, I I think it I I don't
+
+00:30:20.335 --> 00:30:22.415
+<v Speaker 0>think we need a parser. I mean, all
+
+00:30:22.415 --> 00:30:25.295
+<v Speaker 0>we're doing is swapping the first argument around.
+
+00:30:25.679 --> 00:30:26.879
+<v Speaker 0>I mean, we we would have to inject
+
+00:30:26.879 --> 00:30:28.719
+<v Speaker 0>something in here. So like,
+
+00:30:29.279 --> 00:30:30.559
+<v Speaker 0>it would be That's why it's
+
+00:30:32.000 --> 00:30:32.639
+<v Speaker 1>yeah.
+
+00:30:33.039 --> 00:30:35.120
+<v Speaker 1>So that's why it's quote unquote parser. Quote
+
+00:30:35.120 --> 00:30:37.279
+<v Speaker 0>unquote parser. Okay. I'm just thinking if you
+
+00:30:37.279 --> 00:30:38.159
+<v Speaker 1>alias
+
+00:30:38.159 --> 00:30:40.965
+<v Speaker 1>kubectl two, kubectl noun verb,
+
+00:30:41.445 --> 00:30:43.525
+<v Speaker 1>kubectl noun verb then has to understand everything
+
+00:30:43.525 --> 00:30:45.685
+<v Speaker 1>you could ever possibly pass to kubectl. Right?
+
+00:30:45.685 --> 00:30:47.765
+<v Speaker 1>Either understand it or realize that it doesn't
+
+00:30:47.765 --> 00:30:49.845
+<v Speaker 1>understand it and call the underlying one. I
+
+00:30:49.845 --> 00:30:51.525
+<v Speaker 0>mean, the only constraint on people using this
+
+00:30:51.525 --> 00:30:53.365
+<v Speaker 0>program would be that you no longer could
+
+00:30:53.365 --> 00:30:54.950
+<v Speaker 0>put your name as base in the start.
+
+00:30:54.950 --> 00:30:58.070
+<v Speaker 0>You would have to always do pods get
+
+00:30:58.070 --> 00:30:59.590
+<v Speaker 0>and then do flags so that it can
+
+00:30:59.590 --> 00:31:00.789
+<v Speaker 0>swap these two around.
+
+00:31:01.190 --> 00:31:03.030
+<v Speaker 1>But there's other weird stuff on there's like
+
+00:31:03.030 --> 00:31:06.070
+<v Speaker 1>QCTL API resources. Right? And
+
+00:31:07.035 --> 00:31:09.115
+<v Speaker 1>all of these other weird little commands that
+
+00:31:09.115 --> 00:31:09.995
+<v Speaker 1>you forget.
+
+00:31:10.715 --> 00:31:11.434
+<v Speaker 1>Exec
+
+00:31:12.235 --> 00:31:13.835
+<v Speaker 1>and all of that stuff that don't follow
+
+00:31:13.835 --> 00:31:15.755
+<v Speaker 1>this because they're not CRUD operations.
+
+00:31:16.155 --> 00:31:18.635
+<v Speaker 1>There's all there's all the basically, the RPC
+
+00:31:19.035 --> 00:31:19.675
+<v Speaker 1>methods.
+
+00:31:21.280 --> 00:31:21.919
+<v Speaker 0>Yeah.
+
+00:31:22.480 --> 00:31:24.480
+<v Speaker 0>It's getting more complicated than I was hoping
+
+00:31:24.480 --> 00:31:27.280
+<v Speaker 0>for, wasn't it? So I've got, I've got
+
+00:31:27.280 --> 00:31:29.120
+<v Speaker 1>k. I use KubeCTL so much. I've got
+
+00:31:29.120 --> 00:31:30.720
+<v Speaker 1>k alias to KubeCTL. Maybe
+
+00:31:31.680 --> 00:31:34.640
+<v Speaker 1>we just alias k or KNV
+
+00:31:34.640 --> 00:31:37.415
+<v Speaker 1>to KubeCTL noun verb. And then that's your
+
+00:31:37.415 --> 00:31:38.534
+<v Speaker 1>set of shortcuts
+
+00:31:40.215 --> 00:31:41.575
+<v Speaker 1>right on your fingertips.
+
+00:31:44.295 --> 00:31:45.335
+<v Speaker 0>Well, yeah.
+
+00:31:46.054 --> 00:31:48.375
+<v Speaker 0>Okay. So this is a bit of fun
+
+00:31:48.375 --> 00:31:50.295
+<v Speaker 0>to understand how crew works anyway. Right? I
+
+00:31:50.295 --> 00:31:52.215
+<v Speaker 0>mean, we're not actually trying to
+
+00:31:52.880 --> 00:31:54.560
+<v Speaker 0>to solve this problem. I mean, I do
+
+00:31:54.560 --> 00:31:56.000
+<v Speaker 0>wanna make my life a little bit easier.
+
+00:31:56.000 --> 00:31:57.360
+<v Speaker 1>So You might not be.
+
+00:31:58.320 --> 00:32:00.320
+<v Speaker 1>Yeah. No. I'm getting I'm getting carried away.
+
+00:32:00.640 --> 00:32:03.520
+<v Speaker 0>Should we just fork cube control and just
+
+00:32:04.240 --> 00:32:04.720
+<v Speaker 0>fix it?
+
+00:32:06.154 --> 00:32:07.034
+<v Speaker 1>Okay.
+
+00:32:07.034 --> 00:32:08.475
+<v Speaker 1>What what should we learn next? Okay. Maybe
+
+00:32:08.475 --> 00:32:09.595
+<v Speaker 1>it just does pods for now. Should we
+
+00:32:09.595 --> 00:32:10.554
+<v Speaker 1>should we try to publish
+
+00:32:11.195 --> 00:32:13.195
+<v Speaker 1>it? Let's just publish it and see if
+
+00:32:13.195 --> 00:32:14.794
+<v Speaker 0>we can install it through crew.
+
+00:32:15.595 --> 00:32:16.875
+<v Speaker 1>That would be really cool. I'll I'll try
+
+00:32:16.875 --> 00:32:18.235
+<v Speaker 1>to install it over here. Yeah. That'd be
+
+00:32:18.235 --> 00:32:19.355
+<v Speaker 1>really cool. Okay. Let's do that.
+
+00:32:20.429 --> 00:32:22.190
+<v Speaker 0>So this is just our pods helper, we
+
+00:32:22.190 --> 00:32:24.109
+<v Speaker 0>don't need to solve anything else. We can,
+
+00:32:24.110 --> 00:32:26.269
+<v Speaker 0>you know if we're feeling nice, we'll add
+
+00:32:26.269 --> 00:32:27.149
+<v Speaker 0>deployments
+
+00:32:27.309 --> 00:32:30.029
+<v Speaker 0>services. The basic ones, right? Nobody won't handle
+
+00:32:30.029 --> 00:32:32.750
+<v Speaker 0>any CRDs, custom resources or special commands. So,
+
+00:32:34.795 --> 00:32:36.955
+<v Speaker 0>that means we have our noun verb here.
+
+00:32:36.955 --> 00:32:38.715
+<v Speaker 0>So I'm I'm gonna have to push this
+
+00:32:38.715 --> 00:32:41.674
+<v Speaker 0>to get hub. So we need a repository,
+
+00:32:41.915 --> 00:32:44.475
+<v Speaker 0>we need a release, so we need a
+
+00:32:44.475 --> 00:32:46.075
+<v Speaker 0>tag and then we'll need to fill in
+
+00:32:46.075 --> 00:32:47.429
+<v Speaker 0>these values. So,
+
+00:32:48.309 --> 00:32:50.309
+<v Speaker 0>like all good new projects,
+
+00:32:50.549 --> 00:32:51.590
+<v Speaker 0>get in it.
+
+00:32:53.669 --> 00:32:55.590
+<v Speaker 0>I thought that was the default now. Get
+
+00:32:55.590 --> 00:32:56.309
+<v Speaker 0>in it.
+
+00:32:56.710 --> 00:32:58.630
+<v Speaker 1>There it is. What did it say?
+
+00:33:00.405 --> 00:33:03.125
+<v Speaker 0>Oh, no. I have to set config global
+
+00:33:03.205 --> 00:33:05.684
+<v Speaker 0>init. Alright. You just get it's global config.
+
+00:33:06.485 --> 00:33:08.725
+<v Speaker 0>Okay. Get init. There we go.
+
+00:33:09.445 --> 00:33:10.085
+<v Speaker 0>And
+
+00:33:10.565 --> 00:33:11.605
+<v Speaker 0>get at
+
+00:33:12.005 --> 00:33:13.525
+<v Speaker 0>our readme, which has nothing,
+
+00:33:14.580 --> 00:33:17.539
+<v Speaker 0>and our alias, our sub command.
+
+00:33:17.700 --> 00:33:19.380
+<v Speaker 0>Let's get that pushed up first and tag
+
+00:33:19.380 --> 00:33:19.940
+<v Speaker 0>it.
+
+00:33:20.260 --> 00:33:22.019
+<v Speaker 0>So, feat fixing
+
+00:33:23.059 --> 00:33:25.139
+<v Speaker 0>the pod insanity.
+
+00:33:25.700 --> 00:33:27.700
+<v Speaker 0>I'm loving the hyperbole with this episode. I've
+
+00:33:27.700 --> 00:33:28.660
+<v Speaker 0>got It's great, isn't it?
+
+00:33:32.265 --> 00:33:33.865
+<v Speaker 1>Keep con keynote right here.
+
+00:33:34.505 --> 00:33:36.505
+<v Speaker 1>We fixed it. We saved you. All we
+
+00:33:36.505 --> 00:33:39.144
+<v Speaker 1>saved everybody a hundred thousand keystrokes a year.
+
+00:33:39.625 --> 00:33:40.105
+<v Speaker 0>Exactly.
+
+00:33:43.529 --> 00:33:46.169
+<v Speaker 0>Right. And you're positive. What's that? Oh, is
+
+00:33:46.169 --> 00:33:48.169
+<v Speaker 0>that just the theme selector? I thought it
+
+00:33:48.169 --> 00:33:49.529
+<v Speaker 0>was a new feature. Okay.
+
+00:33:52.409 --> 00:33:54.490
+<v Speaker 0>Cube CTL
+
+00:33:55.385 --> 00:33:56.264
+<v Speaker 0>noun
+
+00:33:56.585 --> 00:33:57.304
+<v Speaker 0>verb.
+
+00:33:58.265 --> 00:34:00.905
+<v Speaker 0>I'm hoping there's something in the crew syntax
+
+00:34:00.905 --> 00:34:02.745
+<v Speaker 0>where we can deploy multiple plugins in a
+
+00:34:02.745 --> 00:34:03.945
+<v Speaker 0>single, but
+
+00:34:04.265 --> 00:34:06.105
+<v Speaker 0>if not, I'll be able to plug later.
+
+00:34:06.679 --> 00:34:08.440
+<v Speaker 0>So this is gonna be public,
+
+00:34:09.639 --> 00:34:11.400
+<v Speaker 0>you don't wanna know,
+
+00:34:11.880 --> 00:34:12.600
+<v Speaker 0>and
+
+00:34:13.000 --> 00:34:13.640
+<v Speaker 0>go.
+
+00:34:17.560 --> 00:34:18.760
+<v Speaker 0>Let's copy this.
+
+00:34:22.734 --> 00:34:24.895
+<v Speaker 0>PERSH origin main.
+
+00:34:24.895 --> 00:34:25.295
+<v Speaker 0>Yeah.
+
+00:34:28.335 --> 00:34:29.135
+<v Speaker 0>Fingerprint.
+
+00:34:29.135 --> 00:34:29.614
+<v Speaker 0>Now
+
+00:34:33.855 --> 00:34:35.054
+<v Speaker 0>we wanna tag this.
+
+00:34:36.250 --> 00:34:39.450
+<v Speaker 0>0Dot0Dot1AlphaAlpha1.
+
+00:34:40.890 --> 00:34:42.650
+<v Speaker 1>It's hyperbole and then it's
+
+00:34:42.810 --> 00:34:44.890
+<v Speaker 1>straight up fraud, which would be calling this
+
+00:34:44.890 --> 00:34:45.850
+<v Speaker 1>a v one.
+
+00:34:47.690 --> 00:34:49.210
+<v Speaker 0>Yeah. You're right.
+
+00:34:50.250 --> 00:34:51.770
+<v Speaker 0>Push the tag
+
+00:34:52.145 --> 00:34:55.585
+<v Speaker 0>and let's refresh this. So we should have
+
+00:34:56.304 --> 00:34:57.505
+<v Speaker 0>new release.
+
+00:34:57.905 --> 00:35:00.385
+<v Speaker 0>I've
+
+00:35:00.385 --> 00:35:01.745
+<v Speaker 0>never done a release before.
+
+00:35:01.984 --> 00:35:02.705
+<v Speaker 0>Zero.
+
+00:35:02.785 --> 00:35:04.545
+<v Speaker 1>Oh, yeah. No. It's cool. Yeah. You see
+
+00:35:04.545 --> 00:35:05.984
+<v Speaker 1>that drop pick that from the drop down.
+
+00:35:07.740 --> 00:35:10.220
+<v Speaker 1>And it should make it from the yeah.
+
+00:35:10.300 --> 00:35:12.220
+<v Speaker 1>It should make it from that tag.
+
+00:35:14.380 --> 00:35:16.380
+<v Speaker 1>Yeah. There you go. So on the left
+
+00:35:16.540 --> 00:35:17.660
+<v Speaker 1>on the right is the release name. On
+
+00:35:17.660 --> 00:35:19.820
+<v Speaker 1>the left is the the tag it's associated
+
+00:35:19.820 --> 00:35:20.140
+<v Speaker 1>with.
+
+00:35:20.785 --> 00:35:23.265
+<v Speaker 0>They just copy the length of this tarzip.
+
+00:35:23.265 --> 00:35:24.625
+<v Speaker 1>Oh, yeah. I was thinking we would actually
+
+00:35:24.625 --> 00:35:26.545
+<v Speaker 1>have to make that release artifact, but it's
+
+00:35:26.625 --> 00:35:28.225
+<v Speaker 1>what we want is exactly just the zip
+
+00:35:28.225 --> 00:35:29.745
+<v Speaker 1>content to that repo. Right?
+
+00:35:30.465 --> 00:35:32.625
+<v Speaker 0>Yeah. I wanted the shaft, so let's just
+
+00:35:32.625 --> 00:35:33.585
+<v Speaker 0>download that.
+
+00:35:37.319 --> 00:35:40.680
+<v Speaker 0>Curl FSSL.
+
+00:35:40.760 --> 00:35:41.160
+<v Speaker 1>Yeah.
+
+00:35:48.445 --> 00:35:50.125
+<v Speaker 1>Did
+
+00:35:50.125 --> 00:35:51.965
+<v Speaker 1>anything come down? Nothing came down.
+
+00:35:52.925 --> 00:35:54.045
+<v Speaker 0>TTZ.
+
+00:35:55.645 --> 00:35:56.204
+<v Speaker 0>There we go.
+
+00:36:00.140 --> 00:36:01.340
+<v Speaker 0>Yeah,
+
+00:36:04.300 --> 00:36:04.940
+<v Speaker 0>what?
+
+00:36:05.180 --> 00:36:06.380
+<v Speaker 0>I would learn how to set it just
+
+00:36:06.380 --> 00:36:07.500
+<v Speaker 0>to Sha256.
+
+00:36:07.500 --> 00:36:09.580
+<v Speaker 1>Sha 2 5 6. Yeah, exactly.
+
+00:36:10.060 --> 00:36:10.940
+<v Speaker 1>I'm
+
+00:36:10.940 --> 00:36:12.460
+<v Speaker 1>not But now I'm gonna learn how to
+
+00:36:12.460 --> 00:36:14.555
+<v Speaker 0>work my Mac. Let's just see what gives
+
+00:36:14.555 --> 00:36:16.315
+<v Speaker 0>me then. What
+
+00:36:17.835 --> 00:36:19.515
+<v Speaker 1>is that? What does the man page say
+
+00:36:19.515 --> 00:36:20.315
+<v Speaker 1>that is?
+
+00:36:23.195 --> 00:36:24.555
+<v Speaker 1>5.thirty.
+
+00:36:24.875 --> 00:36:26.395
+<v Speaker 0>Print or check Shasms.
+
+00:36:27.980 --> 00:36:30.940
+<v Speaker 0>Oh, so we can specify the algorithm default.
+
+00:36:30.940 --> 00:36:32.380
+<v Speaker 0>We're getting one. Yeah. We don't want sha
+
+00:36:32.380 --> 00:36:34.619
+<v Speaker 0>one here. Right? We want a 256 probably.
+
+00:36:34.619 --> 00:36:36.859
+<v Speaker 1>We want it to specified. Yeah. Did. Okay.
+
+00:36:36.940 --> 00:36:37.740
+<v Speaker 1>Yeah. So
+
+00:36:38.059 --> 00:36:39.820
+<v Speaker 0>DashA256.
+
+00:36:40.619 --> 00:36:42.625
+<v Speaker 1>I'm just intrigued. I'm gonna look it up
+
+00:36:42.625 --> 00:36:45.265
+<v Speaker 1>now. That looks better. Here we go. Oh,
+
+00:36:45.265 --> 00:36:47.185
+<v Speaker 1>I've got a sha two five six on
+
+00:36:47.424 --> 00:36:48.385
+<v Speaker 1>my Mac.
+
+00:36:48.785 --> 00:36:50.625
+<v Speaker 0>I'm sure it's probably installed.
+
+00:36:50.625 --> 00:36:52.545
+<v Speaker 0>Like I I took the winter
+
+00:36:52.545 --> 00:36:54.704
+<v Speaker 0>break just to wipe this thing and like
+
+00:36:54.860 --> 00:36:56.620
+<v Speaker 0>rebuild my dot file. All my dot files
+
+00:36:56.620 --> 00:36:57.980
+<v Speaker 0>are up in Linux. I've been using Linux
+
+00:36:57.980 --> 00:37:00.380
+<v Speaker 0>since I was 16 and this new role,
+
+00:37:00.380 --> 00:37:01.900
+<v Speaker 0>they gave me a Mac and I've been
+
+00:37:02.220 --> 00:37:03.580
+<v Speaker 0>I've been trying to make the best of
+
+00:37:03.580 --> 00:37:04.700
+<v Speaker 0>it, shall we say.
+
+00:37:05.100 --> 00:37:06.860
+<v Speaker 1>I'm impressed you've stayed off because I yeah.
+
+00:37:06.860 --> 00:37:08.265
+<v Speaker 1>I've been using Linux for about the same
+
+00:37:08.265 --> 00:37:09.704
+<v Speaker 1>amount of time. I've got my I think
+
+00:37:09.704 --> 00:37:11.224
+<v Speaker 1>we're about the same age. I got my
+
+00:37:11.224 --> 00:37:13.625
+<v Speaker 1>dot files in in gits, right, on GitHub.
+
+00:37:13.625 --> 00:37:16.025
+<v Speaker 1>It's all beautiful. And then, yeah, I've I've
+
+00:37:16.025 --> 00:37:17.704
+<v Speaker 1>not been able to to resist the Macs
+
+00:37:17.704 --> 00:37:19.785
+<v Speaker 1>for for so long. Companies keep giving me
+
+00:37:19.620 --> 00:37:21.380
+<v Speaker 1>them. So many of my dot files are
+
+00:37:21.380 --> 00:37:22.980
+<v Speaker 1>now full of if I was Darwin.
+
+00:37:23.060 --> 00:37:24.820
+<v Speaker 1>Do something do something weird.
+
+00:37:24.980 --> 00:37:25.540
+<v Speaker 0>Yep.
+
+00:37:27.460 --> 00:37:29.540
+<v Speaker 0>Alright. Let's let's get this working. So we're
+
+00:37:29.540 --> 00:37:31.940
+<v Speaker 0>almost there. Can feel it. So from
+
+00:37:32.260 --> 00:37:34.820
+<v Speaker 0>I'm assuming this plugin probably just has a
+
+00:37:34.820 --> 00:37:37.975
+<v Speaker 0>directory unlike ours. Right? So let's just check
+
+00:37:37.975 --> 00:37:38.775
+<v Speaker 0>that out.
+
+00:37:39.095 --> 00:37:41.415
+<v Speaker 0>When in doubt, pull up the repo.
+
+00:37:43.495 --> 00:37:45.495
+<v Speaker 0>There we go. I'm assuming they've got a
+
+00:37:45.495 --> 00:37:47.495
+<v Speaker 0>directory called no, they don't.
+
+00:37:47.575 --> 00:37:49.180
+<v Speaker 0>That's annoying. No. I think it's
+
+00:37:51.100 --> 00:37:52.620
+<v Speaker 1>Well, this is fine, right? Because it's literally
+
+00:37:52.620 --> 00:37:54.140
+<v Speaker 1>just gonna be in the I I assume
+
+00:37:54.140 --> 00:37:55.820
+<v Speaker 1>they just extract the zip into the sandbox
+
+00:37:55.820 --> 00:37:57.980
+<v Speaker 1>directory. Look at that. There's no bin file.
+
+00:37:57.980 --> 00:37:59.260
+<v Speaker 0>It's just from star.
+
+00:38:01.820 --> 00:38:02.460
+<v Speaker 1>Nice.
+
+00:38:03.420 --> 00:38:03.900
+<v Speaker 1>Okay.
+
+00:38:04.545 --> 00:38:06.305
+<v Speaker 0>I feel like we're onto a winner here.
+
+00:38:06.305 --> 00:38:08.065
+<v Speaker 0>So Yeah. This might work. We might have
+
+00:38:08.065 --> 00:38:09.585
+<v Speaker 1>to read the docs, but let's try it.
+
+00:38:10.305 --> 00:38:12.465
+<v Speaker 0>So fails from to.
+
+00:38:17.665 --> 00:38:19.400
+<v Speaker 0>Why is not gonna be able to fix
+
+00:38:19.400 --> 00:38:19.960
+<v Speaker 0>that?
+
+00:38:22.839 --> 00:38:23.720
+<v Speaker 0>There we go.
+
+00:38:24.119 --> 00:38:25.960
+<v Speaker 0>And we just want all
+
+00:38:26.839 --> 00:38:28.599
+<v Speaker 0>Oh, so I think it's extracting it into
+
+00:38:28.599 --> 00:38:31.515
+<v Speaker 0>this directory, isn't it? That's what's happening. Okay,
+
+00:38:31.515 --> 00:38:32.875
+<v Speaker 0>so kubectl
+
+00:38:33.835 --> 00:38:37.035
+<v Speaker 1>Oh yeah, okay. And verb star star
+
+00:38:37.755 --> 00:38:40.395
+<v Speaker 0>dot, just describe the dot SH's and stick
+
+00:38:40.395 --> 00:38:42.155
+<v Speaker 0>them into whatever the dot is
+
+00:38:42.555 --> 00:38:43.755
+<v Speaker 0>and see if we can get away with
+
+00:38:43.755 --> 00:38:43.915
+<v Speaker 0>it.
+
+00:38:44.940 --> 00:38:45.660
+<v Speaker 1>Yeah.
+
+00:38:47.500 --> 00:38:49.180
+<v Speaker 0>That may be enough.
+
+00:38:49.340 --> 00:38:52.300
+<v Speaker 0>So I'm gonna I'm feeling brave so
+
+00:38:53.180 --> 00:38:55.099
+<v Speaker 1>Just on git, I don't know, let's let's
+
+00:38:55.099 --> 00:38:55.820
+<v Speaker 1>work it out.
+
+00:38:56.300 --> 00:38:58.859
+<v Speaker 1>I wonder if our zip's got a prefix
+
+00:38:58.859 --> 00:39:01.795
+<v Speaker 1>in it the way GitHub makes it. We'll
+
+00:39:01.795 --> 00:39:03.395
+<v Speaker 1>find out. So we're gonna add the crew
+
+00:39:03.395 --> 00:39:04.355
+<v Speaker 0>manifest.
+
+00:39:04.675 --> 00:39:06.835
+<v Speaker 0>We're gonna tag us as alpha two and
+
+00:39:06.835 --> 00:39:08.435
+<v Speaker 0>we're gonna push everything
+
+00:39:10.755 --> 00:39:12.530
+<v Speaker 0>and create a new release. Is there a
+
+00:39:12.530 --> 00:39:13.970
+<v Speaker 0>way for me just to create
+
+00:39:14.210 --> 00:39:16.610
+<v Speaker 0>releases from tags? Is that not something GitHub
+
+00:39:16.610 --> 00:39:17.170
+<v Speaker 0>does?
+
+00:39:18.050 --> 00:39:19.810
+<v Speaker 1>Not out of way. GitHub actions would be
+
+00:39:19.810 --> 00:39:21.090
+<v Speaker 1>the way to set that up.
+
+00:39:22.210 --> 00:39:23.170
+<v Speaker 1>Not out of the box.
+
+00:39:23.934 --> 00:39:24.735
+<v Speaker 0>Okay.
+
+00:39:24.815 --> 00:39:25.775
+<v Speaker 0>New
+
+00:39:26.734 --> 00:39:28.975
+<v Speaker 0>alpha two target man
+
+00:39:29.055 --> 00:39:30.895
+<v Speaker 0>pre release publish.
+
+00:39:34.174 --> 00:39:36.255
+<v Speaker 1>So normally, obviously, you'd actually have to make
+
+00:39:36.255 --> 00:39:38.410
+<v Speaker 1>those. It it zips up the sources those
+
+00:39:38.410 --> 00:39:40.250
+<v Speaker 1>two like default assets and obviously you normally
+
+00:39:40.250 --> 00:39:41.930
+<v Speaker 1>actually have to do like a build step.
+
+00:39:41.930 --> 00:39:42.490
+<v Speaker 1>Right?
+
+00:39:42.810 --> 00:39:44.490
+<v Speaker 1>And kind of publish assets
+
+00:39:44.570 --> 00:39:45.930
+<v Speaker 1>there. Yeah. But yeah, we get we get
+
+00:39:45.930 --> 00:39:47.850
+<v Speaker 1>we get to win because we've just got
+
+00:39:47.850 --> 00:39:50.010
+<v Speaker 1>just the interpreted code is what we want.
+
+00:39:50.010 --> 00:39:51.370
+<v Speaker 0>I feel that we got quite lucky by
+
+00:39:51.370 --> 00:39:53.225
+<v Speaker 0>just saying let's hack this together and the
+
+00:39:53.225 --> 00:39:56.265
+<v Speaker 0>shell script instead of actually Yeah. Go because
+
+00:39:56.265 --> 00:39:58.825
+<v Speaker 0>that was not the default. Yeah. It was.
+
+00:39:58.825 --> 00:40:00.425
+<v Speaker 1>Yeah. I was like, we're gonna have to,
+
+00:40:00.425 --> 00:40:01.385
+<v Speaker 1>you know, we're have to import all the
+
+00:40:01.385 --> 00:40:04.665
+<v Speaker 1>client go packages, call it's KubeCTL packages, sorry,
+
+00:40:04.665 --> 00:40:07.785
+<v Speaker 1>call it's internal API, you know, find it's
+
+00:40:07.070 --> 00:40:09.150
+<v Speaker 1>four kit, find it's parser, rip it out.
+
+00:40:09.150 --> 00:40:10.670
+<v Speaker 1>And I was gonna spend all weekend like,
+
+00:40:10.670 --> 00:40:11.790
+<v Speaker 1>preparing for this and then I was too
+
+00:40:11.790 --> 00:40:12.430
+<v Speaker 1>busy.
+
+00:40:13.390 --> 00:40:15.390
+<v Speaker 1>Here we are. I think we're we're on
+
+00:40:15.390 --> 00:40:16.830
+<v Speaker 0>to a winner here. So we now have
+
+00:40:16.830 --> 00:40:18.430
+<v Speaker 0>alpha two now.
+
+00:40:18.830 --> 00:40:21.470
+<v Speaker 0>How do we tell crew about it? So
+
+00:40:22.315 --> 00:40:23.915
+<v Speaker 1>let's Yeah. How do we actually publish this
+
+00:40:23.915 --> 00:40:25.035
+<v Speaker 1>to their registry?
+
+00:40:25.515 --> 00:40:27.115
+<v Speaker 0>And are they gonna let us? I mean
+
+00:40:28.235 --> 00:40:30.715
+<v Speaker 1>Yeah. I mean, we maybe have to you
+
+00:40:30.875 --> 00:40:32.555
+<v Speaker 1>we probably have to raise a PR on
+
+00:40:32.555 --> 00:40:34.635
+<v Speaker 1>k slash k or something to be like
+
+00:40:34.635 --> 00:40:35.355
+<v Speaker 1>acknowledged.
+
+00:40:35.640 --> 00:40:37.960
+<v Speaker 0>Oh, I don't think it'll be KK shit.
+
+00:40:37.960 --> 00:40:40.039
+<v Speaker 0>I mean, well Maybe not KK. Testing plugin.
+
+00:40:40.039 --> 00:40:42.119
+<v Speaker 0>Let's do local. Right? There we go. Yeah.
+
+00:40:42.119 --> 00:40:42.599
+<v Speaker 1>Okay.
+
+00:40:44.760 --> 00:40:45.880
+<v Speaker 1>I need okay.
+
+00:40:47.720 --> 00:40:49.319
+<v Speaker 0>I don't even think I have do I
+
+00:40:49.319 --> 00:40:51.855
+<v Speaker 0>have crew? No. So let's if if you
+
+00:40:51.855 --> 00:40:52.735
+<v Speaker 1>got crew.
+
+00:40:55.055 --> 00:40:57.615
+<v Speaker 1>It's Maybe install another or something.
+
+00:40:58.655 --> 00:41:00.015
+<v Speaker 0>We're about to find out. Maybe
+
+00:41:01.055 --> 00:41:03.215
+<v Speaker 1>install another plug in just to find out
+
+00:41:03.215 --> 00:41:04.655
+<v Speaker 1>where it and then use which to find
+
+00:41:04.655 --> 00:41:06.290
+<v Speaker 1>out where it puts it, so we can
+
+00:41:06.290 --> 00:41:08.450
+<v Speaker 1>change ours as being actually sort of installed.
+
+00:41:09.970 --> 00:41:12.050
+<v Speaker 0>Alright. Zero four o, that looks like a
+
+00:41:12.050 --> 00:41:13.730
+<v Speaker 0>Kubernetes project, so.
+
+00:41:15.250 --> 00:41:16.850
+<v Speaker 1>Yeah. I've got a few of these plugins,
+
+00:41:16.850 --> 00:41:17.170
+<v Speaker 1>so.
+
+00:41:20.135 --> 00:41:22.535
+<v Speaker 0>Why is that not in my path?
+
+00:41:24.135 --> 00:41:25.815
+<v Speaker 0>Let's see if it is if I do
+
+00:41:25.815 --> 00:41:26.215
+<v Speaker 0>this.
+
+00:41:31.220 --> 00:41:33.060
+<v Speaker 0>Is it a plugin itself?
+
+00:41:33.380 --> 00:41:36.020
+<v Speaker 0>Or it is? Yeah, it is. Yeah, it
+
+00:41:36.020 --> 00:41:36.500
+<v Speaker 1>is.
+
+00:41:36.980 --> 00:41:39.220
+<v Speaker 1>And they go in Yeah, right. They go
+
+00:41:39.220 --> 00:41:40.100
+<v Speaker 1>in home
+
+00:41:40.420 --> 00:41:41.619
+<v Speaker 1>dot crew
+
+00:41:42.339 --> 00:41:44.255
+<v Speaker 1>bin is where they all end up. In
+
+00:41:44.255 --> 00:41:45.855
+<v Speaker 0>fact, it was right there in front of
+
+00:41:45.855 --> 00:41:47.295
+<v Speaker 0>me. Alright. Okay. So
+
+00:41:49.135 --> 00:41:50.015
+<v Speaker 0>install,
+
+00:41:50.015 --> 00:41:51.935
+<v Speaker 0>point it to our manifest.
+
+00:41:56.520 --> 00:41:58.120
+<v Speaker 0>Noun verb.
+
+00:41:58.840 --> 00:42:01.000
+<v Speaker 0>And then he's just specified archive.
+
+00:42:02.040 --> 00:42:03.320
+<v Speaker 1>Yeah, my guess.
+
+00:42:05.400 --> 00:42:07.640
+<v Speaker 0>Oh, we got an error. Ben has to
+
+00:42:07.640 --> 00:42:09.320
+<v Speaker 0>be set. That was not set on the
+
+00:42:09.320 --> 00:42:09.880
+<v Speaker 0>other plugin.
+
+00:42:10.914 --> 00:42:12.755
+<v Speaker 1>No. Which other plugin did you
+
+00:42:13.234 --> 00:42:14.035
+<v Speaker 1>find?
+
+00:42:16.515 --> 00:42:18.674
+<v Speaker 0>Or was it? And it's just Is this
+
+00:42:18.674 --> 00:42:20.275
+<v Speaker 1>a YAML schema thing?
+
+00:42:20.674 --> 00:42:22.355
+<v Speaker 1>They're on our v one alpha one.
+
+00:42:25.410 --> 00:42:27.090
+<v Speaker 0>We also Are you v one alpha one?
+
+00:42:27.090 --> 00:42:29.010
+<v Speaker 1>I don't know. Because that that repo hadn't
+
+00:42:29.010 --> 00:42:30.690
+<v Speaker 1>been touched for for three years.
+
+00:42:31.010 --> 00:42:31.570
+<v Speaker 1>Yeah.
+
+00:42:32.210 --> 00:42:33.490
+<v Speaker 1>Oh, David.
+
+00:42:34.690 --> 00:42:36.050
+<v Speaker 1>Terrible given.
+
+00:42:37.250 --> 00:42:38.290
+<v Speaker 0>Right. Fine.
+
+00:42:38.609 --> 00:42:40.635
+<v Speaker 0>Fine. Fine. Fine. Alright.
+
+00:42:43.995 --> 00:42:46.475
+<v Speaker 1>Let's see. They've added security.
+
+00:42:47.675 --> 00:42:49.675
+<v Speaker 1>Matt and Dave work around security.
+
+00:42:53.835 --> 00:42:55.355
+<v Speaker 1>Oh, look at that. There's an example patch
+
+00:42:55.355 --> 00:42:56.609
+<v Speaker 1>one. Perfect.
+
+00:42:58.210 --> 00:43:00.290
+<v Speaker 0>Oh, yeah. So they have this
+
+00:43:00.769 --> 00:43:01.730
+<v Speaker 0>Ben.
+
+00:43:04.769 --> 00:43:06.210
+<v Speaker 1>Should we should we get it working like
+
+00:43:06.210 --> 00:43:07.329
+<v Speaker 1>that for now? We can always
+
+00:43:07.890 --> 00:43:09.650
+<v Speaker 1>we can look at auto generating this stuff
+
+00:43:09.650 --> 00:43:11.995
+<v Speaker 1>or do you know, doing something Yeah. Was
+
+00:43:11.995 --> 00:43:13.835
+<v Speaker 0>just curious if they document
+
+00:43:15.035 --> 00:43:16.475
+<v Speaker 0>the field.
+
+00:43:17.035 --> 00:43:19.115
+<v Speaker 0>Yeah. Okay. So each platform requires path to
+
+00:43:19.115 --> 00:43:20.075
+<v Speaker 0>the plugin.
+
+00:43:21.275 --> 00:43:23.115
+<v Speaker 0>You would specify this.
+
+00:43:23.115 --> 00:43:25.355
+<v Speaker 0>It creates a symlink to that.
+
+00:43:25.355 --> 00:43:25.755
+<v Speaker 0>I mean,
+
+00:43:27.890 --> 00:43:28.690
+<v Speaker 0>Yes.
+
+00:43:28.690 --> 00:43:30.450
+<v Speaker 0>Because we're trying selected as much.
+
+00:43:30.770 --> 00:43:32.850
+<v Speaker 0>Be a bit more dangerous. Although, this is
+
+00:43:32.850 --> 00:43:34.610
+<v Speaker 0>an array. Right? So
+
+00:43:35.330 --> 00:43:37.090
+<v Speaker 1>Oh, it is. It wasn't. I I was
+
+00:43:37.090 --> 00:43:38.370
+<v Speaker 1>gonna say that, but I swear it wasn't
+
+00:43:38.370 --> 00:43:39.650
+<v Speaker 1>in that example we had.
+
+00:43:40.370 --> 00:43:41.970
+<v Speaker 1>If it's an array, that's awesome.
+
+00:43:42.450 --> 00:43:44.105
+<v Speaker 0>So we can see Yeah. Looking on my
+
+00:43:44.105 --> 00:43:46.265
+<v Speaker 1>machine, there's yeah. I've got I've got a
+
+00:43:46.265 --> 00:43:48.265
+<v Speaker 1>symlink farm and then I can see there's
+
+00:43:48.265 --> 00:43:50.345
+<v Speaker 1>basically a sandbox directory they all get extracted
+
+00:43:50.345 --> 00:43:50.985
+<v Speaker 1>into.
+
+00:43:51.145 --> 00:43:54.025
+<v Speaker 0>And it just wants the script,
+
+00:43:54.025 --> 00:43:54.665
+<v Speaker 0>which for us,
+
+00:43:56.289 --> 00:43:58.050
+<v Speaker 0>get to your pods.
+
+00:43:58.690 --> 00:44:00.130
+<v Speaker 0>I mean, we can clean up that name
+
+00:44:00.130 --> 00:44:01.970
+<v Speaker 0>and remove that. But for now, let's just
+
+00:44:01.970 --> 00:44:03.410
+<v Speaker 0>do this. I'm gonna
+
+00:44:07.665 --> 00:44:10.065
+<v Speaker 0>No. No. Let's just do that. Let's start
+
+00:44:10.065 --> 00:44:11.585
+<v Speaker 0>something. I don't I don't wanna Yeah. Yeah.
+
+00:44:11.585 --> 00:44:12.145
+<v Speaker 1>True.
+
+00:44:13.185 --> 00:44:13.905
+<v Speaker 0>Okay.
+
+00:44:14.225 --> 00:44:16.465
+<v Speaker 0>So that should make that happy.
+
+00:44:17.425 --> 00:44:18.465
+<v Speaker 0>Not quite
+
+00:44:18.625 --> 00:44:20.785
+<v Speaker 0>oh, yeah. It just wants this path. Okay.
+
+00:44:28.059 --> 00:44:29.820
+<v Speaker 0>URI has to be set.
+
+00:44:31.660 --> 00:44:32.779
+<v Speaker 0>Oh,
+
+00:44:32.779 --> 00:44:34.220
+<v Speaker 0>no. Oh, so the Ben has to come
+
+00:44:34.220 --> 00:44:35.980
+<v Speaker 0>in here. Okay. Got it. Got it. Got
+
+00:44:35.980 --> 00:44:36.380
+<v Speaker 0>it. Got it.
+
+00:44:53.520 --> 00:44:54.800
+<v Speaker 0>Well, I broke it.
+
+00:44:55.920 --> 00:44:58.720
+<v Speaker 1>Oh, no. Isn't it? Okay. So now we
+
+00:44:58.720 --> 00:45:00.720
+<v Speaker 0>need to change it to skip the first
+
+00:45:00.720 --> 00:45:01.440
+<v Speaker 0>two.
+
+00:45:02.400 --> 00:45:04.480
+<v Speaker 1>Maybe. I don't know what it sees.
+
+00:45:05.120 --> 00:45:06.320
+<v Speaker 1>I don't know how q c q c
+
+00:45:06.320 --> 00:45:07.280
+<v Speaker 1>c l might strip
+
+00:45:07.974 --> 00:45:09.255
+<v Speaker 1>one or both of them?
+
+00:45:09.655 --> 00:45:12.055
+<v Speaker 1>That's a good question. Let's do two
+
+00:45:12.454 --> 00:45:14.135
+<v Speaker 0>and then shift shift.
+
+00:45:16.214 --> 00:45:18.135
+<v Speaker 1>I assume that's right. Alright.
+
+00:45:18.454 --> 00:45:20.055
+<v Speaker 1>We could just just echo them.
+
+00:45:21.220 --> 00:45:21.940
+<v Speaker 0>Force.
+
+00:45:25.620 --> 00:45:26.660
+<v Speaker 1>If in doubt.
+
+00:45:28.340 --> 00:45:30.180
+<v Speaker 0>I am I gonna have to uninstall it
+
+00:45:30.180 --> 00:45:31.380
+<v Speaker 0>to reinstall it?
+
+00:45:33.955 --> 00:45:35.475
+<v Speaker 1>I can tell you where it puts it.
+
+00:45:35.475 --> 00:45:37.075
+<v Speaker 1>We could just replace the file.
+
+00:45:38.755 --> 00:45:40.675
+<v Speaker 1>Or bum the version number, maybe.
+
+00:45:41.475 --> 00:45:42.915
+<v Speaker 1>Is that why it's not installing it? I
+
+00:45:42.915 --> 00:45:44.675
+<v Speaker 1>didn't get a chance to read it. You
+
+00:45:44.675 --> 00:45:45.315
+<v Speaker 0>might be right.
+
+00:45:48.680 --> 00:45:51.240
+<v Speaker 0>This is alpha two anyway. Right? Yeah.
+
+00:45:55.720 --> 00:45:57.000
+<v Speaker 0>Maybe I just
+
+00:45:57.880 --> 00:45:59.960
+<v Speaker 0>can't say that. That's not gonna work.
+
+00:46:02.394 --> 00:46:04.634
+<v Speaker 0>Alright. Where's the where does it stick that
+
+00:46:04.634 --> 00:46:05.435
+<v Speaker 0>fail?
+
+00:46:05.755 --> 00:46:07.915
+<v Speaker 1>It sticks it in dot crew
+
+00:46:09.515 --> 00:46:10.474
+<v Speaker 1>store.
+
+00:46:11.835 --> 00:46:13.115
+<v Speaker 1>Wait. A bin is this. So that's the
+
+00:46:13.115 --> 00:46:15.194
+<v Speaker 1>symlink. The actual file
+
+00:46:16.200 --> 00:46:17.960
+<v Speaker 1>is in store.
+
+00:46:18.520 --> 00:46:22.200
+<v Speaker 0>Yeah. Store now verbs version. Alright. Okay. So
+
+00:46:23.080 --> 00:46:23.800
+<v Speaker 0>copy.
+
+00:46:25.000 --> 00:46:25.800
+<v Speaker 0>So hacky.
+
+00:46:27.924 --> 00:46:28.965
+<v Speaker 1>This is a
+
+00:46:29.125 --> 00:46:30.325
+<v Speaker 1>CD right here.
+
+00:46:31.444 --> 00:46:33.445
+<v Speaker 0>Which means we wanna try
+
+00:46:37.045 --> 00:46:39.285
+<v Speaker 0>oh, no. It worked. Alright. Okay. So That's
+
+00:46:39.285 --> 00:46:41.460
+<v Speaker 0>sweet. We can skip noun verbs, which means
+
+00:46:41.460 --> 00:46:43.620
+<v Speaker 0>we know probably can add
+
+00:46:43.859 --> 00:46:47.220
+<v Speaker 0>all the aliases for pods, POP deployments,
+
+00:46:47.220 --> 00:46:48.580
+<v Speaker 0>etcetera. And then
+
+00:46:49.060 --> 00:46:50.020
+<v Speaker 0>we
+
+00:46:51.140 --> 00:46:52.020
+<v Speaker 0>probably
+
+00:46:52.740 --> 00:46:54.500
+<v Speaker 0>what I'll do is I'll do alias
+
+00:46:54.740 --> 00:46:56.260
+<v Speaker 0>key and equals
+
+00:46:58.785 --> 00:46:59.985
+<v Speaker 0>cube control.
+
+00:47:01.265 --> 00:47:02.705
+<v Speaker 1>I'm thinking that's how I'm gonna run it
+
+00:47:02.705 --> 00:47:03.665
+<v Speaker 1>on my machine.
+
+00:47:04.545 --> 00:47:06.305
+<v Speaker 0>I turned on this new Z Shell thing
+
+00:47:06.305 --> 00:47:08.385
+<v Speaker 0>which does like expansion, which I'm really loving
+
+00:47:08.385 --> 00:47:08.865
+<v Speaker 0>right now.
+
+00:47:13.570 --> 00:47:15.410
+<v Speaker 0>Why did that not work?
+
+00:47:17.410 --> 00:47:18.770
+<v Speaker 1>Why did that not work?
+
+00:47:22.130 --> 00:47:24.290
+<v Speaker 0>Because that worked. Right? Oh, no. I've broken
+
+00:47:24.290 --> 00:47:24.530
+<v Speaker 0>it.
+
+00:47:27.425 --> 00:47:30.065
+<v Speaker 1>Yeah. What? Oh, noun verb, not noun verbs.
+
+00:47:30.065 --> 00:47:30.785
+<v Speaker 0>Okay. So
+
+00:47:33.345 --> 00:47:34.305
+<v Speaker 0>k n
+
+00:47:34.865 --> 00:47:35.745
+<v Speaker 0>pods.
+
+00:47:36.065 --> 00:47:37.265
+<v Speaker 0>Nice. Okay.
+
+00:47:38.145 --> 00:47:40.224
+<v Speaker 0>We have changed the world today. Oh, so
+
+00:47:40.224 --> 00:47:42.224
+<v Speaker 1>you were talking you were typing k n
+
+00:47:42.740 --> 00:47:43.940
+<v Speaker 1>and it did that?
+
+00:47:46.339 --> 00:47:48.100
+<v Speaker 0>Yeah. So mine's auto expands.
+
+00:47:48.339 --> 00:47:49.540
+<v Speaker 1>Right. Okay. I just didn't see So when
+
+00:47:49.540 --> 00:47:50.340
+<v Speaker 0>I hit space?
+
+00:47:51.700 --> 00:47:52.980
+<v Speaker 0>Do Very nice. L t
+
+00:47:54.819 --> 00:47:56.900
+<v Speaker 0>t t. Yeah. Okay. That's nice. Oh, must
+
+00:47:56.900 --> 00:47:59.195
+<v Speaker 0>have them configured not to auto spent. Yeah.
+
+00:47:59.195 --> 00:48:01.035
+<v Speaker 0>I started I've been really working on my
+
+00:48:01.035 --> 00:48:02.235
+<v Speaker 0>Z Shell plugins
+
+00:48:02.475 --> 00:48:03.195
+<v Speaker 0>lately.
+
+00:48:04.555 --> 00:48:05.515
+<v Speaker 1>That's really nice.
+
+00:48:07.515 --> 00:48:08.715
+<v Speaker 0>Yeah. And if I do a key Cool.
+
+00:48:08.715 --> 00:48:10.875
+<v Speaker 0>Pod six bands too. Right. Okay.
+
+00:48:11.275 --> 00:48:14.040
+<v Speaker 0>We have a comment from someone.
+
+00:48:14.360 --> 00:48:15.960
+<v Speaker 0>It must be really weird for anyone who's
+
+00:48:15.960 --> 00:48:17.960
+<v Speaker 0>tuned in late. I'm really sorry, Alex.
+
+00:48:18.280 --> 00:48:20.360
+<v Speaker 0>Because this is a bit of a wild
+
+00:48:20.360 --> 00:48:20.920
+<v Speaker 0>one.
+
+00:48:23.320 --> 00:48:25.400
+<v Speaker 0>Yeah. Fuck it. We'll explain it again.
+
+00:48:26.440 --> 00:48:28.360
+<v Speaker 1>Yeah. I mean, we've got description somewhere. Right?
+
+00:48:28.925 --> 00:48:30.525
+<v Speaker 0>I I didn't add one because I had
+
+00:48:30.525 --> 00:48:32.445
+<v Speaker 0>no idea how to describe what the hell
+
+00:48:32.445 --> 00:48:34.045
+<v Speaker 0>we were trying to do. We're we're trying
+
+00:48:34.045 --> 00:48:35.405
+<v Speaker 0>to fix a wrong in the world which
+
+00:48:35.405 --> 00:48:37.325
+<v Speaker 0>is where you have to do pods
+
+00:48:38.445 --> 00:48:41.005
+<v Speaker 0>and then delete two words and then describe
+
+00:48:41.005 --> 00:48:43.210
+<v Speaker 0>your pods where we actually feel that it's
+
+00:48:43.210 --> 00:48:46.890
+<v Speaker 0>more ergonomically correct or enjoyable to do pods,
+
+00:48:47.050 --> 00:48:47.770
+<v Speaker 0>get,
+
+00:48:48.650 --> 00:48:49.610
+<v Speaker 0>describe,
+
+00:48:50.730 --> 00:48:51.530
+<v Speaker 0>etcetera.
+
+00:48:52.810 --> 00:48:54.170
+<v Speaker 0>So we're trying to make that work for
+
+00:48:54.170 --> 00:48:54.970
+<v Speaker 0>a plugin.
+
+00:48:56.010 --> 00:48:57.210
+<v Speaker 0>And I've been really,
+
+00:48:57.905 --> 00:48:59.425
+<v Speaker 0>know Matt has said, yes, we are trying
+
+00:48:59.425 --> 00:49:00.545
+<v Speaker 0>to fix this problem. But at the same
+
+00:49:00.545 --> 00:49:01.984
+<v Speaker 0>time we're using it as an excuse a
+
+00:49:01.984 --> 00:49:03.265
+<v Speaker 0>to catch up. No. No. Haven't. Because we've
+
+00:49:03.265 --> 00:49:04.625
+<v Speaker 0>not seen each other in a while and
+
+00:49:04.625 --> 00:49:06.464
+<v Speaker 0>this is the closest we're getting. And at
+
+00:49:06.464 --> 00:49:08.545
+<v Speaker 0>the same time also we're learning how to
+
+00:49:08.545 --> 00:49:11.220
+<v Speaker 0>keep control plugins work etcetera. So it's it's
+
+00:49:11.220 --> 00:49:13.700
+<v Speaker 0>more of a just fun casual episode.
+
+00:49:14.420 --> 00:49:15.780
+<v Speaker 1>Oh, we are. I keep trying to over
+
+00:49:15.780 --> 00:49:18.100
+<v Speaker 1>engineer it and yeah, David keeps pulling me
+
+00:49:18.100 --> 00:49:18.660
+<v Speaker 1>back.
+
+00:49:19.620 --> 00:49:21.940
+<v Speaker 0>He's just been like, okay. Maybe I'll skip
+
+00:49:21.940 --> 00:49:24.135
+<v Speaker 0>this one. Good call. Good call. Anyway,
+
+00:49:25.655 --> 00:49:27.735
+<v Speaker 0>so we're in a position now where we
+
+00:49:27.735 --> 00:49:29.575
+<v Speaker 0>we have it working.
+
+00:49:30.135 --> 00:49:32.695
+<v Speaker 0>Yeah. We've written this No, this is Crew
+
+00:49:32.695 --> 00:49:33.575
+<v Speaker 0>manifest.
+
+00:49:33.735 --> 00:49:36.300
+<v Speaker 0>You didn't let me cowboy it with v
+
+00:49:36.300 --> 00:49:38.220
+<v Speaker 0>one alpha one. Right. But it probably worked
+
+00:49:38.220 --> 00:49:39.420
+<v Speaker 0>out for the best because now we know
+
+00:49:39.420 --> 00:49:41.740
+<v Speaker 0>we can actually specify this multiple times, which
+
+00:49:41.740 --> 00:49:42.220
+<v Speaker 0>is
+
+00:49:43.420 --> 00:49:46.860
+<v Speaker 0>a little weird because Oh, right. That's how
+
+00:49:46.860 --> 00:49:48.540
+<v Speaker 1>you meant to do multi arch stuff if
+
+00:49:48.540 --> 00:49:50.060
+<v Speaker 1>you need to ship two different binaries.
+
+00:49:50.525 --> 00:49:52.365
+<v Speaker 1>Yeah. But we can probably just abuse that.
+
+00:49:52.365 --> 00:49:53.805
+<v Speaker 1>Right? They can all say Linux.
+
+00:49:55.805 --> 00:49:57.005
+<v Speaker 0>I think.
+
+00:49:57.005 --> 00:49:58.845
+<v Speaker 0>Because now we've changed the way that this
+
+00:49:58.845 --> 00:50:00.045
+<v Speaker 0>works. Right? Like,
+
+00:50:03.099 --> 00:50:04.700
+<v Speaker 0>bear with me here. So
+
+00:50:04.940 --> 00:50:06.780
+<v Speaker 0>no, don't worry, it's just a read me,
+
+00:50:06.780 --> 00:50:07.500
+<v Speaker 0>who cares.
+
+00:50:09.339 --> 00:50:11.900
+<v Speaker 0>We could probably make this an entry point
+
+00:50:12.140 --> 00:50:14.140
+<v Speaker 0>because we tried to make it work as
+
+00:50:14.140 --> 00:50:15.980
+<v Speaker 0>cube pods but the plugin system is actually
+
+00:50:15.980 --> 00:50:17.865
+<v Speaker 0>now force us down the noun verb sting.
+
+00:50:17.865 --> 00:50:19.945
+<v Speaker 0>So we need the alias which means this
+
+00:50:19.945 --> 00:50:22.825
+<v Speaker 0>doesn't necessarily have to be cube control pods.
+
+00:50:23.385 --> 00:50:24.745
+<v Speaker 0>This can be
+
+00:50:25.785 --> 00:50:27.705
+<v Speaker 1>Oh yeah, we can totally switch. We can
+
+00:50:27.705 --> 00:50:29.225
+<v Speaker 1>switch on our V two. Yeah.
+
+00:50:31.220 --> 00:50:32.180
+<v Speaker 0>We can
+
+00:50:33.140 --> 00:50:35.460
+<v Speaker 0>work out the get. We can also work
+
+00:50:35.460 --> 00:50:36.420
+<v Speaker 0>out the
+
+00:50:38.500 --> 00:50:39.380
+<v Speaker 0>noun.
+
+00:50:39.940 --> 00:50:40.580
+<v Speaker 1>Yeah.
+
+00:50:42.180 --> 00:50:43.380
+<v Speaker 1>It's just one.
+
+00:50:43.619 --> 00:50:45.060
+<v Speaker 0>We don't want a default there.
+
+00:50:45.945 --> 00:50:47.865
+<v Speaker 0>Is it one? Is one not known Oh
+
+00:50:47.865 --> 00:50:49.385
+<v Speaker 0>no no, one sorry, what's gonna be known
+
+00:50:49.385 --> 00:50:51.145
+<v Speaker 1>first. So this is just three and we're
+
+00:50:51.145 --> 00:50:53.065
+<v Speaker 0>not gonna let them have a default there.
+
+00:50:53.065 --> 00:50:53.945
+<v Speaker 0>We're not gonna
+
+00:50:54.745 --> 00:50:57.705
+<v Speaker 0>support that. And then we can note another
+
+00:50:57.705 --> 00:50:59.545
+<v Speaker 0>shift and what we're seeing is is the
+
+00:50:59.545 --> 00:51:00.505
+<v Speaker 0>pods becomes
+
+00:51:01.760 --> 00:51:03.920
+<v Speaker 0>known and I actually prefer this syntax. I
+
+00:51:03.920 --> 00:51:05.680
+<v Speaker 0>don't know why I didn't do that. And
+
+00:51:05.680 --> 00:51:08.000
+<v Speaker 0>then we pass everything else through. However, what
+
+00:51:08.000 --> 00:51:09.760
+<v Speaker 0>we can do shift to. Thanks Alex. Let
+
+00:51:09.760 --> 00:51:10.880
+<v Speaker 0>me pop that up.
+
+00:51:11.839 --> 00:51:14.320
+<v Speaker 0>I think we're learning. I'm learning actually.
+
+00:51:15.839 --> 00:51:19.155
+<v Speaker 1>So Idiomatically, you'd Idiomatically, you'd actually say
+
+00:51:19.955 --> 00:51:21.395
+<v Speaker 1>yeah. I guess you can do that.
+
+00:51:22.994 --> 00:51:23.875
+<v Speaker 1>Idiomatically,
+
+00:51:23.875 --> 00:51:25.474
+<v Speaker 1>what we'd actually do is you tend to
+
+00:51:25.474 --> 00:51:27.714
+<v Speaker 1>extract one. So you'd say
+
+00:51:34.730 --> 00:51:35.850
+<v Speaker 1>If that makes sense.
+
+00:51:38.810 --> 00:51:40.890
+<v Speaker 0>Okay. I'll go with it. But
+
+00:51:43.210 --> 00:51:45.714
+<v Speaker 0>we we need some special handling here. What
+
+00:51:45.714 --> 00:51:46.275
+<v Speaker 0>we
+
+00:51:46.755 --> 00:51:48.915
+<v Speaker 0>what you mentioned earlier was there are resources
+
+00:51:48.915 --> 00:51:50.115
+<v Speaker 0>like there are
+
+00:51:50.435 --> 00:51:53.315
+<v Speaker 0>things that aren't crud. So API resources,
+
+00:51:54.595 --> 00:51:55.475
+<v Speaker 0>exec,
+
+00:51:56.675 --> 00:51:58.515
+<v Speaker 0>should we build escape patches for that or
+
+00:51:58.515 --> 00:52:00.035
+<v Speaker 0>do we just assume that people are always
+
+00:52:00.035 --> 00:52:02.130
+<v Speaker 0>gonna use this as a special alias like
+
+00:52:02.130 --> 00:52:02.930
+<v Speaker 0>KN
+
+00:52:04.450 --> 00:52:06.770
+<v Speaker 0>rather than taking over a full K?
+
+00:52:06.930 --> 00:52:07.890
+<v Speaker 1>Right.
+
+00:52:07.890 --> 00:52:09.090
+<v Speaker 1>Maybe for now
+
+00:52:09.730 --> 00:52:11.490
+<v Speaker 1>What about like
+
+00:52:11.970 --> 00:52:13.490
+<v Speaker 0>exec and API resources
+
+00:52:13.730 --> 00:52:14.690
+<v Speaker 0>and
+
+00:52:16.565 --> 00:52:18.885
+<v Speaker 1>There's lot of them actually. Is CS one
+
+00:52:18.885 --> 00:52:20.645
+<v Speaker 0>or is it get CS? It's get CS,
+
+00:52:20.645 --> 00:52:23.045
+<v Speaker 0>right? Yeah. Yeah. It's cluster status, it's cluster
+
+00:52:23.045 --> 00:52:26.964
+<v Speaker 1>info, there's API extensions, API resources, API kinds.
+
+00:52:29.880 --> 00:52:32.440
+<v Speaker 0>Let's just throw them one warning as an
+
+00:52:32.440 --> 00:52:33.080
+<v Speaker 0>example
+
+00:52:33.640 --> 00:52:35.640
+<v Speaker 0>and then people start I mean, if people
+
+00:52:35.640 --> 00:52:37.640
+<v Speaker 0>are wild enough to start using this, they'll
+
+00:52:37.640 --> 00:52:40.040
+<v Speaker 0>add in the other edge cases. Right? So
+
+00:52:40.040 --> 00:52:42.440
+<v Speaker 0>what we're saying is if we run KN
+
+00:52:43.315 --> 00:52:45.315
+<v Speaker 0>and we're in the known verb syntax and
+
+00:52:45.315 --> 00:52:48.355
+<v Speaker 0>we do exec, we wanna warn on
+
+00:52:51.635 --> 00:52:52.355
+<v Speaker 0>noun.
+
+00:52:53.315 --> 00:52:54.835
+<v Speaker 0>Is that the wrong way around? Yeah. It's
+
+00:52:54.835 --> 00:52:57.155
+<v Speaker 0>actually known first so
+
+00:52:59.060 --> 00:53:00.740
+<v Speaker 1>and then Alright. Yeah. This was literally the
+
+00:53:00.740 --> 00:53:01.940
+<v Speaker 1>whole point in this, wasn't it?
+
+00:53:03.140 --> 00:53:05.220
+<v Speaker 1>Maybe, yeah, let's just okay. Let's yeah. You're
+
+00:53:05.220 --> 00:53:06.660
+<v Speaker 1>right. Let's make it easy. Let's check if
+
+00:53:06.660 --> 00:53:09.140
+<v Speaker 1>now it is not pods or deployments.
+
+00:53:09.540 --> 00:53:10.580
+<v Speaker 0>So case now.
+
+00:53:11.975 --> 00:53:14.375
+<v Speaker 0>I can never remember the best case statement.
+
+00:53:15.095 --> 00:53:17.815
+<v Speaker 1>Oh, it's the string and then a right
+
+00:53:17.815 --> 00:53:18.615
+<v Speaker 1>paren.
+
+00:53:20.215 --> 00:53:22.215
+<v Speaker 1>Copy. Yeah. Copy paste it. It's like that.
+
+00:53:25.200 --> 00:53:27.680
+<v Speaker 0>Okay. So what we're saying is if known
+
+00:53:27.680 --> 00:53:29.360
+<v Speaker 0>is in any of these
+
+00:53:30.480 --> 00:53:31.120
+<v Speaker 0>and
+
+00:53:31.359 --> 00:53:31.840
+<v Speaker 0>we'll just
+
+00:53:37.119 --> 00:53:38.320
+<v Speaker 0>okay. So
+
+00:53:38.495 --> 00:53:40.095
+<v Speaker 0>Yeah. And that seems to be like a
+
+00:53:40.255 --> 00:53:42.015
+<v Speaker 0>yeah. This is reg x, so
+
+00:53:42.735 --> 00:53:44.015
+<v Speaker 0>Yep. We're
+
+00:53:44.095 --> 00:53:45.295
+<v Speaker 0>gonna say
+
+00:53:49.375 --> 00:53:50.575
+<v Speaker 0>exec
+
+00:53:51.860 --> 00:53:53.460
+<v Speaker 0>API resources.
+
+00:53:54.420 --> 00:53:56.820
+<v Speaker 1>And we don't just wanna allow list pods
+
+00:53:56.820 --> 00:53:57.860
+<v Speaker 1>and deployments
+
+00:53:58.660 --> 00:54:00.340
+<v Speaker 1>and warn on everything else, and then just
+
+00:54:00.340 --> 00:54:02.020
+<v Speaker 1>allow list more things as we as we
+
+00:54:02.020 --> 00:54:03.380
+<v Speaker 1>know they work, as we support them.
+
+00:54:05.865 --> 00:54:07.305
+<v Speaker 1>Up to you. Up to you.
+
+00:54:08.265 --> 00:54:10.905
+<v Speaker 0>Okay. So let's support pod
+
+00:54:11.545 --> 00:54:12.665
+<v Speaker 0>pods
+
+00:54:13.385 --> 00:54:13.865
+<v Speaker 0>pull.
+
+00:54:15.880 --> 00:54:16.600
+<v Speaker 1>Yeah.
+
+00:54:18.760 --> 00:54:21.320
+<v Speaker 0>What we're gonna do here is override
+
+00:54:21.320 --> 00:54:22.120
+<v Speaker 0>noun
+
+00:54:23.880 --> 00:54:25.080
+<v Speaker 0>to be pods.
+
+00:54:25.080 --> 00:54:26.920
+<v Speaker 0>We'll always give it the full
+
+00:54:27.080 --> 00:54:28.280
+<v Speaker 0>version. Nice.
+
+00:54:28.600 --> 00:54:29.560
+<v Speaker 0>Anything else?
+
+00:54:32.595 --> 00:54:34.355
+<v Speaker 0>I know. We still want the wildcard. Hey.
+
+00:54:34.355 --> 00:54:35.555
+<v Speaker 1>Yeah. Hey,
+
+00:54:36.435 --> 00:54:37.795
+<v Speaker 1>don't do this. Exit one.
+
+00:54:38.275 --> 00:54:38.995
+<v Speaker 0>Ew.
+
+00:54:39.395 --> 00:54:40.435
+<v Speaker 0>This is bad.
+
+00:54:40.995 --> 00:54:41.875
+<v Speaker 0>Right.
+
+00:54:42.435 --> 00:54:43.235
+<v Speaker 0>Exit zero.
+
+00:54:46.040 --> 00:54:47.480
+<v Speaker 0>Then we're happy with the light.
+
+00:54:48.920 --> 00:54:50.600
+<v Speaker 0>I I don't think it's an error. We're
+
+00:54:50.600 --> 00:54:52.200
+<v Speaker 0>just in, hey, you you don't wanna do
+
+00:54:52.200 --> 00:54:53.880
+<v Speaker 0>this. Well, yeah. Fair. Well, I'm nice to
+
+00:54:53.880 --> 00:54:55.480
+<v Speaker 0>chaining it with all the yeah. We didn't
+
+00:54:55.480 --> 00:54:56.440
+<v Speaker 1>do anything wrong.
+
+00:54:57.240 --> 00:54:58.520
+<v Speaker 1>Yeah. No. I think we I think we
+
+00:54:58.520 --> 00:55:00.905
+<v Speaker 1>should to break pipelines stuff. Yeah. Yeah. Exactly.
+
+00:55:03.145 --> 00:55:03.785
+<v Speaker 0>So
+
+00:55:04.265 --> 00:55:06.585
+<v Speaker 0>let's test if this still works.
+
+00:55:09.225 --> 00:55:11.625
+<v Speaker 0>We need to modify this. So whenever we're
+
+00:55:11.625 --> 00:55:13.865
+<v Speaker 0>seeing that now we have this encapsulated group
+
+00:55:13.865 --> 00:55:15.065
+<v Speaker 0>where it's non verb.
+
+00:55:16.510 --> 00:55:18.190
+<v Speaker 0>We just drop it in
+
+00:55:19.390 --> 00:55:20.270
+<v Speaker 0>and
+
+00:55:20.510 --> 00:55:23.070
+<v Speaker 0>let's do my fancy copy again.
+
+00:55:25.390 --> 00:55:26.910
+<v Speaker 1>This is CD.
+
+00:55:28.109 --> 00:55:28.589
+<v Speaker 1>CP.
+
+00:55:29.435 --> 00:55:30.555
+<v Speaker 1>C p.
+
+00:55:32.315 --> 00:55:33.115
+<v Speaker 0>And then
+
+00:55:33.435 --> 00:55:34.155
+<v Speaker 0>verb.
+
+00:55:34.955 --> 00:55:35.835
+<v Speaker 0>Alright.
+
+00:55:35.994 --> 00:55:37.515
+<v Speaker 0>So that means key in.
+
+00:55:38.075 --> 00:55:39.115
+<v Speaker 0>Let's
+
+00:55:39.275 --> 00:55:40.315
+<v Speaker 0>remove
+
+00:55:40.875 --> 00:55:41.755
+<v Speaker 0>crew then.
+
+00:55:46.740 --> 00:55:48.100
+<v Speaker 1>You're gonna redeploy
+
+00:55:48.100 --> 00:55:49.940
+<v Speaker 1>it. I have no idea what I'm doing.
+
+00:55:49.940 --> 00:55:51.540
+<v Speaker 0>Hold on. Yeah. What are trying to do?
+
+00:55:51.860 --> 00:55:53.060
+<v Speaker 0>I wanna see
+
+00:55:54.180 --> 00:55:56.180
+<v Speaker 0>Oh, l n. What am I doing? L
+
+00:55:56.180 --> 00:55:58.815
+<v Speaker 0>s. So that noun verbs is going to
+
+00:55:58.815 --> 00:56:00.255
+<v Speaker 0>keep pods. So, yeah, we don't want that
+
+00:56:00.255 --> 00:56:02.095
+<v Speaker 0>to do that anymore. What we actually Oh,
+
+00:56:02.095 --> 00:56:03.375
+<v Speaker 1>right. No. Is Yeah.
+
+00:56:04.175 --> 00:56:06.815
+<v Speaker 0>Let's just remove it. So Let's see.
+
+00:56:07.535 --> 00:56:10.335
+<v Speaker 0>Crew bin. Let's just delete and see if
+
+00:56:10.335 --> 00:56:11.855
+<v Speaker 0>the crew install Do wanna remove it and
+
+00:56:11.855 --> 00:56:12.734
+<v Speaker 1>then install it? Yeah.
+
+00:56:16.680 --> 00:56:18.760
+<v Speaker 0>So let's just remove it from the store.
+
+00:56:20.680 --> 00:56:21.480
+<v Speaker 0>Yeah.
+
+00:56:22.520 --> 00:56:24.040
+<v Speaker 0>I know what I'm doing.
+
+00:56:27.075 --> 00:56:29.555
+<v Speaker 0>Oh, you know what? Screw you, crew.
+
+00:56:32.115 --> 00:56:34.515
+<v Speaker 1>Oh, because it's Maybe overkill.
+
+00:56:34.835 --> 00:56:36.755
+<v Speaker 0>Oh, yeah. And I've got alias.
+
+00:56:36.915 --> 00:56:37.555
+<v Speaker 0>What?
+
+00:56:39.875 --> 00:56:40.355
+<v Speaker 0>Source
+
+00:56:40.850 --> 00:56:43.890
+<v Speaker 0>Notebeard cannot be extracted into archive.
+
+00:56:44.850 --> 00:56:46.850
+<v Speaker 1>Can be found in extracted archive.
+
+00:56:46.850 --> 00:56:48.850
+<v Speaker 0>Because I blew out the inventory.
+
+00:56:49.570 --> 00:56:51.730
+<v Speaker 0>Is there like a crew in it? Oh,
+
+00:56:52.930 --> 00:56:54.290
+<v Speaker 1>no. We need to it's not in the
+
+00:56:54.290 --> 00:56:55.890
+<v Speaker 1>archive. We literally need to
+
+00:56:56.225 --> 00:56:57.905
+<v Speaker 1>do a git re do a git move,
+
+00:56:57.905 --> 00:56:59.665
+<v Speaker 1>push it to get up, do another release.
+
+00:56:59.665 --> 00:57:01.585
+<v Speaker 0>Alright. It's got the old name in it.
+
+00:57:01.585 --> 00:57:02.625
+<v Speaker 1>It's got the old name in the zip
+
+00:57:02.625 --> 00:57:04.465
+<v Speaker 1>file. Right? We need to do c I
+
+00:57:04.465 --> 00:57:05.905
+<v Speaker 1>before we do c d.
+
+00:57:09.745 --> 00:57:10.705
+<v Speaker 0>Let's
+
+00:57:10.705 --> 00:57:13.150
+<v Speaker 0>add let's make sure we confirm that delete.
+
+00:57:13.150 --> 00:57:15.390
+<v Speaker 0>We don't want the tarzip
+
+00:57:16.750 --> 00:57:17.390
+<v Speaker 0>commit.
+
+00:57:17.790 --> 00:57:18.670
+<v Speaker 0>Chore
+
+00:57:18.670 --> 00:57:19.790
+<v Speaker 0>refactor.
+
+00:57:22.750 --> 00:57:24.030
+<v Speaker 0>Git tag
+
+00:57:24.190 --> 00:57:25.390
+<v Speaker 0>alpha three.
+
+00:57:25.470 --> 00:57:27.150
+<v Speaker 0>Oh, let's update that fail.
+
+00:57:30.385 --> 00:57:31.025
+<v Speaker 0>Add
+
+00:57:32.785 --> 00:57:35.425
+<v Speaker 0>commit and no oh, I've got an alias
+
+00:57:35.425 --> 00:57:38.705
+<v Speaker 0>for that. Okay. Retag
+
+00:57:38.705 --> 00:57:38.945
+<v Speaker 0>it.
+
+00:57:44.150 --> 00:57:45.430
+<v Speaker 0>Stop judging me.
+
+00:57:47.430 --> 00:57:49.190
+<v Speaker 1>You didn't push it, it's fine.
+
+00:57:52.230 --> 00:57:53.030
+<v Speaker 0>Alright.
+
+00:57:53.030 --> 00:57:55.430
+<v Speaker 0>Let's get a release on the go. This
+
+00:57:56.869 --> 00:57:58.065
+<v Speaker 0>is this is my finest work. I was
+
+00:57:58.065 --> 00:57:59.425
+<v Speaker 0>gonna say this is dreadful but I don't
+
+00:57:59.425 --> 00:58:01.425
+<v Speaker 0>think I've ever written anything nicer than this,
+
+00:58:01.425 --> 00:58:02.865
+<v Speaker 0>so. I don't think I've ever been as
+
+00:58:02.865 --> 00:58:04.545
+<v Speaker 1>productive in another one. This is
+
+00:58:05.505 --> 00:58:09.425
+<v Speaker 1>this is this is a nice development ecosystem
+
+00:58:08.900 --> 00:58:10.900
+<v Speaker 1>to be fair. I was expecting this to
+
+00:58:10.900 --> 00:58:12.420
+<v Speaker 1>be nasty,
+
+00:58:12.580 --> 00:58:15.620
+<v Speaker 1>like extending the schedule is nasty or very
+
+00:58:15.620 --> 00:58:16.420
+<v Speaker 1>complicated,
+
+00:58:16.420 --> 00:58:18.740
+<v Speaker 1>like writing a a CRI plugin is very
+
+00:58:18.740 --> 00:58:20.340
+<v Speaker 1>complicated. This is really nice.
+
+00:58:22.825 --> 00:58:24.985
+<v Speaker 0>Yeah. Not been too bad, actually.
+
+00:58:28.185 --> 00:58:30.265
+<v Speaker 0>Okay. So I've got a really broken crew
+
+00:58:30.265 --> 00:58:32.665
+<v Speaker 0>directory right now, actually. So I think I
+
+00:58:32.665 --> 00:58:33.785
+<v Speaker 1>think you might wanna
+
+00:58:34.025 --> 00:58:35.705
+<v Speaker 1>burn it to the ground. Yeah.
+
+00:58:38.585 --> 00:58:39.960
+<v Speaker 1>So You have to reinstall crew now, of
+
+00:58:39.960 --> 00:58:41.000
+<v Speaker 1>course. Install.
+
+00:58:41.960 --> 00:58:42.840
+<v Speaker 0>Reinstall
+
+00:58:43.080 --> 00:58:44.120
+<v Speaker 0>crew.
+
+00:58:45.480 --> 00:58:47.000
+<v Speaker 0>I need an alias for that. I'm never
+
+00:58:47.000 --> 00:58:47.720
+<v Speaker 0>typing that again.
+
+00:58:55.565 --> 00:58:57.485
+<v Speaker 0>Oh, it doesn't like reinstall. I thought that
+
+00:58:57.485 --> 00:58:58.365
+<v Speaker 0>was a thing.
+
+00:58:59.805 --> 00:59:01.725
+<v Speaker 1>I think it might just be reinstall.
+
+00:59:02.205 --> 00:59:04.365
+<v Speaker 1>BrewLink crew should do it because that's that's
+
+00:59:04.365 --> 00:59:05.565
+<v Speaker 1>actually all you broke, isn't it?
+
+00:59:06.950 --> 00:59:08.310
+<v Speaker 0>I I don't know.
+
+00:59:09.109 --> 00:59:10.630
+<v Speaker 0>Let's just let it do that.
+
+00:59:11.269 --> 00:59:12.790
+<v Speaker 0>Alright. Let's see.
+
+00:59:13.430 --> 00:59:14.150
+<v Speaker 0>Install.
+
+00:59:15.349 --> 00:59:17.430
+<v Speaker 0>Of course, that doesn't work. This one.
+
+00:59:20.549 --> 00:59:22.230
+<v Speaker 0>It's alright. Okay. Brew.
+
+00:59:23.115 --> 00:59:24.235
+<v Speaker 0>Uninstall
+
+00:59:24.875 --> 00:59:25.675
+<v Speaker 0>crew.
+
+00:59:26.955 --> 00:59:28.395
+<v Speaker 0>I really shouldn't have blown away that whole
+
+00:59:28.395 --> 00:59:29.915
+<v Speaker 0>directory. I knew that was
+
+00:59:30.155 --> 00:59:31.995
+<v Speaker 0>getting carried away. I don't think it's that.
+
+00:59:31.995 --> 00:59:33.915
+<v Speaker 1>I think it's complaining about our archive.
+
+00:59:34.155 --> 00:59:36.155
+<v Speaker 0>Oh, right. It's complaining about the thing on
+
+00:59:36.155 --> 00:59:38.270
+<v Speaker 1>GitHub and saying it doesn't have QCTL noun
+
+00:59:38.270 --> 00:59:39.710
+<v Speaker 1>verb in it. Is it because it's noun
+
+00:59:39.710 --> 00:59:40.430
+<v Speaker 1>verbs?
+
+00:59:42.830 --> 00:59:44.590
+<v Speaker 0>Oh, you're probably right.
+
+00:59:45.470 --> 00:59:47.710
+<v Speaker 1>Sorry. Pair program. Oh, noun verb, verb. Is
+
+00:59:47.710 --> 00:59:48.910
+<v Speaker 1>noun verb at s h.
+
+00:59:50.109 --> 00:59:52.430
+<v Speaker 1>Should we call that archive and see what's
+
+00:59:51.795 --> 00:59:52.994
+<v Speaker 1>what's going on?
+
+00:59:58.434 --> 01:00:00.275
+<v Speaker 0>Well, I mean, this is wrong.
+
+01:00:02.115 --> 01:00:04.355
+<v Speaker 1>Right. We we need the shag again. Oh,
+
+01:00:04.355 --> 01:00:06.275
+<v Speaker 0>right. Oh, right. Yeah. Yeah.
+
+01:00:08.369 --> 01:00:12.930
+<v Speaker 0>I'm
+
+01:00:12.930 --> 01:00:15.090
+<v Speaker 0>gonna have to install some sort of new
+
+01:00:15.329 --> 01:00:17.650
+<v Speaker 0>quartiles or something like that I think for
+
+01:00:17.650 --> 01:00:18.210
+<v Speaker 0>that.
+
+01:00:18.930 --> 01:00:20.369
+<v Speaker 0>That shit is not the same, is it?
+
+01:00:22.994 --> 01:00:25.075
+<v Speaker 1>It shouldn't be. It shouldn't be.
+
+01:00:26.355 --> 01:00:28.115
+<v Speaker 0>Oh, I downloaded the wrong fail. I
+
+01:00:30.434 --> 01:00:32.994
+<v Speaker 0>it's totally amateur error. I'm really sorry.
+
+01:00:35.154 --> 01:00:37.154
+<v Speaker 1>Sorry. The pressure of typing is is real.
+
+01:00:39.100 --> 01:00:40.700
+<v Speaker 0>Is that too You never feel so smart
+
+01:00:40.700 --> 01:00:42.619
+<v Speaker 1>as when you're a pair programming Here we
+
+01:00:42.619 --> 01:00:43.420
+<v Speaker 0>go. Pair.
+
+01:00:46.300 --> 01:00:47.900
+<v Speaker 1>Because you're just the guy sitting there, like,
+
+01:00:47.900 --> 01:00:50.555
+<v Speaker 1>using 10% of your brain power, just picking
+
+01:00:50.555 --> 01:00:51.275
+<v Speaker 1>fault.
+
+01:00:51.835 --> 01:00:53.435
+<v Speaker 1>Don't worry. If this was reversed, I would
+
+01:00:53.435 --> 01:00:54.955
+<v Speaker 1>look like a complete idiot. You'd be like,
+
+01:00:54.955 --> 01:00:56.235
+<v Speaker 1>Matt, that's wrong. That's wrong.
+
+01:00:56.635 --> 01:00:57.195
+<v Speaker 0>So
+
+01:00:57.755 --> 01:00:59.755
+<v Speaker 0>yes. There's a weird
+
+01:01:01.755 --> 01:01:03.195
+<v Speaker 0>this doesn't
+
+01:01:03.190 --> 01:01:05.190
+<v Speaker 0>that's checking an egg problem here. Right? So
+
+01:01:05.190 --> 01:01:06.790
+<v Speaker 0>for me to update the code and tag
+
+01:01:06.790 --> 01:01:07.990
+<v Speaker 0>this as v four,
+
+01:01:08.550 --> 01:01:10.230
+<v Speaker 0>I would need to push that, release the
+
+01:01:10.230 --> 01:01:11.670
+<v Speaker 0>tag and then push
+
+01:01:11.830 --> 01:01:14.390
+<v Speaker 0>this with the shot. Oh, yeah.
+
+01:01:14.550 --> 01:01:16.070
+<v Speaker 1>How do you keep this on how do
+
+01:01:16.070 --> 01:01:17.350
+<v Speaker 1>you keep this under version control?
+
+01:01:19.465 --> 01:01:21.385
+<v Speaker 0>Maybe this doesn't maybe it shouldn't live in
+
+01:01:21.385 --> 01:01:23.305
+<v Speaker 0>our repository. Maybe someone's done that just for
+
+01:01:23.305 --> 01:01:24.425
+<v Speaker 0>the heck of it, and this lives in
+
+01:01:24.425 --> 01:01:26.905
+<v Speaker 0>the crew repo, and I'm just like
+
+01:01:27.145 --> 01:01:28.025
+<v Speaker 1>Yeah. Maybe.
+
+01:01:28.505 --> 01:01:30.025
+<v Speaker 1>But then you'd have to have right access
+
+01:01:30.025 --> 01:01:31.640
+<v Speaker 1>to the crew repo, or you'd need to
+
+01:01:31.640 --> 01:01:33.000
+<v Speaker 1>PR every time you wanted to do a
+
+01:01:33.000 --> 01:01:33.560
+<v Speaker 1>release.
+
+01:01:34.440 --> 01:01:37.160
+<v Speaker 1>We so we have this at my
+
+01:01:38.120 --> 01:01:39.560
+<v Speaker 1>we had this at my old place with
+
+01:01:39.560 --> 01:01:41.400
+<v Speaker 1>exactly this problem that was because we use
+
+01:01:41.400 --> 01:01:43.320
+<v Speaker 1>Bazel to do hermetic builds. You'd commit the
+
+01:01:43.320 --> 01:01:45.640
+<v Speaker 1>last of the code and lay the tag
+
+01:01:46.185 --> 01:01:47.465
+<v Speaker 1>to do a release,
+
+01:01:47.625 --> 01:01:49.625
+<v Speaker 1>and then it would go through CI,
+
+01:01:49.625 --> 01:01:50.825
+<v Speaker 1>and you then you'd end up with a
+
+01:01:50.825 --> 01:01:51.865
+<v Speaker 1>container image
+
+01:01:52.665 --> 01:01:54.825
+<v Speaker 1>with the char of the container image. Right?
+
+01:01:55.305 --> 01:01:57.065
+<v Speaker 1>And only then could you update your your
+
+01:01:57.065 --> 01:01:59.320
+<v Speaker 1>Helm files to tell Kubernetes to deploy it.
+
+01:01:59.320 --> 01:02:00.680
+<v Speaker 1>So you ended up with this weird double
+
+01:02:00.680 --> 01:02:02.440
+<v Speaker 1>commit because we didn't have a separate info
+
+01:02:02.440 --> 01:02:05.320
+<v Speaker 1>repo. I really wanted one, but the the
+
+01:02:05.320 --> 01:02:07.800
+<v Speaker 1>people who ran the the, you know, back
+
+01:02:07.800 --> 01:02:09.080
+<v Speaker 1>in microservices team
+
+01:02:09.400 --> 01:02:09.880
+<v Speaker 1>were so
+
+01:02:10.605 --> 01:02:13.165
+<v Speaker 1>set on their Bazel and their mono repo.
+
+01:02:13.485 --> 01:02:15.485
+<v Speaker 1>We would even the manifest needed to be
+
+01:02:15.485 --> 01:02:17.005
+<v Speaker 1>in there. So, yeah, we had exactly this
+
+01:02:17.005 --> 01:02:18.525
+<v Speaker 1>double commit to get the shark kind of
+
+01:02:18.525 --> 01:02:19.085
+<v Speaker 1>issue.
+
+01:02:21.885 --> 01:02:23.500
+<v Speaker 0>Yeah. So So I'm not we're we're not
+
+01:02:23.500 --> 01:02:25.180
+<v Speaker 0>gonna solve that today obviously. What I'm gonna
+
+01:02:25.180 --> 01:02:27.180
+<v Speaker 0>suggest is that I I mean we've already
+
+01:02:27.180 --> 01:02:29.900
+<v Speaker 0>pushed v v one alpha three and I'm
+
+01:02:29.900 --> 01:02:30.700
+<v Speaker 0>just gonna
+
+01:02:31.099 --> 01:02:32.619
+<v Speaker 0>do the current install
+
+01:02:32.700 --> 01:02:34.700
+<v Speaker 0>which should hopefully just use the archive.
+
+01:02:35.385 --> 01:02:37.385
+<v Speaker 0>Yeah. I've updated the shallowly, I'm not committing
+
+01:02:37.385 --> 01:02:38.505
+<v Speaker 0>that I'm not pushing it with an alpha
+
+01:02:38.505 --> 01:02:40.345
+<v Speaker 0>four and getting in a loop. I'm just
+
+01:02:40.345 --> 01:02:41.625
+<v Speaker 0>gonna do that. Right.
+
+01:02:45.385 --> 01:02:46.345
+<v Speaker 0>We didn't check the.
+
+01:02:49.240 --> 01:02:50.920
+<v Speaker 0>Okay. We're testing in process. So
+
+01:02:51.960 --> 01:02:53.160
+<v Speaker 0>my
+
+01:02:53.800 --> 01:02:55.720
+<v Speaker 0>very poor attempt at making this work work.
+
+01:02:55.720 --> 01:02:58.040
+<v Speaker 0>So let's run this locally. I mean
+
+01:02:58.920 --> 01:03:01.240
+<v Speaker 1>It's subjecting to that reject syntax. To what
+
+01:03:01.240 --> 01:03:03.155
+<v Speaker 1>is the bash reject syntax.
+
+01:03:03.155 --> 01:03:05.155
+<v Speaker 0>Yeah. I guess it's not that.
+
+01:03:07.715 --> 01:03:08.915
+<v Speaker 0>They're just doing
+
+01:03:12.195 --> 01:03:14.195
+<v Speaker 1>They've got square brackets for
+
+01:03:14.675 --> 01:03:16.435
+<v Speaker 1>character groups, which you'd expect.
+
+01:03:21.050 --> 01:03:22.490
+<v Speaker 1>Maybe you literally have to do it like
+
+01:03:22.490 --> 01:03:24.170
+<v Speaker 1>that, spell them out, and have them fall
+
+01:03:24.170 --> 01:03:24.810
+<v Speaker 1>through.
+
+01:03:25.210 --> 01:03:28.010
+<v Speaker 1>Because the double double semicolons, like, break. Right?
+
+01:03:27.930 --> 01:03:28.330
+<v Speaker 1>Yeah.
+
+01:03:28.810 --> 01:03:30.410
+<v Speaker 1>So we can now fall through. That'll get
+
+01:03:30.410 --> 01:03:32.090
+<v Speaker 1>it working. That'll get it. Pods
+
+01:03:32.570 --> 01:03:32.890
+<v Speaker 0>pod
+
+01:03:35.465 --> 01:03:36.185
+<v Speaker 1>Pull.
+
+01:03:36.825 --> 01:03:38.425
+<v Speaker 1>I'm not here to write vertices.
+
+01:03:38.425 --> 01:03:39.545
+<v Speaker 1>Life's too short.
+
+01:03:40.505 --> 01:03:42.825
+<v Speaker 0>And if I wanna test this, the easiest
+
+01:03:42.825 --> 01:03:44.665
+<v Speaker 0>way to do that would be
+
+01:03:45.225 --> 01:03:46.105
+<v Speaker 0>noun verb.
+
+01:03:49.230 --> 01:03:50.990
+<v Speaker 0>Although, now it's not gonna work because oh,
+
+01:03:50.990 --> 01:03:52.990
+<v Speaker 0>yeah. Noun. Well, it doesn't matter what that
+
+01:03:52.750 --> 01:03:53.150
+<v Speaker 0>Yeah.
+
+01:03:55.070 --> 01:03:57.150
+<v Speaker 0>Okay. So length seven.
+
+01:03:57.630 --> 01:03:59.390
+<v Speaker 0>Okay. So the fall through is not quite
+
+01:03:59.390 --> 01:04:01.525
+<v Speaker 0>right. Oh, wait. Wasn't it running the old
+
+01:04:01.525 --> 01:04:03.445
+<v Speaker 1>code then? Look at that error message again.
+
+01:04:06.325 --> 01:04:08.805
+<v Speaker 0>No. It's complaining about Got it. No. This
+
+01:04:08.805 --> 01:04:11.205
+<v Speaker 0>not really having a statement, I guess.
+
+01:04:12.085 --> 01:04:13.285
+<v Speaker 0>Was there an example of a fall Does
+
+01:04:13.285 --> 01:04:14.805
+<v Speaker 1>it need to be tapped in?
+
+01:04:15.390 --> 01:04:16.830
+<v Speaker 1>Did literally our
+
+01:04:16.990 --> 01:04:19.710
+<v Speaker 1>our statement literally be tapped in?
+
+01:04:21.069 --> 01:04:21.710
+<v Speaker 1>Oh.
+
+01:04:22.030 --> 01:04:23.630
+<v Speaker 1>As in, yeah, as in that?
+
+01:04:23.950 --> 01:04:25.869
+<v Speaker 1>And I think this something this wrong here
+
+01:04:25.869 --> 01:04:28.030
+<v Speaker 0>then. Right? So No. No. I think that's
+
+01:04:27.645 --> 01:04:28.365
+<v Speaker 1>fine.
+
+01:04:29.325 --> 01:04:30.765
+<v Speaker 1>I think that just needs to be indented
+
+01:04:30.765 --> 01:04:32.605
+<v Speaker 1>more than the and and the semicolons. I
+
+01:04:32.605 --> 01:04:34.045
+<v Speaker 1>think they just need to be dented more.
+
+01:04:34.365 --> 01:04:34.925
+<v Speaker 1>Yeah.
+
+01:04:36.605 --> 01:04:37.485
+<v Speaker 1>Try it.
+
+01:04:39.965 --> 01:04:41.005
+<v Speaker 0>Line seven.
+
+01:04:41.485 --> 01:04:44.200
+<v Speaker 1>Which one's seven then? That's weird. I mean,
+
+01:04:44.200 --> 01:04:46.279
+<v Speaker 0>if we let's I I don't mind if
+
+01:04:46.279 --> 01:04:49.000
+<v Speaker 0>it's duplicated for now. Yeah. Right. Yeah. Let's
+
+01:04:49.000 --> 01:04:49.559
+<v Speaker 1>make it work.
+
+01:04:54.135 --> 01:04:54.855
+<v Speaker 0>Okay.
+
+01:04:55.095 --> 01:04:57.815
+<v Speaker 0>Cool. So someone must have done this before.
+
+01:04:57.815 --> 01:05:00.135
+<v Speaker 0>Bash case multiple
+
+01:05:00.135 --> 01:05:01.015
+<v Speaker 0>matches.
+
+01:05:01.015 --> 01:05:01.575
+<v Speaker 0>Yeah.
+
+01:05:01.815 --> 01:05:02.855
+<v Speaker 0>Thanks, Google.
+
+01:05:05.735 --> 01:05:06.375
+<v Speaker 0>Was just trying to pay.
+
+01:05:07.299 --> 01:05:09.540
+<v Speaker 0>Oh, no. Wait. That's just the question. Yeah.
+
+01:05:09.539 --> 01:05:11.059
+<v Speaker 0>Like I did it all the time. Oh,
+
+01:05:11.059 --> 01:05:12.740
+<v Speaker 0>no. Okay. So just a piped.
+
+01:05:13.700 --> 01:05:14.900
+<v Speaker 0>So
+
+01:05:15.779 --> 01:05:16.900
+<v Speaker 0>let's try
+
+01:05:17.220 --> 01:05:17.940
+<v Speaker 0>pod
+
+01:05:19.155 --> 01:05:19.795
+<v Speaker 0>pull.
+
+01:05:20.195 --> 01:05:21.475
+<v Speaker 0>So we were just being a bit too
+
+01:05:21.475 --> 01:05:23.475
+<v Speaker 0>reg x y for it, I think, maybe.
+
+01:05:23.475 --> 01:05:24.835
+<v Speaker 1>We were being too good.
+
+01:05:26.115 --> 01:05:27.475
+<v Speaker 1>Okay. I get that. I get that a
+
+01:05:27.475 --> 01:05:28.835
+<v Speaker 0>lot. You get that a lot. Yeah. Yeah.
+
+01:05:28.835 --> 01:05:30.435
+<v Speaker 0>Yeah. Cool. There we go.
+
+01:05:31.820 --> 01:05:34.140
+<v Speaker 0>And since we're gonna push another release,
+
+01:05:35.500 --> 01:05:37.260
+<v Speaker 0>let's make it a bit more useful.
+
+01:05:37.660 --> 01:05:39.100
+<v Speaker 0>So deployments.
+
+01:05:39.900 --> 01:05:40.860
+<v Speaker 0>Deployment.
+
+01:05:41.420 --> 01:05:42.380
+<v Speaker 0>Deploys.
+
+01:05:42.700 --> 01:05:43.580
+<v Speaker 0>Deploy.
+
+01:05:43.580 --> 01:05:44.140
+<v Speaker 0>Yeah.
+
+01:05:44.700 --> 01:05:47.395
+<v Speaker 0>I've never used anything shorter than deploy. Have
+
+01:05:47.395 --> 01:05:49.635
+<v Speaker 0>you? Does anybody else think you can.
+
+01:05:50.195 --> 01:05:51.235
+<v Speaker 0>Deploys.
+
+01:05:51.635 --> 01:05:54.595
+<v Speaker 0>I'm using my command here. Hold on. Is
+
+01:05:56.355 --> 01:05:57.875
+<v Speaker 0>there a way to get the aliases actually?
+
+01:05:57.875 --> 01:05:59.075
+<v Speaker 0>I've never don't know if I've done that.
+
+01:05:59.075 --> 01:06:01.920
+<v Speaker 1>Yeah. I think CTL API resources tells you
+
+01:06:01.920 --> 01:06:03.200
+<v Speaker 1>that. Oh,
+
+01:06:08.000 --> 01:06:09.360
+<v Speaker 0>yeah. Cool. So
+
+01:06:10.080 --> 01:06:11.040
+<v Speaker 1>Deploy.
+
+01:06:11.200 --> 01:06:13.185
+<v Speaker 1>Yeah. And then you could just pluralize.
+
+01:06:14.865 --> 01:06:17.345
+<v Speaker 0>I couldn't oh, that's okay. So deployments and
+
+01:06:17.345 --> 01:06:19.665
+<v Speaker 0>deploy. So ours is better because we're giving
+
+01:06:19.665 --> 01:06:21.985
+<v Speaker 0>you deployment and deployed.
+
+01:06:22.465 --> 01:06:22.945
+<v Speaker 1>So I
+
+01:06:24.830 --> 01:06:26.510
+<v Speaker 0>okay. And let's make sure that this is
+
+01:06:26.510 --> 01:06:27.550
+<v Speaker 0>bad works.
+
+01:06:29.790 --> 01:06:30.510
+<v Speaker 0>Exec,
+
+01:06:30.670 --> 01:06:31.790
+<v Speaker 0>thingy, majiggy.
+
+01:06:31.950 --> 01:06:33.790
+<v Speaker 0>Yeah. There we go.
+
+01:06:34.350 --> 01:06:35.150
+<v Speaker 1>Nice.
+
+01:06:35.710 --> 01:06:36.910
+<v Speaker 0>This is bad.
+
+01:06:38.075 --> 01:06:38.875
+<v Speaker 0>We
+
+01:06:38.875 --> 01:06:40.555
+<v Speaker 0>don't support
+
+01:06:42.714 --> 01:06:43.435
+<v Speaker 0>known
+
+01:06:45.115 --> 01:06:45.835
+<v Speaker 1>yet.
+
+01:06:46.234 --> 01:06:47.115
+<v Speaker 1>Nice.
+
+01:06:48.474 --> 01:06:49.595
+<v Speaker 1>PR's welcome.
+
+01:06:51.674 --> 01:06:52.635
+<v Speaker 1>Great minds.
+
+01:06:52.795 --> 01:06:53.194
+<v Speaker 0>Alright.
+
+01:06:54.850 --> 01:06:55.490
+<v Speaker 0>So
+
+01:06:55.810 --> 01:06:57.810
+<v Speaker 0>we need to add our
+
+01:06:58.050 --> 01:06:59.970
+<v Speaker 0>YAML, our cube control
+
+01:07:00.450 --> 01:07:03.650
+<v Speaker 0>and we wanna update the version
+
+01:07:05.410 --> 01:07:07.330
+<v Speaker 0>to be version four and we're not gonna
+
+01:07:07.330 --> 01:07:09.410
+<v Speaker 0>update this one
+
+01:07:08.805 --> 01:07:11.045
+<v Speaker 0>until we've done the release. So
+
+01:07:12.805 --> 01:07:14.245
+<v Speaker 0>commit bash m.
+
+01:07:15.125 --> 01:07:16.484
+<v Speaker 0>Fix use.
+
+01:07:16.484 --> 01:07:16.965
+<v Speaker 0>Ah,
+
+01:07:17.765 --> 01:07:18.565
+<v Speaker 0>bash.
+
+01:07:20.645 --> 01:07:22.724
+<v Speaker 1>Yeah. Fixed us rather than return.
+
+01:07:24.480 --> 01:07:26.320
+<v Speaker 0>We go tag it
+
+01:07:26.720 --> 01:07:28.320
+<v Speaker 0>alpha four,
+
+01:07:28.640 --> 01:07:30.160
+<v Speaker 0>don't need a force.
+
+01:07:31.840 --> 01:07:33.120
+<v Speaker 0>Push with tags.
+
+01:07:33.600 --> 01:07:35.040
+<v Speaker 0>I feel like we're almost there.
+
+01:07:38.855 --> 01:07:40.455
+<v Speaker 0>Which means now
+
+01:07:41.815 --> 01:07:43.415
+<v Speaker 0>we create the release.
+
+01:07:44.934 --> 01:07:45.575
+<v Speaker 0>Yes.
+
+01:07:46.055 --> 01:07:47.655
+<v Speaker 0>And that should be us.
+
+01:07:52.055 --> 01:07:52.855
+<v Speaker 0>New release.
+
+01:07:56.869 --> 01:07:58.950
+<v Speaker 0>This is v one alpha four.
+
+01:07:59.510 --> 01:08:01.750
+<v Speaker 0>Definitely a pre release. We had a couple
+
+01:08:01.750 --> 01:08:04.710
+<v Speaker 0>comments come in here, so DevOps directive said,
+
+01:08:04.710 --> 01:08:07.494
+<v Speaker 0>good stuff, fun over your morning coffee. Cool.
+
+01:08:07.494 --> 01:08:09.095
+<v Speaker 0>Good. This is a bit of a weird
+
+01:08:09.095 --> 01:08:10.935
+<v Speaker 0>one but I'm definitely enjoying myself I hope
+
+01:08:10.935 --> 01:08:11.815
+<v Speaker 0>that is true. Yeah
+
+01:08:12.215 --> 01:08:13.975
+<v Speaker 1>yeah. And
+
+01:08:13.975 --> 01:08:16.774
+<v Speaker 0>Adam says you're a little late. I mean
+
+01:08:16.774 --> 01:08:18.375
+<v Speaker 0>I feel sorry for the people who late
+
+01:08:18.375 --> 01:08:19.734
+<v Speaker 0>because this is wild but
+
+01:08:20.055 --> 01:08:21.734
+<v Speaker 0>you watched the Laravel Docker streams good work.
+
+01:08:21.734 --> 01:08:24.570
+<v Speaker 0>Oh thanks man, appreciate that. Okay so v
+
+01:08:24.570 --> 01:08:25.609
+<v Speaker 0>one alpha four
+
+01:08:25.930 --> 01:08:27.050
+<v Speaker 0>is out
+
+01:08:27.130 --> 01:08:30.090
+<v Speaker 0>which means now the crew installed didn't work
+
+01:08:30.090 --> 01:08:32.170
+<v Speaker 0>last time right? So hopefully we can just,
+
+01:08:32.170 --> 01:08:33.850
+<v Speaker 0>there must be some sort of update command
+
+01:08:33.850 --> 01:08:36.410
+<v Speaker 0>but first I'm gonna re download. We'd fix
+
+01:08:36.410 --> 01:08:37.770
+<v Speaker 1>that SHA right? Yeah.
+
+01:08:38.385 --> 01:08:39.984
+<v Speaker 0>Let's get our new SHA,
+
+01:08:40.064 --> 01:08:41.104
+<v Speaker 0>which is here.
+
+01:08:42.224 --> 01:08:44.304
+<v Speaker 0>Weird checking egg thing. I don't think we're
+
+01:08:44.304 --> 01:08:45.824
+<v Speaker 0>doing this right at all.
+
+01:08:47.344 --> 01:08:49.824
+<v Speaker 1>I think GitHub actions would let us do
+
+01:08:49.824 --> 01:08:50.864
+<v Speaker 1>this in one go.
+
+01:08:52.639 --> 01:08:54.239
+<v Speaker 0>So let's take a look at For example.
+
+01:08:55.040 --> 01:08:57.279
+<v Speaker 1>Yeah. It must have an upgrade command. Yeah.
+
+01:08:57.279 --> 01:08:58.959
+<v Speaker 0>That's an sure.
+
+01:08:59.040 --> 01:09:01.359
+<v Speaker 0>Upgrade install plugins to newer versions. Update local
+
+01:09:01.359 --> 01:09:03.439
+<v Speaker 0>copy of the plugin index. Let's try and
+
+01:09:03.439 --> 01:09:04.960
+<v Speaker 0>update. See if it pulls that.
+
+01:09:06.984 --> 01:09:08.664
+<v Speaker 0>Oh, wait. This is coming oh, yes. This
+
+01:09:08.664 --> 01:09:10.824
+<v Speaker 0>is coming from crew index repository. So we
+
+01:09:10.824 --> 01:09:12.984
+<v Speaker 0>do need to push the manifest to that.
+
+01:09:14.104 --> 01:09:16.104
+<v Speaker 1>But we pointing at a local oh, right.
+
+01:09:16.104 --> 01:09:18.024
+<v Speaker 1>So can we just give it a manifest?
+
+01:09:18.420 --> 01:09:20.100
+<v Speaker 1>Can we do a local update by pointing
+
+01:09:20.100 --> 01:09:22.020
+<v Speaker 1>it in a manifest still? Would it still
+
+01:09:22.020 --> 01:09:23.540
+<v Speaker 1>take that dash dash manifest?
+
+01:09:27.060 --> 01:09:28.820
+<v Speaker 0>No. So am I gonna have to uninstall
+
+01:09:28.820 --> 01:09:30.100
+<v Speaker 0>it and reinstall it?
+
+01:09:30.580 --> 01:09:33.314
+<v Speaker 0>That must be the Maybe. The local workflow,
+
+01:09:33.314 --> 01:09:35.635
+<v Speaker 0>I guess. So uninstall
+
+01:09:37.154 --> 01:09:38.274
+<v Speaker 0>noun verb.
+
+01:09:40.675 --> 01:09:42.755
+<v Speaker 0>Noun verbs. Like, it is in my install.
+
+01:09:42.755 --> 01:09:43.635
+<v Speaker 0>Reinstall.
+
+01:09:43.715 --> 01:09:44.354
+<v Speaker 0>Oh, yeah.
+
+01:09:46.200 --> 01:09:48.840
+<v Speaker 0>And now we could do Ken. Let's see
+
+01:09:48.840 --> 01:09:50.439
+<v Speaker 0>if we get our exact thing.
+
+01:09:52.840 --> 01:09:55.000
+<v Speaker 0>Although it said we don't support DHHF.
+
+01:09:55.000 --> 01:09:57.400
+<v Speaker 0>So it's wrong wrong interpretation. But
+
+01:09:58.840 --> 01:09:59.400
+<v Speaker 0>we do have.
+
+01:10:01.505 --> 01:10:03.505
+<v Speaker 0>Oh, no. Oh, no.
+
+01:10:04.305 --> 01:10:06.705
+<v Speaker 1>Oh, we literally shifted too many times.
+
+01:10:07.665 --> 01:10:09.265
+<v Speaker 1>Oh, this works locally.
+
+01:10:09.265 --> 01:10:11.105
+<v Speaker 1>Right. It worked locally, but there's an extra
+
+01:10:11.105 --> 01:10:12.865
+<v Speaker 1>argument in the front when you're running in
+
+01:10:12.865 --> 01:10:14.625
+<v Speaker 1>production. Right. Hot fix. We need a test
+
+01:10:14.625 --> 01:10:15.025
+<v Speaker 1>on this.
+
+01:10:15.930 --> 01:10:18.170
+<v Speaker 0>We need a hot fix. Alright. So we
+
+01:10:18.650 --> 01:10:20.330
+<v Speaker 0>need to push five and we need to
+
+01:10:20.330 --> 01:10:23.130
+<v Speaker 0>fix our bash so noun is
+
+01:10:23.210 --> 01:10:23.850
+<v Speaker 0>two.
+
+01:10:26.090 --> 01:10:27.450
+<v Speaker 0>We can fix this.
+
+01:10:28.090 --> 01:10:29.930
+<v Speaker 0>Oh, so that's properly right now actually.
+
+01:10:31.835 --> 01:10:33.195
+<v Speaker 0>And then this is
+
+01:10:33.675 --> 01:10:34.635
+<v Speaker 0>oh no. That's
+
+01:10:35.755 --> 01:10:37.034
+<v Speaker 0>it's still one.
+
+01:10:37.275 --> 01:10:40.074
+<v Speaker 0>We just need to shift. So shift two.
+
+01:10:40.074 --> 01:10:41.915
+<v Speaker 0>Oh, you did that when you were factoring.
+
+01:10:41.915 --> 01:10:43.515
+<v Speaker 0>That's what it was. Yeah. I did. I
+
+01:10:43.515 --> 01:10:44.315
+<v Speaker 1>broke it.
+
+01:10:45.114 --> 01:10:47.355
+<v Speaker 1>Okay. You think how many mice
+
+01:10:47.329 --> 01:10:48.849
+<v Speaker 0>Oh, and there's a bug.
+
+01:10:51.969 --> 01:10:52.609
+<v Speaker 1>Yeah.
+
+01:10:53.090 --> 01:10:53.889
+<v Speaker 1>So there is.
+
+01:10:55.010 --> 01:10:56.050
+<v Speaker 0>Okay.
+
+01:10:56.050 --> 01:10:56.609
+<v Speaker 0>So
+
+01:11:00.405 --> 01:11:01.925
+<v Speaker 0>And then we do a shift and get
+
+01:11:02.085 --> 01:11:03.925
+<v Speaker 0>okay. I'm confident with that. Are you confident?
+
+01:11:03.925 --> 01:11:05.045
+<v Speaker 1>It feels like a lot of shifts, but
+
+01:11:05.045 --> 01:11:06.084
+<v Speaker 1>okay. Okay.
+
+01:11:06.485 --> 01:11:07.204
+<v Speaker 0>So
+
+01:11:07.844 --> 01:11:10.565
+<v Speaker 0>we are pushing our new we need to
+
+01:11:10.565 --> 01:11:12.164
+<v Speaker 0>go to alpha five. This is a very
+
+01:11:12.164 --> 01:11:14.005
+<v Speaker 0>fast moving project. Definitely cloud native.
+
+01:11:16.380 --> 01:11:17.900
+<v Speaker 1>Multiple deployments a day.
+
+01:11:18.940 --> 01:11:22.060
+<v Speaker 1>Testing in production. I mean Unrefactored
+
+01:11:22.220 --> 01:11:23.100
+<v Speaker 0>mass
+
+01:11:23.180 --> 01:11:24.140
+<v Speaker 0>fix.
+
+01:11:26.860 --> 01:11:27.580
+<v Speaker 1>How?
+
+01:11:28.460 --> 01:11:28.700
+<v Speaker 1>Correct.
+
+01:11:31.185 --> 01:11:33.665
+<v Speaker 0>Push with tax. We're almost there. So, you
+
+01:11:33.665 --> 01:11:35.425
+<v Speaker 1>got the muscle memory for this now. I
+
+01:11:35.425 --> 01:11:37.105
+<v Speaker 0>know. I've got I've got the groove going.
+
+01:11:37.105 --> 01:11:37.505
+<v Speaker 0>So
+
+01:11:38.385 --> 01:11:39.745
+<v Speaker 1>You're in you're in flow.
+
+01:11:41.265 --> 01:11:42.465
+<v Speaker 0>Alpha five.
+
+01:11:42.625 --> 01:11:44.260
+<v Speaker 0>I mean, I'm almost tempted to v one
+
+01:11:44.260 --> 01:11:46.020
+<v Speaker 0>this now, to be honest. If
+
+01:11:46.980 --> 01:11:48.420
+<v Speaker 1>this worked, we could, like, we we could
+
+01:11:48.420 --> 01:11:50.180
+<v Speaker 1>naught point one it. Yeah. Yeah. Yeah. For
+
+01:11:50.180 --> 01:11:53.140
+<v Speaker 0>sure. Alright. Let's grab release five,
+
+01:11:53.860 --> 01:11:54.820
+<v Speaker 0>SHA Summit.
+
+01:11:55.380 --> 01:11:59.285
+<v Speaker 0>Copy this. Uninstall. Reinstall. I mean that development
+
+01:11:59.285 --> 01:12:01.845
+<v Speaker 0>loop is not ideal I think, I still
+
+01:12:01.845 --> 01:12:04.325
+<v Speaker 0>think we're doing something slightly incorrect with how
+
+01:12:04.325 --> 01:12:06.085
+<v Speaker 0>crew wants us to work but
+
+01:12:06.725 --> 01:12:08.885
+<v Speaker 0>it's working for now. It is what we
+
+01:12:08.885 --> 01:12:10.565
+<v Speaker 1>haven't actually read their docs to be fair
+
+01:12:10.565 --> 01:12:11.205
+<v Speaker 1>so.
+
+01:12:11.900 --> 01:12:14.539
+<v Speaker 0>That's true. So let's uninstall,
+
+01:12:14.540 --> 01:12:15.659
+<v Speaker 0>and then verbs,
+
+01:12:15.659 --> 01:12:17.900
+<v Speaker 0>and then install, and then verbs.
+
+01:12:18.860 --> 01:12:19.900
+<v Speaker 0>That should work.
+
+01:12:20.380 --> 01:12:21.820
+<v Speaker 0>Okay. Oh, yeah.
+
+01:12:24.540 --> 01:12:28.135
+<v Speaker 1>Come on. Look at that. Hey. Let's scrape.
+
+01:12:28.135 --> 01:12:29.094
+<v Speaker 0>Engine x.
+
+01:12:29.895 --> 01:12:32.054
+<v Speaker 0>Oh, no. No.
+
+01:12:32.135 --> 01:12:32.695
+<v Speaker 1>What?
+
+01:12:36.455 --> 01:12:38.374
+<v Speaker 1>I don't understand.
+
+01:12:39.175 --> 01:12:39.415
+<v Speaker 1>That's
+
+01:12:41.280 --> 01:12:42.400
+<v Speaker 0>That should work.
+
+01:12:45.440 --> 01:12:47.440
+<v Speaker 1>How is it extracting that?
+
+01:12:48.000 --> 01:12:50.560
+<v Speaker 0>Okay. So how did it get known NGINX
+
+01:12:50.560 --> 01:12:51.440
+<v Speaker 0>one?
+
+01:12:53.600 --> 01:12:54.880
+<v Speaker 1>So we look at the old patch.
+
+01:12:58.625 --> 01:13:01.425
+<v Speaker 1>No, it was verb. It was verb, right?
+
+01:13:02.865 --> 01:13:04.864
+<v Speaker 1>Oh no, it was noun. No, was noun.
+
+01:13:05.585 --> 01:13:07.425
+<v Speaker 0>Yeah, verb should be here.
+
+01:13:07.985 --> 01:13:09.105
+<v Speaker 1>Shifting to
+
+01:13:09.665 --> 01:13:10.625
+<v Speaker 0>I think we,
+
+01:13:12.300 --> 01:13:14.380
+<v Speaker 0>it's that shift. What happens if you shift
+
+01:13:14.380 --> 01:13:16.460
+<v Speaker 0>twice and there's only one in the array?
+
+01:13:16.460 --> 01:13:18.060
+<v Speaker 0>Is that and we're just rejecting the last
+
+01:13:18.060 --> 01:13:19.580
+<v Speaker 0>one. Oh, maybe.
+
+01:13:22.380 --> 01:13:24.540
+<v Speaker 0>So it's shift one to get the known.
+
+01:13:25.525 --> 01:13:27.365
+<v Speaker 0>Shift to oh yeah. That you're right. There
+
+01:13:27.365 --> 01:13:29.445
+<v Speaker 0>was too many shifts. Shift one. That's what
+
+01:13:29.445 --> 01:13:31.445
+<v Speaker 1>I'm saying. Let's run this locally.
+
+01:13:31.845 --> 01:13:33.125
+<v Speaker 0>I'm not I
+
+01:13:33.525 --> 01:13:35.525
+<v Speaker 1>can't
+
+01:13:35.525 --> 01:13:36.965
+<v Speaker 1>reason about this from first principles because I
+
+01:13:36.965 --> 01:13:38.290
+<v Speaker 1>don't actually know what he's doing. I think
+
+01:13:38.290 --> 01:13:39.570
+<v Speaker 1>we just need a lot of print f
+
+01:13:39.570 --> 01:13:40.449
+<v Speaker 1>debugging.
+
+01:13:42.690 --> 01:13:45.250
+<v Speaker 0>Yeah. It worked locally. Yeah. How did we
+
+01:13:45.250 --> 01:13:46.369
+<v Speaker 0>break it?
+
+01:13:47.410 --> 01:13:49.810
+<v Speaker 1>But it gets one more argument, right, when
+
+01:13:49.810 --> 01:13:50.530
+<v Speaker 1>we're running
+
+01:13:51.125 --> 01:13:53.685
+<v Speaker 0>No. Because I'm passing in noun. Oh, you
+
+01:13:53.685 --> 01:13:54.485
+<v Speaker 1>are? Yeah.
+
+01:13:55.125 --> 01:13:56.165
+<v Speaker 0>Describe
+
+01:13:56.165 --> 01:13:57.525
+<v Speaker 0>nginx one.
+
+01:13:57.925 --> 01:13:59.925
+<v Speaker 0>Alright. That that is perfect.
+
+01:14:00.405 --> 01:14:01.045
+<v Speaker 0>So
+
+01:14:01.365 --> 01:14:03.365
+<v Speaker 0>let let's push it one more time and
+
+01:14:03.365 --> 01:14:05.925
+<v Speaker 0>then we'll wrap it up. We're kinda
+
+01:14:06.870 --> 01:14:07.990
+<v Speaker 0>getting towards the end of an hour and
+
+01:14:07.990 --> 01:14:09.350
+<v Speaker 0>a half. And as much fun as it
+
+01:14:09.350 --> 01:14:10.950
+<v Speaker 0>is Oh, wow. We've got a job to
+
+01:14:10.950 --> 01:14:12.150
+<v Speaker 0>do. Real jobs.
+
+01:14:13.030 --> 01:14:14.470
+<v Speaker 1>Yeah. First, we need to put back the
+
+01:14:14.470 --> 01:14:16.470
+<v Speaker 1>code to what I wrote because that was
+
+01:14:16.470 --> 01:14:17.990
+<v Speaker 1>correct and you need to publish that in
+
+01:14:17.990 --> 01:14:18.310
+<v Speaker 1>public.
+
+01:14:18.815 --> 01:14:19.614
+<v Speaker 1>And then
+
+01:14:20.735 --> 01:14:22.655
+<v Speaker 1>there we could we could call it.
+
+01:14:23.375 --> 01:14:24.335
+<v Speaker 0>That's
+
+01:14:24.335 --> 01:14:26.335
+<v Speaker 0>gonna hurt with that commit. Right? Okay. It
+
+01:14:26.335 --> 01:14:28.415
+<v Speaker 1>was the sarcasm. That's why I'm coming for
+
+01:14:28.415 --> 01:14:29.454
+<v Speaker 1>you, David. It
+
+01:14:29.855 --> 01:14:31.610
+<v Speaker 1>was the shade I got last time.
+
+01:14:32.730 --> 01:14:34.890
+<v Speaker 0>Re unrefactored,
+
+01:14:34.890 --> 01:14:35.449
+<v Speaker 0>Matt.
+
+01:14:35.770 --> 01:14:37.770
+<v Speaker 0>And I'll take it out of court. Oh,
+
+01:14:37.770 --> 01:14:39.770
+<v Speaker 1>thank you. Affects him Don't feel so needed.
+
+01:14:39.850 --> 01:14:40.410
+<v Speaker 0>David's.
+
+01:14:45.995 --> 01:14:47.275
+<v Speaker 1>The humiliation.
+
+01:14:47.275 --> 01:14:47.915
+<v Speaker 1>Right.
+
+01:14:48.795 --> 01:14:50.315
+<v Speaker 1>That was worth it.
+
+01:14:51.835 --> 01:14:54.395
+<v Speaker 0>Right. Alpha six six alphas in a day.
+
+01:14:54.395 --> 01:14:55.594
+<v Speaker 0>Right. So
+
+01:14:57.355 --> 01:14:58.795
+<v Speaker 0>let's get a I wish we had to
+
+01:14:58.795 --> 01:15:01.369
+<v Speaker 1>get some seed some seed funding for that.
+
+01:15:01.369 --> 01:15:03.290
+<v Speaker 0>We don't have a star yet. I'm really
+
+01:15:03.290 --> 01:15:05.530
+<v Speaker 0>disappointed in your audience. Come on.
+
+01:15:07.530 --> 01:15:09.290
+<v Speaker 0>No. I think it'll get hub star. This
+
+01:15:09.290 --> 01:15:11.289
+<v Speaker 0>is gold, pure gold.
+
+01:15:12.250 --> 01:15:14.810
+<v Speaker 0>Right. Imagine the amount of update notifications you
+
+01:15:14.810 --> 01:15:17.165
+<v Speaker 1>get Oh. Oh yeah. Just don't watch it.
+
+01:15:17.165 --> 01:15:19.565
+<v Speaker 0>That's probably a poor idea. But star of
+
+01:15:19.565 --> 01:15:20.844
+<v Speaker 0>the thing, please. So
+
+01:15:22.285 --> 01:15:24.364
+<v Speaker 0>we now have alpha six
+
+01:15:27.325 --> 01:15:29.005
+<v Speaker 0>and we wanna uninstall.
+
+01:15:30.680 --> 01:15:31.560
+<v Speaker 0>Install
+
+01:15:34.360 --> 01:15:35.320
+<v Speaker 0>key in
+
+01:15:35.640 --> 01:15:37.240
+<v Speaker 0>pods. Oh, come on.
+
+01:15:43.105 --> 01:15:45.905
+<v Speaker 0>There's something weird happening between us running this
+
+01:15:45.905 --> 01:15:49.024
+<v Speaker 0>locally versus what we're getting as the
+
+01:15:51.905 --> 01:15:54.385
+<v Speaker 0>so the plugins getting one less. That's what
+
+01:15:54.385 --> 01:15:54.864
+<v Speaker 0>it is.
+
+01:15:55.640 --> 01:15:58.040
+<v Speaker 0>So Oh, is it actually stripping it? Right.
+
+01:15:58.040 --> 01:15:58.440
+<v Speaker 1>Yeah.
+
+01:16:02.040 --> 01:16:04.280
+<v Speaker 0>Because remember, it's just it's just executing
+
+01:16:05.560 --> 01:16:08.040
+<v Speaker 0>our script. Of course. It is. But I
+
+01:16:08.040 --> 01:16:10.040
+<v Speaker 1>I assumed it would dump its own argument
+
+01:16:10.040 --> 01:16:12.405
+<v Speaker 1>array through. I didn't think it would okay.
+
+01:16:12.405 --> 01:16:13.605
+<v Speaker 1>So we just need to lose that first
+
+01:16:13.764 --> 01:16:15.925
+<v Speaker 0>the first shift. Yeah. Right. I thought it
+
+01:16:15.925 --> 01:16:17.445
+<v Speaker 1>was I thought it was copying its argument
+
+01:16:17.445 --> 01:16:18.644
+<v Speaker 1>array verbatim.
+
+01:16:18.724 --> 01:16:20.804
+<v Speaker 1>I'm sure we had evidence for that. Oh,
+
+01:16:20.804 --> 01:16:22.164
+<v Speaker 1>I don't know. I don't know.
+
+01:16:23.045 --> 01:16:24.724
+<v Speaker 0>We're now in alpha seven.
+
+01:16:27.590 --> 01:16:29.510
+<v Speaker 0>I don't know what the commit message is
+
+01:16:29.510 --> 01:16:30.870
+<v Speaker 0>for this fix.
+
+01:16:31.910 --> 01:16:33.670
+<v Speaker 0>Let's just do shrug emoji.
+
+01:16:34.230 --> 01:16:34.949
+<v Speaker 1>Yeah.
+
+01:16:37.830 --> 01:16:38.710
+<v Speaker 0>We'll go with this one.
+
+01:16:44.495 --> 01:16:45.135
+<v Speaker 0>Okay.
+
+01:16:45.855 --> 01:16:46.894
+<v Speaker 0>Try again.
+
+01:16:49.375 --> 01:16:51.054
+<v Speaker 1>That item was pretty decent.
+
+01:16:52.655 --> 01:16:54.735
+<v Speaker 0>I'm assuming it doesn't handle the skin tone
+
+01:16:54.735 --> 01:16:56.655
+<v Speaker 0>variance. That seems to be the problem.
+
+01:16:57.135 --> 01:16:57.455
+<v Speaker 1>Right.
+
+01:16:58.300 --> 01:16:59.900
+<v Speaker 0>There's tag seven.
+
+01:17:01.820 --> 01:17:03.340
+<v Speaker 0>I see now there's a window for someone
+
+01:17:03.340 --> 01:17:04.620
+<v Speaker 0>to have starved this and if it's not
+
+01:17:04.620 --> 01:17:06.540
+<v Speaker 0>you Matt, I mean, what are you even
+
+01:17:06.540 --> 01:17:07.260
+<v Speaker 0>doing here?
+
+01:17:07.739 --> 01:17:10.864
+<v Speaker 0>So. I mean, it's me because
+
+01:17:11.745 --> 01:17:13.505
+<v Speaker 1>I thought we needed some love.
+
+01:17:14.785 --> 01:17:16.385
+<v Speaker 0>Yeah. If it wasn't you, you were gonna
+
+01:17:16.385 --> 01:17:18.225
+<v Speaker 0>get called out for that, so I'm glad.
+
+01:17:18.225 --> 01:17:19.184
+<v Speaker 0>Right. Okay.
+
+01:17:20.945 --> 01:17:23.665
+<v Speaker 0>Now we have seven for redownload and release.
+
+01:17:23.665 --> 01:17:26.130
+<v Speaker 0>I really I I don't like this workflow.
+
+01:17:26.450 --> 01:17:27.490
+<v Speaker 1>No. We could I
+
+01:17:29.170 --> 01:17:30.850
+<v Speaker 0>mean, I don't think it's the workflow that's
+
+01:17:30.850 --> 01:17:32.770
+<v Speaker 0>expected of us. I think it's us doing
+
+01:17:32.770 --> 01:17:33.410
+<v Speaker 0>something.
+
+01:17:33.810 --> 01:17:35.090
+<v Speaker 1>I don't think we need we don't need
+
+01:17:35.090 --> 01:17:36.290
+<v Speaker 1>to install it every time. Right? We could
+
+01:17:36.290 --> 01:17:37.650
+<v Speaker 1>literally just overwrite that SIM link.
+
+01:17:39.045 --> 01:17:40.485
+<v Speaker 0>Yeah. Alright.
+
+01:17:40.725 --> 01:17:43.525
+<v Speaker 0>That's what's I'm sure it says. So can
+
+01:17:44.085 --> 01:17:45.125
+<v Speaker 0>pods.
+
+01:17:47.845 --> 01:17:49.845
+<v Speaker 0>Get. Should be the same.
+
+01:17:50.485 --> 01:17:51.365
+<v Speaker 1>There's bit of lag.
+
+01:17:53.120 --> 01:17:56.320
+<v Speaker 0>Yeah. I'm at Nail
+
+01:17:56.320 --> 01:17:57.520
+<v Speaker 1>biting for Eric. Oh, yeah.
+
+01:17:58.160 --> 01:17:59.119
+<v Speaker 1>Look at that.
+
+01:18:00.080 --> 01:18:01.360
+<v Speaker 1>That's so exciting.
+
+01:18:03.520 --> 01:18:05.840
+<v Speaker 0>Job done. Oh, the final test.
+
+01:18:06.080 --> 01:18:06.639
+<v Speaker 0>Exec.
+
+01:18:07.200 --> 01:18:07.840
+<v Speaker 1>Oh, yeah.
+
+01:18:08.855 --> 01:18:11.414
+<v Speaker 0>Nice. And it doesn't support exec.
+
+01:18:12.455 --> 01:18:13.335
+<v Speaker 1>Awesome.
+
+01:18:14.375 --> 01:18:17.094
+<v Speaker 1>Good work, team. Yeah. Let's
+
+01:18:17.094 --> 01:18:18.935
+<v Speaker 0>add. So that we add to the noun
+
+01:18:18.935 --> 01:18:21.094
+<v Speaker 0>verb. It's not a tag. It's not a
+
+01:18:21.094 --> 01:18:23.210
+<v Speaker 0>release. So this is just a chore.
+
+01:18:24.010 --> 01:18:24.969
+<v Speaker 0>Update it.
+
+01:18:25.530 --> 01:18:28.170
+<v Speaker 0>Crew manifest. I don't think the manifest should
+
+01:18:28.170 --> 01:18:30.489
+<v Speaker 0>probably live in this repository.
+
+01:18:30.570 --> 01:18:31.929
+<v Speaker 0>But for now,
+
+01:18:32.489 --> 01:18:35.085
+<v Speaker 0>we have a working plugin. I'm happy to
+
+01:18:35.085 --> 01:18:36.605
+<v Speaker 1>No. I mean, what what we haven't done
+
+01:18:36.605 --> 01:18:38.205
+<v Speaker 1>is publish it. Right? I guess publishing it
+
+01:18:38.205 --> 01:18:40.685
+<v Speaker 1>is gonna involve getting that manifest into the
+
+01:18:40.685 --> 01:18:41.885
+<v Speaker 1>central upstream
+
+01:18:42.045 --> 01:18:43.965
+<v Speaker 0>Yeah. There's a crew index
+
+01:18:44.205 --> 01:18:46.605
+<v Speaker 0>which Right. Which I assume means Yeah. We
+
+01:18:46.605 --> 01:18:48.365
+<v Speaker 1>need to PR or something into this.
+
+01:18:50.650 --> 01:18:52.489
+<v Speaker 0>Yeah. There we go. So this is just
+
+01:18:52.330 --> 01:18:53.449
+<v Speaker 0>Maybe this is the
+
+01:18:55.930 --> 01:18:56.889
+<v Speaker 1>canonical source.
+
+01:18:57.290 --> 01:18:58.889
+<v Speaker 1>Maybe it's not. I don't know.
+
+01:18:59.370 --> 01:19:01.130
+<v Speaker 1>We we could avoid the double commit thing
+
+01:19:01.130 --> 01:19:03.074
+<v Speaker 1>with with some GitHub action magic.
+
+01:19:03.795 --> 01:19:05.315
+<v Speaker 0>Well, don't think we need the double commit.
+
+01:19:05.315 --> 01:19:07.155
+<v Speaker 0>We just don't need that
+
+01:19:07.635 --> 01:19:09.555
+<v Speaker 1>Oh, we we just made the file. Yeah.
+
+01:19:09.555 --> 01:19:12.195
+<v Speaker 1>Yeah. The other repository just becomes the actual
+
+01:19:12.355 --> 01:19:13.635
+<v Speaker 1>the single source of it.
+
+01:19:14.675 --> 01:19:15.635
+<v Speaker 0>So let's
+
+01:19:16.830 --> 01:19:18.110
+<v Speaker 0>try we
+
+01:19:18.910 --> 01:19:20.510
+<v Speaker 0>we we want to submit that PR, like
+
+01:19:20.510 --> 01:19:22.430
+<v Speaker 0>I'll do that later. I don't think it's
+
+01:19:22.430 --> 01:19:23.230
+<v Speaker 1>quite ready.
+
+01:19:23.550 --> 01:19:25.390
+<v Speaker 0>Do mean it's not ready? Does it handles
+
+01:19:25.390 --> 01:19:26.670
+<v Speaker 0>pods and deployments.
+
+01:19:29.070 --> 01:19:30.350
+<v Speaker 1>We need that we should put a license
+
+01:19:30.350 --> 01:19:32.735
+<v Speaker 1>on it at least. You're right. Okay. Yeah.
+
+01:19:32.735 --> 01:19:34.335
+<v Speaker 0>Let's get that cleaned up and ready for
+
+01:19:34.335 --> 01:19:35.695
+<v Speaker 0>open source consumption.
+
+01:19:35.855 --> 01:19:37.615
+<v Speaker 0>We can fight on the license later. I'm
+
+01:19:37.615 --> 01:19:40.255
+<v Speaker 0>assuming we'll just go MIT though. So Oh,
+
+01:19:40.255 --> 01:19:41.695
+<v Speaker 1>yeah. Yeah. I just mean it's it's polite
+
+01:19:41.695 --> 01:19:43.695
+<v Speaker 1>to put to to give it to the
+
+01:19:43.695 --> 01:19:45.775
+<v Speaker 1>world. Or we could proprietor license it and
+
+01:19:45.775 --> 01:19:46.335
+<v Speaker 0>sell it.
+
+01:19:48.700 --> 01:19:49.660
+<v Speaker 1>I pay
+
+01:19:50.540 --> 01:19:52.300
+<v Speaker 1>nothing for that. Yeah. Yeah.
+
+01:19:53.500 --> 01:19:55.340
+<v Speaker 0>That was fun. I really enjoyed that. It
+
+01:19:55.340 --> 01:19:55.900
+<v Speaker 0>was.
+
+01:19:56.460 --> 01:19:58.860
+<v Speaker 0>I hope people watching that got some value
+
+01:19:58.860 --> 01:20:01.980
+<v Speaker 0>from understanding how a cube control plugin works.
+
+01:20:02.645 --> 01:20:05.364
+<v Speaker 0>The development cycle working with crew, I mean,
+
+01:20:05.364 --> 01:20:07.045
+<v Speaker 0>don't think we've nailed that. I think we
+
+01:20:07.045 --> 01:20:09.205
+<v Speaker 0>identified at the end there the reason we
+
+01:20:09.205 --> 01:20:11.205
+<v Speaker 0>have that weird thing. I'm not sure how
+
+01:20:11.205 --> 01:20:13.844
+<v Speaker 0>to upgrade a local plugin but there's definitely
+
+01:20:13.844 --> 01:20:15.045
+<v Speaker 0>stuff that is to get that a little
+
+01:20:15.045 --> 01:20:15.525
+<v Speaker 0>bit nicer.
+
+01:20:16.760 --> 01:20:17.880
+<v Speaker 0>And hopefully,
+
+01:20:18.120 --> 01:20:20.280
+<v Speaker 0>some people find this useful when we publish
+
+01:20:20.280 --> 01:20:22.760
+<v Speaker 0>it. Anything you'd like to add or finish
+
+01:20:22.760 --> 01:20:23.720
+<v Speaker 0>with there, Matt?
+
+01:20:25.400 --> 01:20:27.000
+<v Speaker 1>No. I don't think so. That was that
+
+01:20:27.000 --> 01:20:28.120
+<v Speaker 1>was a lot of fun. I might go
+
+01:20:28.120 --> 01:20:29.995
+<v Speaker 1>and write a couple of plugins. Thank you
+
+01:20:29.995 --> 01:20:31.835
+<v Speaker 1>very much for having me. No. My pleasure.
+
+01:20:31.835 --> 01:20:33.514
+<v Speaker 0>Thank you for joining me. Thank you.
+
+01:20:33.915 --> 01:20:36.715
+<v Speaker 0>I I really I'm looking forward to adding
+
+01:20:36.715 --> 01:20:37.594
+<v Speaker 0>a few more
+
+01:20:38.235 --> 01:20:40.155
+<v Speaker 0>nodes to this and actually using it in
+
+01:20:40.155 --> 01:20:43.275
+<v Speaker 0>my daily cube control journey. So anyway, that's
+
+01:20:43.355 --> 01:20:45.479
+<v Speaker 1>I'm gonna refactor all my shell this is.
+
+01:20:45.800 --> 01:20:48.039
+<v Speaker 0>Yeah exactly I can cut off so many
+
+01:20:48.039 --> 01:20:49.000
+<v Speaker 0>KPOs,
+
+01:20:49.000 --> 01:20:51.479
+<v Speaker 0>KPDs, all these different things. Yeah. Alright
+
+01:20:52.840 --> 01:20:55.480
+<v Speaker 0>anyway, thanks have a great day I'm gonna
+
+01:20:55.480 --> 01:20:57.079
+<v Speaker 0>actually do some real work now before I
+
+01:20:57.079 --> 01:20:58.935
+<v Speaker 0>get fired So I'll speak to you soon.
+
+01:20:59.495 --> 01:21:00.615
+<v Speaker 0>Cool. See you soon. Bye.

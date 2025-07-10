@@ -1,0 +1,3464 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: fa4b56f4-318d-4750-964e-a32b1f1680d8
+Created: 2025-04-29T14:14:11.030Z
+Duration: 2954.7227
+Channels: 1
+
+00:02:43.745 --> 00:02:46.705
+<v Speaker 0>Hello, and welcome back to the Rawkode Academy.
+
+00:02:47.010 --> 00:02:49.730
+<v Speaker 0>I'm your host, David Flanagan. And today, we
+
+00:02:49.730 --> 00:02:52.450
+<v Speaker 0>are going to take a look at KWasm.
+
+00:02:52.610 --> 00:02:54.450
+<v Speaker 0>KWasm is a project that wants to make
+
+00:02:54.450 --> 00:02:56.450
+<v Speaker 0>it easier for you to run WebAssembly workloads
+
+00:02:56.450 --> 00:02:57.890
+<v Speaker 0>on your Kubernetes
+
+00:02:57.890 --> 00:02:58.770
+<v Speaker 0>clusters.
+
+00:02:59.409 --> 00:03:01.970
+<v Speaker 0>So guidance for today's session, I am joined
+
+00:03:03.315 --> 00:03:05.955
+<v Speaker 0>by Christophe and Sven from Liquid Reply who
+
+00:03:05.955 --> 00:03:09.075
+<v Speaker 0>are also working on the KWasm project.
+
+00:03:09.395 --> 00:03:10.835
+<v Speaker 0>Hi there. How are both doing?
+
+00:03:12.035 --> 00:03:12.755
+<v Speaker 1>Hello.
+
+00:03:12.835 --> 00:03:13.555
+<v Speaker 1>Yeah.
+
+00:03:13.955 --> 00:03:16.355
+<v Speaker 1>Thank you for for having us. Super excited
+
+00:03:16.355 --> 00:03:16.915
+<v Speaker 1>to be here.
+
+00:03:19.550 --> 00:03:21.470
+<v Speaker 0>Awesome. Well, let's start with a bit of
+
+00:03:21.470 --> 00:03:23.150
+<v Speaker 0>a a round of introductions. Why don't you
+
+00:03:23.150 --> 00:03:25.950
+<v Speaker 0>just tell me more about each of you?
+
+00:03:27.870 --> 00:03:28.750
+<v Speaker 1>Yeah. Sure.
+
+00:03:29.070 --> 00:03:30.705
+<v Speaker 1>So I'm going to start. My name is
+
+00:03:30.705 --> 00:03:32.465
+<v Speaker 1>Christopher. I'm living in,
+
+00:03:32.705 --> 00:03:34.945
+<v Speaker 1>yeah, sunny Hannover in in Germany.
+
+00:03:35.665 --> 00:03:38.465
+<v Speaker 1>I'm a father of two beautiful daughters, and
+
+00:03:38.865 --> 00:03:42.145
+<v Speaker 1>I'm doing Golang and Kubernetes for a living.
+
+00:03:42.465 --> 00:03:45.665
+<v Speaker 1>I'm a managing director at Liquid Reply
+
+00:03:46.989 --> 00:03:47.790
+<v Speaker 1>consultancy,
+
+00:03:47.790 --> 00:03:50.349
+<v Speaker 1>which is, like, focusing on Kubernetes,
+
+00:03:50.349 --> 00:03:51.630
+<v Speaker 1>container orchestrators,
+
+00:03:51.709 --> 00:03:53.950
+<v Speaker 1>and, yeah, cloud native technology.
+
+00:03:54.510 --> 00:03:56.910
+<v Speaker 1>So we try to bring this
+
+00:03:57.310 --> 00:04:00.110
+<v Speaker 1>cloud native and cloud agnostic mindset
+
+00:04:00.110 --> 00:04:01.069
+<v Speaker 1>to our customers,
+
+00:04:01.515 --> 00:04:03.835
+<v Speaker 1>And customers usually approach us to build up
+
+00:04:03.835 --> 00:04:05.515
+<v Speaker 1>their Kubernetes clusters,
+
+00:04:05.755 --> 00:04:08.075
+<v Speaker 1>to migrate workloads from on prem to the
+
+00:04:08.075 --> 00:04:08.715
+<v Speaker 1>cloud,
+
+00:04:09.435 --> 00:04:11.995
+<v Speaker 1>to optimize their clusters, make them secure,
+
+00:04:12.155 --> 00:04:13.515
+<v Speaker 1>find performance bottlenecks,
+
+00:04:14.330 --> 00:04:17.529
+<v Speaker 1>write custom controllers, custom software on top of
+
+00:04:17.529 --> 00:04:18.410
+<v Speaker 1>Kubernetes.
+
+00:04:18.810 --> 00:04:19.370
+<v Speaker 1>And,
+
+00:04:20.329 --> 00:04:22.010
+<v Speaker 1>yeah, all of a sudden, we found also
+
+00:04:22.010 --> 00:04:22.970
+<v Speaker 1>found out that
+
+00:04:23.290 --> 00:04:26.090
+<v Speaker 1>WebAssembly is also a nice target that can
+
+00:04:26.090 --> 00:04:28.330
+<v Speaker 1>be run-in Kubernetes and
+
+00:04:27.845 --> 00:04:30.645
+<v Speaker 1>became a research topic of of Liquid Reply.
+
+00:04:32.405 --> 00:04:35.125
+<v Speaker 1>This is what we talk about today. Sven?
+
+00:04:36.325 --> 00:04:39.045
+<v Speaker 2>Yeah. Hi. I'm Sven Van Nijk, lead developer
+
+00:04:39.045 --> 00:04:39.925
+<v Speaker 2>at Liquid Reply.
+
+00:04:40.590 --> 00:04:41.150
+<v Speaker 2>And,
+
+00:04:41.630 --> 00:04:44.750
+<v Speaker 2>yeah, unfortunately, here we are allowed to dedicate
+
+00:04:44.750 --> 00:04:47.710
+<v Speaker 2>some time for open source projects.
+
+00:04:47.710 --> 00:04:50.510
+<v Speaker 2>And therefore, I turned the
+
+00:04:51.870 --> 00:04:54.670
+<v Speaker 2>experimental work with Rawkode into an open source
+
+00:04:54.670 --> 00:04:55.470
+<v Speaker 2>project.
+
+00:04:55.550 --> 00:04:58.074
+<v Speaker 2>And, yeah, that's why we are here to
+
+00:04:58.074 --> 00:04:59.514
+<v Speaker 2>show you how easy it is to get
+
+00:04:59.514 --> 00:05:01.595
+<v Speaker 2>started with WebAssembly and Kubernetes.
+
+00:05:04.074 --> 00:05:05.995
+<v Speaker 0>Awesome. No. You're say something there, Christophe. Off
+
+00:05:05.995 --> 00:05:06.715
+<v Speaker 0>on you go.
+
+00:05:07.115 --> 00:05:09.835
+<v Speaker 1>How how easy it became, actually, because it
+
+00:05:09.835 --> 00:05:12.240
+<v Speaker 1>was quite a quite a journey until became
+
+00:05:12.240 --> 00:05:12.880
+<v Speaker 1>easy.
+
+00:05:13.520 --> 00:05:14.960
+<v Speaker 0>Oh, yeah. Why don't we take a couple
+
+00:05:14.960 --> 00:05:15.920
+<v Speaker 0>of minutes? Like,
+
+00:05:16.240 --> 00:05:17.680
+<v Speaker 0>before KWasm,
+
+00:05:17.920 --> 00:05:20.720
+<v Speaker 0>what what what was the process of running,
+
+00:05:20.800 --> 00:05:22.720
+<v Speaker 0>and was it possible to run a WebAssembly
+
+00:05:22.720 --> 00:05:24.640
+<v Speaker 0>workload on a Kubernetes cluster? Why don't you
+
+00:05:24.640 --> 00:05:25.120
+<v Speaker 0>start with that?
+
+00:05:27.205 --> 00:05:29.125
+<v Speaker 2>Yeah. So, basically,
+
+00:05:29.125 --> 00:05:29.925
+<v Speaker 2>it's
+
+00:05:31.525 --> 00:05:34.005
+<v Speaker 2>KWasm is not a runtime. It's not a
+
+00:05:34.005 --> 00:05:36.965
+<v Speaker 2>Kubernetes distribution. It's just an installer. So we
+
+00:05:36.965 --> 00:05:39.044
+<v Speaker 2>take the awesome work of the people out
+
+00:05:39.044 --> 00:05:42.180
+<v Speaker 2>there who have created integrations
+
+00:05:42.500 --> 00:05:44.900
+<v Speaker 2>for WebAssembly on Kubernetes
+
+00:05:45.060 --> 00:05:47.860
+<v Speaker 2>and install them on the cluster. So, yes,
+
+00:05:47.860 --> 00:05:50.020
+<v Speaker 2>before it was possible to install it on
+
+00:05:50.020 --> 00:05:50.900
+<v Speaker 2>your cluster,
+
+00:05:51.300 --> 00:05:52.340
+<v Speaker 2>but
+
+00:05:52.444 --> 00:05:55.245
+<v Speaker 2>you always need to know what you're doing.
+
+00:05:55.245 --> 00:05:57.565
+<v Speaker 2>So in this round, that's not a problem
+
+00:05:57.565 --> 00:05:59.725
+<v Speaker 2>at all. But when you think of an
+
+00:06:00.764 --> 00:06:02.125
+<v Speaker 2>Blazor developer
+
+00:06:02.125 --> 00:06:04.444
+<v Speaker 2>who has is is
+
+00:06:04.444 --> 00:06:07.460
+<v Speaker 2>using his framework, it just outputs and represent
+
+00:06:07.460 --> 00:06:10.100
+<v Speaker 2>the file. And now you're asking yourself, how
+
+00:06:10.100 --> 00:06:11.220
+<v Speaker 2>can I run this?
+
+00:06:11.540 --> 00:06:12.100
+<v Speaker 2>So
+
+00:06:12.580 --> 00:06:15.460
+<v Speaker 2>for this audience, we created this
+
+00:06:15.540 --> 00:06:16.420
+<v Speaker 2>installer
+
+00:06:16.420 --> 00:06:18.740
+<v Speaker 2>to just have a Kubernetes cluster,
+
+00:06:19.220 --> 00:06:22.695
+<v Speaker 2>put an operator on it, label your notes,
+
+00:06:22.935 --> 00:06:26.535
+<v Speaker 2>and you can theoretically start your represent applications.
+
+00:06:26.695 --> 00:06:28.455
+<v Speaker 2>So what this means, we will see in
+
+00:06:28.455 --> 00:06:29.255
+<v Speaker 2>a few minutes.
+
+00:06:29.655 --> 00:06:30.295
+<v Speaker 2>But
+
+00:06:31.655 --> 00:06:32.855
+<v Speaker 2>how it was before,
+
+00:06:34.340 --> 00:06:36.340
+<v Speaker 2>Short spoiler. We will see in a few
+
+00:06:36.340 --> 00:06:38.900
+<v Speaker 2>minutes after when we're doing this on our
+
+00:06:38.900 --> 00:06:40.180
+<v Speaker 2>own cluster.
+
+00:06:41.140 --> 00:06:43.220
+<v Speaker 0>Yeah. So let me fill the audience on
+
+00:06:43.220 --> 00:06:45.300
+<v Speaker 0>on our mission and our plan for today.
+
+00:06:45.460 --> 00:06:47.140
+<v Speaker 0>So when we talked about doing this,
+
+00:06:48.555 --> 00:06:51.275
+<v Speaker 0>you've already said, right, it's easy. Like this
+
+00:06:51.275 --> 00:06:54.155
+<v Speaker 0>was hard. It's very easy. And that you've
+
+00:06:54.155 --> 00:06:55.995
+<v Speaker 0>done all this amazing tooling. And then we're
+
+00:06:55.995 --> 00:06:57.835
+<v Speaker 0>gonna see the easy mode, which is to
+
+00:06:57.835 --> 00:07:01.275
+<v Speaker 0>get KWasm to get a kind cluster ready
+
+00:07:01.275 --> 00:07:02.634
+<v Speaker 0>for web assembly workloads.
+
+00:07:03.210 --> 00:07:05.450
+<v Speaker 0>And you promised me, you've not promised, but
+
+00:07:05.450 --> 00:07:07.130
+<v Speaker 0>I'm gonna tell everyone you promised me. But
+
+00:07:07.130 --> 00:07:09.290
+<v Speaker 0>that's gonna take thirty seconds. Right? I'm sure
+
+00:07:09.290 --> 00:07:10.970
+<v Speaker 0>it'll take maybe a little bit. Wow.
+
+00:07:12.090 --> 00:07:14.410
+<v Speaker 0>No pressure. Absolutely no pressure whatsoever.
+
+00:07:14.890 --> 00:07:17.565
+<v Speaker 2>Just for the audience, I I said under
+
+00:07:17.565 --> 00:07:19.725
+<v Speaker 2>five minutes. Now it's thirty seconds.
+
+00:07:19.965 --> 00:07:21.965
+<v Speaker 0>I've got faith in you. So
+
+00:07:22.525 --> 00:07:24.925
+<v Speaker 0>but of course, I mean, I I
+
+00:07:25.085 --> 00:07:26.764
+<v Speaker 0>spun up a bare metal cluster because that's
+
+00:07:26.764 --> 00:07:27.965
+<v Speaker 0>every time I need to do something like
+
+00:07:27.965 --> 00:07:30.044
+<v Speaker 0>Kubernetes, my my go to is bare metal.
+
+00:07:30.044 --> 00:07:31.405
+<v Speaker 0>And I think this will give us a
+
+00:07:31.405 --> 00:07:32.365
+<v Speaker 0>really viable
+
+00:07:33.139 --> 00:07:35.300
+<v Speaker 0>insights into what we actually need to do
+
+00:07:35.300 --> 00:07:37.300
+<v Speaker 0>to prep a Kubernetes cluster for on a
+
+00:07:37.300 --> 00:07:40.180
+<v Speaker 0>web assembly workloads and user. Hopefully,
+
+00:07:40.340 --> 00:07:42.660
+<v Speaker 0>we're gonna be successful. Let's positive mindset here.
+
+00:07:42.660 --> 00:07:44.260
+<v Speaker 0>We're we're gonna get this bare metal cluster
+
+00:07:44.260 --> 00:07:45.940
+<v Speaker 0>running a web assembly workload
+
+00:07:46.660 --> 00:07:47.700
+<v Speaker 0>or, you know,
+
+00:07:48.405 --> 00:07:49.925
+<v Speaker 0>no. There's no failure. I'm not even gonna
+
+00:07:49.925 --> 00:07:51.445
+<v Speaker 0>accept what we're gonna do. So
+
+00:07:52.085 --> 00:07:53.285
+<v Speaker 0>I'm gonna I mean, there's a there's a
+
+00:07:53.285 --> 00:07:54.565
+<v Speaker 1>very high chance that it that it's going
+
+00:07:54.565 --> 00:07:55.765
+<v Speaker 1>to work. Right? I mean, we tried it
+
+00:07:55.765 --> 00:07:57.285
+<v Speaker 1>with a lot of clusters from a lot
+
+00:07:57.285 --> 00:07:59.925
+<v Speaker 1>of cloud providers. So depending on your specific
+
+00:07:59.925 --> 00:08:02.740
+<v Speaker 1>configuration, I guess, like, if if there's anything
+
+00:08:02.740 --> 00:08:04.580
+<v Speaker 1>arcane going on in the machines, it should
+
+00:08:04.580 --> 00:08:05.460
+<v Speaker 1>work as well.
+
+00:08:06.180 --> 00:08:08.100
+<v Speaker 0>Yeah. It's
+
+00:08:08.340 --> 00:08:12.100
+<v Speaker 0>a traditional Ubuntu machine, cube admin cluster, run-in
+
+00:08:12.100 --> 00:08:12.900
+<v Speaker 0>container d.
+
+00:08:13.635 --> 00:08:15.875
+<v Speaker 0>Hopefully, what most people are doing on the
+
+00:08:15.875 --> 00:08:17.715
+<v Speaker 0>bare metal environment and not going to off
+
+00:08:17.715 --> 00:08:19.955
+<v Speaker 0>the beaten track because keep admin works well,
+
+00:08:19.955 --> 00:08:21.795
+<v Speaker 0>continue the works well and web assembly is
+
+00:08:21.795 --> 00:08:24.035
+<v Speaker 0>the same prospect. We're gonna bridge all that
+
+00:08:24.035 --> 00:08:26.115
+<v Speaker 0>as mission together and I'm excited for that.
+
+00:08:26.900 --> 00:08:29.460
+<v Speaker 0>Cool. Let me share my screen. So
+
+00:08:31.700 --> 00:08:33.620
+<v Speaker 0>there we go. We
+
+00:08:33.940 --> 00:08:34.580
+<v Speaker 0>have
+
+00:08:36.419 --> 00:08:38.740
+<v Speaker 0>a cane control plane, a cane cluster,
+
+00:08:39.235 --> 00:08:42.275
+<v Speaker 0>just a standard done five minutes ago with
+
+00:08:42.595 --> 00:08:43.235
+<v Speaker 0>kind
+
+00:08:43.794 --> 00:08:45.155
+<v Speaker 0>create cluster command.
+
+00:08:45.475 --> 00:08:47.555
+<v Speaker 0>Nothing fancy here. Yeah. Russell, I was gonna
+
+00:08:47.555 --> 00:08:48.915
+<v Speaker 0>mention the hoodie and I don't want to
+
+00:08:48.915 --> 00:08:49.715
+<v Speaker 0>because I
+
+00:08:50.195 --> 00:08:51.475
+<v Speaker 0>don't know how to pronounce that if it's
+
+00:08:51.475 --> 00:08:53.395
+<v Speaker 0>or I or Ori. Maybe maybe Christophe will
+
+00:08:53.395 --> 00:08:53.795
+<v Speaker 0>tell us.
+
+00:08:55.370 --> 00:08:58.570
+<v Speaker 1>I personally pronounce it ori. Ori. Ori.
+
+00:08:59.050 --> 00:09:00.649
+<v Speaker 1>Actually, I have I have no clue. I
+
+00:09:00.649 --> 00:09:02.730
+<v Speaker 1>I should have followed a closer the
+
+00:09:02.970 --> 00:09:05.290
+<v Speaker 1>the talk from from Chris Noble from the.
+
+00:09:05.450 --> 00:09:07.529
+<v Speaker 1>So she was talking about ori and what
+
+00:09:07.529 --> 00:09:08.089
+<v Speaker 1>it's like
+
+00:09:09.055 --> 00:09:09.695
+<v Speaker 1>about.
+
+00:09:10.654 --> 00:09:12.575
+<v Speaker 1>Definitely look into it. It's very it's very,
+
+00:09:12.575 --> 00:09:14.815
+<v Speaker 1>very interesting and exciting project. Can we run
+
+00:09:14.815 --> 00:09:16.415
+<v Speaker 0>WebAssembly workloads on it yet?
+
+00:09:17.295 --> 00:09:18.095
+<v Speaker 1>Not yet. Yeah.
+
+00:09:21.290 --> 00:09:23.370
+<v Speaker 0>Alright. And that sounds like a coming soon
+
+00:09:23.370 --> 00:09:24.810
+<v Speaker 0>segue. So Exactly.
+
+00:09:27.529 --> 00:09:30.410
+<v Speaker 0>Alright. So I have my can cluster
+
+00:09:30.970 --> 00:09:33.130
+<v Speaker 0>super vanilla. What I'm going to do is
+
+00:09:33.130 --> 00:09:34.490
+<v Speaker 0>pull up
+
+00:09:36.015 --> 00:09:37.055
+<v Speaker 0>KWasm
+
+00:09:39.935 --> 00:09:40.655
+<v Speaker 0>here.
+
+00:09:42.895 --> 00:09:45.295
+<v Speaker 0>So you've already kinda covered us, but let's
+
+00:09:45.295 --> 00:09:47.295
+<v Speaker 0>just touch it again so we kinda clarify
+
+00:09:47.295 --> 00:09:49.615
+<v Speaker 0>it for the audience. KWasm is not a
+
+00:09:49.615 --> 00:09:51.310
+<v Speaker 0>runtime. So maybe you can give us a
+
+00:09:51.310 --> 00:09:53.710
+<v Speaker 0>TLDR and what we're about to do to
+
+00:09:53.710 --> 00:09:55.150
+<v Speaker 0>our kind cluster.
+
+00:09:58.350 --> 00:09:59.470
+<v Speaker 2>So, basically,
+
+00:10:00.590 --> 00:10:03.150
+<v Speaker 2>there are different kinds of runtime
+
+00:10:03.150 --> 00:10:06.255
+<v Speaker 2>at the moment available. One is the WASM
+
+00:10:06.255 --> 00:10:08.975
+<v Speaker 2>edge runtime, which is basically used by Docker
+
+00:10:08.975 --> 00:10:12.335
+<v Speaker 2>for this is powering the Docker WASM integration.
+
+00:10:12.895 --> 00:10:15.535
+<v Speaker 2>And there is also the
+
+00:10:16.175 --> 00:10:17.775
+<v Speaker 2>spin based containers.
+
+00:10:17.775 --> 00:10:21.535
+<v Speaker 2>At the moment, there is a WASM node
+
+00:10:20.010 --> 00:10:20.810
+<v Speaker 2>pool
+
+00:10:20.890 --> 00:10:22.410
+<v Speaker 2>preview on
+
+00:10:22.490 --> 00:10:23.290
+<v Speaker 2>Azure.
+
+00:10:23.450 --> 00:10:24.970
+<v Speaker 2>So you could already
+
+00:10:25.050 --> 00:10:26.410
+<v Speaker 2>use them on
+
+00:10:27.210 --> 00:10:29.690
+<v Speaker 2>Azure with the node pool preview.
+
+00:10:29.850 --> 00:10:30.890
+<v Speaker 2>And we thought,
+
+00:10:31.770 --> 00:10:32.490
+<v Speaker 2>why not
+
+00:10:33.135 --> 00:10:35.935
+<v Speaker 2>make it available to the other cloud and
+
+00:10:36.335 --> 00:10:38.575
+<v Speaker 2>even for local development? So
+
+00:10:39.055 --> 00:10:40.255
+<v Speaker 2>that's basically
+
+00:10:41.295 --> 00:10:42.335
+<v Speaker 2>the idea
+
+00:10:42.415 --> 00:10:45.695
+<v Speaker 2>using this existing run times and installing this
+
+00:10:45.695 --> 00:10:46.415
+<v Speaker 2>on your cluster.
+
+00:10:48.240 --> 00:10:50.720
+<v Speaker 2>On the left hand side, you have the
+
+00:10:50.720 --> 00:10:53.680
+<v Speaker 2>quick start, and that would be everything you
+
+00:10:53.680 --> 00:10:55.839
+<v Speaker 2>need to get started with
+
+00:10:56.800 --> 00:10:57.759
+<v Speaker 2>your current cluster.
+
+00:10:59.935 --> 00:11:02.654
+<v Speaker 0>Okay. So looking at this, KWasm can prepare
+
+00:11:02.654 --> 00:11:05.214
+<v Speaker 0>my cluster to run WASM edge applications, WASM
+
+00:11:05.214 --> 00:11:07.855
+<v Speaker 0>time applications, even for me on spend applications,
+
+00:11:07.855 --> 00:11:10.175
+<v Speaker 0>which is very exciting for me. I do
+
+00:11:10.175 --> 00:11:11.774
+<v Speaker 0>a lot with spend, and I'm excited to
+
+00:11:11.774 --> 00:11:12.335
+<v Speaker 0>see
+
+00:11:12.735 --> 00:11:14.335
+<v Speaker 0>that in my Kubernetes cluster.
+
+00:11:15.570 --> 00:11:16.130
+<v Speaker 0>So
+
+00:11:16.690 --> 00:11:19.730
+<v Speaker 0>it looks like the installation is Helm based.
+
+00:11:20.370 --> 00:11:22.770
+<v Speaker 2>Exactly. So we thought
+
+00:11:22.930 --> 00:11:25.810
+<v Speaker 2>it is a common way to distribute
+
+00:11:25.810 --> 00:11:28.450
+<v Speaker 2>some YAML, and that's why we just go
+
+00:11:28.450 --> 00:11:29.010
+<v Speaker 2>with Helm.
+
+00:11:31.015 --> 00:11:33.975
+<v Speaker 0>Alright. I'm just going to very quickly run
+
+00:11:33.975 --> 00:11:36.215
+<v Speaker 0>through this. I am gonna modify your helm
+
+00:11:36.215 --> 00:11:37.255
+<v Speaker 0>command because
+
+00:11:37.895 --> 00:11:39.895
+<v Speaker 0>I don't know. I just feel very uncomfortable
+
+00:11:39.895 --> 00:11:41.415
+<v Speaker 0>when I run helm install. I always have
+
+00:11:41.415 --> 00:11:43.575
+<v Speaker 0>to do upgrade dash dash install. Just I
+
+00:11:43.575 --> 00:11:45.335
+<v Speaker 0>click the item put of it just makes
+
+00:11:45.335 --> 00:11:45.735
+<v Speaker 0>me happy.
+
+00:11:46.640 --> 00:11:48.160
+<v Speaker 0>So we're gonna have a home release. It's
+
+00:11:48.160 --> 00:11:51.200
+<v Speaker 0>gonna be called KWasm operator and say the
+
+00:11:51.200 --> 00:11:52.720
+<v Speaker 0>KWasm namespace
+
+00:11:52.960 --> 00:11:55.520
+<v Speaker 0>and we have a chart KWasm KWasm operator.
+
+00:11:55.840 --> 00:11:58.400
+<v Speaker 0>For anyone coming from Kubernetes, this is all
+
+00:11:58.400 --> 00:12:01.105
+<v Speaker 0>stuff that they're very happy and comfortable with.
+
+00:12:01.105 --> 00:12:02.865
+<v Speaker 0>So no surprises.
+
+00:12:03.745 --> 00:12:05.665
+<v Speaker 0>I do want to do before we move
+
+00:12:05.665 --> 00:12:07.425
+<v Speaker 0>on to annotate in any nodes
+
+00:12:07.745 --> 00:12:09.825
+<v Speaker 0>is just look at what we have inside
+
+00:12:09.825 --> 00:12:12.305
+<v Speaker 0>of our cluster. I'm assuming it's just gonna
+
+00:12:12.305 --> 00:12:15.510
+<v Speaker 0>be a single pod running your KWasm controller.
+
+00:12:15.510 --> 00:12:15.910
+<v Speaker 0>Yeah.
+
+00:12:16.390 --> 00:12:20.230
+<v Speaker 2>It's just an operator using the operator SDK.
+
+00:12:20.230 --> 00:12:21.510
+<v Speaker 2>It's written in Go.
+
+00:12:21.750 --> 00:12:25.270
+<v Speaker 2>So if you're familiar with that, it's just
+
+00:12:25.590 --> 00:12:26.950
+<v Speaker 2>all the defaults you could use.
+
+00:12:27.885 --> 00:12:28.845
+<v Speaker 0>Alright.
+
+00:12:29.725 --> 00:12:31.885
+<v Speaker 0>Now it doesn't do anything by default, I'm
+
+00:12:31.885 --> 00:12:33.805
+<v Speaker 0>assuming, based on the fact that the next
+
+00:12:33.805 --> 00:12:35.965
+<v Speaker 0>instruction is to annotate
+
+00:12:36.525 --> 00:12:38.765
+<v Speaker 0>a node or all nodes in our cluster
+
+00:12:38.765 --> 00:12:40.045
+<v Speaker 0>with KWasm.s
+
+00:12:40.045 --> 00:12:40.285
+<v Speaker 0>h.
+
+00:12:44.829 --> 00:12:45.630
+<v Speaker 2>Operator,
+
+00:12:45.709 --> 00:12:48.910
+<v Speaker 2>so it should not do anything without you
+
+00:12:48.910 --> 00:12:52.350
+<v Speaker 2>having to told it so. So there are
+
+00:12:52.350 --> 00:12:55.149
+<v Speaker 2>also values in the values file of the
+
+00:12:55.149 --> 00:12:56.269
+<v Speaker 2>Helm charts, so
+
+00:12:56.750 --> 00:12:59.395
+<v Speaker 2>you could do it in one step. But
+
+00:12:59.395 --> 00:13:00.515
+<v Speaker 2>to be safe,
+
+00:13:00.835 --> 00:13:01.875
+<v Speaker 2>just install the
+
+00:13:03.795 --> 00:13:05.075
+<v Speaker 0>Oh, we lost them.
+
+00:13:12.510 --> 00:13:13.390
+<v Speaker 0>Lost everybody.
+
+00:13:23.385 --> 00:13:24.985
+<v Speaker 0>Sorry. I have no idea what happened there,
+
+00:13:24.985 --> 00:13:26.745
+<v Speaker 0>but I think it was an error on
+
+00:13:26.745 --> 00:13:27.545
+<v Speaker 0>EK.
+
+00:13:28.345 --> 00:13:29.385
+<v Speaker 2>Me neither. So
+
+00:13:30.505 --> 00:13:32.425
+<v Speaker 0>Hopefully, Christophe comes back to join us.
+
+00:13:35.870 --> 00:13:38.030
+<v Speaker 0>Yeah. Alright. Let's let's we'll carry on for
+
+00:13:38.030 --> 00:13:40.030
+<v Speaker 0>now. Hopefully, he makes it back. I think
+
+00:13:40.030 --> 00:13:41.390
+<v Speaker 0>it was just a temporary blip and it
+
+00:13:41.390 --> 00:13:43.310
+<v Speaker 0>seems to have resolved itself now.
+
+00:13:44.190 --> 00:13:46.830
+<v Speaker 0>So we were yep. There we go. Welcome
+
+00:13:46.830 --> 00:13:48.270
+<v Speaker 0>back, Christophe. I don't know what happened. I
+
+00:13:48.270 --> 00:13:49.790
+<v Speaker 0>think it's my software. I don't think it's
+
+00:13:49.790 --> 00:13:51.945
+<v Speaker 0>you. Because I got an error message saying
+
+00:13:52.265 --> 00:13:53.145
+<v Speaker 0>ECAM
+
+00:13:53.145 --> 00:13:53.945
+<v Speaker 0>error,
+
+00:13:54.185 --> 00:13:56.265
+<v Speaker 0>but it looks like we're okay now. So
+
+00:13:57.945 --> 00:13:58.745
+<v Speaker 0>Alright.
+
+00:13:58.905 --> 00:14:01.305
+<v Speaker 0>Sweet. Yeah. So we're about to we've we've
+
+00:14:01.305 --> 00:14:04.300
+<v Speaker 0>already annotated our note. I'm assuming now you've
+
+00:14:04.300 --> 00:14:06.460
+<v Speaker 0>installed some sort of eBPF rootkit onto my
+
+00:14:06.460 --> 00:14:08.300
+<v Speaker 0>machine. You have root access, and you're remaining
+
+00:14:08.300 --> 00:14:10.140
+<v Speaker 0>on my bank details of Bitcoin. Is that
+
+00:14:10.140 --> 00:14:10.620
+<v Speaker 0>correct?
+
+00:14:12.220 --> 00:14:13.900
+<v Speaker 2>To to to be precise,
+
+00:14:14.380 --> 00:14:16.620
+<v Speaker 2>yes. This just
+
+00:14:16.585 --> 00:14:19.705
+<v Speaker 2>installing something from a random helm in the
+
+00:14:19.705 --> 00:14:21.545
+<v Speaker 2>Internet, starting in
+
+00:14:21.785 --> 00:14:24.665
+<v Speaker 2>super privileged container, which can do something on
+
+00:14:24.665 --> 00:14:26.105
+<v Speaker 2>your notes is is
+
+00:14:26.585 --> 00:14:29.225
+<v Speaker 2>as good as doing a curl and piping
+
+00:14:29.225 --> 00:14:31.705
+<v Speaker 2>as with sudo and bash. So it's
+
+00:14:32.020 --> 00:14:34.420
+<v Speaker 2>the the same safe situation you see on
+
+00:14:34.420 --> 00:14:35.460
+<v Speaker 2>all the websites.
+
+00:14:36.500 --> 00:14:37.860
+<v Speaker 1>So in in fact, we cannot we cannot
+
+00:14:37.860 --> 00:14:40.020
+<v Speaker 1>promise you what's happening in any any case.
+
+00:14:41.860 --> 00:14:42.420
+<v Speaker 0>So,
+
+00:14:42.900 --> 00:14:45.380
+<v Speaker 0>I mean, my understanding, and I'm often wrong,
+
+00:14:45.380 --> 00:14:46.820
+<v Speaker 0>so feel free to correct me. Right? Is
+
+00:14:46.820 --> 00:14:49.245
+<v Speaker 0>that we haven't really done anything to this
+
+00:14:49.245 --> 00:14:51.165
+<v Speaker 0>cluster except you have
+
+00:14:51.725 --> 00:14:52.765
+<v Speaker 0>provisioned
+
+00:14:53.405 --> 00:14:54.125
+<v Speaker 0>some
+
+00:14:54.365 --> 00:14:55.885
+<v Speaker 0>wasm run times
+
+00:14:56.605 --> 00:14:58.445
+<v Speaker 0>onto the underlying host.
+
+00:14:58.685 --> 00:15:01.645
+<v Speaker 2>So when you see the difference to see
+
+00:15:01.050 --> 00:15:04.010
+<v Speaker 2>pods before, there is now a completed job.
+
+00:15:05.529 --> 00:15:08.010
+<v Speaker 0>Yep. So yep. Exactly.
+
+00:15:08.330 --> 00:15:10.570
+<v Speaker 2>And this job was just
+
+00:15:11.050 --> 00:15:12.730
+<v Speaker 2>do executing a script,
+
+00:15:13.535 --> 00:15:16.735
+<v Speaker 2>which so the container is running as root.
+
+00:15:16.895 --> 00:15:19.135
+<v Speaker 2>In the script, you have some NS enter.
+
+00:15:19.135 --> 00:15:21.375
+<v Speaker 2>You exit your container. You just walk out
+
+00:15:21.375 --> 00:15:21.935
+<v Speaker 2>there,
+
+00:15:22.335 --> 00:15:25.695
+<v Speaker 2>place your binaries in the specific folders of
+
+00:15:25.695 --> 00:15:26.975
+<v Speaker 2>your host system,
+
+00:15:27.699 --> 00:15:28.339
+<v Speaker 2>and
+
+00:15:28.579 --> 00:15:29.940
+<v Speaker 2>changing containerd
+
+00:15:29.940 --> 00:15:32.259
+<v Speaker 2>config and restarting containerd.
+
+00:15:32.259 --> 00:15:35.220
+<v Speaker 2>So we will see the script afterwards,
+
+00:15:35.459 --> 00:15:37.620
+<v Speaker 2>but that's basically what happened. And
+
+00:15:40.095 --> 00:15:42.654
+<v Speaker 2>as I said, it's like typing something from
+
+00:15:42.654 --> 00:15:44.415
+<v Speaker 2>the Internet into your bash. You can just
+
+00:15:44.415 --> 00:15:45.295
+<v Speaker 2>do anything.
+
+00:15:46.895 --> 00:15:48.815
+<v Speaker 1>This is, by the way, also made maybe
+
+00:15:48.815 --> 00:15:50.575
+<v Speaker 1>to to add on this because usually what
+
+00:15:50.575 --> 00:15:52.095
+<v Speaker 1>what you do in case you want to
+
+00:15:52.095 --> 00:15:54.610
+<v Speaker 1>do something on the host of on on
+
+00:15:54.610 --> 00:15:56.050
+<v Speaker 1>the level of the host of multi mesh
+
+00:15:56.129 --> 00:15:58.689
+<v Speaker 1>multiple machines, you're using a demo set. So
+
+00:15:58.689 --> 00:16:00.930
+<v Speaker 1>we we considered using a demo set. But
+
+00:16:00.930 --> 00:16:02.529
+<v Speaker 1>what we didn't like about demo set that
+
+00:16:02.529 --> 00:16:04.850
+<v Speaker 1>even after the install process, demo set would
+
+00:16:04.850 --> 00:16:06.850
+<v Speaker 1>be still be provisioned on the node. So,
+
+00:16:06.725 --> 00:16:09.285
+<v Speaker 1>therefore, this highly pro privileged container would also
+
+00:16:09.285 --> 00:16:12.245
+<v Speaker 1>still live on your node. And, therefore, we
+
+00:16:12.245 --> 00:16:14.725
+<v Speaker 1>basically decided to to start a job one
+
+00:16:14.805 --> 00:16:16.805
+<v Speaker 1>once a new node is starting and,
+
+00:16:17.045 --> 00:16:18.405
+<v Speaker 1>yeah, to to
+
+00:16:18.725 --> 00:16:20.725
+<v Speaker 1>start the job and and and get rid
+
+00:16:20.725 --> 00:16:22.760
+<v Speaker 1>of it when once it's done. So this
+
+00:16:22.760 --> 00:16:24.040
+<v Speaker 1>basically was the idea.
+
+00:16:25.560 --> 00:16:26.280
+<v Speaker 0>Cool.
+
+00:16:27.320 --> 00:16:28.120
+<v Speaker 2>Yeah. And
+
+00:16:28.600 --> 00:16:30.440
+<v Speaker 2>now when you look at the website, we
+
+00:16:30.440 --> 00:16:32.040
+<v Speaker 2>have two example workloads.
+
+00:16:32.760 --> 00:16:35.720
+<v Speaker 2>So one for spin and one for Watson
+
+00:16:35.720 --> 00:16:38.305
+<v Speaker 2>Edge. So when you scroll down for Watson
+
+00:16:38.305 --> 00:16:41.665
+<v Speaker 2>Edge, this is the manifest. You create a
+
+00:16:41.665 --> 00:16:42.945
+<v Speaker 2>runtime class
+
+00:16:43.185 --> 00:16:45.745
+<v Speaker 2>for c one because we are using the
+
+00:16:45.745 --> 00:16:48.865
+<v Speaker 2>c one integration here and then starting a
+
+00:16:48.865 --> 00:16:50.464
+<v Speaker 2>container and
+
+00:16:50.769 --> 00:16:52.850
+<v Speaker 2>port with a container. So the
+
+00:16:54.050 --> 00:16:56.529
+<v Speaker 2>one important thing is the annotation you see
+
+00:16:56.529 --> 00:16:59.730
+<v Speaker 2>here. The module was an image variant.
+
+00:17:00.370 --> 00:17:03.245
+<v Speaker 2>That's something special to c one. So c
+
+00:17:03.245 --> 00:17:06.525
+<v Speaker 2>one usually works like run c as an
+
+00:17:06.525 --> 00:17:07.884
+<v Speaker 2>OCI runtime.
+
+00:17:08.285 --> 00:17:11.325
+<v Speaker 2>But if you give this annotation,
+
+00:17:11.484 --> 00:17:13.645
+<v Speaker 2>it looks into the container
+
+00:17:13.645 --> 00:17:16.680
+<v Speaker 2>and sees if it's web assembly container or
+
+00:17:16.680 --> 00:17:17.720
+<v Speaker 2>Linux container.
+
+00:17:18.040 --> 00:17:20.280
+<v Speaker 2>And if it's a web assembly container, it's
+
+00:17:20.280 --> 00:17:22.119
+<v Speaker 2>executed with Watson Edge.
+
+00:17:23.319 --> 00:17:26.119
+<v Speaker 2>This approach makes it possible to start pods
+
+00:17:26.119 --> 00:17:26.440
+<v Speaker 2>with
+
+00:17:27.634 --> 00:17:28.914
+<v Speaker 2>Linux containers
+
+00:17:28.995 --> 00:17:30.835
+<v Speaker 2>and WebAssembly containers.
+
+00:17:30.835 --> 00:17:34.594
+<v Speaker 2>So your WebAssembly workload is, with C1,
+
+00:17:34.914 --> 00:17:36.434
+<v Speaker 2>able to run-in,
+
+00:17:36.754 --> 00:17:38.115
+<v Speaker 2>sidecar integrations
+
+00:17:38.115 --> 00:17:39.554
+<v Speaker 2>like Linkerd,
+
+00:17:39.554 --> 00:17:40.835
+<v Speaker 2>like KDA or,
+
+00:17:43.440 --> 00:17:44.159
+<v Speaker 2>yeah,
+
+00:17:45.280 --> 00:17:47.679
+<v Speaker 2>DEPR, whatever uses sidecar.
+
+00:17:48.799 --> 00:17:50.880
+<v Speaker 2>So that's why we are using not the
+
+00:17:50.880 --> 00:17:53.919
+<v Speaker 2>container d shim here, but the OCI runtime.
+
+00:17:54.815 --> 00:17:56.735
+<v Speaker 2>We could use the other one as well,
+
+00:17:56.735 --> 00:17:57.215
+<v Speaker 2>but
+
+00:17:57.934 --> 00:18:00.975
+<v Speaker 2>this has still a slight advantage over the
+
+00:18:00.975 --> 00:18:01.615
+<v Speaker 2>other one.
+
+00:18:02.095 --> 00:18:04.174
+<v Speaker 0>So I wanted to confirm something there because
+
+00:18:04.174 --> 00:18:06.015
+<v Speaker 0>I think it's something that that's really exciting
+
+00:18:06.015 --> 00:18:08.095
+<v Speaker 0>for me personally and and hopefully for others.
+
+00:18:08.560 --> 00:18:11.200
+<v Speaker 0>But using this approach with c run and
+
+00:18:11.200 --> 00:18:12.160
+<v Speaker 0>the annotations,
+
+00:18:12.160 --> 00:18:12.960
+<v Speaker 0>we can have
+
+00:18:13.440 --> 00:18:16.320
+<v Speaker 0>our main application. Right? Say that just happens
+
+00:18:16.320 --> 00:18:17.600
+<v Speaker 0>to be a go by any rate right
+
+00:18:17.600 --> 00:18:19.440
+<v Speaker 0>now that has a web server, server traffic
+
+00:18:19.440 --> 00:18:21.280
+<v Speaker 0>to customers, maybe it's an API, whatever. It
+
+00:18:21.280 --> 00:18:23.635
+<v Speaker 0>doesn't matter. Right? We can run a web
+
+00:18:23.635 --> 00:18:26.515
+<v Speaker 0>assembly, server side web assembly workload and the
+
+00:18:26.515 --> 00:18:27.554
+<v Speaker 0>same pod
+
+00:18:28.035 --> 00:18:28.674
+<v Speaker 0>and
+
+00:18:29.075 --> 00:18:33.075
+<v Speaker 0>perform standard sidecar capabilities. Maybe that's log transformations.
+
+00:18:33.075 --> 00:18:34.995
+<v Speaker 0>Maybe that's metric collection or something like that.
+
+00:18:34.995 --> 00:18:37.130
+<v Speaker 0>Is that something that is possible now or
+
+00:18:37.130 --> 00:18:38.730
+<v Speaker 0>something that's possible in the future?
+
+00:18:43.130 --> 00:18:46.970
+<v Speaker 2>So basically, you can now run pots with
+
+00:18:46.970 --> 00:18:48.890
+<v Speaker 2>both type of containers when you are running
+
+00:18:48.890 --> 00:18:51.130
+<v Speaker 2>c one. So that's that's working.
+
+00:18:51.995 --> 00:18:53.435
+<v Speaker 2>With the log transformation,
+
+00:18:53.595 --> 00:18:54.475
+<v Speaker 2>that's
+
+00:18:54.475 --> 00:18:56.315
+<v Speaker 2>slightly different because
+
+00:18:57.115 --> 00:18:58.155
+<v Speaker 2>you need
+
+00:18:59.995 --> 00:19:01.355
+<v Speaker 2>to access the logs.
+
+00:19:01.755 --> 00:19:03.115
+<v Speaker 0>Yeah. So that's my application.
+
+00:19:03.700 --> 00:19:06.180
+<v Speaker 0>Obviously, it's it's written to to to standard
+
+00:19:06.180 --> 00:19:07.780
+<v Speaker 0>out, but I could have it multiplex that
+
+00:19:07.780 --> 00:19:09.620
+<v Speaker 0>and put the standard out to fail as
+
+00:19:09.620 --> 00:19:12.100
+<v Speaker 0>well. Can I share that fail with the
+
+00:19:12.980 --> 00:19:14.420
+<v Speaker 0>WASM edge
+
+00:19:14.980 --> 00:19:15.780
+<v Speaker 0>run time
+
+00:19:16.445 --> 00:19:17.325
+<v Speaker 0>application?
+
+00:19:19.325 --> 00:19:21.645
+<v Speaker 2>Let me short think about it. Yes. If
+
+00:19:21.645 --> 00:19:24.524
+<v Speaker 2>it if it's available in the container, you
+
+00:19:24.684 --> 00:19:27.644
+<v Speaker 2>should be able to access it.
+
+00:19:28.045 --> 00:19:30.690
+<v Speaker 2>Isn't that cool? I'm That's
+
+00:19:30.690 --> 00:19:31.809
+<v Speaker 2>cool. Right? It
+
+00:19:32.690 --> 00:19:34.929
+<v Speaker 2>is. So I I haven't thought that to
+
+00:19:34.929 --> 00:19:37.090
+<v Speaker 2>an end because I was always doing it.
+
+00:19:37.090 --> 00:19:38.610
+<v Speaker 2>It's the other way around. So it wasn't
+
+00:19:38.610 --> 00:19:41.090
+<v Speaker 2>was always my main application, and I had
+
+00:19:41.090 --> 00:19:43.585
+<v Speaker 2>supporting things around it. And I have never
+
+00:19:43.585 --> 00:19:44.224
+<v Speaker 2>used
+
+00:19:44.544 --> 00:19:46.705
+<v Speaker 2>Rawkode as a sidecar to
+
+00:19:46.784 --> 00:19:49.664
+<v Speaker 2>support another application, but I like the idea.
+
+00:19:49.904 --> 00:19:52.065
+<v Speaker 0>Well, yeah, I guess that's that's bidirectional. Right?
+
+00:19:52.065 --> 00:19:53.825
+<v Speaker 0>I think it either way, I think the
+
+00:19:53.825 --> 00:19:55.265
+<v Speaker 0>point is completely valid, and that's what I
+
+00:19:55.265 --> 00:19:56.705
+<v Speaker 0>want people to kinda take away from here
+
+00:19:56.705 --> 00:19:59.610
+<v Speaker 0>is that, you know, writing services web assembly
+
+00:19:59.610 --> 00:20:01.529
+<v Speaker 0>is cool and I'm hoping that the audience
+
+00:20:01.529 --> 00:20:03.610
+<v Speaker 0>is somewhat sold on that rate. And if
+
+00:20:03.610 --> 00:20:05.690
+<v Speaker 0>you're not go start experimenting with spend, there
+
+00:20:05.690 --> 00:20:07.450
+<v Speaker 0>was imagine all these other runtime.
+
+00:20:07.690 --> 00:20:08.169
+<v Speaker 0>But
+
+00:20:08.809 --> 00:20:11.435
+<v Speaker 0>it's it's this been able to use web
+
+00:20:11.435 --> 00:20:13.435
+<v Speaker 0>server side by side with containers, which is
+
+00:20:13.435 --> 00:20:15.595
+<v Speaker 0>really appealing to me personally. And I think
+
+00:20:15.595 --> 00:20:18.395
+<v Speaker 0>these kind of hybrid architectures are very will
+
+00:20:18.395 --> 00:20:19.995
+<v Speaker 0>be very big in the future.
+
+00:20:20.555 --> 00:20:21.995
+<v Speaker 0>But let's not take your word for it.
+
+00:20:21.995 --> 00:20:23.799
+<v Speaker 0>Right? Should we deploy this? If you scroll
+
+00:20:23.799 --> 00:20:25.320
+<v Speaker 2>down a bit, you you have the same
+
+00:20:25.320 --> 00:20:27.159
+<v Speaker 2>safe approach to just
+
+00:20:27.399 --> 00:20:30.039
+<v Speaker 2>put some YAML into your cluster.
+
+00:20:31.080 --> 00:20:32.679
+<v Speaker 0>I'm I I I don't I don't mind.
+
+00:20:32.679 --> 00:20:33.559
+<v Speaker 0>I trust you.
+
+00:20:34.039 --> 00:20:36.635
+<v Speaker 2>Yeah. And that's running an, I would say,
+
+00:20:36.635 --> 00:20:39.515
+<v Speaker 2>extremely basic job, which is output we're putting
+
+00:20:39.515 --> 00:20:40.795
+<v Speaker 2>some information
+
+00:20:40.795 --> 00:20:41.434
+<v Speaker 2>from
+
+00:20:42.715 --> 00:20:46.555
+<v Speaker 2>the environments, generating some random numbers, getting the
+
+00:20:46.555 --> 00:20:47.914
+<v Speaker 2>environment variables.
+
+00:20:47.915 --> 00:20:48.155
+<v Speaker 2>So
+
+00:20:49.049 --> 00:20:51.690
+<v Speaker 2>just to show you that the WebAssembly
+
+00:20:51.769 --> 00:20:52.969
+<v Speaker 2>integration is working.
+
+00:20:53.450 --> 00:20:56.809
+<v Speaker 2>Maybe we should have started it before integrating
+
+00:20:57.130 --> 00:20:59.850
+<v Speaker 2>the the WebAssembly runtime so that you can
+
+00:20:59.850 --> 00:21:01.625
+<v Speaker 2>see it fail. But now you need to
+
+00:21:01.625 --> 00:21:03.625
+<v Speaker 2>trust me that's a real WASM application and
+
+00:21:03.625 --> 00:21:06.184
+<v Speaker 2>not something written in Go. Oh, don't you
+
+00:21:06.184 --> 00:21:08.585
+<v Speaker 0>worry because look at us by the power
+
+00:21:08.585 --> 00:21:10.985
+<v Speaker 0>of magic. We can go to another cluster
+
+00:21:10.985 --> 00:21:12.904
+<v Speaker 0>that doesn't have KWasm installed.
+
+00:21:16.090 --> 00:21:18.810
+<v Speaker 0>So let's see. I need my IP address
+
+00:21:18.810 --> 00:21:21.210
+<v Speaker 0>because I've accidentally removed it from my dock.
+
+00:21:22.250 --> 00:21:25.290
+<v Speaker 2>And we slightly hit the thirty seconds you
+
+00:21:25.290 --> 00:21:27.530
+<v Speaker 2>have promised, but I think that's only because
+
+00:21:27.530 --> 00:21:28.570
+<v Speaker 2>of connectivity issues.
+
+00:21:29.505 --> 00:21:31.265
+<v Speaker 0>Yeah. Yeah. It's alright. I'll take the blame
+
+00:21:31.265 --> 00:21:32.625
+<v Speaker 0>for that one. One hundred percent.
+
+00:21:33.025 --> 00:21:35.585
+<v Speaker 0>So this is a bare metal Kubernetes cluster
+
+00:21:35.585 --> 00:21:38.225
+<v Speaker 0>running on Equinix metal. We have a lot
+
+00:21:38.225 --> 00:21:39.745
+<v Speaker 0>of cores, a lot of RAM,
+
+00:21:40.465 --> 00:21:42.065
+<v Speaker 0>and we're gonna run the smallest web assembly
+
+00:21:42.065 --> 00:21:43.665
+<v Speaker 0>workload in New Orleans. But still, it's it's
+
+00:21:43.665 --> 00:21:46.200
+<v Speaker 0>fun. Right? So Yeah. There you go. For
+
+00:21:46.200 --> 00:21:47.880
+<v Speaker 0>a Wow.
+
+00:21:49.160 --> 00:21:52.120
+<v Speaker 2>Nice. Just for the giggles and what was
+
+00:21:52.120 --> 00:21:55.240
+<v Speaker 0>the gig? Yeah. 64 gig of RAM. So
+
+00:21:55.800 --> 00:21:56.840
+<v Speaker 0>this is
+
+00:21:57.560 --> 00:21:58.440
+<v Speaker 0>standard cluster.
+
+00:22:00.355 --> 00:22:01.234
+<v Speaker 0>Like so.
+
+00:22:01.955 --> 00:22:03.635
+<v Speaker 0>As running my cluster of workloads and a
+
+00:22:03.635 --> 00:22:04.914
+<v Speaker 0>post goes up, but we can ignore that
+
+00:22:04.914 --> 00:22:06.274
+<v Speaker 0>for now. That's just because I use the
+
+00:22:06.274 --> 00:22:08.434
+<v Speaker 0>same automation just because it's a lot easier
+
+00:22:08.434 --> 00:22:10.835
+<v Speaker 0>for me. But I'm gonna take your cube
+
+00:22:10.835 --> 00:22:12.195
+<v Speaker 0>control apply command here.
+
+00:22:12.940 --> 00:22:15.420
+<v Speaker 0>Now, I guess what's important here, right, is
+
+00:22:15.420 --> 00:22:17.580
+<v Speaker 0>that we will be able to define the
+
+00:22:17.580 --> 00:22:19.100
+<v Speaker 0>runtime class and we will be able to
+
+00:22:19.100 --> 00:22:21.420
+<v Speaker 0>run the same job because these are standard
+
+00:22:21.420 --> 00:22:22.700
+<v Speaker 0>Kubernetes objects.
+
+00:22:23.180 --> 00:22:25.420
+<v Speaker 0>But they shouldn't run because it's going to
+
+00:22:25.420 --> 00:22:26.620
+<v Speaker 0>try and run it with
+
+00:22:27.285 --> 00:22:28.085
+<v Speaker 0>something
+
+00:22:28.085 --> 00:22:30.085
+<v Speaker 0>that doesn't know how to interpret it. Is
+
+00:22:30.085 --> 00:22:33.205
+<v Speaker 0>that correct? Yeah. It's trying to find
+
+00:22:33.365 --> 00:22:36.245
+<v Speaker 2>c run, and container d should reject that
+
+00:22:36.245 --> 00:22:38.645
+<v Speaker 2>with, I don't know, something like c run.
+
+00:22:39.365 --> 00:22:41.685
+<v Speaker 2>And therefore, it should stay in container creating
+
+00:22:41.685 --> 00:22:42.085
+<v Speaker 2>forever.
+
+00:22:43.799 --> 00:22:45.320
+<v Speaker 0>Okay. And if
+
+00:22:45.320 --> 00:22:47.799
+<v Speaker 2>if you describe it, yep, you will see
+
+00:22:47.799 --> 00:22:50.920
+<v Speaker 2>that it's just saying about I don't have
+
+00:22:50.920 --> 00:22:51.879
+<v Speaker 2>this runtime.
+
+00:22:54.040 --> 00:22:55.480
+<v Speaker 0>There we go. Perfect.
+
+00:22:56.760 --> 00:22:57.160
+<v Speaker 0>Yeah.
+
+00:22:59.495 --> 00:23:00.455
+<v Speaker 0>So now
+
+00:23:02.135 --> 00:23:04.054
+<v Speaker 0>We need to get this working. Now
+
+00:23:04.615 --> 00:23:06.854
+<v Speaker 2>Exactly. This might be a naive question.
+
+00:23:07.174 --> 00:23:08.695
+<v Speaker 0>Are we just doing a helm install here?
+
+00:23:12.430 --> 00:23:14.030
+<v Speaker 2>I would say we are looking at the
+
+00:23:14.030 --> 00:23:14.830
+<v Speaker 2>installer,
+
+00:23:15.310 --> 00:23:18.030
+<v Speaker 2>and you, who knows your cluster best, says
+
+00:23:18.030 --> 00:23:19.790
+<v Speaker 2>if it would work or if it not
+
+00:23:19.790 --> 00:23:20.510
+<v Speaker 2>would work.
+
+00:23:21.550 --> 00:23:23.230
+<v Speaker 0>What do you think the probability is of
+
+00:23:23.230 --> 00:23:25.070
+<v Speaker 0>me doing Helm repo add Helm install and
+
+00:23:25.070 --> 00:23:26.350
+<v Speaker 0>it all just working magically?
+
+00:23:29.445 --> 00:23:30.084
+<v Speaker 2>Yeah.
+
+00:23:30.485 --> 00:23:31.604
+<v Speaker 2>30%?
+
+00:23:33.445 --> 00:23:35.524
+<v Speaker 0>I thought it would have been higher. Alright.
+
+00:23:36.804 --> 00:23:38.085
+<v Speaker 0>I've do you want me to do this
+
+00:23:38.085 --> 00:23:38.965
+<v Speaker 0>with Helm or do you want to do
+
+00:23:38.965 --> 00:23:40.644
+<v Speaker 0>it manually? Let me let me ask that.
+
+00:23:42.250 --> 00:23:43.850
+<v Speaker 2>Let's have a short look at the installer
+
+00:23:43.850 --> 00:23:46.490
+<v Speaker 2>script, and then you can say if there
+
+00:23:46.490 --> 00:23:48.970
+<v Speaker 2>would something be blocking the installer,
+
+00:23:48.970 --> 00:23:49.529
+<v Speaker 2>and
+
+00:23:51.050 --> 00:23:53.290
+<v Speaker 2>then we can try it. Okay? Yeah. Of
+
+00:23:53.290 --> 00:23:54.650
+<v Speaker 2>course. On on the right upper side, you
+
+00:23:54.650 --> 00:23:57.644
+<v Speaker 2>just end in the repository of the
+
+00:23:59.325 --> 00:24:00.125
+<v Speaker 2>operator.
+
+00:24:00.445 --> 00:24:02.284
+<v Speaker 2>But if you go to the organization,
+
+00:24:02.525 --> 00:24:06.045
+<v Speaker 2>there's also the KWasm node installer repository.
+
+00:24:08.450 --> 00:24:09.090
+<v Speaker 2>And
+
+00:24:09.650 --> 00:24:13.330
+<v Speaker 2>I I really love demystifying things, so there
+
+00:24:13.330 --> 00:24:15.090
+<v Speaker 2>is no magic. So
+
+00:24:16.370 --> 00:24:18.450
+<v Speaker 2>here's a Dockerfile in
+
+00:24:18.690 --> 00:24:19.490
+<v Speaker 2>images
+
+00:24:19.810 --> 00:24:20.450
+<v Speaker 2>installer,
+
+00:24:21.835 --> 00:24:24.875
+<v Speaker 2>and the Dockerfile is just downloading
+
+00:24:25.355 --> 00:24:28.315
+<v Speaker 2>compiling and downloading the runtimes
+
+00:24:28.315 --> 00:24:31.035
+<v Speaker 2>and putting it in a folder called assets.
+
+00:24:31.755 --> 00:24:35.115
+<v Speaker 2>If you go back and look at the
+
+00:24:35.115 --> 00:24:37.979
+<v Speaker 2>script, there is an installer script.
+
+00:24:38.700 --> 00:24:39.820
+<v Speaker 2>And
+
+00:24:41.179 --> 00:24:43.659
+<v Speaker 2>it just tries to find out if the
+
+00:24:43.740 --> 00:24:45.579
+<v Speaker 2>it's in an environment
+
+00:24:45.980 --> 00:24:48.460
+<v Speaker 2>where you just not can't use the standard
+
+00:24:48.460 --> 00:24:50.380
+<v Speaker 2>procedure, then it's slightly adapted.
+
+00:24:51.085 --> 00:24:52.765
+<v Speaker 2>But in the end,
+
+00:24:53.245 --> 00:24:56.125
+<v Speaker 2>you are just copying the binaries in some
+
+00:24:56.125 --> 00:24:56.845
+<v Speaker 2>spaces,
+
+00:24:56.925 --> 00:24:58.925
+<v Speaker 2>like in this case, opt KWasm.
+
+00:24:59.965 --> 00:25:01.165
+<v Speaker 2>You are linking
+
+00:25:01.245 --> 00:25:02.365
+<v Speaker 2>the
+
+00:25:03.310 --> 00:25:05.549
+<v Speaker 2>bin files, the lib files,
+
+00:25:06.510 --> 00:25:07.070
+<v Speaker 2>and
+
+00:25:07.470 --> 00:25:08.510
+<v Speaker 2>then this
+
+00:25:08.590 --> 00:25:09.390
+<v Speaker 2>tiny
+
+00:25:10.190 --> 00:25:13.230
+<v Speaker 2>container d config snippet is executed where you
+
+00:25:13.230 --> 00:25:15.550
+<v Speaker 2>just add to your container d config, the
+
+00:25:15.550 --> 00:25:18.184
+<v Speaker 2>c run runtime and the spin runtime, and
+
+00:25:18.184 --> 00:25:20.025
+<v Speaker 2>I think also the slide runtime, but I
+
+00:25:20.025 --> 00:25:21.304
+<v Speaker 2>haven't had no.
+
+00:25:21.545 --> 00:25:22.745
+<v Speaker 2>I don't think so.
+
+00:25:22.985 --> 00:25:23.624
+<v Speaker 2>And,
+
+00:25:24.025 --> 00:25:25.945
+<v Speaker 2>yeah, after that, it's just
+
+00:25:26.585 --> 00:25:28.664
+<v Speaker 2>restarting container d. So
+
+00:25:29.065 --> 00:25:31.865
+<v Speaker 2>could work on a standard Ubuntu based
+
+00:25:32.105 --> 00:25:33.465
+<v Speaker 2>container d and Kubernetes.
+
+00:25:33.850 --> 00:25:36.249
+<v Speaker 0>Yeah. I I don't see anything here
+
+00:25:37.129 --> 00:25:38.570
+<v Speaker 0>that has me concerned.
+
+00:25:39.210 --> 00:25:41.289
+<v Speaker 0>No. The only thing It doesn't I don't
+
+00:25:41.289 --> 00:25:43.370
+<v Speaker 0>know how your script handles it. Is I
+
+00:25:43.370 --> 00:25:45.210
+<v Speaker 0>don't think there's a container d config by
+
+00:25:45.210 --> 00:25:45.690
+<v Speaker 0>default.
+
+00:25:48.325 --> 00:25:50.165
+<v Speaker 0>But other than that, we should be okay.
+
+00:25:50.165 --> 00:25:51.845
+<v Speaker 0>I'm assuming you just create it anyway if
+
+00:25:51.845 --> 00:25:53.365
+<v Speaker 0>it doesn't exist. So
+
+00:25:54.085 --> 00:25:55.605
+<v Speaker 0>let's say that I'm curious.
+
+00:25:58.890 --> 00:26:00.970
+<v Speaker 0>So I've added the repository. Let's do the
+
+00:26:00.970 --> 00:26:01.850
+<v Speaker 0>install.
+
+00:26:02.810 --> 00:26:04.570
+<v Speaker 1>But this was the reason why I was
+
+00:26:04.570 --> 00:26:07.210
+<v Speaker 1>asking, like, about the operating system beforehand
+
+00:26:07.370 --> 00:26:09.530
+<v Speaker 1>because I knew that we are restarting with
+
+00:26:09.530 --> 00:26:11.210
+<v Speaker 1>the system CTL. So
+
+00:26:11.850 --> 00:26:12.170
+<v Speaker 2>Yeah.
+
+00:26:12.955 --> 00:26:15.355
+<v Speaker 0>Yeah. This is a standard container to install
+
+00:26:15.355 --> 00:26:16.955
+<v Speaker 0>system. D is there.
+
+00:26:19.355 --> 00:26:20.475
+<v Speaker 0>I think Flexi?
+
+00:26:20.795 --> 00:26:22.795
+<v Speaker 0>I think everything is gonna magically work, and
+
+00:26:22.795 --> 00:26:24.395
+<v Speaker 0>the stream's gonna be finished, but everyone's gonna
+
+00:26:24.395 --> 00:26:26.155
+<v Speaker 0>be super happy because it just worked.
+
+00:26:28.440 --> 00:26:29.399
+<v Speaker 1>Possibly. Yeah.
+
+00:26:29.800 --> 00:26:30.679
+<v Speaker 0>Alright.
+
+00:26:31.000 --> 00:26:32.840
+<v Speaker 0>Let's annotate our notes
+
+00:26:35.560 --> 00:26:37.480
+<v Speaker 0>and see if we get our job.
+
+00:26:40.840 --> 00:26:41.080
+<v Speaker 0>Almost.
+
+00:26:42.425 --> 00:26:44.345
+<v Speaker 0>Oh, we got an error. Yeah.
+
+00:26:46.505 --> 00:26:47.144
+<v Speaker 2>Luckily,
+
+00:26:47.305 --> 00:26:48.585
+<v Speaker 2>we have an error.
+
+00:26:50.825 --> 00:26:53.545
+<v Speaker 1>Alright. Let's more interesting. It's it's good. It's
+
+00:26:53.545 --> 00:26:53.705
+<v Speaker 1>good.
+
+00:26:55.230 --> 00:26:57.550
+<v Speaker 0>Hey, debug is my favorite pastime. I knew
+
+00:26:57.550 --> 00:26:59.230
+<v Speaker 0>it was the container deconflict.
+
+00:27:00.670 --> 00:27:02.270
+<v Speaker 0>So we could fix that. Right? We just
+
+00:27:02.270 --> 00:27:04.510
+<v Speaker 0>need to create and generate the default container
+
+00:27:04.510 --> 00:27:05.310
+<v Speaker 0>deconflict.
+
+00:27:05.310 --> 00:27:07.390
+<v Speaker 0>So we could do that with
+
+00:27:08.265 --> 00:27:10.665
+<v Speaker 0>is it container the config dump or is
+
+00:27:10.665 --> 00:27:13.145
+<v Speaker 0>it try control? I can never remember.
+
+00:27:15.465 --> 00:27:17.784
+<v Speaker 0>Yeah. The community config
+
+00:27:19.305 --> 00:27:21.480
+<v Speaker 0>dump or default is probably what we Yeah.
+
+00:27:22.520 --> 00:27:24.280
+<v Speaker 0>And then we want to rate that to
+
+00:27:26.360 --> 00:27:29.240
+<v Speaker 0>and we'll probably need to make that directory.
+
+00:27:31.320 --> 00:27:32.120
+<v Speaker 0>Look good to you?
+
+00:27:33.065 --> 00:27:34.904
+<v Speaker 2>Yeah. Mhmm. Interestingly,
+
+00:27:35.705 --> 00:27:38.265
+<v Speaker 2>all of the other accumulators distributions always had
+
+00:27:38.265 --> 00:27:39.625
+<v Speaker 2>a default container.
+
+00:27:40.825 --> 00:27:42.505
+<v Speaker 0>Yeah. We do app install
+
+00:27:42.585 --> 00:27:43.865
+<v Speaker 0>container d
+
+00:27:44.505 --> 00:27:46.345
+<v Speaker 0>because it gives us a default contact. There's
+
+00:27:46.345 --> 00:27:46.745
+<v Speaker 0>no tweaks.
+
+00:27:47.380 --> 00:27:49.299
+<v Speaker 0>Yeah. It just works. Because as you know,
+
+00:27:49.299 --> 00:27:50.900
+<v Speaker 0>I have a show called clustered. And every
+
+00:27:50.900 --> 00:27:52.660
+<v Speaker 0>time I see a container d config, I
+
+00:27:52.660 --> 00:27:54.499
+<v Speaker 0>know somebody's fucked with a container d config.
+
+00:27:54.740 --> 00:27:55.299
+<v Speaker 0>So
+
+00:27:57.220 --> 00:27:57.940
+<v Speaker 0>get pods.
+
+00:28:02.075 --> 00:28:03.195
+<v Speaker 0>Hey, it worked.
+
+00:28:03.515 --> 00:28:04.235
+<v Speaker 0>Yeah.
+
+00:28:05.195 --> 00:28:07.435
+<v Speaker 0>That's it. Where's the job? Oh, no. It's
+
+00:28:07.435 --> 00:28:08.635
+<v Speaker 0>on the KWasm interface.
+
+00:28:08.875 --> 00:28:09.914
+<v Speaker 0>Yeah.
+
+00:28:10.075 --> 00:28:10.794
+<v Speaker 0>Alright.
+
+00:28:11.355 --> 00:28:13.595
+<v Speaker 0>So those are all old. So will I
+
+00:28:13.595 --> 00:28:14.715
+<v Speaker 0>have to clean them up to get a
+
+00:28:14.715 --> 00:28:15.355
+<v Speaker 0>new one to start?
+
+00:28:20.660 --> 00:28:22.820
+<v Speaker 0>Yeah. Let's just I need to delete all
+
+00:28:22.820 --> 00:28:25.940
+<v Speaker 0>approach. That's how I fix things. So Okay.
+
+00:28:25.940 --> 00:28:28.179
+<v Speaker 2>And now you would need to go to
+
+00:28:28.260 --> 00:28:30.725
+<v Speaker 2>your notes and there are the
+
+00:28:31.285 --> 00:28:33.285
+<v Speaker 2>there is the annotation we added, and there
+
+00:28:33.285 --> 00:28:34.804
+<v Speaker 2>is another annotation
+
+00:28:35.125 --> 00:28:36.085
+<v Speaker 2>provisioned.
+
+00:28:37.605 --> 00:28:39.765
+<v Speaker 2>And we just need to remove it. So
+
+00:28:39.765 --> 00:28:41.205
+<v Speaker 2>we need to edit the note.
+
+00:28:44.410 --> 00:28:46.810
+<v Speaker 0>I mean, can I just do dash on
+
+00:28:46.810 --> 00:28:50.490
+<v Speaker 0>this to remove Yeah? Yeah. Or no? Can
+
+00:28:50.650 --> 00:28:52.330
+<v Speaker 1>maybe you can show the annotation so it's
+
+00:28:52.330 --> 00:28:54.250
+<v Speaker 1>so that we can see it, actually. Okay.
+
+00:28:54.250 --> 00:28:56.330
+<v Speaker 0>Yeah. You're right. Sure. Yeah.
+
+00:28:58.010 --> 00:28:58.810
+<v Speaker 0>So
+
+00:29:00.665 --> 00:29:02.424
+<v Speaker 0>you want me to remove this?
+
+00:29:03.545 --> 00:29:04.505
+<v Speaker 0>Yeah.
+
+00:29:05.385 --> 00:29:06.105
+<v Speaker 2>Exactly.
+
+00:29:07.705 --> 00:29:09.625
+<v Speaker 0>And then search for keywords. Yeah.
+
+00:29:10.585 --> 00:29:12.025
+<v Speaker 2>Host. Yeah.
+
+00:29:12.025 --> 00:29:14.345
+<v Speaker 2>Exactly. The no. Host name is okay.
+
+00:29:16.640 --> 00:29:18.399
+<v Speaker 2>Yep. That should be it.
+
+00:29:19.440 --> 00:29:21.760
+<v Speaker 0>Well, there's another node, so let me just
+
+00:29:23.120 --> 00:29:24.080
+<v Speaker 0>delete.
+
+00:29:25.760 --> 00:29:27.680
+<v Speaker 2>Oh, we we only need to start it
+
+00:29:27.680 --> 00:29:29.679
+<v Speaker 2>on one node to see if it's working,
+
+00:29:29.760 --> 00:29:30.000
+<v Speaker 2>and
+
+00:29:32.015 --> 00:29:33.695
+<v Speaker 2>then we could do the other one.
+
+00:29:34.735 --> 00:29:35.374
+<v Speaker 2>Okay.
+
+00:29:40.015 --> 00:29:41.455
+<v Speaker 0>Re annotate it.
+
+00:29:42.815 --> 00:29:44.015
+<v Speaker 0>And we should see, hopefully.
+
+00:29:48.139 --> 00:29:49.980
+<v Speaker 0>Oh, we're not seeing the jobs now. Is
+
+00:29:49.980 --> 00:29:50.620
+<v Speaker 0>that my fault?
+
+00:29:57.835 --> 00:29:58.554
+<v Speaker 2>Okay.
+
+00:30:01.034 --> 00:30:02.955
+<v Speaker 0>Now the real debugging starts.
+
+00:30:03.674 --> 00:30:04.315
+<v Speaker 2>Yeah.
+
+00:30:04.955 --> 00:30:06.714
+<v Speaker 0>But the job already existed.
+
+00:30:07.195 --> 00:30:08.635
+<v Speaker 0>We should probably have picked that up.
+
+00:30:09.330 --> 00:30:12.850
+<v Speaker 2>Okay. Got it. So it created the job,
+
+00:30:12.850 --> 00:30:15.009
+<v Speaker 2>but it didn't change and therefore
+
+00:30:16.049 --> 00:30:16.690
+<v Speaker 2>yeah.
+
+00:30:18.210 --> 00:30:18.929
+<v Speaker 0>Okay.
+
+00:30:19.970 --> 00:30:22.450
+<v Speaker 0>So we'll edit our notes again. Search for
+
+00:30:22.450 --> 00:30:23.809
+<v Speaker 0>KWasm.sh.
+
+00:30:25.255 --> 00:30:27.014
+<v Speaker 0>Start deleting annotations,
+
+00:30:28.295 --> 00:30:30.215
+<v Speaker 0>and then I'm gonna annotate one more time.
+
+00:30:32.695 --> 00:30:33.575
+<v Speaker 2>I
+
+00:30:33.975 --> 00:30:36.535
+<v Speaker 2>see we definitely need to to make it
+
+00:30:36.535 --> 00:30:37.975
+<v Speaker 2>more comfortable to
+
+00:30:40.760 --> 00:30:42.279
+<v Speaker 2>reprovision notes.
+
+00:30:44.280 --> 00:30:45.799
+<v Speaker 0>Alright. Let's see if we can work out
+
+00:30:45.799 --> 00:30:47.399
+<v Speaker 0>what's going on with this.
+
+00:30:47.720 --> 00:30:49.000
+<v Speaker 0>So we still got an error.
+
+00:30:52.144 --> 00:30:52.784
+<v Speaker 0>Oh, did I
+
+00:30:53.745 --> 00:30:54.945
+<v Speaker 0>I created you.
+
+00:30:57.505 --> 00:30:59.345
+<v Speaker 0>Oh, no. Wait. That's on the the worker
+
+00:30:59.345 --> 00:31:00.144
+<v Speaker 0>node. Right?
+
+00:31:00.945 --> 00:31:02.784
+<v Speaker 0>Possible.
+
+00:31:03.184 --> 00:31:04.705
+<v Speaker 0>Yeah. Because I only did it on one
+
+00:31:04.705 --> 00:31:05.664
+<v Speaker 0>node, but that should be
+
+00:31:06.960 --> 00:31:09.120
+<v Speaker 0>We should still see the workload scheduled. Right?
+
+00:31:09.120 --> 00:31:09.919
+<v Speaker 0>Perhaps.
+
+00:31:11.440 --> 00:31:13.200
+<v Speaker 0>Because it's scheduled on the worker note because
+
+00:31:13.200 --> 00:31:14.879
+<v Speaker 0>of the scheduler and the tents.
+
+00:31:16.240 --> 00:31:17.919
+<v Speaker 0>I love how I'm just making everything more
+
+00:31:17.919 --> 00:31:19.840
+<v Speaker 0>difficult for you with my my setup.
+
+00:31:22.015 --> 00:31:23.375
+<v Speaker 2>Yeah. Okay.
+
+00:31:24.335 --> 00:31:25.294
+<v Speaker 2>Interesting. No.
+
+00:31:25.775 --> 00:31:28.655
+<v Speaker 0>Yeah. Yeah. This is okay. Let me make
+
+00:31:28.655 --> 00:31:31.055
+<v Speaker 0>sure the audience understands why we're running into
+
+00:31:31.055 --> 00:31:33.775
+<v Speaker 0>a problem right now. Okay. So KWasm failed
+
+00:31:33.775 --> 00:31:35.215
+<v Speaker 0>to do the installation because there was no
+
+00:31:35.215 --> 00:31:37.540
+<v Speaker 0>default container decode. Now I create one on
+
+00:31:37.540 --> 00:31:38.500
+<v Speaker 0>the control plane.
+
+00:31:39.140 --> 00:31:40.740
+<v Speaker 0>Removed all the annotations and we run it
+
+00:31:40.740 --> 00:31:42.740
+<v Speaker 0>again. However, our workload is scheduled on the
+
+00:31:42.740 --> 00:31:44.340
+<v Speaker 0>worker node where I did not create the
+
+00:31:44.340 --> 00:31:46.340
+<v Speaker 0>default container deconfiguration.
+
+00:31:46.660 --> 00:31:48.420
+<v Speaker 0>And that's why currently things are still not
+
+00:31:48.420 --> 00:31:49.460
+<v Speaker 0>working. However,
+
+00:31:50.660 --> 00:31:51.540
+<v Speaker 0>we can
+
+00:31:52.395 --> 00:31:53.195
+<v Speaker 0>split
+
+00:31:54.955 --> 00:31:56.955
+<v Speaker 0>this and I'll jump onto the worker node
+
+00:31:56.955 --> 00:31:57.595
+<v Speaker 0>too.
+
+00:31:59.195 --> 00:32:01.115
+<v Speaker 0>And all we need to do hopefully
+
+00:32:01.755 --> 00:32:03.914
+<v Speaker 0>is make their
+
+00:32:04.795 --> 00:32:09.835
+<v Speaker 0>container d and then do container d
+
+00:32:08.059 --> 00:32:10.540
+<v Speaker 0>config at default and write it to the
+
+00:32:10.540 --> 00:32:11.740
+<v Speaker 0>expected location.
+
+00:32:14.540 --> 00:32:15.259
+<v Speaker 0>Now
+
+00:32:15.660 --> 00:32:17.419
+<v Speaker 0>the config will exist,
+
+00:32:17.900 --> 00:32:20.540
+<v Speaker 0>but we will need to reprovision the nodes
+
+00:32:21.115 --> 00:32:24.315
+<v Speaker 0>potentially unless that job is still running.
+
+00:32:31.275 --> 00:32:33.355
+<v Speaker 2>Maybe we hit the maximum retries.
+
+00:32:34.350 --> 00:32:35.309
+<v Speaker 0>Yeah. I
+
+00:32:35.950 --> 00:32:38.910
+<v Speaker 0>think that's definitely the case. So in order
+
+00:32:38.910 --> 00:32:40.350
+<v Speaker 0>to clean this up, we do need to
+
+00:32:40.350 --> 00:32:41.470
+<v Speaker 0>delete the job.
+
+00:32:44.590 --> 00:32:46.270
+<v Speaker 0>We do need to edit the notes.
+
+00:32:48.075 --> 00:32:50.554
+<v Speaker 0>Find the KWasm dot SH. Yeah. You only
+
+00:32:50.554 --> 00:32:51.994
+<v Speaker 2>need to remove the
+
+00:32:52.875 --> 00:32:53.754
+<v Speaker 2>label.
+
+00:32:55.034 --> 00:32:55.754
+<v Speaker 2>Okay.
+
+00:32:55.835 --> 00:32:57.914
+<v Speaker 0>Yeah. I just it's just easier, and then
+
+00:32:57.914 --> 00:32:59.755
+<v Speaker 0>I'll just reapply it. Hopefully,
+
+00:33:03.809 --> 00:33:05.489
+<v Speaker 0>we have two completely jobs.
+
+00:33:06.049 --> 00:33:08.129
+<v Speaker 2>Wait. We have a computer. Yeah. So KWasm
+
+00:33:08.130 --> 00:33:10.289
+<v Speaker 0>worked perfectly. The only problem was the container
+
+00:33:10.289 --> 00:33:11.409
+<v Speaker 0>deconfiguration
+
+00:33:11.570 --> 00:33:12.210
+<v Speaker 0>and
+
+00:33:12.770 --> 00:33:14.929
+<v Speaker 0>my talking too fast and trying to debug
+
+00:33:14.929 --> 00:33:16.595
+<v Speaker 0>thing. However Yes.
+
+00:33:17.634 --> 00:33:18.834
+<v Speaker 0>This should mean
+
+00:33:19.235 --> 00:33:21.154
+<v Speaker 0>we have our WebAssembly workload
+
+00:33:21.634 --> 00:33:24.274
+<v Speaker 0>scheduled on the worker node.
+
+00:33:25.235 --> 00:33:27.075
+<v Speaker 1>Feeling confident. This means you can you can
+
+00:33:27.075 --> 00:33:28.754
+<v Speaker 1>create one of the first bug requests in
+
+00:33:28.754 --> 00:33:30.680
+<v Speaker 1>in the in the issues of our GitHub
+
+00:33:30.680 --> 00:33:32.279
+<v Speaker 1>repository. That's nice.
+
+00:33:34.360 --> 00:33:36.360
+<v Speaker 0>Look at that. And it wasn't that job
+
+00:33:36.360 --> 00:33:37.240
+<v Speaker 2>completed.
+
+00:33:37.800 --> 00:33:38.519
+<v Speaker 0>Alright.
+
+00:33:39.240 --> 00:33:41.240
+<v Speaker 0>Now there was another example here. Right?
+
+00:33:41.975 --> 00:33:44.215
+<v Speaker 0>Yeah. That Where we could run the spin
+
+00:33:44.215 --> 00:33:45.174
+<v Speaker 0>application.
+
+00:33:45.655 --> 00:33:46.455
+<v Speaker 2>Exactly.
+
+00:33:46.455 --> 00:33:47.815
+<v Speaker 0>So shall we do that too?
+
+00:33:48.375 --> 00:33:49.414
+<v Speaker 2>Yeah. Sure.
+
+00:33:51.175 --> 00:33:53.415
+<v Speaker 2>So it's the same approach. We just create
+
+00:33:53.415 --> 00:33:54.615
+<v Speaker 2>a runtime class.
+
+00:33:54.775 --> 00:33:56.135
+<v Speaker 2>This time it's called
+
+00:33:56.615 --> 00:33:57.655
+<v Speaker 2>wasn't time spent.
+
+00:33:58.150 --> 00:33:59.669
+<v Speaker 2>And then we start,
+
+00:34:00.310 --> 00:34:02.309
+<v Speaker 2>I would say, very simple
+
+00:34:03.190 --> 00:34:04.149
+<v Speaker 2>example
+
+00:34:04.310 --> 00:34:05.350
+<v Speaker 2>from the
+
+00:34:06.150 --> 00:34:07.350
+<v Speaker 2>container d repository.
+
+00:34:12.944 --> 00:34:14.705
+<v Speaker 0>Alright. So if we run
+
+00:34:16.304 --> 00:34:18.304
+<v Speaker 0>now this one's running. Is it fair to
+
+00:34:18.304 --> 00:34:20.385
+<v Speaker 0>say this is an HTTP application that's gonna
+
+00:34:20.385 --> 00:34:22.385
+<v Speaker 0>say hello world every time we call it?
+
+00:34:22.704 --> 00:34:23.505
+<v Speaker 2>Exactly.
+
+00:34:23.984 --> 00:34:24.545
+<v Speaker 0>Alright.
+
+00:34:26.010 --> 00:34:26.810
+<v Speaker 0>Now
+
+00:34:27.050 --> 00:34:30.330
+<v Speaker 0>it's just a deployment. Right? It's just a
+
+00:34:30.330 --> 00:34:31.050
+<v Speaker 2>deployment.
+
+00:34:31.530 --> 00:34:33.290
+<v Speaker 0>Okay. So there's no service,
+
+00:34:33.370 --> 00:34:36.330
+<v Speaker 0>which means No service. We'll have to port
+
+00:34:36.330 --> 00:34:37.050
+<v Speaker 0>forward
+
+00:34:37.690 --> 00:34:38.810
+<v Speaker 1>Yeah. The deployment. Okay.
+
+00:34:40.395 --> 00:34:41.915
+<v Speaker 2>Or just expose it.
+
+00:34:43.594 --> 00:34:45.835
+<v Speaker 0>And I never remember the syntax for that.
+
+00:34:45.835 --> 00:34:47.035
+<v Speaker 2>No problem.
+
+00:34:47.755 --> 00:34:50.715
+<v Speaker 2>Yeah. Forward is fine. Yeah. I've I've no
+
+00:34:50.715 --> 00:34:51.594
+<v Speaker 0>chance. So
+
+00:34:53.030 --> 00:34:54.630
+<v Speaker 0>you can do the deploy.
+
+00:34:55.750 --> 00:34:57.910
+<v Speaker 0>Can you can you port forward to deploy?
+
+00:34:58.230 --> 00:34:59.670
+<v Speaker 1>Yeah. Yeah. You can. You can do a
+
+00:34:59.670 --> 00:35:01.430
+<v Speaker 1>deploy slash and then the deployment name.
+
+00:35:01.750 --> 00:35:04.470
+<v Speaker 2>It it resolves automatically a port and do
+
+00:35:04.550 --> 00:35:06.230
+<v Speaker 2>that's a port forward to the plot a
+
+00:35:06.230 --> 00:35:08.505
+<v Speaker 2>port, but it should work. And do you
+
+00:35:08.505 --> 00:35:09.944
+<v Speaker 0>know the port number? I think it might
+
+00:35:09.944 --> 00:35:13.545
+<v Speaker 0>be three Eighty. 80. It's just 18. Alright.
+
+00:35:19.224 --> 00:35:21.625
+<v Speaker 0>So I need to get a second session
+
+00:35:22.470 --> 00:35:24.550
+<v Speaker 0>on our control plan.
+
+00:35:24.790 --> 00:35:26.070
+<v Speaker 0>No. Worker. Right?
+
+00:35:26.550 --> 00:35:27.350
+<v Speaker 0>Worker.
+
+00:35:27.430 --> 00:35:28.230
+<v Speaker 0>Worker.
+
+00:35:28.230 --> 00:35:30.390
+<v Speaker 0>No. Because I'm port forwarding from it.
+
+00:35:32.550 --> 00:35:33.590
+<v Speaker 0>I'll get there.
+
+00:35:33.990 --> 00:35:34.550
+<v Speaker 0>Okay.
+
+00:35:42.105 --> 00:35:44.825
+<v Speaker 2>Yeah. You should go get a 404.
+
+00:35:44.825 --> 00:35:45.385
+<v Speaker 2>Right?
+
+00:35:46.345 --> 00:35:47.785
+<v Speaker 0>Yep. So hello.
+
+00:35:51.570 --> 00:35:52.690
+<v Speaker 2>Have a good one, And
+
+00:35:55.970 --> 00:35:58.130
+<v Speaker 2>if you are on the worker node. Right?
+
+00:35:58.610 --> 00:36:00.050
+<v Speaker 0>No. I'm on a control plane, but we're
+
+00:36:00.050 --> 00:36:02.370
+<v Speaker 0>port forwarding from the control plane. Ah,
+
+00:36:03.090 --> 00:36:03.490
+<v Speaker 2>okay.
+
+00:36:04.375 --> 00:36:05.975
+<v Speaker 2>So interestingly,
+
+00:36:05.975 --> 00:36:08.935
+<v Speaker 2>you could now see what the installer has
+
+00:36:08.935 --> 00:36:10.615
+<v Speaker 2>placed. So in the
+
+00:36:10.935 --> 00:36:14.215
+<v Speaker 2>on the worker nodes in your opt folder,
+
+00:36:15.175 --> 00:36:16.375
+<v Speaker 2>that should
+
+00:36:16.455 --> 00:36:17.975
+<v Speaker 2>now be a bunch of
+
+00:36:18.215 --> 00:36:19.175
+<v Speaker 2>binaries and lips.
+
+00:36:22.380 --> 00:36:24.780
+<v Speaker 2>Yeah. There is a KWasm folder,
+
+00:36:25.820 --> 00:36:28.780
+<v Speaker 2>and there are the bin and lib folders.
+
+00:36:28.780 --> 00:36:31.340
+<v Speaker 2>And there you find the container d shims
+
+00:36:31.340 --> 00:36:32.700
+<v Speaker 2>and the c one binary.
+
+00:36:33.345 --> 00:36:35.984
+<v Speaker 2>And the c one binary needs the shared
+
+00:36:35.984 --> 00:36:36.785
+<v Speaker 2>object
+
+00:36:36.785 --> 00:36:39.105
+<v Speaker 2>from the bottom edge library, which is in
+
+00:36:39.105 --> 00:36:40.065
+<v Speaker 2>the lip folder,
+
+00:36:40.225 --> 00:36:42.705
+<v Speaker 2>and they are symlinked into the
+
+00:36:43.265 --> 00:36:45.745
+<v Speaker 2>according folders of your operating system.
+
+00:36:46.465 --> 00:36:46.945
+<v Speaker 2>Nice.
+
+00:36:48.980 --> 00:36:51.140
+<v Speaker 0>This is pretty cool. Like, I now have
+
+00:36:51.140 --> 00:36:52.500
+<v Speaker 0>a spin application
+
+00:36:52.580 --> 00:36:54.660
+<v Speaker 0>running inside of my Kubernetes
+
+00:36:54.660 --> 00:36:55.460
+<v Speaker 0>cluster,
+
+00:36:55.940 --> 00:36:57.620
+<v Speaker 0>which I'm pretty happy with.
+
+00:36:58.099 --> 00:36:59.460
+<v Speaker 1>I I I think it would be worth
+
+00:36:59.460 --> 00:37:01.460
+<v Speaker 1>to to look into the the container
+
+00:37:01.619 --> 00:37:03.445
+<v Speaker 1>just to show what what's actually inside of
+
+00:37:03.445 --> 00:37:04.325
+<v Speaker 1>the container that we are
+
+00:37:05.925 --> 00:37:07.125
+<v Speaker 1>that we just provisioned.
+
+00:37:08.645 --> 00:37:10.645
+<v Speaker 1>Because, like, a spin application
+
+00:37:10.885 --> 00:37:13.525
+<v Speaker 1>needs at least your wasn't binary and also
+
+00:37:13.525 --> 00:37:15.765
+<v Speaker 1>your your spin tunnel, like the configuration for
+
+00:37:15.765 --> 00:37:17.740
+<v Speaker 1>the spin server. So is it gonna be
+
+00:37:17.740 --> 00:37:20.140
+<v Speaker 0>possible for me to get a shell? No.
+
+00:37:20.140 --> 00:37:22.780
+<v Speaker 2>It's No. Pretty like much like a distroless
+
+00:37:22.780 --> 00:37:24.540
+<v Speaker 2>container, so you don't have a shell in
+
+00:37:24.540 --> 00:37:27.340
+<v Speaker 2>there, which also means you could do a
+
+00:37:27.340 --> 00:37:29.500
+<v Speaker 2>debug like with a distroless
+
+00:37:29.500 --> 00:37:29.900
+<v Speaker 2>container.
+
+00:37:36.255 --> 00:37:37.775
+<v Speaker 0>I mean, I'm gonna have to read the
+
+00:37:37.775 --> 00:37:39.055
+<v Speaker 0>help page for that because I have not
+
+00:37:39.055 --> 00:37:41.615
+<v Speaker 0>used cube cube control debug very much at
+
+00:37:41.615 --> 00:37:41.934
+<v Speaker 0>all.
+
+00:37:44.380 --> 00:37:46.700
+<v Speaker 0>So let's copy one of these examples.
+
+00:37:47.740 --> 00:37:48.380
+<v Speaker 0>Yep.
+
+00:37:53.900 --> 00:37:55.980
+<v Speaker 0>Well, I think this one yeah. Add the
+
+00:37:55.980 --> 00:37:58.060
+<v Speaker 0>debug container and exec into it.
+
+00:37:59.255 --> 00:38:01.015
+<v Speaker 2>Yeah. And for space box.
+
+00:38:02.695 --> 00:38:05.495
+<v Speaker 0>Okay. So let's get the pod names first
+
+00:38:05.495 --> 00:38:06.855
+<v Speaker 0>because we'll need that.
+
+00:38:07.015 --> 00:38:08.855
+<v Speaker 0>And then this is going to do keep
+
+00:38:08.855 --> 00:38:09.815
+<v Speaker 0>control debug.
+
+00:38:13.750 --> 00:38:16.070
+<v Speaker 0>I guess my apologies to debug pod name,
+
+00:38:16.070 --> 00:38:17.589
+<v Speaker 0>which is going to run busy box and
+
+00:38:17.589 --> 00:38:18.630
+<v Speaker 0>we want to
+
+00:38:21.830 --> 00:38:23.510
+<v Speaker 0>oh, no. I think it's the other way
+
+00:38:23.510 --> 00:38:25.975
+<v Speaker 0>around. Right? Mhmm. Yeah. So we want to
+
+00:38:25.975 --> 00:38:27.095
+<v Speaker 0>debug the
+
+00:38:27.255 --> 00:38:27.895
+<v Speaker 0>spend.
+
+00:38:28.535 --> 00:38:30.215
+<v Speaker 2>That sounds right.
+
+00:38:30.535 --> 00:38:33.335
+<v Speaker 0>And we're gonna copy it to debug then.
+
+00:38:34.695 --> 00:38:37.335
+<v Speaker 2>There's there's an s missing in the copy
+
+00:38:37.335 --> 00:38:38.455
+<v Speaker 2>from the port name.
+
+00:38:40.630 --> 00:38:41.190
+<v Speaker 0>Thank you.
+
+00:38:55.115 --> 00:38:55.915
+<v Speaker 2>Yeah.
+
+00:38:56.395 --> 00:38:57.995
+<v Speaker 2>One one thing I
+
+00:38:58.155 --> 00:39:00.555
+<v Speaker 2>haven't thought about before is that we are
+
+00:39:00.555 --> 00:39:03.995
+<v Speaker 2>now starting a Linux container in our spin
+
+00:39:03.995 --> 00:39:04.475
+<v Speaker 2>pod,
+
+00:39:05.140 --> 00:39:08.020
+<v Speaker 2>which is interpreted by the container d, shim
+
+00:39:08.020 --> 00:39:10.980
+<v Speaker 2>spin, which can't handle Linux containers. So this
+
+00:39:10.980 --> 00:39:13.220
+<v Speaker 2>approach is only possible with the c one,
+
+00:39:16.340 --> 00:39:19.060
+<v Speaker 2>which is not running a server but an
+
+00:39:19.060 --> 00:39:19.860
+<v Speaker 2>a
+
+00:39:19.940 --> 00:39:21.475
+<v Speaker 2>job. Okay.
+
+00:39:24.835 --> 00:39:26.755
+<v Speaker 2>Yeah. Things to improve. I
+
+00:39:27.155 --> 00:39:28.675
+<v Speaker 1>I guess then then you have to leave
+
+00:39:28.675 --> 00:39:30.515
+<v Speaker 1>us for now. And but we could at
+
+00:39:30.515 --> 00:39:32.195
+<v Speaker 1>least look into the Dockerfile so that you
+
+00:39:32.195 --> 00:39:33.475
+<v Speaker 1>can see how we how we would create
+
+00:39:33.475 --> 00:39:37.190
+<v Speaker 1>such a Dockerfile because Yeah. Yeah. Sure. So
+
+00:39:40.070 --> 00:39:41.670
+<v Speaker 1>when you go into the
+
+00:39:42.470 --> 00:39:45.349
+<v Speaker 1>repository of the days lapse guys of the
+
+00:39:45.349 --> 00:39:47.750
+<v Speaker 1>container editions Oh, the days lapse one. Okay.
+
+00:39:47.750 --> 00:39:50.585
+<v Speaker 2>Yeah. We are using the example directly from
+
+00:39:50.585 --> 00:39:51.465
+<v Speaker 2>the source.
+
+00:39:54.105 --> 00:39:55.545
+<v Speaker 0>Exactly. Repository?
+
+00:39:57.464 --> 00:39:59.145
+<v Speaker 1>Yeah. It is. And then
+
+00:40:02.670 --> 00:40:04.110
+<v Speaker 1>Efficient sources.
+
+00:40:04.589 --> 00:40:06.830
+<v Speaker 2>Yeah. And then there are images.
+
+00:40:08.589 --> 00:40:10.750
+<v Speaker 2>There is the spin example,
+
+00:40:11.630 --> 00:40:13.230
+<v Speaker 2>and there is the Dockerfile. Right.
+
+00:40:16.475 --> 00:40:17.195
+<v Speaker 2>So
+
+00:40:17.355 --> 00:40:18.155
+<v Speaker 2>what it
+
+00:40:18.635 --> 00:40:22.795
+<v Speaker 2>basically does is spinning up a build container,
+
+00:40:22.795 --> 00:40:24.395
+<v Speaker 2>then doing the
+
+00:40:24.955 --> 00:40:27.195
+<v Speaker 2>build of the binaries.
+
+00:40:27.675 --> 00:40:30.075
+<v Speaker 2>So byte code
+
+00:40:29.530 --> 00:40:30.330
+<v Speaker 2>files.
+
+00:40:31.050 --> 00:40:31.610
+<v Speaker 2>And
+
+00:40:31.930 --> 00:40:34.410
+<v Speaker 2>the in the end, it's just using from
+
+00:40:34.410 --> 00:40:35.210
+<v Speaker 2>scratch
+
+00:40:35.530 --> 00:40:38.570
+<v Speaker 2>and is copying all the files needed,
+
+00:40:38.730 --> 00:40:40.970
+<v Speaker 2>which namely is the spin dot toml
+
+00:40:41.685 --> 00:40:43.125
+<v Speaker 2>and the
+
+00:40:43.205 --> 00:40:45.365
+<v Speaker 2>two modules that I referenced in that. The
+
+00:40:45.365 --> 00:40:46.725
+<v Speaker 2>spin dot TOML is in this folder as
+
+00:40:46.725 --> 00:40:48.085
+<v Speaker 2>well, so we can have a look at
+
+00:40:48.085 --> 00:40:48.245
+<v Speaker 2>it.
+
+00:40:55.190 --> 00:40:57.830
+<v Speaker 2>And here you see the two components,
+
+00:40:58.150 --> 00:41:01.750
+<v Speaker 2>which are just referencing to an,
+
+00:41:02.470 --> 00:41:05.110
+<v Speaker 2>WASM file that's in the root directory
+
+00:41:05.430 --> 00:41:07.590
+<v Speaker 2>and a route where you can find it.
+
+00:41:07.815 --> 00:41:10.135
+<v Speaker 2>This is the hello route we have used.
+
+00:41:10.135 --> 00:41:12.775
+<v Speaker 2>So there's also the go hello route where
+
+00:41:12.775 --> 00:41:15.175
+<v Speaker 2>you should get an hello from the go
+
+00:41:15.175 --> 00:41:15.975
+<v Speaker 2>module.
+
+00:41:17.095 --> 00:41:17.815
+<v Speaker 0>Nice.
+
+00:41:19.175 --> 00:41:19.655
+<v Speaker 0>Alright.
+
+00:41:20.150 --> 00:41:23.030
+<v Speaker 0>Let's recap everything that happened here. So we
+
+00:41:23.030 --> 00:41:23.990
+<v Speaker 0>had a
+
+00:41:24.070 --> 00:41:25.830
+<v Speaker 0>vanilla Kubernetes cluster.
+
+00:41:26.310 --> 00:41:27.510
+<v Speaker 0>We used helm
+
+00:41:27.750 --> 00:41:30.470
+<v Speaker 0>to add the KWasm repository and install the
+
+00:41:30.470 --> 00:41:31.830
+<v Speaker 0>KWasm operator.
+
+00:41:31.830 --> 00:41:33.430
+<v Speaker 0>That's just my cluster and does nothing.
+
+00:41:34.155 --> 00:41:36.395
+<v Speaker 0>When we annotate a node or multiple nodes
+
+00:41:36.395 --> 00:41:37.995
+<v Speaker 0>and say that we want to run WebAssembly
+
+00:41:37.995 --> 00:41:40.715
+<v Speaker 0>workloads on it, the controller will spin up
+
+00:41:40.715 --> 00:41:42.155
+<v Speaker 0>a privileged pod
+
+00:41:42.475 --> 00:41:44.475
+<v Speaker 0>and throw all the binaries that we need
+
+00:41:44.475 --> 00:41:46.955
+<v Speaker 0>onto the host to run our WebAssembly workloads.
+
+00:41:47.600 --> 00:41:49.680
+<v Speaker 0>This then means that we can add runtime
+
+00:41:49.680 --> 00:41:52.400
+<v Speaker 0>classes or whatever web assembly runtime we wish
+
+00:41:52.400 --> 00:41:52.880
+<v Speaker 0>to
+
+00:41:53.600 --> 00:41:55.520
+<v Speaker 0>run workloads on whether that be WASM edge
+
+00:41:55.520 --> 00:41:57.360
+<v Speaker 0>or spin or others.
+
+00:41:57.680 --> 00:42:00.640
+<v Speaker 0>And then we just spin up norm pun
+
+00:42:00.640 --> 00:42:01.360
+<v Speaker 0>not intended.
+
+00:42:02.365 --> 00:42:05.325
+<v Speaker 0>Standard Kubernetes deployments with an annotation that says
+
+00:42:05.325 --> 00:42:08.525
+<v Speaker 0>this is is was it smart compact,
+
+00:42:09.005 --> 00:42:10.525
+<v Speaker 0>which tells it to find the correct web
+
+00:42:10.525 --> 00:42:12.765
+<v Speaker 0>assembly workload to run an application.
+
+00:42:13.005 --> 00:42:15.645
+<v Speaker 0>And by magic of everything that just happened,
+
+00:42:16.250 --> 00:42:18.250
+<v Speaker 0>we can run our server side WebAssembly applications
+
+00:42:18.250 --> 00:42:20.650
+<v Speaker 0>inside of a Kubernetes cluster, say by say,
+
+00:42:20.650 --> 00:42:22.730
+<v Speaker 0>with container workloads even
+
+00:42:22.730 --> 00:42:24.570
+<v Speaker 0>in the same pod.
+
+00:42:25.770 --> 00:42:27.050
+<v Speaker 0>Is that right? Yeah. Absolutely.
+
+00:42:28.569 --> 00:42:30.329
+<v Speaker 0>What a wonderful world we live in.
+
+00:42:32.115 --> 00:42:33.555
+<v Speaker 1>And if you're, like, living on the cutting
+
+00:42:33.555 --> 00:42:34.915
+<v Speaker 1>edge and you already have a working spin
+
+00:42:34.915 --> 00:42:37.155
+<v Speaker 1>application, then it should should already work. I
+
+00:42:37.155 --> 00:42:38.995
+<v Speaker 1>mean, we we have some some limitations in
+
+00:42:38.995 --> 00:42:41.875
+<v Speaker 1>terms of, like, for instance, the the Redis
+
+00:42:41.875 --> 00:42:43.235
+<v Speaker 1>integration is not not yet working.
+
+00:42:45.110 --> 00:42:47.190
+<v Speaker 1>But apart from this, like, as as as
+
+00:42:47.190 --> 00:42:48.870
+<v Speaker 1>soon as you're not doing anything fancy, it
+
+00:42:48.870 --> 00:42:49.830
+<v Speaker 1>should be working.
+
+00:42:51.190 --> 00:42:53.670
+<v Speaker 2>And if you are doing anything fancy,
+
+00:42:53.750 --> 00:42:57.110
+<v Speaker 2>so we are also glad to receive issues
+
+00:42:57.110 --> 00:43:00.310
+<v Speaker 2>and forward them to the right position. So
+
+00:43:01.145 --> 00:43:03.305
+<v Speaker 2>it should be more and more fancy with
+
+00:43:03.305 --> 00:43:03.945
+<v Speaker 2>every
+
+00:43:04.105 --> 00:43:04.745
+<v Speaker 2>release.
+
+00:43:05.385 --> 00:43:06.265
+<v Speaker 0>Awesome.
+
+00:43:06.825 --> 00:43:08.665
+<v Speaker 0>Alright. Let's pop back over to
+
+00:43:10.345 --> 00:43:12.185
+<v Speaker 0>our big faces so we can kinda chalk
+
+00:43:12.185 --> 00:43:14.425
+<v Speaker 0>this out. And there's one question on the
+
+00:43:14.425 --> 00:43:15.625
+<v Speaker 0>chat, which is unrelated,
+
+00:43:15.900 --> 00:43:18.380
+<v Speaker 0>but, you know, I've got opinions. I'm just
+
+00:43:18.380 --> 00:43:19.420
+<v Speaker 0>gonna answer anyway.
+
+00:43:19.740 --> 00:43:21.020
+<v Speaker 0>And the bed is asking what is the
+
+00:43:21.020 --> 00:43:23.099
+<v Speaker 0>most used CNI in production? Is it Celeam
+
+00:43:23.099 --> 00:43:24.859
+<v Speaker 0>or Calico? I mean, I'm just gonna go
+
+00:43:24.859 --> 00:43:26.460
+<v Speaker 0>straight and say, if you're not using Celeam,
+
+00:43:26.460 --> 00:43:28.460
+<v Speaker 0>you're probably making a huge mistake. I'm such
+
+00:43:28.460 --> 00:43:30.619
+<v Speaker 0>a huge fan of Celeam. Cloud providers are
+
+00:43:30.619 --> 00:43:31.900
+<v Speaker 0>adopting a support in Celeam.
+
+00:43:32.325 --> 00:43:34.005
+<v Speaker 0>Do either of you have any opinions on
+
+00:43:34.005 --> 00:43:36.245
+<v Speaker 0>CNIs before I pop the question away?
+
+00:43:37.925 --> 00:43:39.605
+<v Speaker 1>I I I tend to use Celeum since
+
+00:43:39.605 --> 00:43:42.005
+<v Speaker 1>I first encountered in 02/2019 in the KubeCon
+
+00:43:42.005 --> 00:43:43.845
+<v Speaker 1>NA, and and we're talking to those those
+
+00:43:43.845 --> 00:43:46.400
+<v Speaker 1>guys. And they're they're beautiful people. I had
+
+00:43:46.400 --> 00:43:48.320
+<v Speaker 1>the chance to meet them in person and
+
+00:43:48.640 --> 00:43:51.680
+<v Speaker 1>very, very clever guys. And the product itself
+
+00:43:51.680 --> 00:43:53.760
+<v Speaker 1>is is really like a blast. And if
+
+00:43:53.760 --> 00:43:56.160
+<v Speaker 1>you ever, like, had really a network problem
+
+00:43:56.240 --> 00:43:57.920
+<v Speaker 1>and had the chance of using
+
+00:43:58.494 --> 00:44:01.455
+<v Speaker 1>Hubble, their their visualization tool for for visualizing
+
+00:44:01.455 --> 00:44:02.815
+<v Speaker 1>traffic and this kind of stuff.
+
+00:44:03.695 --> 00:44:04.095
+<v Speaker 1>Like
+
+00:44:07.135 --> 00:44:08.255
+<v Speaker 0>Oh, ended.
+
+00:44:08.335 --> 00:44:09.375
+<v Speaker 0>Oh, sorry.
+
+00:44:09.935 --> 00:44:11.695
+<v Speaker 0>Yeah. I couldn't agree more. I mean, Hubble
+
+00:44:11.695 --> 00:44:14.095
+<v Speaker 0>is like a superpower. Right? That l four
+
+00:44:13.800 --> 00:44:16.680
+<v Speaker 0>and l seven visibility into your applications been
+
+00:44:16.680 --> 00:44:18.760
+<v Speaker 0>able to visualize network policies. This is not
+
+00:44:18.760 --> 00:44:21.080
+<v Speaker 0>a silly unplug or whatever. I just a
+
+00:44:21.080 --> 00:44:23.320
+<v Speaker 0>huge fan of silly. I couldn't recommend that
+
+00:44:23.320 --> 00:44:25.560
+<v Speaker 0>enough. Oh, we've lost them. Oh, we've lost.
+
+00:44:34.905 --> 00:44:36.985
+<v Speaker 0>They are trying to join again. But of
+
+00:44:36.985 --> 00:44:38.905
+<v Speaker 0>course, my software is being a pain in
+
+00:44:38.905 --> 00:44:39.865
+<v Speaker 0>the ass today.
+
+00:44:41.225 --> 00:44:41.945
+<v Speaker 0>Sorry, folks.
+
+00:44:43.150 --> 00:44:44.750
+<v Speaker 0>We're we're so close to the financial end
+
+00:44:44.750 --> 00:44:46.110
+<v Speaker 0>of my software. It's giving you both a
+
+00:44:46.110 --> 00:44:48.110
+<v Speaker 0>hard time, so sorry about that. But thank
+
+00:44:48.110 --> 00:44:49.070
+<v Speaker 0>you for coming back.
+
+00:44:49.470 --> 00:44:51.630
+<v Speaker 1>You're back again. Just just one last thought
+
+00:44:51.630 --> 00:44:53.070
+<v Speaker 1>about Cilium. I mean, there must be a
+
+00:44:53.070 --> 00:44:54.990
+<v Speaker 1>reason that it's that it's basically used by
+
+00:44:54.990 --> 00:44:55.950
+<v Speaker 1>all the major
+
+00:44:56.110 --> 00:44:58.275
+<v Speaker 1>managed services. So. Yeah.
+
+00:44:58.994 --> 00:45:01.235
+<v Speaker 0>Yeah. I couldn't agree more. It's fantastic.
+
+00:45:01.875 --> 00:45:03.875
+<v Speaker 0>Alright. Let's jump back to WebAssembly. We'll we'll
+
+00:45:03.875 --> 00:45:05.315
+<v Speaker 0>we'll finish up. I wanna say thank you.
+
+00:45:05.315 --> 00:45:06.835
+<v Speaker 0>You both spent a lot of time with
+
+00:45:06.835 --> 00:45:08.035
+<v Speaker 0>me today as we've done a couple of
+
+00:45:08.035 --> 00:45:08.675
+<v Speaker 0>activities.
+
+00:45:08.915 --> 00:45:11.075
+<v Speaker 0>And it's just been fun talking to you.
+
+00:45:11.155 --> 00:45:13.470
+<v Speaker 0>It's nice to meet and speak with other
+
+00:45:13.470 --> 00:45:15.550
+<v Speaker 0>people that are as excited about this hybrid
+
+00:45:15.550 --> 00:45:17.390
+<v Speaker 0>future world of web assembly and containers at
+
+00:45:17.390 --> 00:45:18.110
+<v Speaker 0>the site.
+
+00:45:18.590 --> 00:45:20.910
+<v Speaker 0>Something you mentioned earlier oops. When's it gone?
+
+00:45:20.910 --> 00:45:22.190
+<v Speaker 0>I'm hoping that doesn't mean that you're gonna
+
+00:45:22.190 --> 00:45:22.990
+<v Speaker 0>drop again.
+
+00:45:23.310 --> 00:45:24.910
+<v Speaker 0>So That's good.
+
+00:45:26.590 --> 00:45:28.075
+<v Speaker 0>You mentioned something earlier that I thought was
+
+00:45:28.075 --> 00:45:29.755
+<v Speaker 0>interesting. We haven't mentioned on the stream. I
+
+00:45:29.755 --> 00:45:31.115
+<v Speaker 0>figured maybe we could touch on that. Like,
+
+00:45:31.115 --> 00:45:33.595
+<v Speaker 0>the goal is for KWasm to not exist.
+
+00:45:33.595 --> 00:45:35.755
+<v Speaker 0>Is is that correct? And maybe what's gonna
+
+00:45:35.755 --> 00:45:37.595
+<v Speaker 0>happen in the next three six or nine
+
+00:45:37.595 --> 00:45:38.635
+<v Speaker 0>months is gonna get us there.
+
+00:45:40.410 --> 00:45:43.849
+<v Speaker 1>Exactly. So, like, KWasm is there to actually
+
+00:45:43.849 --> 00:45:45.450
+<v Speaker 1>not exist to to bridge
+
+00:45:46.170 --> 00:45:48.569
+<v Speaker 1>so, like, to to increase the adoption of
+
+00:45:48.569 --> 00:45:50.410
+<v Speaker 1>of WebAssembly and to make people
+
+00:45:50.650 --> 00:45:51.930
+<v Speaker 1>to make it easy for people to try
+
+00:45:51.930 --> 00:45:55.130
+<v Speaker 1>WebAssembly out and run run on the Kubernetes
+
+00:45:54.405 --> 00:45:56.405
+<v Speaker 1>cluster. Again, we are a Kubernetescom
+
+00:45:56.565 --> 00:45:57.205
+<v Speaker 1>company,
+
+00:45:57.365 --> 00:45:59.445
+<v Speaker 1>so we are actually not really earning money
+
+00:45:59.445 --> 00:46:00.565
+<v Speaker 1>with WebAssembly.
+
+00:46:00.565 --> 00:46:02.325
+<v Speaker 1>I mean, maybe some point in in the
+
+00:46:02.325 --> 00:46:04.725
+<v Speaker 1>future, maybe with with some some consulting in
+
+00:46:04.725 --> 00:46:05.445
+<v Speaker 1>this
+
+00:46:06.245 --> 00:46:08.690
+<v Speaker 1>something like this, but definitely not with KWasm.
+
+00:46:08.690 --> 00:46:09.890
+<v Speaker 1>This is not the not the goal. And,
+
+00:46:09.890 --> 00:46:11.970
+<v Speaker 1>also, like, we will probably not create any
+
+00:46:11.970 --> 00:46:14.690
+<v Speaker 1>WebAssembly product or something like this. There are
+
+00:46:14.690 --> 00:46:16.930
+<v Speaker 1>way more smarter people from from, as I
+
+00:46:16.930 --> 00:46:19.890
+<v Speaker 1>said, Fermion wasn't cloud and so on.
+
+00:46:20.290 --> 00:46:20.690
+<v Speaker 1>So
+
+00:46:22.185 --> 00:46:23.705
+<v Speaker 1>from from our perspective,
+
+00:46:23.705 --> 00:46:25.625
+<v Speaker 1>we try to contribute something back to the
+
+00:46:25.625 --> 00:46:26.265
+<v Speaker 1>community,
+
+00:46:27.305 --> 00:46:29.305
+<v Speaker 1>try to be on on the edge
+
+00:46:29.705 --> 00:46:30.745
+<v Speaker 1>to to
+
+00:46:30.905 --> 00:46:32.745
+<v Speaker 1>understand the the developments there.
+
+00:46:34.070 --> 00:46:35.990
+<v Speaker 1>I'm not not sure. Sven, what do you
+
+00:46:35.990 --> 00:46:36.470
+<v Speaker 1>think?
+
+00:46:43.030 --> 00:46:43.830
+<v Speaker 1>He's
+
+00:46:43.830 --> 00:46:44.790
+<v Speaker 1>thinking nothing or
+
+00:46:47.030 --> 00:46:48.630
+<v Speaker 1>so he's not frozen at least.
+
+00:46:51.125 --> 00:46:53.445
+<v Speaker 0>No. But the audience are saying that it's
+
+00:46:53.445 --> 00:46:56.085
+<v Speaker 0>potentially my bandwidth that is a problem. And
+
+00:46:56.085 --> 00:46:57.045
+<v Speaker 0>this
+
+00:46:57.125 --> 00:46:59.365
+<v Speaker 0>I've actually kind of we're streaming in four
+
+00:46:59.365 --> 00:47:00.645
+<v Speaker 0>k, which was not intentional.
+
+00:47:02.180 --> 00:47:04.019
+<v Speaker 0>And I think it's causing a little bit
+
+00:47:04.019 --> 00:47:05.619
+<v Speaker 0>of problems. I'm not sure
+
+00:47:06.019 --> 00:47:08.820
+<v Speaker 0>if when is is still here, but
+
+00:47:12.099 --> 00:47:12.500
+<v Speaker 0>you know,
+
+00:47:14.295 --> 00:47:15.974
+<v Speaker 0>This has been a lot of fun and
+
+00:47:15.974 --> 00:47:18.055
+<v Speaker 0>keep as some people can go and play
+
+00:47:18.055 --> 00:47:19.734
+<v Speaker 0>with it today. If you run into issues,
+
+00:47:19.734 --> 00:47:21.974
+<v Speaker 0>open issues, feel free to contribute. It's all
+
+00:47:21.974 --> 00:47:23.655
+<v Speaker 0>open source. Get involved.
+
+00:47:23.895 --> 00:47:26.055
+<v Speaker 0>If you want to discuss WebAssembly Kubernetes in
+
+00:47:26.055 --> 00:47:28.454
+<v Speaker 0>more details, reach out to Christophe or Sven.
+
+00:47:28.454 --> 00:47:29.734
+<v Speaker 0>Reach out to Liquid Reply.
+
+00:47:30.270 --> 00:47:32.670
+<v Speaker 0>Get some assistance. Wonderful people doing a really
+
+00:47:32.670 --> 00:47:34.110
+<v Speaker 0>cool work in this space.
+
+00:47:34.350 --> 00:47:35.790
+<v Speaker 0>I just say thank you both for for
+
+00:47:35.950 --> 00:47:36.990
+<v Speaker 0>oh, he's gone.
+
+00:47:37.310 --> 00:47:39.630
+<v Speaker 0>Thank you for joining me today and showing
+
+00:47:39.710 --> 00:47:41.230
+<v Speaker 0>us this project, showing us how to get
+
+00:47:41.230 --> 00:47:42.830
+<v Speaker 0>started with server side web assembly in the
+
+00:47:42.830 --> 00:47:45.015
+<v Speaker 0>Kubernetes environment. It's really exciting time, and I
+
+00:47:45.015 --> 00:47:46.695
+<v Speaker 0>can't wait to do more with it.
+
+00:47:47.255 --> 00:47:48.775
+<v Speaker 0>Any last words? And I'll let you go
+
+00:47:48.775 --> 00:47:50.295
+<v Speaker 0>because it seems to be
+
+00:47:50.934 --> 00:47:53.015
+<v Speaker 0>plentiful, plentiful problems today.
+
+00:47:54.214 --> 00:47:55.974
+<v Speaker 1>Yeah. Just thank you for having us. And
+
+00:47:55.974 --> 00:47:57.494
+<v Speaker 1>as I just mentioned, if you have any
+
+00:47:57.494 --> 00:47:58.055
+<v Speaker 1>kind of questions,
+
+00:47:58.800 --> 00:48:00.640
+<v Speaker 1>feel free to reach out either on repository
+
+00:48:00.640 --> 00:48:03.040
+<v Speaker 1>or as well. We are both also available
+
+00:48:03.040 --> 00:48:03.760
+<v Speaker 1>via
+
+00:48:04.320 --> 00:48:07.120
+<v Speaker 1>Mastodon and then Twitter. So these are probably
+
+00:48:07.120 --> 00:48:07.760
+<v Speaker 1>the best
+
+00:48:08.160 --> 00:48:10.320
+<v Speaker 1>ways to approach us. And, also, like, if
+
+00:48:10.320 --> 00:48:12.595
+<v Speaker 1>you have any kind of, like, improvements or
+
+00:48:12.595 --> 00:48:14.275
+<v Speaker 1>things that you would like to see, so
+
+00:48:14.275 --> 00:48:15.715
+<v Speaker 1>we're happy to integrate this.
+
+00:48:17.955 --> 00:48:19.315
+<v Speaker 0>Can you hear us now, Sven?
+
+00:48:23.955 --> 00:48:25.395
+<v Speaker 1>I think he's gone again.
+
+00:48:26.480 --> 00:48:27.200
+<v Speaker 0>Yeah.
+
+00:48:27.839 --> 00:48:30.160
+<v Speaker 0>Well, sometimes there's problems in the streams. And
+
+00:48:30.160 --> 00:48:31.520
+<v Speaker 0>I'm really sorry about that. But thank you
+
+00:48:31.520 --> 00:48:32.880
+<v Speaker 0>again. I'm glad we could at least still
+
+00:48:32.880 --> 00:48:34.640
+<v Speaker 0>talk and finish up. So have a wonderful
+
+00:48:34.640 --> 00:48:36.000
+<v Speaker 0>day. I'll speak to all soon. And thank
+
+00:48:36.000 --> 00:48:36.960
+<v Speaker 0>you all for watching.
+
+00:48:37.359 --> 00:48:38.559
+<v Speaker 1>Thank you so much. Bye.

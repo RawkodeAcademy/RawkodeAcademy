@@ -1,0 +1,5489 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: b8a9e275-7e11-4654-ae31-230620dc246e
+Created: 2025-04-29T19:08:22.886Z
+Duration: 4345.087
+Channels: 1
+
+00:00:49.790 --> 00:00:52.510
+<v Speaker 0>Hello, and welcome to today's episode of Rawkode
+
+00:00:52.510 --> 00:00:55.390
+<v Speaker 0>Live. I'm your host, Rawkode. Today, we are
+
+00:00:55.390 --> 00:00:57.230
+<v Speaker 0>gonna be taking a look at project Velero,
+
+00:00:57.230 --> 00:00:59.870
+<v Speaker 0>a tool for Kubernetes to help make all
+
+00:00:59.870 --> 00:01:01.790
+<v Speaker 0>of our backup and restore lives a lot
+
+00:01:01.790 --> 00:01:03.864
+<v Speaker 0>easier. Now before we begin, there's just a
+
+00:01:03.864 --> 00:01:05.305
+<v Speaker 0>little bit of housekeeping I'd like to take
+
+00:01:05.305 --> 00:01:07.865
+<v Speaker 0>care of. First, please, if you're not subscribed
+
+00:01:07.865 --> 00:01:09.545
+<v Speaker 0>already to the YouTube channel,
+
+00:01:09.865 --> 00:01:12.104
+<v Speaker 0>subscribe now. Click the bell. This helps other
+
+00:01:12.104 --> 00:01:13.385
+<v Speaker 0>people find the content,
+
+00:01:13.865 --> 00:01:15.545
+<v Speaker 0>and it means you get really cool notifications
+
+00:01:15.545 --> 00:01:16.985
+<v Speaker 0>when more episodes are going live.
+
+00:01:18.010 --> 00:01:19.770
+<v Speaker 0>Also, if you are not watching live and
+
+00:01:19.770 --> 00:01:21.770
+<v Speaker 0>you're watching this later, you may have questions.
+
+00:01:21.770 --> 00:01:24.250
+<v Speaker 0>You may want to suggest new episodes or
+
+00:01:24.250 --> 00:01:26.490
+<v Speaker 0>technologies you'd like to see covered, or maybe
+
+00:01:26.490 --> 00:01:27.770
+<v Speaker 0>you just want to chat with other cloud
+
+00:01:27.770 --> 00:01:30.090
+<v Speaker 0>native and Kubernetes people. We have an active
+
+00:01:30.090 --> 00:01:31.855
+<v Speaker 0>Discord server with a few hundred people there.
+
+00:01:31.855 --> 00:01:33.295
+<v Speaker 0>Feel free to come and join us and
+
+00:01:33.295 --> 00:01:34.335
+<v Speaker 0>talk technology.
+
+00:01:35.535 --> 00:01:38.095
+<v Speaker 0>And lastly, I would love to thank Equinix
+
+00:01:38.095 --> 00:01:41.215
+<v Speaker 0>Medal, my employer. They allow me the time,
+
+00:01:41.215 --> 00:01:43.375
+<v Speaker 0>energy, resources to put this show together and
+
+00:01:43.375 --> 00:01:45.295
+<v Speaker 0>provide cloud native learning materials so we can
+
+00:01:45.295 --> 00:01:46.095
+<v Speaker 0>all learn together.
+
+00:01:46.620 --> 00:01:48.780
+<v Speaker 0>So if you wanna check out Equinix metal,
+
+00:01:48.780 --> 00:01:50.540
+<v Speaker 0>you can use the code Rawkode.
+
+00:01:51.020 --> 00:01:53.020
+<v Speaker 0>This is different from previously, so don't fall
+
+00:01:53.020 --> 00:01:54.780
+<v Speaker 0>for the trap. This now gets you 200
+
+00:01:54.780 --> 00:01:56.940
+<v Speaker 0>US dollars and credits that you can use
+
+00:01:56.940 --> 00:01:57.900
+<v Speaker 0>on the platform,
+
+00:01:58.220 --> 00:02:00.220
+<v Speaker 0>which you can use very, very quickly and
+
+00:02:00.220 --> 00:02:02.060
+<v Speaker 0>under fifty hours, or you can get up
+
+00:02:02.060 --> 00:02:03.655
+<v Speaker 0>to four hundred hours of compute with our
+
+00:02:03.655 --> 00:02:05.575
+<v Speaker 0>smallest instances. So feel free to check that
+
+00:02:05.575 --> 00:02:06.615
+<v Speaker 0>out and let me know how you get
+
+00:02:06.615 --> 00:02:07.175
+<v Speaker 0>on.
+
+00:02:07.655 --> 00:02:09.414
+<v Speaker 0>Alright. Now, with today, we're taking a look
+
+00:02:09.414 --> 00:02:11.095
+<v Speaker 0>at project Velero, and I am honored to
+
+00:02:11.095 --> 00:02:13.815
+<v Speaker 0>be joined by Carlisia Thompson, a engineer at
+
+00:02:13.815 --> 00:02:15.655
+<v Speaker 0>VMware, a maintainer of Velero.
+
+00:02:16.180 --> 00:02:17.780
+<v Speaker 0>Hi there. How are you?
+
+00:02:18.580 --> 00:02:19.860
+<v Speaker 1>Hi, David.
+
+00:02:19.940 --> 00:02:22.260
+<v Speaker 1>Thank you for having me on the show.
+
+00:02:22.260 --> 00:02:23.220
+<v Speaker 1>Hi, everybody.
+
+00:02:23.620 --> 00:02:24.500
+<v Speaker 0>It's
+
+00:02:24.580 --> 00:02:26.180
+<v Speaker 0>our pleasure to host you today. We're very
+
+00:02:26.180 --> 00:02:27.700
+<v Speaker 0>excited to take a look at Velero.
+
+00:02:28.195 --> 00:02:29.875
+<v Speaker 0>Do you wanna just start? Give us a
+
+00:02:29.875 --> 00:02:31.795
+<v Speaker 0>little bit of an introduction about yourself. Share
+
+00:02:31.795 --> 00:02:33.715
+<v Speaker 0>whatever you wish, and and we'll take it
+
+00:02:33.715 --> 00:02:34.675
+<v Speaker 0>from there.
+
+00:02:35.475 --> 00:02:38.115
+<v Speaker 1>Yeah. Sure thing. So I am an engineer.
+
+00:02:38.115 --> 00:02:39.395
+<v Speaker 1>I work for VMware.
+
+00:02:40.035 --> 00:02:42.355
+<v Speaker 1>I'm one of the Velero maintainers.
+
+00:02:43.230 --> 00:02:45.150
+<v Speaker 1>There are a few of us from VMware.
+
+00:02:45.150 --> 00:02:46.750
+<v Speaker 1>There is someone from Susie
+
+00:02:47.069 --> 00:02:47.870
+<v Speaker 1>Sousa,
+
+00:02:48.189 --> 00:02:50.110
+<v Speaker 1>and we always welcome
+
+00:02:50.829 --> 00:02:53.230
+<v Speaker 1>people who are interested in becoming maintainers,
+
+00:02:54.030 --> 00:02:54.989
+<v Speaker 1>just for the records.
+
+00:02:55.735 --> 00:02:58.935
+<v Speaker 1>What else? I am a CNCF ambassador.
+
+00:02:59.175 --> 00:03:00.055
+<v Speaker 1>I think
+
+00:03:00.855 --> 00:03:02.614
+<v Speaker 1>I'm very interested in what's going on with
+
+00:03:02.614 --> 00:03:04.375
+<v Speaker 1>the community. I try to help out when
+
+00:03:04.375 --> 00:03:05.015
+<v Speaker 1>I can.
+
+00:03:05.815 --> 00:03:08.375
+<v Speaker 1>I do I am a host of the
+
+00:03:08.375 --> 00:03:09.495
+<v Speaker 1>the Podlets
+
+00:03:09.495 --> 00:03:10.135
+<v Speaker 1>podcast,
+
+00:03:11.080 --> 00:03:12.280
+<v Speaker 1>which which
+
+00:03:12.520 --> 00:03:14.840
+<v Speaker 1>is a panel of hosts that talk about
+
+00:03:14.840 --> 00:03:16.600
+<v Speaker 1>cloud native technologies.
+
+00:03:17.480 --> 00:03:19.000
+<v Speaker 1>What else? I
+
+00:03:20.680 --> 00:03:21.880
+<v Speaker 1>think that's plenty.
+
+00:03:21.960 --> 00:03:23.735
+<v Speaker 0>Yeah. Like, what else? I mean, you listed
+
+00:03:23.735 --> 00:03:25.575
+<v Speaker 0>so much there. You must you must like
+
+00:03:25.575 --> 00:03:26.455
+<v Speaker 0>being busy.
+
+00:03:27.015 --> 00:03:28.455
+<v Speaker 1>I I like to say that I am
+
+00:03:28.455 --> 00:03:31.175
+<v Speaker 1>Brazilian because if in case people are wondering
+
+00:03:31.175 --> 00:03:32.695
+<v Speaker 1>where my accent comes from.
+
+00:03:33.255 --> 00:03:35.730
+<v Speaker 1>I do live in The US, though. So
+
+00:03:35.810 --> 00:03:36.450
+<v Speaker 1>in
+
+00:03:37.090 --> 00:03:37.890
+<v Speaker 1>California.
+
+00:03:39.010 --> 00:03:40.689
+<v Speaker 0>Well, thank you for sharing all of that
+
+00:03:40.689 --> 00:03:41.410
+<v Speaker 0>with us.
+
+00:03:41.730 --> 00:03:44.129
+<v Speaker 0>We're very excited for today. So why don't
+
+00:03:44.129 --> 00:03:45.970
+<v Speaker 0>we start off then a little bit about
+
+00:03:45.970 --> 00:03:47.250
+<v Speaker 0>what project Velero is?
+
+00:03:48.345 --> 00:03:50.105
+<v Speaker 0>Yeah. In fact, let's just start with that.
+
+00:03:50.105 --> 00:03:51.945
+<v Speaker 0>What what is project Velero?
+
+00:03:52.905 --> 00:03:56.665
+<v Speaker 1>Yes. Project Velero is an open source tool.
+
+00:03:56.745 --> 00:03:58.425
+<v Speaker 1>It's a CLI tool
+
+00:03:58.825 --> 00:03:59.785
+<v Speaker 1>that
+
+00:04:00.760 --> 00:04:03.640
+<v Speaker 1>you install on a Kubernetes cluster,
+
+00:04:04.200 --> 00:04:07.400
+<v Speaker 1>and you can run backups on that cluster.
+
+00:04:07.400 --> 00:04:08.920
+<v Speaker 1>And you can run backup,
+
+00:04:09.160 --> 00:04:12.120
+<v Speaker 1>complete back backups of a complete cluster,
+
+00:04:12.360 --> 00:04:14.440
+<v Speaker 1>or you can do selective backups. For example,
+
+00:04:14.440 --> 00:04:15.880
+<v Speaker 1>if you just wanna
+
+00:04:16.404 --> 00:04:19.045
+<v Speaker 1>back up a particular namespace,
+
+00:04:19.524 --> 00:04:21.605
+<v Speaker 1>you can schedule backups.
+
+00:04:22.084 --> 00:04:26.245
+<v Speaker 1>And then if, lo and behold, something happens,
+
+00:04:26.805 --> 00:04:30.000
+<v Speaker 1>you can pull the whatever backup you want
+
+00:04:30.000 --> 00:04:32.880
+<v Speaker 1>and restore it back in that cluster. You
+
+00:04:32.880 --> 00:04:35.520
+<v Speaker 1>can also install Velero in a different cluster
+
+00:04:35.840 --> 00:04:37.360
+<v Speaker 1>and restore
+
+00:04:37.360 --> 00:04:39.920
+<v Speaker 1>a backup on that cluster, which is sort
+
+00:04:39.920 --> 00:04:41.920
+<v Speaker 1>of like make doing a migration.
+
+00:04:42.745 --> 00:04:46.425
+<v Speaker 1>And it's I think it's it's very easy
+
+00:04:46.425 --> 00:04:48.265
+<v Speaker 1>to use given what it does.
+
+00:04:50.025 --> 00:04:53.225
+<v Speaker 1>It's very well supported. It's a very active
+
+00:04:53.225 --> 00:04:53.945
+<v Speaker 1>project.
+
+00:04:54.665 --> 00:04:56.345
+<v Speaker 1>It's been work worked on
+
+00:04:57.479 --> 00:04:58.440
+<v Speaker 1>for years,
+
+00:04:58.680 --> 00:05:01.720
+<v Speaker 1>and, it's it is sponsored by VMware.
+
+00:05:02.680 --> 00:05:05.000
+<v Speaker 1>And VMware is definitely making a lot of
+
+00:05:05.000 --> 00:05:05.800
+<v Speaker 1>investments
+
+00:05:05.880 --> 00:05:06.760
+<v Speaker 1>in it.
+
+00:05:07.400 --> 00:05:09.319
+<v Speaker 0>Yeah. That that's great to hear. I think,
+
+00:05:09.319 --> 00:05:11.400
+<v Speaker 0>you know, backup and restore is just
+
+00:05:11.935 --> 00:05:13.535
+<v Speaker 0>one of those things that a lot of
+
+00:05:13.535 --> 00:05:15.455
+<v Speaker 0>people may not think about upfront when they're
+
+00:05:15.455 --> 00:05:17.615
+<v Speaker 0>piling up their Kubernetes platform, but it's like
+
+00:05:17.615 --> 00:05:20.415
+<v Speaker 0>definitely something that you should always have a
+
+00:05:20.415 --> 00:05:22.175
+<v Speaker 0>strategy for because
+
+00:05:22.255 --> 00:05:24.655
+<v Speaker 0>disaster recovery is, you know, all well and
+
+00:05:24.655 --> 00:05:25.935
+<v Speaker 0>good until you need it and you need
+
+00:05:25.935 --> 00:05:28.180
+<v Speaker 0>it to work well. I think Velero is
+
+00:05:28.180 --> 00:05:30.100
+<v Speaker 0>fulfilling a very important
+
+00:05:32.180 --> 00:05:34.980
+<v Speaker 1>Yes. Requirement. I I yeah. I I think
+
+00:05:34.980 --> 00:05:36.660
+<v Speaker 1>so. I agree with that. And a lot
+
+00:05:36.660 --> 00:05:38.900
+<v Speaker 1>of people leave backup for last.
+
+00:05:39.620 --> 00:05:40.900
+<v Speaker 1>Let's say if you were
+
+00:05:41.955 --> 00:05:42.915
+<v Speaker 1>exploring
+
+00:05:42.915 --> 00:05:43.875
+<v Speaker 1>Kubernetes,
+
+00:05:43.875 --> 00:05:46.354
+<v Speaker 1>coming on board with Kubernetes,
+
+00:05:46.354 --> 00:05:48.435
+<v Speaker 1>you are thinking of so many different things,
+
+00:05:48.435 --> 00:05:49.794
+<v Speaker 1>and the last thing on your list is
+
+00:05:49.794 --> 00:05:51.155
+<v Speaker 1>backup. And I think it should be the
+
+00:05:51.155 --> 00:05:53.075
+<v Speaker 1>first thing because as you
+
+00:05:53.315 --> 00:05:54.514
+<v Speaker 1>tweak things around,
+
+00:05:55.360 --> 00:05:57.600
+<v Speaker 1>if you just had a backup to restore
+
+00:05:57.600 --> 00:05:59.600
+<v Speaker 1>everything back to where it was before,
+
+00:06:00.240 --> 00:06:01.920
+<v Speaker 1>it would be so much
+
+00:06:02.240 --> 00:06:02.960
+<v Speaker 1>easier.
+
+00:06:03.440 --> 00:06:05.200
+<v Speaker 1>So just having that,
+
+00:06:05.520 --> 00:06:07.600
+<v Speaker 1>feature alone, just be able to okay. Let
+
+00:06:07.680 --> 00:06:09.280
+<v Speaker 1>let's put everything back where it was because
+
+00:06:09.280 --> 00:06:11.004
+<v Speaker 1>we messed up something here as we are
+
+00:06:11.004 --> 00:06:11.565
+<v Speaker 1>learning.
+
+00:06:12.205 --> 00:06:14.764
+<v Speaker 1>You so even for that and Velero is
+
+00:06:14.764 --> 00:06:17.164
+<v Speaker 1>so easy to install and run. That's there
+
+00:06:17.164 --> 00:06:18.845
+<v Speaker 1>is no excuse. You should not be running
+
+00:06:18.845 --> 00:06:19.645
+<v Speaker 1>scripts.
+
+00:06:20.365 --> 00:06:22.845
+<v Speaker 1>Velero does all of that for you. So
+
+00:06:23.150 --> 00:06:25.710
+<v Speaker 0>Exactly. Let's let's say that the the clip
+
+00:06:25.710 --> 00:06:28.350
+<v Speaker 0>from today's episode should be every Kubernetes cluster
+
+00:06:28.350 --> 00:06:31.310
+<v Speaker 0>has Velero available. Like, it just I think
+
+00:06:31.310 --> 00:06:32.990
+<v Speaker 0>that should just be table stakes now, but
+
+00:06:32.990 --> 00:06:35.230
+<v Speaker 0>backup recovery is so important. Yeah.
+
+00:06:36.805 --> 00:06:37.845
+<v Speaker 0>And of course,
+
+00:06:38.165 --> 00:06:38.725
+<v Speaker 0>you know,
+
+00:06:39.764 --> 00:06:42.965
+<v Speaker 0>you also have to restore things regularly. And
+
+00:06:42.965 --> 00:06:44.405
+<v Speaker 0>I think some of the more high performing
+
+00:06:44.405 --> 00:06:46.005
+<v Speaker 0>teams that I've worked with or, you know,
+
+00:06:46.005 --> 00:06:48.245
+<v Speaker 0>even just speaking to a coupon and other
+
+00:06:48.245 --> 00:06:49.845
+<v Speaker 0>events are are teams that have got this
+
+00:06:49.845 --> 00:06:51.605
+<v Speaker 0>done to an art form as well. Been
+
+00:06:51.605 --> 00:06:54.220
+<v Speaker 0>able to I've seen one organisation,
+
+00:06:54.380 --> 00:06:55.580
+<v Speaker 0>don't know if I can say their name,
+
+00:06:55.580 --> 00:06:57.100
+<v Speaker 0>but maybe I'll tweet it later,
+
+00:06:57.500 --> 00:06:58.700
+<v Speaker 0>who actually
+
+00:06:59.180 --> 00:07:01.740
+<v Speaker 0>do almost immutable upgrades on their cluster by
+
+00:07:01.740 --> 00:07:03.580
+<v Speaker 0>using backup and restore to do the upgrades.
+
+00:07:03.580 --> 00:07:05.180
+<v Speaker 0>Like they don't do any in place upgrades.
+
+00:07:05.235 --> 00:07:07.074
+<v Speaker 0>They spin up new clusters and then restore
+
+00:07:07.074 --> 00:07:08.435
+<v Speaker 0>from the old cluster to the new one.
+
+00:07:08.435 --> 00:07:10.034
+<v Speaker 0>And I always thought that was almost a
+
+00:07:10.034 --> 00:07:11.715
+<v Speaker 0>superpower of theirs because
+
+00:07:11.955 --> 00:07:14.835
+<v Speaker 0>it just opens up so many different avenues
+
+00:07:14.835 --> 00:07:16.195
+<v Speaker 0>for that platform.
+
+00:07:17.474 --> 00:07:18.530
+<v Speaker 0>Does that make sense? Yeah. It makes Do
+
+00:07:18.530 --> 00:07:20.130
+<v Speaker 1>you see people doing that? Well,
+
+00:07:20.849 --> 00:07:22.850
+<v Speaker 1>there are so many different use cases.
+
+00:07:23.410 --> 00:07:24.290
+<v Speaker 1>For example,
+
+00:07:25.169 --> 00:07:27.970
+<v Speaker 1>the ability ability to just back up your
+
+00:07:27.970 --> 00:07:29.970
+<v Speaker 1>environment. Let's say, I'm the developer.
+
+00:07:30.585 --> 00:07:33.465
+<v Speaker 1>I'm doing something. I back up the environment,
+
+00:07:33.465 --> 00:07:36.185
+<v Speaker 1>and I say, hey. Restore this, and you're
+
+00:07:36.185 --> 00:07:37.065
+<v Speaker 1>going to have
+
+00:07:37.465 --> 00:07:39.545
+<v Speaker 1>this thing to run, which is exactly like
+
+00:07:39.545 --> 00:07:41.465
+<v Speaker 1>my thing. Right? And it could be
+
+00:07:41.785 --> 00:07:43.785
+<v Speaker 1>a developer sending things to,
+
+00:07:44.185 --> 00:07:45.785
+<v Speaker 1>people who to test
+
+00:07:46.139 --> 00:07:48.620
+<v Speaker 1>or for or for people to try out,
+
+00:07:48.620 --> 00:07:50.699
+<v Speaker 1>like, for the marketing department. I don't know.
+
+00:07:50.699 --> 00:07:52.540
+<v Speaker 1>There are so many different use cases that
+
+00:07:52.540 --> 00:07:55.820
+<v Speaker 1>you can use something like that for. Yeah.
+
+00:07:55.820 --> 00:07:57.660
+<v Speaker 0>Definitely. Yeah. I couldn't agree more.
+
+00:07:58.300 --> 00:08:00.220
+<v Speaker 0>And you said something there twice that I'm
+
+00:08:00.220 --> 00:08:01.794
+<v Speaker 0>just gonna bring up a third time and
+
+00:08:01.794 --> 00:08:03.155
+<v Speaker 0>hope that it doesn't jinx this, but you
+
+00:08:03.155 --> 00:08:05.395
+<v Speaker 0>said it is very easy to install and
+
+00:08:05.395 --> 00:08:08.595
+<v Speaker 0>I'm looking forward to my backup and I'm
+
+00:08:08.595 --> 00:08:10.354
+<v Speaker 0>looking forward to the easy installation of Velero
+
+00:08:10.354 --> 00:08:11.794
+<v Speaker 0>to my cluster. I have
+
+00:08:12.690 --> 00:08:15.810
+<v Speaker 0>prepared a really simple workload, but hopefully it's
+
+00:08:15.810 --> 00:08:17.330
+<v Speaker 0>visual enough that we can see
+
+00:08:17.730 --> 00:08:20.210
+<v Speaker 0>where Velero fits in, how the backup happens,
+
+00:08:20.210 --> 00:08:22.610
+<v Speaker 0>and then even trigger the restore bit.
+
+00:08:22.930 --> 00:08:25.090
+<v Speaker 0>So what I'm gonna do is
+
+00:08:25.845 --> 00:08:27.044
+<v Speaker 0>share my screen.
+
+00:08:27.444 --> 00:08:29.285
+<v Speaker 0>This is the Velero.i0
+
+00:08:29.285 --> 00:08:31.845
+<v Speaker 0>homepage. This will be where anyone at home
+
+00:08:31.845 --> 00:08:33.044
+<v Speaker 0>who wants to try this on their own
+
+00:08:33.044 --> 00:08:35.605
+<v Speaker 0>time should just start. We're gonna dive straight
+
+00:08:35.605 --> 00:08:37.044
+<v Speaker 0>into the documentation.
+
+00:08:37.845 --> 00:08:40.200
+<v Speaker 0>And, I mean, I always ask this question,
+
+00:08:40.200 --> 00:08:42.360
+<v Speaker 0>and then feel really silly afterwards. But I
+
+00:08:42.360 --> 00:08:43.720
+<v Speaker 0>guess the first step is for us to
+
+00:08:43.720 --> 00:08:45.480
+<v Speaker 0>install Velero. Is that right?
+
+00:08:47.800 --> 00:08:48.440
+<v Speaker 1>The
+
+00:08:48.760 --> 00:08:50.760
+<v Speaker 1>so the first step
+
+00:08:50.920 --> 00:08:53.000
+<v Speaker 1>is so the first step is you need
+
+00:08:53.000 --> 00:08:54.944
+<v Speaker 1>to provision the cluster. You have to have
+
+00:08:54.944 --> 00:08:56.944
+<v Speaker 1>the cluster. Yeah. I know it's for the
+
+00:08:57.024 --> 00:08:58.065
+<v Speaker 1>then I
+
+00:08:58.305 --> 00:09:00.704
+<v Speaker 1>probably thought about that. So you have to
+
+00:09:00.704 --> 00:09:02.545
+<v Speaker 1>have the cluster up and running.
+
+00:09:04.305 --> 00:09:05.584
+<v Speaker 1>There I I say that because there are
+
+00:09:05.584 --> 00:09:07.745
+<v Speaker 1>so many tools out there now. Sometimes you
+
+00:09:07.745 --> 00:09:09.024
+<v Speaker 1>might think of well, there are also pro
+
+00:09:09.105 --> 00:09:10.840
+<v Speaker 1>will provision things for you now. So you
+
+00:09:10.840 --> 00:09:12.120
+<v Speaker 1>you need to have that.
+
+00:09:12.680 --> 00:09:15.240
+<v Speaker 1>Then you have to go through the documentation
+
+00:09:15.240 --> 00:09:17.160
+<v Speaker 1>and find the provider
+
+00:09:17.320 --> 00:09:20.040
+<v Speaker 1>you are using or if you're using on
+
+00:09:20.040 --> 00:09:20.680
+<v Speaker 1>prem
+
+00:09:21.080 --> 00:09:21.800
+<v Speaker 1>and
+
+00:09:22.200 --> 00:09:26.120
+<v Speaker 1>find the documentation for the plug in that's
+
+00:09:25.125 --> 00:09:28.645
+<v Speaker 1>the corresponds to that provider. So do you
+
+00:09:28.645 --> 00:09:30.405
+<v Speaker 1>know which provider you I mean, you know
+
+00:09:30.405 --> 00:09:32.085
+<v Speaker 1>what which provider are you using?
+
+00:09:32.405 --> 00:09:35.045
+<v Speaker 0>It's a bare metal cluster on Equinix Metal.
+
+00:09:35.045 --> 00:09:36.405
+<v Speaker 0>Does that complicate things?
+
+00:09:36.885 --> 00:09:39.445
+<v Speaker 1>No. No. No. So in that case, you're
+
+00:09:39.445 --> 00:09:42.000
+<v Speaker 1>going to so because we need to connect
+
+00:09:42.000 --> 00:09:43.040
+<v Speaker 1>to a
+
+00:09:43.360 --> 00:09:46.160
+<v Speaker 1>an s three or s three comparable storage.
+
+00:09:47.520 --> 00:09:49.520
+<v Speaker 1>So in that case, we
+
+00:09:51.600 --> 00:09:53.360
+<v Speaker 1>we can use menu
+
+00:09:53.935 --> 00:09:56.654
+<v Speaker 1>unless you have looked ahead and have set
+
+00:09:56.654 --> 00:09:58.175
+<v Speaker 1>up some other storage.
+
+00:09:59.454 --> 00:10:01.055
+<v Speaker 0>I should have.
+
+00:10:01.535 --> 00:10:02.574
+<v Speaker 0>I do have
+
+00:10:02.975 --> 00:10:04.815
+<v Speaker 0>access to AWS.
+
+00:10:04.815 --> 00:10:06.975
+<v Speaker 0>I could really quickly create a bucket. I'm
+
+00:10:06.975 --> 00:10:09.210
+<v Speaker 0>assuming we would just need some really simple
+
+00:10:09.210 --> 00:10:11.050
+<v Speaker 0>credentials to get that running.
+
+00:10:11.290 --> 00:10:14.330
+<v Speaker 1>Yes. You you need the access key and
+
+00:10:16.490 --> 00:10:19.210
+<v Speaker 1>in in the bucket name. Yes. You also
+
+00:10:19.210 --> 00:10:21.210
+<v Speaker 0>said the other option there was Menio. Now
+
+00:10:21.210 --> 00:10:24.075
+<v Speaker 0>Menio has a pretty stable helm chart, which
+
+00:10:24.075 --> 00:10:25.515
+<v Speaker 0>we could throw into a namespace on the
+
+00:10:25.515 --> 00:10:27.195
+<v Speaker 0>cluster itself. Right? Because we're doing backup and
+
+00:10:27.195 --> 00:10:29.755
+<v Speaker 0>restore of individual namespace, I believe. So
+
+00:10:30.555 --> 00:10:33.355
+<v Speaker 1>Yes. So I just wanna say
+
+00:10:33.435 --> 00:10:36.475
+<v Speaker 1>something very important about alerts, red flags.
+
+00:10:36.715 --> 00:10:38.155
+<v Speaker 1>You don't wanna do that in production.
+
+00:10:39.329 --> 00:10:41.410
+<v Speaker 1>You don't wanna because you're backing up a
+
+00:10:41.410 --> 00:10:42.130
+<v Speaker 1>cluster,
+
+00:10:42.290 --> 00:10:44.529
+<v Speaker 1>and if your cluster and if that the
+
+00:10:44.690 --> 00:10:46.610
+<v Speaker 1>if that's where you have your
+
+00:10:46.930 --> 00:10:49.170
+<v Speaker 1>store the storage for your backups and the
+
+00:10:49.170 --> 00:10:51.410
+<v Speaker 1>cluster goes down, you don't you don't have
+
+00:10:51.410 --> 00:10:52.610
+<v Speaker 1>a way to restore it. Right?
+
+00:10:53.334 --> 00:10:55.735
+<v Speaker 1>So do not do that in production.
+
+00:10:55.894 --> 00:10:57.095
+<v Speaker 1>You wanna have
+
+00:10:57.815 --> 00:10:58.695
+<v Speaker 1>your
+
+00:11:00.375 --> 00:11:02.375
+<v Speaker 1>s three buckets
+
+00:11:02.535 --> 00:11:05.654
+<v Speaker 1>somewhere else other than in your cost environments.
+
+00:11:07.009 --> 00:11:09.490
+<v Speaker 0>Yeah. That's great great advice.
+
+00:11:10.290 --> 00:11:12.290
+<v Speaker 1>If we can keep that in mind, you
+
+00:11:12.290 --> 00:11:15.170
+<v Speaker 1>can, yeah, you can have Minio running anywhere.
+
+00:11:15.490 --> 00:11:17.410
+<v Speaker 0>I think I'll just grab a a Docker
+
+00:11:17.410 --> 00:11:19.170
+<v Speaker 0>command and stick it on a host. I'll
+
+00:11:19.170 --> 00:11:21.935
+<v Speaker 0>keep it outside the Kubernetes control plane. Just
+
+00:11:21.935 --> 00:11:23.935
+<v Speaker 0>because you're right, I shouldn't stick it there.
+
+00:11:23.935 --> 00:11:25.295
+<v Speaker 0>So I wouldn't use the helm chart, but
+
+00:11:25.295 --> 00:11:26.975
+<v Speaker 0>I can just run this on a machine.
+
+00:11:27.135 --> 00:11:29.375
+<v Speaker 0>We'll pretend that it's in a different data
+
+00:11:29.055 --> 00:11:29.455
+<v Speaker 0>or
+
+00:11:29.935 --> 00:11:32.415
+<v Speaker 0>somewhere else or it's very safe and secure
+
+00:11:32.895 --> 00:11:33.375
+<v Speaker 0>and
+
+00:11:33.720 --> 00:11:35.639
+<v Speaker 0>it'll be fine. Totally fine.
+
+00:11:37.399 --> 00:11:39.720
+<v Speaker 0>I'll just grab an IP address.
+
+00:11:39.959 --> 00:11:41.079
+<v Speaker 0>And
+
+00:11:42.759 --> 00:11:43.480
+<v Speaker 0>there we go.
+
+00:11:50.275 --> 00:11:52.115
+<v Speaker 0>Oh, very good point, actually.
+
+00:11:52.675 --> 00:11:54.995
+<v Speaker 0>I don't wanna install Docker, use containerd.
+
+00:11:56.435 --> 00:11:57.315
+<v Speaker 0>Trickier.
+
+00:11:58.755 --> 00:12:00.275
+<v Speaker 0>There's a binary. Right? Let me.
+
+00:12:05.930 --> 00:12:08.010
+<v Speaker 0>I should have looked ahead.
+
+00:12:09.209 --> 00:12:10.410
+<v Speaker 0>There we go.
+
+00:12:12.089 --> 00:12:13.930
+<v Speaker 0>Because, you know, in in my head, I
+
+00:12:13.930 --> 00:12:16.810
+<v Speaker 0>knew we needed an s three compatible object
+
+00:12:16.810 --> 00:12:19.274
+<v Speaker 0>store, but I just didn't think.
+
+00:12:19.995 --> 00:12:21.995
+<v Speaker 1>Why I also didn't think to ask you.
+
+00:12:22.555 --> 00:12:25.514
+<v Speaker 1>So that makes two of us. Yeah. Well,
+
+00:12:25.514 --> 00:12:27.435
+<v Speaker 0>we'll just grab this binary and
+
+00:12:27.995 --> 00:12:30.315
+<v Speaker 0>run it. And many of those really take
+
+00:12:30.315 --> 00:12:32.555
+<v Speaker 0>any setting up, so it'll be
+
+00:12:33.500 --> 00:12:35.660
+<v Speaker 0>fine. We'll make it executable.
+
+00:12:36.220 --> 00:12:37.660
+<v Speaker 0>Just run manual
+
+00:12:38.140 --> 00:12:39.180
+<v Speaker 0>server.
+
+00:12:41.500 --> 00:12:43.260
+<v Speaker 0>Think I a command here rather than me
+
+00:12:43.260 --> 00:12:45.740
+<v Speaker 0>just bashing on keys until it works.
+
+00:12:51.435 --> 00:12:53.595
+<v Speaker 0>Oh yeah. Okay. So, server and then just
+
+00:12:53.595 --> 00:12:54.635
+<v Speaker 0>the directory. Perfect.
+
+00:12:59.240 --> 00:12:59.960
+<v Speaker 0>Cool.
+
+00:13:01.320 --> 00:13:03.720
+<v Speaker 0>So menu admin and menu admin, I think
+
+00:13:03.720 --> 00:13:05.560
+<v Speaker 0>it's just the credentials we can use.
+
+00:13:07.880 --> 00:13:09.400
+<v Speaker 0>Yeah. We'll we'll just take it from there
+
+00:13:09.400 --> 00:13:10.200
+<v Speaker 0>and we'll see what happens.
+
+00:13:10.775 --> 00:13:11.895
+<v Speaker 0>What's the worst?
+
+00:13:12.375 --> 00:13:13.415
+<v Speaker 1>That looks good.
+
+00:13:14.935 --> 00:13:17.175
+<v Speaker 0>And now we have another terminal. Okay.
+
+00:13:17.575 --> 00:13:19.575
+<v Speaker 0>Slight segue done.
+
+00:13:19.575 --> 00:13:21.975
+<v Speaker 0>Hopefully, disaster averted. We have our s three
+
+00:13:21.975 --> 00:13:23.335
+<v Speaker 0>compatible storage. So
+
+00:13:23.920 --> 00:13:25.680
+<v Speaker 0>I have a Kubernetes cluster. I have a
+
+00:13:25.680 --> 00:13:28.000
+<v Speaker 0>workload. It has a persistent volume. It has
+
+00:13:28.000 --> 00:13:30.400
+<v Speaker 0>state, and I have something that works and
+
+00:13:30.400 --> 00:13:31.600
+<v Speaker 0>acts like s three.
+
+00:13:32.160 --> 00:13:32.880
+<v Speaker 0>So
+
+00:13:34.640 --> 00:13:35.600
+<v Speaker 0>our next step So
+
+00:13:36.320 --> 00:13:38.400
+<v Speaker 1>so with menu, the plug in that we're
+
+00:13:38.400 --> 00:13:40.695
+<v Speaker 1>going to use is the AWS
+
+00:13:40.775 --> 00:13:41.655
+<v Speaker 1>plug in.
+
+00:13:42.535 --> 00:13:43.015
+<v Speaker 0>Okay.
+
+00:13:44.375 --> 00:13:45.255
+<v Speaker 0>So
+
+00:13:45.575 --> 00:13:47.815
+<v Speaker 0>should I just go into this basic install
+
+00:13:47.815 --> 00:13:48.615
+<v Speaker 0>bit first?
+
+00:13:49.255 --> 00:13:51.335
+<v Speaker 1>So what I would do is go on
+
+00:13:51.335 --> 00:13:54.160
+<v Speaker 1>the search bar, Yep. Up up up on
+
+00:13:54.160 --> 00:13:56.560
+<v Speaker 1>the left. Search for menu.
+
+00:13:59.040 --> 00:14:00.160
+<v Speaker 1>Yes. That
+
+00:14:02.080 --> 00:14:04.640
+<v Speaker 1>the and and as a if if people
+
+00:14:04.640 --> 00:14:07.655
+<v Speaker 1>noticed, that page says evaluation.
+
+00:14:08.055 --> 00:14:10.775
+<v Speaker 1>This is not for production.
+
+00:14:11.815 --> 00:14:13.895
+<v Speaker 1>It's a it's a very good way to
+
+00:14:13.895 --> 00:14:16.695
+<v Speaker 1>set up if you wanna evaluate Velero.
+
+00:14:17.255 --> 00:14:17.975
+<v Speaker 0>Alright. So
+
+00:14:20.135 --> 00:14:22.190
+<v Speaker 0>I will do. I'm gonna open that. I'm
+
+00:14:22.190 --> 00:14:24.350
+<v Speaker 1>gonna turn to my right because I'm gonna
+
+00:14:24.350 --> 00:14:26.350
+<v Speaker 1>look at that. It's a bit too tiny
+
+00:14:26.350 --> 00:14:28.430
+<v Speaker 1>for me. Oh, sorry. I I should have
+
+00:14:28.590 --> 00:14:30.190
+<v Speaker 1>No. It's earlier. If you right click on
+
+00:14:30.190 --> 00:14:31.710
+<v Speaker 0>it and say show controls, you can fill
+
+00:14:31.710 --> 00:14:32.670
+<v Speaker 0>screen the video.
+
+00:14:33.150 --> 00:14:34.910
+<v Speaker 0>Oh. Yeah. I was so
+
+00:14:35.390 --> 00:14:35.790
+<v Speaker 0>annoying.
+
+00:14:36.565 --> 00:14:38.005
+<v Speaker 0>But, yeah, if you right click and show
+
+00:14:38.005 --> 00:14:40.324
+<v Speaker 0>control, should you'll be that'll make your life
+
+00:14:40.324 --> 00:14:41.125
+<v Speaker 0>a lot easier.
+
+00:14:41.605 --> 00:14:43.845
+<v Speaker 1>Yeah. Now we now we get it.
+
+00:14:44.805 --> 00:14:47.685
+<v Speaker 0>Okay. I'll just quickly brew install Velero and
+
+00:14:47.685 --> 00:14:49.524
+<v Speaker 0>get the CLI available to me locally.
+
+00:14:50.880 --> 00:14:51.680
+<v Speaker 1>Oh,
+
+00:14:52.960 --> 00:14:54.320
+<v Speaker 1>that reminds me.
+
+00:14:54.560 --> 00:14:55.280
+<v Speaker 0>If?
+
+00:14:57.760 --> 00:15:00.240
+<v Speaker 1>We just released the 1.6 version, and I
+
+00:15:00.240 --> 00:15:02.080
+<v Speaker 1>don't think we did the brew. We updated
+
+00:15:02.080 --> 00:15:03.040
+<v Speaker 1>the brew install.
+
+00:15:03.654 --> 00:15:05.895
+<v Speaker 0>Ah. Oh, no. It's there. There you go.
+
+00:15:05.895 --> 00:15:08.615
+<v Speaker 0>1.6. It is? Yeah. Somebody did it. Great.
+
+00:15:09.895 --> 00:15:12.214
+<v Speaker 0>Yeah. One sec, though, seems to be coming
+
+00:15:12.214 --> 00:15:15.415
+<v Speaker 0>through here. Yep. Yes. So that's what I
+
+00:15:15.415 --> 00:15:16.775
+<v Speaker 1>wanted to to use today.
+
+00:15:17.870 --> 00:15:19.949
+<v Speaker 0>Oh, yeah. This is the That's a just
+
+00:15:19.949 --> 00:15:22.110
+<v Speaker 1>not that. Still version. Right?
+
+00:15:23.389 --> 00:15:26.029
+<v Speaker 1>Okay. Alright. So let's see what we're looking
+
+00:15:26.029 --> 00:15:28.110
+<v Speaker 1>at here. What we're looking at here is
+
+00:15:28.350 --> 00:15:30.589
+<v Speaker 1>we have the client version,
+
+00:15:31.389 --> 00:15:33.149
+<v Speaker 1>and the error
+
+00:15:33.365 --> 00:15:34.404
+<v Speaker 1>is saying
+
+00:15:34.805 --> 00:15:36.964
+<v Speaker 1>you don't have Velero installed
+
+00:15:37.125 --> 00:15:39.285
+<v Speaker 1>anywhere where that we can find. So there
+
+00:15:39.285 --> 00:15:40.644
+<v Speaker 1>is no server
+
+00:15:41.125 --> 00:15:43.685
+<v Speaker 1>side installation of Velero, which is to be
+
+00:15:43.685 --> 00:15:45.444
+<v Speaker 1>expected because we haven't done that yet.
+
+00:15:47.040 --> 00:15:50.000
+<v Speaker 1>We're going to use the client CLI
+
+00:15:50.000 --> 00:15:51.280
+<v Speaker 1>to to
+
+00:15:51.840 --> 00:15:52.880
+<v Speaker 1>to do that.
+
+00:15:54.080 --> 00:15:54.800
+<v Speaker 0>Okay.
+
+00:15:55.440 --> 00:15:56.160
+<v Speaker 0>So
+
+00:15:58.560 --> 00:16:00.480
+<v Speaker 0>we just need to configure.
+
+00:16:01.795 --> 00:16:04.755
+<v Speaker 1>So you need to The secret. Pass the
+
+00:16:04.915 --> 00:16:06.995
+<v Speaker 1>so so we you need to have the
+
+00:16:06.995 --> 00:16:08.035
+<v Speaker 1>the AWI
+
+00:16:08.195 --> 00:16:09.635
+<v Speaker 1>the menu credentials
+
+00:16:09.635 --> 00:16:10.755
+<v Speaker 1>in a file
+
+00:16:11.155 --> 00:16:13.395
+<v Speaker 1>or pass it as
+
+00:16:14.590 --> 00:16:16.750
+<v Speaker 1>a I think if you pass it as
+
+00:16:17.630 --> 00:16:19.710
+<v Speaker 1>an environment variable, it would work.
+
+00:16:20.110 --> 00:16:21.870
+<v Speaker 1>And we'll just But I think it's that
+
+00:16:21.870 --> 00:16:24.670
+<v Speaker 0>file. It seems to be quite simple. So
+
+00:16:25.870 --> 00:16:27.150
+<v Speaker 0>menu dot creds.
+
+00:16:29.095 --> 00:16:30.535
+<v Speaker 0>And mains was
+
+00:16:31.014 --> 00:16:32.375
+<v Speaker 0>menu admin,
+
+00:16:33.495 --> 00:16:34.855
+<v Speaker 0>menu admin.
+
+00:16:35.894 --> 00:16:37.975
+<v Speaker 0>That should be that taken care of.
+
+00:16:38.694 --> 00:16:40.055
+<v Speaker 0>Do we need to
+
+00:16:41.379 --> 00:16:42.899
+<v Speaker 0>oh, that's the manual deployment. So we can
+
+00:16:42.899 --> 00:16:43.860
+<v Speaker 0>just ignore that.
+
+00:16:44.180 --> 00:16:45.699
+<v Speaker 0>And I guess what we want is this
+
+00:16:45.699 --> 00:16:46.420
+<v Speaker 0>here.
+
+00:16:46.899 --> 00:16:48.820
+<v Speaker 1>Yes. So just the
+
+00:16:50.100 --> 00:16:52.980
+<v Speaker 1>plugin version is going to be version one
+
+00:16:52.980 --> 00:16:53.620
+<v Speaker 1>point
+
+00:16:54.444 --> 00:16:57.565
+<v Speaker 1>point two point zero. So you might wanna
+
+00:16:57.565 --> 00:17:00.285
+<v Speaker 1>paste that into a a text editor so
+
+00:17:00.285 --> 00:17:01.725
+<v Speaker 1>you can edit that stuff.
+
+00:17:02.045 --> 00:17:04.605
+<v Speaker 1>Yeah. The secret file needs to point to
+
+00:17:04.605 --> 00:17:06.605
+<v Speaker 1>to that secret file you just created.
+
+00:17:08.760 --> 00:17:09.640
+<v Speaker 0>Okey dokey.
+
+00:17:12.600 --> 00:17:14.440
+<v Speaker 0>Just all my automation from spinning up the
+
+00:17:14.440 --> 00:17:16.280
+<v Speaker 0>cluster. We can get rid of that.
+
+00:17:18.280 --> 00:17:20.200
+<v Speaker 0>Velero install
+
+00:17:20.914 --> 00:17:22.194
+<v Speaker 0>and paste. Okay.
+
+00:17:22.835 --> 00:17:24.754
+<v Speaker 0>We're gonna Alright. So line three.
+
+00:17:26.115 --> 00:17:27.315
+<v Speaker 1>Yes. And
+
+00:17:27.635 --> 00:17:28.994
+<v Speaker 1>bucket name?
+
+00:17:31.155 --> 00:17:33.075
+<v Speaker 0>Should probably create a bucket. Right?
+
+00:17:34.990 --> 00:17:37.870
+<v Speaker 0>So let's just grab the IP address for
+
+00:17:37.870 --> 00:17:39.710
+<v Speaker 0>this. This is our
+
+00:17:40.030 --> 00:17:40.830
+<v Speaker 0>cluster.
+
+00:17:44.430 --> 00:17:46.830
+<v Speaker 0>And I just log in with those credentials.
+
+00:17:46.830 --> 00:17:48.590
+<v Speaker 0>I'll just quickly create one.
+
+00:17:53.684 --> 00:17:54.485
+<v Speaker 0>Yep,
+
+00:17:54.485 --> 00:17:55.684
+<v Speaker 0>new bucket.
+
+00:17:56.405 --> 00:17:57.365
+<v Speaker 0>There we go.
+
+00:17:58.325 --> 00:18:00.165
+<v Speaker 0>I'll call it Velero. And now we have
+
+00:18:00.165 --> 00:18:01.284
+<v Speaker 0>the bucket name.
+
+00:18:01.365 --> 00:18:01.525
+<v Speaker 0>So,
+
+00:18:03.059 --> 00:18:05.859
+<v Speaker 0>oh, good. That's what that's what's there too.
+
+00:18:06.260 --> 00:18:08.899
+<v Speaker 0>I called this Velero.creds.
+
+00:18:10.740 --> 00:18:12.659
+<v Speaker 0>Use volume snapshots false.
+
+00:18:12.740 --> 00:18:15.539
+<v Speaker 1>What's Yeah. It's gonna be false because
+
+00:18:16.775 --> 00:18:17.335
+<v Speaker 1>with
+
+00:18:17.815 --> 00:18:18.695
+<v Speaker 1>let's say
+
+00:18:23.255 --> 00:18:24.215
+<v Speaker 1>Okay.
+
+00:18:24.615 --> 00:18:27.335
+<v Speaker 1>Okay. So so that's okay. So so let's
+
+00:18:27.335 --> 00:18:28.775
+<v Speaker 1>let's take a pause. Yeah.
+
+00:18:30.330 --> 00:18:32.969
+<v Speaker 1>So so far, we have configured
+
+00:18:33.210 --> 00:18:36.169
+<v Speaker 1>the storage with we're looking at the storage
+
+00:18:36.169 --> 00:18:38.249
+<v Speaker 1>where the backups are going to go to.
+
+00:18:38.409 --> 00:18:40.809
+<v Speaker 1>So when we if if and when we
+
+00:18:40.809 --> 00:18:41.929
+<v Speaker 1>need a restore,
+
+00:18:42.090 --> 00:18:45.515
+<v Speaker 1>we'll pull from that storage. Mhmm. The other
+
+00:18:45.515 --> 00:18:48.315
+<v Speaker 1>part of of the of the Velero configuration
+
+00:18:48.395 --> 00:18:49.115
+<v Speaker 1>is
+
+00:18:49.755 --> 00:18:51.195
+<v Speaker 1>persistent storage.
+
+00:18:51.595 --> 00:18:54.875
+<v Speaker 1>So without the persistent storage piece,
+
+00:18:55.035 --> 00:18:56.955
+<v Speaker 1>we can back up and restore all day
+
+00:18:56.955 --> 00:18:59.035
+<v Speaker 1>long all of the Kubernetes objects.
+
+00:18:59.929 --> 00:19:02.570
+<v Speaker 1>Now if you have persistent data
+
+00:19:02.809 --> 00:19:05.370
+<v Speaker 1>anywhere that you also want to back up,
+
+00:19:05.370 --> 00:19:07.049
+<v Speaker 1>then you have to set up something another
+
+00:19:07.049 --> 00:19:07.690
+<v Speaker 1>piece,
+
+00:19:08.090 --> 00:19:08.970
+<v Speaker 1>which is the,
+
+00:19:09.850 --> 00:19:11.450
+<v Speaker 1>the volume snapshots.
+
+00:19:12.315 --> 00:19:14.554
+<v Speaker 1>Now be if you were using
+
+00:19:15.034 --> 00:19:16.794
+<v Speaker 1>one of the providers
+
+00:19:17.034 --> 00:19:19.594
+<v Speaker 1>for which we we have a plug in,
+
+00:19:19.914 --> 00:19:23.195
+<v Speaker 1>so we the Velero team maintains plug ins
+
+00:19:23.195 --> 00:19:24.554
+<v Speaker 1>for AWS,
+
+00:19:26.429 --> 00:19:27.389
+<v Speaker 1>GCP,
+
+00:19:27.390 --> 00:19:28.190
+<v Speaker 1>Azure,
+
+00:19:28.429 --> 00:19:29.950
+<v Speaker 1>and we also there is also a team
+
+00:19:29.950 --> 00:19:32.030
+<v Speaker 1>at VMware that that maintains
+
+00:19:32.030 --> 00:19:33.789
+<v Speaker 1>the vSphere plug in.
+
+00:19:34.429 --> 00:19:36.030
+<v Speaker 1>And there are a bunch of there are
+
+00:19:36.030 --> 00:19:37.629
+<v Speaker 1>some plug ins for other
+
+00:19:38.110 --> 00:19:39.230
+<v Speaker 1>persistent storage.
+
+00:19:41.035 --> 00:19:42.795
+<v Speaker 1>Yes. So we we just have to go
+
+00:19:42.795 --> 00:19:44.475
+<v Speaker 1>in documentation and see
+
+00:19:44.795 --> 00:19:46.155
+<v Speaker 1>what's listed there.
+
+00:19:46.795 --> 00:19:50.235
+<v Speaker 1>Now if you'd if you're not using any
+
+00:19:50.235 --> 00:19:52.795
+<v Speaker 1>of those providers, if you are, we recommend
+
+00:19:52.795 --> 00:19:54.475
+<v Speaker 1>you use this specific plug in because it's
+
+00:19:54.475 --> 00:19:55.195
+<v Speaker 1>going to be better.
+
+00:19:56.080 --> 00:19:57.679
+<v Speaker 1>You can use Rustic.
+
+00:19:57.679 --> 00:19:59.679
+<v Speaker 1>Rustic is also an open source tool.
+
+00:20:00.559 --> 00:20:03.279
+<v Speaker 1>It's a tool that it's integrated in Velero,
+
+00:20:03.279 --> 00:20:05.360
+<v Speaker 1>and we use it to do to,
+
+00:20:05.840 --> 00:20:08.720
+<v Speaker 1>do a file system level backup of that
+
+00:20:08.720 --> 00:20:09.759
+<v Speaker 1>persistent storage.
+
+00:20:10.625 --> 00:20:13.824
+<v Speaker 1>So with the plug in from a provider,
+
+00:20:13.825 --> 00:20:15.825
+<v Speaker 1>we don't do that. What we do is
+
+00:20:15.825 --> 00:20:17.744
+<v Speaker 1>we call the provider's API,
+
+00:20:18.144 --> 00:20:20.065
+<v Speaker 1>and we trigger snapshots.
+
+00:20:21.264 --> 00:20:23.424
+<v Speaker 1>So we just say, you know, okay. The
+
+00:20:23.424 --> 00:20:26.070
+<v Speaker 1>user wants a backup of this persistent storage.
+
+00:20:26.070 --> 00:20:27.909
+<v Speaker 1>Take a snapshot. Take a snapshot.
+
+00:20:28.070 --> 00:20:30.950
+<v Speaker 1>Right. And the information gets stored in the
+
+00:20:30.950 --> 00:20:31.750
+<v Speaker 1>metadata.
+
+00:20:31.910 --> 00:20:34.230
+<v Speaker 1>So we know the ID, and we know
+
+00:20:34.230 --> 00:20:35.670
+<v Speaker 1>where to fetch it from when we when
+
+00:20:35.670 --> 00:20:37.670
+<v Speaker 1>we wanna do a restore. We do the
+
+00:20:37.670 --> 00:20:39.845
+<v Speaker 1>same thing in reverse. We just we access
+
+00:20:39.845 --> 00:20:41.845
+<v Speaker 1>the provider's API and say, okay. Give me
+
+00:20:41.845 --> 00:20:43.045
+<v Speaker 1>this this snapshot.
+
+00:20:44.645 --> 00:20:46.005
+<v Speaker 0>Alright. So
+
+00:20:46.565 --> 00:20:48.645
+<v Speaker 1>so if we don't have the that plug
+
+00:20:48.645 --> 00:20:51.045
+<v Speaker 1>in, so we use Rustic. And now we
+
+00:20:51.045 --> 00:20:52.885
+<v Speaker 1>have to look at the documentation for how
+
+00:20:52.885 --> 00:20:54.165
+<v Speaker 1>to install
+
+00:20:54.165 --> 00:20:54.885
+<v Speaker 1>Rustic
+
+00:20:55.100 --> 00:20:56.940
+<v Speaker 1>with Velero. And by the way, just so
+
+00:20:56.940 --> 00:20:57.820
+<v Speaker 1>people know,
+
+00:20:58.620 --> 00:21:01.420
+<v Speaker 1>if you run the Velero install against let's
+
+00:21:01.420 --> 00:21:03.660
+<v Speaker 1>say you configure one way and you want
+
+00:21:03.660 --> 00:21:05.179
+<v Speaker 1>to update the configuration,
+
+00:21:05.660 --> 00:21:08.060
+<v Speaker 1>you just run the Velero install again
+
+00:21:08.265 --> 00:21:10.505
+<v Speaker 1>in that whatever it's there is going to
+
+00:21:10.505 --> 00:21:11.625
+<v Speaker 1>update everything.
+
+00:21:12.505 --> 00:21:13.225
+<v Speaker 0>Okay.
+
+00:21:13.865 --> 00:21:15.785
+<v Speaker 1>Just just in case, for example, if we
+
+00:21:15.785 --> 00:21:17.625
+<v Speaker 1>run the install, oh, we forgot to install
+
+00:21:17.625 --> 00:21:19.465
+<v Speaker 1>REST, like, we could run it again with
+
+00:21:19.465 --> 00:21:20.425
+<v Speaker 1>the REST command.
+
+00:21:21.270 --> 00:21:25.110
+<v Speaker 1>So let's go and, in on the documentation
+
+00:21:25.110 --> 00:21:27.350
+<v Speaker 1>and see what I would do is
+
+00:21:27.750 --> 00:21:29.270
+<v Speaker 1>just open a new
+
+00:21:30.710 --> 00:21:32.630
+<v Speaker 1>new tab there
+
+00:21:34.070 --> 00:21:35.270
+<v Speaker 1>and search
+
+00:21:35.270 --> 00:21:35.830
+<v Speaker 1>for REST.
+
+00:21:41.025 --> 00:21:42.865
+<v Speaker 1>Yes. That the first one.
+
+00:21:45.025 --> 00:21:46.225
+<v Speaker 1>Okay. So we have to
+
+00:21:48.945 --> 00:21:49.905
+<v Speaker 0>Okay.
+
+00:21:50.545 --> 00:21:51.345
+<v Speaker 0>So
+
+00:21:52.020 --> 00:21:53.300
+<v Speaker 0>oh, yeah. I could just do the new
+
+00:21:53.300 --> 00:21:54.260
+<v Speaker 1>version. Flag.
+
+00:21:55.780 --> 00:21:56.580
+<v Speaker 2>Alright.
+
+00:22:00.020 --> 00:22:01.940
+<v Speaker 1>Yeah. We we so we set the use
+
+00:22:01.940 --> 00:22:04.340
+<v Speaker 1>volume snapshots to false because we're not going
+
+00:22:04.340 --> 00:22:04.980
+<v Speaker 1>to have
+
+00:22:05.565 --> 00:22:09.325
+<v Speaker 1>Velero calling any provider's API. So that's just
+
+00:22:09.325 --> 00:22:11.245
+<v Speaker 1>that's just it creates
+
+00:22:11.245 --> 00:22:11.964
+<v Speaker 1>less
+
+00:22:12.445 --> 00:22:13.565
+<v Speaker 1>CRDs,
+
+00:22:13.565 --> 00:22:15.965
+<v Speaker 1>less resources related to Velero that we we
+
+00:22:15.965 --> 00:22:17.084
+<v Speaker 1>wouldn't need anyway.
+
+00:22:18.044 --> 00:22:20.125
+<v Speaker 0>Okay. So you have the s three URL
+
+00:22:20.125 --> 00:22:23.460
+<v Speaker 1>set up to your correct IP. Right? The
+
+00:22:23.460 --> 00:22:25.700
+<v Speaker 1>145.40.c.
+
+00:22:25.700 --> 00:22:26.660
+<v Speaker 1>Okay.
+
+00:22:27.860 --> 00:22:30.100
+<v Speaker 1>You typed very fast, so I didn't see
+
+00:22:30.100 --> 00:22:31.380
+<v Speaker 1>you updating that.
+
+00:22:32.420 --> 00:22:33.380
+<v Speaker 1>And
+
+00:22:34.580 --> 00:22:35.540
+<v Speaker 1>I think that's it.
+
+00:22:36.455 --> 00:22:37.654
+<v Speaker 0>I I don't know.
+
+00:22:39.335 --> 00:22:42.055
+<v Speaker 1>Alright. Let's do it. I mean, it's fake
+
+00:22:42.055 --> 00:22:43.895
+<v Speaker 0>confidence. But, mean, let's do it. Yeah. You're
+
+00:22:43.895 --> 00:22:46.615
+<v Speaker 0>right. So Velero installed provider AWS because we're
+
+00:22:46.615 --> 00:22:48.375
+<v Speaker 0>using our s c compatible API.
+
+00:22:48.375 --> 00:22:50.455
+<v Speaker 0>We've got a bucket name. We're using Rustic
+
+00:22:51.080 --> 00:22:52.919
+<v Speaker 0>because we don't have
+
+00:22:53.480 --> 00:22:56.520
+<v Speaker 0>the snapshot API provider support, and we've got
+
+00:22:56.520 --> 00:22:58.280
+<v Speaker 0>that set to false here. That all makes
+
+00:22:58.280 --> 00:23:01.000
+<v Speaker 0>sense. We pass in our API credits here
+
+00:23:01.000 --> 00:23:03.400
+<v Speaker 0>for menu, and then we connect the dot
+
+00:23:03.400 --> 00:23:04.039
+<v Speaker 0>here.
+
+00:23:04.280 --> 00:23:05.960
+<v Speaker 0>So I will just quickly
+
+00:23:07.575 --> 00:23:08.774
+<v Speaker 0>run this here.
+
+00:23:10.615 --> 00:23:12.855
+<v Speaker 0>Is it gonna use my
+
+00:23:13.415 --> 00:23:15.575
+<v Speaker 0>kube config environment variable to speak to the
+
+00:23:15.575 --> 00:23:17.095
+<v Speaker 0>right cluster? I guess so.
+
+00:23:19.110 --> 00:23:20.150
+<v Speaker 0>We'll find that. I
+
+00:23:20.950 --> 00:23:22.790
+<v Speaker 1>just Sorry. Say that again? I'm assuming it's
+
+00:23:22.790 --> 00:23:25.030
+<v Speaker 0>just gonna use my default context for
+
+00:23:25.430 --> 00:23:27.350
+<v Speaker 1>Oh, okay. Great
+
+00:23:28.550 --> 00:23:29.830
+<v Speaker 1>thing to mention.
+
+00:23:30.150 --> 00:23:32.515
+<v Speaker 1>There is a global flag that you can
+
+00:23:32.515 --> 00:23:35.235
+<v Speaker 1>use to point to a specific context
+
+00:23:35.475 --> 00:23:37.315
+<v Speaker 1>if it's not the one you're on.
+
+00:23:37.795 --> 00:23:39.555
+<v Speaker 1>But if you don't use that flag, it's
+
+00:23:39.555 --> 00:23:41.875
+<v Speaker 1>going to install on the context you're on.
+
+00:23:42.035 --> 00:23:43.635
+<v Speaker 0>Okay. I'm I'm okay with that. I've got
+
+00:23:43.635 --> 00:23:46.720
+<v Speaker 0>my context set to there. We also got
+
+00:23:46.720 --> 00:23:48.799
+<v Speaker 0>a comments in great tip.
+
+00:23:49.280 --> 00:23:52.160
+<v Speaker 0>Raverley UK has been uninstalling and reinstalling the
+
+00:23:52.160 --> 00:23:53.040
+<v Speaker 0>Velero
+
+00:23:53.040 --> 00:23:55.279
+<v Speaker 0>change of config. So there we go.
+
+00:23:57.600 --> 00:23:59.759
+<v Speaker 0>Oh, my file name must be
+
+00:23:59.920 --> 00:24:00.480
+<v Speaker 0>wrong.
+
+00:24:03.705 --> 00:24:05.545
+<v Speaker 1>Minion. Minion crudes?
+
+00:24:06.105 --> 00:24:08.105
+<v Speaker 0>How did I manage that? Minion crudes.
+
+00:24:10.665 --> 00:24:12.505
+<v Speaker 0>I must have been in salt stack mode
+
+00:24:12.505 --> 00:24:14.640
+<v Speaker 0>there. I have no idea. Maybe you're hungry
+
+00:24:14.640 --> 00:24:15.919
+<v Speaker 1>for a filet mignon.
+
+00:24:16.080 --> 00:24:17.040
+<v Speaker 0>Perhaps.
+
+00:24:17.040 --> 00:24:17.520
+<v Speaker 0>Yeah.
+
+00:24:18.640 --> 00:24:19.040
+<v Speaker 0>Okay.
+
+00:24:19.680 --> 00:24:22.000
+<v Speaker 0>It looks like it has deployed
+
+00:24:22.320 --> 00:24:24.559
+<v Speaker 0>everything we need to our
+
+00:24:25.200 --> 00:24:25.760
+<v Speaker 0>cluster.
+
+00:24:27.185 --> 00:24:28.785
+<v Speaker 0>Do you want me to run the logs
+
+00:24:28.785 --> 00:24:30.384
+<v Speaker 0>command to make sure that looks I
+
+00:24:31.265 --> 00:24:33.585
+<v Speaker 1>think yeah. Let's show it. You didn't catch
+
+00:24:33.585 --> 00:24:35.105
+<v Speaker 1>the last o. Okay.
+
+00:24:41.940 --> 00:24:44.259
+<v Speaker 0>I see no errors. So
+
+00:24:44.900 --> 00:24:48.100
+<v Speaker 0>our confidence was just we have installed Velero
+
+00:24:48.100 --> 00:24:49.700
+<v Speaker 0>to our cluster.
+
+00:24:50.260 --> 00:24:52.340
+<v Speaker 0>Does this just get installed and not the
+
+00:24:52.340 --> 00:24:55.140
+<v Speaker 0>default namespace then? Velero
+
+00:24:55.140 --> 00:24:55.780
+<v Speaker 1>namespace.
+
+00:24:57.325 --> 00:24:59.325
+<v Speaker 1>So it installs by default on the Velero
+
+00:24:59.325 --> 00:25:01.565
+<v Speaker 1>namespace. If you do wanna install it in
+
+00:25:01.565 --> 00:25:02.205
+<v Speaker 1>this
+
+00:25:02.605 --> 00:25:05.005
+<v Speaker 1>namespace a custom namespace, you can also do
+
+00:25:05.005 --> 00:25:07.085
+<v Speaker 1>that. We have documentation for that.
+
+00:25:07.485 --> 00:25:08.605
+<v Speaker 0>Okay. Awesome.
+
+00:25:09.800 --> 00:25:12.280
+<v Speaker 0>No left as a comment saying bananas. Obviously,
+
+00:25:12.280 --> 00:25:14.919
+<v Speaker 0>has been watching the minions movie recently. So
+
+00:25:16.200 --> 00:25:18.120
+<v Speaker 0>I do love those movies myself. I'm a
+
+00:25:18.120 --> 00:25:19.720
+<v Speaker 0>sucker for them. Yep. I do too. I
+
+00:25:19.720 --> 00:25:20.440
+<v Speaker 1>love it.
+
+00:25:20.840 --> 00:25:23.704
+<v Speaker 1>They're so cute. Oh, yeah. Definitely.
+
+00:25:23.705 --> 00:25:25.384
+<v Speaker 0>My daughter's only two and a half, but
+
+00:25:25.384 --> 00:25:26.505
+<v Speaker 0>I'm waiting for her just to get to
+
+00:25:26.505 --> 00:25:27.865
+<v Speaker 0>that age where she starts to pay more
+
+00:25:27.865 --> 00:25:29.705
+<v Speaker 0>attention for longer periods of time so I
+
+00:25:29.705 --> 00:25:31.144
+<v Speaker 0>can just like watch all the minions movies
+
+00:25:31.144 --> 00:25:32.024
+<v Speaker 0>all the time.
+
+00:25:32.424 --> 00:25:33.224
+<v Speaker 0>Okay.
+
+00:25:34.105 --> 00:25:36.810
+<v Speaker 0>So Velero and Rustic appear to be running.
+
+00:25:36.810 --> 00:25:38.090
+<v Speaker 0>They appear to be happy.
+
+00:25:40.410 --> 00:25:42.090
+<v Speaker 0>Is that it? Stream done. We're finished. Right?
+
+00:25:42.090 --> 00:25:44.409
+<v Speaker 0>It just works. That's it. That's it.
+
+00:25:44.970 --> 00:25:46.810
+<v Speaker 1>So we could try creating the backup.
+
+00:25:48.135 --> 00:25:49.255
+<v Speaker 0>Okay.
+
+00:25:49.495 --> 00:25:50.695
+<v Speaker 0>I'll Do want me to tell you the
+
+00:25:50.695 --> 00:25:52.135
+<v Speaker 1>command or you wanna
+
+00:25:52.295 --> 00:25:53.735
+<v Speaker 1>show the docs?
+
+00:25:54.215 --> 00:25:56.295
+<v Speaker 0>Yeah. Well, I'll I'll pull up the docs,
+
+00:25:56.295 --> 00:25:59.015
+<v Speaker 0>but we can we can definitely just
+
+00:25:59.730 --> 00:26:00.769
+<v Speaker 0>feel brave.
+
+00:26:01.730 --> 00:26:03.650
+<v Speaker 0>I'm assuming if I just type dash help,
+
+00:26:03.650 --> 00:26:05.170
+<v Speaker 0>I may get a little bit of guidance
+
+00:26:05.170 --> 00:26:07.330
+<v Speaker 0>as well. Yes. Yes.
+
+00:26:08.210 --> 00:26:10.530
+<v Speaker 0>Okay. So we got Velero backup command.
+
+00:26:12.664 --> 00:26:14.664
+<v Speaker 0>Oh, we got a bunch Sorry.
+
+00:26:14.664 --> 00:26:16.745
+<v Speaker 1>So before we do a backup, let's look
+
+00:26:16.745 --> 00:26:18.184
+<v Speaker 1>at that backup location.
+
+00:26:18.585 --> 00:26:20.984
+<v Speaker 1>Do a Velero
+
+00:26:21.784 --> 00:26:22.504
+<v Speaker 1>get
+
+00:26:22.585 --> 00:26:23.384
+<v Speaker 1>backup
+
+00:26:23.465 --> 00:26:24.345
+<v Speaker 1>dash location.
+
+00:26:28.960 --> 00:26:30.159
+<v Speaker 1>Alright. So
+
+00:26:31.200 --> 00:26:32.479
+<v Speaker 1>so that
+
+00:26:32.559 --> 00:26:33.999
+<v Speaker 1>backup location,
+
+00:26:34.480 --> 00:26:36.559
+<v Speaker 1>if you're not familiar with Velero, you're going
+
+00:26:36.559 --> 00:26:38.960
+<v Speaker 1>to be wondering where did I with where
+
+00:26:38.960 --> 00:26:40.399
+<v Speaker 1>did that get came from?
+
+00:26:42.065 --> 00:26:43.985
+<v Speaker 1>So when we did the install,
+
+00:26:44.065 --> 00:26:46.065
+<v Speaker 1>we passed some parameters.
+
+00:26:47.425 --> 00:26:48.304
+<v Speaker 1>For example,
+
+00:26:48.545 --> 00:26:50.305
+<v Speaker 1>a dub use the AWS
+
+00:26:50.305 --> 00:26:53.105
+<v Speaker 1>plug in. And the so the Velero the
+
+00:26:53.105 --> 00:26:55.505
+<v Speaker 1>way Velero works is
+
+00:26:56.250 --> 00:26:57.610
+<v Speaker 1>for each
+
+00:26:59.370 --> 00:27:00.890
+<v Speaker 1>storage location
+
+00:27:01.290 --> 00:27:03.450
+<v Speaker 1>where you want to install
+
+00:27:03.530 --> 00:27:05.610
+<v Speaker 1>the sorry. For each,
+
+00:27:07.050 --> 00:27:10.024
+<v Speaker 1>storage location where you want to install, not
+
+00:27:10.024 --> 00:27:12.344
+<v Speaker 1>install, but upload the backups to,
+
+00:27:13.065 --> 00:27:14.984
+<v Speaker 1>you need to have a corresponding
+
+00:27:14.985 --> 00:27:16.184
+<v Speaker 1>backup location.
+
+00:27:16.825 --> 00:27:19.304
+<v Speaker 1>That is sort of, like, the abstraction that
+
+00:27:19.304 --> 00:27:20.744
+<v Speaker 1>Velero uses
+
+00:27:21.065 --> 00:27:23.624
+<v Speaker 1>to to add configuration
+
+00:27:23.625 --> 00:27:24.825
+<v Speaker 1>for the storage location.
+
+00:27:25.510 --> 00:27:28.150
+<v Speaker 1>So everything that Velero needs to know to
+
+00:27:28.150 --> 00:27:29.429
+<v Speaker 1>make that connection.
+
+00:27:29.990 --> 00:27:30.549
+<v Speaker 1>If
+
+00:27:30.870 --> 00:27:32.150
+<v Speaker 1>you don't
+
+00:27:32.150 --> 00:27:34.230
+<v Speaker 1>create it ahead of time, if you don't
+
+00:27:34.230 --> 00:27:36.470
+<v Speaker 1>pass a specific flags or installation,
+
+00:27:36.630 --> 00:27:38.309
+<v Speaker 1>Velero is going to give you a little
+
+00:27:38.309 --> 00:27:40.230
+<v Speaker 1>hand and create a default
+
+00:27:40.395 --> 00:27:43.355
+<v Speaker 1>backup storage backup the the name is the
+
+00:27:43.355 --> 00:27:45.355
+<v Speaker 1>full name is backup storage location.
+
+00:27:45.675 --> 00:27:48.155
+<v Speaker 1>In the CLI, it's backup dash location, but
+
+00:27:48.155 --> 00:27:49.275
+<v Speaker 1>it's the same thing.
+
+00:27:49.675 --> 00:27:51.275
+<v Speaker 1>So we'll create
+
+00:27:52.395 --> 00:27:55.210
+<v Speaker 1>one for you that's named default
+
+00:27:55.210 --> 00:27:57.929
+<v Speaker 1>that's going to be using the parameters that
+
+00:27:57.929 --> 00:27:59.850
+<v Speaker 1>you passed in during the install. So we
+
+00:27:59.850 --> 00:28:02.809
+<v Speaker 1>we knew you were using the AWS plug
+
+00:28:02.809 --> 00:28:03.369
+<v Speaker 1>in.
+
+00:28:03.690 --> 00:28:05.210
+<v Speaker 1>So that backup location
+
+00:28:06.409 --> 00:28:08.164
+<v Speaker 1>in in the s s
+
+00:28:09.285 --> 00:28:11.684
+<v Speaker 1>three URL, that little flag
+
+00:28:11.925 --> 00:28:14.085
+<v Speaker 1>I might got might have gotten that wrong.
+
+00:28:14.165 --> 00:28:16.005
+<v Speaker 1>So all of so that's part of the
+
+00:28:16.005 --> 00:28:16.884
+<v Speaker 1>configuration.
+
+00:28:17.365 --> 00:28:19.285
+<v Speaker 1>You can look at the CRDs
+
+00:28:19.285 --> 00:28:21.285
+<v Speaker 1>that got the the CRs
+
+00:28:21.550 --> 00:28:22.830
+<v Speaker 1>that get created,
+
+00:28:23.630 --> 00:28:24.830
+<v Speaker 1>if you're interested.
+
+00:28:25.070 --> 00:28:26.270
+<v Speaker 1>So at any rate,
+
+00:28:26.510 --> 00:28:28.110
+<v Speaker 1>this is a very good command that I
+
+00:28:28.110 --> 00:28:29.470
+<v Speaker 1>I really like this command,
+
+00:28:29.950 --> 00:28:33.550
+<v Speaker 1>that gives us the the information if the
+
+00:28:33.550 --> 00:28:35.985
+<v Speaker 1>location is available or not. This is the
+
+00:28:35.985 --> 00:28:37.825
+<v Speaker 1>very first thing when I do support. That's
+
+00:28:37.825 --> 00:28:39.105
+<v Speaker 1>the first thing I wanna know.
+
+00:28:40.225 --> 00:28:43.265
+<v Speaker 1>Is your backup location connected and up and
+
+00:28:43.265 --> 00:28:43.825
+<v Speaker 1>running?
+
+00:28:44.065 --> 00:28:45.905
+<v Speaker 1>Because if it is a new you're not
+
+00:28:45.905 --> 00:28:47.905
+<v Speaker 1>gonna be able to upload
+
+00:28:48.200 --> 00:28:51.960
+<v Speaker 1>backups or download backups or restore backups.
+
+00:28:52.760 --> 00:28:55.160
+<v Speaker 1>So that's up and running. Great. You can
+
+00:28:55.160 --> 00:28:57.720
+<v Speaker 1>also use that command to create new ones.
+
+00:28:58.280 --> 00:28:59.720
+<v Speaker 1>You can delete it,
+
+00:29:00.040 --> 00:29:01.400
+<v Speaker 1>and there is always
+
+00:29:01.905 --> 00:29:04.465
+<v Speaker 1>one that will be the default one. And
+
+00:29:04.465 --> 00:29:06.785
+<v Speaker 1>what that means is when you are creating
+
+00:29:06.785 --> 00:29:08.705
+<v Speaker 1>backups and you don't specify
+
+00:29:08.705 --> 00:29:10.465
+<v Speaker 1>a backup location,
+
+00:29:10.865 --> 00:29:12.625
+<v Speaker 1>Velero will use the default.
+
+00:29:12.945 --> 00:29:15.345
+<v Speaker 1>But if you have, let's say, three or
+
+00:29:15.345 --> 00:29:16.545
+<v Speaker 1>what however many,
+
+00:29:17.970 --> 00:29:21.250
+<v Speaker 1>you can pass to the backup commands
+
+00:29:21.490 --> 00:29:25.490
+<v Speaker 1>the specific backup location name to use for
+
+00:29:25.490 --> 00:29:27.810
+<v Speaker 1>that backup. Same thing with the restore. Wherever
+
+00:29:27.810 --> 00:29:30.049
+<v Speaker 1>you wanna restore from, if you don't specify,
+
+00:29:30.290 --> 00:29:32.130
+<v Speaker 1>Velero will use the default one.
+
+00:29:33.434 --> 00:29:35.595
+<v Speaker 1>And and and, again, I I love that
+
+00:29:35.595 --> 00:29:38.235
+<v Speaker 1>command that just lets you know everything is
+
+00:29:38.235 --> 00:29:39.195
+<v Speaker 1>up and running.
+
+00:29:39.674 --> 00:29:41.434
+<v Speaker 1>And if not, then then we dig through
+
+00:29:41.434 --> 00:29:43.195
+<v Speaker 1>the logs and see what's going on.
+
+00:29:43.995 --> 00:29:44.715
+<v Speaker 0>Okay.
+
+00:29:45.034 --> 00:29:46.475
+<v Speaker 0>Awesome. There's
+
+00:29:46.760 --> 00:29:48.680
+<v Speaker 0>a a lot to unpack there. I've got
+
+00:29:48.680 --> 00:29:50.840
+<v Speaker 0>a a couple of questions. So
+
+00:29:51.320 --> 00:29:53.800
+<v Speaker 0>we can have multiple bucket locations.
+
+00:29:53.800 --> 00:29:56.040
+<v Speaker 0>So we could, in theory, be
+
+00:29:56.360 --> 00:30:00.120
+<v Speaker 0>backing up to AWS s three and Google's
+
+00:30:00.335 --> 00:30:02.335
+<v Speaker 0>own cloud storage thing. Is that something I
+
+00:30:02.335 --> 00:30:04.335
+<v Speaker 0>would have, like, one backup go to multiple
+
+00:30:04.335 --> 00:30:05.054
+<v Speaker 0>locations?
+
+00:30:06.175 --> 00:30:08.015
+<v Speaker 0>Is that a common pattern, or would it
+
+00:30:08.015 --> 00:30:10.335
+<v Speaker 0>be that different backups go to different locations?
+
+00:30:11.935 --> 00:30:12.894
+<v Speaker 1>Absolutely.
+
+00:30:12.895 --> 00:30:16.400
+<v Speaker 1>So you have to set up one location,
+
+00:30:16.400 --> 00:30:19.360
+<v Speaker 1>like, at least one location for each of
+
+00:30:19.360 --> 00:30:21.600
+<v Speaker 1>those providers if you want to send
+
+00:30:21.760 --> 00:30:24.160
+<v Speaker 1>back up to different providers. It's it's definitely
+
+00:30:24.160 --> 00:30:25.279
+<v Speaker 1>a good strategy
+
+00:30:25.600 --> 00:30:27.679
+<v Speaker 1>as as a means of back backing up
+
+00:30:27.679 --> 00:30:30.240
+<v Speaker 1>your backups. Or maybe you just want to
+
+00:30:31.105 --> 00:30:31.664
+<v Speaker 1>that's
+
+00:30:31.985 --> 00:30:33.424
+<v Speaker 1>I don't know if people do that, but
+
+00:30:33.424 --> 00:30:36.065
+<v Speaker 1>you might wanna have a section of your
+
+00:30:36.065 --> 00:30:37.505
+<v Speaker 1>cluster guru, just
+
+00:30:38.144 --> 00:30:41.265
+<v Speaker 1>GCP or another section not some namespace go
+
+00:30:41.265 --> 00:30:42.464
+<v Speaker 1>to AWS.
+
+00:30:42.465 --> 00:30:44.224
+<v Speaker 1>Yeah. In other words,
+
+00:30:44.465 --> 00:30:45.265
+<v Speaker 1>flexibility.
+
+00:30:46.200 --> 00:30:46.759
+<v Speaker 1>So
+
+00:30:47.000 --> 00:30:49.000
+<v Speaker 1>so one thing to point out is for
+
+00:30:49.000 --> 00:30:51.479
+<v Speaker 1>people who is familiar with Velero,
+
+00:30:51.640 --> 00:30:53.799
+<v Speaker 1>up to 1.5,
+
+00:30:55.080 --> 00:30:58.520
+<v Speaker 1>you could have that, but Velero only accepted
+
+00:30:58.520 --> 00:30:59.399
+<v Speaker 1>one
+
+00:30:59.559 --> 00:31:00.520
+<v Speaker 1>secret
+
+00:31:02.375 --> 00:31:03.894
+<v Speaker 1>key value pair.
+
+00:31:04.215 --> 00:31:06.775
+<v Speaker 1>So if you wanted to switch from one
+
+00:31:06.775 --> 00:31:09.735
+<v Speaker 1>provider to another provider, you had to manually
+
+00:31:09.735 --> 00:31:11.095
+<v Speaker 1>update
+
+00:31:11.095 --> 00:31:12.615
+<v Speaker 1>the Kubernetes secrets
+
+00:31:13.150 --> 00:31:14.830
+<v Speaker 1>to the secret you're using
+
+00:31:15.150 --> 00:31:17.710
+<v Speaker 1>because Velero could only handle one secret.
+
+00:31:18.510 --> 00:31:20.029
+<v Speaker 1>I mean yes.
+
+00:31:20.590 --> 00:31:22.830
+<v Speaker 1>So with with version 1.6,
+
+00:31:22.830 --> 00:31:25.550
+<v Speaker 1>actually, that is the the the main feature
+
+00:31:25.550 --> 00:31:26.110
+<v Speaker 1>we added.
+
+00:31:26.735 --> 00:31:28.815
+<v Speaker 1>And there is a blog post also that
+
+00:31:28.815 --> 00:31:30.895
+<v Speaker 1>talks about it, and there is documentation that
+
+00:31:30.895 --> 00:31:33.455
+<v Speaker 1>talks about it in drum drum roll. I
+
+00:31:33.455 --> 00:31:35.375
+<v Speaker 1>never start with the end. The
+
+00:31:36.095 --> 00:31:38.495
+<v Speaker 1>feature is you can have you can now
+
+00:31:38.495 --> 00:31:39.695
+<v Speaker 1>have multiple
+
+00:31:39.695 --> 00:31:40.175
+<v Speaker 1>secrets
+
+00:31:40.900 --> 00:31:42.019
+<v Speaker 1>with Velero.
+
+00:31:42.180 --> 00:31:43.940
+<v Speaker 1>So you can definitely
+
+00:31:44.260 --> 00:31:46.180
+<v Speaker 1>you just create you have let's say you
+
+00:31:46.180 --> 00:31:47.380
+<v Speaker 1>create the secrets
+
+00:31:47.620 --> 00:31:48.980
+<v Speaker 1>on Kubernetes.
+
+00:31:49.860 --> 00:31:52.100
+<v Speaker 1>Let's say you create five secrets. Mhmm. And
+
+00:31:52.100 --> 00:31:53.139
+<v Speaker 1>when you create
+
+00:31:53.300 --> 00:31:55.620
+<v Speaker 1>the the backup storage location,
+
+00:31:56.075 --> 00:31:59.195
+<v Speaker 1>you can pass in a name of the
+
+00:31:59.195 --> 00:32:02.155
+<v Speaker 1>secrets you want to associate with the backup
+
+00:32:02.155 --> 00:32:04.315
+<v Speaker 1>storage location. So now you can have a
+
+00:32:04.555 --> 00:32:05.915
+<v Speaker 1>secret for AWS,
+
+00:32:05.915 --> 00:32:07.515
+<v Speaker 1>a secret for GCP,
+
+00:32:07.515 --> 00:32:09.195
+<v Speaker 1>and you can just tell Velero, hey. This
+
+00:32:09.195 --> 00:32:10.475
+<v Speaker 1>is the secret for this location
+
+00:32:11.360 --> 00:32:13.120
+<v Speaker 1>that that and use that.
+
+00:32:13.520 --> 00:32:14.880
+<v Speaker 1>So that's pretty neat.
+
+00:32:15.280 --> 00:32:15.919
+<v Speaker 0>Yeah.
+
+00:32:16.560 --> 00:32:18.080
+<v Speaker 0>Very interesting. Definitely.
+
+00:32:18.800 --> 00:32:20.880
+<v Speaker 0>So the other thing that's jumped out to
+
+00:32:20.880 --> 00:32:22.080
+<v Speaker 0>me here is that,
+
+00:32:22.720 --> 00:32:24.560
+<v Speaker 0>you know, I did an API resources, and
+
+00:32:24.560 --> 00:32:26.155
+<v Speaker 0>I just kind of grabbed it down to
+
+00:32:26.155 --> 00:32:28.395
+<v Speaker 0>the Velero stuff, is that everything that we're
+
+00:32:28.395 --> 00:32:30.235
+<v Speaker 0>working with can just be configured through a
+
+00:32:30.235 --> 00:32:33.115
+<v Speaker 0>custom resource. Which means I can get ops
+
+00:32:33.115 --> 00:32:35.675
+<v Speaker 0>all of my backup and restore processes as
+
+00:32:35.675 --> 00:32:36.715
+<v Speaker 0>well. Is is that right?
+
+00:32:38.980 --> 00:32:40.659
+<v Speaker 1>I am forgetting now
+
+00:32:41.059 --> 00:32:44.100
+<v Speaker 1>what the glitch would be, but Velero has
+
+00:32:44.100 --> 00:32:45.139
+<v Speaker 1>some
+
+00:32:46.019 --> 00:32:48.419
+<v Speaker 1>some hooks there that
+
+00:32:49.779 --> 00:32:52.580
+<v Speaker 1>even it will not recognize some stuff, and
+
+00:32:52.580 --> 00:32:55.504
+<v Speaker 1>I'm forgetting what the stuff is. Mhmm.
+
+00:32:55.585 --> 00:32:57.745
+<v Speaker 1>Because we do an automatic
+
+00:32:58.385 --> 00:32:59.984
+<v Speaker 1>we keep reconciling
+
+00:33:00.465 --> 00:33:01.825
+<v Speaker 1>to check the
+
+00:33:02.225 --> 00:33:04.465
+<v Speaker 1>if there is new backups to to be
+
+00:33:04.465 --> 00:33:05.825
+<v Speaker 1>uploaded, for example.
+
+00:33:06.144 --> 00:33:08.225
+<v Speaker 1>I think if you create a backup
+
+00:33:08.225 --> 00:33:08.784
+<v Speaker 1>just
+
+00:33:10.920 --> 00:33:14.200
+<v Speaker 1>manually, let's say, or with GitOps bypassing the
+
+00:33:14.200 --> 00:33:15.480
+<v Speaker 1>Velero CLI,
+
+00:33:15.720 --> 00:33:18.600
+<v Speaker 1>I there is something that I'm not remembering.
+
+00:33:18.600 --> 00:33:21.000
+<v Speaker 1>I have to ask my teammates that Velero
+
+00:33:21.000 --> 00:33:23.480
+<v Speaker 1>will not recognize and Right.
+
+00:33:23.960 --> 00:33:27.895
+<v Speaker 1>Get you in trouble. Okay. Noted. Okay. We
+
+00:33:27.895 --> 00:33:30.375
+<v Speaker 0>got two comments there that should quickly tackle
+
+00:33:30.375 --> 00:33:32.934
+<v Speaker 0>before we we kinda progress there. So Noel
+
+00:33:32.934 --> 00:33:35.735
+<v Speaker 0>is saying that he spotted the Velero bug
+
+00:33:35.735 --> 00:33:38.534
+<v Speaker 0>command and is just saying kudos. That's awesome
+
+00:33:38.534 --> 00:33:38.934
+<v Speaker 0>feature.
+
+00:33:39.720 --> 00:33:41.880
+<v Speaker 0>I never Yeah. Thank you. Never noticed that,
+
+00:33:41.880 --> 00:33:42.360
+<v Speaker 0>but
+
+00:33:43.080 --> 00:33:45.160
+<v Speaker 0>oh, yeah. Yeah. Thank you for for we
+
+00:33:45.160 --> 00:33:47.320
+<v Speaker 1>love knowing what people love. For
+
+00:33:47.640 --> 00:33:49.159
+<v Speaker 1>version 1.7,
+
+00:33:49.160 --> 00:33:51.320
+<v Speaker 1>we have planned to do
+
+00:33:52.040 --> 00:33:53.000
+<v Speaker 1>a Velero
+
+00:33:53.804 --> 00:33:57.485
+<v Speaker 1>diagnosis tool. It might be called Velero crash
+
+00:33:57.485 --> 00:33:58.445
+<v Speaker 1>or something
+
+00:33:58.764 --> 00:33:59.484
+<v Speaker 1>that
+
+00:34:01.085 --> 00:34:03.325
+<v Speaker 1>it's a bit tricky because, if you run
+
+00:34:03.325 --> 00:34:05.245
+<v Speaker 1>that and it's going to output things from
+
+00:34:05.245 --> 00:34:07.644
+<v Speaker 1>your cluster, it it needs to be
+
+00:34:08.580 --> 00:34:11.140
+<v Speaker 1>nothing that they'll be private. So we we're
+
+00:34:11.140 --> 00:34:12.100
+<v Speaker 1>going to be
+
+00:34:12.739 --> 00:34:15.620
+<v Speaker 1>very careful about that. But, basically, you run
+
+00:34:15.620 --> 00:34:17.700
+<v Speaker 1>that. You output if you need if you
+
+00:34:17.700 --> 00:34:19.300
+<v Speaker 1>have a problem with Velero, if you're asking
+
+00:34:19.300 --> 00:34:21.380
+<v Speaker 1>for support or if you just wanted to
+
+00:34:21.380 --> 00:34:23.885
+<v Speaker 1>troubleshoot it yourself, You run that. It will
+
+00:34:23.885 --> 00:34:25.565
+<v Speaker 1>give you all of the,
+
+00:34:26.764 --> 00:34:28.445
+<v Speaker 1>all all the information you have to look
+
+00:34:28.445 --> 00:34:30.445
+<v Speaker 1>at, like, the the proper logs, all the
+
+00:34:30.445 --> 00:34:32.605
+<v Speaker 1>proper things that will be relevant.
+
+00:34:33.005 --> 00:34:33.725
+<v Speaker 1>Anyway,
+
+00:34:33.885 --> 00:34:36.290
+<v Speaker 1>I'm just saying we're always looking for to
+
+00:34:36.290 --> 00:34:38.530
+<v Speaker 1>to make things easier for for people to
+
+00:34:38.530 --> 00:34:40.929
+<v Speaker 1>to see what's going on. Awesome.
+
+00:34:41.010 --> 00:34:43.090
+<v Speaker 0>Okay. We'll tackle one more, and then we'll
+
+00:34:43.090 --> 00:34:46.130
+<v Speaker 0>we'll continue. But Nils is asking, can Velero
+
+00:34:46.130 --> 00:34:47.489
+<v Speaker 0>back up etcd?
+
+00:34:48.449 --> 00:34:51.404
+<v Speaker 1>Yeah. Yep. Yep. That's a every
+
+00:34:51.404 --> 00:34:53.005
+<v Speaker 1>Kubernetes resource
+
+00:34:53.244 --> 00:34:54.925
+<v Speaker 1>gets backed up by Velero.
+
+00:34:55.804 --> 00:34:56.764
+<v Speaker 0>Awesome.
+
+00:34:56.844 --> 00:34:58.685
+<v Speaker 0>Alright. Everything from etcd.
+
+00:34:59.484 --> 00:35:01.565
+<v Speaker 0>Yeah. Which is which is great because, you
+
+00:35:01.565 --> 00:35:03.484
+<v Speaker 0>know, we wanna be able to restore everything
+
+00:35:03.484 --> 00:35:05.259
+<v Speaker 0>from the ground up if the worst were
+
+00:35:05.259 --> 00:35:07.180
+<v Speaker 0>to ever happen. It makes a lot of
+
+00:35:07.180 --> 00:35:09.099
+<v Speaker 0>sense. So so one thing that may be
+
+00:35:09.099 --> 00:35:11.019
+<v Speaker 1>useful for people to know, people who are
+
+00:35:11.019 --> 00:35:12.780
+<v Speaker 1>not familiar with Velero is
+
+00:35:13.740 --> 00:35:14.619
+<v Speaker 1>Velero
+
+00:35:14.619 --> 00:35:15.900
+<v Speaker 1>only accesses
+
+00:35:16.825 --> 00:35:17.945
+<v Speaker 1>the through
+
+00:35:18.425 --> 00:35:20.025
+<v Speaker 1>the server API.
+
+00:35:20.585 --> 00:35:21.145
+<v Speaker 1>So,
+
+00:35:21.545 --> 00:35:24.425
+<v Speaker 1>we're not taking the file system backup of.
+
+00:35:24.585 --> 00:35:26.345
+<v Speaker 1>There are tools that do that if and
+
+00:35:26.345 --> 00:35:28.025
+<v Speaker 1>you can use that in parallel with Velero
+
+00:35:28.025 --> 00:35:28.665
+<v Speaker 1>too.
+
+00:35:28.905 --> 00:35:30.745
+<v Speaker 1>But Velero only uses the API,
+
+00:35:31.460 --> 00:35:31.940
+<v Speaker 1>and,
+
+00:35:32.660 --> 00:35:35.140
+<v Speaker 1>that is what makes it be able to
+
+00:35:35.140 --> 00:35:38.180
+<v Speaker 1>do, for example, selective backups because with the
+
+00:35:38.180 --> 00:35:39.059
+<v Speaker 1>API,
+
+00:35:39.059 --> 00:35:41.460
+<v Speaker 1>we have we we can exclude things,
+
+00:35:43.140 --> 00:35:45.140
+<v Speaker 1>and there's a lot more flexibility.
+
+00:35:45.299 --> 00:35:47.165
+<v Speaker 1>So just so so people are clear, we're
+
+00:35:47.165 --> 00:35:49.085
+<v Speaker 1>not doing a file system backup of the
+
+00:35:49.085 --> 00:35:50.365
+<v Speaker 1>entire SCD.
+
+00:35:50.365 --> 00:35:52.125
+<v Speaker 1>We're just backing
+
+00:35:52.125 --> 00:35:54.845
+<v Speaker 1>up the the the objects in the database.
+
+00:35:55.805 --> 00:35:56.765
+<v Speaker 0>Okay. Awesome.
+
+00:35:57.789 --> 00:36:00.109
+<v Speaker 0>So I guess our next step here would
+
+00:36:00.109 --> 00:36:02.510
+<v Speaker 0>be to create our first backup.
+
+00:36:02.990 --> 00:36:04.430
+<v Speaker 1>Yeah. Let's do it.
+
+00:36:04.910 --> 00:36:06.750
+<v Speaker 0>Alright. So I did see there was a
+
+00:36:06.750 --> 00:36:09.069
+<v Speaker 0>Velero backup command. So I'll just
+
+00:36:11.015 --> 00:36:15.015
+<v Speaker 1>Oh, one neat thing or maybe maddening, depends
+
+00:36:15.015 --> 00:36:18.135
+<v Speaker 1>on how your brain works, is with
+
+00:36:18.215 --> 00:36:19.655
+<v Speaker 1>all Velero commands,
+
+00:36:19.735 --> 00:36:21.495
+<v Speaker 1>except I think for the downloads, you can
+
+00:36:21.495 --> 00:36:23.495
+<v Speaker 1>interchange the command. So you can do create
+
+00:36:23.495 --> 00:36:25.735
+<v Speaker 1>backup or backup create, and either one will
+
+00:36:25.735 --> 00:36:25.895
+<v Speaker 1>work.
+
+00:36:26.940 --> 00:36:29.660
+<v Speaker 0>I actually did an entire episode where I
+
+00:36:29.660 --> 00:36:31.580
+<v Speaker 0>tried to build a kube control plugin to
+
+00:36:31.580 --> 00:36:35.180
+<v Speaker 0>override the Kubernetes verb noun behavior because I
+
+00:36:35.180 --> 00:36:37.500
+<v Speaker 0>really disapprove of it. So I'm glad that
+
+00:36:37.500 --> 00:36:39.339
+<v Speaker 0>I could just take backup create rather than
+
+00:36:39.339 --> 00:36:40.380
+<v Speaker 0>create backup in it.
+
+00:36:41.175 --> 00:36:43.095
+<v Speaker 0>But I guess personal preference.
+
+00:36:43.655 --> 00:36:46.135
+<v Speaker 1>I like I like starting with the verb,
+
+00:36:46.135 --> 00:36:47.895
+<v Speaker 1>so I stick to that so I don't
+
+00:36:47.895 --> 00:36:50.295
+<v Speaker 1>have to think, wait. What am I writing?
+
+00:36:50.935 --> 00:36:51.655
+<v Speaker 0>Okay.
+
+00:36:52.375 --> 00:36:54.455
+<v Speaker 0>I'll I'll I'll do it your way. So
+
+00:36:55.329 --> 00:36:56.690
+<v Speaker 0>you would do create
+
+00:36:57.170 --> 00:36:58.050
+<v Speaker 0>backup?
+
+00:36:58.690 --> 00:37:01.330
+<v Speaker 1>Yeah. Yeah. Okay. And give it a name.
+
+00:37:02.210 --> 00:37:03.010
+<v Speaker 0>Okay.
+
+00:37:03.010 --> 00:37:04.210
+<v Speaker 0>So backup
+
+00:37:04.530 --> 00:37:05.970
+<v Speaker 0>one. Oh, back one one.
+
+00:37:08.474 --> 00:37:09.914
+<v Speaker 0>Okay. And then I need to do dash
+
+00:37:09.914 --> 00:37:11.035
+<v Speaker 0>help on this to see if I need
+
+00:37:11.035 --> 00:37:12.954
+<v Speaker 0>other flags, or is that gonna do something
+
+00:37:12.954 --> 00:37:14.474
+<v Speaker 0>for me out of the box?
+
+00:37:16.075 --> 00:37:17.914
+<v Speaker 1>That's it. That's how you need it. I
+
+00:37:17.914 --> 00:37:20.395
+<v Speaker 1>mean, again, if you wanted to specify
+
+00:37:21.440 --> 00:37:23.839
+<v Speaker 1>backup storage location to to save it to
+
+00:37:23.839 --> 00:37:26.319
+<v Speaker 1>that wasn't the default, then you add the
+
+00:37:26.319 --> 00:37:27.200
+<v Speaker 1>flag there.
+
+00:37:28.000 --> 00:37:30.640
+<v Speaker 1>If you wanted to
+
+00:37:32.559 --> 00:37:33.599
+<v Speaker 0>Sorry. I knew. Yeah.
+
+00:37:35.345 --> 00:37:37.265
+<v Speaker 0>So that's just gonna back up everything? Like,
+
+00:37:37.265 --> 00:37:39.425
+<v Speaker 0>that's just the default behavior except everything. Yes.
+
+00:37:39.425 --> 00:37:41.345
+<v Speaker 1>Okay. Yeah. Yeah. And that a good that's
+
+00:37:41.345 --> 00:37:42.545
+<v Speaker 1>a good point. If you wanted to do
+
+00:37:42.545 --> 00:37:44.625
+<v Speaker 1>a selective backup, then there are flags you
+
+00:37:44.625 --> 00:37:44.944
+<v Speaker 1>can use.
+
+00:37:49.160 --> 00:37:50.600
+<v Speaker 1>Backup. Alright.
+
+00:37:51.319 --> 00:37:53.560
+<v Speaker 1>It's not done. Not done. Okay. Sorry.
+
+00:37:54.040 --> 00:37:56.760
+<v Speaker 1>So what is done here is the request
+
+00:37:56.760 --> 00:37:57.960
+<v Speaker 1>for the backup to
+
+00:37:59.319 --> 00:38:00.520
+<v Speaker 1>for the backup operation.
+
+00:38:01.965 --> 00:38:04.285
+<v Speaker 1>So Got it. You can do
+
+00:38:04.525 --> 00:38:08.125
+<v Speaker 1>yeah. Velero describe or you can do Velero
+
+00:38:08.125 --> 00:38:09.405
+<v Speaker 1>get backup.
+
+00:38:10.205 --> 00:38:13.485
+<v Speaker 1>Backup or backups, that's another thing. Single or
+
+00:38:13.820 --> 00:38:15.260
+<v Speaker 1>plural doesn't matter.
+
+00:38:15.980 --> 00:38:17.580
+<v Speaker 2>I have backup one.
+
+00:38:18.140 --> 00:38:19.100
+<v Speaker 1>Yeah.
+
+00:38:19.180 --> 00:38:21.260
+<v Speaker 0>So is this just a a wrapper on
+
+00:38:21.260 --> 00:38:23.420
+<v Speaker 0>the Kube control? I mean, it's it's just
+
+00:38:23.420 --> 00:38:25.420
+<v Speaker 0>going to the Kubernetes API and and request
+
+00:38:25.420 --> 00:38:28.115
+<v Speaker 0>in resources. Is is that correct? Yeah. We
+
+00:38:28.115 --> 00:38:30.995
+<v Speaker 1>are now wrapping the Kube control tool.
+
+00:38:31.875 --> 00:38:34.515
+<v Speaker 1>We we have we we are doing our
+
+00:38:34.515 --> 00:38:37.315
+<v Speaker 1>own API calls. Okay. But, yeah, it's only
+
+00:38:37.315 --> 00:38:39.235
+<v Speaker 1>going against the server
+
+00:38:39.315 --> 00:38:42.115
+<v Speaker 1>in in getting that re Velero
+
+00:38:42.570 --> 00:38:43.290
+<v Speaker 1>CR
+
+00:38:43.850 --> 00:38:44.570
+<v Speaker 1>that
+
+00:38:45.130 --> 00:38:47.690
+<v Speaker 1>gets created with each backup. There is a
+
+00:38:47.690 --> 00:38:49.050
+<v Speaker 1>CR that gets created,
+
+00:38:50.090 --> 00:38:52.650
+<v Speaker 1>and that gets updated by the reconciling
+
+00:38:52.970 --> 00:38:55.610
+<v Speaker 1>things that happen. And, so what we what
+
+00:38:55.610 --> 00:38:56.810
+<v Speaker 1>we are doing is
+
+00:38:57.135 --> 00:38:59.775
+<v Speaker 1>getting information from from that resource.
+
+00:39:00.175 --> 00:39:01.855
+<v Speaker 0>Okay. Oh, yeah. So I can actually see
+
+00:39:01.855 --> 00:39:02.655
+<v Speaker 0>here that
+
+00:39:02.895 --> 00:39:05.055
+<v Speaker 0>it looks like I can just describe my
+
+00:39:05.055 --> 00:39:05.855
+<v Speaker 0>backup
+
+00:39:06.255 --> 00:39:08.655
+<v Speaker 0>backup one, and I'm probably gonna get, yeah,
+
+00:39:08.655 --> 00:39:12.095
+<v Speaker 0>very similar information. Not displayed quite as nice,
+
+00:39:12.095 --> 00:39:13.310
+<v Speaker 0>but very similar.
+
+00:39:13.550 --> 00:39:15.870
+<v Speaker 0>Okay. Let's go back to the Velero
+
+00:39:15.870 --> 00:39:16.590
+<v Speaker 0>command.
+
+00:39:17.710 --> 00:39:19.150
+<v Speaker 0>First thing that jumps out to me here
+
+00:39:19.150 --> 00:39:21.550
+<v Speaker 0>was first is completed, which is great, but
+
+00:39:21.550 --> 00:39:24.030
+<v Speaker 0>also there's an a default expiration on my
+
+00:39:24.030 --> 00:39:26.030
+<v Speaker 0>backup. So it's, like, twenty nine days.
+
+00:39:27.775 --> 00:39:28.575
+<v Speaker 1>Yes.
+
+00:39:29.535 --> 00:39:31.935
+<v Speaker 1>Yes. So you can set that TTL.
+
+00:39:32.815 --> 00:39:34.735
+<v Speaker 1>Some people have asked if can you set
+
+00:39:34.735 --> 00:39:35.615
+<v Speaker 1>it forever?
+
+00:39:35.775 --> 00:39:36.575
+<v Speaker 1>No.
+
+00:39:37.455 --> 00:39:39.375
+<v Speaker 1>We don't have that ability right now, but
+
+00:39:39.375 --> 00:39:41.550
+<v Speaker 1>some people have asked, can you just, like,
+
+00:39:41.550 --> 00:39:43.390
+<v Speaker 1>make it not expire, basically?
+
+00:39:43.790 --> 00:39:44.750
+<v Speaker 1>But, otherwise,
+
+00:39:45.630 --> 00:39:48.030
+<v Speaker 1>you can override the thirty day default and
+
+00:39:48.030 --> 00:39:49.550
+<v Speaker 1>set your own expiration.
+
+00:39:49.950 --> 00:39:52.510
+<v Speaker 0>Yeah. I guess the forever would be essentially
+
+00:39:52.510 --> 00:39:54.335
+<v Speaker 0>an anti part because you don't wanna take
+
+00:39:54.335 --> 00:39:56.015
+<v Speaker 0>one backup and then say keep it forever.
+
+00:39:56.015 --> 00:39:58.415
+<v Speaker 0>I'm assuming we want this scheduled to run-in
+
+00:39:58.415 --> 00:40:00.734
+<v Speaker 0>a regular interval and expire the older backups
+
+00:40:00.734 --> 00:40:03.055
+<v Speaker 0>as we progress through time. So I can
+
+00:40:03.055 --> 00:40:03.695
+<v Speaker 0>understand
+
+00:40:04.255 --> 00:40:05.375
+<v Speaker 0>that constraint. Yeah.
+
+00:40:06.050 --> 00:40:06.930
+<v Speaker 0>Okay. And
+
+00:40:07.570 --> 00:40:09.490
+<v Speaker 0>I guess this also means that you shouldn't
+
+00:40:09.570 --> 00:40:11.970
+<v Speaker 0>schedule your backups around once every twenty nine
+
+00:40:11.970 --> 00:40:13.330
+<v Speaker 0>days just to create a new one. That's
+
+00:40:13.330 --> 00:40:14.530
+<v Speaker 0>probably not ideal either.
+
+00:40:15.090 --> 00:40:16.610
+<v Speaker 0>Is there a a cadence that you would
+
+00:40:16.610 --> 00:40:18.290
+<v Speaker 0>recommend? Is it is it daily? Is it
+
+00:40:18.290 --> 00:40:20.450
+<v Speaker 0>hourly? Does it depend on the workload? Like,
+
+00:40:20.475 --> 00:40:21.835
+<v Speaker 0>what what would you do in your own
+
+00:40:21.835 --> 00:40:22.555
+<v Speaker 0>clusters?
+
+00:40:28.715 --> 00:40:30.635
+<v Speaker 1>To be completely transparent,
+
+00:40:30.715 --> 00:40:33.400
+<v Speaker 1>I am not running clusters in production. Right.
+
+00:40:33.400 --> 00:40:35.080
+<v Speaker 0>Got it. And even if I were, I'll
+
+00:40:35.080 --> 00:40:37.160
+<v Speaker 1>be I'll be cautious about
+
+00:40:38.360 --> 00:40:39.080
+<v Speaker 1>saying
+
+00:40:40.040 --> 00:40:41.240
+<v Speaker 1>I don't know. I think you need more
+
+00:40:41.240 --> 00:40:42.680
+<v Speaker 1>data points than one.
+
+00:40:43.160 --> 00:40:45.640
+<v Speaker 1>It's definitely very good to be asking what's
+
+00:40:45.640 --> 00:40:47.455
+<v Speaker 1>the best practice, but I think
+
+00:40:47.935 --> 00:40:49.455
+<v Speaker 1>it would vary.
+
+00:40:49.455 --> 00:40:51.535
+<v Speaker 1>Just as an engineer, I would say it
+
+00:40:51.535 --> 00:40:53.295
+<v Speaker 1>varies it would vary.
+
+00:40:53.375 --> 00:40:55.855
+<v Speaker 1>It should vary depending on what is it
+
+00:40:55.855 --> 00:40:57.775
+<v Speaker 1>that you that you're backing up.
+
+00:40:58.575 --> 00:41:01.200
+<v Speaker 1>Is it is it programmer
+
+00:41:01.200 --> 00:41:03.360
+<v Speaker 1>stuff? Is is it production?
+
+00:41:03.520 --> 00:41:04.000
+<v Speaker 1>Yeah.
+
+00:41:04.880 --> 00:41:06.800
+<v Speaker 0>That's a that's a great part. My question
+
+00:41:06.800 --> 00:41:08.800
+<v Speaker 0>was extremely naive, but you're right. Like, it
+
+00:41:08.800 --> 00:41:10.560
+<v Speaker 0>depends on the workloads on the cluster. Right?
+
+00:41:10.560 --> 00:41:11.760
+<v Speaker 0>Like, there are some applications.
+
+00:41:12.425 --> 00:41:14.105
+<v Speaker 0>I mean, maybe Kafka would be an example
+
+00:41:14.105 --> 00:41:16.025
+<v Speaker 0>that does its own replication, so you could
+
+00:41:16.025 --> 00:41:18.025
+<v Speaker 0>maybe back it up at a slightly lesser
+
+00:41:18.025 --> 00:41:20.265
+<v Speaker 0>velocity than maybe something else that doesn't.
+
+00:41:20.665 --> 00:41:22.585
+<v Speaker 0>There are too many ifs, buts, whens, and
+
+00:41:22.585 --> 00:41:24.425
+<v Speaker 0>maybes there. So the let's just straight that
+
+00:41:24.425 --> 00:41:26.185
+<v Speaker 0>question from all records. The question is not
+
+00:41:26.185 --> 00:41:29.570
+<v Speaker 1>naive at all. You is a very pertinent
+
+00:41:29.570 --> 00:41:32.370
+<v Speaker 1>question that everybody should be asking because you
+
+00:41:32.370 --> 00:41:33.730
+<v Speaker 1>also don't want to
+
+00:41:35.010 --> 00:41:37.490
+<v Speaker 1>be backing up and thinking
+
+00:41:38.210 --> 00:41:40.610
+<v Speaker 1>of, okay. This is data that's
+
+00:41:41.655 --> 00:41:43.655
+<v Speaker 1>being transmitted up to the cloud,
+
+00:41:44.135 --> 00:41:45.415
+<v Speaker 1>being stored.
+
+00:41:45.655 --> 00:41:47.655
+<v Speaker 1>You pay for all of that. So you
+
+00:41:47.655 --> 00:41:49.015
+<v Speaker 1>have to think about it. So it's not
+
+00:41:49.015 --> 00:41:51.335
+<v Speaker 1>naive at all. It's just that it's it's,
+
+00:41:51.495 --> 00:41:53.015
+<v Speaker 1>going to depend on things that I have
+
+00:41:53.015 --> 00:41:56.055
+<v Speaker 1>no idea how to how to, help you
+
+00:41:56.055 --> 00:41:56.695
+<v Speaker 1>with.
+
+00:41:58.290 --> 00:41:59.010
+<v Speaker 0>Okay.
+
+00:41:59.970 --> 00:42:00.610
+<v Speaker 0>So,
+
+00:42:00.850 --> 00:42:02.850
+<v Speaker 0>I mean, I'm amazed at how easy this
+
+00:42:02.850 --> 00:42:04.930
+<v Speaker 0>has been so far. We have installed Velero.
+
+00:42:05.410 --> 00:42:08.290
+<v Speaker 0>It's already made a backup. I'm assuming if
+
+00:42:08.290 --> 00:42:10.690
+<v Speaker 0>I just jump over to our menu
+
+00:42:10.850 --> 00:42:11.890
+<v Speaker 0>and hit refresh,
+
+00:42:14.425 --> 00:42:16.745
+<v Speaker 0>we have our backup one directory.
+
+00:42:17.464 --> 00:42:18.425
+<v Speaker 0>We've got
+
+00:42:18.825 --> 00:42:20.745
+<v Speaker 0>a whole bunch of stuff in here.
+
+00:42:21.865 --> 00:42:24.265
+<v Speaker 0>We've got the CSI volume snapshots.
+
+00:42:24.265 --> 00:42:26.345
+<v Speaker 0>We've got volume backups, resource lists.
+
+00:42:27.069 --> 00:42:28.589
+<v Speaker 0>I guess this is just all the different
+
+00:42:28.589 --> 00:42:31.150
+<v Speaker 0>components of my cluster backed up individually.
+
+00:42:31.390 --> 00:42:34.030
+<v Speaker 0>Does that mean I can restore these
+
+00:42:34.349 --> 00:42:35.950
+<v Speaker 0>isolated or
+
+00:42:35.950 --> 00:42:37.869
+<v Speaker 0>or as everything at once that that I
+
+00:42:37.869 --> 00:42:39.150
+<v Speaker 0>have that option and flexibility?
+
+00:42:40.315 --> 00:42:41.435
+<v Speaker 1>Alright. So
+
+00:42:42.235 --> 00:42:45.115
+<v Speaker 1>if you go back to the command line,
+
+00:42:45.115 --> 00:42:47.755
+<v Speaker 1>I wanna show you one feature, and then
+
+00:42:47.755 --> 00:42:49.755
+<v Speaker 1>I'll answer your question. So you
+
+00:42:51.035 --> 00:42:53.275
+<v Speaker 1>can run a Velero,
+
+00:42:54.910 --> 00:42:56.270
+<v Speaker 1>Downloads.
+
+00:42:56.270 --> 00:42:57.710
+<v Speaker 1>I forgot the flag.
+
+00:42:57.870 --> 00:42:59.630
+<v Speaker 1>I think it's download backup and then the
+
+00:42:59.630 --> 00:43:00.750
+<v Speaker 1>name of the backup.
+
+00:43:02.430 --> 00:43:04.510
+<v Speaker 1>Could I could be wrong. Yeah.
+
+00:43:05.070 --> 00:43:07.390
+<v Speaker 1>Let's look at the help, please. Download help.
+
+00:43:08.165 --> 00:43:10.885
+<v Speaker 0>Oh, I think this was done. It's a
+
+00:43:10.885 --> 00:43:12.245
+<v Speaker 0>non command download.
+
+00:43:12.805 --> 00:43:15.285
+<v Speaker 1>Oh, that's okay. So Velero backup I'm sorry.
+
+00:43:15.285 --> 00:43:17.365
+<v Speaker 1>Velero backup, that's the one that doesn't have
+
+00:43:17.365 --> 00:43:17.925
+<v Speaker 1>the
+
+00:43:18.325 --> 00:43:19.045
+<v Speaker 1>the switch.
+
+00:43:20.180 --> 00:43:21.860
+<v Speaker 1>The little backup downloads
+
+00:43:24.820 --> 00:43:26.500
+<v Speaker 1>in the name of the backup.
+
+00:43:27.060 --> 00:43:30.100
+<v Speaker 0>There we go. Yeah. Alright. So that downloads
+
+00:43:30.100 --> 00:43:33.060
+<v Speaker 1>the whole thing to your local machine,
+
+00:43:33.620 --> 00:43:36.674
+<v Speaker 1>and then you can untie and explore the
+
+00:43:36.674 --> 00:43:37.395
+<v Speaker 1>contents.
+
+00:43:38.194 --> 00:43:40.434
+<v Speaker 1>Now to ask your quest to answer the
+
+00:43:40.434 --> 00:43:41.714
+<v Speaker 1>question you asked,
+
+00:43:42.194 --> 00:43:43.875
+<v Speaker 1>yes, you can
+
+00:43:44.115 --> 00:43:44.994
+<v Speaker 1>selectively
+
+00:43:44.994 --> 00:43:45.875
+<v Speaker 1>restore.
+
+00:43:46.355 --> 00:43:49.394
+<v Speaker 1>So one back best practice for backups in
+
+00:43:49.394 --> 00:43:53.579
+<v Speaker 1>general is to have at least one periodic
+
+00:43:53.579 --> 00:43:55.900
+<v Speaker 1>backup that you're backing up everything.
+
+00:43:56.380 --> 00:43:59.180
+<v Speaker 1>If you can, some some some organizations
+
+00:43:59.180 --> 00:44:01.180
+<v Speaker 1>are going to have restrictions. They're not gonna
+
+00:44:01.180 --> 00:44:01.820
+<v Speaker 1>want
+
+00:44:02.540 --> 00:44:03.420
+<v Speaker 1>some
+
+00:44:03.740 --> 00:44:05.820
+<v Speaker 1>people backing up some namespace.
+
+00:44:06.654 --> 00:44:07.214
+<v Speaker 1>But
+
+00:44:07.775 --> 00:44:09.775
+<v Speaker 1>as long as everything gets backed up one
+
+00:44:09.775 --> 00:44:12.654
+<v Speaker 1>way or another. But so, ideally, you have
+
+00:44:12.654 --> 00:44:14.095
+<v Speaker 1>a backup for everything.
+
+00:44:14.494 --> 00:44:16.414
+<v Speaker 1>And then when you it's time to restore,
+
+00:44:16.414 --> 00:44:17.775
+<v Speaker 1>you can decide what it is that you
+
+00:44:17.775 --> 00:44:18.414
+<v Speaker 1>want to restore.
+
+00:44:18.960 --> 00:44:20.560
+<v Speaker 1>And then you can say, okay. I just
+
+00:44:20.560 --> 00:44:21.600
+<v Speaker 1>wanna restore
+
+00:44:22.400 --> 00:44:24.240
+<v Speaker 1>particular namespace, for example.
+
+00:44:26.480 --> 00:44:27.200
+<v Speaker 0>Okay.
+
+00:44:27.920 --> 00:44:28.560
+<v Speaker 0>So,
+
+00:44:29.040 --> 00:44:30.720
+<v Speaker 0>I mean, there's no point in us restoring
+
+00:44:30.720 --> 00:44:32.960
+<v Speaker 0>this to our cluster. Right? We should probably
+
+00:44:32.960 --> 00:44:35.335
+<v Speaker 0>cause a little bit of chaos into something.
+
+00:44:35.335 --> 00:44:36.695
+<v Speaker 0>Although, I think I've all I think I've
+
+00:44:36.695 --> 00:44:38.855
+<v Speaker 0>just identified a mistake that I've maybe made
+
+00:44:39.015 --> 00:44:41.655
+<v Speaker 0>during the setup is that I don't think
+
+00:44:41.655 --> 00:44:43.815
+<v Speaker 0>we can actually delete the default namespace. Should
+
+00:44:43.815 --> 00:44:46.135
+<v Speaker 0>I deploy my fake stateful workload to a
+
+00:44:46.135 --> 00:44:46.775
+<v Speaker 0>new namespace?
+
+00:44:47.540 --> 00:44:49.140
+<v Speaker 0>Or can I delete the default names? I
+
+00:44:49.140 --> 00:44:50.660
+<v Speaker 0>don't think I've ever attempted that before. What
+
+00:44:50.660 --> 00:44:52.180
+<v Speaker 1>what you can do is
+
+00:44:52.339 --> 00:44:53.060
+<v Speaker 1>maybe
+
+00:44:53.300 --> 00:44:55.780
+<v Speaker 1>do you have a the workload installed in
+
+00:44:55.780 --> 00:44:57.060
+<v Speaker 1>that cluster?
+
+00:44:57.140 --> 00:44:58.980
+<v Speaker 1>Excuse me. I do. Yeah. So we got
+
+00:44:58.980 --> 00:45:01.140
+<v Speaker 0>a time writer, which is every ten seconds
+
+00:45:01.140 --> 00:45:03.215
+<v Speaker 0>raising the time to fail on a persistent
+
+00:45:03.215 --> 00:45:04.015
+<v Speaker 0>volume.
+
+00:45:04.495 --> 00:45:06.575
+<v Speaker 1>Okay. So you can delete that.
+
+00:45:06.895 --> 00:45:09.215
+<v Speaker 1>I mean, if you I suppose that is
+
+00:45:09.215 --> 00:45:09.455
+<v Speaker 1>a
+
+00:45:11.135 --> 00:45:12.975
+<v Speaker 1>it's not a high value thing.
+
+00:45:14.255 --> 00:45:15.135
+<v Speaker 0>No.
+
+00:45:16.095 --> 00:45:18.735
+<v Speaker 0>Yeah. I mean, Velero is robust enough.
+
+00:45:19.190 --> 00:45:21.750
+<v Speaker 1>It's just like in a demo
+
+00:45:22.070 --> 00:45:22.470
+<v Speaker 1>situation.
+
+00:45:23.030 --> 00:45:25.110
+<v Speaker 1>I I don't wanna be troubleshooting your production
+
+00:45:25.110 --> 00:45:25.910
+<v Speaker 1>cluster.
+
+00:45:25.910 --> 00:45:28.870
+<v Speaker 0>No. This is an entirely contrived cluster. So
+
+00:45:28.870 --> 00:45:31.190
+<v Speaker 0>let me share with the viewers what I
+
+00:45:31.405 --> 00:45:32.845
+<v Speaker 0>I've put in place just to kind of
+
+00:45:32.845 --> 00:45:34.845
+<v Speaker 0>demonstrate what we're doing. So this is just
+
+00:45:34.845 --> 00:45:36.765
+<v Speaker 0>a really simple bash script,
+
+00:45:37.325 --> 00:45:39.565
+<v Speaker 0>but it does have a persistent volume.
+
+00:45:40.205 --> 00:45:42.445
+<v Speaker 0>And then the persistent volume, we're writing
+
+00:45:43.005 --> 00:45:45.085
+<v Speaker 0>the time every ten seconds to it. So
+
+00:45:45.460 --> 00:45:48.340
+<v Speaker 0>if I just run a WC dash L,
+
+00:45:48.500 --> 00:45:49.860
+<v Speaker 0>you know, this has been running all day.
+
+00:45:49.860 --> 00:45:52.500
+<v Speaker 0>We got nearly 2,000 time entries and our
+
+00:45:52.500 --> 00:45:53.780
+<v Speaker 0>PVC. So
+
+00:45:54.420 --> 00:45:56.340
+<v Speaker 0>I guess what I would like to see
+
+00:45:56.340 --> 00:45:58.100
+<v Speaker 0>now is that if I delete the persistent
+
+00:45:58.100 --> 00:46:00.340
+<v Speaker 0>volume and the time rate or stateful set
+
+00:46:00.735 --> 00:46:02.895
+<v Speaker 0>is that we can actually restore those almost
+
+00:46:02.895 --> 00:46:05.055
+<v Speaker 0>2,000 entries into our cluster as if nothing
+
+00:46:05.055 --> 00:46:05.855
+<v Speaker 0>happened. Is that
+
+00:46:06.735 --> 00:46:09.695
+<v Speaker 1>Hold on. Because I I am forgetting now
+
+00:46:09.695 --> 00:46:13.135
+<v Speaker 1>if with Rustic, need to specify something during
+
+00:46:13.135 --> 00:46:15.970
+<v Speaker 1>the backup. Uh-huh. Okay. So let me just
+
+00:46:17.089 --> 00:46:18.450
+<v Speaker 0>Do you want me to open up the
+
+00:46:18.450 --> 00:46:20.289
+<v Speaker 0>backup and and poke around a little bit?
+
+00:46:20.289 --> 00:46:20.770
+<v Speaker 0>Or
+
+00:46:22.609 --> 00:46:24.690
+<v Speaker 1>Either that or we could look at the
+
+00:46:24.690 --> 00:46:25.089
+<v Speaker 1>docs.
+
+00:46:26.065 --> 00:46:27.825
+<v Speaker 0>Yeah. Maybe we should look at the docs.
+
+00:46:27.825 --> 00:46:28.705
+<v Speaker 0>That's
+
+00:46:28.705 --> 00:46:30.545
+<v Speaker 0>what that's what people other people would do.
+
+00:46:30.545 --> 00:46:32.625
+<v Speaker 0>So I'd rather I I think I'm just
+
+00:46:32.625 --> 00:46:34.625
+<v Speaker 0>the the silly one that would go the
+
+00:46:34.625 --> 00:46:36.785
+<v Speaker 0>harder. I think the docs is better. Yeah.
+
+00:46:36.785 --> 00:46:37.585
+<v Speaker 0>Agreed.
+
+00:46:37.985 --> 00:46:40.240
+<v Speaker 1>We might have to create another backup if
+
+00:46:40.560 --> 00:46:42.160
+<v Speaker 1>I think there is something special we need
+
+00:46:42.160 --> 00:46:42.720
+<v Speaker 1>to do.
+
+00:46:43.600 --> 00:46:46.800
+<v Speaker 1>Okay. Alright. So the installation requires the use
+
+00:46:46.800 --> 00:46:49.040
+<v Speaker 1>rustic flag. We did that. Mhmm.
+
+00:46:56.295 --> 00:46:57.815
+<v Speaker 0>Okay. To back up.
+
+00:46:58.135 --> 00:46:59.975
+<v Speaker 1>Yes. That section.
+
+00:47:03.495 --> 00:47:06.375
+<v Speaker 0>This is just creating a sample workload of
+
+00:47:06.375 --> 00:47:08.630
+<v Speaker 0>a PVC. It looks like do we need
+
+00:47:08.630 --> 00:47:10.230
+<v Speaker 0>a annotation on it?
+
+00:47:10.870 --> 00:47:11.430
+<v Speaker 1>Yeah.
+
+00:47:14.310 --> 00:47:16.150
+<v Speaker 0>Oh, no. That's an it's an No. So
+
+00:47:16.310 --> 00:47:18.070
+<v Speaker 0>Oh, okay. Yeah. That's an We we can
+
+00:47:18.070 --> 00:47:20.310
+<v Speaker 1>use the I think I always get those
+
+00:47:20.310 --> 00:47:22.630
+<v Speaker 1>two confused. I think what we want is
+
+00:47:22.630 --> 00:47:23.510
+<v Speaker 1>the opt in.
+
+00:47:26.915 --> 00:47:29.475
+<v Speaker 0>Using opt in pod volume backup.
+
+00:47:32.835 --> 00:47:35.555
+<v Speaker 1>You only have one volume one pod to
+
+00:47:35.555 --> 00:47:37.635
+<v Speaker 1>backup, right, that has to persist the bot
+
+00:47:37.635 --> 00:47:38.115
+<v Speaker 1>better?
+
+00:47:38.700 --> 00:47:39.740
+<v Speaker 0>Yeah.
+
+00:47:39.740 --> 00:47:41.740
+<v Speaker 0>And it looks like there's a flag here.
+
+00:47:41.740 --> 00:47:44.380
+<v Speaker 0>Is that important? Default volumes to Rustic,
+
+00:47:44.700 --> 00:47:45.740
+<v Speaker 0>or is that something else?
+
+00:47:54.835 --> 00:47:56.995
+<v Speaker 0>Default volumes. I don't know what default volumes
+
+00:47:56.995 --> 00:47:58.755
+<v Speaker 0>to rustic means.
+
+00:47:58.915 --> 00:48:00.835
+<v Speaker 1>Hold on. I mean, let
+
+00:48:01.475 --> 00:48:02.755
+<v Speaker 1>me also read this.
+
+00:48:04.115 --> 00:48:04.995
+<v Speaker 2>Backup
+
+00:48:05.235 --> 00:48:06.035
+<v Speaker 2>create
+
+00:48:06.515 --> 00:48:07.315
+<v Speaker 2>dash help.
+
+00:48:08.430 --> 00:48:10.190
+<v Speaker 2>Let's just see what it says here.
+
+00:48:10.829 --> 00:48:13.230
+<v Speaker 0>Okay. So it defaults I think true. And
+
+00:48:13.470 --> 00:48:14.030
+<v Speaker 1>So
+
+00:48:14.750 --> 00:48:16.270
+<v Speaker 0>Yeah. I think it I think it has
+
+00:48:16.270 --> 00:48:17.150
+<v Speaker 0>backed up.
+
+00:48:19.950 --> 00:48:20.670
+<v Speaker 0>Because
+
+00:48:20.829 --> 00:48:23.205
+<v Speaker 0>the rest default volumes to Rustic is the
+
+00:48:23.205 --> 00:48:25.045
+<v Speaker 0>default of true, and it seems to suggest
+
+00:48:25.045 --> 00:48:27.285
+<v Speaker 0>that it will use Rustic by default. It
+
+00:48:27.285 --> 00:48:29.445
+<v Speaker 1>should be it should be out of yeah.
+
+00:48:29.925 --> 00:48:31.925
+<v Speaker 0>It's not a production workload. I'm okay if
+
+00:48:31.925 --> 00:48:33.925
+<v Speaker 0>I lose my 2,000 timestamps. I'd be a
+
+00:48:33.925 --> 00:48:36.005
+<v Speaker 0>little upset, of course, but I will go
+
+00:48:36.005 --> 00:48:36.325
+<v Speaker 0>over it.
+
+00:48:37.180 --> 00:48:39.180
+<v Speaker 1>Do you wanna look at the content of
+
+00:48:39.180 --> 00:48:41.340
+<v Speaker 1>the backup, see if there's Rustic stuff in
+
+00:48:41.340 --> 00:48:41.820
+<v Speaker 1>there?
+
+00:48:42.300 --> 00:48:44.460
+<v Speaker 2>Yeah. Let's do that. So let's just move
+
+00:48:44.460 --> 00:48:45.900
+<v Speaker 2>this to this directory
+
+00:48:47.100 --> 00:48:48.940
+<v Speaker 2>and then load it.
+
+00:48:51.045 --> 00:48:52.725
+<v Speaker 2>Got a whole bunch of stuff.
+
+00:48:53.365 --> 00:48:53.845
+<v Speaker 2>Faint
+
+00:48:54.805 --> 00:48:56.565
+<v Speaker 2>finder. No. Open.
+
+00:48:57.924 --> 00:48:59.285
+<v Speaker 2>Yeah. That works. Okay.
+
+00:49:00.325 --> 00:49:01.765
+<v Speaker 2>So
+
+00:49:02.005 --> 00:49:03.605
+<v Speaker 2>I'm assuming
+
+00:49:06.549 --> 00:49:08.309
+<v Speaker 2>would be under resources,
+
+00:49:08.309 --> 00:49:09.830
+<v Speaker 2>persistent volumes.
+
+00:49:15.029 --> 00:49:16.869
+<v Speaker 2>Got a JSON fail.
+
+00:49:17.190 --> 00:49:19.724
+<v Speaker 1>I think there should be a Rustic folder.
+
+00:49:19.724 --> 00:49:22.444
+<v Speaker 1>I don't Rustic folder. Use Rustic all the
+
+00:49:22.444 --> 00:49:24.045
+<v Speaker 1>time. And and when I do use it,
+
+00:49:24.045 --> 00:49:26.045
+<v Speaker 1>I forget what is what should be there.
+
+00:49:29.244 --> 00:49:30.845
+<v Speaker 1>There's no Rustic folder?
+
+00:49:33.085 --> 00:49:34.045
+<v Speaker 1>Above resources?
+
+00:49:36.400 --> 00:49:37.920
+<v Speaker 2>We've got a metadata.
+
+00:49:40.000 --> 00:49:41.680
+<v Speaker 2>Yeah. I don't know. I mean, we oh,
+
+00:49:41.680 --> 00:49:44.000
+<v Speaker 0>there's a that's our claim.
+
+00:49:46.480 --> 00:49:48.800
+<v Speaker 2>Maybe we don't have the actual data. I
+
+00:49:48.800 --> 00:49:50.855
+<v Speaker 2>mean, I could always, I guess, just the
+
+00:49:50.855 --> 00:49:51.734
+<v Speaker 2>prep
+
+00:49:51.734 --> 00:49:52.295
+<v Speaker 2>for
+
+00:49:53.815 --> 00:49:55.815
+<v Speaker 2>I can't remember the format of my timestamps
+
+00:49:55.815 --> 00:49:56.455
+<v Speaker 2>now.
+
+00:49:56.694 --> 00:49:58.775
+<v Speaker 2>Oh, I used the date command. So
+
+00:49:59.175 --> 00:50:00.694
+<v Speaker 2>I searched for April.
+
+00:50:02.490 --> 00:50:03.770
+<v Speaker 2>I don't think we may be I don't
+
+00:50:03.770 --> 00:50:05.690
+<v Speaker 0>think there's any data. I don't yeah. I
+
+00:50:05.690 --> 00:50:07.370
+<v Speaker 1>think the there will be a folder with
+
+00:50:07.370 --> 00:50:09.530
+<v Speaker 1>Rustic. Let's do the opt in.
+
+00:50:10.330 --> 00:50:11.690
+<v Speaker 1>Like, from the
+
+00:50:13.050 --> 00:50:14.010
+<v Speaker 1>documentation,
+
+00:50:14.010 --> 00:50:15.850
+<v Speaker 1>let's go in the opt in and run
+
+00:50:15.850 --> 00:50:16.730
+<v Speaker 1>the cube cuddle,
+
+00:50:18.375 --> 00:50:21.175
+<v Speaker 1>the number one. Yep. So I notate the
+
+00:50:21.175 --> 00:50:21.895
+<v Speaker 1>pods.
+
+00:50:22.775 --> 00:50:24.775
+<v Speaker 0>Okay. Let's do that. So if I do
+
+00:50:24.775 --> 00:50:25.975
+<v Speaker 0>get pods
+
+00:50:28.375 --> 00:50:30.695
+<v Speaker 0>yep. Still work. We've got a cube control
+
+00:50:30.695 --> 00:50:33.175
+<v Speaker 0>command here. We're in a default namespace.
+
+00:50:34.880 --> 00:50:36.560
+<v Speaker 0>I guess I could just annotate
+
+00:50:39.120 --> 00:50:41.280
+<v Speaker 0>stateful set time
+
+00:50:41.280 --> 00:50:42.160
+<v Speaker 0>writer
+
+00:50:42.160 --> 00:50:43.200
+<v Speaker 0>and we're adding,
+
+00:50:44.400 --> 00:50:46.640
+<v Speaker 0>we just have a PVC volume.
+
+00:50:46.640 --> 00:50:47.200
+<v Speaker 0>So I think,
+
+00:50:48.025 --> 00:50:49.865
+<v Speaker 0>yeah. We're adding an annotation here. This is
+
+00:50:49.865 --> 00:50:51.145
+<v Speaker 0>backup PVC
+
+00:50:51.145 --> 00:50:52.025
+<v Speaker 0>volume.
+
+00:50:53.625 --> 00:50:54.345
+<v Speaker 0>Done.
+
+00:50:55.305 --> 00:50:56.505
+<v Speaker 1>Okay. So
+
+00:50:58.905 --> 00:51:01.305
+<v Speaker 0>So now we create See number yeah. See
+
+00:51:01.305 --> 00:51:02.105
+<v Speaker 1>the yeah.
+
+00:51:02.265 --> 00:51:03.065
+<v Speaker 1>Create the backup.
+
+00:51:06.800 --> 00:51:09.840
+<v Speaker 1>So number two, create a backup, and then
+
+00:51:10.800 --> 00:51:13.040
+<v Speaker 1>we can look at the just the
+
+00:51:13.440 --> 00:51:15.200
+<v Speaker 1>backup describe command
+
+00:51:15.360 --> 00:51:17.795
+<v Speaker 1>to see if there is rustic stuff in
+
+00:51:17.795 --> 00:51:18.355
+<v Speaker 1>there.
+
+00:51:27.155 --> 00:51:28.994
+<v Speaker 0>Okay. So it's still backing up.
+
+00:51:32.080 --> 00:51:34.240
+<v Speaker 0>I mean, it's taking a bit longer, I
+
+00:51:34.240 --> 00:51:34.480
+<v Speaker 0>guess.
+
+00:51:41.855 --> 00:51:44.255
+<v Speaker 0>I think it's, yeah, it's finished. Okay.
+
+00:51:53.454 --> 00:51:55.454
+<v Speaker 0>Okay, so it looks like we can use
+
+00:51:55.454 --> 00:51:56.654
+<v Speaker 0>the customer resource.
+
+00:52:00.250 --> 00:52:03.850
+<v Speaker 2>Get what was it? Pod volume backup.
+
+00:52:07.770 --> 00:52:10.330
+<v Speaker 0>Try all. Pod volume. Pod volume.
+
+00:52:11.265 --> 00:52:11.825
+<v Speaker 1>Yeah.
+
+00:52:12.224 --> 00:52:13.265
+<v Speaker 0>Okay.
+
+00:52:14.065 --> 00:52:16.305
+<v Speaker 0>So I annotated the state full set, but
+
+00:52:16.305 --> 00:52:18.305
+<v Speaker 0>I haven't restarted the pod. So
+
+00:52:18.785 --> 00:52:20.464
+<v Speaker 0>I probably set this up to fail there
+
+00:52:20.464 --> 00:52:22.865
+<v Speaker 0>because if I describe the pod,
+
+00:52:23.184 --> 00:52:25.744
+<v Speaker 0>we're actually probably not gonna have the annotation.
+
+00:52:27.640 --> 00:52:28.280
+<v Speaker 0>Yeah.
+
+00:52:29.000 --> 00:52:30.920
+<v Speaker 0>So I should probably just annotate that part
+
+00:52:30.920 --> 00:52:32.920
+<v Speaker 0>rather than doing the stateful set.
+
+00:52:34.680 --> 00:52:35.320
+<v Speaker 1>Yeah.
+
+00:52:37.000 --> 00:52:38.920
+<v Speaker 0>But I'm learning, which is important.
+
+00:52:40.665 --> 00:52:43.065
+<v Speaker 0>Okay. Let's create backup three,
+
+00:52:47.865 --> 00:52:50.585
+<v Speaker 0>and we'll scrape
+
+00:52:51.465 --> 00:52:52.585
+<v Speaker 0>scrape
+
+00:52:54.025 --> 00:52:54.505
+<v Speaker 0>three.
+
+00:52:57.599 --> 00:52:58.320
+<v Speaker 0>Okay.
+
+00:52:59.359 --> 00:53:01.119
+<v Speaker 0>Gives that a few seconds to finish. It
+
+00:53:01.119 --> 00:53:02.720
+<v Speaker 0>seems like it's only taken around,
+
+00:53:03.039 --> 00:53:05.279
+<v Speaker 0>I think, ten seconds last time to back
+
+00:53:05.279 --> 00:53:05.680
+<v Speaker 0>up the
+
+00:53:06.240 --> 00:53:09.760
+<v Speaker 1>So so the very Velero create backup or
+
+00:53:09.760 --> 00:53:12.865
+<v Speaker 1>backup create has a flag wait, dash dash
+
+00:53:12.865 --> 00:53:15.585
+<v Speaker 1>wait, if you want to use that. Ah,
+
+00:53:15.585 --> 00:53:18.625
+<v Speaker 0>nice. So it will run we would only
+
+00:53:18.625 --> 00:53:21.105
+<v Speaker 1>return after the backup's created, and you can
+
+00:53:21.105 --> 00:53:22.865
+<v Speaker 1>also control c out of that.
+
+00:53:24.640 --> 00:53:25.760
+<v Speaker 1>Just FYI.
+
+00:53:26.160 --> 00:53:27.200
+<v Speaker 0>Ah, nice.
+
+00:53:28.400 --> 00:53:29.600
+<v Speaker 0>Okay. I'm not
+
+00:53:30.320 --> 00:53:32.960
+<v Speaker 0>seeing anything for the pod volumes back up.
+
+00:53:32.960 --> 00:53:34.800
+<v Speaker 0>Of course, that doesn't mean that it hasn't
+
+00:53:34.800 --> 00:53:36.720
+<v Speaker 0>backed it up. But based on what I
+
+00:53:36.720 --> 00:53:38.560
+<v Speaker 0>see in the docs here,
+
+00:53:43.575 --> 00:53:45.815
+<v Speaker 0>I kind of expected maybe to see something
+
+00:53:45.815 --> 00:53:46.135
+<v Speaker 0>there.
+
+00:53:57.800 --> 00:53:59.800
+<v Speaker 0>Should I download it again, do you think?
+
+00:54:00.760 --> 00:54:03.720
+<v Speaker 1>Did you run that cube cube control
+
+00:54:05.000 --> 00:54:07.240
+<v Speaker 1>bits to see the label for the backup?
+
+00:54:09.915 --> 00:54:10.875
+<v Speaker 0>I
+
+00:54:10.875 --> 00:54:12.635
+<v Speaker 0>can run it again.
+
+00:54:12.795 --> 00:54:14.475
+<v Speaker 0>Our backup name was
+
+00:54:14.635 --> 00:54:16.075
+<v Speaker 0>backup three.
+
+00:54:19.115 --> 00:54:21.595
+<v Speaker 0>Yeah. So we're getting an empty list back.
+
+00:54:23.070 --> 00:54:24.910
+<v Speaker 0>And I'll just describe the pod and make
+
+00:54:24.910 --> 00:54:26.750
+<v Speaker 0>sure I didn't mess up either.
+
+00:54:32.110 --> 00:54:34.110
+<v Speaker 0>Oh, that's not a Okay.
+
+00:54:35.625 --> 00:54:37.865
+<v Speaker 0>Okay. I think I'm working because I'm doing
+
+00:54:37.865 --> 00:54:39.465
+<v Speaker 0>this the hard way and not actually reading
+
+00:54:39.465 --> 00:54:40.425
+<v Speaker 0>the documentation.
+
+00:54:40.825 --> 00:54:42.585
+<v Speaker 0>I don't think this is the type of
+
+00:54:42.585 --> 00:54:43.945
+<v Speaker 0>volume. Is it maybe the name of the
+
+00:54:43.945 --> 00:54:46.025
+<v Speaker 0>volume? Is that something I think it's the
+
+00:54:46.025 --> 00:54:47.305
+<v Speaker 1>name. Yeah. Yeah.
+
+00:54:48.025 --> 00:54:50.425
+<v Speaker 0>But that's just me being rather shitty again.
+
+00:54:50.425 --> 00:54:50.665
+<v Speaker 0>Okay.
+
+00:54:52.160 --> 00:54:54.480
+<v Speaker 0>So what was our volume actually called? It's
+
+00:54:54.480 --> 00:54:55.440
+<v Speaker 0>called data.
+
+00:54:55.520 --> 00:54:57.760
+<v Speaker 0>So I would just re annotate.
+
+00:54:59.440 --> 00:55:00.960
+<v Speaker 0>Fourth time's a charm.
+
+00:55:01.680 --> 00:55:04.160
+<v Speaker 1>Fourth time's a charm. Not who said third
+
+00:55:04.160 --> 00:55:04.640
+<v Speaker 1>time's a
+
+00:55:05.655 --> 00:55:06.295
+<v Speaker 1>charm?
+
+00:55:06.455 --> 00:55:07.335
+<v Speaker 0>Exactly.
+
+00:55:07.895 --> 00:55:09.015
+<v Speaker 0>Overwrite.
+
+00:55:09.655 --> 00:55:10.855
+<v Speaker 1>We are innovating.
+
+00:55:12.775 --> 00:55:14.775
+<v Speaker 0>Okay. Back up. Let's go to work this
+
+00:55:14.775 --> 00:55:15.335
+<v Speaker 0>thing.
+
+00:55:16.935 --> 00:55:17.495
+<v Speaker 0>Four.
+
+00:55:17.735 --> 00:55:20.150
+<v Speaker 0>Oh, no. I should've done all good. I'm
+
+00:55:20.150 --> 00:55:21.510
+<v Speaker 0>glad I got that command wrong because I
+
+00:55:21.510 --> 00:55:23.030
+<v Speaker 0>wanna do the wait flag
+
+00:55:24.310 --> 00:55:25.350
+<v Speaker 2>dash dash.
+
+00:55:26.790 --> 00:55:27.430
+<v Speaker 2>Cool.
+
+00:55:30.550 --> 00:55:32.150
+<v Speaker 0>So I guess now that I've got the
+
+00:55:32.150 --> 00:55:33.190
+<v Speaker 0>annotation correct,
+
+00:55:33.885 --> 00:55:36.285
+<v Speaker 0>the backup volumes annotation takes the list of
+
+00:55:36.285 --> 00:55:38.285
+<v Speaker 0>the PVCs that we want to opt and
+
+00:55:38.285 --> 00:55:40.845
+<v Speaker 0>to backup, which makes much more sense than
+
+00:55:40.845 --> 00:55:43.165
+<v Speaker 0>my random just backup all PVCs.
+
+00:55:43.805 --> 00:55:45.645
+<v Speaker 1>Let let's run the cube control
+
+00:55:46.125 --> 00:55:48.365
+<v Speaker 1>bit for the label, see if it's what
+
+00:55:48.365 --> 00:55:48.845
+<v Speaker 1>shows up.
+
+00:55:49.960 --> 00:55:51.720
+<v Speaker 0>Okay. So that was
+
+00:55:51.880 --> 00:55:53.080
+<v Speaker 0>this command
+
+00:55:53.080 --> 00:55:55.640
+<v Speaker 0>here. Only my backup's got a new name.
+
+00:55:56.600 --> 00:55:57.800
+<v Speaker 0>Look at that.
+
+00:55:58.360 --> 00:55:59.240
+<v Speaker 1>Look at that.
+
+00:55:59.720 --> 00:56:02.120
+<v Speaker 0>When you do it right, it works. Awesome.
+
+00:56:04.605 --> 00:56:06.445
+<v Speaker 1>Okay. So now let's
+
+00:56:07.325 --> 00:56:08.925
+<v Speaker 1>download it and see
+
+00:56:09.005 --> 00:56:10.045
+<v Speaker 1>the structure.
+
+00:56:10.365 --> 00:56:12.205
+<v Speaker 1>The rustic data should be there.
+
+00:56:12.605 --> 00:56:13.245
+<v Speaker 1>Yep.
+
+00:56:21.869 --> 00:56:24.670
+<v Speaker 0>Thank you, River DK who's very thankful that
+
+00:56:24.670 --> 00:56:26.670
+<v Speaker 0>I don't prerecord my terminal stuff. No, I
+
+00:56:26.670 --> 00:56:29.710
+<v Speaker 0>do everything very live to my own success
+
+00:56:29.710 --> 00:56:31.390
+<v Speaker 0>and detriment depending on how my day is
+
+00:56:31.390 --> 00:56:31.630
+<v Speaker 0>going.
+
+00:56:32.675 --> 00:56:33.395
+<v Speaker 0>So
+
+00:56:34.435 --> 00:56:36.835
+<v Speaker 0>I just created folders with wacky names. Now
+
+00:56:36.835 --> 00:56:38.515
+<v Speaker 0>we now have b k four and then
+
+00:56:38.515 --> 00:56:40.675
+<v Speaker 0>now hungry for a burger king, but
+
+00:56:41.395 --> 00:56:42.915
+<v Speaker 0>we'll jump in here,
+
+00:56:44.755 --> 00:56:45.795
+<v Speaker 0>extract this,
+
+00:56:46.275 --> 00:56:48.035
+<v Speaker 0>and we're hoping
+
+00:56:48.960 --> 00:56:51.040
+<v Speaker 0>we'll see under resources
+
+00:56:51.040 --> 00:56:52.720
+<v Speaker 0>something called Rustic.
+
+00:56:54.080 --> 00:56:55.280
+<v Speaker 2>Yes.
+
+00:56:55.280 --> 00:56:57.280
+<v Speaker 2>There we go. Yeah. Don't know.
+
+00:56:58.800 --> 00:57:00.320
+<v Speaker 0>It's a JSON file.
+
+00:57:02.105 --> 00:57:03.305
+<v Speaker 0>I I don't know if we should be
+
+00:57:03.305 --> 00:57:04.744
+<v Speaker 0>seeing a JSON file or not a JSON
+
+00:57:04.744 --> 00:57:06.825
+<v Speaker 0>file. I'm I'm I'm not entirely sure. You
+
+00:57:06.825 --> 00:57:08.744
+<v Speaker 0>said it's not a file level backup. Right?
+
+00:57:08.744 --> 00:57:09.225
+<v Speaker 0>So
+
+00:57:10.664 --> 00:57:13.225
+<v Speaker 0>JSON may be may be embedded there.
+
+00:57:13.545 --> 00:57:16.025
+<v Speaker 0>However it works, I'm not entirely sure. But
+
+00:57:15.944 --> 00:57:18.720
+<v Speaker 1>I think I think that that rustic folder
+
+00:57:18.720 --> 00:57:20.640
+<v Speaker 1>is a good good sign.
+
+00:57:21.520 --> 00:57:24.000
+<v Speaker 0>Yeah. I'm I'm feeling And
+
+00:57:24.240 --> 00:57:26.240
+<v Speaker 1>it would these were labeled properly,
+
+00:57:26.320 --> 00:57:28.320
+<v Speaker 1>so I think you can go ahead and
+
+00:57:28.320 --> 00:57:30.080
+<v Speaker 1>crash your workloads.
+
+00:57:31.404 --> 00:57:34.765
+<v Speaker 0>Okay. So I'm a silly Kubernetes operator
+
+00:57:34.765 --> 00:57:36.924
+<v Speaker 0>who comes along and says, hey, that stateful
+
+00:57:36.924 --> 00:57:38.525
+<v Speaker 0>set doesn't look useful.
+
+00:57:39.484 --> 00:57:40.605
+<v Speaker 0>And delete.
+
+00:57:42.845 --> 00:57:44.125
+<v Speaker 0>Oh, I'm in the wrong directory.
+
+00:57:44.850 --> 00:57:47.410
+<v Speaker 0>And I need my kube configs. Let's try
+
+00:57:47.410 --> 00:57:48.690
+<v Speaker 0>that one more time.
+
+00:57:49.570 --> 00:57:50.850
+<v Speaker 0>Time writer.
+
+00:57:51.570 --> 00:57:53.250
+<v Speaker 0>Because I'm having a very bad day, I
+
+00:57:53.250 --> 00:57:55.330
+<v Speaker 0>haven't just deleted my stateful set. I am
+
+00:57:55.330 --> 00:57:56.690
+<v Speaker 0>going to delete
+
+00:57:58.545 --> 00:58:00.465
+<v Speaker 0>my persistent volumes
+
+00:58:00.625 --> 00:58:01.265
+<v Speaker 0>too.
+
+00:58:02.465 --> 00:58:04.705
+<v Speaker 0>So, we'll delete the claim first.
+
+00:58:10.780 --> 00:58:12.620
+<v Speaker 0>Oh, I delete the volume first. Oh, and
+
+00:58:12.620 --> 00:58:13.660
+<v Speaker 0>it should still work.
+
+00:58:18.860 --> 00:58:21.340
+<v Speaker 0>Completely claim too. Maybe speed that up.
+
+00:58:23.994 --> 00:58:25.595
+<v Speaker 0>And we'll run get.
+
+00:58:25.994 --> 00:58:27.915
+<v Speaker 0>Okay. We have deleted the stateful set. We
+
+00:58:27.915 --> 00:58:30.875
+<v Speaker 0>have deleted the claim and the volume. That
+
+00:58:31.035 --> 00:58:34.234
+<v Speaker 0>2,000 lines of very useful timestamps has now
+
+00:58:34.234 --> 00:58:35.115
+<v Speaker 0>disappeared forever.
+
+00:58:36.400 --> 00:58:38.560
+<v Speaker 0>But I guess we wanna restore
+
+00:58:38.640 --> 00:58:41.600
+<v Speaker 0>our no broken production service.
+
+00:58:41.600 --> 00:58:42.880
+<v Speaker 1>Yeah. Okay.
+
+00:58:45.520 --> 00:58:47.440
+<v Speaker 0>I'm gonna just go out and I'll let
+
+00:58:47.440 --> 00:58:49.785
+<v Speaker 0>you know because the CLI has been so
+
+00:58:49.785 --> 00:58:51.545
+<v Speaker 0>easy to work with that I could probably
+
+00:58:51.545 --> 00:58:54.265
+<v Speaker 0>just do restore backup backup four.
+
+00:58:55.464 --> 00:58:56.905
+<v Speaker 0>Is that what you want me to do?
+
+00:58:57.224 --> 00:58:59.305
+<v Speaker 1>No. No. Almost.
+
+00:58:59.305 --> 00:58:59.705
+<v Speaker 1>Almost.
+
+00:59:00.585 --> 00:59:01.225
+<v Speaker 1>Almost.
+
+00:59:01.944 --> 00:59:03.865
+<v Speaker 1>It's Velero restore
+
+00:59:04.160 --> 00:59:05.760
+<v Speaker 1>dash dash from
+
+00:59:08.160 --> 00:59:10.640
+<v Speaker 1>dash sorry. No. No. No. Backup.
+
+00:59:10.880 --> 00:59:12.080
+<v Speaker 1>From dash
+
+00:59:12.080 --> 00:59:12.960
+<v Speaker 1>backup
+
+00:59:13.680 --> 00:59:15.360
+<v Speaker 1>and then the name of the backup.
+
+00:59:16.160 --> 00:59:18.080
+<v Speaker 1>Oh, no. Yeah. I guess that works.
+
+00:59:19.255 --> 00:59:20.935
+<v Speaker 1>I never put the equal, but that should
+
+00:59:20.935 --> 00:59:21.575
+<v Speaker 1>work.
+
+00:59:24.135 --> 00:59:25.255
+<v Speaker 1>Almost.
+
+00:59:25.255 --> 00:59:26.615
+<v Speaker 1>No. Wait.
+
+00:59:27.015 --> 00:59:27.575
+<v Speaker 1>What?
+
+00:59:28.535 --> 00:59:30.055
+<v Speaker 1>Maybe it's the equal
+
+00:59:30.295 --> 00:59:31.575
+<v Speaker 1>sign. It looks like it wants us to
+
+00:59:31.575 --> 00:59:32.970
+<v Speaker 0>do a Velero restore
+
+00:59:33.290 --> 00:59:34.810
+<v Speaker 1>Oh, I'm sorry. Gosh.
+
+00:59:35.450 --> 00:59:36.010
+<v Speaker 1>Yeah.
+
+00:59:36.570 --> 00:59:37.530
+<v Speaker 1>It's a
+
+00:59:37.850 --> 00:59:40.090
+<v Speaker 1>create. Yeah. So you wanna create
+
+00:59:40.170 --> 00:59:41.290
+<v Speaker 1>a restore.
+
+00:59:41.770 --> 00:59:42.970
+<v Speaker 1>I intuitively,
+
+00:59:42.970 --> 00:59:44.730
+<v Speaker 1>I do the same. I think, oh, we
+
+00:59:44.890 --> 00:59:46.730
+<v Speaker 1>I wanna restore. What what I wanna do
+
+00:59:46.730 --> 00:59:48.595
+<v Speaker 1>is restore, so I the command should be
+
+00:59:48.595 --> 00:59:50.675
+<v Speaker 1>named restore. But you wanna create
+
+00:59:50.915 --> 00:59:53.635
+<v Speaker 1>because, basically, with all the little commands,
+
+00:59:53.795 --> 00:59:54.835
+<v Speaker 1>you're not
+
+00:59:55.315 --> 00:59:57.075
+<v Speaker 1>actually creating anything.
+
+00:59:57.475 --> 01:00:01.260
+<v Speaker 1>Things get created or updated through the reconciliation.
+
+01:00:01.660 --> 01:00:03.980
+<v Speaker 1>All that we can do is create a
+
+01:00:03.980 --> 01:00:04.700
+<v Speaker 1>request
+
+01:00:05.820 --> 01:00:08.620
+<v Speaker 1>to the API server. So we want to
+
+01:00:08.620 --> 01:00:09.980
+<v Speaker 1>create a restore
+
+01:00:10.860 --> 01:00:11.980
+<v Speaker 1>request
+
+01:00:12.595 --> 01:00:15.715
+<v Speaker 1>from the backup, and that's gonna be that
+
+01:00:15.715 --> 01:00:17.235
+<v Speaker 1>request is going to be sent,
+
+01:00:17.795 --> 01:00:19.875
+<v Speaker 1>and then things will be done
+
+01:00:21.075 --> 01:00:22.275
+<v Speaker 1>Okay. Magically.
+
+01:00:22.995 --> 01:00:25.280
+<v Speaker 0>So let's kick that off then, and then
+
+01:00:25.280 --> 01:00:27.200
+<v Speaker 0>we'll tackle a couple of the the comments
+
+01:00:27.200 --> 01:00:29.840
+<v Speaker 0>that we've received. Yeah. Let's start it. Okay.
+
+01:00:30.000 --> 01:00:30.560
+<v Speaker 0>So
+
+01:00:31.440 --> 01:00:34.000
+<v Speaker 0>Noah was just again, reiterating that the CLI
+
+01:00:34.000 --> 01:00:36.160
+<v Speaker 0>user experience is really nice. He's very happy
+
+01:00:36.160 --> 01:00:37.760
+<v Speaker 0>with that. Oh, did that not pop up?
+
+01:00:37.760 --> 01:00:38.080
+<v Speaker 0>There we go.
+
+01:00:38.785 --> 01:00:41.025
+<v Speaker 0>We got a comment from Hector Gibson who
+
+01:00:41.025 --> 01:00:41.825
+<v Speaker 0>suggested
+
+01:00:41.825 --> 01:00:43.425
+<v Speaker 0>that I run the rep rep again and
+
+01:00:43.425 --> 01:00:45.105
+<v Speaker 0>the backup data just to see if it's
+
+01:00:45.105 --> 01:00:47.025
+<v Speaker 0>there. Yeah. I think that's a good idea.
+
+01:00:47.025 --> 01:00:47.665
+<v Speaker 0>Let's see.
+
+01:00:47.985 --> 01:00:50.385
+<v Speaker 0>Because Noel actually posted another comment, which I'll
+
+01:00:50.385 --> 01:00:51.505
+<v Speaker 0>get to in a second, but
+
+01:00:52.530 --> 01:00:53.250
+<v Speaker 0>yeah.
+
+01:00:54.050 --> 01:00:55.010
+<v Speaker 0>So it
+
+01:00:55.250 --> 01:00:56.930
+<v Speaker 0>doesn't look like the data is in the
+
+01:00:56.930 --> 01:00:58.290
+<v Speaker 0>backup that we download,
+
+01:00:58.370 --> 01:01:01.250
+<v Speaker 0>but someone has suggested that perhaps the JSON
+
+01:01:01.250 --> 01:01:03.570
+<v Speaker 0>file just contains a pointer to something that's
+
+01:01:03.570 --> 01:01:05.010
+<v Speaker 0>in the SD object store.
+
+01:01:05.635 --> 01:01:07.155
+<v Speaker 0>But I guess that we could poke around
+
+01:01:07.155 --> 01:01:09.315
+<v Speaker 0>menu if we if we wanted to.
+
+01:01:12.115 --> 01:01:14.915
+<v Speaker 0>I'm assuming. So you can also do Velero
+
+01:01:14.915 --> 01:01:16.835
+<v Speaker 1>restore to see the status.
+
+01:01:16.995 --> 01:01:18.595
+<v Speaker 1>Velero restore get.
+
+01:01:18.915 --> 01:01:19.315
+<v Speaker 0>K.
+
+01:01:20.730 --> 01:01:22.090
+<v Speaker 1>Just that. Just
+
+01:01:22.250 --> 01:01:24.250
+<v Speaker 1>well, you could've could've passed the name.
+
+01:01:24.490 --> 01:01:26.090
+<v Speaker 1>So it's in progress still.
+
+01:01:28.090 --> 01:01:29.690
+<v Speaker 0>Yeah. Because we didn't do
+
+01:01:31.050 --> 01:01:33.530
+<v Speaker 0>selective restore of our broken or mess in
+
+01:01:33.530 --> 01:01:35.964
+<v Speaker 0>the service. We're we're restoring everything in the
+
+01:01:35.964 --> 01:01:37.165
+<v Speaker 0>cluster. Is that correct?
+
+01:01:37.484 --> 01:01:38.925
+<v Speaker 1>Mhmm. Okay.
+
+01:01:41.645 --> 01:01:43.085
+<v Speaker 0>Does that have any
+
+01:01:44.285 --> 01:01:46.045
+<v Speaker 0>is this safe to do in a live
+
+01:01:46.045 --> 01:01:47.724
+<v Speaker 0>production cluster or would it be something that
+
+01:01:47.724 --> 01:01:49.805
+<v Speaker 0>you you maybe take it offline and restore
+
+01:01:49.805 --> 01:01:50.765
+<v Speaker 0>before doing that?
+
+01:01:53.860 --> 01:01:55.780
+<v Speaker 0>Because I'm assuming it's modifying
+
+01:01:56.420 --> 01:01:58.420
+<v Speaker 0>HCD and doing a whole bunch of stuff
+
+01:01:58.420 --> 01:01:59.700
+<v Speaker 0>there. I'm just
+
+01:02:00.980 --> 01:02:01.940
+<v Speaker 0>curious.
+
+01:02:02.340 --> 01:02:04.260
+<v Speaker 1>I don't know how to I don't know
+
+01:02:04.260 --> 01:02:05.825
+<v Speaker 1>the answer to that question. I think I
+
+01:02:05.825 --> 01:02:08.464
+<v Speaker 1>think the answer is a safe yes.
+
+01:02:10.545 --> 01:02:12.785
+<v Speaker 1>If you some when you do when you're
+
+01:02:12.785 --> 01:02:14.065
+<v Speaker 1>working with databases,
+
+01:02:14.464 --> 01:02:16.464
+<v Speaker 1>you want to do the
+
+01:02:16.944 --> 01:02:18.920
+<v Speaker 1>sometimes you wanna do a what is it
+
+01:02:18.920 --> 01:02:20.920
+<v Speaker 1>called, FS freeze
+
+01:02:22.120 --> 01:02:23.000
+<v Speaker 1>back
+
+01:02:23.000 --> 01:02:24.280
+<v Speaker 1>up. Mhmm.
+
+01:02:24.840 --> 01:02:26.920
+<v Speaker 1>And after you have the backup, you want
+
+01:02:27.000 --> 01:02:27.560
+<v Speaker 1>I
+
+01:02:28.120 --> 01:02:29.880
+<v Speaker 1>think it's called FS unfreeze.
+
+01:02:30.695 --> 01:02:32.455
+<v Speaker 1>And when you do a restore, you might
+
+01:02:32.455 --> 01:02:34.615
+<v Speaker 1>have to do the same thing. I'm forgetting.
+
+01:02:34.775 --> 01:02:35.255
+<v Speaker 1>Yeah.
+
+01:02:35.655 --> 01:02:39.015
+<v Speaker 1>Just f s unfree freeze, restore,
+
+01:02:39.415 --> 01:02:40.375
+<v Speaker 1>or otherwise,
+
+01:02:40.455 --> 01:02:41.735
+<v Speaker 1>you should be good to go.
+
+01:02:42.135 --> 01:02:44.055
+<v Speaker 0>Yeah. I I'm sure there's
+
+01:02:44.420 --> 01:02:46.340
+<v Speaker 0>stuff in the documentation that I'm just not
+
+01:02:46.340 --> 01:02:48.660
+<v Speaker 0>reading, but it looks like our backup has
+
+01:02:48.660 --> 01:02:50.340
+<v Speaker 0>restored successfully.
+
+01:02:51.780 --> 01:02:53.860
+<v Speaker 0>So does that mean in theory, if I
+
+01:02:53.860 --> 01:02:55.700
+<v Speaker 0>run get pods, we should see that our
+
+01:02:55.700 --> 01:02:56.900
+<v Speaker 0>stateful set is
+
+01:02:57.700 --> 01:02:58.820
+<v Speaker 0>back with it was before.
+
+01:02:59.445 --> 01:03:00.885
+<v Speaker 1>Should be. Look at that.
+
+01:03:01.605 --> 01:03:02.965
+<v Speaker 1>And it's up and running
+
+01:03:03.205 --> 01:03:04.245
+<v Speaker 1>like magic.
+
+01:03:04.805 --> 01:03:06.245
+<v Speaker 0>I do like magic.
+
+01:03:08.645 --> 01:03:11.205
+<v Speaker 0>And we now have over 2,000 entries. That's
+
+01:03:11.205 --> 01:03:12.800
+<v Speaker 0>awesome. Really,
+
+01:03:12.800 --> 01:03:15.440
+<v Speaker 0>really simple to just get that running, do
+
+01:03:15.440 --> 01:03:17.520
+<v Speaker 0>a backup, and the restore.
+
+01:03:18.480 --> 01:03:20.480
+<v Speaker 0>That's exactly what we wanna see.
+
+01:03:23.280 --> 01:03:24.000
+<v Speaker 0>So,
+
+01:03:24.400 --> 01:03:26.560
+<v Speaker 0>let's have a look just quickly.
+
+01:03:28.825 --> 01:03:30.185
+<v Speaker 0>There's all my
+
+01:03:30.265 --> 01:03:32.825
+<v Speaker 0>broken backups, but there's a good one. Okay.
+
+01:03:33.305 --> 01:03:35.465
+<v Speaker 0>I was just curious if we have a
+
+01:03:35.465 --> 01:03:37.385
+<v Speaker 0>pod volume backup here. So I guess this
+
+01:03:37.385 --> 01:03:39.625
+<v Speaker 0>is the bit that's actually got my
+
+01:03:41.385 --> 01:03:42.185
+<v Speaker 0>data
+
+01:03:42.265 --> 01:03:42.505
+<v Speaker 0>bit.
+
+01:03:44.210 --> 01:03:46.290
+<v Speaker 0>Very cool. Yeah. Yeah.
+
+01:03:47.809 --> 01:03:49.090
+<v Speaker 1>Let's just check.
+
+01:03:51.089 --> 01:03:53.650
+<v Speaker 0>Yeah. Okay. I'm pretty happy with that.
+
+01:03:54.130 --> 01:03:56.770
+<v Speaker 0>That was good. We got a a question
+
+01:03:56.770 --> 01:03:57.970
+<v Speaker 0>from no.
+
+01:04:00.765 --> 01:04:03.724
+<v Speaker 0>Doesn't Kubernetes complain about applied revision of the
+
+01:04:03.724 --> 01:04:05.724
+<v Speaker 0>revision was updated after a backup and we
+
+01:04:05.724 --> 01:04:06.685
+<v Speaker 0>try and restore?
+
+01:04:06.925 --> 01:04:08.845
+<v Speaker 0>I have no idea.
+
+01:04:09.405 --> 01:04:10.125
+<v Speaker 0>Something I guess.
+
+01:04:12.330 --> 01:04:15.130
+<v Speaker 1>I don't know what a applied revision is.
+
+01:04:16.090 --> 01:04:17.850
+<v Speaker 1>Maybe it's something that I know by a
+
+01:04:17.850 --> 01:04:18.650
+<v Speaker 1>different name.
+
+01:04:19.930 --> 01:04:21.770
+<v Speaker 0>It's not something I am
+
+01:04:22.250 --> 01:04:24.730
+<v Speaker 0>confident in either to try and describe, but
+
+01:04:24.730 --> 01:04:28.010
+<v Speaker 0>I believe that when Kubernetes resources are modified
+
+01:04:28.305 --> 01:04:31.905
+<v Speaker 0>and the revision number goes back in time,
+
+01:04:32.305 --> 01:04:33.905
+<v Speaker 0>that it would complain that the update was
+
+01:04:33.905 --> 01:04:34.865
+<v Speaker 0>out of sync
+
+01:04:35.025 --> 01:04:36.944
+<v Speaker 0>and probably wouldn't take place. But I'm assuming
+
+01:04:36.944 --> 01:04:38.065
+<v Speaker 0>Velero just
+
+01:04:38.305 --> 01:04:40.145
+<v Speaker 0>handles these things for us.
+
+01:04:41.660 --> 01:04:42.620
+<v Speaker 0>Yes.
+
+01:04:42.620 --> 01:04:44.220
+<v Speaker 0>Something to experiment with. Do
+
+01:04:44.700 --> 01:04:46.060
+<v Speaker 1>you think he's talking about
+
+01:04:47.020 --> 01:04:48.140
+<v Speaker 1>group versions?
+
+01:04:49.340 --> 01:04:51.820
+<v Speaker 1>No? I'm not sure. Feel free to give
+
+01:04:51.820 --> 01:04:53.500
+<v Speaker 0>us a little bit more context, Noel, if
+
+01:04:53.500 --> 01:04:55.180
+<v Speaker 0>you want us to have a little bit
+
+01:04:55.180 --> 01:04:57.085
+<v Speaker 0>of a chat about it. And if anyone
+
+01:04:57.085 --> 01:04:58.525
+<v Speaker 0>else, of course, is watching and you have
+
+01:04:58.525 --> 01:05:00.685
+<v Speaker 0>any questions or wanna see something with Velero,
+
+01:05:00.685 --> 01:05:01.885
+<v Speaker 0>you know, now is the time to drop
+
+01:05:01.885 --> 01:05:03.805
+<v Speaker 0>in before we we finish up for this
+
+01:05:03.805 --> 01:05:04.365
+<v Speaker 0>session.
+
+01:05:04.765 --> 01:05:05.165
+<v Speaker 0>Okay.
+
+01:05:06.125 --> 01:05:08.845
+<v Speaker 0>Is there anything you would like us to
+
+01:05:09.725 --> 01:05:11.485
+<v Speaker 0>take a look at before we finish this
+
+01:05:11.485 --> 01:05:13.540
+<v Speaker 0>session, or do you think that we've covered
+
+01:05:13.540 --> 01:05:15.619
+<v Speaker 0>enough of the the capabilities of of what
+
+01:05:15.619 --> 01:05:17.300
+<v Speaker 0>we wanna use Velero for?
+
+01:05:19.220 --> 01:05:20.180
+<v Speaker 1>I think
+
+01:05:21.059 --> 01:05:23.460
+<v Speaker 1>that is the bread and butter restoring.
+
+01:05:23.460 --> 01:05:26.454
+<v Speaker 1>And then for anything besides that, what I
+
+01:05:26.454 --> 01:05:29.335
+<v Speaker 1>would recommend is going through the docs
+
+01:05:29.335 --> 01:05:29.975
+<v Speaker 1>and,
+
+01:05:30.454 --> 01:05:32.375
+<v Speaker 1>to figure out, for example, how do you
+
+01:05:32.375 --> 01:05:33.015
+<v Speaker 1>do
+
+01:05:33.335 --> 01:05:35.974
+<v Speaker 1>how to include and exclude things. We have
+
+01:05:35.974 --> 01:05:37.175
+<v Speaker 1>a page for that.
+
+01:05:37.974 --> 01:05:40.850
+<v Speaker 1>You can schedule backups, so you can just
+
+01:05:41.090 --> 01:05:42.850
+<v Speaker 1>you just continuously be
+
+01:05:43.250 --> 01:05:45.810
+<v Speaker 1>creating backups for you based on what you
+
+01:05:45.810 --> 01:05:46.770
+<v Speaker 1>specify.
+
+01:05:48.130 --> 01:05:48.770
+<v Speaker 1>What else?
+
+01:05:53.275 --> 01:05:55.595
+<v Speaker 1>There is a page for
+
+01:05:55.835 --> 01:05:57.035
+<v Speaker 1>contributing.
+
+01:05:58.955 --> 01:06:01.115
+<v Speaker 0>It feels always welcome. Right?
+
+01:06:01.435 --> 01:06:02.315
+<v Speaker 1>Oh, absolutely.
+
+01:06:04.475 --> 01:06:05.275
+<v Speaker 1>There is
+
+01:06:05.610 --> 01:06:07.050
+<v Speaker 1>a GitHub
+
+01:06:07.050 --> 01:06:07.850
+<v Speaker 1>discussion
+
+01:06:08.010 --> 01:06:10.090
+<v Speaker 1>where people can drop questions,
+
+01:06:10.250 --> 01:06:11.610
+<v Speaker 1>and everybody
+
+01:06:12.170 --> 01:06:12.730
+<v Speaker 1>is,
+
+01:06:13.290 --> 01:06:15.930
+<v Speaker 1>we try to answer. Anyone is is welcome
+
+01:06:15.930 --> 01:06:17.610
+<v Speaker 1>to try to answer questions.
+
+01:06:19.955 --> 01:06:22.355
+<v Speaker 1>We do have a okay. This is not
+
+01:06:22.355 --> 01:06:24.355
+<v Speaker 1>what you asked, but I'm jumping ahead. You
+
+01:06:24.355 --> 01:06:27.155
+<v Speaker 1>asked if I there is something related
+
+01:06:27.155 --> 01:06:28.835
+<v Speaker 1>to the Velero tool that we should look
+
+01:06:28.835 --> 01:06:29.075
+<v Speaker 1>at.
+
+01:06:34.010 --> 01:06:36.730
+<v Speaker 1>You know, Velero is not complicated to use.
+
+01:06:36.730 --> 01:06:38.170
+<v Speaker 1>That's that's about it.
+
+01:06:38.650 --> 01:06:41.290
+<v Speaker 0>Yeah. I'm I'm really happy with how simple
+
+01:06:41.290 --> 01:06:43.850
+<v Speaker 0>using the CLI was to get started. I
+
+01:06:43.850 --> 01:06:45.609
+<v Speaker 0>like that it takes care of all of
+
+01:06:45.609 --> 01:06:48.285
+<v Speaker 0>that, you know, essentially toil of actually installing
+
+01:06:48.285 --> 01:06:50.205
+<v Speaker 0>it to my cluster. I didn't need to
+
+01:06:50.205 --> 01:06:51.805
+<v Speaker 0>go find a Helm chart or worry about
+
+01:06:51.805 --> 01:06:53.165
+<v Speaker 0>how to do that. It just kind of
+
+01:06:53.645 --> 01:06:54.765
+<v Speaker 0>it just worked.
+
+01:06:55.085 --> 01:06:57.325
+<v Speaker 0>And creating the backup restore, I mean, it's
+
+01:06:57.325 --> 01:06:58.605
+<v Speaker 0>just I love it when things are just
+
+01:06:58.605 --> 01:07:00.845
+<v Speaker 0>simple and it's just easy to use. It
+
+01:07:00.450 --> 01:07:02.369
+<v Speaker 0>makes my life easier, especially when there's something
+
+01:07:02.369 --> 01:07:04.770
+<v Speaker 0>as important as as backups and restoration.
+
+01:07:05.490 --> 01:07:07.410
+<v Speaker 0>We we we do want these difficult problems
+
+01:07:07.410 --> 01:07:09.890
+<v Speaker 0>to be handled by the tooling. And I
+
+01:07:09.890 --> 01:07:11.810
+<v Speaker 0>think Velero's doing a great job at that.
+
+01:07:13.570 --> 01:07:13.810
+<v Speaker 0>So
+
+01:07:14.385 --> 01:07:16.385
+<v Speaker 0>I think I mean, the only comments we're
+
+01:07:16.385 --> 01:07:18.385
+<v Speaker 0>getting right now are a little bit of
+
+01:07:18.385 --> 01:07:21.185
+<v Speaker 0>discussion about my terrible audio quality in previous
+
+01:07:21.185 --> 01:07:23.825
+<v Speaker 0>episodes. So thank you for reminding everybody there.
+
+01:07:26.385 --> 01:07:29.310
+<v Speaker 1>Yeah. And there's a resource page on the
+
+01:07:29.310 --> 01:07:30.270
+<v Speaker 1>Velero.
+
+01:07:30.430 --> 01:07:32.910
+<v Speaker 1>Website where you can find ways to,
+
+01:07:33.870 --> 01:07:36.510
+<v Speaker 1>con like, get in touch with the team,
+
+01:07:36.830 --> 01:07:37.310
+<v Speaker 1>and,
+
+01:07:38.510 --> 01:07:41.390
+<v Speaker 1>there is a community meeting every Tuesday,
+
+01:07:41.470 --> 01:07:42.910
+<v Speaker 1>9AM Pacific time.
+
+01:07:43.725 --> 01:07:47.085
+<v Speaker 1>Everybody's free to attend and also drop
+
+01:07:47.325 --> 01:07:51.005
+<v Speaker 1>any discussion topic on our HackMD file that's
+
+01:07:51.005 --> 01:07:53.165
+<v Speaker 1>it's all linked on that page.
+
+01:07:54.765 --> 01:07:57.085
+<v Speaker 0>Awesome. Alright. Let me pop us back and
+
+01:07:57.085 --> 01:07:57.565
+<v Speaker 0>we will.
+
+01:07:59.240 --> 01:08:00.600
+<v Speaker 0>There we go.
+
+01:08:01.240 --> 01:08:02.599
+<v Speaker 0>So Velero
+
+01:08:02.599 --> 01:08:05.400
+<v Speaker 0>handles backups and restores. We've seen how easy
+
+01:08:05.400 --> 01:08:08.200
+<v Speaker 0>installation was. We've created backups and we restored.
+
+01:08:08.200 --> 01:08:10.760
+<v Speaker 0>All you need is a SD compatible
+
+01:08:11.160 --> 01:08:12.440
+<v Speaker 0>storage location or API.
+
+01:08:13.065 --> 01:08:14.425
+<v Speaker 0>You've seen how easy it was to get
+
+01:08:14.425 --> 01:08:16.425
+<v Speaker 0>manual there. I should have came prepared with
+
+01:08:16.425 --> 01:08:18.745
+<v Speaker 0>that setup, but we got there in the
+
+01:08:18.745 --> 01:08:19.304
+<v Speaker 0>end.
+
+01:08:20.024 --> 01:08:21.625
+<v Speaker 0>I really I I think I went off
+
+01:08:21.625 --> 01:08:22.745
+<v Speaker 0>the page there a bit too early, but
+
+01:08:22.745 --> 01:08:24.344
+<v Speaker 0>I love the schedule command. It just took
+
+01:08:24.344 --> 01:08:26.984
+<v Speaker 0>cron syntax. I'm excited to start deploying Velero
+
+01:08:26.984 --> 01:08:28.665
+<v Speaker 0>to my clusters now and taking
+
+01:08:29.120 --> 01:08:31.520
+<v Speaker 0>advantage of this. I just wanna say thank
+
+01:08:31.520 --> 01:08:32.960
+<v Speaker 0>you for joining me today. It was a
+
+01:08:32.960 --> 01:08:34.640
+<v Speaker 0>pleasure to kinda go through this and get
+
+01:08:34.640 --> 01:08:36.239
+<v Speaker 0>your insights into Velero.
+
+01:08:36.240 --> 01:08:38.560
+<v Speaker 0>The 1.6 release seems to be really, really
+
+01:08:38.560 --> 01:08:40.160
+<v Speaker 0>cool. I'm glad that that is out and
+
+01:08:40.160 --> 01:08:40.800
+<v Speaker 0>shipped.
+
+01:08:41.120 --> 01:08:42.640
+<v Speaker 0>Is there anything you'd like to share about
+
+01:08:42.640 --> 01:08:45.125
+<v Speaker 0>what's coming next in Velero before we finish
+
+01:08:45.125 --> 01:08:45.684
+<v Speaker 0>up?
+
+01:08:47.524 --> 01:08:48.484
+<v Speaker 1>Oh my gosh.
+
+01:08:48.885 --> 01:08:49.764
+<v Speaker 1>Blank.
+
+01:08:52.085 --> 01:08:54.484
+<v Speaker 1>We are going to do some
+
+01:08:55.125 --> 01:08:56.085
+<v Speaker 1>so
+
+01:08:56.920 --> 01:08:59.479
+<v Speaker 1>there is a set of tooling that's sort
+
+01:08:59.479 --> 01:09:01.719
+<v Speaker 1>of new. It's called Carvel.
+
+01:09:01.880 --> 01:09:03.000
+<v Speaker 1>It has some
+
+01:09:03.720 --> 01:09:06.599
+<v Speaker 1>Carvel. Yeah. So y y t and
+
+01:09:06.840 --> 01:09:07.960
+<v Speaker 1>KDB,
+
+01:09:08.120 --> 01:09:08.680
+<v Speaker 1>and
+
+01:09:09.335 --> 01:09:12.215
+<v Speaker 1>it's it's basically for deploying,
+
+01:09:12.215 --> 01:09:13.414
+<v Speaker 1>building images,
+
+01:09:13.895 --> 01:09:14.854
+<v Speaker 1>templating,
+
+01:09:15.495 --> 01:09:17.894
+<v Speaker 1>and we're going to be compatible with that.
+
+01:09:18.295 --> 01:09:20.455
+<v Speaker 1>And the why I'm saying that first is
+
+01:09:20.455 --> 01:09:22.375
+<v Speaker 1>because I'm going to be doing that work.
+
+01:09:22.375 --> 01:09:24.455
+<v Speaker 1>I'm just not remembering what else is. So
+
+01:09:24.880 --> 01:09:26.960
+<v Speaker 1>it's on for version 1.7,
+
+01:09:26.960 --> 01:09:29.120
+<v Speaker 1>but maybe we should have looked at so
+
+01:09:29.120 --> 01:09:31.280
+<v Speaker 1>at the very root of our repository on
+
+01:09:31.280 --> 01:09:33.680
+<v Speaker 1>GitHub, there is a road map dot m
+
+01:09:33.680 --> 01:09:34.560
+<v Speaker 1>d file.
+
+01:09:35.040 --> 01:09:36.560
+<v Speaker 1>And now that I'm reading it
+
+01:09:38.255 --> 01:09:40.494
+<v Speaker 1>yeah, so we're going to integrate we're going
+
+01:09:40.494 --> 01:09:43.215
+<v Speaker 1>to make artifacts available so people who use
+
+01:09:43.215 --> 01:09:46.574
+<v Speaker 1>those tools can install Velero, deploy Velero
+
+01:09:46.734 --> 01:09:48.014
+<v Speaker 1>using those tools.
+
+01:09:48.415 --> 01:09:49.294
+<v Speaker 1>And
+
+01:09:49.774 --> 01:09:52.810
+<v Speaker 1>we continuous working we are continuing work
+
+01:09:52.810 --> 01:09:53.609
+<v Speaker 1>to do
+
+01:09:54.010 --> 01:09:55.130
+<v Speaker 1>e two e test
+
+01:09:56.170 --> 01:09:58.730
+<v Speaker 1>test for Velero, which is awesome. We're going
+
+01:09:58.730 --> 01:10:00.010
+<v Speaker 1>to do the the
+
+01:10:00.490 --> 01:10:01.610
+<v Speaker 1>diagnostic
+
+01:10:01.690 --> 01:10:03.210
+<v Speaker 1>tool that I mentioned.
+
+01:10:03.610 --> 01:10:04.890
+<v Speaker 1>That's gonna be
+
+01:10:05.495 --> 01:10:06.455
+<v Speaker 1>great to have.
+
+01:10:07.335 --> 01:10:10.135
+<v Speaker 1>The c so we have CSI a CSI
+
+01:10:10.135 --> 01:10:10.935
+<v Speaker 1>plugin
+
+01:10:11.815 --> 01:10:13.255
+<v Speaker 1>for snapshots,
+
+01:10:13.335 --> 01:10:15.495
+<v Speaker 1>and we're going to bring it to general
+
+01:10:15.495 --> 01:10:16.215
+<v Speaker 1>availability.
+
+01:10:17.570 --> 01:10:20.449
+<v Speaker 1>We are going to do plug in versioning
+
+01:10:20.690 --> 01:10:23.570
+<v Speaker 0>Okay. Which is we don't have versioning right
+
+01:10:23.570 --> 01:10:25.489
+<v Speaker 1>now for the plug ins. Yeah. I p
+
+01:10:25.489 --> 01:10:26.689
+<v Speaker 1>v six support.
+
+01:10:27.329 --> 01:10:30.610
+<v Speaker 1>I know the upload progress monitoring is on
+
+01:10:30.610 --> 01:10:32.574
+<v Speaker 1>desired items, but I think it's going to
+
+01:10:32.574 --> 01:10:34.814
+<v Speaker 1>be implemented for 1.7.
+
+01:10:35.135 --> 01:10:36.574
+<v Speaker 1>Yeah. That's what's on the list. Those are
+
+01:10:36.574 --> 01:10:37.854
+<v Speaker 1>the big ticket items.
+
+01:10:38.494 --> 01:10:40.974
+<v Speaker 0>Again, a quite a a number of of
+
+01:10:40.974 --> 01:10:42.895
+<v Speaker 0>items there. So, you know, people that are
+
+01:10:42.895 --> 01:10:44.974
+<v Speaker 0>watching or their interest has peaked in Velero,
+
+01:10:45.150 --> 01:10:46.989
+<v Speaker 0>go and check out the repository. Hopefully, you
+
+01:10:46.989 --> 01:10:49.550
+<v Speaker 0>can start contributing to a really cool project.
+
+01:10:50.350 --> 01:10:53.230
+<v Speaker 0>Alright. Thanks. And yes. Okay. No. No. Go.
+
+01:10:53.230 --> 01:10:54.909
+<v Speaker 0>Please. I I I No. We have an
+
+01:10:54.909 --> 01:10:56.749
+<v Speaker 1>integration with the tilts.
+
+01:10:56.909 --> 01:10:59.155
+<v Speaker 1>Some people might not know tilt, but there
+
+01:10:59.155 --> 01:11:02.594
+<v Speaker 1>is instruction in to set it up, and
+
+01:11:03.155 --> 01:11:04.675
+<v Speaker 1>it is ridiculously
+
+01:11:04.675 --> 01:11:05.394
+<v Speaker 1>easy.
+
+01:11:05.635 --> 01:11:07.795
+<v Speaker 1>If you if you wanna run Velero codes,
+
+01:11:07.795 --> 01:11:10.870
+<v Speaker 1>that's where I suggest you start. Even even
+
+01:11:11.190 --> 01:11:13.270
+<v Speaker 1>I've been working with Velero for years, and
+
+01:11:13.270 --> 01:11:15.270
+<v Speaker 1>that's what I use because it's the easiest
+
+01:11:15.270 --> 01:11:18.230
+<v Speaker 1>and it's faster faster than anything else.
+
+01:11:18.870 --> 01:11:21.190
+<v Speaker 0>Well, personally, I do have go around. I
+
+01:11:21.190 --> 01:11:23.510
+<v Speaker 0>I do have previous videos with the tilt
+
+01:11:23.510 --> 01:11:26.025
+<v Speaker 0>team and the carvel team. And strangely enough,
+
+01:11:26.025 --> 01:11:27.705
+<v Speaker 0>Carvel video is probably one of the worst
+
+01:11:27.705 --> 01:11:29.625
+<v Speaker 0>audio recordings on my side that I've ever
+
+01:11:29.625 --> 01:11:31.625
+<v Speaker 0>done. So anyone that does watch that, the
+
+01:11:31.625 --> 01:11:33.225
+<v Speaker 0>demo is very cool of Carvel. I just
+
+01:11:33.625 --> 01:11:36.025
+<v Speaker 1>Oh, I'm gonna watch it today because I
+
+01:11:36.265 --> 01:11:37.865
+<v Speaker 1>I am I have to learn.
+
+01:11:38.665 --> 01:11:40.350
+<v Speaker 0>No. It was great session. I learned a
+
+01:11:40.350 --> 01:11:42.270
+<v Speaker 0>lot. The Carvel tool was is really, really
+
+01:11:42.270 --> 01:11:43.309
+<v Speaker 0>interesting. So
+
+01:11:43.949 --> 01:11:46.270
+<v Speaker 0>alright. Thank you again for joining me today.
+
+01:11:46.270 --> 01:11:47.630
+<v Speaker 0>I hope you have a a really good
+
+01:11:47.630 --> 01:11:49.070
+<v Speaker 0>day and a great week, and I will
+
+01:11:49.070 --> 01:11:50.429
+<v Speaker 0>see you again soon. Thank you for joining
+
+01:11:50.429 --> 01:11:52.270
+<v Speaker 0>me today. Same to you, and thank you
+
+01:11:52.270 --> 01:11:54.685
+<v Speaker 1>so much, David. Thank you. Bye bye. Alright.
+
+01:11:54.685 --> 01:11:55.165
+<v Speaker 1>Bye.

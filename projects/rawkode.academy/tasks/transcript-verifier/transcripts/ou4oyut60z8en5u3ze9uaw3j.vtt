@@ -1,0 +1,3899 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 66d741fc-5d6c-4711-9207-e4f83fca7304
+Created: 2025-04-29T21:16:39.171Z
+Duration: 3153.996
+Channels: 1
+
+00:00:39.310 --> 00:00:41.950
+<v Speaker 0>Hey there, friends from the future. Whether that's
+
+00:00:41.950 --> 00:00:44.414
+<v Speaker 0>the two second delay that we're on or
+
+00:00:44.414 --> 00:00:46.175
+<v Speaker 0>if you're watching this on video at some
+
+00:00:46.175 --> 00:00:47.774
+<v Speaker 0>time in the, at some time down the
+
+00:00:47.774 --> 00:00:50.015
+<v Speaker 0>road. I'd like to welcome you back to
+
+00:00:50.015 --> 00:00:51.055
+<v Speaker 0>middle Monday.
+
+00:00:51.215 --> 00:00:52.894
+<v Speaker 0>We will be looking at
+
+00:00:53.535 --> 00:00:55.855
+<v Speaker 0>high availability with BGP today,
+
+00:00:56.500 --> 00:00:56.900
+<v Speaker 0>And,
+
+00:00:57.620 --> 00:00:59.620
+<v Speaker 0>I am Jeremy Tanner,
+
+00:00:59.860 --> 00:01:02.660
+<v Speaker 0>penguin on the Internet. And, word is we'll
+
+00:01:02.660 --> 00:01:04.739
+<v Speaker 0>be talking about a different sort of bird
+
+00:01:04.739 --> 00:01:05.459
+<v Speaker 0>today.
+
+00:01:06.180 --> 00:01:08.980
+<v Speaker 0>I'd like to bring in the cohosts.
+
+00:01:09.060 --> 00:01:09.940
+<v Speaker 0>We have
+
+00:01:10.155 --> 00:01:11.275
+<v Speaker 0>Tom Crow.
+
+00:01:12.075 --> 00:01:14.155
+<v Speaker 1>Hey, gang. David McKay.
+
+00:01:14.235 --> 00:01:16.795
+<v Speaker 2>Hey. How's it going? Dan Finnerin.
+
+00:01:16.795 --> 00:01:17.515
+<v Speaker 0>Hello.
+
+00:01:21.835 --> 00:01:24.235
+<v Speaker 2>There we go. Alright. So
+
+00:01:24.840 --> 00:01:28.439
+<v Speaker 2>we are gonna try and tackle a
+
+00:01:28.679 --> 00:01:29.399
+<v Speaker 2>common
+
+00:01:29.880 --> 00:01:32.679
+<v Speaker 2>problem, I guess, that people have with scaling
+
+00:01:32.679 --> 00:01:33.880
+<v Speaker 2>on bare metal.
+
+00:01:35.159 --> 00:01:36.520
+<v Speaker 2>Anyone wanna talk about that?
+
+00:01:39.575 --> 00:01:41.495
+<v Speaker 1>Yeah. Sure. I suppose. I mean,
+
+00:01:41.975 --> 00:01:43.495
+<v Speaker 1>I one of the key
+
+00:01:43.815 --> 00:01:44.695
+<v Speaker 1>issues
+
+00:01:44.775 --> 00:01:46.695
+<v Speaker 1>that people kind of hit, I guess, within
+
+00:01:46.695 --> 00:01:48.455
+<v Speaker 1>bare metal environments is
+
+00:01:48.855 --> 00:01:50.055
+<v Speaker 1>lack of facilities
+
+00:01:51.095 --> 00:01:53.095
+<v Speaker 1>and how best to kind of
+
+00:01:53.880 --> 00:01:56.600
+<v Speaker 1>manage those and emulate things that would normally
+
+00:01:56.600 --> 00:01:58.200
+<v Speaker 1>require physical devices.
+
+00:01:58.360 --> 00:01:59.800
+<v Speaker 1>So I guess that's kind of some of
+
+00:01:59.800 --> 00:02:01.080
+<v Speaker 1>the stuff that we're gonna be covering today
+
+00:02:01.080 --> 00:02:02.040
+<v Speaker 1>in terms of
+
+00:02:02.920 --> 00:02:03.720
+<v Speaker 1>using
+
+00:02:04.120 --> 00:02:06.440
+<v Speaker 1>a few different techniques for providing high availability
+
+00:02:06.440 --> 00:02:07.400
+<v Speaker 1>of services
+
+00:02:08.120 --> 00:02:09.000
+<v Speaker 1>on bare metal.
+
+00:02:11.135 --> 00:02:13.055
+<v Speaker 2>Nice. So I believe our our plan is
+
+00:02:13.055 --> 00:02:14.255
+<v Speaker 2>we're gonna
+
+00:02:14.814 --> 00:02:15.775
+<v Speaker 2>spin up
+
+00:02:16.575 --> 00:02:19.215
+<v Speaker 2>just, I guess, some random NGINX servers across
+
+00:02:19.215 --> 00:02:21.295
+<v Speaker 2>a variety of bare metal machines. And then
+
+00:02:21.295 --> 00:02:23.135
+<v Speaker 2>our first challenge is we
+
+00:02:23.520 --> 00:02:24.960
+<v Speaker 2>we we wanna be able to provide some
+
+00:02:24.960 --> 00:02:27.520
+<v Speaker 2>load balancing across those edge and x servers.
+
+00:02:27.520 --> 00:02:28.080
+<v Speaker 2>And
+
+00:02:28.720 --> 00:02:31.520
+<v Speaker 2>then we wanna be able to remove the
+
+00:02:31.520 --> 00:02:33.440
+<v Speaker 2>single point of failure from
+
+00:02:34.560 --> 00:02:36.880
+<v Speaker 2>the load balancing by using
+
+00:02:37.760 --> 00:02:38.560
+<v Speaker 2>BGP.
+
+00:02:40.065 --> 00:02:42.305
+<v Speaker 2>Now maybe we could I'm just gonna nominate
+
+00:02:42.305 --> 00:02:44.705
+<v Speaker 2>you Dan since you're a resident expert here.
+
+00:02:44.705 --> 00:02:45.825
+<v Speaker 1>I'm not so.
+
+00:02:47.025 --> 00:02:49.345
+<v Speaker 2>Can like so I think I'm hoping you
+
+00:02:49.345 --> 00:02:50.785
+<v Speaker 2>know, the people viewing are are gonna have
+
+00:02:50.785 --> 00:02:52.865
+<v Speaker 2>a good understanding of NGINX and load balancing,
+
+00:02:52.865 --> 00:02:54.145
+<v Speaker 2>we're gonna use a J proxy for that.
+
+00:02:54.330 --> 00:02:56.010
+<v Speaker 2>These are tools that most people
+
+00:02:56.330 --> 00:02:58.730
+<v Speaker 2>probably familiar with, however,
+
+00:02:59.370 --> 00:03:01.210
+<v Speaker 2>a concern that you may not have, I
+
+00:03:01.210 --> 00:03:02.650
+<v Speaker 2>would say the bare metal environments would be
+
+00:03:02.650 --> 00:03:03.930
+<v Speaker 2>BGP and
+
+00:03:04.170 --> 00:03:06.410
+<v Speaker 2>and using that with elastic IPs etcetera. So
+
+00:03:06.410 --> 00:03:08.185
+<v Speaker 2>can you just kinda give us the quick
+
+00:03:08.185 --> 00:03:10.025
+<v Speaker 2>one or two minute overview of what that
+
+00:03:10.025 --> 00:03:11.625
+<v Speaker 2>problem is and how we solve it?
+
+00:03:12.105 --> 00:03:13.305
+<v Speaker 1>Yep. So,
+
+00:03:14.665 --> 00:03:16.665
+<v Speaker 1>I mean, the the cool kind of concept
+
+00:03:16.665 --> 00:03:18.585
+<v Speaker 1>really here is the
+
+00:03:19.145 --> 00:03:21.785
+<v Speaker 1>the virtual IP or the elastic IP in
+
+00:03:21.785 --> 00:03:22.985
+<v Speaker 1>this instance, which
+
+00:03:24.470 --> 00:03:25.190
+<v Speaker 1>in
+
+00:03:25.590 --> 00:03:28.310
+<v Speaker 1>cloud parlance, you typically will go
+
+00:03:28.629 --> 00:03:29.750
+<v Speaker 1>I require
+
+00:03:29.830 --> 00:03:31.910
+<v Speaker 1>an EIP or I require one of these
+
+00:03:31.910 --> 00:03:33.110
+<v Speaker 1>virtual IP addresses.
+
+00:03:33.430 --> 00:03:35.269
+<v Speaker 1>And you can add your services underneath it,
+
+00:03:36.114 --> 00:03:39.155
+<v Speaker 1>and magic typically will happen whenever traffic goes
+
+00:03:39.155 --> 00:03:40.834
+<v Speaker 1>to that I IP address that you asked
+
+00:03:40.834 --> 00:03:41.395
+<v Speaker 1>for.
+
+00:03:41.635 --> 00:03:43.075
+<v Speaker 1>You will be passed to one of the
+
+00:03:43.075 --> 00:03:44.835
+<v Speaker 1>instances that sits underneath it.
+
+00:03:45.875 --> 00:03:47.955
+<v Speaker 2>There is magic that is transpiring
+
+00:03:47.955 --> 00:03:50.995
+<v Speaker 2>between your virtual machines and that Elastic IP
+
+00:03:51.370 --> 00:03:52.410
+<v Speaker 2>in
+
+00:03:53.050 --> 00:03:55.530
+<v Speaker 1>a bare metal or on premises
+
+00:03:57.050 --> 00:03:58.090
+<v Speaker 1>environment,
+
+00:03:58.250 --> 00:03:59.770
+<v Speaker 1>that magic is typically
+
+00:04:00.010 --> 00:04:01.050
+<v Speaker 1>BGP.
+
+00:04:01.610 --> 00:04:03.450
+<v Speaker 1>And what BGP is doing
+
+00:04:03.725 --> 00:04:04.925
+<v Speaker 1>is saying,
+
+00:04:06.365 --> 00:04:09.005
+<v Speaker 1>you enable BGP on all of those instances,
+
+00:04:09.085 --> 00:04:11.165
+<v Speaker 1>and all of those instances are saying
+
+00:04:11.325 --> 00:04:13.165
+<v Speaker 1>to the networking equipment,
+
+00:04:14.205 --> 00:04:16.765
+<v Speaker 1>you can route to me to access
+
+00:04:17.650 --> 00:04:20.610
+<v Speaker 1>services that I'm actually running. So all of
+
+00:04:20.610 --> 00:04:22.450
+<v Speaker 1>the machines that you would have in your
+
+00:04:22.450 --> 00:04:23.490
+<v Speaker 1>your pool
+
+00:04:23.970 --> 00:04:27.490
+<v Speaker 1>will all advertise that that Elastic IP. They
+
+00:04:27.490 --> 00:04:30.290
+<v Speaker 1>will all say, I am advertising my services
+
+00:04:30.290 --> 00:04:32.290
+<v Speaker 1>from the the the address that was given.
+
+00:04:33.355 --> 00:04:35.435
+<v Speaker 1>And the routers themselves can actually take care
+
+00:04:35.435 --> 00:04:38.715
+<v Speaker 1>then of sending traffic to one of the
+
+00:04:38.715 --> 00:04:41.595
+<v Speaker 1>instances that are actually advertising that Elastic IP.
+
+00:04:42.395 --> 00:04:44.315
+<v Speaker 3>And just so we're all on the same
+
+00:04:44.315 --> 00:04:45.595
+<v Speaker 3>page, Dan, do you mind telling people what
+
+00:04:45.595 --> 00:04:46.475
+<v Speaker 3>BGP is?
+
+00:04:47.470 --> 00:04:48.830
+<v Speaker 1>So BGP
+
+00:04:49.629 --> 00:04:52.189
+<v Speaker 1>just quickly going on to Wikipedia. No. BGP
+
+00:04:52.430 --> 00:04:54.590
+<v Speaker 1>my hands are here. BGP is border
+
+00:04:54.990 --> 00:04:58.110
+<v Speaker 1>I've forgotten. Border gateway. Gateway protocol.
+
+00:04:59.229 --> 00:05:00.350
+<v Speaker 1>And it is used
+
+00:05:00.590 --> 00:05:01.949
+<v Speaker 1>throughout the Internet for
+
+00:05:04.735 --> 00:05:06.815
+<v Speaker 1>routes and machines advertising
+
+00:05:07.375 --> 00:05:09.615
+<v Speaker 1>to the rest of the Internet that if
+
+00:05:09.615 --> 00:05:11.295
+<v Speaker 1>you want to get to these particular IP
+
+00:05:11.295 --> 00:05:12.015
+<v Speaker 1>addresses,
+
+00:05:12.415 --> 00:05:14.815
+<v Speaker 1>then send your traffic through me or through
+
+00:05:15.020 --> 00:05:16.540
+<v Speaker 1>this particular device.
+
+00:05:17.420 --> 00:05:19.100
+<v Speaker 1>And I that you know, these routes that
+
+00:05:19.100 --> 00:05:20.780
+<v Speaker 1>we're advertising will get you to where you
+
+00:05:20.780 --> 00:05:21.580
+<v Speaker 1>need to go.
+
+00:05:22.300 --> 00:05:24.620
+<v Speaker 1>I suppose it's also worth mentioning the BGP
+
+00:05:24.620 --> 00:05:25.980
+<v Speaker 1>has also been notable
+
+00:05:26.220 --> 00:05:29.100
+<v Speaker 1>for some of the larger Internet outages
+
+00:05:29.180 --> 00:05:30.780
+<v Speaker 1>over the last few years
+
+00:05:31.145 --> 00:05:32.665
+<v Speaker 1>where there have been
+
+00:05:33.145 --> 00:05:34.985
+<v Speaker 1>human errors or,
+
+00:05:35.385 --> 00:05:36.585
+<v Speaker 1>in some cases,
+
+00:05:37.545 --> 00:05:39.385
+<v Speaker 1>bad actors that have,
+
+00:05:39.785 --> 00:05:42.665
+<v Speaker 1>been on on the Internet and said to
+
+00:05:42.665 --> 00:05:44.025
+<v Speaker 1>other devices on the Internet,
+
+00:05:45.060 --> 00:05:46.980
+<v Speaker 1>hey. You wanna get to Google? Then send
+
+00:05:46.980 --> 00:05:48.500
+<v Speaker 1>your traffic through me.
+
+00:05:48.900 --> 00:05:49.860
+<v Speaker 1>At which point,
+
+00:05:50.180 --> 00:05:51.700
+<v Speaker 1>you'll find that Google has disappeared off the
+
+00:05:51.700 --> 00:05:53.700
+<v Speaker 1>Internet because the traffic is going somewhere that
+
+00:05:53.700 --> 00:05:55.140
+<v Speaker 1>it isn't meant to do.
+
+00:05:56.340 --> 00:05:59.060
+<v Speaker 1>So, yeah, BGP is powerful, but also, in
+
+00:05:59.060 --> 00:06:00.100
+<v Speaker 1>the wrong hands, dangerous.
+
+00:06:02.965 --> 00:06:05.044
+<v Speaker 2>Yeah. I think since I I started this
+
+00:06:05.044 --> 00:06:06.805
+<v Speaker 2>position and I have become a lot more
+
+00:06:06.805 --> 00:06:08.805
+<v Speaker 2>familiar with BGP, I'm starting to notice just
+
+00:06:08.805 --> 00:06:10.965
+<v Speaker 2>how many of those BGP hijackings and denial
+
+00:06:10.965 --> 00:06:13.604
+<v Speaker 2>of service attacks actually happen on the the
+
+00:06:13.604 --> 00:06:15.685
+<v Speaker 2>big old Internet much more frequently than I
+
+00:06:15.685 --> 00:06:16.004
+<v Speaker 2>expected.
+
+00:06:17.160 --> 00:06:19.240
+<v Speaker 1>Yeah. It's one of the key issues really
+
+00:06:19.240 --> 00:06:20.840
+<v Speaker 1>is that BGP has been implemented for quite
+
+00:06:20.840 --> 00:06:21.560
+<v Speaker 1>some time.
+
+00:06:22.360 --> 00:06:22.920
+<v Speaker 1>But
+
+00:06:24.120 --> 00:06:26.280
+<v Speaker 1>randomly, not a lot of people have decided
+
+00:06:26.280 --> 00:06:26.760
+<v Speaker 1>to
+
+00:06:27.320 --> 00:06:28.440
+<v Speaker 1>protect
+
+00:06:29.000 --> 00:06:31.320
+<v Speaker 1>the devices or or protect how they advertise
+
+00:06:31.320 --> 00:06:32.785
+<v Speaker 1>BGP routes. So
+
+00:06:33.185 --> 00:06:34.625
+<v Speaker 1>there's been a lot of work now to
+
+00:06:34.625 --> 00:06:37.025
+<v Speaker 1>ensure that a random person can't just advertise
+
+00:06:37.025 --> 00:06:38.945
+<v Speaker 1>routes that they're not meant to be doing.
+
+00:06:39.985 --> 00:06:41.264
+<v Speaker 1>But that has been the case for quite
+
+00:06:41.264 --> 00:06:41.905
+<v Speaker 1>some time.
+
+00:06:42.865 --> 00:06:43.985
+<v Speaker 2>Alright. Cool.
+
+00:06:44.830 --> 00:06:47.310
+<v Speaker 2>So let's just get started then. Alright. We're
+
+00:06:47.310 --> 00:06:49.230
+<v Speaker 2>gonna walk through. So
+
+00:06:49.390 --> 00:06:51.150
+<v Speaker 2>yeah, we're gonna walk through using the UI
+
+00:06:51.150 --> 00:06:52.510
+<v Speaker 2>and do as many of these components as
+
+00:06:52.510 --> 00:06:53.790
+<v Speaker 2>we can interactively
+
+00:06:53.790 --> 00:06:56.030
+<v Speaker 2>but one of my homework for after today's
+
+00:06:56.030 --> 00:06:58.830
+<v Speaker 2>episode is to produce this as a Hulumi
+
+00:06:59.875 --> 00:07:02.275
+<v Speaker 2>setup inside of our Git repository. So I
+
+00:07:02.275 --> 00:07:04.435
+<v Speaker 2>will do that and should look. But for
+
+00:07:04.435 --> 00:07:05.075
+<v Speaker 2>now,
+
+00:07:06.835 --> 00:07:09.074
+<v Speaker 2>just for brevity and the focus, we're gonna
+
+00:07:09.074 --> 00:07:10.195
+<v Speaker 2>do the UI,
+
+00:07:11.074 --> 00:07:12.835
+<v Speaker 2>which is conveniently pretty good anyway.
+
+00:07:13.430 --> 00:07:13.990
+<v Speaker 2>So
+
+00:07:14.710 --> 00:07:17.590
+<v Speaker 2>let's go I guess we'll just go with
+
+00:07:17.590 --> 00:07:20.470
+<v Speaker 2>Ubuntu. Everyone happy with that? Yes,
+
+00:07:21.270 --> 00:07:22.230
+<v Speaker 2>Dave? Alright. Thanks.
+
+00:07:23.110 --> 00:07:24.630
+<v Speaker 2>And we'll do NGINX one two three.
+
+00:07:28.294 --> 00:07:30.294
+<v Speaker 2>Yeah. Why not? Let's just try and set
+
+00:07:30.294 --> 00:07:32.775
+<v Speaker 2>this up. So we'll just you can't see
+
+00:07:32.775 --> 00:07:33.735
+<v Speaker 2>that. So
+
+00:07:34.615 --> 00:07:35.735
+<v Speaker 2>There
+
+00:07:37.175 --> 00:07:39.495
+<v Speaker 3>we go. There we go. So I'll just
+
+00:07:39.495 --> 00:07:41.574
+<v Speaker 2>do this here because it should be pretty
+
+00:07:41.574 --> 00:07:43.630
+<v Speaker 2>quick anyway. So we'll do an app update
+
+00:07:43.630 --> 00:07:44.430
+<v Speaker 2>install.
+
+00:07:44.430 --> 00:07:46.750
+<v Speaker 2>Because nginx is just one of those packages
+
+00:07:47.390 --> 00:07:49.070
+<v Speaker 2>which is super simple.
+
+00:07:50.430 --> 00:07:51.950
+<v Speaker 2>Non interactive.
+
+00:07:52.990 --> 00:07:54.510
+<v Speaker 2>Have I made any mistakes? Anyone?
+
+00:07:56.695 --> 00:07:57.415
+<v Speaker 2>Yes.
+
+00:07:57.655 --> 00:08:01.175
+<v Speaker 1>Minus y for asking questions. Yep. Alright.
+
+00:08:04.615 --> 00:08:06.215
+<v Speaker 2>Done. That's it.
+
+00:08:07.655 --> 00:08:08.695
+<v Speaker 2>Now it would have been a good time
+
+00:08:08.695 --> 00:08:10.294
+<v Speaker 2>to describe what BGP is actually.
+
+00:08:12.750 --> 00:08:14.350
+<v Speaker 2>As we wait a few minutes for these
+
+00:08:14.350 --> 00:08:15.470
+<v Speaker 2>machines to come up.
+
+00:08:15.790 --> 00:08:17.230
+<v Speaker 2>I guess I could talk a little bit
+
+00:08:17.230 --> 00:08:19.470
+<v Speaker 2>about what I found confusing with BGP and
+
+00:08:19.470 --> 00:08:21.150
+<v Speaker 2>maybe that hopefully helps other people.
+
+00:08:21.710 --> 00:08:24.190
+<v Speaker 2>But when I started kinda reading up on
+
+00:08:24.190 --> 00:08:25.950
+<v Speaker 2>it and this was a matter of weeks
+
+00:08:25.950 --> 00:08:27.550
+<v Speaker 2>ago, so you know my knowledge is
+
+00:08:28.324 --> 00:08:30.645
+<v Speaker 2>very preliminary at this moment in time. Is
+
+00:08:30.645 --> 00:08:32.565
+<v Speaker 2>that I didn't actually understand that BGP had
+
+00:08:32.565 --> 00:08:34.804
+<v Speaker 2>a use case internally and locally as well
+
+00:08:34.804 --> 00:08:36.965
+<v Speaker 2>rather than just global BGP.
+
+00:08:37.044 --> 00:08:38.085
+<v Speaker 2>Like for, you know,
+
+00:08:39.539 --> 00:08:42.500
+<v Speaker 2>advertising IP addresses within a single autonomous system.
+
+00:08:42.500 --> 00:08:43.940
+<v Speaker 2>There's still a very valid use case for
+
+00:08:43.940 --> 00:08:45.380
+<v Speaker 2>doing stuff for that. And that kinda caught
+
+00:08:45.380 --> 00:08:46.899
+<v Speaker 2>me off guard and I think it caused
+
+00:08:46.899 --> 00:08:48.500
+<v Speaker 2>a lot of confusion when I was reading
+
+00:08:48.500 --> 00:08:51.459
+<v Speaker 2>up and what it was. So really interesting
+
+00:08:52.100 --> 00:08:52.579
+<v Speaker 2>protocol.
+
+00:08:53.235 --> 00:08:55.315
+<v Speaker 1>It's I suppose it's kind of interesting that
+
+00:08:55.315 --> 00:08:56.995
+<v Speaker 1>a lot of people are probably using it
+
+00:08:56.995 --> 00:08:58.355
+<v Speaker 1>without really realizing.
+
+00:08:59.155 --> 00:09:01.475
+<v Speaker 1>So for instance, if you're using Calico
+
+00:09:01.795 --> 00:09:04.595
+<v Speaker 1>as your CNI plug in for a Kubernetes
+
+00:09:04.595 --> 00:09:05.315
+<v Speaker 1>cluster,
+
+00:09:05.715 --> 00:09:08.670
+<v Speaker 1>what is typically happening there is the the
+
+00:09:08.670 --> 00:09:10.270
+<v Speaker 1>pods that you are creating,
+
+00:09:10.670 --> 00:09:12.590
+<v Speaker 1>they're given an internal IP address,
+
+00:09:12.990 --> 00:09:15.230
+<v Speaker 1>and the bird BGP protocol
+
+00:09:15.790 --> 00:09:17.790
+<v Speaker 1>is being used to advertise to all of
+
+00:09:17.790 --> 00:09:20.110
+<v Speaker 1>the nodes in the cluster that to get
+
+00:09:20.110 --> 00:09:21.710
+<v Speaker 1>to this pod IP address,
+
+00:09:22.030 --> 00:09:23.550
+<v Speaker 1>you should send your traffic
+
+00:09:23.885 --> 00:09:26.205
+<v Speaker 1>through you should route your traffic through the
+
+00:09:26.205 --> 00:09:28.765
+<v Speaker 1>host where the pod actually is now running.
+
+00:09:29.005 --> 00:09:30.845
+<v Speaker 1>So it's doing all of that. You just
+
+00:09:31.005 --> 00:09:32.925
+<v Speaker 1>it's all transparent to the end user.
+
+00:09:33.964 --> 00:09:35.325
+<v Speaker 2>Nice
+
+00:09:35.325 --> 00:09:35.725
+<v Speaker 2>to know.
+
+00:09:36.570 --> 00:09:40.090
+<v Speaker 2>I'm just gonna spin up our HEProxy machine
+
+00:09:40.090 --> 00:09:42.730
+<v Speaker 2>just now too. Oh, we want two HEProxies,
+
+00:09:42.730 --> 00:09:43.450
+<v Speaker 2>don't we?
+
+00:09:44.650 --> 00:09:46.250
+<v Speaker 2>Because we're gonna do high availability of the
+
+00:09:46.250 --> 00:09:46.890
+<v Speaker 2>HEProxy.
+
+00:09:48.585 --> 00:09:51.625
+<v Speaker 2>And then we just need one machine
+
+00:09:51.865 --> 00:09:53.625
+<v Speaker 2>with what's the program that we're gonna be
+
+00:09:53.625 --> 00:09:56.025
+<v Speaker 2>using today to do the BGP
+
+00:09:56.265 --> 00:09:57.225
+<v Speaker 2>announcements?
+
+00:09:58.345 --> 00:10:00.425
+<v Speaker 1>So the program that we'll be running on
+
+00:10:01.709 --> 00:10:03.709
+<v Speaker 1>the nodes that we want to advertise from
+
+00:10:03.709 --> 00:10:04.829
+<v Speaker 1>is called BERD,
+
+00:10:05.230 --> 00:10:07.470
+<v Speaker 1>which is the BGP
+
+00:10:07.709 --> 00:10:09.790
+<v Speaker 1>Internet routing daemon
+
+00:10:10.670 --> 00:10:12.029
+<v Speaker 1>off the top of my head. I think
+
+00:10:12.029 --> 00:10:13.470
+<v Speaker 1>I've got that right. Apologies if not.
+
+00:10:14.975 --> 00:10:16.015
+<v Speaker 1>Quite simply,
+
+00:10:16.495 --> 00:10:19.135
+<v Speaker 1>what that will do is we tell it
+
+00:10:20.015 --> 00:10:22.735
+<v Speaker 1>these are the networking device these are the
+
+00:10:22.735 --> 00:10:25.295
+<v Speaker 1>IP addresses of the networking devices in our
+
+00:10:25.295 --> 00:10:26.015
+<v Speaker 1>environment.
+
+00:10:26.495 --> 00:10:27.935
+<v Speaker 1>This is the address that we would like
+
+00:10:27.935 --> 00:10:30.640
+<v Speaker 1>to advertise that is coming from us ourselves
+
+00:10:30.640 --> 00:10:31.760
+<v Speaker 1>as server,
+
+00:10:32.000 --> 00:10:33.760
+<v Speaker 1>and it will then start advertising that to
+
+00:10:33.760 --> 00:10:34.800
+<v Speaker 1>the to the network.
+
+00:10:35.440 --> 00:10:38.000
+<v Speaker 2>Okay. So I've got my first question then.
+
+00:10:38.000 --> 00:10:40.400
+<v Speaker 2>Do we install BERD on our h a
+
+00:10:40.400 --> 00:10:42.640
+<v Speaker 2>proxy machines, or does BERD run on its
+
+00:10:42.640 --> 00:10:44.880
+<v Speaker 2>own machine away from the h a proxies
+
+00:10:44.880 --> 00:10:45.785
+<v Speaker 2>that we wanna
+
+00:10:46.505 --> 00:10:48.185
+<v Speaker 2>provide high availability for?
+
+00:10:48.824 --> 00:10:49.464
+<v Speaker 1>So
+
+00:10:50.185 --> 00:10:52.185
+<v Speaker 1>Bird is effectively
+
+00:10:52.185 --> 00:10:53.945
+<v Speaker 1>just going to do
+
+00:10:54.665 --> 00:10:55.704
+<v Speaker 1>advertising
+
+00:10:55.704 --> 00:10:57.225
+<v Speaker 1>IP address
+
+00:10:57.900 --> 00:11:00.780
+<v Speaker 1>to the outside world, we would need HAProxy
+
+00:11:00.780 --> 00:11:03.740
+<v Speaker 1>running on the same machines because we would
+
+00:11:03.740 --> 00:11:06.140
+<v Speaker 1>need the TCP ports to be advertised
+
+00:11:06.620 --> 00:11:09.260
+<v Speaker 1>from that address. So if we were if
+
+00:11:09.260 --> 00:11:09.980
+<v Speaker 1>we didn't do that,
+
+00:11:10.595 --> 00:11:12.595
+<v Speaker 1>our Elastic IP would go to a machine,
+
+00:11:12.595 --> 00:11:14.675
+<v Speaker 1>but we would have no ports to connect
+
+00:11:14.675 --> 00:11:15.875
+<v Speaker 1>to or anything like that.
+
+00:11:17.075 --> 00:11:19.795
+<v Speaker 2>Okay. Pop quiz then, hotshot. What's the BERT
+
+00:11:19.795 --> 00:11:21.075
+<v Speaker 2>package called on Ubuntu?
+
+00:11:25.310 --> 00:11:27.630
+<v Speaker 1>Birds? I I actually I'm not entirely sure.
+
+00:11:27.630 --> 00:11:28.110
+<v Speaker 1>Can
+
+00:11:30.190 --> 00:11:32.510
+<v Speaker 2>Google Google help me. I think it's just
+
+00:11:32.510 --> 00:11:35.070
+<v Speaker 2>called bird. Bird hyphen b g p. Bird
+
+00:11:35.070 --> 00:11:36.990
+<v Speaker 2>hyphen b g p. Oh, well, there's actually
+
+00:11:36.990 --> 00:11:38.510
+<v Speaker 2>a bird and a bird b g p.
+
+00:11:38.510 --> 00:11:41.204
+<v Speaker 2>It does. No. This is a traditional package.
+
+00:11:41.204 --> 00:11:42.325
+<v Speaker 2>It's okay. So I think we can get
+
+00:11:42.325 --> 00:11:43.445
+<v Speaker 2>away with just bird.
+
+00:11:44.404 --> 00:11:46.325
+<v Speaker 2>And then I think bird BGP would have
+
+00:11:46.325 --> 00:11:47.605
+<v Speaker 2>been the old name and then this was
+
+00:11:47.605 --> 00:11:48.245
+<v Speaker 2>provided
+
+00:11:48.565 --> 00:11:50.005
+<v Speaker 2>just to make it still work.
+
+00:11:51.125 --> 00:11:53.670
+<v Speaker 2>We'll find out anyway. So. Let's see what
+
+00:11:53.670 --> 00:11:55.910
+<v Speaker 3>happens. Yep. So this is our second set
+
+00:11:55.910 --> 00:11:58.070
+<v Speaker 2>of machines. We're gonna install h e proxy.
+
+00:11:58.070 --> 00:12:00.310
+<v Speaker 2>We're also gonna install bird. And it doesn't
+
+00:12:00.310 --> 00:12:02.230
+<v Speaker 2>matter if this user data fails because we're
+
+00:12:02.230 --> 00:12:03.830
+<v Speaker 2>just gonna jump on each of the machines
+
+00:12:03.830 --> 00:12:05.430
+<v Speaker 2>anyway and start
+
+00:12:05.590 --> 00:12:07.190
+<v Speaker 2>doing things manually till we get it all
+
+00:12:07.190 --> 00:12:07.430
+<v Speaker 2>working.
+
+00:12:09.505 --> 00:12:11.985
+<v Speaker 2>So let's see if this worked. Make sure
+
+00:12:11.985 --> 00:12:13.584
+<v Speaker 2>I didn't break the user data on machine
+
+00:12:13.584 --> 00:12:14.305
+<v Speaker 2>one.
+
+00:12:14.865 --> 00:12:16.305
+<v Speaker 2>I always do that.
+
+00:12:16.625 --> 00:12:17.105
+<v Speaker 2>Anyway.
+
+00:12:18.065 --> 00:12:19.265
+<v Speaker 2>Okay.
+
+00:12:22.200 --> 00:12:23.640
+<v Speaker 2>I'm gonna assume that that worked on all
+
+00:12:23.640 --> 00:12:25.480
+<v Speaker 2>the machines. We have our three engine axes.
+
+00:12:25.480 --> 00:12:27.160
+<v Speaker 2>We've got our two h a proxy machines
+
+00:12:27.160 --> 00:12:28.360
+<v Speaker 2>spitting up.
+
+00:12:29.560 --> 00:12:31.000
+<v Speaker 2>And I asked Dan what the next step
+
+00:12:31.000 --> 00:12:32.200
+<v Speaker 2>is. I'm hoping he doesn't say go on
+
+00:12:32.200 --> 00:12:33.160
+<v Speaker 2>an h a proxy machine.
+
+00:12:34.695 --> 00:12:36.535
+<v Speaker 1>The next step is to go on a
+
+00:12:36.535 --> 00:12:37.895
+<v Speaker 1>h a proxy machine.
+
+00:12:42.215 --> 00:12:44.215
+<v Speaker 2>Alright. Or we or we can take the
+
+00:12:44.215 --> 00:12:45.895
+<v Speaker 0>time for for brief correction.
+
+00:12:46.215 --> 00:12:49.180
+<v Speaker 0>The b in bird is is not for
+
+00:12:49.180 --> 00:12:50.620
+<v Speaker 0>BGP. What's it for?
+
+00:12:52.540 --> 00:12:54.780
+<v Speaker 1>It's
+
+00:12:54.780 --> 00:12:55.660
+<v Speaker 1>like new.
+
+00:12:55.900 --> 00:12:57.180
+<v Speaker 0>It's recursive.
+
+00:12:57.900 --> 00:12:59.260
+<v Speaker 0>The b stands for bird.
+
+00:13:02.565 --> 00:13:03.685
+<v Speaker 0>Bird Internet
+
+00:13:04.085 --> 00:13:06.325
+<v Speaker 1>Well, I didn't name it. That's that's insane.
+
+00:13:08.565 --> 00:13:10.325
+<v Speaker 2>Well, we invite a guest out of Jeremy.
+
+00:13:10.325 --> 00:13:12.485
+<v Speaker 2>She's laughing him down with directions already.
+
+00:13:12.725 --> 00:13:14.325
+<v Speaker 1>That's fine. It's
+
+00:13:15.205 --> 00:13:16.005
+<v Speaker 1>that's
+
+00:13:17.610 --> 00:13:19.290
+<v Speaker 2>It is just a it's a whole of
+
+00:13:19.290 --> 00:13:20.890
+<v Speaker 0>mirrors all the way down. There's a recursive
+
+00:13:20.890 --> 00:13:22.170
+<v Speaker 1>loop forever then.
+
+00:13:24.970 --> 00:13:25.850
+<v Speaker 0>Correct.
+
+00:13:25.850 --> 00:13:28.490
+<v Speaker 2>So just to ask a few questions then.
+
+00:13:28.475 --> 00:13:30.395
+<v Speaker 2>I mean, is BERT the only way to
+
+00:13:30.395 --> 00:13:31.915
+<v Speaker 2>do this kind of setup? Are there other
+
+00:13:31.915 --> 00:13:34.635
+<v Speaker 2>tooling? Is there newer tooling? Like, what is
+
+00:13:34.635 --> 00:13:35.915
+<v Speaker 2>the the status quo when it comes to
+
+00:13:35.915 --> 00:13:37.355
+<v Speaker 2>BGP here?
+
+00:13:38.395 --> 00:13:41.050
+<v Speaker 1>From the experiences that I've had, it's if
+
+00:13:41.050 --> 00:13:42.170
+<v Speaker 1>you are wanting to
+
+00:13:43.290 --> 00:13:45.930
+<v Speaker 1>do this via software running on a server
+
+00:13:45.930 --> 00:13:46.970
+<v Speaker 1>itself, then
+
+00:13:47.370 --> 00:13:48.490
+<v Speaker 1>Bird is
+
+00:13:49.449 --> 00:13:51.129
+<v Speaker 1>the kind of de facto way of doing
+
+00:13:51.129 --> 00:13:51.610
+<v Speaker 1>it.
+
+00:13:51.930 --> 00:13:55.015
+<v Speaker 1>Other software solutions that do exist so for
+
+00:13:55.015 --> 00:13:56.855
+<v Speaker 1>instance, if you are wanting to use something
+
+00:13:56.855 --> 00:13:59.095
+<v Speaker 1>like service type load balancer in a Kubernetes
+
+00:13:59.095 --> 00:13:59.895
+<v Speaker 1>cluster,
+
+00:14:00.855 --> 00:14:04.215
+<v Speaker 1>metal l b is the defacto standard
+
+00:14:05.095 --> 00:14:05.735
+<v Speaker 1>at the moment.
+
+00:14:06.620 --> 00:14:07.180
+<v Speaker 1>But
+
+00:14:07.740 --> 00:14:10.860
+<v Speaker 1>that has a a BGP server
+
+00:14:10.940 --> 00:14:12.220
+<v Speaker 1>written in Go
+
+00:14:12.540 --> 00:14:14.860
+<v Speaker 1>that runs so when you when you advertise
+
+00:14:15.100 --> 00:14:16.380
+<v Speaker 1>a service type address,
+
+00:14:16.700 --> 00:14:18.220
+<v Speaker 1>it does exactly the same sort of thing.
+
+00:14:18.220 --> 00:14:20.105
+<v Speaker 1>It will say, this is my load balance
+
+00:14:20.105 --> 00:14:21.545
+<v Speaker 1>address outside worlds.
+
+00:14:21.705 --> 00:14:24.025
+<v Speaker 1>I have I have it. Route through me
+
+00:14:24.025 --> 00:14:26.345
+<v Speaker 1>to get to the pods that sit underneath
+
+00:14:26.345 --> 00:14:26.905
+<v Speaker 1>me.
+
+00:14:29.625 --> 00:14:31.945
+<v Speaker 1>And that's its own written in Go. But
+
+00:14:31.945 --> 00:14:33.305
+<v Speaker 1>Bird is typically the one that you would
+
+00:14:33.305 --> 00:14:33.465
+<v Speaker 1>see.
+
+00:14:35.040 --> 00:14:37.120
+<v Speaker 2>I mean, one may have taken an opportunity
+
+00:14:37.120 --> 00:14:39.200
+<v Speaker 2>to talk about their own project there too.
+
+00:14:39.360 --> 00:14:41.040
+<v Speaker 3>I was gonna say, isn't it a isn't
+
+00:14:41.040 --> 00:14:43.680
+<v Speaker 3>it a challenger to the market on for
+
+00:14:43.760 --> 00:14:45.200
+<v Speaker 3>in metal l b right now?
+
+00:14:46.080 --> 00:14:47.120
+<v Speaker 2>Maybe
+
+00:14:47.120 --> 00:14:48.160
+<v Speaker 2>at some point or another.
+
+00:14:49.435 --> 00:14:52.394
+<v Speaker 1>There is there's actually been there's there's PureLB,
+
+00:14:52.394 --> 00:14:53.995
+<v Speaker 1>which is a a full commit LB that
+
+00:14:53.995 --> 00:14:55.834
+<v Speaker 1>does the same sort of thing. Okay.
+
+00:14:56.875 --> 00:14:58.714
+<v Speaker 1>CubeVip, which is one that I've been part
+
+00:14:58.714 --> 00:14:59.915
+<v Speaker 1>of, which also
+
+00:15:00.315 --> 00:15:01.915
+<v Speaker 1>implements its own native
+
+00:15:01.995 --> 00:15:03.915
+<v Speaker 1>BGP server in Go.
+
+00:15:06.070 --> 00:15:07.510
+<v Speaker 1>Trying think what else there is.
+
+00:15:08.070 --> 00:15:09.270
+<v Speaker 2>I Rust one. There has to be a
+
+00:15:09.270 --> 00:15:11.590
+<v Speaker 2>Rust one. Come on. More than likely, there
+
+00:15:11.590 --> 00:15:13.990
+<v Speaker 1>there will be a Rust one. Yeah. There'll
+
+00:15:13.990 --> 00:15:16.310
+<v Speaker 2>be Rust LB or something. Yep. Must be.
+
+00:15:17.525 --> 00:15:20.245
+<v Speaker 2>Alright. Well, we do have our HG proxy
+
+00:15:20.245 --> 00:15:21.125
+<v Speaker 2>machines.
+
+00:15:21.205 --> 00:15:21.845
+<v Speaker 2>So
+
+00:15:22.885 --> 00:15:24.965
+<v Speaker 2>let's jump on one of them.
+
+00:15:25.285 --> 00:15:26.885
+<v Speaker 3>That was pretty fast to spin up five
+
+00:15:26.885 --> 00:15:27.605
+<v Speaker 3>servers y'all.
+
+00:15:33.430 --> 00:15:35.910
+<v Speaker 2>I moved my microphone and I reached my
+
+00:15:36.389 --> 00:15:38.230
+<v Speaker 2>fingerprint reader. It's a pain in the ass.
+
+00:15:38.310 --> 00:15:38.950
+<v Speaker 2>Anyway,
+
+00:15:40.310 --> 00:15:42.630
+<v Speaker 2>let's see. Itch a proxy.
+
+00:15:43.190 --> 00:15:44.630
+<v Speaker 2>Alright. So that will work.
+
+00:15:45.115 --> 00:15:47.115
+<v Speaker 2>So let's take a look at our HAProxy
+
+00:15:47.115 --> 00:15:48.235
+<v Speaker 2>configuration.
+
+00:15:49.195 --> 00:15:51.035
+<v Speaker 2>And what we actually wanna do here is
+
+00:15:51.035 --> 00:15:53.435
+<v Speaker 2>configure our back ends to be the three
+
+00:15:53.435 --> 00:15:54.635
+<v Speaker 2>engine axes
+
+00:15:55.035 --> 00:15:56.475
+<v Speaker 2>and serve that over
+
+00:15:57.040 --> 00:15:58.720
+<v Speaker 2>probably just the same port.
+
+00:16:00.320 --> 00:16:02.320
+<v Speaker 2>So let's see if I can remember how
+
+00:16:02.320 --> 00:16:04.080
+<v Speaker 2>to write an engine x config slash pull
+
+00:16:04.080 --> 00:16:05.280
+<v Speaker 2>one up on my other screen and hope
+
+00:16:05.280 --> 00:16:06.880
+<v Speaker 2>that nobody notices I'm looking at it.
+
+00:16:10.945 --> 00:16:12.464
+<v Speaker 3>Hey, MacKay. What are looking for looking at
+
+00:16:12.464 --> 00:16:13.585
+<v Speaker 3>on your other screen?
+
+00:16:17.024 --> 00:16:18.625
+<v Speaker 2>I'm
+
+00:16:18.625 --> 00:16:20.865
+<v Speaker 2>just checking the time. I know it's early
+
+00:16:20.865 --> 00:16:22.464
+<v Speaker 2>for you. I want you to be considerate.
+
+00:16:25.560 --> 00:16:27.800
+<v Speaker 2>Oh, look. There's this magical thing I just
+
+00:16:27.800 --> 00:16:29.240
+<v Speaker 2>copy and pasted. So
+
+00:16:30.920 --> 00:16:32.760
+<v Speaker 2>we can define our front advanced.
+
+00:16:34.040 --> 00:16:35.800
+<v Speaker 2>We can define our front ends like this.
+
+00:16:35.800 --> 00:16:38.440
+<v Speaker 2>So let's grab our IP addresses.
+
+00:16:39.665 --> 00:16:41.985
+<v Speaker 2>And I should actually just let's just share
+
+00:16:41.985 --> 00:16:43.505
+<v Speaker 2>this too actually.
+
+00:16:43.745 --> 00:16:46.625
+<v Speaker 2>This is just coming from our guides and
+
+00:16:46.625 --> 00:16:49.985
+<v Speaker 2>Equinix metal docs. So there's this great guide.
+
+00:16:49.985 --> 00:16:51.745
+<v Speaker 2>I can't zoom in on the URL bar,
+
+00:16:51.745 --> 00:16:52.305
+<v Speaker 2>can I? No.
+
+00:16:54.250 --> 00:16:59.769
+<v Speaker 2>Metals.iconx.com/developers/docs/guides/loadbalancing-aj.
+
+00:16:59.850 --> 00:17:00.410
+<v Speaker 2>I'm
+
+00:17:00.970 --> 00:17:02.570
+<v Speaker 2>stealing everything from there.
+
+00:17:03.769 --> 00:17:06.249
+<v Speaker 2>Oh, okay. So IP addresses. NGINX one.
+
+00:17:06.569 --> 00:17:07.770
+<v Speaker 2>So front end.
+
+00:17:11.644 --> 00:17:13.084
+<v Speaker 2>Port 80.
+
+00:17:14.044 --> 00:17:15.164
+<v Speaker 2>Grab this one.
+
+00:17:21.260 --> 00:17:22.700
+<v Speaker 2>And number three.
+
+00:17:30.539 --> 00:17:33.500
+<v Speaker 2>And let's see. So that's defined three front
+
+00:17:33.500 --> 00:17:35.095
+<v Speaker 2>ends, which I'm not sure if it's completely
+
+00:17:35.095 --> 00:17:37.734
+<v Speaker 2>correct because I'm skimming this very quickly.
+
+00:17:37.735 --> 00:17:39.335
+<v Speaker 2>Nope. Let's do it front end one and
+
+00:17:39.335 --> 00:17:39.974
+<v Speaker 2>two.
+
+00:17:41.654 --> 00:17:43.894
+<v Speaker 2>And they provide a back end pool of
+
+00:17:43.894 --> 00:17:45.815
+<v Speaker 2>engine x which do I need to configure
+
+00:17:45.815 --> 00:17:47.654
+<v Speaker 2>anything for? Yep.
+
+00:17:49.310 --> 00:17:50.830
+<v Speaker 2>I'm doing this all wrong.
+
+00:17:53.870 --> 00:17:56.270
+<v Speaker 2>Please stand by. Okay. We'll get there. Piece
+
+00:17:56.270 --> 00:17:58.269
+<v Speaker 2>by piece. By piece. So
+
+00:17:58.990 --> 00:18:00.670
+<v Speaker 2>what we we don't wanna bang the front
+
+00:18:00.670 --> 00:18:02.670
+<v Speaker 2>end is what we're load balancing on. So
+
+00:18:04.015 --> 00:18:06.095
+<v Speaker 2>we we actually did want www.
+
+00:18:06.095 --> 00:18:07.615
+<v Speaker 2>This is gonna be our elastic IP which
+
+00:18:07.615 --> 00:18:09.375
+<v Speaker 2>we've not allocated yet.
+
+00:18:10.255 --> 00:18:11.855
+<v Speaker 2>And then this is our engine x pool
+
+00:18:11.855 --> 00:18:13.695
+<v Speaker 2>where we do render up in TCP
+
+00:18:13.855 --> 00:18:15.695
+<v Speaker 2>and we can actually use the internal IP
+
+00:18:15.695 --> 00:18:16.495
+<v Speaker 2>addresses.
+
+00:18:16.655 --> 00:18:18.415
+<v Speaker 2>Using the public ones was very naive of
+
+00:18:18.415 --> 00:18:18.655
+<v Speaker 2>me.
+
+00:18:19.220 --> 00:18:19.860
+<v Speaker 2>So
+
+00:18:21.140 --> 00:18:22.740
+<v Speaker 2>don't laugh. Come on.
+
+00:18:24.020 --> 00:18:25.940
+<v Speaker 2>I am trying my best here.
+
+00:18:26.500 --> 00:18:27.860
+<v Speaker 2>Alright. So let's
+
+00:18:28.340 --> 00:18:29.940
+<v Speaker 2>grab the internal IP system.
+
+00:18:41.355 --> 00:18:41.674
+<v Speaker 2>Two.
+
+00:18:54.180 --> 00:18:55.940
+<v Speaker 2>My wife always asked me why people watch
+
+00:18:55.940 --> 00:18:57.220
+<v Speaker 2>it when I stream. And when I do
+
+00:18:57.220 --> 00:18:58.820
+<v Speaker 2>moments like this, wonder why too.
+
+00:19:01.895 --> 00:19:02.935
+<v Speaker 3>It's because it's
+
+00:19:03.735 --> 00:19:05.735
+<v Speaker 3>it brings us all closer together. We realize
+
+00:19:05.735 --> 00:19:07.495
+<v Speaker 3>we're not the only ones who do this
+
+00:19:07.495 --> 00:19:08.615
+<v Speaker 3>sort of thing, know?
+
+00:19:10.055 --> 00:19:13.255
+<v Speaker 2>Okay. So I
+
+00:19:12.299 --> 00:19:14.779
+<v Speaker 2>we're NGINX. We're not using elastic IP actually.
+
+00:19:14.779 --> 00:19:16.460
+<v Speaker 2>We're just gonna hard code this h a
+
+00:19:16.460 --> 00:19:18.059
+<v Speaker 2>proxy to be its own IP address and
+
+00:19:18.059 --> 00:19:19.340
+<v Speaker 2>other h a proxy to be its own
+
+00:19:19.340 --> 00:19:22.299
+<v Speaker 2>IP address. And I'm gonna copy this and
+
+00:19:22.299 --> 00:19:23.659
+<v Speaker 2>then we'll do that on h a proxy
+
+00:19:23.659 --> 00:19:24.940
+<v Speaker 2>too. But I should be able to save
+
+00:19:24.940 --> 00:19:27.340
+<v Speaker 2>that to a restart
+
+00:19:28.755 --> 00:19:30.035
+<v Speaker 2>issue proxy.
+
+00:19:32.595 --> 00:19:33.555
+<v Speaker 2>Bastard.
+
+00:19:36.835 --> 00:19:37.955
+<v Speaker 2>What did I get wrong?
+
+00:19:43.570 --> 00:19:45.010
+<v Speaker 2>Must just be
+
+00:19:50.290 --> 00:19:51.250
+<v Speaker 2>oh, that looks good.
+
+00:19:54.785 --> 00:19:56.785
+<v Speaker 2>Okay. Let's so we can do a h
+
+00:19:56.785 --> 00:19:57.985
+<v Speaker 2>a proxy check
+
+00:19:57.985 --> 00:19:59.825
+<v Speaker 2>also coming from the docs that I shared
+
+00:19:59.825 --> 00:20:01.505
+<v Speaker 2>a moment ago. It tells you to do
+
+00:20:01.505 --> 00:20:02.544
+<v Speaker 2>that first anyway.
+
+00:20:02.705 --> 00:20:03.665
+<v Speaker 2>I'm just a cowboy.
+
+00:20:06.080 --> 00:20:06.720
+<v Speaker 2>So
+
+00:20:06.880 --> 00:20:09.280
+<v Speaker 2>front end tries to use incompatible TCP back
+
+00:20:09.280 --> 00:20:10.960
+<v Speaker 2>end at your next pull as its default
+
+00:20:10.960 --> 00:20:12.240
+<v Speaker 2>back end. See mode.
+
+00:20:22.505 --> 00:20:24.745
+<v Speaker 1>Modes did did mode TCP for the front
+
+00:20:24.745 --> 00:20:25.304
+<v Speaker 1>end?
+
+00:20:27.145 --> 00:20:29.465
+<v Speaker 2>That is not listed.
+
+00:20:30.905 --> 00:20:32.585
+<v Speaker 2>Let's example
+
+00:20:33.625 --> 00:20:35.065
+<v Speaker 2>we do have some defaults.
+
+00:20:35.630 --> 00:20:36.190
+<v Speaker 2>There
+
+00:20:36.590 --> 00:20:37.710
+<v Speaker 2>we go. Okay.
+
+00:20:38.350 --> 00:20:40.190
+<v Speaker 2>So the mode should be HTTP,
+
+00:20:40.190 --> 00:20:41.150
+<v Speaker 2>not TCP.
+
+00:20:44.510 --> 00:20:45.150
+<v Speaker 2>Perfect.
+
+00:20:45.310 --> 00:20:46.030
+<v Speaker 2>Alright.
+
+00:20:49.470 --> 00:20:50.030
+<v Speaker 2>Now
+
+00:20:50.554 --> 00:20:51.674
+<v Speaker 2>in theory,
+
+00:20:51.755 --> 00:20:54.075
+<v Speaker 2>I'm gonna open a new in fact, let's
+
+00:20:54.075 --> 00:20:56.475
+<v Speaker 2>open a code window. I wanna paste that
+
+00:20:56.475 --> 00:20:58.715
+<v Speaker 2>before I lose it. Right? And then we
+
+00:20:58.715 --> 00:21:00.875
+<v Speaker 2>wanna SSH onto a t proxy too and
+
+00:21:00.875 --> 00:21:02.955
+<v Speaker 2>then we can confirm the setup actually works.
+
+00:21:02.955 --> 00:21:03.115
+<v Speaker 2>So
+
+00:21:09.620 --> 00:21:11.460
+<v Speaker 2>last time I'm doing that. Okay.
+
+00:21:12.500 --> 00:21:14.260
+<v Speaker 2>So we can test the 80 proxy one
+
+00:21:14.260 --> 00:21:15.220
+<v Speaker 2>first. Right?
+
+00:21:16.020 --> 00:21:17.620
+<v Speaker 2>Should be able to hit this on port
+
+00:21:17.620 --> 00:21:18.260
+<v Speaker 2>80.
+
+00:21:20.414 --> 00:21:22.414
+<v Speaker 1>We've got no back ends. That's that's kinda
+
+00:21:22.414 --> 00:21:24.255
+<v Speaker 2>working. Right? I'm gonna I'll I'll take that
+
+00:21:24.255 --> 00:21:24.894
+<v Speaker 2>for now.
+
+00:21:25.615 --> 00:21:26.095
+<v Speaker 2>Okay.
+
+00:21:26.975 --> 00:21:29.134
+<v Speaker 2>Let's work out our back end situational.
+
+00:21:29.375 --> 00:21:30.495
+<v Speaker 2>What did I get wrong?
+
+00:21:31.390 --> 00:21:34.029
+<v Speaker 2>So we should let's cat that fail actually.
+
+00:21:34.429 --> 00:21:35.870
+<v Speaker 2>Ping +1
+
+00:21:35.950 --> 00:21:38.029
+<v Speaker 2>0120129.
+
+00:21:40.830 --> 00:21:41.309
+<v Speaker 2>Curl.
+
+00:21:47.995 --> 00:21:49.435
+<v Speaker 2>They may just not be healthy yet. So
+
+00:21:49.435 --> 00:21:51.515
+<v Speaker 2>issue proxy will be testing them and waiting
+
+00:21:51.515 --> 00:21:53.514
+<v Speaker 2>for them to pass a certain number of
+
+00:21:54.315 --> 00:21:56.555
+<v Speaker 2>times before it delivers them as healthy traffic.
+
+00:21:56.555 --> 00:21:58.555
+<v Speaker 2>Right? That's how it works. Yeah.
+
+00:21:58.555 --> 00:22:01.274
+<v Speaker 1>That's the check part of the Yeah. So
+
+00:22:01.435 --> 00:22:02.075
+<v Speaker 2>let's see.
+
+00:22:04.950 --> 00:22:06.790
+<v Speaker 2>Nothing configured. So it's probably gonna be up
+
+00:22:06.790 --> 00:22:08.790
+<v Speaker 2>at thirty seconds if I remember correctly. But
+
+00:22:08.790 --> 00:22:10.950
+<v Speaker 2>that's me come back a while. So
+
+00:22:11.270 --> 00:22:13.270
+<v Speaker 2>let's get the other one up and running.
+
+00:22:15.510 --> 00:22:17.350
+<v Speaker 2>And we're just gonna drop in.
+
+00:22:18.635 --> 00:22:20.315
+<v Speaker 2>Like that. I think it's a good thing
+
+00:22:20.315 --> 00:22:21.274
+<v Speaker 2>I did that.
+
+00:22:22.715 --> 00:22:25.434
+<v Speaker 2>And that's gonna be the exact same except
+
+00:22:26.075 --> 00:22:28.395
+<v Speaker 2>we're gonna bind on its own IP address.
+
+00:22:33.539 --> 00:22:34.499
+<v Speaker 2>Restart.
+
+00:22:34.580 --> 00:22:35.379
+<v Speaker 2>Itchy.
+
+00:22:35.860 --> 00:22:36.259
+<v Speaker 2>Oh,
+
+00:22:39.380 --> 00:22:41.139
+<v Speaker 2>the mode. Mode. Yeah.
+
+00:22:43.380 --> 00:22:44.980
+<v Speaker 2>Thanks, Dan. I'm glad you're paying attention.
+
+00:22:52.445 --> 00:22:55.085
+<v Speaker 2>Okay. Let's run the config check. I'm not
+
+00:22:55.085 --> 00:22:56.845
+<v Speaker 2>sure what it's gonna be more about.
+
+00:23:02.590 --> 00:23:03.390
+<v Speaker 2>Okay.
+
+00:23:03.390 --> 00:23:04.669
+<v Speaker 2>Just needed a second.
+
+00:23:06.430 --> 00:23:07.149
+<v Speaker 2>Cool.
+
+00:23:07.710 --> 00:23:10.030
+<v Speaker 2>So let's see if we've got a healthy
+
+00:23:10.030 --> 00:23:11.070
+<v Speaker 2>itchy proxy one.
+
+00:23:16.085 --> 00:23:17.124
+<v Speaker 2>Nice. Okay.
+
+00:23:18.164 --> 00:23:21.684
+<v Speaker 2>I can stop panicking there. So we have
+
+00:23:22.565 --> 00:23:23.524
+<v Speaker 2>an artificially
+
+00:23:24.005 --> 00:23:24.965
+<v Speaker 2>where did Tom go?
+
+00:23:26.560 --> 00:23:29.120
+<v Speaker 2>Oh. Tom. He's coming back. I'm here.
+
+00:23:31.040 --> 00:23:31.760
+<v Speaker 2>Sorry.
+
+00:23:32.000 --> 00:23:34.880
+<v Speaker 2>Okay. So we have a artificially scaled engine
+
+00:23:34.880 --> 00:23:36.880
+<v Speaker 2>x configuration right now. Assume this is your
+
+00:23:36.880 --> 00:23:37.600
+<v Speaker 2>application.
+
+00:23:37.840 --> 00:23:40.720
+<v Speaker 2>You got two eighty proxies running, delivering traffic
+
+00:23:40.720 --> 00:23:42.565
+<v Speaker 2>to that and that's great. But right now,
+
+00:23:42.565 --> 00:23:45.765
+<v Speaker 2>we have a situation and if we point
+
+00:23:45.765 --> 00:23:46.565
+<v Speaker 2>our
+
+00:23:46.965 --> 00:23:48.725
+<v Speaker 2>elastic IP address to one of our h
+
+00:23:48.725 --> 00:23:50.565
+<v Speaker 2>a proxies and it goes down, we have
+
+00:23:50.565 --> 00:23:51.605
+<v Speaker 2>no high availability.
+
+00:23:52.645 --> 00:23:53.285
+<v Speaker 2>So
+
+00:23:53.685 --> 00:23:54.565
+<v Speaker 2>based on what
+
+00:23:55.930 --> 00:23:58.650
+<v Speaker 2>Dan said, step one is gonna be to
+
+00:23:59.210 --> 00:24:01.370
+<v Speaker 2>install birds, which we should
+
+00:24:01.610 --> 00:24:02.170
+<v Speaker 2>have.
+
+00:24:04.010 --> 00:24:05.610
+<v Speaker 2>And we have version one sixty.
+
+00:24:06.170 --> 00:24:08.090
+<v Speaker 2>So what do we do next?
+
+00:24:08.655 --> 00:24:11.935
+<v Speaker 1>So we need to ask Equinix Mettle for
+
+00:24:11.935 --> 00:24:12.975
+<v Speaker 1>an EIP.
+
+00:24:14.815 --> 00:24:15.935
+<v Speaker 1>Actually, there's a number of steps that we
+
+00:24:15.935 --> 00:24:18.415
+<v Speaker 1>need to do. Sorry. The first thing that
+
+00:24:18.415 --> 00:24:21.215
+<v Speaker 1>we need to do is to enable BGP
+
+00:24:21.615 --> 00:24:23.695
+<v Speaker 1>on our two HAProxy nodes.
+
+00:24:25.330 --> 00:24:27.010
+<v Speaker 1>So, we'll need to edit both of those
+
+00:24:27.010 --> 00:24:27.809
+<v Speaker 1>machines.
+
+00:24:33.650 --> 00:24:36.210
+<v Speaker 1>Turn on I think it is manage
+
+00:24:37.285 --> 00:24:38.645
+<v Speaker 1>I p v four
+
+00:24:41.365 --> 00:24:43.125
+<v Speaker 1>and enable BGP.
+
+00:24:45.685 --> 00:24:48.245
+<v Speaker 2>What's the default route thing you need, Jiggy?
+
+00:24:48.645 --> 00:24:50.325
+<v Speaker 1>I don't think we need to worry about
+
+00:24:50.325 --> 00:24:50.565
+<v Speaker 1>that.
+
+00:24:51.890 --> 00:24:53.730
+<v Speaker 2>Alright. I can do Let's
+
+00:24:53.730 --> 00:24:54.529
+<v Speaker 2>do it. So
+
+00:24:56.529 --> 00:25:00.609
+<v Speaker 1>what's actually happening here is the we're basically
+
+00:25:00.770 --> 00:25:02.210
+<v Speaker 1>enabling the
+
+00:25:03.809 --> 00:25:06.525
+<v Speaker 1>there's this internal things happening where we're basically
+
+00:25:06.525 --> 00:25:08.285
+<v Speaker 1>telling the top of rack switches that these
+
+00:25:08.285 --> 00:25:10.044
+<v Speaker 1>physical service sit underneath,
+
+00:25:10.845 --> 00:25:13.245
+<v Speaker 1>that they will be allowed to advertise routes
+
+00:25:13.245 --> 00:25:14.605
+<v Speaker 1>to those top rack switches.
+
+00:25:18.779 --> 00:25:19.419
+<v Speaker 2>Okay.
+
+00:25:19.820 --> 00:25:21.899
+<v Speaker 2>We have a couple of questions.
+
+00:25:21.980 --> 00:25:25.019
+<v Speaker 2>So will we tackle them just now?
+
+00:25:25.580 --> 00:25:28.620
+<v Speaker 1>We can do. Feeling brave? Alright. So we
+
+00:25:28.620 --> 00:25:30.299
+<v Speaker 2>got well, got a hey first from fusion
+
+00:25:30.299 --> 00:25:32.380
+<v Speaker 2>one. Hello. You're watching on Twitch. Nice.
+
+00:25:33.545 --> 00:25:36.825
+<v Speaker 2>Tom O'Connor asked, does anyone still use Quagga?
+
+00:25:36.905 --> 00:25:38.024
+<v Speaker 2>What's Quagga?
+
+00:25:39.385 --> 00:25:41.625
+<v Speaker 1>So somebody brought Quagga earlier
+
+00:25:41.945 --> 00:25:44.184
+<v Speaker 1>in a different conversation that I was having
+
+00:25:44.184 --> 00:25:44.825
+<v Speaker 1>today.
+
+00:25:45.625 --> 00:25:47.570
+<v Speaker 1>I don't spend all day talking about BGP,
+
+00:25:47.570 --> 00:25:49.009
+<v Speaker 1>but it seems like a very strange day
+
+00:25:49.009 --> 00:25:50.289
+<v Speaker 1>for BGP questions.
+
+00:25:50.610 --> 00:25:52.529
+<v Speaker 1>I have not heard of Quagga before until
+
+00:25:52.529 --> 00:25:55.490
+<v Speaker 1>earlier, and I didn't research it. But apparently,
+
+00:25:55.490 --> 00:25:57.250
+<v Speaker 1>I think it's just another BGP
+
+00:25:57.250 --> 00:26:00.374
+<v Speaker 1>server. So BGP is a a a a
+
+00:26:00.375 --> 00:26:03.095
+<v Speaker 1>software suite of of
+
+00:26:03.095 --> 00:26:03.894
+<v Speaker 1>routing
+
+00:26:04.215 --> 00:26:05.095
+<v Speaker 1>software.
+
+00:26:06.294 --> 00:26:07.654
+<v Speaker 1>Looks like it runs in a bunch of
+
+00:26:07.654 --> 00:26:09.815
+<v Speaker 1>different places. For whatever reason though,
+
+00:26:12.240 --> 00:26:14.160
+<v Speaker 1>most places at the moment seem to have,
+
+00:26:14.160 --> 00:26:16.000
+<v Speaker 1>as as I mentioned earlier, have have kind
+
+00:26:16.000 --> 00:26:18.640
+<v Speaker 1>of migrated towards bird. I I don't know
+
+00:26:18.640 --> 00:26:19.200
+<v Speaker 1>why.
+
+00:26:19.520 --> 00:26:21.440
+<v Speaker 1>I think it just has slowly become
+
+00:26:22.320 --> 00:26:24.960
+<v Speaker 1>the more popular of the the routing software
+
+00:26:24.960 --> 00:26:26.880
+<v Speaker 1>stacks that people people run these days.
+
+00:26:27.815 --> 00:26:29.015
+<v Speaker 2>Alright. Nice.
+
+00:26:30.935 --> 00:26:32.135
+<v Speaker 2>One funkman.
+
+00:26:32.215 --> 00:26:32.774
+<v Speaker 2>Does
+
+00:26:33.015 --> 00:26:35.095
+<v Speaker 2>h a proxy check also look for a
+
+00:26:35.095 --> 00:26:36.774
+<v Speaker 2>specific status code?
+
+00:26:37.495 --> 00:26:38.695
+<v Speaker 2>So off the top of my head, I
+
+00:26:38.695 --> 00:26:39.495
+<v Speaker 2>think h a proxy
+
+00:26:40.710 --> 00:26:43.110
+<v Speaker 2>will expect a 200 or two x x
+
+00:26:43.110 --> 00:26:45.350
+<v Speaker 2>code and or remove it from the pool
+
+00:26:45.350 --> 00:26:47.830
+<v Speaker 2>if there's any five hundreds, four hundreds are
+
+00:26:47.830 --> 00:26:50.309
+<v Speaker 2>obviously client side. So it does by default
+
+00:26:50.309 --> 00:26:52.470
+<v Speaker 2>as far as I am concerned. If anyone
+
+00:26:52.470 --> 00:26:54.230
+<v Speaker 2>wants to correct me, feel free. But yes,
+
+00:26:54.885 --> 00:26:57.205
+<v Speaker 2>we'll remove them if they are unhealthy or
+
+00:26:57.205 --> 00:26:58.325
+<v Speaker 2>unreachable too.
+
+00:26:59.365 --> 00:27:01.765
+<v Speaker 2>Oh and a colleague Ed says thanks for
+
+00:27:01.765 --> 00:27:02.644
+<v Speaker 2>the livestream.
+
+00:27:02.805 --> 00:27:04.005
+<v Speaker 2>Thank you for watching.
+
+00:27:04.325 --> 00:27:04.965
+<v Speaker 3>Hey Ed.
+
+00:27:07.525 --> 00:27:08.885
+<v Speaker 2>Hi Ed. So
+
+00:27:11.030 --> 00:27:13.270
+<v Speaker 2>we have in fact, what we request in
+
+00:27:13.270 --> 00:27:14.470
+<v Speaker 2>your elastic IP?
+
+00:27:17.830 --> 00:27:20.070
+<v Speaker 2>Yes, Dave. Okay. Thanks. Yes. So
+
+00:27:20.789 --> 00:27:22.470
+<v Speaker 2>let's just grab one. We don't need any
+
+00:27:22.470 --> 00:27:22.710
+<v Speaker 2>more.
+
+00:27:23.655 --> 00:27:25.975
+<v Speaker 2>BGP demo, that'll help me remember to delete
+
+00:27:25.975 --> 00:27:26.775
+<v Speaker 2>it later.
+
+00:27:28.135 --> 00:27:30.215
+<v Speaker 2>And that should pretty much be instant.
+
+00:27:31.975 --> 00:27:33.895
+<v Speaker 1>There we go. Exactly.
+
+00:27:35.095 --> 00:27:36.615
+<v Speaker 2>So I'm gonna copy this.
+
+00:27:37.380 --> 00:27:39.700
+<v Speaker 2>So we've enabled BGP on both of our
+
+00:27:39.700 --> 00:27:41.700
+<v Speaker 2>machines, which means that the
+
+00:27:41.860 --> 00:27:44.100
+<v Speaker 2>top of Rack switch knows to expect us
+
+00:27:44.100 --> 00:27:45.299
+<v Speaker 2>to announce something.
+
+00:27:47.220 --> 00:27:49.940
+<v Speaker 2>So we want to hear now tell Bird
+
+00:27:49.940 --> 00:27:52.020
+<v Speaker 2>that it can announce the IP. Is that
+
+00:27:52.020 --> 00:27:54.155
+<v Speaker 2>right? So the first thing that we want
+
+00:27:54.155 --> 00:27:54.955
+<v Speaker 1>to do
+
+00:27:55.435 --> 00:27:57.034
+<v Speaker 1>is to add
+
+00:27:58.395 --> 00:28:01.195
+<v Speaker 1>that IP address, that EIP,
+
+00:28:01.515 --> 00:28:03.835
+<v Speaker 1>to our loopback interface.
+
+00:28:04.475 --> 00:28:06.715
+<v Speaker 1>That IP address needs to exist on something
+
+00:28:07.020 --> 00:28:08.700
+<v Speaker 1>on the physical host itself.
+
+00:28:09.100 --> 00:28:10.940
+<v Speaker 1>Otherwise, when traffic is set there from the
+
+00:28:10.940 --> 00:28:11.980
+<v Speaker 1>outside world,
+
+00:28:12.220 --> 00:28:13.500
+<v Speaker 1>we'll just ignore it.
+
+00:28:14.940 --> 00:28:15.659
+<v Speaker 1>So
+
+00:28:16.060 --> 00:28:18.700
+<v Speaker 1>what we will need to do
+
+00:28:21.045 --> 00:28:24.085
+<v Speaker 1>is typically we will create a sub interface
+
+00:28:24.085 --> 00:28:25.445
+<v Speaker 1>on the loop back.
+
+00:28:28.245 --> 00:28:29.044
+<v Speaker 2>Alright.
+
+00:28:29.285 --> 00:28:31.845
+<v Speaker 2>Let's see if I remember this stuff. Networking.
+
+00:28:33.620 --> 00:28:35.940
+<v Speaker 2>So Network and then interfaces.
+
+00:28:36.180 --> 00:28:36.900
+<v Speaker 1>Yep.
+
+00:28:37.540 --> 00:28:38.420
+<v Speaker 2>And
+
+00:28:38.580 --> 00:28:39.940
+<v Speaker 2>where is low?
+
+00:28:40.340 --> 00:28:42.500
+<v Speaker 1>So we will need to create a new
+
+00:28:42.500 --> 00:28:43.460
+<v Speaker 1>interface.
+
+00:28:43.540 --> 00:28:45.300
+<v Speaker 1>I face low colon zero
+
+00:28:47.835 --> 00:28:49.115
+<v Speaker 1>INEX static
+
+00:28:50.155 --> 00:28:52.475
+<v Speaker 1>because it's an address replying to it. Yep.
+
+00:28:54.155 --> 00:28:55.434
+<v Speaker 2>That's all I remember.
+
+00:28:55.915 --> 00:28:58.395
+<v Speaker 1>And then, yeah, it's net masks all the
+
+00:28:58.395 --> 00:29:00.155
+<v Speaker 1>20 fives. Oh, yeah. Five fives.
+
+00:29:01.800 --> 00:29:03.400
+<v Speaker 2>Zero? No. Yeah.
+
+00:29:03.880 --> 00:29:06.600
+<v Speaker 2>Because it's Yep. 32. Okay. Yep. That's it.
+
+00:29:06.600 --> 00:29:09.000
+<v Speaker 2>Right? That is it. Yep.
+
+00:29:09.880 --> 00:29:11.480
+<v Speaker 1>So once we
+
+00:29:13.320 --> 00:29:15.000
+<v Speaker 2>This is where we laugh when I get
+
+00:29:15.000 --> 00:29:16.605
+<v Speaker 2>kicked off the machine. We can do an
+
+00:29:16.605 --> 00:29:19.644
+<v Speaker 1>if up actually, which will only affect the
+
+00:29:20.925 --> 00:29:22.044
+<v Speaker 1>that interface.
+
+00:29:25.885 --> 00:29:26.925
+<v Speaker 1>Why has that not worked?
+
+00:29:29.190 --> 00:29:32.149
+<v Speaker 1>Can you bring up the interfaces file?
+
+00:29:32.710 --> 00:29:34.869
+<v Speaker 2>Oh, this is a bit to 20, actually.
+
+00:29:34.870 --> 00:29:37.269
+<v Speaker 2>So It should still work, I think.
+
+00:29:40.870 --> 00:29:41.669
+<v Speaker 1>We started it.
+
+00:29:42.615 --> 00:29:43.414
+<v Speaker 2>Did it?
+
+00:29:46.375 --> 00:29:47.335
+<v Speaker 2>Oh, it did.
+
+00:29:47.975 --> 00:29:49.014
+<v Speaker 1>That's strange.
+
+00:29:49.815 --> 00:29:51.815
+<v Speaker 2>Yeah. It's because this is I don't think
+
+00:29:51.815 --> 00:29:53.495
+<v Speaker 2>the f up stuff particularly works for the
+
+00:29:53.495 --> 00:29:56.054
+<v Speaker 2>modern more advantage. You're supposed to do IP
+
+00:29:56.215 --> 00:29:59.570
+<v Speaker 2>as a dev or something and then up.
+
+00:30:01.250 --> 00:30:01.969
+<v Speaker 2>See
+
+00:30:03.009 --> 00:30:04.049
+<v Speaker 2>if I can remember.
+
+00:30:04.529 --> 00:30:05.330
+<v Speaker 2>Link,
+
+00:30:05.330 --> 00:30:06.929
+<v Speaker 2>low, zero,
+
+00:30:07.169 --> 00:30:07.649
+<v Speaker 2>up.
+
+00:30:10.065 --> 00:30:11.985
+<v Speaker 1>I think if you still need to edit
+
+00:30:11.985 --> 00:30:13.664
+<v Speaker 1>the interfaces, folks, I think we missed a
+
+00:30:13.664 --> 00:30:14.544
+<v Speaker 1>line off,
+
+00:30:15.505 --> 00:30:17.504
+<v Speaker 1>which was the auto
+
+00:30:19.745 --> 00:30:21.345
+<v Speaker 1>yep. Need to have the auto line above
+
+00:30:21.345 --> 00:30:22.225
+<v Speaker 1>the
+
+00:30:22.225 --> 00:30:23.024
+<v Speaker 1>low zero.
+
+00:30:28.210 --> 00:30:29.649
+<v Speaker 2>Alright. Yep.
+
+00:30:30.210 --> 00:30:32.210
+<v Speaker 2>Is that why they have upfield then? I
+
+00:30:32.210 --> 00:30:33.169
+<v Speaker 1>think so. Yeah.
+
+00:30:34.770 --> 00:30:36.290
+<v Speaker 2>And I'm a good chat there about it
+
+00:30:36.290 --> 00:30:36.929
+<v Speaker 2>being deprecated.
+
+00:30:39.625 --> 00:30:40.264
+<v Speaker 1>Okay.
+
+00:30:40.505 --> 00:30:41.144
+<v Speaker 1>So
+
+00:30:41.625 --> 00:30:44.345
+<v Speaker 1>Equinix Messle have also made our lives a
+
+00:30:44.345 --> 00:30:45.225
+<v Speaker 1>lot easier.
+
+00:30:45.625 --> 00:30:47.225
+<v Speaker 1>I think we will need to add some
+
+00:30:47.225 --> 00:30:49.385
+<v Speaker 1>additional tooling for this to actually work. So
+
+00:30:49.385 --> 00:30:50.024
+<v Speaker 1>we'll need
+
+00:30:50.825 --> 00:30:52.105
+<v Speaker 1>Python three dot six,
+
+00:30:52.610 --> 00:30:55.809
+<v Speaker 1>git, and Python three dash pip adding
+
+00:30:56.370 --> 00:30:57.170
+<v Speaker 1>to
+
+00:30:58.210 --> 00:30:59.570
+<v Speaker 1>to our systems.
+
+00:31:02.610 --> 00:31:03.250
+<v Speaker 2>K.
+
+00:31:03.570 --> 00:31:05.170
+<v Speaker 2>We don't want Python two. Why is that
+
+00:31:05.170 --> 00:31:06.935
+<v Speaker 2>even still the default? Oh, we do have
+
+00:31:06.935 --> 00:31:08.935
+<v Speaker 2>Python three. It just wasn't available under. Right.
+
+00:31:08.935 --> 00:31:11.735
+<v Speaker 2>K. Which means we probably have pep three.
+
+00:31:11.975 --> 00:31:12.615
+<v Speaker 2>No.
+
+00:31:15.495 --> 00:31:18.295
+<v Speaker 2>Alright. So let the app install
+
+00:31:18.295 --> 00:31:19.735
+<v Speaker 2>Python three.
+
+00:31:20.295 --> 00:31:21.415
+<v Speaker 1>And getters. Okay.
+
+00:31:24.159 --> 00:31:25.760
+<v Speaker 2>Get should be no. Get won't be on
+
+00:31:25.760 --> 00:31:26.479
+<v Speaker 2>the machine.
+
+00:31:26.880 --> 00:31:27.759
+<v Speaker 2>We'll see.
+
+00:31:30.159 --> 00:31:32.559
+<v Speaker 0>For minimized
+
+00:31:32.559 --> 00:31:33.919
+<v Speaker 0>or compressed Ubuntu,
+
+00:31:34.675 --> 00:31:36.435
+<v Speaker 0>the normal one that we that we get.
+
+00:31:36.435 --> 00:31:38.355
+<v Speaker 0>That was the that was last Metal Monday's
+
+00:31:38.355 --> 00:31:40.115
+<v Speaker 0>issue was git was not on there. Was
+
+00:31:40.115 --> 00:31:42.115
+<v Speaker 3>git wasn't on there? Yep. Not in the
+
+00:31:42.115 --> 00:31:42.915
+<v Speaker 0>not
+
+00:31:42.915 --> 00:31:44.195
+<v Speaker 0>in the compressed version
+
+00:31:45.155 --> 00:31:46.355
+<v Speaker 0>or the minimized version.
+
+00:31:47.539 --> 00:31:48.340
+<v Speaker 2>Alright.
+
+00:31:48.580 --> 00:31:51.220
+<v Speaker 2>That's noted for future. Next time I'm fighting
+
+00:31:51.220 --> 00:31:53.779
+<v Speaker 2>with that, need to install git. So are
+
+00:31:53.779 --> 00:31:56.419
+<v Speaker 2>you gonna tell me to get clone the
+
+00:31:56.419 --> 00:31:57.700
+<v Speaker 2>network helpers?
+
+00:31:58.260 --> 00:32:00.340
+<v Speaker 1>Yes. So with all of those bits in
+
+00:32:00.340 --> 00:32:03.615
+<v Speaker 1>place, we can grab the network helpers package,
+
+00:32:03.855 --> 00:32:04.335
+<v Speaker 1>which
+
+00:32:04.815 --> 00:32:07.135
+<v Speaker 1>will automate a lot of well, it'll automate
+
+00:32:07.135 --> 00:32:08.815
+<v Speaker 1>the entire bird config, actually.
+
+00:32:10.415 --> 00:32:12.335
+<v Speaker 2>Sounds good to me. Yeah. Staying stay me
+
+00:32:12.335 --> 00:32:12.575
+<v Speaker 2>up.
+
+00:32:14.740 --> 00:32:15.539
+<v Speaker 2>Okay.
+
+00:32:15.700 --> 00:32:17.140
+<v Speaker 2>So
+
+00:32:17.140 --> 00:32:19.380
+<v Speaker 2>what do we have here? We got some
+
+00:32:19.380 --> 00:32:21.940
+<v Speaker 2>Python scripts. We've got a RIPNI, a Dockerfile.
+
+00:32:26.835 --> 00:32:28.355
+<v Speaker 1>So the first thing that we will need
+
+00:32:28.355 --> 00:32:30.595
+<v Speaker 1>to do is install
+
+00:32:31.075 --> 00:32:33.315
+<v Speaker 1>a couple of things. So a pip three
+
+00:32:33.315 --> 00:32:34.674
+<v Speaker 1>install of
+
+00:32:34.995 --> 00:32:36.355
+<v Speaker 1>JMS path.
+
+00:32:38.515 --> 00:32:38.995
+<v Speaker 1>Mhmm.
+
+00:32:41.320 --> 00:32:41.960
+<v Speaker 2>Done.
+
+00:32:42.280 --> 00:32:45.640
+<v Speaker 1>And then pip three install minus e current
+
+00:32:45.640 --> 00:32:46.520
+<v Speaker 1>directory.
+
+00:32:49.640 --> 00:32:50.920
+<v Speaker 2>Oh, alright. Okay.
+
+00:32:51.320 --> 00:32:52.600
+<v Speaker 2>Install dashi dot.
+
+00:32:55.995 --> 00:32:58.395
+<v Speaker 1>That will get all of the dependencies that
+
+00:32:58.395 --> 00:32:59.355
+<v Speaker 1>we actually need.
+
+00:32:59.755 --> 00:33:01.675
+<v Speaker 1>The the final step now is that we
+
+00:33:01.675 --> 00:33:04.875
+<v Speaker 1>can use that Python script to actually configure
+
+00:33:06.315 --> 00:33:08.395
+<v Speaker 1>the config for us. We can do it
+
+00:33:08.395 --> 00:33:10.955
+<v Speaker 1>so it prints straight to standard out. So
+
+00:33:10.955 --> 00:33:12.850
+<v Speaker 1>we can actually see what it's gonna do.
+
+00:33:12.850 --> 00:33:14.529
+<v Speaker 2>So if you do minus r and then
+
+00:33:14.770 --> 00:33:15.409
+<v Speaker 1>bird
+
+00:33:15.730 --> 00:33:18.690
+<v Speaker 1>Mhmm. This should generate our entire bird config
+
+00:33:18.690 --> 00:33:20.129
+<v Speaker 1>for us. So
+
+00:33:21.169 --> 00:33:22.529
+<v Speaker 1>if we look here,
+
+00:33:22.850 --> 00:33:24.289
+<v Speaker 1>we can see
+
+00:33:26.505 --> 00:33:28.184
+<v Speaker 1>a number of things. One,
+
+00:33:29.145 --> 00:33:32.025
+<v Speaker 1>the router ID, that's ourselves. That's this particular
+
+00:33:32.025 --> 00:33:35.304
+<v Speaker 1>machine is going to be a BGP router.
+
+00:33:35.785 --> 00:33:36.585
+<v Speaker 1>The
+
+00:33:36.665 --> 00:33:39.305
+<v Speaker 1>interface local host is where
+
+00:33:39.750 --> 00:33:40.390
+<v Speaker 1>the
+
+00:33:40.550 --> 00:33:43.990
+<v Speaker 1>bird daemon will look for the EIP
+
+00:33:44.070 --> 00:33:46.790
+<v Speaker 1>to tell the rest of the other servers
+
+00:33:47.670 --> 00:33:49.029
+<v Speaker 1>the other machines about.
+
+00:33:49.830 --> 00:33:51.590
+<v Speaker 1>If we scroll a little bit further down,
+
+00:33:53.255 --> 00:33:54.534
+<v Speaker 1>we will find
+
+00:33:54.934 --> 00:33:56.054
+<v Speaker 1>our neighbors.
+
+00:33:56.375 --> 00:33:57.495
+<v Speaker 1>Our neighbors
+
+00:33:57.495 --> 00:33:58.214
+<v Speaker 1>are
+
+00:33:59.095 --> 00:34:00.934
+<v Speaker 1>basically the top of rack switches.
+
+00:34:01.095 --> 00:34:03.414
+<v Speaker 1>So when we enabled BGP,
+
+00:34:04.455 --> 00:34:06.375
+<v Speaker 1>that set up that kind of configuration that
+
+00:34:06.375 --> 00:34:09.170
+<v Speaker 1>allowed this particular machine to speak to those
+
+00:34:09.170 --> 00:34:11.969
+<v Speaker 1>neighbors to tell them that they have an
+
+00:34:11.969 --> 00:34:13.570
+<v Speaker 1>EIP that they're advertising.
+
+00:34:13.650 --> 00:34:15.730
+<v Speaker 1>So the Python script has gotten all of
+
+00:34:15.730 --> 00:34:17.170
+<v Speaker 1>that information for us.
+
+00:34:17.409 --> 00:34:19.089
+<v Speaker 1>We can now tell these two neighbors that
+
+00:34:19.089 --> 00:34:20.609
+<v Speaker 1>we have the EIP.
+
+00:34:21.170 --> 00:34:24.175
+<v Speaker 2>Is that getting that from the metadata?
+
+00:34:25.695 --> 00:34:27.534
+<v Speaker 1>I believe so because I don't think this
+
+00:34:27.534 --> 00:34:29.935
+<v Speaker 1>is using the wow. Yes. It is, I
+
+00:34:29.935 --> 00:34:32.175
+<v Speaker 1>guess. It's a peer IPs. Peer IPs. Yep.
+
+00:34:32.175 --> 00:34:32.574
+<v Speaker 1>Nice.
+
+00:34:33.775 --> 00:34:35.695
+<v Speaker 1>Very nice. I didn't actually know that was
+
+00:34:35.695 --> 00:34:37.869
+<v Speaker 1>how it was doing it. I I just
+
+00:34:37.869 --> 00:34:39.710
+<v Speaker 2>took a guess because I learn learn something
+
+00:34:39.710 --> 00:34:40.670
+<v Speaker 1>new every day.
+
+00:34:41.230 --> 00:34:42.909
+<v Speaker 2>Alright. So I guess we wanna run that
+
+00:34:42.909 --> 00:34:44.830
+<v Speaker 2>configure again and we wanna
+
+00:34:46.110 --> 00:34:47.310
+<v Speaker 2>store that somewhere?
+
+00:34:47.710 --> 00:34:48.350
+<v Speaker 1>We can
+
+00:34:49.085 --> 00:34:52.925
+<v Speaker 1>key that straight into at cdbirdbird.com.
+
+00:34:53.484 --> 00:34:55.565
+<v Speaker 2>Bird or board? Bird.
+
+00:34:57.244 --> 00:34:58.845
+<v Speaker 2>Just my typing. No. It's not you.
+
+00:35:02.079 --> 00:35:02.880
+<v Speaker 2>Done.
+
+00:35:03.119 --> 00:35:05.760
+<v Speaker 3>Nope. Bird, bird, bird is the word, McKay.
+
+00:35:07.839 --> 00:35:08.560
+<v Speaker 1>Now,
+
+00:35:08.880 --> 00:35:11.680
+<v Speaker 1>if we do a system CTL restart bird,
+
+00:35:16.875 --> 00:35:17.675
+<v Speaker 1>And
+
+00:35:17.755 --> 00:35:19.515
+<v Speaker 1>there's a couple commands we can do if
+
+00:35:19.515 --> 00:35:20.875
+<v Speaker 1>we do a bird c,
+
+00:35:24.475 --> 00:35:25.995
+<v Speaker 1>and we do show
+
+00:35:26.955 --> 00:35:27.915
+<v Speaker 1>protocols.
+
+00:35:27.915 --> 00:35:28.875
+<v Speaker 2>Oh, sorry. Sorry.
+
+00:35:30.700 --> 00:35:32.460
+<v Speaker 1>All space all
+
+00:35:33.820 --> 00:35:35.580
+<v Speaker 1>space neighbor
+
+00:35:35.660 --> 00:35:36.700
+<v Speaker 1>underscore
+
+00:35:36.940 --> 00:35:38.780
+<v Speaker 1>v four underscore one.
+
+00:35:39.100 --> 00:35:41.100
+<v Speaker 2>Cat hair. Rolls rolls US.
+
+00:35:44.460 --> 00:35:46.325
+<v Speaker 2>US. Must be right. Yeah. U US. Yeah.
+
+00:35:46.325 --> 00:35:48.725
+<v Speaker 1>Underscore V V 4 Underscore 1.
+
+00:35:51.365 --> 00:35:54.005
+<v Speaker 1>So here we go. We have got if
+
+00:35:54.005 --> 00:35:55.445
+<v Speaker 1>you look I'm trying to highlight this with
+
+00:35:55.445 --> 00:35:56.165
+<v Speaker 1>my mouse.
+
+00:35:56.805 --> 00:35:58.565
+<v Speaker 1>BGP state is established,
+
+00:35:59.030 --> 00:36:01.430
+<v Speaker 1>So we are speaking to
+
+00:36:01.990 --> 00:36:02.710
+<v Speaker 1>other
+
+00:36:03.109 --> 00:36:04.310
+<v Speaker 1>peer neighbors,
+
+00:36:05.349 --> 00:36:07.990
+<v Speaker 1>and we are advertising our routes to them.
+
+00:36:10.390 --> 00:36:11.430
+<v Speaker 2>Very cool.
+
+00:36:11.750 --> 00:36:13.190
+<v Speaker 1>So
+
+00:36:13.515 --> 00:36:16.075
+<v Speaker 1>we are now letting other devices know that
+
+00:36:16.075 --> 00:36:17.915
+<v Speaker 1>we have IP addresses
+
+00:36:18.395 --> 00:36:21.434
+<v Speaker 1>and that if they when they have traffic
+
+00:36:21.434 --> 00:36:23.675
+<v Speaker 1>for them, to send them to this machine.
+
+00:36:25.115 --> 00:36:27.035
+<v Speaker 1>Now this can take a few minutes to
+
+00:36:27.035 --> 00:36:28.714
+<v Speaker 1>fully propagate
+
+00:36:28.460 --> 00:36:29.740
+<v Speaker 1>for the first time.
+
+00:36:31.420 --> 00:36:32.060
+<v Speaker 2>Okay.
+
+00:36:32.460 --> 00:36:33.819
+<v Speaker 2>So do we need to do this again
+
+00:36:33.819 --> 00:36:35.900
+<v Speaker 2>on the other machine? So, yeah, we need
+
+00:36:35.900 --> 00:36:37.819
+<v Speaker 1>to do all of that on the other
+
+00:36:37.819 --> 00:36:38.299
+<v Speaker 1>machine.
+
+00:36:42.375 --> 00:36:43.415
+<v Speaker 1>Godspeed.
+
+00:36:46.295 --> 00:36:47.175
+<v Speaker 2>Network
+
+00:36:47.255 --> 00:36:48.535
+<v Speaker 2>helpers.
+
+00:36:51.255 --> 00:36:53.735
+<v Speaker 2>Install get Python three.
+
+00:36:56.570 --> 00:36:58.570
+<v Speaker 2>Was there another one? I don't think so.
+
+00:37:01.930 --> 00:37:03.690
+<v Speaker 1>We'll need to edit the local host config
+
+00:37:03.690 --> 00:37:05.530
+<v Speaker 1>as well. You should be able to grab
+
+00:37:05.530 --> 00:37:06.890
+<v Speaker 1>that config from the other one the other
+
+00:37:06.890 --> 00:37:07.050
+<v Speaker 1>one.
+
+00:37:08.135 --> 00:37:09.415
+<v Speaker 2>I'm
+
+00:37:09.415 --> 00:37:10.535
+<v Speaker 2>feeling brave.
+
+00:37:10.695 --> 00:37:12.855
+<v Speaker 2>So enter faces. Wow.
+
+00:37:13.415 --> 00:37:17.095
+<v Speaker 2>Auto load zero. I face load zero.
+
+00:37:17.095 --> 00:37:19.175
+<v Speaker 2>Next static
+
+00:37:20.740 --> 00:37:21.620
+<v Speaker 2>address.
+
+00:37:22.580 --> 00:37:24.740
+<v Speaker 2>I'll need to copy that from somewhere and
+
+00:37:24.740 --> 00:37:26.820
+<v Speaker 2>then there was a net mass. Yep.
+
+00:37:29.060 --> 00:37:31.780
+<v Speaker 2>And it's the same IP.
+
+00:37:33.300 --> 00:37:35.835
+<v Speaker 2>All good? Yep. That looks good.
+
+00:37:37.115 --> 00:37:38.635
+<v Speaker 1>If up, might work.
+
+00:37:42.395 --> 00:37:43.995
+<v Speaker 2>Oh, maybe it just fails the first time.
+
+00:37:43.995 --> 00:37:46.715
+<v Speaker 1>There we go. Okay. Let's ignore that. So,
+
+00:37:48.780 --> 00:37:50.860
+<v Speaker 2>now that I've copied these, oh, there was
+
+00:37:50.860 --> 00:37:53.260
+<v Speaker 2>a pep three install
+
+00:37:53.340 --> 00:37:55.500
+<v Speaker 2>g m e's path.
+
+00:37:56.300 --> 00:37:57.660
+<v Speaker 2>Don't know what that is, but we'll have
+
+00:37:57.660 --> 00:38:00.060
+<v Speaker 2>it. And Oh, yeah. Alright. Now I can
+
+00:38:00.060 --> 00:38:00.780
+<v Speaker 2>do the git clone.
+
+00:38:02.165 --> 00:38:03.365
+<v Speaker 2>And then there was
+
+00:38:03.845 --> 00:38:05.525
+<v Speaker 1>CD network helpers.
+
+00:38:05.925 --> 00:38:10.005
+<v Speaker 2>PIP three dash install dash e dot? Yep.
+
+00:38:10.005 --> 00:38:11.365
+<v Speaker 1>Scrub all of the
+
+00:38:11.605 --> 00:38:12.485
+<v Speaker 1>dependencies.
+
+00:38:12.805 --> 00:38:15.845
+<v Speaker 2>I have some three config bird dash r.
+
+00:38:17.030 --> 00:38:18.710
+<v Speaker 1>Oops. No. It's minus r bird.
+
+00:38:19.829 --> 00:38:20.710
+<v Speaker 1>Bastard.
+
+00:38:20.869 --> 00:38:22.550
+<v Speaker 1>So close though.
+
+00:38:24.390 --> 00:38:25.910
+<v Speaker 2>Etcetera.
+
+00:38:26.869 --> 00:38:28.390
+<v Speaker 2>Birdbird.conf.
+
+00:38:32.125 --> 00:38:33.005
+<v Speaker 1>Alright.
+
+00:38:33.165 --> 00:38:34.045
+<v Speaker 2>Restart.
+
+00:38:34.365 --> 00:38:34.925
+<v Speaker 2>So
+
+00:38:35.645 --> 00:38:37.565
+<v Speaker 2>does that mean that we have two copies
+
+00:38:37.565 --> 00:38:40.765
+<v Speaker 2>of bird advertising the same IP address? We
+
+00:38:40.765 --> 00:38:43.005
+<v Speaker 1>do. Yes. Is that good? Is that bad?
+
+00:38:43.005 --> 00:38:43.725
+<v Speaker 2>So is that normal?
+
+00:38:44.600 --> 00:38:45.000
+<v Speaker 1>It's
+
+00:38:45.480 --> 00:38:46.440
+<v Speaker 1>so I I thought
+
+00:38:47.080 --> 00:38:49.560
+<v Speaker 1>obviously, playing with Bird the first time when
+
+00:38:49.560 --> 00:38:51.080
+<v Speaker 1>I kinda first started here,
+
+00:38:51.960 --> 00:38:53.800
+<v Speaker 1>I thought it sounded kind of quite a
+
+00:38:53.800 --> 00:38:54.920
+<v Speaker 1>crazy thing to do.
+
+00:38:55.480 --> 00:38:57.400
+<v Speaker 1>Multiple hosts will advertise in the same IP
+
+00:38:57.400 --> 00:38:57.720
+<v Speaker 1>address.
+
+00:38:58.885 --> 00:39:01.205
+<v Speaker 1>On a network, typically, if you if you
+
+00:39:01.205 --> 00:39:03.525
+<v Speaker 1>were to try and do that by giving
+
+00:39:03.525 --> 00:39:06.005
+<v Speaker 1>multiple devices the same IP address, you end
+
+00:39:06.005 --> 00:39:07.525
+<v Speaker 1>up in an IP address conflict.
+
+00:39:08.165 --> 00:39:09.685
+<v Speaker 1>But this is not kind of working in
+
+00:39:09.685 --> 00:39:12.460
+<v Speaker 1>the same way. So for a start, the
+
+00:39:12.460 --> 00:39:15.500
+<v Speaker 1>the EIP address is bounced to local host.
+
+00:39:15.660 --> 00:39:18.300
+<v Speaker 1>So it's not proliferating itself on the network.
+
+00:39:19.580 --> 00:39:21.660
+<v Speaker 1>What's actually happening here is that Bird is
+
+00:39:21.660 --> 00:39:21.980
+<v Speaker 1>essentially
+
+00:39:23.115 --> 00:39:25.275
+<v Speaker 1>doing a TCP connection to those top of
+
+00:39:25.275 --> 00:39:28.555
+<v Speaker 1>rack switches, those networking devices, and advertising routes
+
+00:39:28.795 --> 00:39:29.675
+<v Speaker 1>to say,
+
+00:39:30.555 --> 00:39:31.995
+<v Speaker 1>if traffic comes to this top of rack
+
+00:39:31.995 --> 00:39:33.355
+<v Speaker 1>switch with the EIP,
+
+00:39:33.675 --> 00:39:34.875
+<v Speaker 1>send it to
+
+00:39:35.515 --> 00:39:38.190
+<v Speaker 1>send it to me. Now multiple hosts can
+
+00:39:38.190 --> 00:39:39.710
+<v Speaker 1>say that, and the top of rack switch
+
+00:39:39.710 --> 00:39:42.910
+<v Speaker 1>will then do load balancing for us and
+
+00:39:42.910 --> 00:39:45.630
+<v Speaker 1>for us. So if, for instance, one of
+
+00:39:45.630 --> 00:39:47.630
+<v Speaker 1>these machines goes down and stops having that
+
+00:39:47.630 --> 00:39:49.630
+<v Speaker 1>communication to the top of rack switches,
+
+00:39:49.790 --> 00:39:51.070
+<v Speaker 1>that route will be removed,
+
+00:39:51.575 --> 00:39:54.375
+<v Speaker 1>At which point, EIP traffic will only go
+
+00:39:54.375 --> 00:39:55.895
+<v Speaker 1>to the remaining nodes
+
+00:39:56.535 --> 00:39:58.295
+<v Speaker 1>that are advertising that address.
+
+00:40:00.055 --> 00:40:03.335
+<v Speaker 2>Okay. Nice. Nice. So we're getting load balancing
+
+00:40:03.415 --> 00:40:04.535
+<v Speaker 2>on the EIP,
+
+00:40:04.860 --> 00:40:07.100
+<v Speaker 2>which is all the governance high availability and
+
+00:40:07.100 --> 00:40:08.860
+<v Speaker 2>we've got our engine axes who are completely
+
+00:40:08.860 --> 00:40:10.300
+<v Speaker 2>oblivious to all of that who are just
+
+00:40:10.300 --> 00:40:13.020
+<v Speaker 2>responding to traffic. Yep. Awesome.
+
+00:40:14.060 --> 00:40:14.860
+<v Speaker 2>Alright.
+
+00:40:14.940 --> 00:40:17.740
+<v Speaker 2>We got another comment from Tom O'Connor
+
+00:40:17.900 --> 00:40:18.780
+<v Speaker 2>who just.
+
+00:40:19.965 --> 00:40:22.205
+<v Speaker 2>Okay. Cool. Is your proxy allows you to
+
+00:40:22.205 --> 00:40:24.365
+<v Speaker 2>configure what status code to expect with http
+
+00:40:24.365 --> 00:40:26.765
+<v Speaker 2>check expect? So you so you could say
+
+00:40:26.765 --> 00:40:29.565
+<v Speaker 2>200 frames, 300 the same, etcetera. Nice.
+
+00:40:29.965 --> 00:40:31.645
+<v Speaker 2>If you know what the defaults are, feel
+
+00:40:31.645 --> 00:40:32.765
+<v Speaker 2>free to drop that in the comments too
+
+00:40:32.765 --> 00:40:33.725
+<v Speaker 2>so we can share it.
+
+00:40:35.230 --> 00:40:37.550
+<v Speaker 2>How then do we confirm
+
+00:40:38.110 --> 00:40:39.710
+<v Speaker 2>this is working? Should I be able to
+
+00:40:39.710 --> 00:40:41.470
+<v Speaker 2>browse to my EIP now?
+
+00:40:41.870 --> 00:40:42.990
+<v Speaker 2>Hopefully.
+
+00:40:44.190 --> 00:40:45.070
+<v Speaker 2>Oh.
+
+00:40:45.950 --> 00:40:46.670
+<v Speaker 1>That's strange.
+
+00:40:47.964 --> 00:40:50.444
+<v Speaker 2>No. Is that just a time thing? Does
+
+00:40:50.444 --> 00:40:52.605
+<v Speaker 2>that mean we're just a little quick?
+
+00:40:52.925 --> 00:40:54.685
+<v Speaker 1>I shouldn't think so. No.
+
+00:40:55.565 --> 00:40:56.845
+<v Speaker 2>So I broke it.
+
+00:40:57.645 --> 00:40:59.005
+<v Speaker 1>Why is that not working?
+
+00:41:00.045 --> 00:41:01.885
+<v Speaker 2>What was that proxy command again? Can I
+
+00:41:01.885 --> 00:41:03.165
+<v Speaker 2>run that one on the other Yep?
+
+00:41:03.910 --> 00:41:05.990
+<v Speaker 1>But if one of them's advertising then,
+
+00:41:06.470 --> 00:41:09.590
+<v Speaker 1>the command is show space protocols
+
+00:41:09.590 --> 00:41:10.950
+<v Speaker 1>space all
+
+00:41:12.950 --> 00:41:13.590
+<v Speaker 1>neighbor.
+
+00:41:14.470 --> 00:41:15.190
+<v Speaker 2>What neighbor?
+
+00:41:17.184 --> 00:41:19.905
+<v Speaker 2>IP four one. Yeah. With underscores.
+
+00:41:20.145 --> 00:41:21.105
+<v Speaker 1>So it's under
+
+00:41:22.145 --> 00:41:23.424
+<v Speaker 1>neighbor underscore
+
+00:41:23.424 --> 00:41:25.185
+<v Speaker 1>I v four.
+
+00:41:27.585 --> 00:41:30.145
+<v Speaker 1>Yep. There's an underscore between neighbor and
+
+00:41:31.000 --> 00:41:32.200
+<v Speaker 1>delete the extra.
+
+00:41:33.160 --> 00:41:35.400
+<v Speaker 1>Underscore v four underscore one. There we go.
+
+00:41:35.400 --> 00:41:37.240
+<v Speaker 2>So close. Okay. So
+
+00:41:38.680 --> 00:41:40.280
+<v Speaker 2>it's established.
+
+00:41:40.280 --> 00:41:41.080
+<v Speaker 2>It's working.
+
+00:41:42.855 --> 00:41:44.535
+<v Speaker 1>So what we can also do is if
+
+00:41:44.535 --> 00:41:46.615
+<v Speaker 1>we go back to the
+
+00:41:48.695 --> 00:41:50.375
+<v Speaker 1>Equinix metal portal,
+
+00:41:51.015 --> 00:41:53.815
+<v Speaker 1>we should be able to see from the
+
+00:41:53.815 --> 00:41:54.775
+<v Speaker 1>machines
+
+00:41:55.790 --> 00:41:56.510
+<v Speaker 1>okay.
+
+00:41:56.750 --> 00:41:58.430
+<v Speaker 2>It's down. Oh,
+
+00:41:58.830 --> 00:42:00.110
+<v Speaker 1>why are you down
+
+00:42:02.750 --> 00:42:04.750
+<v Speaker 1>when you say you're up? Can I hit
+
+00:42:04.750 --> 00:42:05.390
+<v Speaker 2>update?
+
+00:42:06.670 --> 00:42:07.150
+<v Speaker 2>Yep.
+
+00:42:19.145 --> 00:42:20.585
+<v Speaker 1>Learned routes. Okay. So they
+
+00:42:21.065 --> 00:42:22.345
+<v Speaker 1>the routes have been learned.
+
+00:42:27.319 --> 00:42:30.200
+<v Speaker 2>So we have update, which is told the
+
+00:42:31.880 --> 00:42:34.280
+<v Speaker 2>router, the switch, the ASN, or whatever we
+
+00:42:34.280 --> 00:42:35.640
+<v Speaker 2>call that that
+
+00:42:35.975 --> 00:42:37.175
+<v Speaker 2>to recheck
+
+00:42:37.255 --> 00:42:38.535
+<v Speaker 2>for those published
+
+00:42:38.615 --> 00:42:40.455
+<v Speaker 2>routes, which we now got.
+
+00:42:40.935 --> 00:42:43.655
+<v Speaker 2>I still can't hit that, but I'll ignore
+
+00:42:43.655 --> 00:42:44.615
+<v Speaker 2>that for now.
+
+00:42:44.935 --> 00:42:46.935
+<v Speaker 1>If we the AJ proxy is is all
+
+00:42:46.935 --> 00:42:48.935
+<v Speaker 1>up and running as expected. So if we
+
+00:42:49.340 --> 00:42:51.420
+<v Speaker 2>Well, we can confirm that's still working or
+
+00:42:51.420 --> 00:42:54.060
+<v Speaker 2>just hidden their IPs.
+
+00:42:55.100 --> 00:42:57.180
+<v Speaker 2>This looks okay to me. Yep. Yep.
+
+00:42:58.460 --> 00:43:00.780
+<v Speaker 1>So we should oh, hang on a second.
+
+00:43:01.355 --> 00:43:04.954
+<v Speaker 1>Your HAProxy is bound to the it's bound
+
+00:43:04.954 --> 00:43:06.315
+<v Speaker 1>to the IP address.
+
+00:43:06.555 --> 00:43:09.755
+<v Speaker 1>Uh-huh. Bind it to 0000
+
+00:43:09.755 --> 00:43:11.275
+<v Speaker 1>and it will bind to
+
+00:43:11.835 --> 00:43:12.795
+<v Speaker 1>all and sundry.
+
+00:43:13.830 --> 00:43:15.430
+<v Speaker 2>We knew that. We were just testing you
+
+00:43:15.430 --> 00:43:16.150
+<v Speaker 2>by the way.
+
+00:43:17.030 --> 00:43:18.470
+<v Speaker 2>Tom and I, Jeremy, talked some of that
+
+00:43:18.470 --> 00:43:21.190
+<v Speaker 2>upfront. We're like And passed. Pop quiz. I'm
+
+00:43:25.030 --> 00:43:26.150
+<v Speaker 1>hoping this fixes everything.
+
+00:43:29.984 --> 00:43:31.984
+<v Speaker 2>Okay. Good catch, by the way. I would
+
+00:43:31.984 --> 00:43:33.585
+<v Speaker 2>have spent at least three weeks looking at
+
+00:43:33.585 --> 00:43:34.065
+<v Speaker 1>that. So
+
+00:43:37.744 --> 00:43:39.185
+<v Speaker 2>Delete to there.
+
+00:43:39.825 --> 00:43:40.545
+<v Speaker 2>Zero zero zero.
+
+00:43:41.830 --> 00:43:43.670
+<v Speaker 1>Certainly fingers across right now.
+
+00:43:45.349 --> 00:43:47.830
+<v Speaker 2>Alright. So Please work. Please work. We'll that
+
+00:43:47.830 --> 00:43:49.270
+<v Speaker 2>in a minute. We'll we'll just tackle another
+
+00:43:49.270 --> 00:43:51.910
+<v Speaker 2>comment before we we test it. So Tom
+
+00:43:51.910 --> 00:43:53.750
+<v Speaker 2>got back to this and says, the default
+
+00:43:53.750 --> 00:43:55.670
+<v Speaker 2>with option is to be checked as anything
+
+00:43:55.670 --> 00:43:57.325
+<v Speaker 2>two x x or three x x. It's
+
+00:43:57.325 --> 00:43:58.045
+<v Speaker 2>fine.
+
+00:43:58.525 --> 00:44:00.205
+<v Speaker 2>Expect this handy if you actually want to
+
+00:44:00.205 --> 00:44:02.605
+<v Speaker 2>do if you want to handle, I guess
+
+00:44:02.605 --> 00:44:04.045
+<v Speaker 2>five x x errors
+
+00:44:04.285 --> 00:44:05.885
+<v Speaker 2>back up to something else. Nice. Thank you,
+
+00:44:05.885 --> 00:44:08.125
+<v Speaker 2>Tom for that. Very useful. Alright
+
+00:44:08.765 --> 00:44:10.685
+<v Speaker 2>then. Moment of truth.
+
+00:44:15.070 --> 00:44:16.350
+<v Speaker 2>I'm out. You did it.
+
+00:44:19.870 --> 00:44:22.110
+<v Speaker 2>Very nice. That is very
+
+00:44:22.110 --> 00:44:22.830
+<v Speaker 2>cool.
+
+00:44:23.230 --> 00:44:24.030
+<v Speaker 2>Now,
+
+00:44:24.350 --> 00:44:25.470
+<v Speaker 2>I wanna
+
+00:44:25.704 --> 00:44:27.225
+<v Speaker 2>confirm some
+
+00:44:27.944 --> 00:44:30.184
+<v Speaker 2>assumptions we made there about the load balancing
+
+00:44:30.184 --> 00:44:32.185
+<v Speaker 2>on the bird side. So
+
+00:44:32.825 --> 00:44:35.625
+<v Speaker 2>is there anything like I'm sorry. I'm gonna
+
+00:44:35.625 --> 00:44:37.785
+<v Speaker 2>go to my machine and curl. Will be
+
+00:44:37.785 --> 00:44:39.305
+<v Speaker 2>anything in the headers that tells me which
+
+00:44:39.305 --> 00:44:40.505
+<v Speaker 2>machine satisfied that?
+
+00:44:43.680 --> 00:44:45.440
+<v Speaker 2>We don't know. Let's find out.
+
+00:44:48.480 --> 00:44:50.000
+<v Speaker 2>Server engine x.
+
+00:44:51.680 --> 00:44:53.280
+<v Speaker 1>Oh, there's two h t t p's there.
+
+00:44:59.805 --> 00:45:01.805
+<v Speaker 2>Was hoping it would reveal. Oh, well, maybe
+
+00:45:01.805 --> 00:45:03.565
+<v Speaker 2>the e tag will reveal. No. That's gonna
+
+00:45:03.565 --> 00:45:06.125
+<v Speaker 2>be on the document that delivers. Strats. Yeah.
+
+00:45:06.125 --> 00:45:08.605
+<v Speaker 0>I was thinking of I didn't mention, but
+
+00:45:08.605 --> 00:45:11.260
+<v Speaker 0>for demo purposes on each of those, the
+
+00:45:11.339 --> 00:45:14.380
+<v Speaker 0>the the default page for NGINX just numbering
+
+00:45:14.380 --> 00:45:15.900
+<v Speaker 0>just numbering them off.
+
+00:45:16.460 --> 00:45:18.140
+<v Speaker 2>You know what? Yeah.
+
+00:45:18.299 --> 00:45:19.819
+<v Speaker 2>What I wanted to see was, like, if
+
+00:45:19.819 --> 00:45:20.780
+<v Speaker 2>we shut down one of the h two
+
+00:45:20.780 --> 00:45:21.740
+<v Speaker 2>proxies just
+
+00:45:22.305 --> 00:45:23.185
+<v Speaker 2>just to see
+
+00:45:23.744 --> 00:45:25.265
+<v Speaker 2>it still working. That is going to the
+
+00:45:25.265 --> 00:45:26.545
+<v Speaker 2>other one. But I guess we can just
+
+00:45:26.545 --> 00:45:28.465
+<v Speaker 2>shut one down anyway. Right? So
+
+00:45:29.744 --> 00:45:31.025
+<v Speaker 1>I mean we should still at least see
+
+00:45:31.025 --> 00:45:32.065
+<v Speaker 1>errors in
+
+00:45:32.865 --> 00:45:34.385
+<v Speaker 1>no we wouldn't wouldn't we? Well we're taking
+
+00:45:34.385 --> 00:45:35.345
+<v Speaker 1>down h a proxy.
+
+00:45:37.460 --> 00:45:39.700
+<v Speaker 2>Well, yeah. So now BGP's advertising on address
+
+00:45:39.700 --> 00:45:41.859
+<v Speaker 2>that's not gonna be resolved?
+
+00:45:43.220 --> 00:45:45.299
+<v Speaker 1>Yeah. So in theory, we may load balance
+
+00:45:45.299 --> 00:45:47.299
+<v Speaker 1>now to a a dead h a proxy
+
+00:45:47.299 --> 00:45:48.819
+<v Speaker 1>instance because the server is still up.
+
+00:45:50.805 --> 00:45:52.165
+<v Speaker 2>Okay.
+
+00:45:54.724 --> 00:45:55.925
+<v Speaker 2>Is there a
+
+00:45:56.965 --> 00:45:58.565
+<v Speaker 2>what would be the route then for me
+
+00:45:58.565 --> 00:45:59.765
+<v Speaker 2>to make sure that
+
+00:46:00.085 --> 00:46:02.244
+<v Speaker 2>bird as an advertising address of HAProxy. Well,
+
+00:46:02.244 --> 00:46:04.680
+<v Speaker 2>I guess if h a proxy wasn't wasn't
+
+00:46:04.680 --> 00:46:06.200
+<v Speaker 2>resolving to that address, the machine would be
+
+00:46:06.200 --> 00:46:09.880
+<v Speaker 2>offline, really. So I I yeah. So, I
+
+00:46:09.880 --> 00:46:11.480
+<v Speaker 1>mean, so logic
+
+00:46:11.480 --> 00:46:13.800
+<v Speaker 1>logic doesn't exist in this case. You would
+
+00:46:13.800 --> 00:46:16.120
+<v Speaker 1>need to implement something or other which basically
+
+00:46:18.265 --> 00:46:21.225
+<v Speaker 1>stops this machine routing traffic unless it actually
+
+00:46:21.225 --> 00:46:22.505
+<v Speaker 1>has a service running.
+
+00:46:22.665 --> 00:46:24.345
+<v Speaker 1>So if engine x goes down, then in
+
+00:46:24.345 --> 00:46:25.625
+<v Speaker 1>theory, Bird should stop.
+
+00:46:27.065 --> 00:46:28.665
+<v Speaker 2>I'm happy with that assumption too.
+
+00:46:31.660 --> 00:46:33.500
+<v Speaker 2>Nice. Well At the moment, yeah, there there
+
+00:46:33.500 --> 00:46:35.660
+<v Speaker 1>are two different services that aren't intertwined
+
+00:46:35.660 --> 00:46:36.780
+<v Speaker 1>as such. So
+
+00:46:37.340 --> 00:46:39.660
+<v Speaker 1>all Bird cares about is basically saying to
+
+00:46:39.660 --> 00:46:41.740
+<v Speaker 1>the outside world, I have this IP address.
+
+00:46:42.700 --> 00:46:44.780
+<v Speaker 1>We need to then combine logic which says,
+
+00:46:46.095 --> 00:46:47.855
+<v Speaker 1>there's no point having this IP address if
+
+00:46:47.855 --> 00:46:49.855
+<v Speaker 1>the service is down. Yeah. I mean, we
+
+00:46:49.855 --> 00:46:51.695
+<v Speaker 2>could you could probably put that logic together
+
+00:46:51.695 --> 00:46:53.855
+<v Speaker 2>in system d by having, you know, 80
+
+00:46:53.855 --> 00:46:55.855
+<v Speaker 2>proxies or dependency on bird. And then if
+
+00:46:55.855 --> 00:46:58.335
+<v Speaker 2>one goes down, it's gonna, you know, restart
+
+00:46:58.335 --> 00:47:00.380
+<v Speaker 2>them and stuff like that. Yeah, there was
+
+00:47:00.380 --> 00:47:01.980
+<v Speaker 2>around that. I was just curious.
+
+00:47:02.140 --> 00:47:03.180
+<v Speaker 2>Throwing
+
+00:47:03.180 --> 00:47:05.020
+<v Speaker 2>random stuff as we were about to finish.
+
+00:47:05.020 --> 00:47:05.980
+<v Speaker 2>That would be neat.
+
+00:47:06.860 --> 00:47:08.300
+<v Speaker 2>Alright. Well, what we'll do is we'll give
+
+00:47:08.460 --> 00:47:10.140
+<v Speaker 2>if anyone has any questions, feel free to
+
+00:47:10.140 --> 00:47:11.660
+<v Speaker 2>drop them in the comments. We'll tackle them
+
+00:47:11.660 --> 00:47:12.700
+<v Speaker 2>and we'll wait a minute.
+
+00:47:13.655 --> 00:47:16.055
+<v Speaker 2>Tom's gonna tell us a joke just now.
+
+00:47:16.535 --> 00:47:19.095
+<v Speaker 2>Okay. You weren't paying attention, Tom. I am
+
+00:47:19.095 --> 00:47:20.055
+<v Speaker 3>telling a joke.
+
+00:47:21.335 --> 00:47:22.215
+<v Speaker 3>You all ready?
+
+00:47:22.695 --> 00:47:23.815
+<v Speaker 2>I'm ready. Do you have a joke? You
+
+00:47:23.815 --> 00:47:25.095
+<v Speaker 2>have a joke? It's it's one I got
+
+00:47:25.095 --> 00:47:26.430
+<v Speaker 3>for my daughter this morning. What did the
+
+00:47:26.430 --> 00:47:27.710
+<v Speaker 3>cow say when or what did the cat
+
+00:47:27.710 --> 00:47:28.910
+<v Speaker 3>say when it fell out of the out
+
+00:47:28.910 --> 00:47:29.710
+<v Speaker 3>of the tree?
+
+00:47:30.990 --> 00:47:32.030
+<v Speaker 3>Meow.
+
+00:47:32.829 --> 00:47:34.030
+<v Speaker 2>Oh, sorry, guys.
+
+00:47:35.790 --> 00:47:37.869
+<v Speaker 0>As as we were wrapping, Makih, I thought
+
+00:47:37.869 --> 00:47:39.150
+<v Speaker 0>it may be good to go back to
+
+00:47:39.150 --> 00:47:41.135
+<v Speaker 0>document the documentation
+
+00:47:41.135 --> 00:47:43.775
+<v Speaker 0>also. And if there was that architecture diagram,
+
+00:47:43.775 --> 00:47:45.055
+<v Speaker 0>I love pictures
+
+00:47:45.215 --> 00:47:46.255
+<v Speaker 0>that we could
+
+00:47:46.815 --> 00:47:48.655
+<v Speaker 0>look at for just a moment, unless you
+
+00:47:48.655 --> 00:47:50.255
+<v Speaker 0>wanted to draw one freehand.
+
+00:47:50.895 --> 00:47:51.055
+<v Speaker 0>But
+
+00:47:52.255 --> 00:47:53.295
+<v Speaker 3>Whiteboard it.
+
+00:47:54.015 --> 00:47:54.575
+<v Speaker 2>Alright.
+
+00:47:55.070 --> 00:47:55.630
+<v Speaker 2>And
+
+00:47:56.750 --> 00:47:57.470
+<v Speaker 2>Oh.
+
+00:47:57.550 --> 00:47:58.910
+<v Speaker 2>Uh-oh. I'm
+
+00:47:58.910 --> 00:48:00.910
+<v Speaker 1>not doing that. So that's not happening.
+
+00:48:02.430 --> 00:48:04.110
+<v Speaker 0>I was really excited.
+
+00:48:05.869 --> 00:48:07.869
+<v Speaker 0>But just the just for a quick visual
+
+00:48:07.869 --> 00:48:09.470
+<v Speaker 0>representation of what was
+
+00:48:09.815 --> 00:48:11.975
+<v Speaker 0>of the digital sand castle that was built.
+
+00:48:12.535 --> 00:48:14.455
+<v Speaker 2>Is this what you want? Yeah.
+
+00:48:15.735 --> 00:48:17.095
+<v Speaker 2>Do you wanna walk through it?
+
+00:48:17.975 --> 00:48:19.495
+<v Speaker 0>And so we can break any one of
+
+00:48:19.495 --> 00:48:20.055
+<v Speaker 0>those
+
+00:48:21.335 --> 00:48:23.175
+<v Speaker 0>break any one of those pieces, and it
+
+00:48:23.175 --> 00:48:25.950
+<v Speaker 0>will still end up with a web server?
+
+00:48:25.950 --> 00:48:27.310
+<v Speaker 1>The difference between
+
+00:48:27.710 --> 00:48:30.270
+<v Speaker 1>what we're looking at here is that our
+
+00:48:31.070 --> 00:48:32.990
+<v Speaker 1>our our system that we built today is
+
+00:48:32.990 --> 00:48:34.270
+<v Speaker 1>actually active active.
+
+00:48:35.870 --> 00:48:36.990
+<v Speaker 1>So
+
+00:48:37.405 --> 00:48:38.685
+<v Speaker 1>the EIP
+
+00:48:38.685 --> 00:48:42.045
+<v Speaker 1>will send traffic to both load balancers.
+
+00:48:42.125 --> 00:48:44.685
+<v Speaker 0>Ah, okay. It doesn't there's no kind of
+
+00:48:45.405 --> 00:48:48.365
+<v Speaker 1>no checking going on regardless of the
+
+00:48:48.765 --> 00:48:51.460
+<v Speaker 1>the the state of the load balancer. Say
+
+00:48:51.460 --> 00:48:52.740
+<v Speaker 1>the machine is different than the state of
+
+00:48:52.740 --> 00:48:54.900
+<v Speaker 1>the load balancer. So if the machine exists
+
+00:48:54.900 --> 00:48:56.500
+<v Speaker 1>and the machine is up and running, then
+
+00:48:56.500 --> 00:48:58.579
+<v Speaker 1>the the path is active to that load
+
+00:48:58.579 --> 00:48:59.619
+<v Speaker 1>balancer machine.
+
+00:49:03.045 --> 00:49:05.204
+<v Speaker 2>Right. Yeah. Okay. Yeah. And I get that.
+
+00:49:05.204 --> 00:49:07.365
+<v Speaker 2>Yeah. Because we're we're taking advantage of this.
+
+00:49:07.365 --> 00:49:07.925
+<v Speaker 2>I
+
+00:49:08.724 --> 00:49:09.765
+<v Speaker 2>can't remember what you call it. Is it
+
+00:49:09.765 --> 00:49:11.845
+<v Speaker 2>switcher or richer that does the BGP advertising?
+
+00:49:11.845 --> 00:49:13.605
+<v Speaker 2>It's a richer. Right? Rooster. Yep. This is
+
+00:49:13.605 --> 00:49:15.765
+<v Speaker 1>layer layer three. Yep. So that richer for
+
+00:49:15.765 --> 00:49:17.950
+<v Speaker 2>us is is load balancing for us. But
+
+00:49:17.950 --> 00:49:19.710
+<v Speaker 2>if we did want an active passive approach,
+
+00:49:19.710 --> 00:49:21.150
+<v Speaker 2>we would just be running bird on one
+
+00:49:21.150 --> 00:49:24.430
+<v Speaker 2>machine or leveraging other tools that was a
+
+00:49:24.430 --> 00:49:27.230
+<v Speaker 2>bit more sophisticated and could move Yeah. Like,
+
+00:49:27.230 --> 00:49:28.430
+<v Speaker 2>is that where keep a live d would
+
+00:49:28.430 --> 00:49:29.630
+<v Speaker 2>would come in? Would that be able to
+
+00:49:29.630 --> 00:49:32.625
+<v Speaker 2>do something like that? Yep. Another alternative
+
+00:49:32.705 --> 00:49:33.425
+<v Speaker 1>is
+
+00:49:34.865 --> 00:49:35.745
+<v Speaker 1>you can
+
+00:49:36.385 --> 00:49:37.825
+<v Speaker 1>there there is capability
+
+00:49:37.825 --> 00:49:40.305
+<v Speaker 1>inside the Equinix Metal API
+
+00:49:40.785 --> 00:49:41.985
+<v Speaker 1>to say,
+
+00:49:43.185 --> 00:49:44.545
+<v Speaker 1>without using BGP,
+
+00:49:44.920 --> 00:49:47.560
+<v Speaker 1>to speak to Equinix Metal API to do,
+
+00:49:47.560 --> 00:49:50.280
+<v Speaker 1>like, a direct association of an EIP to
+
+00:49:50.280 --> 00:49:51.160
+<v Speaker 1>a single machine.
+
+00:49:51.640 --> 00:49:52.520
+<v Speaker 1>So
+
+00:49:52.520 --> 00:49:54.040
+<v Speaker 1>not using BGP,
+
+00:49:54.040 --> 00:49:56.200
+<v Speaker 1>that will basically program the top rack switches
+
+00:49:56.200 --> 00:49:57.320
+<v Speaker 1>with a static route,
+
+00:49:57.875 --> 00:50:00.675
+<v Speaker 1>which says traffic for that AIP goes to
+
+00:50:00.675 --> 00:50:01.715
+<v Speaker 1>this one machine.
+
+00:50:01.954 --> 00:50:03.795
+<v Speaker 1>And that's that's through an API call.
+
+00:50:04.515 --> 00:50:06.675
+<v Speaker 2>Ah, nice. Okay. I like that too. Something
+
+00:50:06.675 --> 00:50:08.275
+<v Speaker 2>for us to play with another day for
+
+00:50:08.275 --> 00:50:10.915
+<v Speaker 2>sure. Yep. It's a little bit slower
+
+00:50:10.740 --> 00:50:12.420
+<v Speaker 1>is is the main thing to and the
+
+00:50:12.420 --> 00:50:14.020
+<v Speaker 1>main thing to be aware of.
+
+00:50:15.060 --> 00:50:15.780
+<v Speaker 2>Alright.
+
+00:50:16.020 --> 00:50:17.619
+<v Speaker 2>I I don't think we're gonna get any
+
+00:50:17.619 --> 00:50:19.540
+<v Speaker 2>more questions. If they do come in, they
+
+00:50:19.540 --> 00:50:21.460
+<v Speaker 2>come in after the buzzer, which means we
+
+00:50:21.460 --> 00:50:23.619
+<v Speaker 2>will follow-up in the comment section later.
+
+00:50:25.285 --> 00:50:28.085
+<v Speaker 2>Anything from anyone else before we we wrap
+
+00:50:28.085 --> 00:50:28.565
+<v Speaker 2>up?
+
+00:50:29.205 --> 00:50:30.485
+<v Speaker 1>I have a joke. What
+
+00:50:33.285 --> 00:50:35.285
+<v Speaker 1>is a bird's favorite game?
+
+00:50:37.125 --> 00:50:37.925
+<v Speaker 1>Beakaboo.
+
+00:50:38.380 --> 00:50:40.620
+<v Speaker 1>I don't know. Hey,
+
+00:50:41.260 --> 00:50:43.260
+<v Speaker 3>MacKay. Do you wanna throw up your
+
+00:50:43.660 --> 00:50:45.740
+<v Speaker 3>your promo code so that people can try
+
+00:50:45.740 --> 00:50:47.660
+<v Speaker 3>this stuff out for free on Equinix Medal?
+
+00:50:50.315 --> 00:50:51.035
+<v Speaker 2>Boom.
+
+00:50:51.755 --> 00:50:52.875
+<v Speaker 2>There we go. Yeah.
+
+00:50:54.875 --> 00:50:56.715
+<v Speaker 3>That is more than enough to test out
+
+00:50:56.715 --> 00:50:57.595
+<v Speaker 3>and play with.
+
+00:50:58.155 --> 00:51:00.315
+<v Speaker 2>Yeah. It was really great about that $50.
+
+00:51:00.315 --> 00:51:02.475
+<v Speaker 2>It's like, I've been trying to work out
+
+00:51:02.475 --> 00:51:03.860
+<v Speaker 2>where the sweet spot is and like you
+
+00:51:03.860 --> 00:51:05.780
+<v Speaker 2>can get a hundred hours of our small
+
+00:51:05.780 --> 00:51:07.860
+<v Speaker 2>instances which is ridiculous value.
+
+00:51:08.100 --> 00:51:10.180
+<v Speaker 2>But you can also spend that pretty quick.
+
+00:51:10.180 --> 00:51:11.860
+<v Speaker 2>You can spend it in like less than
+
+00:51:11.860 --> 00:51:13.540
+<v Speaker 2>twenty hours with the top of the lane
+
+00:51:13.540 --> 00:51:15.780
+<v Speaker 2>machines. You know, pick your poison wisely people.
+
+00:51:17.915 --> 00:51:19.835
+<v Speaker 2>Alright. Well, thank you very much for joining
+
+00:51:19.835 --> 00:51:22.075
+<v Speaker 2>us, Dan. It was great having you on
+
+00:51:22.075 --> 00:51:24.235
+<v Speaker 2>metal Mondays. We really enjoyed that and your
+
+00:51:24.235 --> 00:51:26.555
+<v Speaker 2>insights were fantastic as always.
+
+00:51:26.955 --> 00:51:28.715
+<v Speaker 0>Best dungeon master.
+
+00:51:29.355 --> 00:51:29.995
+<v Speaker 3>Absolutely.
+
+00:51:30.635 --> 00:51:31.595
+<v Speaker 3>Do you
+
+00:51:32.650 --> 00:51:34.890
+<v Speaker 3>and next week, we won't have metal Mondays,
+
+00:51:34.890 --> 00:51:36.570
+<v Speaker 3>but, Makay, you have something else
+
+00:51:36.970 --> 00:51:38.970
+<v Speaker 3>exciting for next Monday. Right?
+
+00:51:41.290 --> 00:51:42.250
+<v Speaker 2>Next Monday,
+
+00:51:42.730 --> 00:51:46.235
+<v Speaker 2>the KubeCon wrap up show? Yes. Yeah.
+
+00:51:47.515 --> 00:51:50.635
+<v Speaker 2>Obviously, the yeah. This week is KubeCon North
+
+00:51:50.635 --> 00:51:52.075
+<v Speaker 2>America virtual.
+
+00:51:52.315 --> 00:51:55.035
+<v Speaker 2>I think it is Tuesday through Friday.
+
+00:51:55.355 --> 00:51:58.395
+<v Speaker 2>I will be sitting up ex stupidly late
+
+00:51:57.870 --> 00:52:00.190
+<v Speaker 2>watching every single talk that I can so
+
+00:52:00.190 --> 00:52:01.550
+<v Speaker 2>that we can talk about it next week
+
+00:52:01.550 --> 00:52:04.110
+<v Speaker 2>and I have a host of guests joining
+
+00:52:04.110 --> 00:52:05.470
+<v Speaker 2>us as well from the Kubernetes So
+
+00:52:06.430 --> 00:52:07.710
+<v Speaker 2>we will be taking a look at the
+
+00:52:07.710 --> 00:52:08.350
+<v Speaker 2>news,
+
+00:52:08.750 --> 00:52:10.750
+<v Speaker 2>the new features and all the awesome talks
+
+00:52:10.750 --> 00:52:12.750
+<v Speaker 2>that we've seen and giving you the load
+
+00:52:12.750 --> 00:52:14.735
+<v Speaker 2>out of what we liked. It'll be awesome.
+
+00:52:14.735 --> 00:52:15.615
+<v Speaker 2>Very cool.
+
+00:52:16.095 --> 00:52:18.335
+<v Speaker 0>You can also walk your virtual body by
+
+00:52:18.335 --> 00:52:19.535
+<v Speaker 0>our digital booth.
+
+00:52:19.935 --> 00:52:20.575
+<v Speaker 3>Yeah.
+
+00:52:20.895 --> 00:52:22.255
+<v Speaker 3>I think every one of us will be
+
+00:52:22.255 --> 00:52:23.935
+<v Speaker 3>there at some point throughout the week. So
+
+00:52:23.935 --> 00:52:24.575
+<v Speaker 3>come say hi.
+
+00:52:26.091 --> 00:52:28.251
+<v Speaker 2>Alright. Sweet. Well, thank you all of you
+
+00:52:28.251 --> 00:52:29.931
+<v Speaker 2>for your time. Have a great day and
+
+00:52:29.931 --> 00:52:31.131
+<v Speaker 2>I will speak to you all very very
+
+00:52:31.131 --> 00:52:33.371
+<v Speaker 2>soon. Goodbye and a happy Monday.

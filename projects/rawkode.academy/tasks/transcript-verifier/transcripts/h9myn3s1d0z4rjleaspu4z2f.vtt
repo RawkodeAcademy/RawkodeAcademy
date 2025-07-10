@@ -1,0 +1,4328 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 1960c037-d0c3-4419-8418-ae8080cd1151
+Created: 2025-04-29T18:56:09.804Z
+Duration: 3574.1611
+Channels: 1
+
+00:00:49.880 --> 00:00:52.600
+<v Speaker 0>Hello, and welcome to today's episode of Rawkode
+
+00:00:52.600 --> 00:00:55.480
+<v Speaker 0>Live. I'm your host, Rawkode. Today, we're taking
+
+00:00:55.480 --> 00:00:57.160
+<v Speaker 0>a look at hacking Kubernetes,
+
+00:00:57.160 --> 00:00:59.560
+<v Speaker 0>playing some fun capture the flags organized for
+
+00:00:59.560 --> 00:01:01.480
+<v Speaker 0>us by our friends at Control Plane.
+
+00:01:01.800 --> 00:01:03.480
+<v Speaker 0>Before we get started, there's just a little
+
+00:01:03.480 --> 00:01:06.475
+<v Speaker 0>bit of housekeeping. So first, please subscribe to
+
+00:01:06.475 --> 00:01:08.234
+<v Speaker 0>the YouTube channel and click the bell. This
+
+00:01:08.234 --> 00:01:10.475
+<v Speaker 0>will get you alerts and notifications whenever we
+
+00:01:10.475 --> 00:01:12.234
+<v Speaker 0>have new episodes of Rawkode Live.
+
+00:01:12.875 --> 00:01:14.875
+<v Speaker 0>Next, we have a very active Discord server.
+
+00:01:14.875 --> 00:01:16.155
+<v Speaker 0>Feel free to jump in there if you
+
+00:01:16.155 --> 00:01:18.795
+<v Speaker 0>wanna chat cloud native, Kubernetes, and anything in
+
+00:01:18.795 --> 00:01:19.034
+<v Speaker 0>between.
+
+00:01:19.760 --> 00:01:21.840
+<v Speaker 0>And lastly, thank you to my employer, Equinix
+
+00:01:21.840 --> 00:01:23.360
+<v Speaker 0>Metal. They allow me to do this on
+
+00:01:23.360 --> 00:01:25.680
+<v Speaker 0>their time and leverage their hardware when required.
+
+00:01:25.680 --> 00:01:26.880
+<v Speaker 0>If you wanna check out a bare metal
+
+00:01:26.880 --> 00:01:28.640
+<v Speaker 0>cloud, use the code Rawkode.
+
+00:01:28.720 --> 00:01:30.880
+<v Speaker 0>This will get you $200 of compute, which
+
+00:01:30.880 --> 00:01:32.640
+<v Speaker 0>is around 400 hours on one of our
+
+00:01:32.640 --> 00:01:33.680
+<v Speaker 0>more modest instances.
+
+00:01:34.835 --> 00:01:36.595
+<v Speaker 0>Alright. That is a housekeeping.
+
+00:01:36.755 --> 00:01:40.195
+<v Speaker 0>Today, I am joined by Andrew Martin, the
+
+00:01:40.195 --> 00:01:42.035
+<v Speaker 0>CEO of Control Plane.
+
+00:01:44.035 --> 00:01:45.955
+<v Speaker 1>Hello. Hello. I just I've looked up and
+
+00:01:45.955 --> 00:01:47.395
+<v Speaker 0>I've seen your big cheesy smile and I
+
+00:01:47.395 --> 00:01:47.635
+<v Speaker 0>was like,
+
+00:01:49.619 --> 00:01:50.820
+<v Speaker 0>I was like, I don't I won't say
+
+00:01:50.820 --> 00:01:52.259
+<v Speaker 0>anymore. Do you wanna tell us a little
+
+00:01:52.259 --> 00:01:54.100
+<v Speaker 0>bit about yourself? And then we'll get started
+
+00:01:54.100 --> 00:01:55.140
+<v Speaker 0>on today's session.
+
+00:01:55.460 --> 00:01:57.700
+<v Speaker 1>Sure. Yes. Hello. It's a delight to be
+
+00:01:57.700 --> 00:02:00.820
+<v Speaker 1>here. I'm Andy. I'm alcohol free at this
+
+00:02:00.820 --> 00:02:01.380
+<v Speaker 1>point in time.
+
+00:02:03.875 --> 00:02:04.275
+<v Speaker 1>I,
+
+00:02:04.994 --> 00:02:05.954
+<v Speaker 1>I promise.
+
+00:02:06.275 --> 00:02:08.275
+<v Speaker 1>And, yeah. Hi. I'm the CEO at Control
+
+00:02:08.275 --> 00:02:11.155
+<v Speaker 1>Plane. We are cloud native security,
+
+00:02:11.795 --> 00:02:14.275
+<v Speaker 1>which basically means, we do DevOps, and we
+
+00:02:14.275 --> 00:02:15.155
+<v Speaker 1>try to do it well because
+
+00:02:16.220 --> 00:02:18.700
+<v Speaker 1>DevSecOps and that layer above is just solid
+
+00:02:18.700 --> 00:02:19.500
+<v Speaker 1>engineering.
+
+00:02:19.819 --> 00:02:22.540
+<v Speaker 1>So very proud to have a very
+
+00:02:22.780 --> 00:02:24.220
+<v Speaker 1>smart bunch of colleagues,
+
+00:02:24.540 --> 00:02:27.260
+<v Speaker 1>doing interesting things. We have plenty of positions
+
+00:02:27.260 --> 00:02:29.660
+<v Speaker 1>open if people are interested,
+
+00:02:29.660 --> 00:02:30.060
+<v Speaker 1>of course.
+
+00:02:30.894 --> 00:02:34.254
+<v Speaker 1>And, yeah, my background is in low level
+
+00:02:34.254 --> 00:02:36.175
+<v Speaker 1>engineering and distributed systems.
+
+00:02:36.655 --> 00:02:38.655
+<v Speaker 1>I came into security as a product of
+
+00:02:38.655 --> 00:02:39.455
+<v Speaker 1>getting
+
+00:02:39.694 --> 00:02:42.254
+<v Speaker 1>access to these systems and realizing that there
+
+00:02:42.254 --> 00:02:45.055
+<v Speaker 1>was less than perfect coverage.
+
+00:02:45.610 --> 00:02:47.690
+<v Speaker 1>Of course, a hundred percent is never possible.
+
+00:02:48.090 --> 00:02:50.569
+<v Speaker 1>So I was just able to follow my
+
+00:02:50.569 --> 00:02:51.370
+<v Speaker 1>interest
+
+00:02:51.450 --> 00:02:53.850
+<v Speaker 1>and keep on going down rabbit holes and
+
+00:02:54.170 --> 00:02:55.850
+<v Speaker 1>untangling balls of twine.
+
+00:02:56.650 --> 00:02:58.650
+<v Speaker 1>So that's how we find ourselves here today.
+
+00:02:59.535 --> 00:03:02.335
+<v Speaker 0>Awesome. Thank you for sharing. So what are
+
+00:03:02.335 --> 00:03:04.735
+<v Speaker 0>you drinking? It looked like a beer. Oh.
+
+00:03:05.455 --> 00:03:08.175
+<v Speaker 1>Yeah. I mean, I I'm almost carbon neutral,
+
+00:03:08.175 --> 00:03:09.935
+<v Speaker 1>so I'm now trying to go alcohol neutral.
+
+00:03:10.255 --> 00:03:10.895
+<v Speaker 1>If
+
+00:03:11.135 --> 00:03:12.655
+<v Speaker 1>they would like to sponsor me, this is
+
+00:03:12.655 --> 00:03:16.180
+<v Speaker 1>the most crisp and beautiful of the
+
+00:03:16.900 --> 00:03:18.340
+<v Speaker 1>unfiltered lagers.
+
+00:03:18.340 --> 00:03:20.020
+<v Speaker 1>It is 0.5%.
+
+00:03:21.379 --> 00:03:22.100
+<v Speaker 0>Nice.
+
+00:03:22.900 --> 00:03:24.659
+<v Speaker 0>It's a couple of really nice alcohol free
+
+00:03:24.659 --> 00:03:26.739
+<v Speaker 0>beers that I like actually. The Erdinger one
+
+00:03:26.739 --> 00:03:29.140
+<v Speaker 0>is really, really nice. Mhmm. And the Brewdog
+
+00:03:29.140 --> 00:03:31.215
+<v Speaker 0>ones are are particularly tasty too.
+
+00:03:32.655 --> 00:03:35.694
+<v Speaker 0>Yeah. I Sorry. The the other silent magical
+
+00:03:35.694 --> 00:03:37.615
+<v Speaker 1>beer is the the Jupiter.
+
+00:03:38.175 --> 00:03:40.255
+<v Speaker 1>And for many years of drinking in Belgium,
+
+00:03:40.334 --> 00:03:42.974
+<v Speaker 1>I've accidentally bought cases of non alcoholic beer
+
+00:03:42.974 --> 00:03:43.455
+<v Speaker 1>before.
+
+00:03:44.769 --> 00:03:46.690
+<v Speaker 1>So now at the other end of my
+
+00:03:46.690 --> 00:03:49.170
+<v Speaker 1>existence, I'm happy to type it says actually
+
+00:03:49.170 --> 00:03:52.610
+<v Speaker 1>really quite good as lagers go. Nice. So
+
+00:03:53.730 --> 00:03:54.530
+<v Speaker 0>today,
+
+00:03:54.930 --> 00:03:57.330
+<v Speaker 0>we're taking a look at some of the
+
+00:03:57.330 --> 00:03:58.930
+<v Speaker 0>CTS scenarios
+
+00:03:58.655 --> 00:04:00.334
+<v Speaker 0>that you and your team at ControlPlay and
+
+00:04:00.334 --> 00:04:02.175
+<v Speaker 0>put together. Is it the KubeCon ones?
+
+00:04:03.135 --> 00:04:05.935
+<v Speaker 1>Yes. Indeed. It is the scenarios from
+
+00:04:06.015 --> 00:04:07.215
+<v Speaker 1>last week's
+
+00:04:07.855 --> 00:04:10.735
+<v Speaker 1>epic KubeCon, frankly. The, the livestreams that we
+
+00:04:10.735 --> 00:04:12.655
+<v Speaker 1>did, one of which you were a part
+
+00:04:12.655 --> 00:04:15.780
+<v Speaker 1>of, were just fantastic. Really thoroughly enjoyed doing
+
+00:04:15.780 --> 00:04:17.060
+<v Speaker 1>them, and
+
+00:04:17.540 --> 00:04:19.540
+<v Speaker 1>we didn't have enough time to finish everything.
+
+00:04:19.779 --> 00:04:21.860
+<v Speaker 1>So we will run through them all end
+
+00:04:21.860 --> 00:04:22.500
+<v Speaker 1>to end.
+
+00:04:22.820 --> 00:04:25.300
+<v Speaker 0>Awesome. Well, I actually didn't have a chance
+
+00:04:25.300 --> 00:04:27.140
+<v Speaker 0>to partake in the CTF
+
+00:04:27.140 --> 00:04:29.375
+<v Speaker 0>last week, except for what we did on
+
+00:04:29.375 --> 00:04:31.375
+<v Speaker 0>the the livestream in between where we had
+
+00:04:31.375 --> 00:04:32.255
+<v Speaker 0>a little play.
+
+00:04:32.655 --> 00:04:34.015
+<v Speaker 0>It definitely gave me a wee taste for
+
+00:04:34.015 --> 00:04:35.055
+<v Speaker 0>it. I like, oh, I should do more
+
+00:04:35.055 --> 00:04:36.655
+<v Speaker 0>of this stuff. So I'm really excited that
+
+00:04:36.655 --> 00:04:38.655
+<v Speaker 0>we actually get to sit down together and
+
+00:04:38.655 --> 00:04:40.335
+<v Speaker 0>do this together too. So
+
+00:04:41.295 --> 00:04:43.870
+<v Speaker 0>you have sent me some rather sketchy and
+
+00:04:43.870 --> 00:04:46.030
+<v Speaker 0>dubious bash stuff to stick in my shell,
+
+00:04:46.030 --> 00:04:48.190
+<v Speaker 0>which I did without blinking an eye. So
+
+00:04:48.190 --> 00:04:49.630
+<v Speaker 0>there we go. We're gonna see how we
+
+00:04:49.630 --> 00:04:50.510
+<v Speaker 0>get on today.
+
+00:04:51.790 --> 00:04:54.590
+<v Speaker 0>I've got this link from the CTF.
+
+00:04:54.590 --> 00:04:56.574
+<v Speaker 0>I mean, can people still do this on
+
+00:04:56.574 --> 00:04:58.255
+<v Speaker 0>their own time, or is this something that
+
+00:04:58.255 --> 00:04:59.295
+<v Speaker 0>they'd have to
+
+00:04:59.935 --> 00:05:01.455
+<v Speaker 0>send you a little money for?
+
+00:05:02.335 --> 00:05:05.135
+<v Speaker 1>There are two versions, of course. We are
+
+00:05:05.135 --> 00:05:07.455
+<v Speaker 1>open core for all of this. So there
+
+00:05:07.455 --> 00:05:10.175
+<v Speaker 1>is an open source project called Kubernetes
+
+00:05:10.175 --> 00:05:10.895
+<v Speaker 1>simulator,
+
+00:05:11.750 --> 00:05:14.790
+<v Speaker 1>and that fundamentally is a provisioning engine,
+
+00:05:15.270 --> 00:05:16.870
+<v Speaker 1>aka Terraform, of course,
+
+00:05:17.270 --> 00:05:17.830
+<v Speaker 1>and
+
+00:05:18.310 --> 00:05:19.750
+<v Speaker 1>a load of nefarious
+
+00:05:19.750 --> 00:05:20.390
+<v Speaker 1>scripts
+
+00:05:20.630 --> 00:05:22.710
+<v Speaker 1>that run through and misconfigure,
+
+00:05:24.155 --> 00:05:25.995
+<v Speaker 1>I guess, security contexts
+
+00:05:25.995 --> 00:05:26.715
+<v Speaker 1>and
+
+00:05:27.115 --> 00:05:28.875
+<v Speaker 1>the definitions of what's running in a pod
+
+00:05:28.875 --> 00:05:29.595
+<v Speaker 1>and
+
+00:05:29.995 --> 00:05:30.715
+<v Speaker 1>various
+
+00:05:30.875 --> 00:05:31.995
+<v Speaker 1>various other
+
+00:05:32.235 --> 00:05:34.155
+<v Speaker 1>things that miscreants may or may not take
+
+00:05:34.155 --> 00:05:35.035
+<v Speaker 1>advantage of.
+
+00:05:35.275 --> 00:05:37.435
+<v Speaker 1>So that open source piece
+
+00:05:37.980 --> 00:05:40.380
+<v Speaker 1>is used for the CTF. Yep. It is
+
+00:05:40.380 --> 00:05:42.540
+<v Speaker 1>beholden upon me to patch the changes back
+
+00:05:42.540 --> 00:05:44.140
+<v Speaker 1>into that, so that will be done next
+
+00:05:44.140 --> 00:05:46.460
+<v Speaker 1>week because I had to take a breather.
+
+00:05:46.620 --> 00:05:47.660
+<v Speaker 1>Yes. And
+
+00:05:48.060 --> 00:05:50.460
+<v Speaker 1>to actually run this at scale, we've built
+
+00:05:50.460 --> 00:05:54.145
+<v Speaker 1>a load of, distributed orchestration around it. So
+
+00:05:54.145 --> 00:05:56.145
+<v Speaker 1>we've run that for conferences. We've run that
+
+00:05:56.145 --> 00:05:57.185
+<v Speaker 1>privately as well.
+
+00:05:57.745 --> 00:06:00.145
+<v Speaker 1>But, centrally, all of the learning experience
+
+00:06:00.385 --> 00:06:02.945
+<v Speaker 1>is available through the simulator, and all the
+
+00:06:02.945 --> 00:06:05.425
+<v Speaker 1>scenarios that we ran for, KubeCon
+
+00:06:06.290 --> 00:06:09.970
+<v Speaker 1>twenty twenty north sorry, twenty twenty EU,
+
+00:06:10.770 --> 00:06:12.210
+<v Speaker 1>no. It was North America.
+
+00:06:12.610 --> 00:06:13.650
+<v Speaker 1>It's continental
+
+00:06:13.890 --> 00:06:14.850
+<v Speaker 1>confusion
+
+00:06:15.090 --> 00:06:17.330
+<v Speaker 1>are available on the open source version. So
+
+00:06:17.330 --> 00:06:19.090
+<v Speaker 1>everything will be there, but no one can
+
+00:06:19.090 --> 00:06:21.564
+<v Speaker 1>cheat for the CTF so we don't publish
+
+00:06:21.564 --> 00:06:23.645
+<v Speaker 1>them in advance. Got it. Perfect.
+
+00:06:24.284 --> 00:06:25.565
+<v Speaker 0>Alright. So
+
+00:06:25.805 --> 00:06:28.125
+<v Speaker 0>this is the dodgy stuff you sent me.
+
+00:06:29.724 --> 00:06:30.525
+<v Speaker 0>Untars
+
+00:06:30.525 --> 00:06:33.245
+<v Speaker 0>some configurations and SSHs me in
+
+00:06:33.570 --> 00:06:35.890
+<v Speaker 0>to something. So I'm just gonna
+
+00:06:36.450 --> 00:06:38.050
+<v Speaker 0>hit k s play, let it do its
+
+00:06:38.050 --> 00:06:38.690
+<v Speaker 0>thing,
+
+00:06:38.930 --> 00:06:40.210
+<v Speaker 0>and we are
+
+00:06:41.490 --> 00:06:43.010
+<v Speaker 0>n a shell,
+
+00:06:43.650 --> 00:06:45.650
+<v Speaker 0>either in a container, on a VM, and
+
+00:06:45.650 --> 00:06:47.890
+<v Speaker 0>somewhere. Right? Is that is that all I
+
+00:06:47.890 --> 00:06:49.010
+<v Speaker 0>need to know at this point in time?
+
+00:06:50.155 --> 00:06:51.835
+<v Speaker 1>That is a correct observation.
+
+00:06:52.794 --> 00:06:53.435
+<v Speaker 1>Each
+
+00:06:54.155 --> 00:06:55.915
+<v Speaker 1>the the penultimate well, the last line of
+
+00:06:55.915 --> 00:06:58.555
+<v Speaker 1>text there where your cursor is tells us
+
+00:06:58.555 --> 00:07:00.635
+<v Speaker 1>what the starting position is.
+
+00:07:01.755 --> 00:07:02.794
+<v Speaker 1>Actually, you're
+
+00:07:03.530 --> 00:07:04.810
+<v Speaker 1>you're kind of right about the layers of
+
+00:07:04.810 --> 00:07:05.610
+<v Speaker 1>abstraction,
+
+00:07:05.610 --> 00:07:07.210
+<v Speaker 1>but yeah, we only care that it's a
+
+00:07:07.210 --> 00:07:09.530
+<v Speaker 1>pod right now. Alright. Okay. So
+
+00:07:10.010 --> 00:07:12.650
+<v Speaker 0>I'm starting in a hashtag pod,
+
+00:07:12.970 --> 00:07:14.730
+<v Speaker 0>which is in some namespace.
+
+00:07:14.730 --> 00:07:16.010
+<v Speaker 0>It wants me to
+
+00:07:16.405 --> 00:07:18.885
+<v Speaker 0>follow the captain and prove out his attack
+
+00:07:18.885 --> 00:07:20.725
+<v Speaker 0>path to find a flag.
+
+00:07:22.405 --> 00:07:24.965
+<v Speaker 0>Alright. Yes. There is this
+
+00:07:25.365 --> 00:07:26.565
+<v Speaker 1>arch nemesis
+
+00:07:27.525 --> 00:07:28.965
+<v Speaker 1>sort of archetypal
+
+00:07:30.140 --> 00:07:31.980
+<v Speaker 1>sailor of the binary maelstrom,
+
+00:07:31.980 --> 00:07:34.220
+<v Speaker 1>and all this other nonsensical rubbish,
+
+00:07:34.540 --> 00:07:37.740
+<v Speaker 1>who is this character that I've constructed
+
+00:07:38.780 --> 00:07:40.940
+<v Speaker 1>to write a book around, essentially. So that
+
+00:07:41.020 --> 00:07:42.780
+<v Speaker 1>there's a book coming out in November
+
+00:07:43.245 --> 00:07:44.685
+<v Speaker 1>called Hacking Kubernetes.
+
+00:07:45.324 --> 00:07:47.165
+<v Speaker 1>And in order to give kind of threat
+
+00:07:47.165 --> 00:07:50.925
+<v Speaker 1>modeling and attacking stuff more teeth and something
+
+00:07:50.925 --> 00:07:52.125
+<v Speaker 1>a bit more realistic,
+
+00:07:52.525 --> 00:07:54.845
+<v Speaker 1>this guy, captain hashtag exists. You will see
+
+00:07:54.845 --> 00:07:57.210
+<v Speaker 1>on the fourth lineup how much effort I
+
+00:07:57.210 --> 00:07:58.250
+<v Speaker 1>put into the,
+
+00:07:58.730 --> 00:08:01.050
+<v Speaker 1>kind of UTF eight spelling of the word
+
+00:08:01.050 --> 00:08:01.930
+<v Speaker 1>Hashtag.
+
+00:08:03.850 --> 00:08:05.850
+<v Speaker 1>And joy of all joys, it renders in
+
+00:08:05.850 --> 00:08:06.730
+<v Speaker 1>our terminals.
+
+00:08:06.890 --> 00:08:08.490
+<v Speaker 1>Truly, we are in the future.
+
+00:08:09.450 --> 00:08:11.855
+<v Speaker 1>Yeah. So this guy, captain Hashjack,
+
+00:08:11.855 --> 00:08:15.295
+<v Speaker 1>has done numerous nefarious things with his motley
+
+00:08:15.295 --> 00:08:16.815
+<v Speaker 1>crew of scoundrels.
+
+00:08:17.455 --> 00:08:19.615
+<v Speaker 1>And the point of the CTF is to
+
+00:08:20.015 --> 00:08:23.455
+<v Speaker 1>chase down what he's done and understand how
+
+00:08:23.455 --> 00:08:24.815
+<v Speaker 1>he's performed these attacks
+
+00:08:25.140 --> 00:08:26.420
+<v Speaker 1>in order to
+
+00:08:26.740 --> 00:08:28.980
+<v Speaker 1>understand for ourselves how best we secure the
+
+00:08:28.980 --> 00:08:31.620
+<v Speaker 1>cluster, how we chop off those branches on
+
+00:08:31.620 --> 00:08:32.580
+<v Speaker 1>an attack tree,
+
+00:08:33.059 --> 00:08:35.380
+<v Speaker 1>and how we model the threat model
+
+00:08:36.340 --> 00:08:38.455
+<v Speaker 1>in an abstract sense and, of course, in
+
+00:08:38.455 --> 00:08:40.455
+<v Speaker 1>the concrete sense of actually putting these controls
+
+00:08:40.455 --> 00:08:41.175
+<v Speaker 1>in place.
+
+00:08:42.054 --> 00:08:42.775
+<v Speaker 0>Okay.
+
+00:08:43.335 --> 00:08:46.375
+<v Speaker 0>So should I just start pushing buttons or
+
+00:08:46.215 --> 00:08:46.695
+<v Speaker 0>Mhmm.
+
+00:08:47.095 --> 00:08:47.815
+<v Speaker 0>Yeah. Alright.
+
+00:08:49.740 --> 00:08:51.660
+<v Speaker 0>Okay. So I do see
+
+00:08:52.300 --> 00:08:54.060
+<v Speaker 0>a process table that makes me think we
+
+00:08:54.060 --> 00:08:55.260
+<v Speaker 0>are in a container.
+
+00:09:02.140 --> 00:09:02.860
+<v Speaker 0>Confirmed.
+
+00:09:06.025 --> 00:09:07.625
+<v Speaker 0>This looks like a host disk.
+
+00:09:17.570 --> 00:09:18.450
+<v Speaker 0>Alright.
+
+00:09:21.810 --> 00:09:23.170
+<v Speaker 0>So it appeared to me that we can
+
+00:09:23.170 --> 00:09:24.530
+<v Speaker 0>just mount the host disk.
+
+00:09:24.850 --> 00:09:27.410
+<v Speaker 1>That is entirely correct. The
+
+00:09:27.810 --> 00:09:31.505
+<v Speaker 1>the telltale signs here are the container runtime
+
+00:09:31.505 --> 00:09:33.425
+<v Speaker 1>would normally mask dev
+
+00:09:33.825 --> 00:09:36.625
+<v Speaker 1>and so not give us full access to
+
+00:09:36.625 --> 00:09:37.345
+<v Speaker 1>everything
+
+00:09:37.745 --> 00:09:39.825
+<v Speaker 1>that is available on the host. Because, of
+
+00:09:39.825 --> 00:09:42.705
+<v Speaker 1>course, dev is a virtual kernel file system.
+
+00:09:42.785 --> 00:09:44.705
+<v Speaker 1>It's provided because everything in Linux is a
+
+00:09:44.705 --> 00:09:44.945
+<v Speaker 1>file.
+
+00:09:45.560 --> 00:09:47.320
+<v Speaker 1>And in a container normally,
+
+00:09:47.480 --> 00:09:48.600
+<v Speaker 1>we would not see
+
+00:09:49.240 --> 00:09:51.160
+<v Speaker 1>lots of TTYs.
+
+00:09:52.920 --> 00:09:54.360
+<v Speaker 1>If we know David's not a big fan
+
+00:09:54.360 --> 00:09:56.839
+<v Speaker 1>of Unicode. Yeah. There was a custard episode
+
+00:09:56.839 --> 00:09:57.560
+<v Speaker 0>where
+
+00:09:58.040 --> 00:09:58.920
+<v Speaker 0>a fell
+
+00:09:59.160 --> 00:10:00.760
+<v Speaker 0>Scotsman actually, Guy Templeton
+
+00:10:02.015 --> 00:10:04.335
+<v Speaker 0>ruined broke the core DNS config by swapping
+
+00:10:04.335 --> 00:10:05.935
+<v Speaker 0>out the old for a Unicode old that
+
+00:10:05.935 --> 00:10:07.775
+<v Speaker 0>looked very much like it. Yeah.
+
+00:10:08.975 --> 00:10:11.615
+<v Speaker 1>That's the the original typo squatting, I guess.
+
+00:10:11.615 --> 00:10:12.975
+<v Speaker 0>Painful.
+
+00:10:13.055 --> 00:10:14.530
+<v Speaker 0>Anyway. Yeah. Big time.
+
+00:10:15.650 --> 00:10:17.810
+<v Speaker 1>Yeah. So so with normally some very restricted
+
+00:10:17.810 --> 00:10:18.610
+<v Speaker 1>but
+
+00:10:19.410 --> 00:10:22.130
+<v Speaker 1>but but yes, you are you're bang on.
+
+00:10:22.290 --> 00:10:24.290
+<v Speaker 1>This is exactly where we want to be.
+
+00:10:25.730 --> 00:10:27.090
+<v Speaker 0>So I guess
+
+00:10:27.615 --> 00:10:30.095
+<v Speaker 0>I mean, I've got access to the desk.
+
+00:10:30.095 --> 00:10:32.895
+<v Speaker 0>I can just share it this. I'm assuming
+
+00:10:32.895 --> 00:10:33.855
+<v Speaker 0>I've know
+
+00:10:36.415 --> 00:10:37.375
+<v Speaker 0>Kubernetes.
+
+00:10:38.495 --> 00:10:39.215
+<v Speaker 0>Yeah.
+
+00:10:40.095 --> 00:10:42.015
+<v Speaker 0>I've got the rootster. That's always a good
+
+00:10:42.015 --> 00:10:42.334
+<v Speaker 0>sign.
+
+00:10:44.060 --> 00:10:45.820
+<v Speaker 0>I've got ability to
+
+00:10:46.060 --> 00:10:49.020
+<v Speaker 0>speak to the cubelet or even probably modify
+
+00:10:49.980 --> 00:10:51.180
+<v Speaker 0>no. Thank you.
+
+00:10:51.500 --> 00:10:53.740
+<v Speaker 0>I was starting manifest. Alright. Okay.
+
+00:10:54.540 --> 00:10:56.060
+<v Speaker 0>So am I supposed to be looking for
+
+00:10:56.060 --> 00:10:57.260
+<v Speaker 0>a flag or am I just trying to
+
+00:10:57.260 --> 00:10:58.540
+<v Speaker 0>take the roots there? It's like,
+
+00:10:59.214 --> 00:11:02.735
+<v Speaker 0>I'm looking for something. Right? Yes. There are
+
+00:11:02.735 --> 00:11:05.455
+<v Speaker 1>flags littered across all the clusters.
+
+00:11:05.774 --> 00:11:07.375
+<v Speaker 1>In this case, there's only one.
+
+00:11:10.735 --> 00:11:11.135
+<v Speaker 0>Okay.
+
+00:11:12.050 --> 00:11:14.370
+<v Speaker 1>The, there's a vital piece of information which
+
+00:11:14.370 --> 00:11:17.009
+<v Speaker 1>I should, in the spirits of Fairplay, share
+
+00:11:17.009 --> 00:11:19.410
+<v Speaker 1>with you, and that's that the flags have
+
+00:11:19.410 --> 00:11:20.850
+<v Speaker 1>a well known format.
+
+00:11:21.089 --> 00:11:24.129
+<v Speaker 1>So flag underscore c t f, open curly
+
+00:11:24.129 --> 00:11:24.769
+<v Speaker 1>parentheses,
+
+00:11:25.995 --> 00:11:27.274
+<v Speaker 1>a hex block,
+
+00:11:27.435 --> 00:11:29.115
+<v Speaker 1>and then a close parenthesis.
+
+00:11:30.235 --> 00:11:32.154
+<v Speaker 1>So it is possible if you have the
+
+00:11:32.154 --> 00:11:33.514
+<v Speaker 1>time and inclination
+
+00:11:33.514 --> 00:11:35.755
+<v Speaker 1>to find these flags. Some of them,
+
+00:11:36.074 --> 00:11:37.675
+<v Speaker 1>it takes a a little bit longer to
+
+00:11:37.675 --> 00:11:38.795
+<v Speaker 1>find. So
+
+00:11:40.580 --> 00:11:43.700
+<v Speaker 1>sniffing around in some places is useful.
+
+00:11:47.940 --> 00:11:50.260
+<v Speaker 0>I mean, I just check things that I
+
+00:11:50.260 --> 00:11:52.340
+<v Speaker 0>would assume would probably be
+
+00:11:54.084 --> 00:11:55.045
+<v Speaker 0>obvious.
+
+00:11:57.524 --> 00:11:59.204
+<v Speaker 0>So what you'd like, I mean, I've never
+
+00:11:59.204 --> 00:12:01.365
+<v Speaker 0>done like a real CTF. Right? So if
+
+00:12:01.365 --> 00:12:02.885
+<v Speaker 0>I was partaking in this,
+
+00:12:03.524 --> 00:12:05.444
+<v Speaker 0>are there any hints or advice that you
+
+00:12:05.444 --> 00:12:07.210
+<v Speaker 0>would give to people? Like, what should actually
+
+00:12:07.210 --> 00:12:08.970
+<v Speaker 0>be doing? Like, once you get access to
+
+00:12:08.970 --> 00:12:11.210
+<v Speaker 0>the the root disk, other common
+
+00:12:11.529 --> 00:12:12.970
+<v Speaker 0>places, paths,
+
+00:12:13.130 --> 00:12:15.450
+<v Speaker 0>commands they should be running, things they should
+
+00:12:15.450 --> 00:12:16.570
+<v Speaker 0>be looking out for?
+
+00:12:17.770 --> 00:12:19.850
+<v Speaker 1>That's a really good question. The
+
+00:12:20.890 --> 00:12:22.090
+<v Speaker 1>playing a CTF
+
+00:12:22.214 --> 00:12:23.654
+<v Speaker 1>and avoiding
+
+00:12:23.654 --> 00:12:25.894
+<v Speaker 1>or evading intrusion detection,
+
+00:12:26.295 --> 00:12:29.095
+<v Speaker 1>are are quite different things. So if we
+
+00:12:29.095 --> 00:12:32.134
+<v Speaker 1>were actually attacking a host system that we
+
+00:12:32.134 --> 00:12:32.774
+<v Speaker 1>were,
+
+00:12:33.014 --> 00:12:36.055
+<v Speaker 1>we were red teaming, we had legitimate reason
+
+00:12:35.610 --> 00:12:37.210
+<v Speaker 1>to be, to be attacking
+
+00:12:37.930 --> 00:12:39.290
+<v Speaker 1>the system, of course,
+
+00:12:40.329 --> 00:12:42.410
+<v Speaker 1>which is the disclaimer on on all of
+
+00:12:42.410 --> 00:12:43.850
+<v Speaker 1>the the CTF stuff.
+
+00:12:44.890 --> 00:12:46.010
+<v Speaker 1>In that case,
+
+00:12:46.410 --> 00:12:48.730
+<v Speaker 1>we would probably be trying to tread quite
+
+00:12:48.730 --> 00:12:51.695
+<v Speaker 1>carefully. So we wouldn't necessarily be grepping for
+
+00:12:51.695 --> 00:12:54.015
+<v Speaker 1>stuff, although that is, frankly,
+
+00:12:54.655 --> 00:12:56.015
+<v Speaker 1>the the best way to solve a CTF
+
+00:12:56.015 --> 00:12:56.975
+<v Speaker 1>a lot of the time.
+
+00:12:57.935 --> 00:12:59.775
+<v Speaker 1>We would try and perhaps,
+
+00:12:59.935 --> 00:13:02.655
+<v Speaker 1>depending upon our level of, of defense evasion.
+
+00:13:03.160 --> 00:13:04.200
+<v Speaker 1>I was just watching,
+
+00:13:05.400 --> 00:13:07.800
+<v Speaker 1>we were doing a Sands call earlier,
+
+00:13:08.200 --> 00:13:10.360
+<v Speaker 1>and there was a really great presentation on
+
+00:13:10.920 --> 00:13:12.440
+<v Speaker 1>emerging threat actors,
+
+00:13:12.600 --> 00:13:14.600
+<v Speaker 1>and they popped up a SolarWinds slide.
+
+00:13:15.000 --> 00:13:16.360
+<v Speaker 1>The SolarWinds slide,
+
+00:13:16.600 --> 00:13:18.280
+<v Speaker 1>the the attack began
+
+00:13:18.824 --> 00:13:21.225
+<v Speaker 1>getting on for a year before they actually
+
+00:13:21.225 --> 00:13:23.065
+<v Speaker 1>dropped the Sunburst malware
+
+00:13:23.384 --> 00:13:26.185
+<v Speaker 1>the Sunspot malware. So they were super stealthy.
+
+00:13:26.185 --> 00:13:28.985
+<v Speaker 1>They were just doing one thing really cautiously
+
+00:13:29.144 --> 00:13:29.944
+<v Speaker 1>at a time
+
+00:13:30.639 --> 00:13:31.440
+<v Speaker 1>because,
+
+00:13:32.320 --> 00:13:33.920
+<v Speaker 1>I mean, you don't wanna trigger those alarm
+
+00:13:33.920 --> 00:13:34.640
+<v Speaker 1>systems.
+
+00:13:36.399 --> 00:13:37.600
+<v Speaker 1>In a CTF,
+
+00:13:38.399 --> 00:13:40.240
+<v Speaker 1>I haven't played a CTF with IDS. I
+
+00:13:40.240 --> 00:13:42.240
+<v Speaker 1>think it's it's a great idea and watch
+
+00:13:42.240 --> 00:13:43.360
+<v Speaker 1>out for next
+
+00:13:43.665 --> 00:13:45.505
+<v Speaker 1>KubeCon CTF, I guess.
+
+00:13:46.305 --> 00:13:48.065
+<v Speaker 1>But, yeah, in in this case,
+
+00:13:49.345 --> 00:13:51.584
+<v Speaker 1>speaking personally, I go and look in places
+
+00:13:51.584 --> 00:13:52.144
+<v Speaker 1>that,
+
+00:13:52.704 --> 00:13:55.024
+<v Speaker 1>I would drop things myself, I guess.
+
+00:13:55.665 --> 00:13:56.545
+<v Speaker 1>The root directory
+
+00:13:57.000 --> 00:13:59.480
+<v Speaker 1>is normally somewhere that an administrator
+
+00:13:59.640 --> 00:14:02.040
+<v Speaker 1>if I've just got a Snowflake server and,
+
+00:14:02.760 --> 00:14:05.160
+<v Speaker 1>as you and I can probably recall from
+
+00:14:05.160 --> 00:14:08.600
+<v Speaker 1>the days before wide automation and DevOps being
+
+00:14:09.075 --> 00:14:10.595
+<v Speaker 1>being a thing almost,
+
+00:14:11.235 --> 00:14:12.595
+<v Speaker 1>we used to have to go on servers,
+
+00:14:12.595 --> 00:14:13.795
+<v Speaker 1>and we used to have to move
+
+00:14:14.035 --> 00:14:16.835
+<v Speaker 1>keys around. We used to generate our certificates
+
+00:14:16.835 --> 00:14:18.675
+<v Speaker 1>from the server itself.
+
+00:14:19.395 --> 00:14:21.235
+<v Speaker 1>And the slash root directory
+
+00:14:21.779 --> 00:14:22.500
+<v Speaker 1>is
+
+00:14:22.740 --> 00:14:26.100
+<v Speaker 1>a it's a place where root trusts
+
+00:14:26.420 --> 00:14:27.779
+<v Speaker 1>they only have access.
+
+00:14:29.060 --> 00:14:31.860
+<v Speaker 1>Yeah. So so something in here is
+
+00:14:32.899 --> 00:14:34.180
+<v Speaker 1>likely to cause
+
+00:14:34.820 --> 00:14:39.300
+<v Speaker 1>cause problems for
+
+00:14:37.355 --> 00:14:38.394
+<v Speaker 1>a flag
+
+00:14:38.394 --> 00:14:39.675
+<v Speaker 1>defender maybe.
+
+00:14:41.035 --> 00:14:43.274
+<v Speaker 0>Alright. Well, I love that I could see
+
+00:14:43.274 --> 00:14:44.795
+<v Speaker 0>the kernel with AWS and I could set
+
+00:14:44.795 --> 00:14:47.915
+<v Speaker 0>the metadata API. That would be fun. But
+
+00:14:47.915 --> 00:14:50.074
+<v Speaker 0>I'm looking in this root thingy. And you
+
+00:14:50.074 --> 00:14:50.795
+<v Speaker 0>said
+
+00:14:51.640 --> 00:14:53.000
+<v Speaker 0>you wouldn't grab?
+
+00:14:53.320 --> 00:14:55.960
+<v Speaker 0>Why would you not grab? In a CTF,
+
+00:14:55.960 --> 00:14:56.600
+<v Speaker 1>I would.
+
+00:14:56.840 --> 00:14:59.320
+<v Speaker 0>Alright. But on on
+
+00:14:59.320 --> 00:15:00.120
+<v Speaker 1>a non
+
+00:15:02.600 --> 00:15:04.045
+<v Speaker 1>excellent work, sir.
+
+00:15:07.245 --> 00:15:09.005
+<v Speaker 0>Hate that I don't have my all complete.
+
+00:15:09.725 --> 00:15:10.524
+<v Speaker 1>I know.
+
+00:15:11.644 --> 00:15:12.845
+<v Speaker 0>Cdf
+
+00:15:12.925 --> 00:15:14.045
+<v Speaker 0>dot star.
+
+00:15:15.884 --> 00:15:16.845
+<v Speaker 0>Was
+
+00:15:17.790 --> 00:15:20.350
+<v Speaker 0>there was something there. There we go.
+
+00:15:23.470 --> 00:15:26.029
+<v Speaker 1>Very good. That is it. Oh, look. There's
+
+00:15:26.029 --> 00:15:27.950
+<v Speaker 1>more more UTF eight.
+
+00:15:28.670 --> 00:15:29.710
+<v Speaker 1>What a joy.
+
+00:15:31.870 --> 00:15:32.430
+<v Speaker 1>Alright.
+
+00:15:33.365 --> 00:15:35.845
+<v Speaker 1>So if you just if you grep for
+
+00:15:35.845 --> 00:15:38.644
+<v Speaker 1>the flag again Yeah. It's in the authorized
+
+00:15:38.644 --> 00:15:40.725
+<v Speaker 0>keys fail, wasn't it? Yeah. You got it.
+
+00:15:45.750 --> 00:15:48.230
+<v Speaker 0>That is bashing this thing. There we go.
+
+00:15:49.990 --> 00:15:50.630
+<v Speaker 0>So
+
+00:15:54.950 --> 00:15:57.670
+<v Speaker 0>the the flag is this nasty person has
+
+00:15:57.670 --> 00:15:59.590
+<v Speaker 0>added SSH keys to the authorized keys, so
+
+00:15:59.590 --> 00:16:01.110
+<v Speaker 0>they have access to the host going forward.
+
+00:16:02.144 --> 00:16:04.145
+<v Speaker 1>That is exactly it. Yes.
+
+00:16:05.584 --> 00:16:07.345
+<v Speaker 1>And this is one of the
+
+00:16:07.825 --> 00:16:09.985
+<v Speaker 1>one of the ways to achieve persistence if
+
+00:16:09.985 --> 00:16:12.945
+<v Speaker 1>you are just mounting the host file system.
+
+00:16:13.720 --> 00:16:16.920
+<v Speaker 1>Because, of course, without using NS enter, we've
+
+00:16:16.920 --> 00:16:20.520
+<v Speaker 1>only really technically charrooted or entered the the
+
+00:16:20.520 --> 00:16:22.280
+<v Speaker 1>host's mount namespace.
+
+00:16:22.440 --> 00:16:24.760
+<v Speaker 1>If you run a a PS again here,
+
+00:16:24.840 --> 00:16:26.440
+<v Speaker 1>you'll see you'll see it's still in the
+
+00:16:26.440 --> 00:16:26.760
+<v Speaker 1>container.
+
+00:16:28.075 --> 00:16:31.195
+<v Speaker 0>Oh, because of the bash. Yeah. Chirutz told
+
+00:16:31.195 --> 00:16:33.675
+<v Speaker 1>you the Oh. The the magic, I think.
+
+00:16:35.595 --> 00:16:36.795
+<v Speaker 1>Yeah. So so
+
+00:16:39.060 --> 00:16:41.140
+<v Speaker 1>yeah. Precisely. So you you're able to navigate
+
+00:16:41.140 --> 00:16:42.820
+<v Speaker 1>that file system and pull all the things
+
+00:16:42.820 --> 00:16:43.780
+<v Speaker 1>from it.
+
+00:16:44.900 --> 00:16:47.380
+<v Speaker 0>Mhmm. But but we're still yeah. Exactly. As
+
+00:16:47.380 --> 00:16:49.060
+<v Speaker 1>you see, we're still in the process namespace
+
+00:16:49.060 --> 00:16:50.180
+<v Speaker 1>of the container.
+
+00:16:50.820 --> 00:16:52.660
+<v Speaker 1>So the only namespace we've managed to break
+
+00:16:52.660 --> 00:16:54.205
+<v Speaker 1>into so far
+
+00:16:54.605 --> 00:16:57.005
+<v Speaker 1>is, is the mount namespace, and that means
+
+00:16:57.005 --> 00:16:59.165
+<v Speaker 1>to actually break out onto the host, we
+
+00:16:59.165 --> 00:17:00.525
+<v Speaker 1>need to do one of a few things.
+
+00:17:00.925 --> 00:17:01.965
+<v Speaker 1>The simplest
+
+00:17:02.125 --> 00:17:02.685
+<v Speaker 1>is,
+
+00:17:03.485 --> 00:17:05.005
+<v Speaker 1>well, let's say the simplest.
+
+00:17:05.325 --> 00:17:07.325
+<v Speaker 1>We can do what we've done here, which
+
+00:17:07.325 --> 00:17:08.204
+<v Speaker 1>is to drop
+
+00:17:08.710 --> 00:17:11.030
+<v Speaker 1>an author a public key into the host
+
+00:17:11.030 --> 00:17:12.310
+<v Speaker 1>dot SSH
+
+00:17:12.310 --> 00:17:13.910
+<v Speaker 1>authorized keys for root.
+
+00:17:14.470 --> 00:17:16.390
+<v Speaker 1>If we wanted to use that attack route
+
+00:17:16.390 --> 00:17:18.950
+<v Speaker 1>on a modern system, we'd also probably have
+
+00:17:18.950 --> 00:17:20.230
+<v Speaker 1>to enable route login
+
+00:17:20.964 --> 00:17:22.964
+<v Speaker 1>for for SSHD
+
+00:17:22.964 --> 00:17:25.124
+<v Speaker 1>because that's not always enabled anymore,
+
+00:17:25.684 --> 00:17:27.124
+<v Speaker 1>but we can do loads of things.
+
+00:17:29.125 --> 00:17:30.965
+<v Speaker 1>Interacting with system d units is a bit
+
+00:17:30.965 --> 00:17:32.644
+<v Speaker 1>more difficult, of course. Sorry to interrupt.
+
+00:17:33.830 --> 00:17:35.190
+<v Speaker 0>I I was I was only gonna say
+
+00:17:35.190 --> 00:17:38.470
+<v Speaker 0>we we have access to the etcetera kubernetes.
+
+00:17:38.470 --> 00:17:39.830
+<v Speaker 0>We have access to the kubelet in the
+
+00:17:39.830 --> 00:17:41.190
+<v Speaker 0>static pod manifest.
+
+00:17:41.190 --> 00:17:42.550
+<v Speaker 0>So we mean, we could run a privilege
+
+00:17:42.550 --> 00:17:43.510
+<v Speaker 0>pod in there,
+
+00:17:44.870 --> 00:17:46.790
+<v Speaker 0>which would get us access to the all
+
+00:17:46.790 --> 00:17:47.990
+<v Speaker 0>the namespaces on the host.
+
+00:17:49.255 --> 00:17:51.415
+<v Speaker 1>Yes. If we had n a center in
+
+00:17:51.415 --> 00:17:53.575
+<v Speaker 1>that pod, then we could just blaze into
+
+00:17:53.575 --> 00:17:54.615
+<v Speaker 1>all the namespaces.
+
+00:17:55.015 --> 00:17:56.935
+<v Speaker 1>But because we've just because we're in a
+
+00:17:56.935 --> 00:17:59.735
+<v Speaker 1>pod with that, slash dev access,
+
+00:18:00.215 --> 00:18:01.174
+<v Speaker 1>which is normally
+
+00:18:01.415 --> 00:18:03.095
+<v Speaker 1>because it's privileged anyway,
+
+00:18:04.990 --> 00:18:07.070
+<v Speaker 1>That's the route we've taken. But, yeah, exactly
+
+00:18:07.070 --> 00:18:08.750
+<v Speaker 1>as you say, we could just run another
+
+00:18:08.750 --> 00:18:10.830
+<v Speaker 1>container. Mhmm. We could just drop in a
+
+00:18:10.830 --> 00:18:12.029
+<v Speaker 1>shadow pod that
+
+00:18:12.750 --> 00:18:14.190
+<v Speaker 1>has the tooling that we want to break
+
+00:18:14.190 --> 00:18:16.030
+<v Speaker 1>out onto the host. We could drop in
+
+00:18:16.030 --> 00:18:17.710
+<v Speaker 1>a cron job, which fires off a reverse
+
+00:18:17.710 --> 00:18:18.030
+<v Speaker 1>shell.
+
+00:18:18.544 --> 00:18:20.145
+<v Speaker 1>We could mess with some of the system
+
+00:18:20.145 --> 00:18:22.145
+<v Speaker 1>d units, although they might need a daemon
+
+00:18:22.145 --> 00:18:23.664
+<v Speaker 1>reload and that would take longer.
+
+00:18:24.705 --> 00:18:28.465
+<v Speaker 1>It's game over for multiple different games simultaneously.
+
+00:18:30.784 --> 00:18:31.184
+<v Speaker 0>Nice.
+
+00:18:34.110 --> 00:18:37.950
+<v Speaker 1>Super cool. Excellent work. Okay. Let us progress.
+
+00:18:39.230 --> 00:18:40.830
+<v Speaker 0>Alright. Do I need do I need new
+
+00:18:40.830 --> 00:18:43.070
+<v Speaker 0>stack new things? Or am I done with
+
+00:18:43.070 --> 00:18:44.030
+<v Speaker 0>this shell?
+
+00:18:44.590 --> 00:18:46.350
+<v Speaker 1>Yes. That shell is
+
+00:18:46.750 --> 00:18:47.950
+<v Speaker 1>thoroughly popped
+
+00:18:48.415 --> 00:18:50.414
+<v Speaker 1>and no longer very used to us.
+
+00:18:50.815 --> 00:18:51.375
+<v Speaker 1>So
+
+00:18:52.815 --> 00:18:54.014
+<v Speaker 1>here we go.
+
+00:18:54.975 --> 00:18:56.975
+<v Speaker 1>And this highly advanced,
+
+00:18:58.495 --> 00:19:02.255
+<v Speaker 1>tar g z based
+
+00:19:00.590 --> 00:19:04.110
+<v Speaker 1>access provisioning mode is is how we run
+
+00:19:04.350 --> 00:19:05.070
+<v Speaker 1>the
+
+00:19:06.110 --> 00:19:09.070
+<v Speaker 1>the KubeCon CTF as well. And all credit
+
+00:19:09.070 --> 00:19:10.110
+<v Speaker 1>to the attendees,
+
+00:19:10.670 --> 00:19:12.190
+<v Speaker 1>many of them did question
+
+00:19:12.510 --> 00:19:14.030
+<v Speaker 1>what do we think we were doing,
+
+00:19:14.695 --> 00:19:18.295
+<v Speaker 1>just throwing around bits of bash and tarballs,
+
+00:19:18.455 --> 00:19:19.255
+<v Speaker 0>which is put
+
+00:19:19.735 --> 00:19:20.855
+<v Speaker 0>it on a USB
+
+00:19:20.855 --> 00:19:22.295
+<v Speaker 0>key and give it to them. Right?
+
+00:19:23.975 --> 00:19:25.255
+<v Speaker 1>It's coming in by pigeon.
+
+00:19:28.630 --> 00:19:31.670
+<v Speaker 0>Alright. So we're now in a second
+
+00:19:31.830 --> 00:19:34.070
+<v Speaker 0>shell. I'm assuming like what,
+
+00:19:34.550 --> 00:19:36.550
+<v Speaker 0>you know, the new people they're joining c
+
+00:19:36.550 --> 00:19:39.445
+<v Speaker 0>test. Right? The first five commands you should
+
+00:19:39.445 --> 00:19:41.684
+<v Speaker 0>run. I'm assuming are look at the processes,
+
+00:19:42.245 --> 00:19:44.565
+<v Speaker 0>look at the main points, look at
+
+00:19:46.565 --> 00:19:48.725
+<v Speaker 0>maybe wanna see if you've got an sophisticated
+
+00:19:48.725 --> 00:19:51.125
+<v Speaker 0>network or no access to the network. Like,
+
+00:19:51.125 --> 00:19:52.565
+<v Speaker 0>what would what would you run beyond that?
+
+00:19:53.630 --> 00:19:55.869
+<v Speaker 1>Yeah. That that's awesome. I
+
+00:19:56.750 --> 00:19:58.669
+<v Speaker 1>I have some useful collateral that I will
+
+00:19:58.669 --> 00:20:00.830
+<v Speaker 1>share in a second. Alright. But but the
+
+00:20:00.830 --> 00:20:02.750
+<v Speaker 1>first thing is just to exactly like you
+
+00:20:02.750 --> 00:20:05.230
+<v Speaker 1>say, check the mount points because they bleed
+
+00:20:05.230 --> 00:20:07.389
+<v Speaker 1>so much of the abstraction of a container.
+
+00:20:08.625 --> 00:20:10.465
+<v Speaker 1>From there, it's worth checking.
+
+00:20:12.545 --> 00:20:14.705
+<v Speaker 1>We can see in in the process table
+
+00:20:14.705 --> 00:20:15.345
+<v Speaker 1>if
+
+00:20:15.745 --> 00:20:18.385
+<v Speaker 1>if we are actually in a process namespace.
+
+00:20:18.945 --> 00:20:20.545
+<v Speaker 1>Yeah. Precisely. So all good.
+
+00:20:21.860 --> 00:20:24.019
+<v Speaker 1>The the network as well is super useful.
+
+00:20:24.100 --> 00:20:26.339
+<v Speaker 1>We should be we should have a pod
+
+00:20:27.139 --> 00:20:29.059
+<v Speaker 1>well, rather, we should have a local Ethernet
+
+00:20:29.059 --> 00:20:29.859
+<v Speaker 1>adapter
+
+00:20:29.940 --> 00:20:32.340
+<v Speaker 1>that is on something that looks like a
+
+00:20:32.340 --> 00:20:33.459
+<v Speaker 1>private range.
+
+00:20:33.700 --> 00:20:35.620
+<v Speaker 1>It should probably also look like quite a
+
+00:20:35.620 --> 00:20:37.514
+<v Speaker 1>small range because we assume it's a pod
+
+00:20:37.514 --> 00:20:38.234
+<v Speaker 1>network.
+
+00:20:39.034 --> 00:20:41.195
+<v Speaker 1>If it's not, then maybe we've got access
+
+00:20:41.195 --> 00:20:42.394
+<v Speaker 1>to the host adapter.
+
+00:20:43.434 --> 00:20:46.475
+<v Speaker 1>There's also a super useful, bit of kernel
+
+00:20:46.475 --> 00:20:48.074
+<v Speaker 1>jiggery pokery that
+
+00:20:48.394 --> 00:20:51.034
+<v Speaker 1>we can do. So because we're,
+
+00:20:52.130 --> 00:20:54.290
+<v Speaker 1>I I I checked ID as well just
+
+00:20:54.290 --> 00:20:55.170
+<v Speaker 1>to see,
+
+00:20:55.650 --> 00:20:56.290
+<v Speaker 1>what,
+
+00:20:57.170 --> 00:20:59.090
+<v Speaker 1>what we are. Okay. So
+
+00:20:59.490 --> 00:21:02.130
+<v Speaker 1>if we now cat proc self
+
+00:21:02.130 --> 00:21:02.770
+<v Speaker 1>status,
+
+00:21:05.675 --> 00:21:07.195
+<v Speaker 1>then we can see some stuff in here
+
+00:21:07.195 --> 00:21:09.515
+<v Speaker 1>that also looks a bit like what AMI
+
+00:21:09.515 --> 00:21:10.955
+<v Speaker 1>contained brings us.
+
+00:21:11.434 --> 00:21:14.075
+<v Speaker 1>AMI contained is the canonical
+
+00:21:14.715 --> 00:21:16.635
+<v Speaker 1>internal container observability
+
+00:21:16.635 --> 00:21:19.610
+<v Speaker 1>tool written by Jess Fraz, who just shipped
+
+00:21:19.610 --> 00:21:22.090
+<v Speaker 1>all the container security stuff right at the
+
+00:21:22.090 --> 00:21:22.649
+<v Speaker 1>beginning.
+
+00:21:23.530 --> 00:21:25.370
+<v Speaker 1>But we do have to pull a binary
+
+00:21:25.370 --> 00:21:27.450
+<v Speaker 1>into our pod if we want to run
+
+00:21:27.450 --> 00:21:30.274
+<v Speaker 1>am I contained. So proc self status will
+
+00:21:30.274 --> 00:21:32.114
+<v Speaker 1>tell us quite a lot of things.
+
+00:21:32.674 --> 00:21:34.115
+<v Speaker 1>We can see that we have no set
+
+00:21:34.115 --> 00:21:36.355
+<v Speaker 1>comp enabled on the, like, seventh or eighth
+
+00:21:36.355 --> 00:21:37.794
+<v Speaker 1>line up there.
+
+00:21:38.835 --> 00:21:40.515
+<v Speaker 1>We can see some of the capabilities that
+
+00:21:40.515 --> 00:21:41.234
+<v Speaker 1>we've got.
+
+00:21:41.875 --> 00:21:43.154
+<v Speaker 1>Although broadly,
+
+00:21:43.394 --> 00:21:44.674
+<v Speaker 1>I I don't decode those.
+
+00:21:45.580 --> 00:21:46.940
+<v Speaker 1>And then if we go up,
+
+00:21:47.500 --> 00:21:48.459
+<v Speaker 1>there is,
+
+00:21:49.500 --> 00:21:51.100
+<v Speaker 1>we can see the UID. Of course, we
+
+00:21:51.100 --> 00:21:52.619
+<v Speaker 1>can see that through ID as well.
+
+00:21:54.700 --> 00:21:57.099
+<v Speaker 1>And it's some interesting information.
+
+00:21:57.820 --> 00:21:59.500
+<v Speaker 1>To take this to the next level, the
+
+00:21:59.500 --> 00:22:00.700
+<v Speaker 1>AMI contained tool,
+
+00:22:01.355 --> 00:22:04.075
+<v Speaker 1>which will run, in a in a later
+
+00:22:04.475 --> 00:22:05.115
+<v Speaker 1>attack,
+
+00:22:05.755 --> 00:22:07.355
+<v Speaker 1>will also tell us it will take a
+
+00:22:07.355 --> 00:22:08.635
+<v Speaker 1>best guess at which,
+
+00:22:09.835 --> 00:22:12.075
+<v Speaker 1>which container orchestrator we're in. So let's try
+
+00:22:12.075 --> 00:22:14.235
+<v Speaker 1>and guess which orchestrator we're in. Well,
+
+00:22:14.635 --> 00:22:16.635
+<v Speaker 1>that wouldn't be doing justice to clustered
+
+00:22:17.029 --> 00:22:19.109
+<v Speaker 1>and its obvious spelling
+
+00:22:19.110 --> 00:22:20.389
+<v Speaker 1>hints perhaps.
+
+00:22:20.630 --> 00:22:21.909
+<v Speaker 1>But if we cat
+
+00:22:22.070 --> 00:22:23.190
+<v Speaker 1>proc self
+
+00:22:23.429 --> 00:22:24.469
+<v Speaker 1>c groups
+
+00:22:27.750 --> 00:22:28.630
+<v Speaker 1>singular. Sorry.
+
+00:22:35.335 --> 00:22:37.015
+<v Speaker 1>Then we can see that the name of
+
+00:22:37.015 --> 00:22:39.414
+<v Speaker 1>the c groups that have been created
+
+00:22:40.054 --> 00:22:41.735
+<v Speaker 1>also give us a bit of a clue.
+
+00:22:45.650 --> 00:22:47.970
+<v Speaker 1>And it's all this stuff around leaking abstractions
+
+00:22:47.970 --> 00:22:48.610
+<v Speaker 1>that
+
+00:22:48.770 --> 00:22:50.049
+<v Speaker 1>make containers
+
+00:22:50.210 --> 00:22:52.610
+<v Speaker 1>at once super fast to spin up and
+
+00:22:52.610 --> 00:22:54.690
+<v Speaker 1>beneficial and portable and useful,
+
+00:22:56.315 --> 00:22:58.475
+<v Speaker 1>but then they're not a perfect abstraction.
+
+00:23:01.434 --> 00:23:02.235
+<v Speaker 0>Okay.
+
+00:23:03.115 --> 00:23:04.555
+<v Speaker 0>So is that the first the first thing
+
+00:23:04.555 --> 00:23:06.795
+<v Speaker 0>to do is really just to gather as
+
+00:23:06.795 --> 00:23:09.674
+<v Speaker 0>much information as you can before trying to
+
+00:23:10.075 --> 00:23:11.515
+<v Speaker 0>move towards the flag. Right?
+
+00:23:12.169 --> 00:23:13.369
+<v Speaker 1>Yeah. Exactly.
+
+00:23:14.250 --> 00:23:17.370
+<v Speaker 0>Alright. I'm I'm gonna show my naivety here.
+
+00:23:17.370 --> 00:23:19.450
+<v Speaker 0>I didn't see anything here to reveal maybe
+
+00:23:19.450 --> 00:23:21.850
+<v Speaker 0>what CRI implementation we were using. I do
+
+00:23:21.850 --> 00:23:23.530
+<v Speaker 0>see system d and freezer.
+
+00:23:25.774 --> 00:23:27.695
+<v Speaker 0>Does that mean we're using container d?
+
+00:23:28.894 --> 00:23:31.455
+<v Speaker 1>That's a really good point, actually. If
+
+00:23:32.815 --> 00:23:34.894
+<v Speaker 1>these are stood up I I mean, yes
+
+00:23:34.894 --> 00:23:36.734
+<v Speaker 1>is the answer, but
+
+00:23:36.815 --> 00:23:38.735
+<v Speaker 1>I'm not I'm not convinced that
+
+00:23:39.350 --> 00:23:42.230
+<v Speaker 1>I'm not sure that queue pods changes for
+
+00:23:42.230 --> 00:23:43.990
+<v Speaker 1>different run times. I haven't I I can't
+
+00:23:43.990 --> 00:23:45.990
+<v Speaker 1>actually tell you that offhand. Certainly, if we
+
+00:23:45.990 --> 00:23:47.750
+<v Speaker 1>were to run this via Docker, it would
+
+00:23:47.750 --> 00:23:49.910
+<v Speaker 1>tell us that we're in Docker there. Right.
+
+00:23:49.910 --> 00:23:50.710
+<v Speaker 1>Okay. So
+
+00:23:51.030 --> 00:23:53.750
+<v Speaker 1>I I think you're you're definitely on the
+
+00:23:53.750 --> 00:23:54.150
+<v Speaker 1>right path.
+
+00:23:56.125 --> 00:23:57.645
+<v Speaker 0>Yeah. I've
+
+00:23:58.205 --> 00:23:59.725
+<v Speaker 0>that's how I handle most things. I just
+
+00:23:59.725 --> 00:24:01.404
+<v Speaker 0>say I don't know and guess. So
+
+00:24:03.085 --> 00:24:05.485
+<v Speaker 0>but I should just be prodding around. Right?
+
+00:24:05.485 --> 00:24:05.885
+<v Speaker 0>This is
+
+00:24:07.165 --> 00:24:08.765
+<v Speaker 0>I did see the mounts were
+
+00:24:10.370 --> 00:24:11.730
+<v Speaker 0>It looks like we've maybe got access to
+
+00:24:11.730 --> 00:24:13.090
+<v Speaker 0>the host again that way.
+
+00:24:15.810 --> 00:24:16.450
+<v Speaker 0>Yeah.
+
+00:24:17.410 --> 00:24:18.930
+<v Speaker 0>Maybe let's see.
+
+00:24:19.490 --> 00:24:21.090
+<v Speaker 0>Oh no, we don't. Okay.
+
+00:24:21.650 --> 00:24:22.770
+<v Speaker 1>That's how it should look.
+
+00:24:25.105 --> 00:24:27.104
+<v Speaker 0>Alright. So what do we have then?
+
+00:24:34.625 --> 00:24:36.225
+<v Speaker 0>Not a whole lot on this one.
+
+00:24:38.570 --> 00:24:40.970
+<v Speaker 0>Is there I I don't know what system
+
+00:24:40.970 --> 00:24:41.850
+<v Speaker 0>this is.
+
+00:24:43.530 --> 00:24:44.730
+<v Speaker 0>Well, let's see if I can work that
+
+00:24:44.730 --> 00:24:47.370
+<v Speaker 0>out. Maybe that'll help me. Not an LSB
+
+00:24:47.370 --> 00:24:48.570
+<v Speaker 0>file normally.
+
+00:24:49.770 --> 00:24:52.170
+<v Speaker 1>I'd like to go asterisk
+
+00:24:52.525 --> 00:24:54.365
+<v Speaker 1>rel into asterisk.
+
+00:24:57.885 --> 00:25:00.125
+<v Speaker 1>And that yeah. That's it. Oh, actually. Yeah.
+
+00:25:00.525 --> 00:25:01.565
+<v Speaker 0>Alright. Okay.
+
+00:25:02.045 --> 00:25:03.565
+<v Speaker 1>But it's a bit different for different I
+
+00:25:03.565 --> 00:25:05.805
+<v Speaker 1>mean, older OSs don't quite have it. So
+
+00:25:05.805 --> 00:25:08.760
+<v Speaker 1>that star rel always tends to work. Nice.
+
+00:25:08.920 --> 00:25:10.520
+<v Speaker 0>Yeah. I normally look for the l s
+
+00:25:10.520 --> 00:25:12.440
+<v Speaker 0>p underscore release, but I guess star rail
+
+00:25:12.440 --> 00:25:13.960
+<v Speaker 0>would cover that too. So
+
+00:25:14.520 --> 00:25:15.320
+<v Speaker 0>handy.
+
+00:25:16.760 --> 00:25:17.480
+<v Speaker 0>Alright. So
+
+00:25:18.680 --> 00:25:19.720
+<v Speaker 1>Yeah. When
+
+00:25:20.200 --> 00:25:22.280
+<v Speaker 1>you started off, you used the mount command.
+
+00:25:22.665 --> 00:25:24.745
+<v Speaker 0>Mhmm. Which is super useful because
+
+00:25:25.065 --> 00:25:27.305
+<v Speaker 1>it gives you all that extra context.
+
+00:25:27.705 --> 00:25:29.385
+<v Speaker 1>And and if we go right to the
+
+00:25:29.385 --> 00:25:29.865
+<v Speaker 1>top
+
+00:25:30.985 --> 00:25:32.585
+<v Speaker 1>I say right to the top, just slightly
+
+00:25:32.585 --> 00:25:35.225
+<v Speaker 1>further up, then it also leaks the overlay
+
+00:25:35.225 --> 00:25:37.000
+<v Speaker 1>f s. Yeah. Exactly. Yeah. There's the docker
+
+00:25:37.000 --> 00:25:38.760
+<v Speaker 0>run time as well. Yeah. Okay.
+
+00:25:40.120 --> 00:25:41.800
+<v Speaker 1>And and so so that gives us a
+
+00:25:41.800 --> 00:25:42.440
+<v Speaker 1>bit more
+
+00:25:43.480 --> 00:25:45.320
+<v Speaker 1>it's just something else that's leaking.
+
+00:25:45.960 --> 00:25:48.280
+<v Speaker 1>However, this is super noisy because it tells
+
+00:25:48.280 --> 00:25:50.280
+<v Speaker 1>us things about where c groups are mounted.
+
+00:25:50.655 --> 00:25:53.535
+<v Speaker 1>So I always run both mount and also
+
+00:25:53.535 --> 00:25:54.414
+<v Speaker 1>d f.
+
+00:25:55.935 --> 00:25:58.255
+<v Speaker 1>And that tends to scream a bit louder
+
+00:26:00.095 --> 00:26:01.855
+<v Speaker 1>when there is a service count.
+
+00:26:02.495 --> 00:26:04.895
+<v Speaker 0>Yeah. We've got the secret in here.
+
+00:26:07.620 --> 00:26:09.460
+<v Speaker 1>And it's kind of most of the time,
+
+00:26:09.779 --> 00:26:12.499
+<v Speaker 1>people don't unmount the default service account,
+
+00:26:13.539 --> 00:26:15.859
+<v Speaker 1>which is obviously not a great look.
+
+00:26:16.020 --> 00:26:18.659
+<v Speaker 1>It also means that a service account may
+
+00:26:18.659 --> 00:26:19.700
+<v Speaker 1>just be
+
+00:26:21.025 --> 00:26:22.945
+<v Speaker 1>unable to do very much by default, let's
+
+00:26:22.945 --> 00:26:24.945
+<v Speaker 1>say. Someone else who came to left me
+
+00:26:24.945 --> 00:26:27.024
+<v Speaker 0>control in this container.
+
+00:26:27.665 --> 00:26:28.384
+<v Speaker 1>Yes.
+
+00:26:29.825 --> 00:26:31.585
+<v Speaker 1>Sometimes thinking of the user.
+
+00:26:33.505 --> 00:26:34.945
+<v Speaker 0>Does that mean I can run
+
+00:26:35.419 --> 00:26:36.700
+<v Speaker 0>oh, look at that.
+
+00:26:37.500 --> 00:26:38.539
+<v Speaker 1>Bazinga.
+
+00:26:40.059 --> 00:26:40.779
+<v Speaker 0>At
+
+00:26:40.940 --> 00:26:43.259
+<v Speaker 0>least there's some RBAC going on. Oh,
+
+00:26:47.659 --> 00:26:49.659
+<v Speaker 0>we got some crypto miners going on as
+
+00:26:49.659 --> 00:26:52.295
+<v Speaker 0>well. That's fun. That is the badger.
+
+00:26:54.695 --> 00:26:56.615
+<v Speaker 1>And the the context for this is that
+
+00:26:56.615 --> 00:26:58.695
+<v Speaker 1>we've got unexpected workloads.
+
+00:26:59.015 --> 00:27:00.295
+<v Speaker 1>Now notably,
+
+00:27:00.535 --> 00:27:02.695
+<v Speaker 1>just some background with this one, the
+
+00:27:03.575 --> 00:27:05.335
+<v Speaker 1>this is more about
+
+00:27:06.480 --> 00:27:07.840
+<v Speaker 1>attacking Kubernetes'
+
+00:27:07.840 --> 00:27:08.640
+<v Speaker 1>workloads
+
+00:27:08.640 --> 00:27:09.440
+<v Speaker 1>and
+
+00:27:09.679 --> 00:27:13.840
+<v Speaker 1>side effects rather than misconfigurations of the orchestrator.
+
+00:27:16.400 --> 00:27:18.000
+<v Speaker 1>Doesn't really mean very much, does it?
+
+00:27:23.025 --> 00:27:23.745
+<v Speaker 0>Okay.
+
+00:27:25.745 --> 00:27:26.865
+<v Speaker 0>So I need to work out what my
+
+00:27:26.865 --> 00:27:27.985
+<v Speaker 0>next move is. Right?
+
+00:27:29.105 --> 00:27:30.225
+<v Speaker 0>Yes.
+
+00:27:30.945 --> 00:27:32.465
+<v Speaker 0>I I can start
+
+00:27:33.585 --> 00:27:34.465
+<v Speaker 0>poking around.
+
+00:27:36.150 --> 00:27:39.110
+<v Speaker 0>I could start exactly into other pods
+
+00:27:39.190 --> 00:27:41.670
+<v Speaker 0>looking for maybe better privileges
+
+00:27:41.670 --> 00:27:42.310
+<v Speaker 0>like
+
+00:27:42.870 --> 00:27:44.310
+<v Speaker 0>in the interest of time.
+
+00:27:44.710 --> 00:27:46.150
+<v Speaker 0>Yeah. What should I do?
+
+00:27:47.510 --> 00:27:49.875
+<v Speaker 1>Those pods should not be running and stealing
+
+00:27:49.875 --> 00:27:52.115
+<v Speaker 1>our compute resource. Let's shoot them in the
+
+00:27:52.115 --> 00:27:52.595
+<v Speaker 1>head.
+
+00:27:54.195 --> 00:27:55.555
+<v Speaker 0>Oh, wait. Are we the good guys or
+
+00:27:55.555 --> 00:27:56.755
+<v Speaker 0>the bad guys? I thought I was trying
+
+00:27:56.755 --> 00:27:57.635
+<v Speaker 0>to get ripped.
+
+00:27:59.235 --> 00:28:01.715
+<v Speaker 1>We're the good guys following
+
+00:28:01.680 --> 00:28:03.440
+<v Speaker 1>the bad guys. And this is what the
+
+00:28:03.440 --> 00:28:05.120
+<v Speaker 1>bad guys have done. Okay.
+
+00:28:08.880 --> 00:28:11.440
+<v Speaker 1>There are a good number of routes targeted
+
+00:28:11.920 --> 00:28:14.400
+<v Speaker 1>flags, but this is not all of them.
+
+00:28:16.045 --> 00:28:18.765
+<v Speaker 0>Okay. So we wanna delete some pods.
+
+00:28:19.805 --> 00:28:21.485
+<v Speaker 0>I was gonna spin up some more, but
+
+00:28:21.485 --> 00:28:22.205
+<v Speaker 0>whatever.
+
+00:28:23.885 --> 00:28:25.565
+<v Speaker 1>You've you've
+
+00:28:25.565 --> 00:28:28.205
+<v Speaker 1>avoided the mistake that is easy to make,
+
+00:28:28.460 --> 00:28:29.980
+<v Speaker 1>which is we are in fact in the
+
+00:28:29.980 --> 00:28:31.100
+<v Speaker 1>hashtag pod.
+
+00:28:31.980 --> 00:28:32.779
+<v Speaker 0>Yes.
+
+00:28:32.860 --> 00:28:34.620
+<v Speaker 0>Because my my first instinct was to do
+
+00:28:34.620 --> 00:28:36.380
+<v Speaker 0>a delete pod dash dash all and I
+
+00:28:36.380 --> 00:28:36.940
+<v Speaker 0>thought,
+
+00:28:37.180 --> 00:28:38.940
+<v Speaker 0>no, I'm in this namespace.
+
+00:28:38.940 --> 00:28:39.100
+<v Speaker 0>So
+
+00:28:40.755 --> 00:28:42.755
+<v Speaker 0>although now that I've just realized I've deleted
+
+00:28:42.755 --> 00:28:45.475
+<v Speaker 0>pods, which is probably rather silly because they
+
+00:28:45.475 --> 00:28:47.955
+<v Speaker 0>are tuples, which would suggest
+
+00:28:49.155 --> 00:28:50.835
+<v Speaker 0>there may be something else
+
+00:28:51.315 --> 00:28:52.195
+<v Speaker 0>get deployed.
+
+00:28:54.650 --> 00:28:55.610
+<v Speaker 0>Deployment.
+
+00:28:56.570 --> 00:28:58.090
+<v Speaker 0>I don't have access to that.
+
+00:28:59.050 --> 00:29:00.810
+<v Speaker 1>But if you check the pods Yeah. They
+
+00:29:00.810 --> 00:29:02.490
+<v Speaker 0>are coming back. So
+
+00:29:04.410 --> 00:29:05.929
+<v Speaker 0>not stateful sets.
+
+00:29:06.010 --> 00:29:07.529
+<v Speaker 0>It could be daemon sets.
+
+00:29:07.930 --> 00:29:09.050
+<v Speaker 0>I don't have access to that.
+
+00:29:11.745 --> 00:29:13.585
+<v Speaker 1>You're very much in the right direction.
+
+00:29:14.225 --> 00:29:15.985
+<v Speaker 0>Right. Okay. So my my goal is to
+
+00:29:15.985 --> 00:29:17.345
+<v Speaker 0>get rid of all these pods.
+
+00:29:17.745 --> 00:29:20.145
+<v Speaker 1>Yeah. And between you and me, they are
+
+00:29:20.145 --> 00:29:21.665
+<v Speaker 1>demon sets. No. They're not.
+
+00:29:23.160 --> 00:29:26.200
+<v Speaker 1>That's instinctive. I'm so sorry. No. They're deployments.
+
+00:29:27.000 --> 00:29:29.080
+<v Speaker 0>Alright. But I don't have the access
+
+00:29:29.320 --> 00:29:32.280
+<v Speaker 0>to list the deployments on my current privileges.
+
+00:29:33.240 --> 00:29:34.679
+<v Speaker 1>But you could probably
+
+00:29:34.840 --> 00:29:35.960
+<v Speaker 1>elucidate
+
+00:29:36.040 --> 00:29:36.600
+<v Speaker 1>their names.
+
+00:29:38.145 --> 00:29:40.465
+<v Speaker 0>Oh, so I just don't have list access.
+
+00:29:40.785 --> 00:29:41.985
+<v Speaker 1>Yeah. That's right.
+
+00:29:50.865 --> 00:29:52.145
+<v Speaker 0>Oh, look at that. Alright.
+
+00:29:53.090 --> 00:29:53.890
+<v Speaker 1>Incidentally,
+
+00:29:53.890 --> 00:29:55.890
+<v Speaker 1>I'm looking to launch all of those coins.
+
+00:29:55.970 --> 00:29:57.570
+<v Speaker 0>Really, I should have been a bit smarter
+
+00:29:57.570 --> 00:29:58.769
+<v Speaker 0>and just says,
+
+00:29:59.570 --> 00:30:01.970
+<v Speaker 0>auth can I list?
+
+00:30:04.770 --> 00:30:06.530
+<v Speaker 0>And I would have seen
+
+00:30:08.465 --> 00:30:10.865
+<v Speaker 0>that I can delete very nicely left as
+
+00:30:10.865 --> 00:30:12.385
+<v Speaker 0>a hint there. I was just being rather
+
+00:30:12.385 --> 00:30:14.465
+<v Speaker 0>silly, but there we go. Got it.
+
+00:30:15.505 --> 00:30:17.345
+<v Speaker 0>So that should mean they're all gone at
+
+00:30:17.345 --> 00:30:18.145
+<v Speaker 0>least now.
+
+00:30:19.745 --> 00:30:20.545
+<v Speaker 0>Getting
+
+00:30:20.545 --> 00:30:22.110
+<v Speaker 0>there. Is
+
+00:30:24.110 --> 00:30:25.390
+<v Speaker 0>that it? Is it done?
+
+00:30:25.710 --> 00:30:28.750
+<v Speaker 1>Almost. Almost. At the point that they make
+
+00:30:28.750 --> 00:30:30.190
+<v Speaker 1>themselves scarce,
+
+00:30:31.150 --> 00:30:32.750
+<v Speaker 1>something will probably turn up in secrets.
+
+00:30:34.685 --> 00:30:36.685
+<v Speaker 0>Oh, there was a hashtag secret. I looked
+
+00:30:36.685 --> 00:30:38.685
+<v Speaker 0>at that earlier. Oh, there's a flag. Alright.
+
+00:30:38.685 --> 00:30:42.605
+<v Speaker 0>Okay. I think, potentially, this is managed by
+
+00:30:42.605 --> 00:30:43.565
+<v Speaker 1>the world's
+
+00:30:43.965 --> 00:30:46.205
+<v Speaker 1>oh, gonna make a big claim. The world's
+
+00:30:46.205 --> 00:30:47.405
+<v Speaker 1>shortest
+
+00:30:48.460 --> 00:30:49.340
+<v Speaker 1>operator,
+
+00:30:49.340 --> 00:30:49.979
+<v Speaker 1>perhaps?
+
+00:30:54.779 --> 00:30:56.219
+<v Speaker 0>I found my flag.
+
+00:30:56.460 --> 00:30:58.059
+<v Speaker 0>Oh, the one I missed there.
+
+00:30:58.700 --> 00:30:59.659
+<v Speaker 0>There you go.
+
+00:31:01.340 --> 00:31:02.139
+<v Speaker 1>Excellent.
+
+00:31:02.735 --> 00:31:03.855
+<v Speaker 1>Excellent work.
+
+00:31:04.175 --> 00:31:06.575
+<v Speaker 1>Okay. Let's keep on rolling.
+
+00:31:08.335 --> 00:31:10.815
+<v Speaker 1>Here is your next scenario.
+
+00:31:13.695 --> 00:31:15.294
+<v Speaker 1>So in this scenario,
+
+00:31:15.855 --> 00:31:17.375
+<v Speaker 1>we have
+
+00:31:17.680 --> 00:31:20.000
+<v Speaker 1>we're running internal container registries,
+
+00:31:20.240 --> 00:31:22.400
+<v Speaker 1>and the pirates have turned up,
+
+00:31:22.720 --> 00:31:24.240
+<v Speaker 1>taken the registry down,
+
+00:31:25.040 --> 00:31:26.480
+<v Speaker 1>and left a secret in one of the
+
+00:31:26.480 --> 00:31:27.120
+<v Speaker 1>pods.
+
+00:31:27.840 --> 00:31:29.120
+<v Speaker 1>So this is a
+
+00:31:29.520 --> 00:31:31.200
+<v Speaker 1>this is a kind of
+
+00:31:32.025 --> 00:31:35.625
+<v Speaker 1>screaming backflip through a flaming hoop kind of
+
+00:31:35.945 --> 00:31:36.665
+<v Speaker 1>exploit,
+
+00:31:37.225 --> 00:31:39.465
+<v Speaker 1>where, again, we're just using what Kubernetes gives
+
+00:31:39.465 --> 00:31:40.025
+<v Speaker 1>us
+
+00:31:40.425 --> 00:31:43.544
+<v Speaker 1>in an unusual way. So is it hacking?
+
+00:31:43.625 --> 00:31:44.265
+<v Speaker 1>Well,
+
+00:31:44.825 --> 00:31:45.945
+<v Speaker 1>of of a sorts.
+
+00:31:59.100 --> 00:32:00.380
+<v Speaker 0>Okay. I don't wanna run that, but
+
+00:32:03.345 --> 00:32:04.705
+<v Speaker 0>echo hashtag.
+
+00:32:05.505 --> 00:32:06.225
+<v Speaker 0>Okay.
+
+00:32:08.545 --> 00:32:10.625
+<v Speaker 0>Is that important? Should I be looking at
+
+00:32:10.625 --> 00:32:11.825
+<v Speaker 0>that or is that just there for the
+
+00:32:11.905 --> 00:32:12.945
+<v Speaker 0>is that an Easter egg?
+
+00:32:14.480 --> 00:32:16.240
+<v Speaker 1>Yes. It is not important for It's not
+
+00:32:16.240 --> 00:32:17.039
+<v Speaker 0>important. I
+
+00:32:18.640 --> 00:32:20.400
+<v Speaker 0>was hoping you were gonna wreck Rawkode me,
+
+00:32:20.400 --> 00:32:20.560
+<v Speaker 0>but
+
+00:32:23.840 --> 00:32:24.640
+<v Speaker 1>Just you wait, perhaps.
+
+00:32:28.895 --> 00:32:32.255
+<v Speaker 0>Alright. So I can see Docker CRI again.
+
+00:32:32.255 --> 00:32:33.535
+<v Speaker 0>We have our overlay.
+
+00:32:33.695 --> 00:32:36.415
+<v Speaker 0>We've got our secrets. We've got some disks.
+
+00:32:36.495 --> 00:32:36.895
+<v Speaker 0>We
+
+00:32:38.095 --> 00:32:39.615
+<v Speaker 0>have a service account.
+
+00:32:42.639 --> 00:32:44.079
+<v Speaker 0>No IP command.
+
+00:32:46.639 --> 00:32:47.759
+<v Speaker 0>Alright.
+
+00:32:47.840 --> 00:32:48.240
+<v Speaker 0>So
+
+00:32:53.934 --> 00:32:55.215
+<v Speaker 0>Do we have control?
+
+00:32:55.215 --> 00:32:55.934
+<v Speaker 0>We do.
+
+00:32:56.815 --> 00:32:58.575
+<v Speaker 0>People are always nice leaving all these tools
+
+00:32:58.575 --> 00:32:59.455
+<v Speaker 0>lying around.
+
+00:33:00.575 --> 00:33:03.215
+<v Speaker 1>It was a yeah. Feedback from last time
+
+00:33:03.215 --> 00:33:03.934
+<v Speaker 1>perhaps.
+
+00:33:04.735 --> 00:33:06.495
+<v Speaker 0>So they have to curl down the binary
+
+00:33:06.495 --> 00:33:07.695
+<v Speaker 0>in every single pod.
+
+00:33:10.680 --> 00:33:12.920
+<v Speaker 0>Alright. Let's see what I have access to
+
+00:33:12.920 --> 00:33:13.559
+<v Speaker 0>here.
+
+00:33:15.640 --> 00:33:17.160
+<v Speaker 0>Well, we can create deployments.
+
+00:33:20.554 --> 00:33:22.794
+<v Speaker 0>We can get logs,
+
+00:33:22.955 --> 00:33:24.154
+<v Speaker 0>but we can
+
+00:33:25.195 --> 00:33:27.274
+<v Speaker 0>get pods too. Okay.
+
+00:33:28.875 --> 00:33:30.634
+<v Speaker 0>Let's see what else we have.
+
+00:33:31.434 --> 00:33:32.395
+<v Speaker 0>Namespaced,
+
+00:33:34.909 --> 00:33:37.389
+<v Speaker 0>private tier one, two and three.
+
+00:33:40.029 --> 00:33:42.270
+<v Speaker 0>We do not have the ability to exec
+
+00:33:42.270 --> 00:33:43.869
+<v Speaker 0>into another pod.
+
+00:33:44.990 --> 00:33:47.710
+<v Speaker 0>So I'm assuming
+
+00:33:47.165 --> 00:33:47.725
+<v Speaker 0>we're create
+
+00:33:50.684 --> 00:33:52.525
+<v Speaker 0>do you want me to create something? Is
+
+00:33:52.525 --> 00:33:53.804
+<v Speaker 0>that why I have the ability to create
+
+00:33:53.804 --> 00:33:55.004
+<v Speaker 0>create deployments?
+
+00:33:55.804 --> 00:33:57.245
+<v Speaker 1>Yeah. That's it. There's
+
+00:33:57.965 --> 00:34:01.000
+<v Speaker 1>the interesting thing here is the contents of
+
+00:34:01.000 --> 00:34:01.720
+<v Speaker 1>the image.
+
+00:34:02.040 --> 00:34:03.640
+<v Speaker 1>We can't get to that image,
+
+00:34:04.280 --> 00:34:06.920
+<v Speaker 1>but we can run a pod using that
+
+00:34:06.920 --> 00:34:08.120
+<v Speaker 1>image as the base.
+
+00:34:08.520 --> 00:34:10.199
+<v Speaker 1>So it's then about and this is the,
+
+00:34:10.520 --> 00:34:12.040
+<v Speaker 1>the screaming backflip.
+
+00:34:12.199 --> 00:34:13.880
+<v Speaker 1>It's then about trying to
+
+00:34:15.094 --> 00:34:17.335
+<v Speaker 1>it it's almost a blind injection attack.
+
+00:34:17.574 --> 00:34:19.335
+<v Speaker 1>It's not quite it is blind because we
+
+00:34:19.335 --> 00:34:20.935
+<v Speaker 1>can't see the file system contents.
+
+00:34:21.255 --> 00:34:22.695
+<v Speaker 1>It's kind of an injection,
+
+00:34:23.014 --> 00:34:24.855
+<v Speaker 1>but we are still just running kube control.
+
+00:34:24.855 --> 00:34:27.574
+<v Speaker 1>So that's perhaps a overly dramatic wording.
+
+00:34:28.135 --> 00:34:30.054
+<v Speaker 1>But if we
+
+00:34:30.869 --> 00:34:32.389
+<v Speaker 1>if we have a look at what's running
+
+00:34:32.389 --> 00:34:34.070
+<v Speaker 1>in those private ear pods,
+
+00:34:34.949 --> 00:34:37.109
+<v Speaker 1>so dumping them as as YAML and grepping
+
+00:34:37.109 --> 00:34:37.829
+<v Speaker 1>for image.
+
+00:34:47.455 --> 00:34:48.895
+<v Speaker 0>They are running
+
+00:34:49.055 --> 00:34:50.095
+<v Speaker 0>Excalibur.
+
+00:34:52.175 --> 00:34:53.535
+<v Speaker 1>That is the badger.
+
+00:34:57.240 --> 00:34:59.160
+<v Speaker 1>So the goal here is to
+
+00:35:00.119 --> 00:35:02.119
+<v Speaker 1>run a pod using that image. Do you
+
+00:35:02.119 --> 00:35:03.640
+<v Speaker 0>maintain your own registry?
+
+00:35:05.320 --> 00:35:07.880
+<v Speaker 1>This is the the secret internal
+
+00:35:07.880 --> 00:35:09.935
+<v Speaker 1>registry for the purpose of this. Alright. The
+
+00:35:09.935 --> 00:35:11.615
+<v Speaker 1>answer is absolutely not.
+
+00:35:14.175 --> 00:35:16.095
+<v Speaker 0>Sorry. I cut you off. Okay. So No.
+
+00:35:16.095 --> 00:35:17.055
+<v Speaker 1>No. It's all good.
+
+00:35:18.175 --> 00:35:19.935
+<v Speaker 0>Right. Let's
+
+00:35:20.095 --> 00:35:21.695
+<v Speaker 0>push me along a little bit here. I'm
+
+00:35:21.695 --> 00:35:22.815
+<v Speaker 0>not sure what my next move is.
+
+00:35:23.950 --> 00:35:26.430
+<v Speaker 1>So what we want to try is cube
+
+00:35:26.430 --> 00:35:27.550
+<v Speaker 1>control run
+
+00:35:29.230 --> 00:35:29.950
+<v Speaker 1>and
+
+00:35:30.030 --> 00:35:31.550
+<v Speaker 1>set the image to be
+
+00:35:33.470 --> 00:35:34.750
+<v Speaker 1>that crazy,
+
+00:35:37.630 --> 00:35:38.590
+<v Speaker 1>practical image.
+
+00:35:40.365 --> 00:35:41.405
+<v Speaker 1>And then
+
+00:35:43.405 --> 00:35:45.085
+<v Speaker 1>yes. Nice. We
+
+00:35:45.325 --> 00:35:47.405
+<v Speaker 1>want do we want a terminal? I'm not
+
+00:35:47.405 --> 00:35:50.845
+<v Speaker 1>sure. Maybe just try double double hyphen.
+
+00:35:52.845 --> 00:35:54.525
+<v Speaker 1>I'm not sure if we yeah. Okay.
+
+00:35:55.029 --> 00:35:55.910
+<v Speaker 1>And then
+
+00:35:56.150 --> 00:35:57.670
+<v Speaker 0>I don't know if IT will work on
+
+00:35:57.670 --> 00:35:59.270
+<v Speaker 0>the run, but I figured I'd try it.
+
+00:35:59.670 --> 00:36:01.589
+<v Speaker 1>It's it's worth trying. Yeah.
+
+00:36:06.069 --> 00:36:06.630
+<v Speaker 0>What's there?
+
+00:36:13.325 --> 00:36:15.085
+<v Speaker 0>Yeah. I can't end because I don't have
+
+00:36:15.085 --> 00:36:16.125
+<v Speaker 0>blood exec.
+
+00:36:16.685 --> 00:36:18.685
+<v Speaker 0>Checking a thought was gonna happen.
+
+00:36:20.285 --> 00:36:22.285
+<v Speaker 1>So the way that we can do this
+
+00:36:22.940 --> 00:36:26.060
+<v Speaker 1>semi blind maybe it's kind of monocalled half
+
+00:36:26.060 --> 00:36:26.860
+<v Speaker 1>injection
+
+00:36:27.020 --> 00:36:27.740
+<v Speaker 1>is
+
+00:36:27.900 --> 00:36:29.500
+<v Speaker 1>to check the log outputs.
+
+00:36:30.460 --> 00:36:33.340
+<v Speaker 1>And the the the tool that I really
+
+00:36:33.340 --> 00:36:35.980
+<v Speaker 1>love for logging is called Stern
+
+00:36:36.220 --> 00:36:39.345
+<v Speaker 1>from, a company called Worker that Oracle bought,
+
+00:36:39.505 --> 00:36:40.865
+<v Speaker 1>like, three years ago.
+
+00:36:41.185 --> 00:36:42.625
+<v Speaker 1>But this tool Stern,
+
+00:36:43.105 --> 00:36:45.505
+<v Speaker 1>I'll drop a link in, allows us to
+
+00:36:48.065 --> 00:36:51.025
+<v Speaker 1>essentially specify a wildcard that lets us grep
+
+00:36:51.825 --> 00:36:54.650
+<v Speaker 1>across any existing or future pods in any
+
+00:36:54.650 --> 00:36:56.250
+<v Speaker 1>or all namespaces.
+
+00:36:58.329 --> 00:36:59.690
+<v Speaker 1>We can't do that right now. We'll just
+
+00:36:59.690 --> 00:37:01.609
+<v Speaker 1>have to use cube control logs. Well, we
+
+00:37:01.609 --> 00:37:03.610
+<v Speaker 1>could, but let's not bother.
+
+00:37:03.930 --> 00:37:04.570
+<v Speaker 1>And
+
+00:37:05.290 --> 00:37:05.850
+<v Speaker 1>okay.
+
+00:37:06.329 --> 00:37:07.609
+<v Speaker 1>So where are we?
+
+00:37:11.505 --> 00:37:13.825
+<v Speaker 1>I have to admit missing the previous command.
+
+00:37:13.825 --> 00:37:15.825
+<v Speaker 1>Sorry. I was running the logs against our
+
+00:37:15.825 --> 00:37:17.425
+<v Speaker 0>hashtag too, but I don't seem to be
+
+00:37:17.425 --> 00:37:17.985
+<v Speaker 0>getting
+
+00:37:18.785 --> 00:37:20.705
+<v Speaker 0>anything back out. And then I just decided
+
+00:37:20.705 --> 00:37:22.385
+<v Speaker 0>to check the logs of private tier one,
+
+00:37:22.385 --> 00:37:23.910
+<v Speaker 0>two, three, but let's just sleep.
+
+00:37:24.310 --> 00:37:26.790
+<v Speaker 1>Oh, yeah. It's going round in circles. Okay.
+
+00:37:26.790 --> 00:37:28.710
+<v Speaker 1>Let's have a look at this injection command.
+
+00:37:31.349 --> 00:37:33.109
+<v Speaker 1>Could you pull up the cube control run
+
+00:37:33.109 --> 00:37:33.670
+<v Speaker 1>again, please?
+
+00:37:35.915 --> 00:37:36.635
+<v Speaker 1>Yep.
+
+00:37:37.835 --> 00:37:38.475
+<v Speaker 1>Yeah.
+
+00:37:39.115 --> 00:37:40.395
+<v Speaker 1>This. Okay.
+
+00:37:40.635 --> 00:37:42.235
+<v Speaker 1>So if
+
+00:37:42.235 --> 00:37:45.035
+<v Speaker 1>we replace bash if if I could get
+
+00:37:45.035 --> 00:37:45.435
+<v Speaker 1>bash
+
+00:37:46.555 --> 00:37:48.579
+<v Speaker 1>let me think about this. If if you
+
+00:37:48.579 --> 00:37:50.820
+<v Speaker 1>can remove the IT as well, because I
+
+00:37:50.820 --> 00:37:52.580
+<v Speaker 1>don't think we need an interactive terminal
+
+00:37:52.820 --> 00:37:55.620
+<v Speaker 1>for what we'll do, and then double hyphen.
+
+00:37:56.579 --> 00:37:58.339
+<v Speaker 1>And then we'll we'll run bash again, bash
+
+00:37:58.339 --> 00:37:59.860
+<v Speaker 1>space hyphen c,
+
+00:38:00.740 --> 00:38:02.820
+<v Speaker 1>and then just put an ID in there
+
+00:38:02.820 --> 00:38:04.135
+<v Speaker 1>and see what happens.
+
+00:38:05.894 --> 00:38:06.694
+<v Speaker 0>Alright.
+
+00:38:06.694 --> 00:38:07.734
+<v Speaker 0>Okay. Gotcha.
+
+00:38:08.214 --> 00:38:10.055
+<v Speaker 1>And we've got a fun game here because
+
+00:38:10.055 --> 00:38:11.974
+<v Speaker 1>we need a unique Yeah. Pod name, of
+
+00:38:11.974 --> 00:38:14.615
+<v Speaker 1>course, every time we do an injection.
+
+00:38:16.055 --> 00:38:18.549
+<v Speaker 1>So, yes, apologies. This is where Stern is
+
+00:38:18.549 --> 00:38:19.270
+<v Speaker 1>useful.
+
+00:38:27.270 --> 00:38:29.190
+<v Speaker 0>Alright. Rip, Rip, and Rip.
+
+00:38:30.195 --> 00:38:30.755
+<v Speaker 1>Cool.
+
+00:38:31.155 --> 00:38:32.035
+<v Speaker 1>Okay.
+
+00:38:32.035 --> 00:38:34.835
+<v Speaker 1>So Noel has very helpfully posted,
+
+00:38:35.155 --> 00:38:39.155
+<v Speaker 1>another useful GREP. So if we replace ID
+
+00:38:39.395 --> 00:38:40.035
+<v Speaker 1>with
+
+00:38:40.675 --> 00:38:42.755
+<v Speaker 1>the GREP r flag CTF
+
+00:38:42.755 --> 00:38:43.475
+<v Speaker 1>search,
+
+00:38:46.510 --> 00:38:47.869
+<v Speaker 1>then we will find
+
+00:38:48.670 --> 00:38:50.430
+<v Speaker 1>and I think, again, for the purposes of
+
+00:38:50.430 --> 00:38:52.990
+<v Speaker 1>of speed searching in user share.
+
+00:38:54.910 --> 00:38:56.430
+<v Speaker 1>So up to, please.
+
+00:38:59.785 --> 00:39:01.625
+<v Speaker 1>That's the badger. And then,
+
+00:39:02.185 --> 00:39:04.985
+<v Speaker 1>just Noel's last, last chat in the
+
+00:39:05.545 --> 00:39:07.065
+<v Speaker 1>that's the badger again.
+
+00:39:08.345 --> 00:39:11.270
+<v Speaker 1>And then if we use user share as
+
+00:39:11.349 --> 00:39:13.190
+<v Speaker 1>instead of the root slash.
+
+00:39:19.430 --> 00:39:20.950
+<v Speaker 0>That looks good to me.
+
+00:39:23.270 --> 00:39:24.390
+<v Speaker 1>Joyful joys.
+
+00:39:32.905 --> 00:39:34.185
+<v Speaker 0>And we have a flag.
+
+00:39:35.065 --> 00:39:36.425
+<v Speaker 1>Very nice indeed.
+
+00:39:36.984 --> 00:39:38.425
+<v Speaker 1>Interesting points to note here.
+
+00:39:39.030 --> 00:39:41.270
+<v Speaker 1>The rickroll will be from a different line
+
+00:39:41.430 --> 00:39:43.430
+<v Speaker 1>of the song every time.
+
+00:39:45.670 --> 00:39:46.630
+<v Speaker 1>If you actually
+
+00:39:48.630 --> 00:39:51.110
+<v Speaker 1>and why
+
+00:39:51.190 --> 00:39:53.555
+<v Speaker 1>under god's bright sun would anybody ever create
+
+00:39:53.555 --> 00:39:55.715
+<v Speaker 1>a directory name, which is a comma?
+
+00:39:57.075 --> 00:39:58.515
+<v Speaker 1>Who who only knows?
+
+00:39:58.755 --> 00:40:00.275
+<v Speaker 1>But, yes, congratulations.
+
+00:40:00.674 --> 00:40:02.595
+<v Speaker 1>We are rocking through the flags.
+
+00:40:04.860 --> 00:40:06.300
+<v Speaker 1>On we go to the next one.
+
+00:40:21.395 --> 00:40:23.235
+<v Speaker 0>There we go. Thank you.
+
+00:40:28.435 --> 00:40:30.755
+<v Speaker 0>And we are in number four.
+
+00:40:32.035 --> 00:40:34.595
+<v Speaker 1>Very nice. Now it occurs to me because
+
+00:40:34.595 --> 00:40:36.275
+<v Speaker 1>of my exceptional timing,
+
+00:40:37.220 --> 00:40:38.260
+<v Speaker 1>I may,
+
+00:40:39.220 --> 00:40:41.619
+<v Speaker 1>this cluster may self destruct around this. Can
+
+00:40:41.619 --> 00:40:42.500
+<v Speaker 1>you just check?
+
+00:40:42.900 --> 00:40:44.819
+<v Speaker 1>This is an interesting experiment. What does uptime
+
+00:40:44.819 --> 00:40:45.540
+<v Speaker 1>say?
+
+00:40:47.539 --> 00:40:48.180
+<v Speaker 0>55.
+
+00:40:49.175 --> 00:40:51.015
+<v Speaker 1>So this is this will go in a
+
+00:40:51.015 --> 00:40:53.494
+<v Speaker 1>a blaze of glory very shortly. There's another
+
+00:40:53.494 --> 00:40:55.095
+<v Speaker 1>one coming up, so we'll be able to
+
+00:40:55.095 --> 00:40:57.015
+<v Speaker 1>transition between clusters
+
+00:40:57.895 --> 00:40:58.855
+<v Speaker 1>semi seamlessly.
+
+00:41:02.550 --> 00:41:03.670
+<v Speaker 1>But let's
+
+00:41:03.910 --> 00:41:05.510
+<v Speaker 0>You can send me the my
+
+00:41:05.990 --> 00:41:06.790
+<v Speaker 0>service
+
+00:41:07.910 --> 00:41:10.150
+<v Speaker 0>account again. I'm assuming we're gonna be following
+
+00:41:10.150 --> 00:41:11.190
+<v Speaker 0>the same pattern here.
+
+00:41:19.805 --> 00:41:21.565
+<v Speaker 0>Let's just go straight in there.
+
+00:41:24.365 --> 00:41:25.565
+<v Speaker 0>Oh, that's ripped.
+
+00:41:31.165 --> 00:41:33.910
+<v Speaker 1>Yeah. Loved into a false sense of insecurity,
+
+00:41:33.910 --> 00:41:34.790
+<v Speaker 1>I'm afraid.
+
+00:41:37.590 --> 00:41:38.870
+<v Speaker 1>Alright. The the
+
+00:41:39.510 --> 00:41:42.070
+<v Speaker 1>back chat for this one is the supply
+
+00:41:42.070 --> 00:41:43.350
+<v Speaker 1>chain is compromised,
+
+00:41:43.750 --> 00:41:45.805
+<v Speaker 1>and code has been merged into an application
+
+00:41:45.805 --> 00:41:47.485
+<v Speaker 1>library that developers use.
+
+00:41:48.125 --> 00:41:50.045
+<v Speaker 1>The library runs in the in a pod.
+
+00:41:50.605 --> 00:41:51.965
+<v Speaker 1>Attackers have used
+
+00:41:52.125 --> 00:41:53.085
+<v Speaker 1>that reverse
+
+00:41:53.485 --> 00:41:55.645
+<v Speaker 1>shell that the pod threw to jump into
+
+00:41:55.645 --> 00:41:56.365
+<v Speaker 1>the pod
+
+00:41:57.165 --> 00:41:58.925
+<v Speaker 1>and find secrets
+
+00:41:59.005 --> 00:42:00.605
+<v Speaker 1>mounted on the host.
+
+00:42:01.245 --> 00:42:02.900
+<v Speaker 1>So somehow, we need to get out of
+
+00:42:02.900 --> 00:42:03.780
+<v Speaker 1>this pod
+
+00:42:04.019 --> 00:42:06.180
+<v Speaker 1>and, and into a mount point.
+
+00:42:11.779 --> 00:42:12.180
+<v Speaker 0>Okay.
+
+00:42:20.745 --> 00:42:21.545
+<v Speaker 0>Cool.
+
+00:42:26.345 --> 00:42:27.785
+<v Speaker 0>And we have four minutes.
+
+00:42:28.265 --> 00:42:29.145
+<v Speaker 1>And I
+
+00:42:29.760 --> 00:42:31.920
+<v Speaker 1>and I have to say, I, again,
+
+00:42:33.280 --> 00:42:35.360
+<v Speaker 1>lulled you somewhere because if you go back
+
+00:42:35.360 --> 00:42:36.880
+<v Speaker 1>to the PS at the top
+
+00:42:39.520 --> 00:42:41.600
+<v Speaker 1>now earlier on, we both jumped into the
+
+00:42:41.600 --> 00:42:44.320
+<v Speaker 1>same pod, and that meant that we had
+
+00:42:43.875 --> 00:42:45.235
+<v Speaker 1>two bash sessions
+
+00:42:45.955 --> 00:42:48.515
+<v Speaker 1>the two bash processes running. Actually, what we've
+
+00:42:48.515 --> 00:42:50.355
+<v Speaker 1>got here with two sleep sessions,
+
+00:42:51.955 --> 00:42:52.675
+<v Speaker 1>processes
+
+00:42:54.515 --> 00:42:55.395
+<v Speaker 1>is
+
+00:42:56.115 --> 00:42:57.715
+<v Speaker 1>potentially an indicator
+
+00:42:57.715 --> 00:42:59.075
+<v Speaker 1>of misconfiguration.
+
+00:43:01.630 --> 00:43:02.430
+<v Speaker 0>Okay.
+
+00:43:02.670 --> 00:43:03.870
+<v Speaker 0>Oh, there we go.
+
+00:43:05.150 --> 00:43:07.630
+<v Speaker 1>Oops. See you later. Okay. What should we
+
+00:43:07.630 --> 00:43:08.270
+<v Speaker 1>do?
+
+00:43:09.310 --> 00:43:10.750
+<v Speaker 1>We will have the next one up very
+
+00:43:10.750 --> 00:43:12.494
+<v Speaker 1>shortly. And if you just
+
+00:43:13.135 --> 00:43:14.895
+<v Speaker 1>okay. Yes. So so just looking at that.
+
+00:43:14.895 --> 00:43:15.214
+<v Speaker 1>We've
+
+00:43:16.734 --> 00:43:18.415
+<v Speaker 1>the the first thing to do, please, is
+
+00:43:18.415 --> 00:43:21.055
+<v Speaker 1>to scroll back up to the, description.
+
+00:43:23.214 --> 00:43:25.535
+<v Speaker 1>And and then just slightly further down.
+
+00:43:28.849 --> 00:43:30.930
+<v Speaker 1>Now just before we've typed uptime,
+
+00:43:31.329 --> 00:43:33.970
+<v Speaker 1>it says use kube control, describe, blah blah
+
+00:43:33.970 --> 00:43:35.410
+<v Speaker 1>blah to see all of the containers in
+
+00:43:35.410 --> 00:43:37.730
+<v Speaker 1>this pod. And the line above that,
+
+00:43:38.130 --> 00:43:39.809
+<v Speaker 1>defaulting container name to audit,
+
+00:43:40.944 --> 00:43:42.945
+<v Speaker 1>that comes from kubectl exec.
+
+00:43:43.025 --> 00:43:45.265
+<v Speaker 1>That is not part of the scenario description.
+
+00:43:45.505 --> 00:43:47.424
+<v Speaker 1>And probably in the spirit of fairness and
+
+00:43:47.424 --> 00:43:48.225
+<v Speaker 1>goodwill,
+
+00:43:48.464 --> 00:43:50.545
+<v Speaker 1>I should put a dividing line between the
+
+00:43:50.545 --> 00:43:51.424
+<v Speaker 1>two so that's clear.
+
+00:43:53.330 --> 00:43:54.770
+<v Speaker 1>Right. But concretely,
+
+00:43:54.770 --> 00:43:56.770
+<v Speaker 1>what that means is there's more than one
+
+00:43:57.490 --> 00:43:58.370
+<v Speaker 1>container
+
+00:43:58.370 --> 00:43:59.410
+<v Speaker 1>in the pod.
+
+00:44:00.130 --> 00:44:01.890
+<v Speaker 1>KubeControl used to
+
+00:44:03.170 --> 00:44:04.850
+<v Speaker 1>not tell you this information
+
+00:44:05.010 --> 00:44:07.010
+<v Speaker 1>when, when you jumped in or or give
+
+00:44:07.010 --> 00:44:07.730
+<v Speaker 1>you less information.
+
+00:44:08.335 --> 00:44:10.255
+<v Speaker 1>But now with kind of one two one
+
+00:44:10.495 --> 00:44:12.335
+<v Speaker 0>Yeah. Yeah. That's that does you can set
+
+00:44:12.335 --> 00:44:13.935
+<v Speaker 0>the default container now. Right?
+
+00:44:14.975 --> 00:44:17.455
+<v Speaker 1>Yeah. So it and we go toward it.
+
+00:44:17.455 --> 00:44:18.175
+<v Speaker 1>But, actually,
+
+00:44:18.815 --> 00:44:19.135
+<v Speaker 1>the,
+
+00:44:19.695 --> 00:44:21.455
+<v Speaker 1>the container that we're looking for
+
+00:44:21.855 --> 00:44:23.375
+<v Speaker 1>is in the same pod
+
+00:44:23.840 --> 00:44:25.840
+<v Speaker 1>and somehow accessible.
+
+00:44:28.720 --> 00:44:30.880
+<v Speaker 1>And that's, suitably vague,
+
+00:44:30.960 --> 00:44:34.000
+<v Speaker 1>not be of any further use without a
+
+00:44:34.000 --> 00:44:34.960
+<v Speaker 1>cluster as well.
+
+00:44:37.225 --> 00:44:38.905
+<v Speaker 1>I don't know if we've got any more.
+
+00:44:41.465 --> 00:44:43.065
+<v Speaker 1>So if I just send you one that
+
+00:44:43.065 --> 00:44:43.705
+<v Speaker 1>we've
+
+00:44:44.665 --> 00:44:45.145
+<v Speaker 1>been
+
+00:44:48.425 --> 00:44:50.650
+<v Speaker 1>let's, let's reverse back to the last cluster.
+
+00:44:50.650 --> 00:44:52.330
+<v Speaker 1>We only need another couple of minutes before
+
+00:44:52.330 --> 00:44:53.770
+<v Speaker 1>this comes back up again,
+
+00:44:54.890 --> 00:44:56.330
+<v Speaker 1>but at least we'll have something to poke
+
+00:44:56.330 --> 00:44:58.810
+<v Speaker 1>around that mind you saying that, they were
+
+00:44:58.810 --> 00:45:00.410
+<v Speaker 1>probably all spun up at the same time.
+
+00:45:00.490 --> 00:45:02.744
+<v Speaker 1>This is where I miss Lewis.
+
+00:45:04.825 --> 00:45:07.305
+<v Speaker 1>He never makes these kind of rudimentary mistakes.
+
+00:45:08.585 --> 00:45:09.545
+<v Speaker 0>Alright.
+
+00:45:10.105 --> 00:45:13.305
+<v Speaker 0>So I'm deleting the old cluster, and you
+
+00:45:13.305 --> 00:45:15.625
+<v Speaker 0>want me to redownload the previous cluster, which
+
+00:45:15.625 --> 00:45:17.760
+<v Speaker 0>you've just sent me. I'll do that now.
+
+00:45:17.840 --> 00:45:20.080
+<v Speaker 0>Although we suspect that that one may also
+
+00:45:20.480 --> 00:45:21.520
+<v Speaker 0>go kaboom.
+
+00:45:21.840 --> 00:45:23.840
+<v Speaker 1>Yes. Which is nice because I'm actually I'm
+
+00:45:23.840 --> 00:45:25.440
+<v Speaker 0>wearing my Marvin the Martian t shirt today.
+
+00:45:25.440 --> 00:45:27.280
+<v Speaker 0>So things gone kaboom is encouraged.
+
+00:45:29.360 --> 00:45:30.960
+<v Speaker 0>It's only up ninety minutes. There we go.
+
+00:45:33.435 --> 00:45:34.395
+<v Speaker 0>Well, that's
+
+00:45:34.635 --> 00:45:35.915
+<v Speaker 0>is that what you expected?
+
+00:45:37.195 --> 00:45:39.435
+<v Speaker 1>Yes. Because I was better at the beginning
+
+00:45:39.435 --> 00:45:40.235
+<v Speaker 1>of this
+
+00:45:40.715 --> 00:45:42.475
+<v Speaker 1>video than I am at the end.
+
+00:45:44.315 --> 00:45:45.835
+<v Speaker 1>So this might be an interesting time to
+
+00:45:45.835 --> 00:45:47.275
+<v Speaker 1>pull am I contained?
+
+00:45:48.260 --> 00:45:49.060
+<v Speaker 1>Fortunately,
+
+00:45:49.060 --> 00:45:51.300
+<v Speaker 1>Jess does an awesome job on the releases
+
+00:45:51.300 --> 00:45:51.940
+<v Speaker 1>page.
+
+00:45:52.820 --> 00:45:55.140
+<v Speaker 1>Genuine tools, am I contained?
+
+00:45:55.380 --> 00:45:56.580
+<v Speaker 1>That's the badger.
+
+00:45:56.660 --> 00:45:58.180
+<v Speaker 1>And if you go straight to releases, she
+
+00:45:58.180 --> 00:45:59.619
+<v Speaker 1>gives you a checksum validation.
+
+00:46:01.585 --> 00:46:03.105
+<v Speaker 1>I mean, this is how software should be
+
+00:46:03.105 --> 00:46:05.985
+<v Speaker 1>delivered. Right? Everybody who is running code cove
+
+00:46:05.985 --> 00:46:07.185
+<v Speaker 1>and not checking
+
+00:46:07.585 --> 00:46:09.025
+<v Speaker 1>and when I say everybody,
+
+00:46:09.105 --> 00:46:09.985
+<v Speaker 1>everybody,
+
+00:46:10.225 --> 00:46:11.745
+<v Speaker 1>even up to HashiCorp,
+
+00:46:11.825 --> 00:46:12.900
+<v Speaker 1>the big boys.
+
+00:46:13.859 --> 00:46:14.580
+<v Speaker 1>So
+
+00:46:14.740 --> 00:46:16.740
+<v Speaker 1>we've got a permission denied. This is totally
+
+00:46:16.740 --> 00:46:18.020
+<v Speaker 1>standard in containers.
+
+00:46:18.260 --> 00:46:20.180
+<v Speaker 1>We often can't hit the file system locations
+
+00:46:20.180 --> 00:46:21.060
+<v Speaker 1>that we want,
+
+00:46:21.619 --> 00:46:24.260
+<v Speaker 1>but what we can do is
+
+00:46:24.579 --> 00:46:26.260
+<v Speaker 1>yeah. You got it. We can write to
+
+00:46:26.260 --> 00:46:27.700
+<v Speaker 1>temp, and that's
+
+00:46:28.575 --> 00:46:29.455
+<v Speaker 1>we can
+
+00:46:30.015 --> 00:46:32.655
+<v Speaker 1>we can grep the mount points for the
+
+00:46:32.655 --> 00:46:34.095
+<v Speaker 1>string RW,
+
+00:46:34.335 --> 00:46:36.575
+<v Speaker 1>and that will just tell us if we've
+
+00:46:36.575 --> 00:46:38.895
+<v Speaker 1>got a mount if we've a writable mount.
+
+00:46:39.775 --> 00:46:42.015
+<v Speaker 1>As long as we don't have no dev
+
+00:46:42.380 --> 00:46:44.060
+<v Speaker 0>Oh, wait. I was trying to download. Oh,
+
+00:46:44.060 --> 00:46:45.660
+<v Speaker 0>there we go. Let's Yeah. Repeat that.
+
+00:46:46.380 --> 00:46:47.180
+<v Speaker 1>And
+
+00:46:47.340 --> 00:46:49.340
+<v Speaker 1>the before as well Yep.
+
+00:46:49.580 --> 00:46:50.380
+<v Speaker 1>Twice.
+
+00:46:53.420 --> 00:46:55.595
+<v Speaker 1>So this kind of cat and mouse game
+
+00:46:55.595 --> 00:46:57.435
+<v Speaker 1>of immutability on partitions
+
+00:46:57.435 --> 00:47:00.715
+<v Speaker 1>is really not solvable. Applications need to drop
+
+00:47:01.035 --> 00:47:03.835
+<v Speaker 1>PID files, lock files. They probably need temporary
+
+00:47:03.835 --> 00:47:06.635
+<v Speaker 1>disk. You've probably got access to dev SHM,
+
+00:47:06.635 --> 00:47:07.595
+<v Speaker 1>shared memory segment.
+
+00:47:08.990 --> 00:47:11.710
+<v Speaker 1>Really, even GKE, which is super hardened and
+
+00:47:11.710 --> 00:47:13.310
+<v Speaker 1>well configured by default,
+
+00:47:13.869 --> 00:47:16.109
+<v Speaker 1>you can still find places to write runnable
+
+00:47:16.109 --> 00:47:17.070
+<v Speaker 1>files.
+
+00:47:18.510 --> 00:47:21.230
+<v Speaker 1>It becomes a lot easier to IDS detect
+
+00:47:21.230 --> 00:47:21.710
+<v Speaker 1>the thing,
+
+00:47:22.404 --> 00:47:24.325
+<v Speaker 1>but boom. Okay. Awesome.
+
+00:47:25.045 --> 00:47:26.964
+<v Speaker 1>So if we remember what we had in
+
+00:47:26.964 --> 00:47:28.325
+<v Speaker 1>self status,
+
+00:47:28.805 --> 00:47:30.644
+<v Speaker 1>we've got a a lot more visibility here.
+
+00:47:30.644 --> 00:47:33.605
+<v Speaker 1>We can see has namespaces pid? Yes. That's
+
+00:47:33.605 --> 00:47:36.484
+<v Speaker 1>a good thing. Username spaces, no. Hardly anybody
+
+00:47:36.484 --> 00:47:38.700
+<v Speaker 1>has username spaces right now because
+
+00:47:39.340 --> 00:47:41.580
+<v Speaker 1>they're very complex. They cut across a lot
+
+00:47:41.580 --> 00:47:45.020
+<v Speaker 1>of other namespaces because everything is a file,
+
+00:47:45.020 --> 00:47:48.140
+<v Speaker 1>and every file must have, discretionary access control,
+
+00:47:48.140 --> 00:47:50.060
+<v Speaker 1>users and groups, and blah blah blah.
+
+00:47:51.020 --> 00:47:51.740
+<v Speaker 1>Doing
+
+00:47:51.820 --> 00:47:54.155
+<v Speaker 1>a lot of work to bring usernamespaces
+
+00:47:54.155 --> 00:47:54.795
+<v Speaker 1>to
+
+00:47:55.515 --> 00:47:56.315
+<v Speaker 1>Flatcar,
+
+00:47:56.315 --> 00:47:59.195
+<v Speaker 1>which is the spiritual successor of container Linux
+
+00:47:59.195 --> 00:48:01.355
+<v Speaker 1>or CoreOS as it used to be. That
+
+00:48:01.355 --> 00:48:03.435
+<v Speaker 1>will be super awesome when they ship that.
+
+00:48:03.835 --> 00:48:05.675
+<v Speaker 1>What else do we have here? AppArmor profile,
+
+00:48:05.675 --> 00:48:06.395
+<v Speaker 1>docker default.
+
+00:48:07.450 --> 00:48:08.410
+<v Speaker 1>You beauty.
+
+00:48:09.130 --> 00:48:11.690
+<v Speaker 1>Very rarely is AppArmor on by default in
+
+00:48:11.690 --> 00:48:12.570
+<v Speaker 1>Kubernetes,
+
+00:48:12.570 --> 00:48:14.090
+<v Speaker 1>so this is a very happy day.
+
+00:48:14.410 --> 00:48:16.330
+<v Speaker 1>And we can see our bounding sets of
+
+00:48:16.330 --> 00:48:17.450
+<v Speaker 1>capabilities.
+
+00:48:17.770 --> 00:48:19.130
+<v Speaker 1>This will give us an indication
+
+00:48:19.994 --> 00:48:22.474
+<v Speaker 1>whether we're privileged to start off with,
+
+00:48:23.115 --> 00:48:24.954
+<v Speaker 1>but but also tell us things like we've
+
+00:48:24.954 --> 00:48:26.714
+<v Speaker 1>got deck overrides. That means we can change
+
+00:48:26.714 --> 00:48:28.954
+<v Speaker 1>permissions on files in the same way we
+
+00:48:28.954 --> 00:48:29.915
+<v Speaker 1>can with churn.
+
+00:48:31.674 --> 00:48:33.835
+<v Speaker 1>We can make nodes. We can do routes.
+
+00:48:34.140 --> 00:48:35.900
+<v Speaker 1>We we've got a lot going on in
+
+00:48:35.900 --> 00:48:36.460
+<v Speaker 1>there.
+
+00:48:36.859 --> 00:48:38.059
+<v Speaker 1>And then
+
+00:48:38.220 --> 00:48:39.180
+<v Speaker 1>yep. Sorry.
+
+00:48:40.059 --> 00:48:42.380
+<v Speaker 0>No. No. I was just agreeing. Yeah. Stuff.
+
+00:48:42.539 --> 00:48:43.099
+<v Speaker 0>Thanks.
+
+00:48:44.220 --> 00:48:46.460
+<v Speaker 0>App Armour, SC Linux, love all that stuff.
+
+00:48:46.460 --> 00:48:48.299
+<v Speaker 0>It's so easy to operate these days in
+
+00:48:48.299 --> 00:48:48.940
+<v Speaker 0>2021.
+
+00:48:49.585 --> 00:48:51.265
+<v Speaker 1>Tell me about it. And this is where
+
+00:48:51.265 --> 00:48:52.545
+<v Speaker 1>the vendors make the money.
+
+00:48:53.985 --> 00:48:56.465
+<v Speaker 0>Yeah. There's there are loads of things that
+
+00:48:56.705 --> 00:48:59.665
+<v Speaker 0>I I know are just good practice, but
+
+00:48:59.665 --> 00:49:00.305
+<v Speaker 0>then,
+
+00:49:00.465 --> 00:49:01.105
+<v Speaker 0>you know,
+
+00:49:02.305 --> 00:49:03.185
+<v Speaker 0>it's
+
+00:49:03.185 --> 00:49:03.425
+<v Speaker 0>hard.
+
+00:49:04.970 --> 00:49:06.570
+<v Speaker 1>Big time. Yeah.
+
+00:49:06.970 --> 00:49:09.769
+<v Speaker 1>There's there there are tools that will extract
+
+00:49:09.769 --> 00:49:12.970
+<v Speaker 1>runtime security profiles from running applications.
+
+00:49:13.609 --> 00:49:16.410
+<v Speaker 1>But unless those applications exercise the full sets
+
+00:49:16.410 --> 00:49:18.810
+<v Speaker 1>of production runtime behaviors,
+
+00:49:19.289 --> 00:49:21.595
+<v Speaker 1>they're not gonna build the right security profile.
+
+00:49:21.675 --> 00:49:23.275
+<v Speaker 1>So there's this mysterious
+
+00:49:23.275 --> 00:49:24.395
+<v Speaker 1>gray area
+
+00:49:24.555 --> 00:49:25.435
+<v Speaker 1>wherever
+
+00:49:26.475 --> 00:49:28.395
+<v Speaker 1>a security operates, I suppose.
+
+00:49:29.355 --> 00:49:30.475
+<v Speaker 1>And often,
+
+00:49:32.075 --> 00:49:33.675
+<v Speaker 1>there there's some awesome tooling that's come out
+
+00:49:33.675 --> 00:49:34.475
+<v Speaker 1>to support this, actually.
+
+00:49:38.020 --> 00:49:39.940
+<v Speaker 1>The, Aqua Tracy
+
+00:49:39.940 --> 00:49:42.500
+<v Speaker 1>does some of this stuff. Red Red Hat
+
+00:49:42.500 --> 00:49:43.700
+<v Speaker 1>have a,
+
+00:49:45.140 --> 00:49:46.579
+<v Speaker 1>but they have multiple things. They have,
+
+00:49:48.974 --> 00:49:50.974
+<v Speaker 1>a man, I'm just I have tool override.
+
+00:49:50.974 --> 00:49:53.295
+<v Speaker 1>So there there's a there there's a tool
+
+00:49:53.295 --> 00:49:55.775
+<v Speaker 1>that will use eBPF to trace system calls
+
+00:49:55.775 --> 00:49:57.295
+<v Speaker 1>to generate profiles.
+
+00:49:57.454 --> 00:49:58.575
+<v Speaker 1>And Oh, nice.
+
+00:49:59.375 --> 00:50:01.694
+<v Speaker 1>And so could maybe do bits of that
+
+00:50:01.694 --> 00:50:03.055
+<v Speaker 0>as well if you got that running on
+
+00:50:03.055 --> 00:50:03.615
+<v Speaker 0>your cluster.
+
+00:50:04.790 --> 00:50:07.110
+<v Speaker 1>It's absolutely the same space. Yeah.
+
+00:50:07.590 --> 00:50:09.590
+<v Speaker 1>I guess Falca reverse engineer.
+
+00:50:09.830 --> 00:50:12.070
+<v Speaker 0>Yeah. And seccomp, I think, you know, with
+
+00:50:12.070 --> 00:50:14.710
+<v Speaker 0>the seccomp operator and all the work that
+
+00:50:15.110 --> 00:50:17.510
+<v Speaker 0>Dan and Sasha are doing there, it's it's
+
+00:50:17.510 --> 00:50:19.030
+<v Speaker 0>getting a lot easier to run seccomp on
+
+00:50:19.030 --> 00:50:21.805
+<v Speaker 0>Kubernetes as well, which is which is nice.
+
+00:50:21.805 --> 00:50:23.005
+<v Speaker 0>I just wish people would do that for
+
+00:50:23.005 --> 00:50:25.165
+<v Speaker 0>AppArmor and SE Linux. Otherwise, I I'd maybe
+
+00:50:25.165 --> 00:50:26.445
+<v Speaker 0>stop disabling them.
+
+00:50:29.005 --> 00:50:31.245
+<v Speaker 1>Dan wolf's cries every time someone disables
+
+00:50:35.790 --> 00:50:39.550
+<v Speaker 1>extract SELinux profiles from deny events,
+
+00:50:40.110 --> 00:50:42.910
+<v Speaker 1>similar to Audit to RBAC that Jordan Leggett
+
+00:50:42.910 --> 00:50:43.470
+<v Speaker 1>built.
+
+00:50:43.870 --> 00:50:45.310
+<v Speaker 1>I just can't remember what it's called.
+
+00:50:46.350 --> 00:50:47.470
+<v Speaker 1>I'm sure someone will find it.
+
+00:50:48.265 --> 00:50:50.105
+<v Speaker 0>I think Noel has come in. Is it
+
+00:50:50.105 --> 00:50:51.225
+<v Speaker 0>Bain?
+
+00:50:51.225 --> 00:50:53.625
+<v Speaker 1>Yeah. But Bain's great, but it's actually a
+
+00:50:53.625 --> 00:50:55.625
+<v Speaker 1>a preprocessor
+
+00:50:55.625 --> 00:50:56.265
+<v Speaker 1>for,
+
+00:50:57.305 --> 00:50:58.825
+<v Speaker 1>for AppArmor, I think.
+
+00:50:59.065 --> 00:51:00.425
+<v Speaker 1>He says, not having used it like that.
+
+00:51:00.450 --> 00:51:02.530
+<v Speaker 1>So perhaps Oh, I think I missed his
+
+00:51:02.530 --> 00:51:04.530
+<v Speaker 0>first comment. So I think that's also from
+
+00:51:04.530 --> 00:51:06.369
+<v Speaker 0>Jess Rizzell, and it's a tool for dynamically
+
+00:51:06.369 --> 00:51:09.010
+<v Speaker 0>generated tech comp profiles for a binary, which
+
+00:51:09.010 --> 00:51:09.810
+<v Speaker 0>is nice.
+
+00:51:11.570 --> 00:51:13.329
+<v Speaker 0>Or unless I've just stashed two random comments
+
+00:51:13.329 --> 00:51:14.450
+<v Speaker 0>together that aren't related.
+
+00:51:18.005 --> 00:51:20.085
+<v Speaker 1>It's it's in the right direction.
+
+00:51:20.565 --> 00:51:22.805
+<v Speaker 1>Bain focuses on AppArmor,
+
+00:51:23.045 --> 00:51:25.285
+<v Speaker 1>and it's less of a reverse engineer. It's
+
+00:51:25.285 --> 00:51:27.845
+<v Speaker 1>more of a a DSL. So you can
+
+00:51:27.845 --> 00:51:29.765
+<v Speaker 1>just so you don't have to write AppArmor,
+
+00:51:29.765 --> 00:51:31.605
+<v Speaker 1>basically. You can write kind of higher order
+
+00:51:31.740 --> 00:51:34.140
+<v Speaker 1>language and and have it compiled down.
+
+00:51:35.820 --> 00:51:37.340
+<v Speaker 1>But, yeah, I I mean, the this is
+
+00:51:37.340 --> 00:51:40.220
+<v Speaker 1>where container security vendors the next cluster's with
+
+00:51:40.220 --> 00:51:41.980
+<v Speaker 1>you, by the way. This is where container
+
+00:51:41.980 --> 00:51:44.220
+<v Speaker 1>security vendors have been operating for the past,
+
+00:51:44.220 --> 00:51:44.460
+<v Speaker 1>like,
+
+00:51:45.145 --> 00:51:46.105
+<v Speaker 1>five, seven
+
+00:51:46.745 --> 00:51:48.745
+<v Speaker 1>what year is it? Eight years.
+
+00:51:51.145 --> 00:51:51.785
+<v Speaker 1>And
+
+00:51:52.585 --> 00:51:54.585
+<v Speaker 1>another great I'm just dropping stats that I
+
+00:51:54.585 --> 00:51:55.945
+<v Speaker 1>heard in a call earlier.
+
+00:51:56.745 --> 00:52:00.340
+<v Speaker 1>Security operation centers that use open source tooling
+
+00:52:00.420 --> 00:52:02.020
+<v Speaker 1>have a markedly higher
+
+00:52:02.100 --> 00:52:03.780
+<v Speaker 1>talent retention rates.
+
+00:52:04.020 --> 00:52:05.460
+<v Speaker 1>People like open source.
+
+00:52:07.300 --> 00:52:08.500
+<v Speaker 0>Yeah. True.
+
+00:52:09.060 --> 00:52:10.100
+<v Speaker 1>It's awesome.
+
+00:52:10.260 --> 00:52:10.980
+<v Speaker 0>Alright.
+
+00:52:12.100 --> 00:52:15.065
+<v Speaker 0>So we're getting close to the hour, and
+
+00:52:15.065 --> 00:52:17.545
+<v Speaker 0>I know your calendar is always a nightmare.
+
+00:52:17.545 --> 00:52:18.505
+<v Speaker 0>So I don't want us to go over
+
+00:52:18.505 --> 00:52:19.944
+<v Speaker 0>that hour. So why don't you guide us
+
+00:52:19.944 --> 00:52:21.545
+<v Speaker 0>through this one if we can do it
+
+00:52:21.545 --> 00:52:23.144
+<v Speaker 0>in the next five minutes and then we'll
+
+00:52:23.144 --> 00:52:24.744
+<v Speaker 0>do a quick wrap up and then
+
+00:52:25.065 --> 00:52:26.505
+<v Speaker 0>maybe I can schedule more of your time
+
+00:52:26.505 --> 00:52:27.704
+<v Speaker 0>in the future to do a bit more
+
+00:52:27.704 --> 00:52:29.510
+<v Speaker 0>CTFE fun. Absolutely.
+
+00:52:31.430 --> 00:52:33.510
+<v Speaker 1>SE Linux audit to allow is the one.
+
+00:52:33.510 --> 00:52:36.470
+<v Speaker 1>Good spot. We'll lead. Okay. So what are
+
+00:52:36.470 --> 00:52:37.510
+<v Speaker 1>we doing here?
+
+00:52:37.990 --> 00:52:40.070
+<v Speaker 1>We are So you've told me that we
+
+00:52:40.070 --> 00:52:42.550
+<v Speaker 0>have a second container and this
+
+00:52:43.125 --> 00:52:44.325
+<v Speaker 0>pod and we need to find a way
+
+00:52:44.325 --> 00:52:46.805
+<v Speaker 0>to get access to the other container. Right?
+
+00:52:47.125 --> 00:52:49.205
+<v Speaker 1>Yes. That is entirely correct.
+
+00:52:49.445 --> 00:52:50.965
+<v Speaker 0>No. I know that pods
+
+00:52:51.125 --> 00:52:51.685
+<v Speaker 0>share
+
+00:52:52.485 --> 00:52:55.045
+<v Speaker 0>the net namespace but I don't seem to
+
+00:52:55.045 --> 00:52:55.205
+<v Speaker 0>see
+
+00:52:56.440 --> 00:52:58.920
+<v Speaker 0>any way to confirm that, I guess.
+
+00:53:00.360 --> 00:53:00.760
+<v Speaker 0>So
+
+00:53:04.600 --> 00:53:06.040
+<v Speaker 1>yeah. I'll You're
+
+00:53:06.760 --> 00:53:08.840
+<v Speaker 1>totally in the right kind of area. Right.
+
+00:53:08.840 --> 00:53:09.720
+<v Speaker 0>Okay. Go for it.
+
+00:53:11.035 --> 00:53:13.115
+<v Speaker 1>Because we've got those two sleep pods,
+
+00:53:13.355 --> 00:53:14.955
+<v Speaker 1>we want to just have a poke around.
+
+00:53:15.035 --> 00:53:17.915
+<v Speaker 1>And while PS shows us that we are
+
+00:53:17.915 --> 00:53:19.835
+<v Speaker 1>in a process namespace,
+
+00:53:19.835 --> 00:53:22.155
+<v Speaker 1>the question is who else is in our
+
+00:53:22.155 --> 00:53:23.275
+<v Speaker 1>process namespace?
+
+00:53:23.435 --> 00:53:25.435
+<v Speaker 1>By default, Kubernetes containers
+
+00:53:25.435 --> 00:53:27.240
+<v Speaker 1>in a pod are in the same network
+
+00:53:27.240 --> 00:53:29.640
+<v Speaker 1>namespace, the same interprocess namespace,
+
+00:53:29.800 --> 00:53:31.000
+<v Speaker 1>but not the same
+
+00:53:31.640 --> 00:53:33.000
+<v Speaker 1>mount namespace,
+
+00:53:33.240 --> 00:53:34.360
+<v Speaker 1>and not the same,
+
+00:53:35.320 --> 00:53:37.080
+<v Speaker 1>and they have their own container file systems,
+
+00:53:37.080 --> 00:53:39.160
+<v Speaker 1>of course, and not the same process namespace.
+
+00:53:39.480 --> 00:53:41.845
+<v Speaker 1>In this case, we have a shared process
+
+00:53:41.845 --> 00:53:44.405
+<v Speaker 1>namespace between containers and a pod.
+
+00:53:44.885 --> 00:53:47.125
+<v Speaker 1>So if we go cat proc
+
+00:53:47.445 --> 00:53:48.245
+<v Speaker 1>12
+
+00:53:48.245 --> 00:53:50.325
+<v Speaker 1>because 12 is the pit of the other
+
+00:53:50.325 --> 00:53:51.365
+<v Speaker 1>sleep process.
+
+00:53:52.245 --> 00:53:54.085
+<v Speaker 0>And we could probably have found that by
+
+00:53:54.085 --> 00:53:55.845
+<v Speaker 0>just doing an LS and seeing that we
+
+00:53:55.845 --> 00:53:57.580
+<v Speaker 0>have a few numbers here.
+
+00:53:57.740 --> 00:53:58.140
+<v Speaker 0>So
+
+00:53:59.420 --> 00:54:01.660
+<v Speaker 0>is that how you would have done it?
+
+00:54:03.180 --> 00:54:05.339
+<v Speaker 1>Yes. It should always correlate to It would
+
+00:54:05.339 --> 00:54:07.180
+<v Speaker 0>have shown me it here. Right? You got
+
+00:54:07.180 --> 00:54:07.660
+<v Speaker 1>it.
+
+00:54:08.460 --> 00:54:10.300
+<v Speaker 0>See, sometimes I take the hard road. I
+
+00:54:10.300 --> 00:54:12.885
+<v Speaker 0>don't think Right. Okay. Sorry. We're in prog
+
+00:54:12.885 --> 00:54:13.765
+<v Speaker 0>12. Cool.
+
+00:54:14.885 --> 00:54:17.365
+<v Speaker 1>Okay. So what we can do from here
+
+00:54:17.365 --> 00:54:19.525
+<v Speaker 1>is see the root file system of the
+
+00:54:19.525 --> 00:54:20.405
+<v Speaker 1>other process.
+
+00:54:20.645 --> 00:54:23.525
+<v Speaker 1>So if we let's start with cat and
+
+00:54:24.885 --> 00:54:26.245
+<v Speaker 1>go into root, please.
+
+00:54:28.780 --> 00:54:29.820
+<v Speaker 1>Just
+
+00:54:30.220 --> 00:54:30.860
+<v Speaker 1>yeah.
+
+00:54:31.180 --> 00:54:33.740
+<v Speaker 1>Root within this directory. Alright.
+
+00:54:35.420 --> 00:54:37.260
+<v Speaker 1>And then just start auto completing.
+
+00:54:39.285 --> 00:54:41.125
+<v Speaker 1>So we've now got the root file system
+
+00:54:41.125 --> 00:54:43.045
+<v Speaker 1>of the other container because
+
+00:54:43.204 --> 00:54:44.885
+<v Speaker 1>the PID that is running in the other
+
+00:54:44.885 --> 00:54:46.244
+<v Speaker 1>process namespace
+
+00:54:46.325 --> 00:54:48.565
+<v Speaker 1>is now leaking back to us as well.
+
+00:54:48.565 --> 00:54:51.605
+<v Speaker 1>This is by design. It's What? It's necessary.
+
+00:54:51.990 --> 00:54:54.869
+<v Speaker 1>It's because we've shared the process namespace between
+
+00:54:54.869 --> 00:54:57.030
+<v Speaker 1>the pods the containers in a pod.
+
+00:54:57.990 --> 00:54:59.030
+<v Speaker 0>So, I mean,
+
+00:54:59.590 --> 00:55:01.510
+<v Speaker 0>I would say I'm relatively familiar with the
+
+00:55:01.510 --> 00:55:03.110
+<v Speaker 0>product namespace, and I had no idea you
+
+00:55:03.110 --> 00:55:04.790
+<v Speaker 0>could navigate the root file system for each
+
+00:55:04.790 --> 00:55:05.750
+<v Speaker 0>process in this way.
+
+00:55:08.165 --> 00:55:10.565
+<v Speaker 0>Okay. Normally, this is a highly I mean,
+
+00:55:10.565 --> 00:55:12.565
+<v Speaker 1>we we're roots, so we we have access
+
+00:55:12.565 --> 00:55:14.405
+<v Speaker 1>to privileged system stuff.
+
+00:55:15.285 --> 00:55:16.565
+<v Speaker 1>And from here,
+
+00:55:17.365 --> 00:55:19.605
+<v Speaker 1>where do we want to go? This one,
+
+00:55:19.605 --> 00:55:21.680
+<v Speaker 1>you may want to look in temp. So
+
+00:55:21.680 --> 00:55:24.240
+<v Speaker 1>in the temp directory of the other container,
+
+00:55:28.960 --> 00:55:30.640
+<v Speaker 1>and then into temp again,
+
+00:55:34.015 --> 00:55:35.935
+<v Speaker 1>and then into logs again. You might just
+
+00:55:35.935 --> 00:55:37.535
+<v Speaker 1>want to also complete for a bit.
+
+00:55:39.055 --> 00:55:39.695
+<v Speaker 1>Oh.
+
+00:55:41.535 --> 00:55:43.135
+<v Speaker 0>I should have just said no. Read them
+
+00:55:43.135 --> 00:55:44.335
+<v Speaker 0>all out to me one by one.
+
+00:55:54.200 --> 00:55:55.640
+<v Speaker 1>Yeah. I I feel bad that I've used
+
+00:55:55.640 --> 00:55:57.880
+<v Speaker 1>the same, file name twice.
+
+00:55:59.400 --> 00:56:00.600
+<v Speaker 1>The directory name rather.
+
+00:56:05.974 --> 00:56:06.855
+<v Speaker 0>There we go.
+
+00:56:07.815 --> 00:56:08.695
+<v Speaker 1>Excellent.
+
+00:56:08.934 --> 00:56:09.655
+<v Speaker 1>Fantastic.
+
+00:56:11.255 --> 00:56:12.775
+<v Speaker 1>Yet there are two more,
+
+00:56:13.015 --> 00:56:15.654
+<v Speaker 1>and there is a, a mysterious bounty flag
+
+00:56:15.654 --> 00:56:17.414
+<v Speaker 1>hidden later. So
+
+00:56:18.420 --> 00:56:19.940
+<v Speaker 1>let's let's cut it off there and find
+
+00:56:19.940 --> 00:56:21.460
+<v Speaker 1>the time to get the others through and
+
+00:56:21.460 --> 00:56:23.220
+<v Speaker 1>then maybe run through some of last year's
+
+00:56:23.220 --> 00:56:23.780
+<v Speaker 1>as well.
+
+00:56:25.460 --> 00:56:26.740
+<v Speaker 0>Alright. Well,
+
+00:56:27.300 --> 00:56:28.500
+<v Speaker 0>thank you very much. Like,
+
+00:56:29.945 --> 00:56:32.825
+<v Speaker 0>I'm learning scary stuff, which is always a
+
+00:56:32.825 --> 00:56:35.625
+<v Speaker 0>wonderful thing to be doing. Like, that route
+
+00:56:35.625 --> 00:56:38.105
+<v Speaker 0>director and the prog thing. I I took
+
+00:56:38.105 --> 00:56:39.625
+<v Speaker 0>that that's wild.
+
+00:56:40.585 --> 00:56:42.105
+<v Speaker 0>I I don't know why that's a thing,
+
+00:56:42.105 --> 00:56:43.410
+<v Speaker 0>but I'm gonna have I'm gonna I'm gonna
+
+00:56:43.410 --> 00:56:45.250
+<v Speaker 0>have to look look that up for sure.
+
+00:56:45.490 --> 00:56:47.170
+<v Speaker 1>It's
+
+00:56:47.170 --> 00:56:49.569
+<v Speaker 1>a thing because when the kernel and I'm
+
+00:56:49.569 --> 00:56:52.290
+<v Speaker 1>I'm gonna butcher this, and please, colonel devs,
+
+00:56:52.290 --> 00:56:53.010
+<v Speaker 1>correct me.
+
+00:56:53.329 --> 00:56:55.089
+<v Speaker 1>But when the kernel is managing processes,
+
+00:56:55.734 --> 00:56:57.655
+<v Speaker 1>it wants all of that information so that
+
+00:56:57.655 --> 00:56:59.415
+<v Speaker 1>it can do its own introspection.
+
+00:56:59.415 --> 00:57:01.175
+<v Speaker 1>They're just SIM links to places.
+
+00:57:02.535 --> 00:57:04.535
+<v Speaker 1>Everything in Linux is a file, so it
+
+00:57:04.535 --> 00:57:06.615
+<v Speaker 1>makes that all available through the proc virtual
+
+00:57:06.615 --> 00:57:07.175
+<v Speaker 1>file system.
+
+00:57:07.750 --> 00:57:10.230
+<v Speaker 1>When we're root inside the container, and here's
+
+00:57:10.230 --> 00:57:12.070
+<v Speaker 1>the you know, just say this sort of
+
+00:57:12.070 --> 00:57:13.990
+<v Speaker 1>blur in the face, we have access to
+
+00:57:13.990 --> 00:57:15.670
+<v Speaker 1>all those privileged operations.
+
+00:57:16.390 --> 00:57:17.990
+<v Speaker 1>And so root inside the container can do
+
+00:57:17.990 --> 00:57:19.990
+<v Speaker 1>an awful lot because we're still just using
+
+00:57:19.990 --> 00:57:22.475
+<v Speaker 1>Linux, and that's why we want to elevate
+
+00:57:22.475 --> 00:57:23.755
+<v Speaker 1>to a non root user.
+
+00:57:25.195 --> 00:57:27.915
+<v Speaker 0>And would that be something that disappears with
+
+00:57:27.915 --> 00:57:29.115
+<v Speaker 0>user namespaces?
+
+00:57:29.915 --> 00:57:30.235
+<v Speaker 0>At least
+
+00:57:32.795 --> 00:57:34.395
+<v Speaker 1>user namespaces perform
+
+00:57:34.635 --> 00:57:37.035
+<v Speaker 1>oh, man. It's a mouthful. Subordinate group and
+
+00:57:37.035 --> 00:57:37.675
+<v Speaker 1>user mapping.
+
+00:57:38.210 --> 00:57:40.289
+<v Speaker 1>So where we've got kind of we used
+
+00:57:40.289 --> 00:57:42.609
+<v Speaker 1>to have one to 64 k. We've now
+
+00:57:42.609 --> 00:57:43.810
+<v Speaker 1>got one to 2,000,000,000,
+
+00:57:45.329 --> 00:57:46.849
+<v Speaker 1>possible user IDs.
+
+00:57:47.410 --> 00:57:49.250
+<v Speaker 1>There's so many because you can then so
+
+00:57:49.250 --> 00:57:51.410
+<v Speaker 1>you've got your root user namespace. You can
+
+00:57:51.410 --> 00:57:54.185
+<v Speaker 1>then create another user namespace on top, and
+
+00:57:54.185 --> 00:57:55.145
+<v Speaker 1>that maps
+
+00:57:55.545 --> 00:57:58.665
+<v Speaker 1>zero inside that namespace to 50,000
+
+00:57:58.665 --> 00:58:00.425
+<v Speaker 1>on the host. And then you can do
+
+00:58:00.425 --> 00:58:02.105
+<v Speaker 1>that again, and you can do it to
+
+00:58:02.105 --> 00:58:03.865
+<v Speaker 1>a point of brain melting complexity that we
+
+00:58:03.865 --> 00:58:04.665
+<v Speaker 1>won't think about.
+
+00:58:06.140 --> 00:58:08.380
+<v Speaker 1>So does it go away with these namespaces?
+
+00:58:08.380 --> 00:58:10.620
+<v Speaker 1>Some of the privileged host mounting stuff does
+
+00:58:10.620 --> 00:58:12.940
+<v Speaker 1>go away because we need that permission on
+
+00:58:12.940 --> 00:58:16.220
+<v Speaker 1>the in the the root's username space. What
+
+00:58:16.220 --> 00:58:17.260
+<v Speaker 1>we did just now
+
+00:58:18.300 --> 00:58:19.865
+<v Speaker 1>oh, that's by
+
+00:58:20.425 --> 00:58:22.505
+<v Speaker 1>design in inverted commas.
+
+00:58:23.385 --> 00:58:25.545
+<v Speaker 0>Cool. Alright. Well, I'll definitely be losing sleep
+
+00:58:25.545 --> 00:58:27.224
+<v Speaker 0>and turning off all of my production infrastructure
+
+00:58:27.224 --> 00:58:28.265
+<v Speaker 0>tonight. You
+
+00:58:28.984 --> 00:58:31.625
+<v Speaker 1>did a great job. Alright. Well, again, thank
+
+00:58:31.625 --> 00:58:32.984
+<v Speaker 0>you for taking some time out of your
+
+00:58:32.984 --> 00:58:34.850
+<v Speaker 0>day and walking us through this today. It
+
+00:58:34.850 --> 00:58:37.250
+<v Speaker 0>was great fun. I definitely am gonna get
+
+00:58:37.890 --> 00:58:39.730
+<v Speaker 0>more involved with CTS, I think, and just
+
+00:58:39.730 --> 00:58:41.730
+<v Speaker 0>use them as a learning experience. I think
+
+00:58:41.730 --> 00:58:43.730
+<v Speaker 0>this is a really fun and engaging way
+
+00:58:43.730 --> 00:58:44.530
+<v Speaker 0>to learn
+
+00:58:44.850 --> 00:58:48.050
+<v Speaker 0>really lower level components of the kernel and
+
+00:58:48.050 --> 00:58:51.085
+<v Speaker 0>containers that I've probably just been neglecting for
+
+00:58:51.085 --> 00:58:51.885
+<v Speaker 0>a while. So,
+
+00:58:52.285 --> 00:58:55.005
+<v Speaker 0>Andy, it's always a pleasure, but thanks again.
+
+00:58:55.005 --> 00:58:56.924
+<v Speaker 0>Have a great evening and I will speak
+
+00:58:56.924 --> 00:58:57.724
+<v Speaker 0>to you soon.
+
+00:58:58.045 --> 00:58:58.845
+<v Speaker 1>Cheers.
+
+00:58:58.845 --> 00:58:59.644
+<v Speaker 1>Totally enjoyed.

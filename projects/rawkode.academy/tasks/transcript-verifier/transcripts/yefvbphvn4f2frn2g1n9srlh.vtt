@@ -1,0 +1,6398 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 676c5e9f-5567-4fe7-8e21-aa14f47c53cd
+Created: 2025-04-29T20:46:45.256Z
+Duration: 4640.027
+Channels: 1
+
+00:01:19.150 --> 00:01:19.950
+<v Speaker 0>Hello.
+
+00:01:20.110 --> 00:01:21.230
+<v Speaker 0>And welcome
+
+00:01:21.310 --> 00:01:24.350
+<v Speaker 0>to today's episode of Rawkode live. I am
+
+00:01:24.350 --> 00:01:25.790
+<v Speaker 0>your host Rawkode.
+
+00:01:26.030 --> 00:01:27.790
+<v Speaker 0>And today we're gonna be taking a look
+
+00:01:27.790 --> 00:01:29.390
+<v Speaker 0>at TektonCD.
+
+00:01:29.390 --> 00:01:30.990
+<v Speaker 0>A continuous
+
+00:01:31.070 --> 00:01:33.230
+<v Speaker 0>build pipeline delivery
+
+00:01:33.795 --> 00:01:36.755
+<v Speaker 0>software thingy majiggy for Kubernetes.
+
+00:01:36.994 --> 00:01:38.755
+<v Speaker 0>Before we get started, I just wanna say
+
+00:01:38.755 --> 00:01:40.595
+<v Speaker 0>thank you to my employer. I work for
+
+00:01:40.595 --> 00:01:42.274
+<v Speaker 0>a company called Equinix Metal. They are a
+
+00:01:42.274 --> 00:01:43.555
+<v Speaker 0>bare metal cloud.
+
+00:01:44.034 --> 00:01:46.755
+<v Speaker 0>They provide the time, the resources for me
+
+00:01:46.755 --> 00:01:50.070
+<v Speaker 0>to invest in the show and get experts
+
+00:01:50.230 --> 00:01:52.390
+<v Speaker 0>from the cloud native community to come and
+
+00:01:52.390 --> 00:01:54.310
+<v Speaker 0>share the technologies they're working on with us
+
+00:01:54.310 --> 00:01:56.630
+<v Speaker 0>today. So thank you, Equinix Medal. If you
+
+00:01:56.630 --> 00:01:58.630
+<v Speaker 0>wanna try it out, you can. There's a
+
+00:01:58.630 --> 00:02:01.190
+<v Speaker 0>$50 code or Rawkode dash live. This will
+
+00:02:01.190 --> 00:02:03.590
+<v Speaker 0>get you roughly one hundred hours of compute.
+
+00:02:03.675 --> 00:02:05.035
+<v Speaker 0>So it'll allow you to get a feel
+
+00:02:05.035 --> 00:02:06.955
+<v Speaker 0>for what bare metal is and how to
+
+00:02:06.955 --> 00:02:09.035
+<v Speaker 0>leverage it best to your cloud native architectures.
+
+00:02:09.835 --> 00:02:12.155
+<v Speaker 0>Now today, for looking at Tekton, I am
+
+00:02:12.155 --> 00:02:16.315
+<v Speaker 0>joined by Kevin McDermott. Kevin is an engineer
+
+00:02:16.315 --> 00:02:18.635
+<v Speaker 0>at Red Hat and a contributor to the
+
+00:02:18.635 --> 00:02:21.810
+<v Speaker 0>TektonCD projects. Hey, Kevin. How are you? Hey,
+
+00:02:21.810 --> 00:02:23.330
+<v Speaker 1>dude. I'm not doing too badly.
+
+00:02:23.730 --> 00:02:24.450
+<v Speaker 0>Awesome. Do
+
+00:02:24.849 --> 00:02:26.689
+<v Speaker 0>you wanna take a a few moments to
+
+00:02:26.689 --> 00:02:28.209
+<v Speaker 0>tell us a little bit about yourself? And
+
+00:02:28.209 --> 00:02:29.890
+<v Speaker 0>then we'll start talking about Tekton.
+
+00:02:30.530 --> 00:02:31.489
+<v Speaker 1>So
+
+00:02:31.489 --> 00:02:33.569
+<v Speaker 1>I work on GitOps at Red Hat. I'm
+
+00:02:33.569 --> 00:02:35.165
+<v Speaker 1>building out automated
+
+00:02:35.165 --> 00:02:37.805
+<v Speaker 1>pipelines to allow you to automate
+
+00:02:38.365 --> 00:02:40.365
+<v Speaker 1>build and deployment into production.
+
+00:02:41.405 --> 00:02:42.205
+<v Speaker 1>I've
+
+00:02:42.205 --> 00:02:45.085
+<v Speaker 1>been writing software for thirty years commercially. So
+
+00:02:45.085 --> 00:02:47.325
+<v Speaker 1>I've been around the block a few times.
+
+00:02:47.325 --> 00:02:47.405
+<v Speaker 1>But
+
+00:02:49.300 --> 00:02:50.740
+<v Speaker 1>most of the stuff I read nowadays is
+
+00:02:50.740 --> 00:02:53.060
+<v Speaker 1>is really centered around helping people get
+
+00:02:53.940 --> 00:02:57.060
+<v Speaker 1>software from idea into production as quickly and
+
+00:02:57.060 --> 00:02:58.580
+<v Speaker 1>safely as possible.
+
+00:02:58.819 --> 00:03:00.100
+<v Speaker 1>At least theoretically, at least.
+
+00:03:02.075 --> 00:03:03.435
+<v Speaker 0>Awesome. Cool.
+
+00:03:04.235 --> 00:03:07.435
+<v Speaker 0>So why don't you start by telling us
+
+00:03:07.754 --> 00:03:09.595
+<v Speaker 0>what is Tekton?
+
+00:03:10.394 --> 00:03:11.755
+<v Speaker 1>So Tekton
+
+00:03:12.474 --> 00:03:14.720
+<v Speaker 1>is a project. Been around for, I think,
+
+00:03:14.720 --> 00:03:16.320
+<v Speaker 1>four, five years now and and it and
+
+00:03:16.320 --> 00:03:18.560
+<v Speaker 1>it's basic part of it. I don't know.
+
+00:03:18.560 --> 00:03:19.920
+<v Speaker 1>Maybe not. Not about two years since basic
+
+00:03:19.920 --> 00:03:22.160
+<v Speaker 1>part. And what it does is is
+
+00:03:22.160 --> 00:03:24.320
+<v Speaker 1>I I can keep native a cloud native,
+
+00:03:24.320 --> 00:03:25.440
+<v Speaker 1>Kubernetes native
+
+00:03:27.585 --> 00:03:28.625
+<v Speaker 1>pod scheduling.
+
+00:03:28.625 --> 00:03:29.745
+<v Speaker 1>So what do you have a problem with
+
+00:03:29.745 --> 00:03:31.985
+<v Speaker 1>now? You wanna run a container in Kubernetes?
+
+00:03:31.985 --> 00:03:33.825
+<v Speaker 1>How do you get another container to wait
+
+00:03:33.825 --> 00:03:35.505
+<v Speaker 1>for that container to execute?
+
+00:03:35.585 --> 00:03:37.265
+<v Speaker 1>You can. Right? It's pretty difficult. You have
+
+00:03:37.265 --> 00:03:39.830
+<v Speaker 1>to do something with Kubernetes or something. And
+
+00:03:39.830 --> 00:03:40.870
+<v Speaker 1>so Kubernetes
+
+00:03:40.870 --> 00:03:43.269
+<v Speaker 1>Tekton allows you to specify the order of
+
+00:03:43.269 --> 00:03:46.150
+<v Speaker 1>things and you can split and and rejoin
+
+00:03:46.470 --> 00:03:47.510
+<v Speaker 1>processes
+
+00:03:47.510 --> 00:03:49.829
+<v Speaker 1>to allow you to set up a series
+
+00:03:49.829 --> 00:03:50.870
+<v Speaker 1>of events
+
+00:03:50.870 --> 00:03:51.670
+<v Speaker 1>and
+
+00:03:51.945 --> 00:03:53.865
+<v Speaker 1>containers to to be executed
+
+00:03:53.945 --> 00:03:55.705
+<v Speaker 1>on a PVC or something like that. So
+
+00:03:55.705 --> 00:03:56.985
+<v Speaker 1>maybe if you wanna build, like, a a
+
+00:03:56.985 --> 00:03:59.065
+<v Speaker 1>build pipeline, then you always have to clone
+
+00:03:59.065 --> 00:04:00.665
+<v Speaker 1>your source code. You might wanna run some
+
+00:04:00.665 --> 00:04:02.345
+<v Speaker 1>tests, and then you start to build on
+
+00:04:02.345 --> 00:04:03.145
+<v Speaker 1>top of it.
+
+00:04:04.185 --> 00:04:05.920
+<v Speaker 1>So if you will have a continuous delivery
+
+00:04:05.920 --> 00:04:08.480
+<v Speaker 1>pipeline, then Tekton is a cloud native way
+
+00:04:08.480 --> 00:04:09.920
+<v Speaker 1>of doing it. It's also the kind of
+
+00:04:09.920 --> 00:04:12.400
+<v Speaker 1>basis for some other projects. So they're forced
+
+00:04:12.400 --> 00:04:13.840
+<v Speaker 1>to Jenkins X and things like that. They're
+
+00:04:13.840 --> 00:04:15.120
+<v Speaker 1>building on top of it.
+
+00:04:16.320 --> 00:04:17.200
+<v Speaker 0>Okay. So,
+
+00:04:17.995 --> 00:04:20.555
+<v Speaker 0>I mean, one of issues cases is continuous
+
+00:04:20.555 --> 00:04:23.194
+<v Speaker 0>delivery. Does it also take the same box,
+
+00:04:23.194 --> 00:04:24.955
+<v Speaker 0>fit in the same market as other services
+
+00:04:24.955 --> 00:04:27.675
+<v Speaker 0>like like regular Jenkins, like CircleCI, you know,
+
+00:04:27.675 --> 00:04:30.330
+<v Speaker 0>does it have a, like, I guess, a
+
+00:04:30.330 --> 00:04:32.090
+<v Speaker 0>crossover and feature set with these ones or
+
+00:04:32.090 --> 00:04:34.090
+<v Speaker 0>is it slightly different because it runs on
+
+00:04:34.090 --> 00:04:35.690
+<v Speaker 0>our own Kubernetes clusters?
+
+00:04:35.930 --> 00:04:38.010
+<v Speaker 1>So how do think? So I think the
+
+00:04:38.010 --> 00:04:41.610
+<v Speaker 1>biggest difference is that it isn't by itself
+
+00:04:42.465 --> 00:04:44.865
+<v Speaker 1>system. It's a way of executing containers and
+
+00:04:44.865 --> 00:04:47.185
+<v Speaker 1>and and getting the results of those containers
+
+00:04:47.185 --> 00:04:48.865
+<v Speaker 1>so you don't get the kind of
+
+00:04:49.505 --> 00:04:52.385
+<v Speaker 1>and this is, you know, it's not intended
+
+00:04:52.705 --> 00:04:54.225
+<v Speaker 1>not intended to be like this at the
+
+00:04:54.225 --> 00:04:56.540
+<v Speaker 1>moment and there is ongoing work. But you
+
+00:04:56.540 --> 00:04:59.340
+<v Speaker 1>essentially get the results of executing those containers.
+
+00:04:59.340 --> 00:05:01.100
+<v Speaker 1>So for example, like, I was saying, we're
+
+00:05:01.100 --> 00:05:02.300
+<v Speaker 1>doing is we have OpenShift and we have
+
+00:05:02.300 --> 00:05:05.020
+<v Speaker 1>some kind of nice UIs around them showing
+
+00:05:05.020 --> 00:05:06.300
+<v Speaker 1>you, like, the results of those and we
+
+00:05:06.300 --> 00:05:07.340
+<v Speaker 1>can gather up some
+
+00:05:08.305 --> 00:05:10.065
+<v Speaker 1>results and you can see, like, what pipeline,
+
+00:05:10.065 --> 00:05:12.145
+<v Speaker 1>what has executed and things like that.
+
+00:05:12.465 --> 00:05:13.745
+<v Speaker 1>And as you'll see that there there is
+
+00:05:13.745 --> 00:05:15.264
+<v Speaker 1>a Tekton dashboard which allows you to get
+
+00:05:15.264 --> 00:05:17.745
+<v Speaker 1>a kind of nice visual representation of this.
+
+00:05:18.705 --> 00:05:20.865
+<v Speaker 0>Alright. Well, I am looking forward to seeing
+
+00:05:20.865 --> 00:05:23.259
+<v Speaker 0>this. Tekton is one of those projects that,
+
+00:05:23.259 --> 00:05:25.180
+<v Speaker 0>you know there are so many projects
+
+00:05:25.419 --> 00:05:27.259
+<v Speaker 0>in the cloud native ecosystem. And I wanna
+
+00:05:27.259 --> 00:05:28.300
+<v Speaker 0>be able to play with them all, I
+
+00:05:28.300 --> 00:05:30.139
+<v Speaker 0>guess, like Pokemon, but it's just finding the
+
+00:05:30.139 --> 00:05:31.419
+<v Speaker 0>time. So I'm really glad that we got
+
+00:05:31.419 --> 00:05:33.420
+<v Speaker 0>to take a look at this today. Yep.
+
+00:05:33.580 --> 00:05:34.060
+<v Speaker 0>Okay.
+
+00:05:34.845 --> 00:05:36.925
+<v Speaker 0>Sorry, Nico. What you guys said? You know
+
+00:05:36.925 --> 00:05:38.925
+<v Speaker 1>that when you open up that CNC airplane,
+
+00:05:38.925 --> 00:05:39.325
+<v Speaker 1>you
+
+00:05:40.125 --> 00:05:41.485
+<v Speaker 1>just think, woah.
+
+00:05:43.325 --> 00:05:45.085
+<v Speaker 1>Sorry. I mean, I I like the size
+
+00:05:45.085 --> 00:05:46.605
+<v Speaker 0>of it now because I'm like, cool. I'm
+
+00:05:46.605 --> 00:05:47.805
+<v Speaker 0>not gonna run out of content for this
+
+00:05:47.805 --> 00:05:49.965
+<v Speaker 0>show for a while. So, you know, selfish
+
+00:05:49.965 --> 00:05:52.690
+<v Speaker 0>reasons. But certainly as an end user, someone
+
+00:05:52.690 --> 00:05:54.290
+<v Speaker 0>that has to operate stuff in production, it
+
+00:05:54.290 --> 00:05:55.810
+<v Speaker 0>can be a little bit intimidating.
+
+00:05:56.210 --> 00:05:57.970
+<v Speaker 0>But for, you know, Tekton solves a lot
+
+00:05:57.970 --> 00:05:59.650
+<v Speaker 0>of problems and I'm hoping we can demonstrate
+
+00:05:59.650 --> 00:06:01.330
+<v Speaker 0>that today. Well, you can demonstrate that today.
+
+00:06:01.330 --> 00:06:02.690
+<v Speaker 0>I just get to sit and enjoy.
+
+00:06:03.615 --> 00:06:05.295
+<v Speaker 0>Alright. Before we get started, we do have
+
+00:06:05.295 --> 00:06:07.855
+<v Speaker 0>a couple of comments. So first, hey, Andreas.
+
+00:06:07.855 --> 00:06:10.815
+<v Speaker 0>How's it going? Wave, wave, wave. And rain.
+
+00:06:10.815 --> 00:06:12.255
+<v Speaker 0>Hey, rain. How are you?
+
+00:06:13.455 --> 00:06:14.495
+<v Speaker 0>Okay. So
+
+00:06:15.610 --> 00:06:17.050
+<v Speaker 0>let's one of the things I like to
+
+00:06:17.050 --> 00:06:18.330
+<v Speaker 0>do at the start of the show is
+
+00:06:18.330 --> 00:06:20.010
+<v Speaker 0>just see what was prepared upfront.
+
+00:06:20.410 --> 00:06:21.850
+<v Speaker 0>And I like that to be as little
+
+00:06:21.850 --> 00:06:24.010
+<v Speaker 0>as possible. Now nobody wants to watch me
+
+00:06:24.010 --> 00:06:26.170
+<v Speaker 0>provision a Kubernetes cluster. So that has been
+
+00:06:26.170 --> 00:06:26.890
+<v Speaker 0>provisioned upfront.
+
+00:06:27.465 --> 00:06:29.865
+<v Speaker 0>And I have shared the cube contact for
+
+00:06:29.865 --> 00:06:31.785
+<v Speaker 0>that with Kevin who will be driving most
+
+00:06:31.785 --> 00:06:33.145
+<v Speaker 0>of the demo today and
+
+00:06:34.585 --> 00:06:36.264
+<v Speaker 0>batting away all my questions at the same
+
+00:06:36.264 --> 00:06:37.465
+<v Speaker 0>time, I'm sure.
+
+00:06:39.225 --> 00:06:41.225
+<v Speaker 0>I'm gonna share your screen. Oh, we got
+
+00:06:42.229 --> 00:06:43.910
+<v Speaker 1>Oh, that's okay.
+
+00:06:44.389 --> 00:06:44.790
+<v Speaker 1>We will
+
+00:06:46.550 --> 00:06:48.389
+<v Speaker 1>da. Cut you off guard. There we go.
+
+00:06:48.389 --> 00:06:49.270
+<v Speaker 0>So
+
+00:06:50.389 --> 00:06:52.150
+<v Speaker 0>can we zoom in on that terminal a
+
+00:06:52.150 --> 00:06:54.550
+<v Speaker 0>little bit? Sure. My eyes are good, but
+
+00:06:54.550 --> 00:06:55.910
+<v Speaker 0>they're not that good.
+
+00:06:56.550 --> 00:06:58.854
+<v Speaker 1>Where's that, Luke? I I would go another
+
+00:06:58.854 --> 00:07:00.695
+<v Speaker 0>six or seven presses maybe.
+
+00:07:01.735 --> 00:07:02.535
+<v Speaker 1>Okay.
+
+00:07:03.655 --> 00:07:06.375
+<v Speaker 0>A couple more if you can. Yeah. Okay.
+
+00:07:07.094 --> 00:07:08.375
+<v Speaker 1>Let me see if we can do this
+
+00:07:08.375 --> 00:07:08.935
+<v Speaker 1>a couple more.
+
+00:07:10.050 --> 00:07:12.210
+<v Speaker 0>I know it's gonna be yeah.
+
+00:07:13.090 --> 00:07:15.250
+<v Speaker 1>Like, that wasn't too bad, is it? I
+
+00:07:15.250 --> 00:07:16.690
+<v Speaker 0>I think that should be okay. Better than
+
+00:07:17.250 --> 00:07:17.890
+<v Speaker 0>yeah.
+
+00:07:18.530 --> 00:07:19.650
+<v Speaker 0>I think that might be okay. Yeah.
+
+00:07:20.290 --> 00:07:21.010
+<v Speaker 1>Okay.
+
+00:07:21.730 --> 00:07:24.324
+<v Speaker 1>So what I'm going to do is
+
+00:07:24.805 --> 00:07:27.604
+<v Speaker 1>so doc, basically, we have a a blank
+
+00:07:27.764 --> 00:07:29.525
+<v Speaker 1>cluster provided by David. So what we're gonna
+
+00:07:29.525 --> 00:07:31.125
+<v Speaker 1>do is then we go through the the
+
+00:07:31.125 --> 00:07:33.365
+<v Speaker 1>things that you need to have installed. If
+
+00:07:34.085 --> 00:07:35.604
+<v Speaker 1>native things all have,
+
+00:07:36.280 --> 00:07:37.880
+<v Speaker 1>know, a a big bunch of YAML to
+
+00:07:37.880 --> 00:07:39.560
+<v Speaker 1>get installed. So the very first part I'm
+
+00:07:39.560 --> 00:07:41.160
+<v Speaker 1>gonna install is this is just coming from
+
+00:07:41.160 --> 00:07:44.040
+<v Speaker 1>the the Tekton release documentation
+
+00:07:44.440 --> 00:07:47.960
+<v Speaker 1>is the pipelines part. So pipelines is slightly
+
+00:07:47.960 --> 00:07:49.160
+<v Speaker 1>more mature than
+
+00:07:49.479 --> 00:07:51.560
+<v Speaker 1>triggers and so we can easily do a
+
+00:07:51.560 --> 00:07:53.285
+<v Speaker 1>simple control apply
+
+00:07:53.445 --> 00:07:55.765
+<v Speaker 1>and it will source all those resources and
+
+00:07:55.765 --> 00:07:57.125
+<v Speaker 1>get them coming in.
+
+00:07:58.005 --> 00:08:00.165
+<v Speaker 1>How nice to be be on clusterable role
+
+00:08:00.165 --> 00:08:02.485
+<v Speaker 1>bindings. That's probably something we have to fix
+
+00:08:02.485 --> 00:08:05.845
+<v Speaker 1>at some point. So this is version 0.18
+
+00:08:05.870 --> 00:08:08.030
+<v Speaker 0>Is that what we consider stable? That's safe
+
+00:08:08.030 --> 00:08:10.990
+<v Speaker 0>for production people? Yeah. Okay. Yep. Yeah. I
+
+00:08:10.990 --> 00:08:11.470
+<v Speaker 1>mean,
+
+00:08:12.190 --> 00:08:13.870
+<v Speaker 1>it's not one point zero yet and there's
+
+00:08:13.870 --> 00:08:16.190
+<v Speaker 1>no there's no guarantees around stability. So the
+
+00:08:16.190 --> 00:08:18.485
+<v Speaker 1>next thing we install is triggers. So pipeline
+
+00:08:18.485 --> 00:08:21.764
+<v Speaker 1>is basically your sequencing mechanism. You you as
+
+00:08:21.764 --> 00:08:23.445
+<v Speaker 1>you'll see, you can define tasks and you
+
+00:08:23.445 --> 00:08:24.565
+<v Speaker 1>can define pipelines
+
+00:08:24.645 --> 00:08:26.325
+<v Speaker 1>and then we can execute those.
+
+00:08:26.805 --> 00:08:29.685
+<v Speaker 1>Triggers is more about how do you drive
+
+00:08:29.685 --> 00:08:31.285
+<v Speaker 1>a pipeline. So I'm hoping that we'll get
+
+00:08:31.285 --> 00:08:32.085
+<v Speaker 1>to today
+
+00:08:32.720 --> 00:08:34.399
+<v Speaker 1>actually having completed
+
+00:08:35.199 --> 00:08:38.240
+<v Speaker 1>driving build and push of an image to
+
+00:08:38.319 --> 00:08:39.679
+<v Speaker 1>Docker Hub
+
+00:08:40.240 --> 00:08:42.000
+<v Speaker 1>based on a change to GitHub. So let's
+
+00:08:42.000 --> 00:08:43.279
+<v Speaker 1>see if can get that far. So that's
+
+00:08:43.279 --> 00:08:44.720
+<v Speaker 1>what triggers is doing. So it's bringing in
+
+00:08:44.720 --> 00:08:46.399
+<v Speaker 1>a couple of CRs. So it has if
+
+00:08:46.399 --> 00:08:48.214
+<v Speaker 1>it I mean, as you're gonna see, this
+
+00:08:48.214 --> 00:08:49.654
+<v Speaker 1>is pretty YAML heavy.
+
+00:08:49.815 --> 00:08:50.775
+<v Speaker 1>There's a
+
+00:08:51.175 --> 00:08:52.774
+<v Speaker 1>not a lot of niceness in some of
+
+00:08:52.774 --> 00:08:53.335
+<v Speaker 1>this,
+
+00:08:54.214 --> 00:08:55.815
+<v Speaker 1>is why. And then the very final part
+
+00:08:55.815 --> 00:08:57.894
+<v Speaker 1>of this, I'm going to grab is the
+
+00:08:57.894 --> 00:08:58.615
+<v Speaker 1>dashboard.
+
+00:09:00.935 --> 00:09:01.894
+<v Speaker 1>And we do this.
+
+00:09:02.540 --> 00:09:04.620
+<v Speaker 1>So we've got our dashboard going in. So
+
+00:09:04.620 --> 00:09:06.220
+<v Speaker 1>dashboard is nice. So as you can see,
+
+00:09:06.220 --> 00:09:08.620
+<v Speaker 1>the UI for it looks quite quite tasty.
+
+00:09:08.620 --> 00:09:10.220
+<v Speaker 1>So I'm I know we were talking about
+
+00:09:10.220 --> 00:09:11.180
+<v Speaker 1>getting a
+
+00:09:12.620 --> 00:09:14.780
+<v Speaker 1>an increase available for this. I don't know
+
+00:09:14.780 --> 00:09:15.820
+<v Speaker 1>if you can do that. If not, I'm
+
+00:09:15.820 --> 00:09:18.014
+<v Speaker 1>very happy to keep proxy it because keep
+
+00:09:18.014 --> 00:09:19.214
+<v Speaker 1>proxy is quite nice.
+
+00:09:19.454 --> 00:09:21.695
+<v Speaker 0>Yeah. I think we'll be we'll be keep
+
+00:09:21.695 --> 00:09:22.735
+<v Speaker 0>proxying.
+
+00:09:23.214 --> 00:09:25.375
+<v Speaker 1>So don't worry. You're not gonna you're gonna
+
+00:09:25.375 --> 00:09:27.055
+<v Speaker 1>have to do we could do this very
+
+00:09:27.055 --> 00:09:28.495
+<v Speaker 1>small because you actually have to see the
+
+00:09:28.495 --> 00:09:31.774
+<v Speaker 1>screen. That's fine. So let's keep proxy
+
+00:09:32.650 --> 00:09:36.170
+<v Speaker 1>figure here, then we should be able to
+
+00:09:36.170 --> 00:09:38.650
+<v Speaker 1>see yeah. There we go. So this dashboard,
+
+00:09:38.650 --> 00:09:40.490
+<v Speaker 1>so we've got as you can see Do
+
+00:09:40.490 --> 00:09:41.610
+<v Speaker 0>you have the main on this as well,
+
+00:09:41.610 --> 00:09:42.730
+<v Speaker 0>please? Sure. Sure.
+
+00:09:45.445 --> 00:09:47.685
+<v Speaker 1>Is that readable? Yeah? No. I can't read
+
+00:09:47.685 --> 00:09:48.245
+<v Speaker 0>it yet.
+
+00:09:50.325 --> 00:09:51.845
+<v Speaker 1>It's a new one. He's good. We're at
+
+00:09:51.845 --> 00:09:52.885
+<v Speaker 1>200%.
+
+00:09:53.285 --> 00:09:55.045
+<v Speaker 1>Or maybe I'll bring my screen size. Maybe
+
+00:09:55.045 --> 00:09:56.565
+<v Speaker 1>not. Wait. Can you see that? Is that
+
+00:09:56.565 --> 00:09:56.964
+<v Speaker 1>reasonable?
+
+00:09:57.650 --> 00:09:59.650
+<v Speaker 1>Visible? The menu is not readable, but the
+
+00:09:59.650 --> 00:10:01.250
+<v Speaker 0>rest is. So I think we're okay. The
+
+00:10:01.250 --> 00:10:02.770
+<v Speaker 1>menu is not readable by the Yeah. It's
+
+00:10:02.770 --> 00:10:04.050
+<v Speaker 0>just it's just a bit small. But it's
+
+00:10:04.050 --> 00:10:05.250
+<v Speaker 0>okay. I think we're okay just now. There's
+
+00:10:05.250 --> 00:10:06.850
+<v Speaker 0>not much to see. Oh, there we go.
+
+00:10:06.850 --> 00:10:08.770
+<v Speaker 0>That's perfect. 300 is where we need to
+
+00:10:08.770 --> 00:10:08.850
+<v Speaker 0>be.
+
+00:10:10.915 --> 00:10:13.715
+<v Speaker 1>Okay. So very first thing I'm gonna do
+
+00:10:14.275 --> 00:10:15.795
+<v Speaker 1>second thing I'm gonna do rather is create
+
+00:10:15.795 --> 00:10:17.875
+<v Speaker 1>a very, very first task. So this is
+
+00:10:18.195 --> 00:10:20.195
+<v Speaker 1>maybe a very simple task which I'm gonna
+
+00:10:20.195 --> 00:10:21.395
+<v Speaker 1>put into file.
+
+00:10:21.555 --> 00:10:22.595
+<v Speaker 1>So then oh.
+
+00:10:26.650 --> 00:10:28.410
+<v Speaker 1>Let's look at this. So it's a it's
+
+00:10:28.410 --> 00:10:29.130
+<v Speaker 1>a cube
+
+00:10:29.370 --> 00:10:31.370
+<v Speaker 1>CR. So we've got this, you know, API
+
+00:10:31.370 --> 00:10:33.370
+<v Speaker 1>version, part of the GBK stuff. So API
+
+00:10:33.370 --> 00:10:36.410
+<v Speaker 1>version kind of task, metadata name. So obviously,
+
+00:10:36.410 --> 00:10:37.529
+<v Speaker 1>name it. I'm gonna put it in the
+
+00:10:37.529 --> 00:10:39.450
+<v Speaker 1>default namespace just now mostly because it's kinda
+
+00:10:39.450 --> 00:10:41.825
+<v Speaker 1>simpler to work with. And this task is
+
+00:10:41.825 --> 00:10:43.825
+<v Speaker 1>a single step that just has a name
+
+00:10:43.825 --> 00:10:45.584
+<v Speaker 1>called say hello because you can have a
+
+00:10:45.584 --> 00:10:47.985
+<v Speaker 1>name for these things. It's using Alpine, which
+
+00:10:47.985 --> 00:10:49.185
+<v Speaker 1>can be obvious, I guess.
+
+00:10:49.584 --> 00:10:51.345
+<v Speaker 1>And in this case, it's using a script.
+
+00:10:51.345 --> 00:10:52.865
+<v Speaker 1>So this gets executed
+
+00:10:52.865 --> 00:10:55.345
+<v Speaker 1>as a shell script on the inside the
+
+00:10:55.345 --> 00:10:58.060
+<v Speaker 1>container that you pick. So we have we'll
+
+00:10:58.060 --> 00:10:59.980
+<v Speaker 1>skip shell inside the open and we're gonna
+
+00:10:59.980 --> 00:11:02.620
+<v Speaker 1>run this. So let's see. So I save
+
+00:11:02.620 --> 00:11:03.740
+<v Speaker 1>this and
+
+00:11:05.260 --> 00:11:07.100
+<v Speaker 1>k. I know you hit k apply but
+
+00:11:07.100 --> 00:11:07.900
+<v Speaker 1>that's okay.
+
+00:11:08.380 --> 00:11:10.220
+<v Speaker 0>No. It's k create. I don't like k
+
+00:11:10.220 --> 00:11:11.895
+<v Speaker 0>apply is okay. Okay.
+
+00:11:13.255 --> 00:11:14.855
+<v Speaker 1>It's regard creation.
+
+00:11:15.175 --> 00:11:17.415
+<v Speaker 1>So the next so we have this thing.
+
+00:11:17.415 --> 00:11:18.695
+<v Speaker 1>So we can see if we go to
+
+00:11:18.695 --> 00:11:19.895
+<v Speaker 1>dashboard,
+
+00:11:20.295 --> 00:11:22.775
+<v Speaker 1>we're gonna see we now have a hello
+
+00:11:22.775 --> 00:11:25.015
+<v Speaker 1>world task created 10 ago
+
+00:11:25.580 --> 00:11:27.660
+<v Speaker 1>and it hasn't yet run. There aren't any
+
+00:11:27.660 --> 00:11:29.980
+<v Speaker 1>runs for it, so it's not particularly exciting,
+
+00:11:29.980 --> 00:11:30.780
+<v Speaker 1>but that's okay.
+
+00:11:31.580 --> 00:11:32.940
+<v Speaker 1>So next thing we do
+
+00:11:33.180 --> 00:11:35.340
+<v Speaker 1>is I'm gonna create a really simple task
+
+00:11:35.340 --> 00:11:36.940
+<v Speaker 1>run for this. After this, this just and
+
+00:11:36.940 --> 00:11:38.620
+<v Speaker 1>all of the materials will be taken about
+
+00:11:38.620 --> 00:11:39.180
+<v Speaker 1>other
+
+00:11:39.565 --> 00:11:40.685
+<v Speaker 1>I'll
+
+00:11:41.324 --> 00:11:43.165
+<v Speaker 1>just open up the the repo that this
+
+00:11:43.165 --> 00:11:44.685
+<v Speaker 1>is coming from. So let's create
+
+00:11:45.165 --> 00:11:46.365
+<v Speaker 1>hello world
+
+00:11:46.605 --> 00:11:49.324
+<v Speaker 1>task run. So the the relationship between these
+
+00:11:49.324 --> 00:11:51.005
+<v Speaker 1>is, it's kind of like a class and
+
+00:11:51.005 --> 00:11:53.180
+<v Speaker 1>instance type relationship if you're a programmer. So
+
+00:11:53.180 --> 00:11:55.260
+<v Speaker 1>you have like a task defined, here's the
+
+00:11:55.260 --> 00:11:56.620
+<v Speaker 1>things that need to get executed
+
+00:11:56.779 --> 00:11:58.620
+<v Speaker 1>and the task run is an instance of
+
+00:11:58.620 --> 00:12:00.779
+<v Speaker 1>that particular one. So if if you're familiar
+
+00:12:00.779 --> 00:12:02.060
+<v Speaker 1>with Kube, you'll see that we've got a
+
+00:12:02.060 --> 00:12:03.820
+<v Speaker 1>generate name on this. I don't need to
+
+00:12:03.820 --> 00:12:04.940
+<v Speaker 1>have a generate name if I wanted to
+
+00:12:04.940 --> 00:12:05.820
+<v Speaker 1>keep it, then I'd have to go and
+
+00:12:05.820 --> 00:12:06.700
+<v Speaker 1>delete everything and run it.
+
+00:12:07.415 --> 00:12:09.495
+<v Speaker 1>And this basically just is a really, simple
+
+00:12:09.495 --> 00:12:11.654
+<v Speaker 1>thing that says go and execute the hello
+
+00:12:11.654 --> 00:12:13.735
+<v Speaker 1>world task. You see there's just a text
+
+00:12:13.735 --> 00:12:14.375
+<v Speaker 1>script.
+
+00:12:14.615 --> 00:12:15.654
+<v Speaker 1>What we can do is we can do
+
+00:12:15.654 --> 00:12:16.615
+<v Speaker 1>key, create.
+
+00:12:19.569 --> 00:12:20.370
+<v Speaker 1>You
+
+00:12:21.329 --> 00:12:23.329
+<v Speaker 1>do need to use create with generate name,
+
+00:12:23.329 --> 00:12:24.290
+<v Speaker 1>I think. So
+
+00:12:24.690 --> 00:12:26.769
+<v Speaker 1>so what we're gonna see here is if
+
+00:12:26.769 --> 00:12:28.529
+<v Speaker 1>I click on this hello world task, you
+
+00:12:28.529 --> 00:12:29.810
+<v Speaker 1>can see that it's
+
+00:12:30.769 --> 00:12:32.850
+<v Speaker 1>doing its thing. It's pulling it and
+
+00:12:33.355 --> 00:12:36.395
+<v Speaker 1>and we can see that it logged out.
+
+00:12:36.395 --> 00:12:38.635
+<v Speaker 1>Hello, world. Right? Pretty much what we expected
+
+00:12:38.635 --> 00:12:41.115
+<v Speaker 1>to see. So that's a really simple case,
+
+00:12:41.115 --> 00:12:43.595
+<v Speaker 1>think. We need to say, you know, traditional
+
+00:12:43.915 --> 00:12:45.995
+<v Speaker 1>from KNRC book, where we've got a hello
+
+00:12:45.995 --> 00:12:47.195
+<v Speaker 1>world is our thing.
+
+00:12:47.515 --> 00:12:48.635
+<v Speaker 1>So we can also,
+
+00:12:49.390 --> 00:12:51.870
+<v Speaker 1>there's a command line component part of this
+
+00:12:51.870 --> 00:12:55.310
+<v Speaker 1>and it's installable through homebrew, it's installable from
+
+00:12:55.310 --> 00:12:56.910
+<v Speaker 1>the binary releases
+
+00:12:57.630 --> 00:12:59.550
+<v Speaker 1>and so we can do a TKN
+
+00:13:00.029 --> 00:13:00.990
+<v Speaker 1>start
+
+00:13:01.149 --> 00:13:02.110
+<v Speaker 1>hello
+
+00:13:02.190 --> 00:13:03.390
+<v Speaker 1>world task.
+
+00:13:04.635 --> 00:13:07.035
+<v Speaker 1>Oops. Oh, task start.
+
+00:13:08.235 --> 00:13:09.595
+<v Speaker 1>Oh, if we can't if I could actually
+
+00:13:09.595 --> 00:13:10.235
+<v Speaker 1>type.
+
+00:13:11.595 --> 00:13:13.435
+<v Speaker 0>Nobody can type with people watching them, that's
+
+00:13:13.435 --> 00:13:15.675
+<v Speaker 0>just the rule. It's a ticking task start
+
+00:13:15.675 --> 00:13:17.115
+<v Speaker 1>and so you can see that that's just
+
+00:13:17.115 --> 00:13:19.510
+<v Speaker 1>created a task run and done the exact
+
+00:13:19.510 --> 00:13:21.430
+<v Speaker 1>same thing. So we go to our pipeline
+
+00:13:21.430 --> 00:13:23.270
+<v Speaker 1>runs, our task runs here, we can see
+
+00:13:23.270 --> 00:13:25.030
+<v Speaker 1>that our second task running and it's not
+
+00:13:25.030 --> 00:13:26.470
+<v Speaker 1>gonna do anything different. Right? So we can
+
+00:13:26.470 --> 00:13:28.230
+<v Speaker 1>do that. Tekton is nice because you can
+
+00:13:28.230 --> 00:13:29.990
+<v Speaker 1>do things like task run
+
+00:13:30.710 --> 00:13:31.190
+<v Speaker 1>test.
+
+00:13:32.904 --> 00:13:34.904
+<v Speaker 1>See this? Because these are really just group
+
+00:13:34.904 --> 00:13:37.065
+<v Speaker 1>resources, which fits in those. And the thing
+
+00:13:37.065 --> 00:13:38.584
+<v Speaker 1>that I like the most about this is
+
+00:13:38.584 --> 00:13:41.225
+<v Speaker 1>you can do task run logs last
+
+00:13:41.545 --> 00:13:43.944
+<v Speaker 1>and it will go and fetch the lot
+
+00:13:44.105 --> 00:13:46.060
+<v Speaker 1>most recent task run and get you the
+
+00:13:46.060 --> 00:13:47.579
+<v Speaker 1>logs from those things. And this applies to
+
+00:13:47.579 --> 00:13:49.180
+<v Speaker 1>pipeline run as well. So we've seen that
+
+00:13:49.180 --> 00:13:51.260
+<v Speaker 1>you can basically do a really simple task
+
+00:13:51.260 --> 00:13:53.339
+<v Speaker 1>that's doing something. Nothing too exciting in this.
+
+00:13:53.339 --> 00:13:55.100
+<v Speaker 0>Okay. Can I just summarize that back and
+
+00:13:55.100 --> 00:13:56.779
+<v Speaker 0>tell me if I got anything wrong there?
+
+00:13:56.779 --> 00:13:57.339
+<v Speaker 0>So
+
+00:13:59.855 --> 00:14:02.654
+<v Speaker 0>what you've done so far is the fans
+
+00:14:03.135 --> 00:14:06.334
+<v Speaker 0>and the yaml, your task. Your task just
+
+00:14:06.334 --> 00:14:08.415
+<v Speaker 0>needs a container image which we reuse in
+
+00:14:08.415 --> 00:14:10.334
+<v Speaker 0>Alpine. We give it whatever name we want.
+
+00:14:10.334 --> 00:14:12.495
+<v Speaker 0>And then you have the script
+
+00:14:12.570 --> 00:14:15.210
+<v Speaker 0>at a property and the spec called script,
+
+00:14:15.210 --> 00:14:17.610
+<v Speaker 0>which can run any command that can happen
+
+00:14:17.610 --> 00:14:19.850
+<v Speaker 0>as a damage. Yep. So it doesn't do
+
+00:14:19.850 --> 00:14:22.330
+<v Speaker 0>anything by default. That just creates a definition
+
+00:14:22.330 --> 00:14:24.650
+<v Speaker 0>of a task. And then the second thing
+
+00:14:24.650 --> 00:14:26.810
+<v Speaker 0>that you did via the TKN,
+
+00:14:26.810 --> 00:14:29.035
+<v Speaker 0>we call it Tekken. Tekken. Tekken. I don't
+
+00:14:29.035 --> 00:14:29.515
+<v Speaker 0>know.
+
+00:14:29.995 --> 00:14:32.154
+<v Speaker 0>Is there official pronunciation? In fact, there's just
+
+00:14:32.154 --> 00:14:33.195
+<v Speaker 0>something I didn't ask you as well. What
+
+00:14:33.195 --> 00:14:34.875
+<v Speaker 0>does what does Tekton mean? Let's answer that
+
+00:14:34.875 --> 00:14:35.595
+<v Speaker 0>in a second.
+
+00:14:36.235 --> 00:14:37.195
+<v Speaker 0>So you
+
+00:14:37.514 --> 00:14:39.595
+<v Speaker 0>then have a task run which can be
+
+00:14:39.595 --> 00:14:42.634
+<v Speaker 0>applied via YAML or via the Tekken. I'm
+
+00:14:42.634 --> 00:14:44.269
+<v Speaker 0>gonna call it Tekken command.
+
+00:14:44.750 --> 00:14:46.990
+<v Speaker 0>And that actually takes the task definition, runs
+
+00:14:46.990 --> 00:14:48.189
+<v Speaker 0>it as a pod and set up a
+
+00:14:48.189 --> 00:14:50.029
+<v Speaker 0>container and then gives us the outcome of
+
+00:14:50.029 --> 00:14:51.550
+<v Speaker 0>that. That's kind of what you've done so
+
+00:14:51.550 --> 00:14:54.350
+<v Speaker 0>far. Yep. So that's pretty much it. Basically,
+
+00:14:54.430 --> 00:14:57.389
+<v Speaker 1>your task definition is your class definition if
+
+00:14:57.389 --> 00:14:59.315
+<v Speaker 1>you like and your task run is an
+
+00:14:59.315 --> 00:15:01.475
+<v Speaker 1>instance of that class and executes whatever the
+
+00:15:01.475 --> 00:15:03.074
+<v Speaker 1>behavior that was in the class. That's a
+
+00:15:03.074 --> 00:15:04.355
+<v Speaker 1>kind of simple way to think about it.
+
+00:15:04.355 --> 00:15:07.394
+<v Speaker 1>Obviously, there's not a direct analogy but it's
+
+00:15:07.795 --> 00:15:10.834
+<v Speaker 1>task will not deviate from a a task.
+
+00:15:11.010 --> 00:15:13.250
+<v Speaker 1>Sorry. Task run will not deviate from a
+
+00:15:13.250 --> 00:15:13.810
+<v Speaker 1>task.
+
+00:15:14.290 --> 00:15:17.570
+<v Speaker 1>So tasks that do one single thing are
+
+00:15:17.570 --> 00:15:20.130
+<v Speaker 1>not actually all that useful, don't suppose.
+
+00:15:20.770 --> 00:15:22.450
+<v Speaker 1>So what I'm gonna do here is I'm
+
+00:15:22.450 --> 00:15:23.970
+<v Speaker 1>gonna need to update this task.
+
+00:15:25.105 --> 00:15:27.265
+<v Speaker 1>I'm gonna give it a parameter because, you
+
+00:15:27.265 --> 00:15:28.945
+<v Speaker 1>know, sometimes you just want to
+
+00:15:30.065 --> 00:15:31.665
+<v Speaker 1>sometimes you just want to
+
+00:15:36.305 --> 00:15:38.280
+<v Speaker 1>okay. So I'm gonna add a parameter. So
+
+00:15:38.280 --> 00:15:39.160
+<v Speaker 1>you can see that I've added a single
+
+00:15:39.160 --> 00:15:41.080
+<v Speaker 1>parameter. It's called name because, hey, we're gonna
+
+00:15:41.080 --> 00:15:43.720
+<v Speaker 1>greet someone here. It's a it's a string
+
+00:15:43.720 --> 00:15:44.760
+<v Speaker 1>type parameter.
+
+00:15:45.000 --> 00:15:47.640
+<v Speaker 1>The default is world because, you know, traditional.
+
+00:15:47.640 --> 00:15:48.840
+<v Speaker 1>And we can give a description so we
+
+00:15:48.840 --> 00:15:49.960
+<v Speaker 1>can see, like, who is it, what is
+
+00:15:49.960 --> 00:15:51.880
+<v Speaker 1>it, what's the purpose of this particular parameter.
+
+00:15:52.365 --> 00:15:54.765
+<v Speaker 1>You can name parameters any which way you
+
+00:15:54.765 --> 00:15:57.005
+<v Speaker 1>want and you'll see there's bit of variance
+
+00:15:57.005 --> 00:15:58.845
+<v Speaker 1>between them. Some people use lowercase and some
+
+00:15:58.845 --> 00:16:00.125
+<v Speaker 1>people use uppercase.
+
+00:16:00.125 --> 00:16:02.605
+<v Speaker 1>I tend to use a mix sometimes usually
+
+00:16:02.605 --> 00:16:05.005
+<v Speaker 1>to differentiate between parameters that are the same
+
+00:16:05.230 --> 00:16:06.990
+<v Speaker 1>because you may become you may be coming
+
+00:16:06.990 --> 00:16:08.830
+<v Speaker 1>in an input parameter or an output parameter,
+
+00:16:08.830 --> 00:16:10.190
+<v Speaker 1>but you can choose to name them in
+
+00:16:10.190 --> 00:16:11.870
+<v Speaker 1>which way you want. And so you can
+
+00:16:11.870 --> 00:16:13.070
+<v Speaker 1>see that that on
+
+00:16:15.150 --> 00:16:18.030
+<v Speaker 1>on line 16, you can see params dot
+
+00:16:18.030 --> 00:16:19.790
+<v Speaker 1>name. So what that's gonna do is when
+
+00:16:19.790 --> 00:16:22.885
+<v Speaker 1>it gets when the task run gets created,
+
+00:16:22.885 --> 00:16:25.445
+<v Speaker 1>when it's setting up, it does a param
+
+00:16:25.445 --> 00:16:26.245
+<v Speaker 1>replace.
+
+00:16:26.325 --> 00:16:28.885
+<v Speaker 1>And so anything that's getting pulled in is
+
+00:16:28.885 --> 00:16:31.204
+<v Speaker 1>a params dot name thing here, that will
+
+00:16:31.204 --> 00:16:33.204
+<v Speaker 1>get replaced with the value of the parameter.
+
+00:16:33.204 --> 00:16:35.285
+<v Speaker 1>It's just a string replacement. It's it's not
+
+00:16:35.285 --> 00:16:38.070
+<v Speaker 1>anymore advanced than that. Does that make sense?
+
+00:16:38.710 --> 00:16:40.550
+<v Speaker 0>Yeah. Yeah. Yeah. That makes sense.
+
+00:16:40.950 --> 00:16:43.430
+<v Speaker 0>I think that's just interpolating the entire script
+
+00:16:43.430 --> 00:16:45.830
+<v Speaker 0>and dropping in all those parameters before
+
+00:16:45.990 --> 00:16:47.830
+<v Speaker 0>runtime. Right? Okay.
+
+00:16:47.830 --> 00:16:50.230
+<v Speaker 1>Yeah. So we can now do Tekton task
+
+00:16:50.230 --> 00:16:50.710
+<v Speaker 1>start.
+
+00:16:51.265 --> 00:16:53.505
+<v Speaker 1>Hello world task.
+
+00:16:55.345 --> 00:16:57.345
+<v Speaker 1>You see that it's gonna say, like, can
+
+00:16:57.345 --> 00:16:59.024
+<v Speaker 1>give us a value for the parameter name
+
+00:16:59.024 --> 00:17:00.705
+<v Speaker 1>of type string. So you can create this
+
+00:17:00.705 --> 00:17:02.385
+<v Speaker 1>with a pipeline run, you can obviously do
+
+00:17:02.385 --> 00:17:04.304
+<v Speaker 1>it in in in the task run rather.
+
+00:17:04.380 --> 00:17:06.380
+<v Speaker 1>And you can put it in explicitly into
+
+00:17:06.380 --> 00:17:08.220
+<v Speaker 1>the ammo. But Tekton
+
+00:17:08.460 --> 00:17:10.060
+<v Speaker 1>allows you to prompt for those things. So
+
+00:17:10.060 --> 00:17:11.020
+<v Speaker 1>you can see that it's offering me the
+
+00:17:11.020 --> 00:17:12.059
+<v Speaker 1>default world.
+
+00:17:12.380 --> 00:17:14.220
+<v Speaker 1>But, hey, you know, let's put in Rawkode
+
+00:17:14.220 --> 00:17:15.019
+<v Speaker 1>in there.
+
+00:17:16.140 --> 00:17:19.964
+<v Speaker 1>Okay. Awesome. So we can do Tekton
+
+00:17:20.285 --> 00:17:22.444
+<v Speaker 1>task run logs last.
+
+00:17:22.765 --> 00:17:24.845
+<v Speaker 1>May not have completed yet. Oh, yeah. It
+
+00:17:24.845 --> 00:17:26.845
+<v Speaker 1>has. Awesome. Right. So you can see that
+
+00:17:26.845 --> 00:17:29.005
+<v Speaker 1>we've got this Hello Rawkode and that's gonna
+
+00:17:29.005 --> 00:17:31.325
+<v Speaker 1>be expected. Right? So tasks are really kinda
+
+00:17:31.325 --> 00:17:34.080
+<v Speaker 1>simple. But tasks can have multiple steps. Let's
+
+00:17:34.400 --> 00:17:35.600
+<v Speaker 1>you know, we can see where we're going
+
+00:17:35.600 --> 00:17:37.440
+<v Speaker 1>next to this. So we can we can
+
+00:17:37.440 --> 00:17:38.880
+<v Speaker 1>create a task once we can pass this
+
+00:17:38.880 --> 00:17:40.080
+<v Speaker 1>in if we really wanted to do it.
+
+00:17:40.080 --> 00:17:41.280
+<v Speaker 1>We're not gonna do that. We can change
+
+00:17:41.280 --> 00:17:44.160
+<v Speaker 1>our so let's add an extra step to
+
+00:17:44.160 --> 00:17:45.920
+<v Speaker 1>our task. Right? So a task doesn't have
+
+00:17:45.920 --> 00:17:48.235
+<v Speaker 1>to be just one thing, it can actually
+
+00:17:48.235 --> 00:17:49.275
+<v Speaker 1>have multiple
+
+00:17:49.435 --> 00:17:50.795
+<v Speaker 1>I don't even know why that's jumping a
+
+00:17:50.795 --> 00:17:51.755
+<v Speaker 1>bit all over the place.
+
+00:17:53.355 --> 00:17:55.835
+<v Speaker 1>With your hello world task dot yamo
+
+00:17:56.075 --> 00:17:57.595
+<v Speaker 1>add an extra step in here.
+
+00:17:59.090 --> 00:18:00.850
+<v Speaker 1>Mhmm. What's interesting about it, I guess, the
+
+00:18:00.850 --> 00:18:02.050
+<v Speaker 1>thing that caught me at the first time
+
+00:18:02.050 --> 00:18:05.250
+<v Speaker 1>I had to do this was
+
+00:18:07.010 --> 00:18:08.770
+<v Speaker 1>you that that it uses a different image
+
+00:18:08.770 --> 00:18:10.610
+<v Speaker 1>for each one. So these are obviously a
+
+00:18:10.610 --> 00:18:12.050
+<v Speaker 1>complete separate pods on top of this. We
+
+00:18:12.130 --> 00:18:14.050
+<v Speaker 1>you're gonna see what this gets generated as.
+
+00:18:14.885 --> 00:18:16.485
+<v Speaker 1>But we can put the same use the
+
+00:18:16.485 --> 00:18:17.764
+<v Speaker 1>same parameter again,
+
+00:18:18.245 --> 00:18:20.725
+<v Speaker 1>and this will get executed as a couple
+
+00:18:20.725 --> 00:18:22.404
+<v Speaker 1>different pods. So if I do Tekton
+
+00:18:23.765 --> 00:18:25.445
+<v Speaker 0>I think your HTML invalid.
+
+00:18:28.020 --> 00:18:30.660
+<v Speaker 1>Oh, which actually I think your name, image,
+
+00:18:30.660 --> 00:18:32.340
+<v Speaker 0>and script are all indented ones based too
+
+00:18:32.340 --> 00:18:32.899
+<v Speaker 0>many.
+
+00:18:34.260 --> 00:18:36.179
+<v Speaker 1>Yes. You're absolutely right. See.
+
+00:18:37.940 --> 00:18:39.700
+<v Speaker 1>That's why I was kinda worried about YAML.
+
+00:18:41.685 --> 00:18:43.525
+<v Speaker 0>I always worry about YAML.
+
+00:18:44.325 --> 00:18:46.645
+<v Speaker 1>There's no YAML to it. YAML developer.
+
+00:18:47.365 --> 00:18:50.565
+<v Speaker 1>Alright. So we've got our task we've been.
+
+00:18:50.565 --> 00:18:53.685
+<v Speaker 1>So let's do we start on this. Let's
+
+00:18:53.685 --> 00:18:54.245
+<v Speaker 1>do
+
+00:18:54.485 --> 00:18:55.365
+<v Speaker 1>live demo.
+
+00:18:56.160 --> 00:18:58.320
+<v Speaker 1>It will of course get past through
+
+00:18:58.560 --> 00:18:59.360
+<v Speaker 1>and
+
+00:19:00.880 --> 00:19:01.280
+<v Speaker 1>oh,
+
+00:19:03.120 --> 00:19:04.480
+<v Speaker 1>I haven't completed probably.
+
+00:19:05.200 --> 00:19:07.280
+<v Speaker 1>We go. There are a few things. Okay.
+
+00:19:07.280 --> 00:19:08.720
+<v Speaker 1>So and of course, if we go into
+
+00:19:08.720 --> 00:19:09.200
+<v Speaker 1>dashboard,
+
+00:19:10.135 --> 00:19:12.695
+<v Speaker 1>You can see your tasks coming up here.
+
+00:19:12.695 --> 00:19:14.615
+<v Speaker 1>There's the the duration of them
+
+00:19:14.855 --> 00:19:15.815
+<v Speaker 1>and
+
+00:19:16.775 --> 00:19:19.095
+<v Speaker 1>you can see, you know, which particular pod.
+
+00:19:19.095 --> 00:19:20.855
+<v Speaker 1>And these these just get executed pods.
+
+00:19:21.175 --> 00:19:23.095
+<v Speaker 0>Does it show you the parameters that were
+
+00:19:23.095 --> 00:19:23.815
+<v Speaker 0>passed to it as well?
+
+00:19:26.200 --> 00:19:28.440
+<v Speaker 1>Good question. I know Tekton does. If I
+
+00:19:28.440 --> 00:19:29.799
+<v Speaker 1>do Tekton describe
+
+00:19:31.160 --> 00:19:31.799
+<v Speaker 1>describe
+
+00:19:32.919 --> 00:19:33.799
+<v Speaker 1>last
+
+00:19:35.000 --> 00:19:36.440
+<v Speaker 1>I definitely, you can see. So there's your
+
+00:19:36.615 --> 00:19:39.654
+<v Speaker 1>parameters there. Does that show you the parameters?
+
+00:19:41.495 --> 00:19:42.934
+<v Speaker 1>Let me see. It would be on oh,
+
+00:19:42.934 --> 00:19:44.135
+<v Speaker 1>yeah. There you go. So on the actual
+
+00:19:44.135 --> 00:19:45.735
+<v Speaker 1>task, it's on the container. So you can
+
+00:19:45.735 --> 00:19:46.855
+<v Speaker 1>actually see those things.
+
+00:19:47.655 --> 00:19:48.695
+<v Speaker 1>And you can keep them by by by
+
+00:19:48.695 --> 00:19:50.535
+<v Speaker 1>because obviously, they are pods. So if we
+
+00:19:50.535 --> 00:19:50.855
+<v Speaker 1>do, like,
+
+00:19:52.549 --> 00:19:54.470
+<v Speaker 1>pods, you'll see that we have
+
+00:19:54.789 --> 00:19:57.429
+<v Speaker 1>one pod for each of the and
+
+00:19:57.510 --> 00:19:58.710
+<v Speaker 1>and so some of those as you can
+
+00:19:58.710 --> 00:20:01.190
+<v Speaker 1>see, hello world task run two two sevens
+
+00:20:01.190 --> 00:20:02.389
+<v Speaker 1>eight five has
+
+00:20:03.510 --> 00:20:04.070
+<v Speaker 1>two
+
+00:20:04.470 --> 00:20:07.105
+<v Speaker 1>containers with it and that'll be this the
+
+00:20:07.105 --> 00:20:09.025
+<v Speaker 1>hello and goodbye containers.
+
+00:20:09.025 --> 00:20:11.345
+<v Speaker 0>Oh. So those actually ran as multiple containers
+
+00:20:11.345 --> 00:20:14.065
+<v Speaker 0>and a pod concurrently and not one after
+
+00:20:14.065 --> 00:20:16.304
+<v Speaker 0>the other? No. They run they run one
+
+00:20:16.304 --> 00:20:18.544
+<v Speaker 1>after the other. They do. Oh, they're good.
+
+00:20:18.544 --> 00:20:20.544
+<v Speaker 1>Sequence a little bit, but these actually wait.
+
+00:20:20.544 --> 00:20:23.000
+<v Speaker 1>It uses the downward API to do detection
+
+00:20:23.000 --> 00:20:25.240
+<v Speaker 1>of when the the things are gonna execute.
+
+00:20:25.240 --> 00:20:26.440
+<v Speaker 1>But as you will see in a bit
+
+00:20:26.440 --> 00:20:28.519
+<v Speaker 1>when we get to, like, sequencing of of
+
+00:20:28.519 --> 00:20:29.399
+<v Speaker 1>pipelines,
+
+00:20:30.200 --> 00:20:31.879
+<v Speaker 1>yeah, you know, you you actually need it.
+
+00:20:31.879 --> 00:20:33.639
+<v Speaker 1>For example, if you're gonna have a get
+
+00:20:33.639 --> 00:20:35.735
+<v Speaker 1>clone task before you run your build, you
+
+00:20:35.735 --> 00:20:37.015
+<v Speaker 1>really need to make sure that the code
+
+00:20:37.015 --> 00:20:39.015
+<v Speaker 1>is completed before you start to build your
+
+00:20:39.015 --> 00:20:40.215
+<v Speaker 1>code. So we'll have a look and see
+
+00:20:40.215 --> 00:20:41.414
+<v Speaker 1>how that actually happens.
+
+00:20:42.215 --> 00:20:44.455
+<v Speaker 1>Okay. So where are we? So we're basically
+
+00:20:44.615 --> 00:20:47.500
+<v Speaker 1>so the other format for this, so we
+
+00:20:47.500 --> 00:20:49.259
+<v Speaker 1>create a slightly different task here.
+
+00:20:49.980 --> 00:20:51.580
+<v Speaker 1>The other format you can use
+
+00:20:52.940 --> 00:20:55.179
+<v Speaker 1>oh, I expected to download a complete, don't
+
+00:20:55.179 --> 00:20:55.740
+<v Speaker 1>know.
+
+00:20:56.940 --> 00:20:59.179
+<v Speaker 1>The other format you can use is you
+
+00:20:59.179 --> 00:21:01.020
+<v Speaker 1>can put like a traditional
+
+00:21:03.065 --> 00:21:05.225
+<v Speaker 1>YAML array type approach too. So you don't
+
+00:21:05.225 --> 00:21:06.345
+<v Speaker 1>have to use a script. So you can
+
+00:21:06.345 --> 00:21:08.185
+<v Speaker 1>actually execute a very specific command with a
+
+00:21:08.185 --> 00:21:10.024
+<v Speaker 1>specific specific parameters.
+
+00:21:10.425 --> 00:21:12.505
+<v Speaker 1>So I do git create.
+
+00:21:17.020 --> 00:21:19.340
+<v Speaker 1>Start to execute l s.
+
+00:21:21.179 --> 00:21:22.379
+<v Speaker 1>What do I call it?
+
+00:21:23.980 --> 00:21:26.220
+<v Speaker 1>Hit it. Oh, did I not do it?
+
+00:21:26.860 --> 00:21:28.379
+<v Speaker 1>Execute
+
+00:21:28.700 --> 00:21:31.179
+<v Speaker 1>l s. You did a cube create within
+
+00:21:31.179 --> 00:21:33.845
+<v Speaker 0>them, but I'd that's I'm not sure what
+
+00:21:33.845 --> 00:21:34.565
+<v Speaker 0>that did.
+
+00:21:36.485 --> 00:21:37.525
+<v Speaker 1>Let me read and wait for it to
+
+00:21:37.525 --> 00:21:39.284
+<v Speaker 1>complete before it is it. Let's make sure.
+
+00:21:39.284 --> 00:21:41.524
+<v Speaker 1>Yeah. Okay. Yeah. There you go. Probably.
+
+00:21:41.924 --> 00:21:43.605
+<v Speaker 1>And so we can put in so let's
+
+00:21:43.605 --> 00:21:44.485
+<v Speaker 1>put slash in here.
+
+00:21:46.289 --> 00:21:47.169
+<v Speaker 1>And
+
+00:21:48.769 --> 00:21:50.130
+<v Speaker 1>logs was
+
+00:21:52.690 --> 00:21:53.730
+<v Speaker 1>and it's probably
+
+00:21:54.130 --> 00:21:55.809
+<v Speaker 1>yeah. There we go. So just exactly what
+
+00:21:55.809 --> 00:21:57.889
+<v Speaker 1>you'd expect. We just executed. And as you
+
+00:21:57.889 --> 00:21:59.169
+<v Speaker 1>can see from the task
+
+00:21:59.250 --> 00:22:00.209
+<v Speaker 1>definition,
+
+00:22:00.210 --> 00:22:02.405
+<v Speaker 1>it's just the same as everything else. The
+
+00:22:02.405 --> 00:22:02.965
+<v Speaker 1>the
+
+00:22:03.365 --> 00:22:04.245
+<v Speaker 1>parameter
+
+00:22:04.565 --> 00:22:07.045
+<v Speaker 1>interpolation is just getting put into the array
+
+00:22:07.045 --> 00:22:09.445
+<v Speaker 1>slice of this. There are some complications around
+
+00:22:09.445 --> 00:22:10.965
+<v Speaker 1>this. So you can have, like, one of
+
+00:22:10.965 --> 00:22:12.325
+<v Speaker 1>the types you can have is a
+
+00:22:12.885 --> 00:22:15.600
+<v Speaker 1>an array types parameter
+
+00:22:15.600 --> 00:22:16.320
+<v Speaker 1>type.
+
+00:22:16.560 --> 00:22:18.240
+<v Speaker 1>And you you kinda have to go and
+
+00:22:18.240 --> 00:22:20.640
+<v Speaker 1>pull out the specific elements or there's some
+
+00:22:20.720 --> 00:22:22.160
+<v Speaker 1>weird stuff around, like,
+
+00:22:22.720 --> 00:22:23.600
+<v Speaker 1>expand well, expansion
+
+00:22:24.080 --> 00:22:26.800
+<v Speaker 1>of of array slices of or slices arrays
+
+00:22:26.800 --> 00:22:27.280
+<v Speaker 1>of
+
+00:22:28.240 --> 00:22:28.560
+<v Speaker 1>strings.
+
+00:22:29.665 --> 00:22:32.305
+<v Speaker 1>But you can also it's it's able to
+
+00:22:32.305 --> 00:22:33.665
+<v Speaker 1>be you can go fetch a specific one
+
+00:22:33.665 --> 00:22:34.945
+<v Speaker 1>when you can even do those kind of
+
+00:22:34.945 --> 00:22:37.105
+<v Speaker 1>things. So Yeah. I would that's pretty trivial.
+
+00:22:37.105 --> 00:22:38.705
+<v Speaker 1>So that's well, you know, just so you
+
+00:22:38.705 --> 00:22:39.825
+<v Speaker 1>know you're saying what you're gonna have a
+
+00:22:39.825 --> 00:22:42.080
+<v Speaker 1>point definitions or whatever you're doing. So need
+
+00:22:42.080 --> 00:22:44.480
+<v Speaker 1>to be thinking about it. So that's that.
+
+00:22:44.560 --> 00:22:46.160
+<v Speaker 0>We have a question if you're happy to
+
+00:22:46.160 --> 00:22:47.520
+<v Speaker 0>take that just now. Yeah. Go for it.
+
+00:22:47.520 --> 00:22:50.080
+<v Speaker 0>Andreas is asking if we'll be covering the
+
+00:22:50.080 --> 00:22:52.320
+<v Speaker 0>options for building container images.
+
+00:22:52.640 --> 00:22:53.760
+<v Speaker 0>Yes. We will.
+
+00:22:54.325 --> 00:22:56.485
+<v Speaker 0>Alright. Stay tuned, Andres. I mean, I mean,
+
+00:22:56.645 --> 00:22:57.685
+<v Speaker 1>also, we'll see who
+
+00:22:58.565 --> 00:23:00.325
+<v Speaker 1>so we're gonna use builder to do later,
+
+00:23:00.325 --> 00:23:01.525
+<v Speaker 1>but I'm sure we will get to that.
+
+00:23:01.525 --> 00:23:03.285
+<v Speaker 1>So this there's another thing that we have
+
+00:23:04.325 --> 00:23:05.285
+<v Speaker 1>called
+
+00:23:05.365 --> 00:23:06.965
+<v Speaker 1>this this is some
+
+00:23:11.460 --> 00:23:12.020
+<v Speaker 1>so
+
+00:23:14.020 --> 00:23:16.020
+<v Speaker 1>let's look at this one. So this is
+
+00:23:16.340 --> 00:23:17.700
+<v Speaker 1>so the difference here is you get a
+
+00:23:17.700 --> 00:23:18.820
+<v Speaker 1>thing called a result
+
+00:23:19.220 --> 00:23:21.220
+<v Speaker 1>and the result is something that you
+
+00:23:21.460 --> 00:23:23.684
+<v Speaker 1>when you execute, if you write to the
+
+00:23:23.684 --> 00:23:25.524
+<v Speaker 1>path of the result, then whatever you write
+
+00:23:25.524 --> 00:23:27.524
+<v Speaker 1>there is available to other tasks. Now this
+
+00:23:27.524 --> 00:23:28.804
+<v Speaker 1>is a single task, so it's not so
+
+00:23:28.804 --> 00:23:29.445
+<v Speaker 1>exciting.
+
+00:23:30.245 --> 00:23:32.245
+<v Speaker 1>But first, like, you'll see in a bit,
+
+00:23:32.245 --> 00:23:34.885
+<v Speaker 1>like, when you clone a git clone, when
+
+00:23:34.885 --> 00:23:37.460
+<v Speaker 1>the official git clone task, it writes the
+
+00:23:37.460 --> 00:23:39.860
+<v Speaker 1>specific URL and the shell of the commit
+
+00:23:39.860 --> 00:23:40.900
+<v Speaker 1>that it cloned
+
+00:23:41.140 --> 00:23:43.060
+<v Speaker 1>to results, which you can then use later
+
+00:23:43.060 --> 00:23:44.340
+<v Speaker 1>on. So for example, you may wanna build
+
+00:23:44.340 --> 00:23:45.940
+<v Speaker 1>something that references
+
+00:23:46.020 --> 00:23:47.780
+<v Speaker 1>those things and so you can do that.
+
+00:23:47.780 --> 00:23:49.060
+<v Speaker 1>So this case here is a really simple
+
+00:23:49.060 --> 00:23:50.020
+<v Speaker 1>example ish.
+
+00:23:51.195 --> 00:23:53.355
+<v Speaker 1>It takes a repo and it goes to
+
+00:23:53.355 --> 00:23:56.234
+<v Speaker 1>GitHub and then uses j q to
+
+00:23:57.274 --> 00:23:59.034
+<v Speaker 1>work out what the most common, you know,
+
+00:23:59.034 --> 00:24:00.554
+<v Speaker 1>the the the if you go to I
+
+00:24:00.554 --> 00:24:02.075
+<v Speaker 1>don't know if you go to slash languages
+
+00:24:02.075 --> 00:24:03.914
+<v Speaker 1>on a repo, then you get this map
+
+00:24:03.914 --> 00:24:05.914
+<v Speaker 1>back which is the strings of all of
+
+00:24:05.914 --> 00:24:06.235
+<v Speaker 1>the
+
+00:24:07.280 --> 00:24:08.960
+<v Speaker 1>languages. You know, when you go to GitHub
+
+00:24:08.960 --> 00:24:10.080
+<v Speaker 1>and you can see it. So this this
+
+00:24:10.080 --> 00:24:11.520
+<v Speaker 1>will go into it and we'll put out
+
+00:24:11.520 --> 00:24:13.600
+<v Speaker 1>the top language. How useful this is? Probably
+
+00:24:13.600 --> 00:24:14.799
+<v Speaker 1>not all that useful.
+
+00:24:15.360 --> 00:24:16.239
+<v Speaker 1>But let's
+
+00:24:18.000 --> 00:24:18.559
+<v Speaker 1>so
+
+00:24:18.960 --> 00:24:21.120
+<v Speaker 1>good. Let's not wait. Actually, I could create
+
+00:24:21.200 --> 00:24:21.840
+<v Speaker 1>complete this thing.
+
+00:24:23.245 --> 00:24:25.005
+<v Speaker 1>There we go. Right. So it's the TTM
+
+00:24:25.005 --> 00:24:25.965
+<v Speaker 1>task
+
+00:24:26.445 --> 00:24:27.485
+<v Speaker 1>start
+
+00:24:27.485 --> 00:24:29.005
+<v Speaker 1>top language
+
+00:24:29.005 --> 00:24:31.405
+<v Speaker 1>task. And you can actually pass parameters. We
+
+00:24:31.405 --> 00:24:33.485
+<v Speaker 1>can do recall equals give me a recall
+
+00:24:33.485 --> 00:24:34.765
+<v Speaker 1>something you've got on GitHub.
+
+00:24:36.410 --> 00:24:37.690
+<v Speaker 0>Rawkode
+
+00:24:39.130 --> 00:24:40.809
+<v Speaker 0>slash dot fails
+
+00:24:42.250 --> 00:24:42.889
+<v Speaker 0>slash
+
+00:24:43.130 --> 00:24:45.530
+<v Speaker 0>no. Slash in Rawkode slash dot fails. Not
+
+00:24:45.530 --> 00:24:47.130
+<v Speaker 0>actual little word. Yeah.
+
+00:24:48.455 --> 00:24:49.975
+<v Speaker 1>Okay. It's Wednesday.
+
+00:24:50.295 --> 00:24:52.135
+<v Speaker 0>Can you have we hide on that screen
+
+00:24:52.135 --> 00:24:53.815
+<v Speaker 0>share thing just so it doesn't Sound you.
+
+00:24:53.815 --> 00:24:54.934
+<v Speaker 1>Pull up the text.
+
+00:24:55.175 --> 00:24:56.774
+<v Speaker 1>Yeah. It annoys me as well. Oh.
+
+00:24:58.695 --> 00:25:00.935
+<v Speaker 0>Thanks. Alright. Okay. So we've got a task
+
+00:25:00.935 --> 00:25:03.309
+<v Speaker 1>run. In task run
+
+00:25:04.110 --> 00:25:04.830
+<v Speaker 1>logs
+
+00:25:05.470 --> 00:25:06.349
+<v Speaker 1>past.
+
+00:25:06.590 --> 00:25:08.749
+<v Speaker 0>It should say, gender, gender, gender.
+
+00:25:09.070 --> 00:25:11.149
+<v Speaker 1>So it's done. Yeah. Believe it or not.
+
+00:25:11.870 --> 00:25:14.510
+<v Speaker 1>But with the Tekton task run describe,
+
+00:25:15.265 --> 00:25:17.585
+<v Speaker 1>Last, you should see the what what language
+
+00:25:17.585 --> 00:25:19.504
+<v Speaker 1>you expect me to be? Gender.
+
+00:25:19.905 --> 00:25:22.465
+<v Speaker 0>Michelle. Well, I guess it's calendar too. Right.
+
+00:25:22.465 --> 00:25:24.065
+<v Speaker 1>So top according to so what it does
+
+00:25:24.065 --> 00:25:26.225
+<v Speaker 1>is it goes in the like, if you've
+
+00:25:26.225 --> 00:25:28.065
+<v Speaker 1>never seen j q, j q is fun
+
+00:25:28.065 --> 00:25:29.265
+<v Speaker 1>for doing this kind of stuff. But you
+
+00:25:29.265 --> 00:25:31.300
+<v Speaker 1>can see, like, two entries, sort by dot
+
+00:25:31.300 --> 00:25:33.620
+<v Speaker 1>value dash one, take the last one and
+
+00:25:33.620 --> 00:25:35.059
+<v Speaker 1>then get the key of that.
+
+00:25:35.700 --> 00:25:36.260
+<v Speaker 1>So,
+
+00:25:36.820 --> 00:25:37.460
+<v Speaker 1>like,
+
+00:25:37.700 --> 00:25:39.220
+<v Speaker 1>you get two for today, you you get
+
+00:25:39.220 --> 00:25:41.060
+<v Speaker 1>whether JQ works if you're really keen on
+
+00:25:41.060 --> 00:25:41.540
+<v Speaker 1>it.
+
+00:25:42.020 --> 00:25:43.540
+<v Speaker 1>I think it was very infectious and get
+
+00:25:43.540 --> 00:25:45.460
+<v Speaker 1>you. So your your top language and your
+
+00:25:45.845 --> 00:25:48.725
+<v Speaker 1>repo is clearly shale. So
+
+00:25:49.765 --> 00:25:50.085
+<v Speaker 1>So you
+
+00:25:51.125 --> 00:25:52.485
+<v Speaker 0>So
+
+00:25:52.485 --> 00:25:55.205
+<v Speaker 0>this is using something on a task called
+
+00:25:55.205 --> 00:25:57.205
+<v Speaker 0>a a result. What what are the primary
+
+00:25:57.205 --> 00:25:58.805
+<v Speaker 0>use cases for that then? Is that something
+
+00:25:58.805 --> 00:26:01.300
+<v Speaker 0>we use to to pass it other task
+
+00:26:01.300 --> 00:26:02.980
+<v Speaker 0>definitions? Is it something
+
+00:26:03.460 --> 00:26:05.620
+<v Speaker 0>is it logged hand is it logged differently
+
+00:26:05.620 --> 00:26:07.700
+<v Speaker 0>in the UI? Like, what are what do
+
+00:26:07.700 --> 00:26:09.780
+<v Speaker 0>we get results for? Use for couple of
+
+00:26:09.780 --> 00:26:12.100
+<v Speaker 1>different mostly, it's about getting things between
+
+00:26:13.385 --> 00:26:14.265
+<v Speaker 1>between
+
+00:26:14.585 --> 00:26:15.945
+<v Speaker 1>tasks in our pipeline.
+
+00:26:16.185 --> 00:26:18.585
+<v Speaker 1>But you can oops. If I I
+
+00:26:18.825 --> 00:26:20.905
+<v Speaker 1>remember to actually get the right thing here.
+
+00:26:21.625 --> 00:26:23.625
+<v Speaker 1>So I get my task room. What was
+
+00:26:23.625 --> 00:26:25.305
+<v Speaker 1>my what was my task room? You can
+
+00:26:25.385 --> 00:26:27.385
+<v Speaker 1>I mean, because it's it's a standard
+
+00:26:27.465 --> 00:26:30.519
+<v Speaker 1>cube resource of object, you can do
+
+00:26:31.080 --> 00:26:32.919
+<v Speaker 1>this and so you can you know, if
+
+00:26:32.919 --> 00:26:34.520
+<v Speaker 1>you wanted to run something and then get
+
+00:26:34.520 --> 00:26:36.919
+<v Speaker 1>a structured result from it, you can do
+
+00:26:36.919 --> 00:26:38.520
+<v Speaker 1>that? So we we can get our value
+
+00:26:38.520 --> 00:26:39.559
+<v Speaker 1>back as Shell.
+
+00:26:40.600 --> 00:26:42.760
+<v Speaker 1>But yeah. I mean, it's it's essentially just
+
+00:26:42.735 --> 00:26:44.575
+<v Speaker 1>writing a value in that you can then
+
+00:26:44.575 --> 00:26:46.575
+<v Speaker 1>use later in a pipeline. So for example,
+
+00:26:46.575 --> 00:26:47.294
+<v Speaker 1>you might
+
+00:26:47.615 --> 00:26:49.535
+<v Speaker 1>get an auth token, for example, for something.
+
+00:26:49.535 --> 00:26:50.655
+<v Speaker 1>So you might want to write that to
+
+00:26:50.655 --> 00:26:51.374
+<v Speaker 1>the result
+
+00:26:51.695 --> 00:26:53.375
+<v Speaker 1>and then pick that up and use that
+
+00:26:53.375 --> 00:26:55.135
+<v Speaker 1>for auth and subsequent requests
+
+00:26:56.279 --> 00:26:57.880
+<v Speaker 1>Because you can as you'll see now, we've
+
+00:26:57.880 --> 00:26:59.640
+<v Speaker 1>been when we get to pipelines, can actually
+
+00:26:59.640 --> 00:27:00.359
+<v Speaker 1>reference
+
+00:27:00.840 --> 00:27:01.640
+<v Speaker 1>results
+
+00:27:01.640 --> 00:27:03.720
+<v Speaker 1>specifically as parameter and and put them into
+
+00:27:03.720 --> 00:27:04.599
+<v Speaker 1>parameters
+
+00:27:05.000 --> 00:27:07.960
+<v Speaker 1>to be then called by subsequent tasks in
+
+00:27:07.960 --> 00:27:10.225
+<v Speaker 1>the pipeline. Okay. So we actually have another
+
+00:27:10.225 --> 00:27:12.465
+<v Speaker 0>question that aligns really well to what you
+
+00:27:12.465 --> 00:27:14.784
+<v Speaker 0>just said there then. Andres is asking,
+
+00:27:15.265 --> 00:27:17.904
+<v Speaker 0>is there a way to put secrets
+
+00:27:17.905 --> 00:27:20.145
+<v Speaker 0>into our tasks so that we can access
+
+00:27:20.145 --> 00:27:22.625
+<v Speaker 0>secret information from Kubernetes or even failments?
+
+00:27:23.990 --> 00:27:24.709
+<v Speaker 1>Yes.
+
+00:27:25.590 --> 00:27:26.950
+<v Speaker 1>There's a couple of different ways to do
+
+00:27:26.950 --> 00:27:28.549
+<v Speaker 1>it. We're gonna see a secret getting used
+
+00:27:28.549 --> 00:27:29.190
+<v Speaker 1>later.
+
+00:27:29.429 --> 00:27:31.510
+<v Speaker 1>This is something that I'll be honest, especially
+
+00:27:31.510 --> 00:27:33.990
+<v Speaker 1>pipeline doesn't have it's not great the support
+
+00:27:33.990 --> 00:27:34.870
+<v Speaker 1>for doing this
+
+00:27:36.415 --> 00:27:37.775
+<v Speaker 1>for reasons that you've seen a bit there.
+
+00:27:37.775 --> 00:27:38.975
+<v Speaker 1>And there is a plan to kind of
+
+00:27:38.975 --> 00:27:40.415
+<v Speaker 1>make this a little bit better. There's a
+
+00:27:40.415 --> 00:27:42.735
+<v Speaker 1>there's a big kind of discussion about making
+
+00:27:43.055 --> 00:27:44.975
+<v Speaker 1>secrets better for pipelines
+
+00:27:44.975 --> 00:27:47.535
+<v Speaker 1>before one point zero, I guess. But you'll
+
+00:27:47.535 --> 00:27:48.495
+<v Speaker 1>see how that works in a bit. I
+
+00:27:48.495 --> 00:27:50.095
+<v Speaker 1>promise we're gonna get to doing a secret.
+
+00:27:50.340 --> 00:27:52.340
+<v Speaker 1>So I'm gonna create a very simple
+
+00:27:52.500 --> 00:27:53.859
+<v Speaker 1>pipeline. Okay?
+
+00:27:55.299 --> 00:27:57.220
+<v Speaker 1>This pipeline here. So let's look at what
+
+00:27:57.220 --> 00:28:00.179
+<v Speaker 1>this has. So this is a pipeline called
+
+00:28:00.179 --> 00:28:01.860
+<v Speaker 1>demo pipeline. It takes one parameter,
+
+00:28:02.885 --> 00:28:04.884
+<v Speaker 1>takes string and it only has one
+
+00:28:05.524 --> 00:28:06.965
+<v Speaker 1>task in it. Right? So it's using the
+
+00:28:06.965 --> 00:28:08.565
+<v Speaker 1>task that we were using earlier
+
+00:28:08.965 --> 00:28:11.924
+<v Speaker 1>called hello world task. It's a task task.
+
+00:28:12.565 --> 00:28:14.725
+<v Speaker 1>You get two types of tasks, you get
+
+00:28:14.725 --> 00:28:17.580
+<v Speaker 1>cluster tasks and you get task tasks.
+
+00:28:18.620 --> 00:28:21.100
+<v Speaker 1>And so we're and it's unsurprisingly, the difference
+
+00:28:21.100 --> 00:28:22.940
+<v Speaker 1>between those is one is cluster label and
+
+00:28:22.940 --> 00:28:24.380
+<v Speaker 1>the other is namespace label.
+
+00:28:24.540 --> 00:28:27.420
+<v Speaker 1>And you can so for example, how you
+
+00:28:27.420 --> 00:28:28.460
+<v Speaker 1>build
+
+00:28:28.965 --> 00:28:31.684
+<v Speaker 1>your docker images and things like that. Those
+
+00:28:31.684 --> 00:28:35.284
+<v Speaker 1>probably don't vary very much across different environments.
+
+00:28:36.245 --> 00:28:37.365
+<v Speaker 1>So you probably won't make those as a
+
+00:28:37.365 --> 00:28:38.885
+<v Speaker 1>kind of or or the goal in code
+
+00:28:38.885 --> 00:28:40.164
+<v Speaker 1>or anything. So I mean, maybe a lot
+
+00:28:40.164 --> 00:28:41.605
+<v Speaker 1>of tasks I'm gonna show you today are
+
+00:28:41.605 --> 00:28:43.044
+<v Speaker 1>could be cluster labeled tasks.
+
+00:28:43.670 --> 00:28:46.630
+<v Speaker 1>But for the specific case, this is we're
+
+00:28:46.630 --> 00:28:48.150
+<v Speaker 1>just gonna keep them all in one namespace
+
+00:28:48.150 --> 00:28:50.470
+<v Speaker 1>and and have some point that way, I
+
+00:28:50.470 --> 00:28:51.750
+<v Speaker 1>guess. And so one of the things that
+
+00:28:51.750 --> 00:28:53.830
+<v Speaker 1>we see is see that params part in
+
+00:28:53.830 --> 00:28:55.429
+<v Speaker 1>the task reference,
+
+00:28:55.429 --> 00:28:57.190
+<v Speaker 1>so just below the task. So what that's
+
+00:28:57.190 --> 00:28:59.845
+<v Speaker 1>actually doing is it maps a parameter to
+
+00:28:59.845 --> 00:29:00.804
+<v Speaker 1>the pipeline
+
+00:29:01.045 --> 00:29:04.005
+<v Speaker 1>to a parameter to the task. So you'll
+
+00:29:04.005 --> 00:29:06.005
+<v Speaker 1>notice that I deliberately called the parameter to
+
+00:29:06.005 --> 00:29:07.284
+<v Speaker 1>the pipeline message.
+
+00:29:07.925 --> 00:29:09.845
+<v Speaker 1>And what it does is it takes that
+
+00:29:09.845 --> 00:29:10.965
+<v Speaker 1>message value
+
+00:29:11.029 --> 00:29:13.429
+<v Speaker 1>and maps that to the name parameter to
+
+00:29:13.429 --> 00:29:14.309
+<v Speaker 1>the task.
+
+00:29:14.789 --> 00:29:15.830
+<v Speaker 1>That make sense?
+
+00:29:16.630 --> 00:29:19.269
+<v Speaker 0>Yes. So our our pipeline has a parameter
+
+00:29:19.269 --> 00:29:21.510
+<v Speaker 0>called message and we're passing that into the
+
+00:29:21.510 --> 00:29:23.190
+<v Speaker 0>task as name.
+
+00:29:23.350 --> 00:29:25.325
+<v Speaker 1>Yes. It means you don't have to have,
+
+00:29:25.325 --> 00:29:27.325
+<v Speaker 1>like, the same names and you you this
+
+00:29:27.325 --> 00:29:29.565
+<v Speaker 1>is a really common thing through Tekton. There's
+
+00:29:29.565 --> 00:29:32.285
+<v Speaker 1>a whole lot of things that use remappings,
+
+00:29:32.685 --> 00:29:34.365
+<v Speaker 1>like workspaces and so
+
+00:29:34.365 --> 00:29:36.779
+<v Speaker 1>many other things basically you see, like, here
+
+00:29:36.779 --> 00:29:38.220
+<v Speaker 1>is this value and it and it I'll
+
+00:29:38.220 --> 00:29:40.299
+<v Speaker 1>be honest, it looks complicated at first and
+
+00:29:40.299 --> 00:29:41.980
+<v Speaker 1>and if you don't understand the exact reason
+
+00:29:41.980 --> 00:29:44.219
+<v Speaker 1>for it, it's twice as complicated probably.
+
+00:29:44.299 --> 00:29:45.980
+<v Speaker 1>But really what it's all about is you
+
+00:29:45.980 --> 00:29:47.899
+<v Speaker 1>don't need to have standard naming and you
+
+00:29:47.899 --> 00:29:49.340
+<v Speaker 1>could have pipelines or upstream
+
+00:29:49.740 --> 00:29:52.595
+<v Speaker 1>have upstream tasks that you just use and
+
+00:29:52.595 --> 00:29:54.595
+<v Speaker 1>you map how you wanna make your parameters
+
+00:29:54.595 --> 00:29:55.955
+<v Speaker 1>pass through to those.
+
+00:29:56.195 --> 00:29:58.515
+<v Speaker 1>Okay? Mhmm. So this is our very first
+
+00:29:58.515 --> 00:29:59.795
+<v Speaker 1>pipeline. So this is
+
+00:30:01.315 --> 00:30:02.434
+<v Speaker 1>I need there
+
+00:30:02.915 --> 00:30:04.915
+<v Speaker 1>we go. Okay. So we can
+
+00:30:05.570 --> 00:30:07.330
+<v Speaker 1>create what's called a pipeline run.
+
+00:30:07.410 --> 00:30:09.250
+<v Speaker 1>And to be honest, Tekton
+
+00:30:09.250 --> 00:30:11.250
+<v Speaker 1>is creating pipeline run. So I'm gonna probably
+
+00:30:11.250 --> 00:30:12.769
+<v Speaker 1>create a pipeline run.
+
+00:30:13.170 --> 00:30:14.929
+<v Speaker 1>Oh, no. I'm gonna do it this way.
+
+00:30:15.410 --> 00:30:16.690
+<v Speaker 1>We're gonna get to pipeline run the things.
+
+00:30:16.690 --> 00:30:17.570
+<v Speaker 1>So pipeline
+
+00:30:17.730 --> 00:30:19.090
+<v Speaker 1>start demo pipeline.
+
+00:30:22.155 --> 00:30:24.555
+<v Speaker 1>It's gonna complete and so probably It's gonna
+
+00:30:24.555 --> 00:30:26.395
+<v Speaker 1>ask me for the message.
+
+00:30:27.355 --> 00:30:32.875
+<v Speaker 1>So let's put let's
+
+00:30:32.875 --> 00:30:34.555
+<v Speaker 1>do our Tekton
+
+00:30:34.555 --> 00:30:35.595
+<v Speaker 1>pipeline
+
+00:30:35.595 --> 00:30:36.955
+<v Speaker 1>run list.
+
+00:30:37.170 --> 00:30:39.170
+<v Speaker 1>Because we we should see it. So you
+
+00:30:39.170 --> 00:30:40.530
+<v Speaker 1>can see that it's running and
+
+00:30:41.170 --> 00:30:42.130
+<v Speaker 1>we can do
+
+00:30:42.850 --> 00:30:44.210
+<v Speaker 1>logs last
+
+00:30:44.290 --> 00:30:44.930
+<v Speaker 1>and this
+
+00:30:46.050 --> 00:30:47.810
+<v Speaker 1>wait. There we go. Awesome. Right. So it's
+
+00:30:47.810 --> 00:30:48.930
+<v Speaker 1>just executing that task.
+
+00:30:49.424 --> 00:30:50.864
+<v Speaker 1>We're going to our dashboard.
+
+00:30:51.024 --> 00:30:53.105
+<v Speaker 1>We get to see our pipeline runs for
+
+00:30:53.105 --> 00:30:53.825
+<v Speaker 1>a change
+
+00:30:54.144 --> 00:30:57.184
+<v Speaker 1>and we can see this particular
+
+00:30:57.264 --> 00:30:59.344
+<v Speaker 1>pipeline run here. Yes. So that's it there.
+
+00:31:00.945 --> 00:31:03.105
+<v Speaker 1>And all it does is one task and
+
+00:31:03.105 --> 00:31:05.560
+<v Speaker 1>passes that parameter through to it. It's kinda
+
+00:31:05.560 --> 00:31:06.280
+<v Speaker 1>really simple.
+
+00:31:06.680 --> 00:31:09.320
+<v Speaker 1>Pipelines basically provide sequencing
+
+00:31:09.800 --> 00:31:11.480
+<v Speaker 1>for tasks.
+
+00:31:12.360 --> 00:31:14.200
+<v Speaker 0>Can I don't know if it's something you're
+
+00:31:14.200 --> 00:31:16.440
+<v Speaker 0>gonna show later, but it popped in my
+
+00:31:16.440 --> 00:31:18.040
+<v Speaker 0>head? So I'll see now. Can can we
+
+00:31:18.040 --> 00:31:19.320
+<v Speaker 0>modify this
+
+00:31:19.765 --> 00:31:21.845
+<v Speaker 0>the task definition and can we make it
+
+00:31:21.845 --> 00:31:24.005
+<v Speaker 0>fail? Just for the yeah. Yeah. Just for
+
+00:31:24.005 --> 00:31:24.884
+<v Speaker 0>the giggles?
+
+00:31:27.125 --> 00:31:29.205
+<v Speaker 1>Okay. Could we do this? Let's think.
+
+00:31:29.605 --> 00:31:31.125
+<v Speaker 1>What would what would actually call it to
+
+00:31:31.125 --> 00:31:31.445
+<v Speaker 1>feel?
+
+00:31:32.020 --> 00:31:33.540
+<v Speaker 0>Let's just change the task to run a
+
+00:31:33.540 --> 00:31:35.380
+<v Speaker 0>command that doesn't exist. Like, instead of echo
+
+00:31:35.460 --> 00:31:37.460
+<v Speaker 0>let's type one echo or something. Right? So
+
+00:31:37.700 --> 00:31:40.019
+<v Speaker 1>Yeah. Let's let's do l six.
+
+00:31:41.620 --> 00:31:42.259
+<v Speaker 1>Yeah.
+
+00:31:42.820 --> 00:31:44.580
+<v Speaker 1>I don't think there's a command called l
+
+00:31:44.580 --> 00:31:45.220
+<v Speaker 1>six, is there?
+
+00:31:46.445 --> 00:31:47.565
+<v Speaker 0>No. See what I know.
+
+00:31:49.245 --> 00:31:49.884
+<v Speaker 1>Yeah.
+
+00:31:51.405 --> 00:31:51.804
+<v Speaker 1>We
+
+00:31:53.085 --> 00:31:55.325
+<v Speaker 1>do actually. Oh, yeah. So why?
+
+00:31:58.990 --> 00:31:59.789
+<v Speaker 1>Come on.
+
+00:32:00.350 --> 00:32:01.229
+<v Speaker 1>On. Okay.
+
+00:32:01.710 --> 00:32:02.029
+<v Speaker 1>It's
+
+00:32:02.590 --> 00:32:04.510
+<v Speaker 1>we run that pipeline and you'll see what
+
+00:32:04.510 --> 00:32:05.469
+<v Speaker 1>happens. So
+
+00:32:05.710 --> 00:32:07.629
+<v Speaker 1>we start demo pipeline.
+
+00:32:08.510 --> 00:32:09.469
+<v Speaker 1>Let's
+
+00:32:10.029 --> 00:32:11.390
+<v Speaker 1>just put demo
+
+00:32:13.975 --> 00:32:15.894
+<v Speaker 1>see it in there. I
+
+00:32:18.135 --> 00:32:19.815
+<v Speaker 1>think there we go. Awesome. Right. So it
+
+00:32:19.815 --> 00:32:22.135
+<v Speaker 1>failed because and then a pipeline will fail
+
+00:32:22.135 --> 00:32:24.375
+<v Speaker 1>if any of its tasks fail.
+
+00:32:24.615 --> 00:32:26.215
+<v Speaker 1>As soon as a step, it returns a
+
+00:32:26.215 --> 00:32:29.150
+<v Speaker 1>non zero exit code, then it fails. I'm
+
+00:32:29.150 --> 00:32:30.429
+<v Speaker 0>assuming I can just get the logs out
+
+00:32:30.429 --> 00:32:31.950
+<v Speaker 0>of that, see why it failed. Like, it's
+
+00:32:31.950 --> 00:32:34.510
+<v Speaker 0>all self explanatory, I would imagine. It's actually
+
+00:32:34.510 --> 00:32:36.190
+<v Speaker 1>quite nice because you can do if you
+
+00:32:36.190 --> 00:32:38.270
+<v Speaker 1>do type click again pipeline
+
+00:32:38.270 --> 00:32:39.549
+<v Speaker 1>run
+
+00:32:42.585 --> 00:32:43.384
+<v Speaker 1>Last.
+
+00:32:43.385 --> 00:32:44.424
+<v Speaker 1>See see. See
+
+00:32:46.184 --> 00:32:47.865
+<v Speaker 1>what I actually say. It's usually says, like,
+
+00:32:47.865 --> 00:32:50.184
+<v Speaker 1>you know, state state space code 127 blah
+
+00:32:50.184 --> 00:32:51.785
+<v Speaker 1>blah blah to
+
+00:32:51.785 --> 00:32:53.544
+<v Speaker 1>see the specific logs for this.
+
+00:32:54.850 --> 00:32:56.610
+<v Speaker 1>Must have listened like a real oh, because
+
+00:32:56.610 --> 00:32:58.610
+<v Speaker 1>it's so big. It's getting taken off into
+
+00:32:58.610 --> 00:32:59.489
+<v Speaker 1>the screen.
+
+00:32:59.809 --> 00:33:01.570
+<v Speaker 1>If you're in a normal screen, what actually
+
+00:33:01.570 --> 00:33:03.649
+<v Speaker 1>happens here is it shows you
+
+00:33:04.450 --> 00:33:07.570
+<v Speaker 1>the the the control command to
+
+00:33:08.450 --> 00:33:09.009
+<v Speaker 1>display it.
+
+00:33:10.245 --> 00:33:11.925
+<v Speaker 1>I don't even do a scroller across from
+
+00:33:11.925 --> 00:33:14.005
+<v Speaker 1>this for whatever reasons. It can't just create
+
+00:33:14.005 --> 00:33:15.445
+<v Speaker 1>except for when it's not. You can just
+
+00:33:15.445 --> 00:33:16.885
+<v Speaker 0>show it from the UI, I guess. Right?
+
+00:33:16.885 --> 00:33:18.245
+<v Speaker 0>I mean Yeah. Yeah. That that message should
+
+00:33:18.245 --> 00:33:20.245
+<v Speaker 0>be there too. Yep. You'll see that thing
+
+00:33:20.245 --> 00:33:22.420
+<v Speaker 1>there, but it it it will. Yeah. Perfect.
+
+00:33:22.500 --> 00:33:24.500
+<v Speaker 1>So we exactly what we expected. If you
+
+00:33:24.500 --> 00:33:26.420
+<v Speaker 1>modify it and you get I mean, it's
+
+00:33:26.420 --> 00:33:28.260
+<v Speaker 1>it's really visible. You can see the nice
+
+00:33:28.260 --> 00:33:28.900
+<v Speaker 1>kinda
+
+00:33:29.140 --> 00:33:31.700
+<v Speaker 1>red thing here. So this is
+
+00:33:32.420 --> 00:33:34.500
+<v Speaker 1>we can we can do better. Okay. So
+
+00:33:35.445 --> 00:33:37.045
+<v Speaker 1>now we're gonna start to get into the
+
+00:33:37.045 --> 00:33:38.804
+<v Speaker 1>the the image and the other bits of
+
+00:33:38.804 --> 00:33:40.725
+<v Speaker 1>it that folks are probably really keen on.
+
+00:33:41.045 --> 00:33:43.524
+<v Speaker 1>So there is a catalog of tasks
+
+00:33:43.605 --> 00:33:45.524
+<v Speaker 1>available. So Tekton has this
+
+00:33:46.245 --> 00:33:48.130
+<v Speaker 1>whole big catalogue with
+
+00:33:48.690 --> 00:33:50.690
+<v Speaker 1>about five different build mechanisms.
+
+00:33:50.690 --> 00:33:53.890
+<v Speaker 1>It's builder, s two I and build packs
+
+00:33:53.890 --> 00:33:56.370
+<v Speaker 1>and various other things in here. So these
+
+00:33:56.370 --> 00:33:57.650
+<v Speaker 1>are kind of predefined
+
+00:33:57.650 --> 00:33:58.529
+<v Speaker 1>tasks.
+
+00:33:59.330 --> 00:34:00.290
+<v Speaker 1>And if we go and look at the
+
+00:34:00.290 --> 00:34:01.170
+<v Speaker 1>get clone task
+
+00:34:01.745 --> 00:34:03.905
+<v Speaker 0>Can you just send that to 300%?
+
+00:34:04.225 --> 00:34:06.305
+<v Speaker 1>Yeah. Thank you for reminding me.
+
+00:34:06.865 --> 00:34:08.145
+<v Speaker 1>So you can see that this has a
+
+00:34:08.145 --> 00:34:09.185
+<v Speaker 1>0.2
+
+00:34:09.585 --> 00:34:10.785
+<v Speaker 1>and it has
+
+00:34:10.945 --> 00:34:12.465
+<v Speaker 1>two things. So this it says here this
+
+00:34:12.465 --> 00:34:14.785
+<v Speaker 1>task has two required inputs, the URL of
+
+00:34:14.785 --> 00:34:16.820
+<v Speaker 1>the get reports clone provided with the URL
+
+00:34:16.820 --> 00:34:17.540
+<v Speaker 1>parameter
+
+00:34:17.620 --> 00:34:19.860
+<v Speaker 1>and a workspace called output.
+
+00:34:20.340 --> 00:34:21.540
+<v Speaker 1>Okay. So we can see that these are
+
+00:34:21.540 --> 00:34:22.340
+<v Speaker 1>the two things.
+
+00:34:22.660 --> 00:34:24.420
+<v Speaker 1>And we'll talk about workspaces when I set
+
+00:34:24.420 --> 00:34:25.860
+<v Speaker 1>this up to do it. But based on
+
+00:34:25.860 --> 00:34:26.580
+<v Speaker 1>our workspaces
+
+00:34:27.060 --> 00:34:28.500
+<v Speaker 1>I'll say you last thing, so I'll do
+
+00:34:28.500 --> 00:34:30.335
+<v Speaker 1>it. Workspace is in kind of shared space.
+
+00:34:30.335 --> 00:34:32.094
+<v Speaker 1>So it's a PVC that's getting defined
+
+00:34:32.494 --> 00:34:34.655
+<v Speaker 1>and that task executes.
+
+00:34:35.295 --> 00:34:36.335
+<v Speaker 1>It's because this is why you can't use
+
+00:34:36.335 --> 00:34:37.454
+<v Speaker 1>an empty door because if you did, you
+
+00:34:37.454 --> 00:34:38.895
+<v Speaker 1>would end up with multiple
+
+00:34:39.695 --> 00:34:42.609
+<v Speaker 1>p v empty door PVCs getting created. And
+
+00:34:42.609 --> 00:34:44.369
+<v Speaker 1>this gives you kind of persistent storage to
+
+00:34:44.449 --> 00:34:45.889
+<v Speaker 1>it's bound to the lifetime of the pipeline
+
+00:34:45.889 --> 00:34:46.929
+<v Speaker 1>run to be fair,
+
+00:34:47.489 --> 00:34:49.889
+<v Speaker 1>but I lose the, like, tasks to carry
+
+00:34:49.889 --> 00:34:52.130
+<v Speaker 1>the things. So obviously, if you get cloned,
+
+00:34:52.449 --> 00:34:54.449
+<v Speaker 1>you probably want to act on that get
+
+00:34:54.449 --> 00:34:56.815
+<v Speaker 1>cloned that you've just cloned. So what this
+
+00:34:56.815 --> 00:34:58.655
+<v Speaker 1>allows you to do is to write it
+
+00:34:58.655 --> 00:35:00.175
+<v Speaker 1>out and then have another task come along
+
+00:35:00.175 --> 00:35:02.495
+<v Speaker 1>and pick that source code up and do
+
+00:35:02.495 --> 00:35:03.775
+<v Speaker 1>the right thing. So there's a whole lot
+
+00:35:03.775 --> 00:35:05.055
+<v Speaker 1>of parameters. I'm not gonna go into all
+
+00:35:05.055 --> 00:35:06.095
+<v Speaker 1>of them. You can see that
+
+00:35:06.415 --> 00:35:08.415
+<v Speaker 1>you can provide revisions, rest specs,
+
+00:35:08.850 --> 00:35:11.490
+<v Speaker 1>sub modules, depth, SSL verification,
+
+00:35:11.890 --> 00:35:13.650
+<v Speaker 1>which I think should be insecure as you
+
+00:35:13.650 --> 00:35:16.050
+<v Speaker 1>know, and I don't like CSSL verified. What
+
+00:35:16.050 --> 00:35:17.570
+<v Speaker 1>what it tells you and what it what
+
+00:35:17.570 --> 00:35:19.330
+<v Speaker 1>it mean is really different. You can set
+
+00:35:19.330 --> 00:35:21.010
+<v Speaker 1>up properties and things like that. So you
+
+00:35:21.010 --> 00:35:22.290
+<v Speaker 1>can do a lot of different things in
+
+00:35:22.615 --> 00:35:24.935
+<v Speaker 1>So what we're gonna do is we're gonna
+
+00:35:24.935 --> 00:35:25.495
+<v Speaker 1>take
+
+00:35:25.815 --> 00:35:27.655
+<v Speaker 1>the this is the YAML for it.
+
+00:35:28.775 --> 00:35:30.295
+<v Speaker 1>It's quite a big task here. I've looked
+
+00:35:30.295 --> 00:35:32.295
+<v Speaker 1>at it a few things. Come on. Go
+
+00:35:32.295 --> 00:35:33.895
+<v Speaker 1>to there. And you can see it's got
+
+00:35:34.310 --> 00:35:36.630
+<v Speaker 1>a 32 lanes. Probably not what you wanna
+
+00:35:36.630 --> 00:35:37.990
+<v Speaker 1>look at. So I'm gonna grab the raw
+
+00:35:37.990 --> 00:35:39.030
+<v Speaker 1>version of this.
+
+00:35:39.670 --> 00:35:41.670
+<v Speaker 0>Uh-huh. So the way that we use we
+
+00:35:41.670 --> 00:35:43.830
+<v Speaker 0>consume tasks from the catalog, it's it's really
+
+00:35:43.830 --> 00:35:46.710
+<v Speaker 0>just to apply them rather than, like, reference
+
+00:35:46.710 --> 00:35:49.185
+<v Speaker 0>them within the YAML itself. Yeah. Because it's
+
+00:35:49.185 --> 00:35:50.785
+<v Speaker 1>gonna be in the industry. There is
+
+00:35:50.945 --> 00:35:52.465
+<v Speaker 1>a couple of things. So I'm
+
+00:35:53.825 --> 00:35:55.905
+<v Speaker 1>pretty sure Tekton has support for fixing them
+
+00:35:55.905 --> 00:35:56.465
+<v Speaker 1>from
+
+00:35:57.105 --> 00:35:58.545
+<v Speaker 1>from the catalog.
+
+00:35:59.265 --> 00:36:01.345
+<v Speaker 1>But there's also a big bundle work going
+
+00:36:01.345 --> 00:36:02.945
+<v Speaker 1>on, some quick site and stuff going on
+
+00:36:02.945 --> 00:36:05.510
+<v Speaker 1>that's always you to, like, bundling to,
+
+00:36:05.750 --> 00:36:07.430
+<v Speaker 1>like, add all of the various pieces that
+
+00:36:07.430 --> 00:36:08.550
+<v Speaker 1>you might need for a task. So there
+
+00:36:08.550 --> 00:36:10.150
+<v Speaker 1>we go. So we've installed our new and
+
+00:36:10.150 --> 00:36:12.150
+<v Speaker 1>get clone task as you saw from the
+
+00:36:12.150 --> 00:36:13.030
+<v Speaker 1>the catalog.
+
+00:36:13.990 --> 00:36:15.670
+<v Speaker 1>That's what I'm now about to do
+
+00:36:16.404 --> 00:36:17.205
+<v Speaker 1>here
+
+00:36:17.525 --> 00:36:20.484
+<v Speaker 1>is I'm gonna build a pipeline that uses
+
+00:36:20.484 --> 00:36:21.125
+<v Speaker 1>this.
+
+00:36:21.605 --> 00:36:22.565
+<v Speaker 1>Okay. So it's
+
+00:36:23.045 --> 00:36:23.685
+<v Speaker 1>then
+
+00:36:24.404 --> 00:36:26.085
+<v Speaker 1>go to the old source.
+
+00:36:26.724 --> 00:36:28.244
+<v Speaker 1>That was a better promise if ever I
+
+00:36:28.244 --> 00:36:28.484
+<v Speaker 1>heard.
+
+00:36:30.260 --> 00:36:31.620
+<v Speaker 1>Build source pipeline.
+
+00:36:32.340 --> 00:36:33.859
+<v Speaker 1>What you're gonna see is it takes two
+
+00:36:33.859 --> 00:36:36.340
+<v Speaker 1>parameters. I've made them capitals mostly to help
+
+00:36:36.340 --> 00:36:37.140
+<v Speaker 1>differentiate
+
+00:36:37.300 --> 00:36:39.780
+<v Speaker 1>between the things that I'm passing in and
+
+00:36:39.780 --> 00:36:41.460
+<v Speaker 1>the things that the task needs. You'll notice
+
+00:36:41.460 --> 00:36:43.315
+<v Speaker 1>that in the past, the task said it
+
+00:36:43.315 --> 00:36:45.715
+<v Speaker 1>needed a lowercase URL and a lowercase revision
+
+00:36:45.715 --> 00:36:46.515
+<v Speaker 1>parameter.
+
+00:36:46.835 --> 00:36:49.155
+<v Speaker 1>So my pipeline takes Git repo and Git
+
+00:36:49.155 --> 00:36:49.875
+<v Speaker 1>ref
+
+00:36:50.115 --> 00:36:51.715
+<v Speaker 1>and it
+
+00:36:52.035 --> 00:36:54.355
+<v Speaker 1>takes those and and will execute the task.
+
+00:36:54.995 --> 00:36:56.515
+<v Speaker 1>You can see that it creates this it
+
+00:36:56.515 --> 00:36:58.010
+<v Speaker 1>uses, I think, called a work space. So
+
+00:36:58.010 --> 00:36:59.530
+<v Speaker 1>this is like a declaration. So this is
+
+00:36:59.609 --> 00:37:02.250
+<v Speaker 1>I see that this pipeline has a workspace
+
+00:37:02.250 --> 00:37:03.690
+<v Speaker 1>called shared data.
+
+00:37:04.810 --> 00:37:06.410
+<v Speaker 1>But again, this mapping thing that we talked
+
+00:37:06.410 --> 00:37:09.690
+<v Speaker 1>about, like, workspaces name output, workspace shared data,
+
+00:37:09.770 --> 00:37:13.635
+<v Speaker 1>that's me saying that the, git clone source,
+
+00:37:13.635 --> 00:37:15.155
+<v Speaker 1>which is using git clone,
+
+00:37:15.234 --> 00:37:18.035
+<v Speaker 1>it should, get this shared data workspace, but
+
+00:37:18.035 --> 00:37:19.875
+<v Speaker 1>they want to call it output for their
+
+00:37:19.875 --> 00:37:21.635
+<v Speaker 1>purposes. So that's cool. We will we will
+
+00:37:21.635 --> 00:37:24.595
+<v Speaker 1>map shared data to output for the execution
+
+00:37:24.595 --> 00:37:25.635
+<v Speaker 1>of this particular task.
+
+00:37:26.700 --> 00:37:28.460
+<v Speaker 1>Okay. So that's like, basically, a pipeline with
+
+00:37:28.460 --> 00:37:29.900
+<v Speaker 1>a single task just now. All it's doing
+
+00:37:29.900 --> 00:37:31.500
+<v Speaker 1>is calling that get repo
+
+00:37:31.820 --> 00:37:32.940
+<v Speaker 1>and putting it in.
+
+00:37:33.820 --> 00:37:34.380
+<v Speaker 1>So
+
+00:37:35.500 --> 00:37:36.860
+<v Speaker 1>I'm gonna build
+
+00:37:36.860 --> 00:37:37.900
+<v Speaker 1>a source.
+
+00:37:37.980 --> 00:37:39.500
+<v Speaker 1>I'm gonna do
+
+00:37:39.500 --> 00:37:40.300
+<v Speaker 1>it like this.
+
+00:37:43.275 --> 00:37:44.155
+<v Speaker 1>Oh,
+
+00:37:46.955 --> 00:37:47.595
+<v Speaker 1>yes.
+
+00:37:50.955 --> 00:37:52.315
+<v Speaker 0>Oh, you didn't apply the pipeline.
+
+00:37:53.270 --> 00:37:54.150
+<v Speaker 0>Right. Okay.
+
+00:37:54.710 --> 00:37:57.349
+<v Speaker 1>So it's a you know, handy here. So
+
+00:37:57.349 --> 00:37:58.870
+<v Speaker 1>name for the workspace
+
+00:37:59.190 --> 00:38:00.390
+<v Speaker 1>should be the
+
+00:38:00.550 --> 00:38:01.190
+<v Speaker 1>this
+
+00:38:01.430 --> 00:38:03.349
+<v Speaker 1>I mean, we can empty there for this
+
+00:38:03.349 --> 00:38:04.790
+<v Speaker 1>one because we can we don't need to
+
+00:38:04.790 --> 00:38:05.910
+<v Speaker 1>carry the source across.
+
+00:38:07.135 --> 00:38:08.975
+<v Speaker 1>So it's an empty door, isn't it?
+
+00:38:09.295 --> 00:38:10.415
+<v Speaker 1>Think this will work.
+
+00:38:12.415 --> 00:38:14.335
+<v Speaker 1>Okay. So it's gonna go and grab the
+
+00:38:14.335 --> 00:38:15.855
+<v Speaker 1>git clone task
+
+00:38:15.855 --> 00:38:17.775
+<v Speaker 1>and do the right thing.
+
+00:38:18.735 --> 00:38:21.055
+<v Speaker 1>You can see that it has completed. Awesome.
+
+00:38:21.840 --> 00:38:24.640
+<v Speaker 1>Right. So not particularly useful as a start,
+
+00:38:24.640 --> 00:38:25.120
+<v Speaker 1>but
+
+00:38:27.360 --> 00:38:28.560
+<v Speaker 1>log slash.
+
+00:38:29.520 --> 00:38:30.800
+<v Speaker 1>You'll see that we
+
+00:38:31.680 --> 00:38:31.920
+<v Speaker 1>awesome.
+
+00:38:34.065 --> 00:38:37.105
+<v Speaker 1>So that's stored in there and
+
+00:38:38.464 --> 00:38:40.305
+<v Speaker 1>that's our that's our first problem when we
+
+00:38:40.305 --> 00:38:41.905
+<v Speaker 1>wanna whenever you wanna build something, you need
+
+00:38:41.905 --> 00:38:43.905
+<v Speaker 1>to you need to source code somewhere.
+
+00:38:44.305 --> 00:38:45.425
+<v Speaker 1>Okay. So one of the things I'm gonna
+
+00:38:45.425 --> 00:38:48.590
+<v Speaker 1>show, we've talked about earlier is task results.
+
+00:38:49.070 --> 00:38:49.870
+<v Speaker 1>Let me
+
+00:38:52.670 --> 00:38:54.110
+<v Speaker 1>see what they're useful for.
+
+00:38:56.270 --> 00:38:57.790
+<v Speaker 1>Oops. So they're bigger. So I'm gonna add
+
+00:38:57.790 --> 00:38:59.230
+<v Speaker 1>an extra task in here
+
+00:38:59.805 --> 00:39:01.244
+<v Speaker 1>and well, this is two things. Right? So
+
+00:39:01.244 --> 00:39:03.405
+<v Speaker 1>this new task is called echo results.
+
+00:39:05.244 --> 00:39:08.365
+<v Speaker 1>Number of easier to people to 26,
+
+00:39:08.365 --> 00:39:10.045
+<v Speaker 1>you can see echo results. And so what
+
+00:39:10.045 --> 00:39:12.285
+<v Speaker 1>you'll notice is I've explicitly put it to
+
+00:39:12.285 --> 00:39:14.204
+<v Speaker 1>run after clone source
+
+00:39:14.570 --> 00:39:15.850
+<v Speaker 1>and I'm happy to take that out and
+
+00:39:15.850 --> 00:39:16.970
+<v Speaker 1>show you what happens if you don't put
+
+00:39:16.970 --> 00:39:18.090
+<v Speaker 1>running after.
+
+00:39:18.810 --> 00:39:21.210
+<v Speaker 1>But you can see that it's
+
+00:39:21.290 --> 00:39:23.930
+<v Speaker 1>taking two parameters, the commit in the URL
+
+00:39:24.570 --> 00:39:25.370
+<v Speaker 1>and
+
+00:39:25.770 --> 00:39:27.610
+<v Speaker 1>it's got a script that just echoes the
+
+00:39:27.610 --> 00:39:30.135
+<v Speaker 1>two values. Right? So nothing particularly remarkable about
+
+00:39:30.135 --> 00:39:31.335
+<v Speaker 1>this particular thing.
+
+00:39:31.895 --> 00:39:34.295
+<v Speaker 1>But it takes its parameters to the task.
+
+00:39:34.375 --> 00:39:36.215
+<v Speaker 1>This is like an embedded task. I'm not
+
+00:39:36.215 --> 00:39:38.615
+<v Speaker 1>referencing an external task here. I'm referencing an
+
+00:39:38.615 --> 00:39:39.655
+<v Speaker 1>embedded task
+
+00:39:39.735 --> 00:39:41.255
+<v Speaker 1>and it's gonna take those two parameters. So
+
+00:39:41.255 --> 00:39:42.615
+<v Speaker 1>you see the way that this is referenced
+
+00:39:42.615 --> 00:39:45.700
+<v Speaker 1>here. So this tasks dot clone source dot
+
+00:39:45.700 --> 00:39:48.019
+<v Speaker 1>result dot commit. Unfortunately,
+
+00:39:48.019 --> 00:39:49.460
+<v Speaker 1>the only way you'll know this is by
+
+00:39:49.460 --> 00:39:51.619
+<v Speaker 1>looking at the task that you're executing,
+
+00:39:52.900 --> 00:39:56.420
+<v Speaker 1>but this is seeing that lane 14 task
+
+00:39:56.145 --> 00:39:57.345
+<v Speaker 1>clone source,
+
+00:39:57.425 --> 00:39:58.945
+<v Speaker 1>it has a result called commit and I
+
+00:39:58.945 --> 00:40:00.305
+<v Speaker 1>want to be passing that and it's a
+
+00:40:00.305 --> 00:40:01.025
+<v Speaker 1>parameter
+
+00:40:01.345 --> 00:40:01.905
+<v Speaker 1>to
+
+00:40:02.225 --> 00:40:03.905
+<v Speaker 1>my echo results
+
+00:40:04.385 --> 00:40:06.225
+<v Speaker 1>task. Does that make sense?
+
+00:40:07.025 --> 00:40:09.105
+<v Speaker 0>Yeah. I mean, I'll try and summarize that
+
+00:40:09.105 --> 00:40:11.105
+<v Speaker 0>back to you. So this is another pipeline
+
+00:40:11.105 --> 00:40:13.480
+<v Speaker 0>with multiple tasks. I think what's different from
+
+00:40:13.480 --> 00:40:14.120
+<v Speaker 0>this one
+
+00:40:14.440 --> 00:40:16.520
+<v Speaker 0>is that instead of using task ref like
+
+00:40:16.520 --> 00:40:18.280
+<v Speaker 0>we do in the clone source one, we
+
+00:40:18.280 --> 00:40:20.360
+<v Speaker 0>got a task spec. The task spec just
+
+00:40:20.360 --> 00:40:22.120
+<v Speaker 0>allows us to define a task inside of
+
+00:40:22.120 --> 00:40:23.160
+<v Speaker 0>the pipeline.
+
+00:40:23.800 --> 00:40:27.160
+<v Speaker 0>There's an access to a variable called tasks
+
+00:40:26.745 --> 00:40:28.425
+<v Speaker 0>dot and then the code source is just
+
+00:40:28.425 --> 00:40:30.425
+<v Speaker 0>the name of the previous task. And then
+
+00:40:30.425 --> 00:40:31.945
+<v Speaker 0>we can access the results and then the
+
+00:40:31.945 --> 00:40:33.545
+<v Speaker 0>commit and then the results of the URL
+
+00:40:33.545 --> 00:40:36.105
+<v Speaker 0>from it. So all connect links together via
+
+00:40:36.105 --> 00:40:37.705
+<v Speaker 0>the task name and
+
+00:40:38.025 --> 00:40:39.385
+<v Speaker 0>the task back is a nice way to
+
+00:40:39.385 --> 00:40:41.800
+<v Speaker 0>know that. I mean, is task back something
+
+00:40:41.800 --> 00:40:42.760
+<v Speaker 0>that you see
+
+00:40:43.000 --> 00:40:45.079
+<v Speaker 0>people using for their pipeline trial and find
+
+00:40:45.079 --> 00:40:46.680
+<v Speaker 0>the task separately? Is there any kind of
+
+00:40:46.680 --> 00:40:48.040
+<v Speaker 0>preference there?
+
+00:40:48.359 --> 00:40:48.920
+<v Speaker 1>So,
+
+00:40:49.400 --> 00:40:51.880
+<v Speaker 1>truthfully, guess it depends on whether you consider
+
+00:40:51.880 --> 00:40:53.885
+<v Speaker 1>a task to be reusable or not. Like,
+
+00:40:53.885 --> 00:40:55.244
+<v Speaker 1>for some things. For that, why did I
+
+00:40:55.244 --> 00:40:57.724
+<v Speaker 1>put a task back in here? Because basically,
+
+00:40:57.724 --> 00:40:59.405
+<v Speaker 1>I didn't want to write another YAML file.
+
+00:40:59.405 --> 00:41:00.444
+<v Speaker 1>Don't have to find it. Then I can
+
+00:41:00.444 --> 00:41:02.605
+<v Speaker 1>just do how much task is taken. So
+
+00:41:02.605 --> 00:41:03.645
+<v Speaker 1>that's what I was doing too, like
+
+00:41:04.765 --> 00:41:06.444
+<v Speaker 1>I guess if it's reusable and if you
+
+00:41:06.525 --> 00:41:08.204
+<v Speaker 1>and and it's easy enough to refactor this
+
+00:41:08.204 --> 00:41:10.180
+<v Speaker 1>so you can just extract it and make
+
+00:41:10.180 --> 00:41:12.420
+<v Speaker 1>that task speak the speak of a task
+
+00:41:12.420 --> 00:41:14.100
+<v Speaker 1>definition that you're rating.
+
+00:41:14.500 --> 00:41:16.980
+<v Speaker 1>So nothing would be particularly different here and
+
+00:41:16.980 --> 00:41:18.740
+<v Speaker 1>we're just the only thing that we've changed
+
+00:41:18.740 --> 00:41:20.900
+<v Speaker 1>is task speak and become task ref and
+
+00:41:20.900 --> 00:41:21.780
+<v Speaker 1>whatever you name this.
+
+00:41:22.475 --> 00:41:24.715
+<v Speaker 1>Yeah. So it's really it's a useful trick.
+
+00:41:24.715 --> 00:41:27.355
+<v Speaker 1>It's I I guess, the paintings are kind
+
+00:41:27.355 --> 00:41:29.115
+<v Speaker 1>of when we generate, like, paintings for the
+
+00:41:29.115 --> 00:41:30.075
+<v Speaker 1>time for this.
+
+00:41:30.955 --> 00:41:33.515
+<v Speaker 1>We cannot try to mostly task ref but
+
+00:41:33.515 --> 00:41:35.275
+<v Speaker 1>for some cases, we would task make it.
+
+00:41:35.450 --> 00:41:37.770
+<v Speaker 1>And if you've tried my Tekton CI thing,
+
+00:41:37.770 --> 00:41:39.770
+<v Speaker 1>it generates huge gamos
+
+00:41:40.090 --> 00:41:42.730
+<v Speaker 1>with all embedded tasks and pipeline runs in
+
+00:41:42.730 --> 00:41:45.050
+<v Speaker 1>the rhythm. What I'm gonna do here
+
+00:41:45.370 --> 00:41:46.170
+<v Speaker 1>is
+
+00:41:46.250 --> 00:41:47.930
+<v Speaker 1>we do keep a play on it.
+
+00:41:48.730 --> 00:41:49.770
+<v Speaker 1>I should have done when it was in
+
+00:41:49.770 --> 00:41:50.570
+<v Speaker 1>boom, but there you go.
+
+00:41:51.385 --> 00:41:54.505
+<v Speaker 1>K. And I'm gonna run that pipeline again.
+
+00:41:56.585 --> 00:41:58.745
+<v Speaker 1>Me know what works. I will see how
+
+00:41:58.745 --> 00:41:59.385
+<v Speaker 1>it goes.
+
+00:41:59.705 --> 00:42:03.145
+<v Speaker 1>There's
+
+00:42:04.345 --> 00:42:06.025
+<v Speaker 1>in task run logs.
+
+00:42:08.300 --> 00:42:09.900
+<v Speaker 1>And what I'm gonna do, once it's failed,
+
+00:42:09.900 --> 00:42:10.860
+<v Speaker 1>once it finishes,
+
+00:42:11.180 --> 00:42:12.380
+<v Speaker 1>I'll go back and show what happens if
+
+00:42:12.380 --> 00:42:14.620
+<v Speaker 1>you don't put one after because this is
+
+00:42:14.620 --> 00:42:16.460
+<v Speaker 1>this is sequencing. Right? So you need to
+
+00:42:16.460 --> 00:42:18.060
+<v Speaker 1>wait for the first task to finish
+
+00:42:18.555 --> 00:42:19.435
+<v Speaker 1>generally.
+
+00:42:20.155 --> 00:42:21.435
+<v Speaker 1>And so, Tekton.
+
+00:42:24.155 --> 00:42:25.515
+<v Speaker 1>I pick my mom.
+
+00:42:29.675 --> 00:42:30.954
+<v Speaker 1>Oh, yeah. So you can like pick from
+
+00:42:30.954 --> 00:42:31.755
+<v Speaker 1>here. That's pretty cool.
+
+00:42:34.280 --> 00:42:35.800
+<v Speaker 1>Should see and there we go. Right. So
+
+00:42:35.800 --> 00:42:37.480
+<v Speaker 1>our our task is executed
+
+00:42:37.720 --> 00:42:39.320
+<v Speaker 1>and all it says you can see, it's
+
+00:42:39.320 --> 00:42:41.000
+<v Speaker 1>just echoed the two values that we were
+
+00:42:41.000 --> 00:42:42.760
+<v Speaker 1>expecting to get here. It's nothing
+
+00:42:43.720 --> 00:42:45.480
+<v Speaker 1>don't think about that. Okay. So
+
+00:42:47.865 --> 00:42:50.265
+<v Speaker 1>we're gonna start to get into building an
+
+00:42:50.265 --> 00:42:52.985
+<v Speaker 1>image from source. So there's another task
+
+00:42:53.065 --> 00:42:54.585
+<v Speaker 1>and Do you want to remove that run
+
+00:42:54.585 --> 00:42:55.945
+<v Speaker 0>after first? Just so we can see. Oh,
+
+00:42:55.945 --> 00:42:56.905
+<v Speaker 1>yeah. Yeah. Yeah. I
+
+00:42:57.945 --> 00:42:59.465
+<v Speaker 0>was excited for that and then I felt
+
+00:42:59.465 --> 00:43:00.585
+<v Speaker 0>like you were gonna take away from me
+
+00:43:00.585 --> 00:43:00.825
+<v Speaker 0>there.
+
+00:43:01.880 --> 00:43:03.320
+<v Speaker 1>Right. So we do this
+
+00:43:03.800 --> 00:43:04.760
+<v Speaker 1>and go
+
+00:43:07.480 --> 00:43:09.320
+<v Speaker 1>go ahead and use them for everything.
+
+00:43:10.120 --> 00:43:12.840
+<v Speaker 1>So it should apply that. There we go.
+
+00:43:13.560 --> 00:43:15.080
+<v Speaker 1>Let's do that run again.
+
+00:43:18.345 --> 00:43:18.905
+<v Speaker 1>Oh.
+
+00:43:22.425 --> 00:43:23.545
+<v Speaker 1>Yeah. I don't know why it doesn't just
+
+00:43:23.545 --> 00:43:26.585
+<v Speaker 1>default to that. It's possibly a bug. Anyway,
+
+00:43:26.585 --> 00:43:27.785
+<v Speaker 1>so we're gonna do this.
+
+00:43:28.105 --> 00:43:30.430
+<v Speaker 1>I think it will know
+
+00:43:34.990 --> 00:43:35.630
+<v Speaker 1>I
+
+00:43:37.630 --> 00:43:39.710
+<v Speaker 1>think it's a bit confusing because it's not
+
+00:43:39.710 --> 00:43:40.830
+<v Speaker 1>obvious. We give you
+
+00:43:42.555 --> 00:43:45.195
+<v Speaker 1>oh, yeah. Yeah. It's p t n task.
+
+00:43:53.194 --> 00:43:54.474
+<v Speaker 1>It could get result.
+
+00:43:59.970 --> 00:44:00.530
+<v Speaker 1>Think
+
+00:44:01.970 --> 00:44:04.050
+<v Speaker 1>this may just be let me see. Oh,
+
+00:44:04.050 --> 00:44:05.730
+<v Speaker 1>did I actually reapply that thing after I
+
+00:44:05.730 --> 00:44:06.530
+<v Speaker 1>changed it?
+
+00:44:08.370 --> 00:44:09.250
+<v Speaker 0>I don't recall.
+
+00:44:11.244 --> 00:44:13.405
+<v Speaker 1>How much I I think it may just
+
+00:44:13.405 --> 00:44:14.285
+<v Speaker 1>be lucky.
+
+00:44:15.244 --> 00:44:17.005
+<v Speaker 0>So is there a race condition without the
+
+00:44:17.005 --> 00:44:19.085
+<v Speaker 0>run after? Okay. Yep. We can get into
+
+00:44:19.085 --> 00:44:20.845
+<v Speaker 1>it. Let's say you avoid race conditions.
+
+00:44:21.645 --> 00:44:22.525
+<v Speaker 1>And so,
+
+00:44:23.565 --> 00:44:25.930
+<v Speaker 1>builder is this new task that we're gonna
+
+00:44:25.930 --> 00:44:28.490
+<v Speaker 1>use. Right? So builder takes a git repository
+
+00:44:28.490 --> 00:44:30.730
+<v Speaker 1>that has a a Docker file in it
+
+00:44:30.730 --> 00:44:31.530
+<v Speaker 1>and
+
+00:44:32.490 --> 00:44:35.530
+<v Speaker 1>it it builds it and then pushes it
+
+00:44:35.610 --> 00:44:37.370
+<v Speaker 1>to git repository.
+
+00:44:37.370 --> 00:44:39.775
+<v Speaker 1>So this is kinda really so it's it's
+
+00:44:39.775 --> 00:44:41.055
+<v Speaker 1>an image repo. So you can see that
+
+00:44:41.055 --> 00:44:43.375
+<v Speaker 1>you've you've got given an image, override the
+
+00:44:43.375 --> 00:44:44.255
+<v Speaker 1>builder image,
+
+00:44:44.415 --> 00:44:45.855
+<v Speaker 1>the path to the Dockerfile. So that just
+
+00:44:45.855 --> 00:44:47.215
+<v Speaker 1>kinda assumes that it'll be in the top
+
+00:44:47.215 --> 00:44:48.255
+<v Speaker 1>label of your
+
+00:44:49.055 --> 00:44:49.855
+<v Speaker 1>repo.
+
+00:44:50.015 --> 00:44:52.015
+<v Speaker 1>You can pass a whole of extra parameters
+
+00:44:52.015 --> 00:44:53.935
+<v Speaker 1>and and arguments to it. So for example,
+
+00:44:53.935 --> 00:44:55.720
+<v Speaker 1>you wanna add them, we we will be
+
+00:44:55.720 --> 00:44:57.480
+<v Speaker 1>using this for is for doing extra
+
+00:44:58.520 --> 00:45:00.360
+<v Speaker 1>labels on an image. So if wanna, like,
+
+00:45:00.360 --> 00:45:02.040
+<v Speaker 1>label it with a commit and who committed
+
+00:45:02.040 --> 00:45:03.800
+<v Speaker 1>and the details that can be getting from
+
+00:45:03.800 --> 00:45:04.360
+<v Speaker 1>a
+
+00:45:04.600 --> 00:45:05.880
+<v Speaker 1>commit here. So you can see that it's
+
+00:45:05.880 --> 00:45:06.920
+<v Speaker 1>gonna take a source
+
+00:45:07.080 --> 00:45:08.840
+<v Speaker 1>and it's gonna work on top of that.
+
+00:45:08.840 --> 00:45:09.160
+<v Speaker 1>So
+
+00:45:10.105 --> 00:45:11.705
+<v Speaker 1>I'm gonna steal my
+
+00:45:12.905 --> 00:45:14.265
+<v Speaker 1>oh, yeah. I'm do it like this. So
+
+00:45:14.265 --> 00:45:15.785
+<v Speaker 1>first of all, I'm gonna do the the
+
+00:45:15.785 --> 00:45:16.505
+<v Speaker 1>apply.
+
+00:45:18.105 --> 00:45:18.665
+<v Speaker 1>So
+
+00:45:19.785 --> 00:45:20.745
+<v Speaker 1>that'll work.
+
+00:45:21.065 --> 00:45:21.625
+<v Speaker 1>Awesome.
+
+00:45:22.720 --> 00:45:24.240
+<v Speaker 1>I will need a secret
+
+00:45:24.640 --> 00:45:25.040
+<v Speaker 1>in your
+
+00:45:28.480 --> 00:45:30.480
+<v Speaker 1>k. So I've got a secret created. And
+
+00:45:30.480 --> 00:45:31.840
+<v Speaker 1>what I'm gonna do for this is I'm
+
+00:45:31.840 --> 00:45:34.560
+<v Speaker 1>gonna grant access to that secret, the Docker
+
+00:45:34.560 --> 00:45:37.415
+<v Speaker 1>config secret type. So I'm gonna add
+
+00:45:37.415 --> 00:45:38.615
+<v Speaker 1>this to the
+
+00:45:39.175 --> 00:45:41.015
+<v Speaker 1>default service account, which is probably not that
+
+00:45:41.015 --> 00:45:42.695
+<v Speaker 1>great, anyway, we'll come back to this thing.
+
+00:45:42.855 --> 00:45:43.495
+<v Speaker 1>And
+
+00:45:44.455 --> 00:45:46.055
+<v Speaker 1>I'm gonna need so
+
+00:45:46.695 --> 00:45:47.175
+<v Speaker 1>let's
+
+00:45:48.215 --> 00:45:49.255
+<v Speaker 1>oh, source pipeline.
+
+00:45:51.300 --> 00:45:52.340
+<v Speaker 1>So
+
+00:45:52.340 --> 00:45:53.780
+<v Speaker 1>let's look at what we've got now.
+
+00:45:56.020 --> 00:45:57.140
+<v Speaker 1>We have
+
+00:45:58.260 --> 00:46:00.020
+<v Speaker 1>task clone source
+
+00:46:00.420 --> 00:46:02.660
+<v Speaker 1>and we have a task build image and
+
+00:46:02.660 --> 00:46:05.540
+<v Speaker 1>build image runs after closed source. References the
+
+00:46:05.540 --> 00:46:07.775
+<v Speaker 1>task, the build image and it takes our
+
+00:46:07.775 --> 00:46:09.055
+<v Speaker 1>param image
+
+00:46:09.055 --> 00:46:10.575
+<v Speaker 1>that we wanna do. And
+
+00:46:12.175 --> 00:46:14.015
+<v Speaker 1>it's pretty pretty simple.
+
+00:46:14.495 --> 00:46:16.575
+<v Speaker 1>Builder, as I say, just takes your Dockerfile
+
+00:46:16.575 --> 00:46:18.975
+<v Speaker 1>and runs, I think, called Builder, which is
+
+00:46:18.975 --> 00:46:20.895
+<v Speaker 1>our bug rather, which is our tool for
+
+00:46:21.050 --> 00:46:23.450
+<v Speaker 1>building images inside containers.
+
+00:46:23.849 --> 00:46:24.490
+<v Speaker 1>Yep.
+
+00:46:24.970 --> 00:46:26.330
+<v Speaker 1>So if we do key,
+
+00:46:27.290 --> 00:46:28.250
+<v Speaker 1>it's
+
+00:46:31.369 --> 00:46:33.370
+<v Speaker 1>deviation for control to key.
+
+00:46:34.410 --> 00:46:36.490
+<v Speaker 1>And so let's run this builds.
+
+00:46:37.704 --> 00:46:39.385
+<v Speaker 1>I need a secret. There's reason I need
+
+00:46:39.385 --> 00:46:42.025
+<v Speaker 1>a secret in there is because I wanna
+
+00:46:44.425 --> 00:46:45.464
+<v Speaker 1>which image to
+
+00:46:46.105 --> 00:46:47.385
+<v Speaker 1>it could be the
+
+00:46:48.425 --> 00:46:49.865
+<v Speaker 1>I demo
+
+00:46:49.865 --> 00:46:50.425
+<v Speaker 1>latest.
+
+00:46:55.070 --> 00:46:56.270
+<v Speaker 1>That should work.
+
+00:46:56.670 --> 00:46:57.470
+<v Speaker 1>Yeah.
+
+00:47:01.870 --> 00:47:04.110
+<v Speaker 1>Yeah. Now this might take a little bit
+
+00:47:04.510 --> 00:47:06.590
+<v Speaker 1>of time. Yeah. Sure. Put some there.
+
+00:47:09.655 --> 00:47:12.135
+<v Speaker 1>Let's see. See that this is pro oh,
+
+00:47:12.135 --> 00:47:13.495
+<v Speaker 1>parameter missing. Oh,
+
+00:47:15.734 --> 00:47:16.935
+<v Speaker 1>I know what I did wrong.
+
+00:47:18.055 --> 00:47:19.815
+<v Speaker 1>Well, we let's see what this is. Then,
+
+00:47:19.815 --> 00:47:22.135
+<v Speaker 1>really, let's let's say, he can
+
+00:47:22.550 --> 00:47:22.869
+<v Speaker 1>pick
+
+00:47:24.470 --> 00:47:26.710
+<v Speaker 1>actually, the parameters I'm screwed on.
+
+00:47:27.030 --> 00:47:27.990
+<v Speaker 1>Last
+
+00:47:27.990 --> 00:47:30.230
+<v Speaker 1>thing, you see it's missing the image param.
+
+00:47:31.190 --> 00:47:33.430
+<v Speaker 1>So pipeline run to full parameters. It's missing
+
+00:47:33.430 --> 00:47:35.670
+<v Speaker 1>some parameter. It's missing some parameters source
+
+00:47:36.855 --> 00:47:38.935
+<v Speaker 1>image. If you look at my command line,
+
+00:47:40.055 --> 00:47:42.295
+<v Speaker 1>minus p is how you specify each key
+
+00:47:42.295 --> 00:47:43.735
+<v Speaker 1>value parameter.
+
+00:47:43.895 --> 00:47:45.494
+<v Speaker 1>And I forgot what p I need there.
+
+00:47:45.494 --> 00:47:46.535
+<v Speaker 1>So that's cool.
+
+00:47:48.215 --> 00:47:50.535
+<v Speaker 0>So it keeps asking you for the workspace,
+
+00:47:50.535 --> 00:47:52.240
+<v Speaker 0>the sub path. I mean, is there a
+
+00:47:52.240 --> 00:47:53.760
+<v Speaker 0>way for it to not ask that?
+
+00:47:54.080 --> 00:47:55.600
+<v Speaker 1>Oh, I can't think about I don't know
+
+00:47:55.600 --> 00:47:56.800
+<v Speaker 1>where we have it on Tekton. So the
+
+00:47:56.800 --> 00:47:58.240
+<v Speaker 1>way I normally do this is by creating
+
+00:47:58.240 --> 00:48:00.160
+<v Speaker 1>a pipeline run and just as I did
+
+00:48:00.160 --> 00:48:01.760
+<v Speaker 1>with the task running earlier and you can
+
+00:48:01.760 --> 00:48:03.120
+<v Speaker 1>then do the whole thing and then you're
+
+00:48:03.120 --> 00:48:04.880
+<v Speaker 1>just kinda creating it because it doesn't change
+
+00:48:04.880 --> 00:48:06.974
+<v Speaker 1>over the noise cycle. Oh, there's a nice
+
+00:48:06.974 --> 00:48:08.175
+<v Speaker 1>typo there actually,
+
+00:48:08.654 --> 00:48:10.894
+<v Speaker 1>which I haven't noticed before and it's empty
+
+00:48:10.894 --> 00:48:11.694
+<v Speaker 1>here.
+
+00:48:11.694 --> 00:48:12.255
+<v Speaker 1>Okay.
+
+00:48:12.575 --> 00:48:13.775
+<v Speaker 1>Well, maybe fix that.
+
+00:48:14.174 --> 00:48:16.494
+<v Speaker 1>Yeah. You take it someone who took
+
+00:48:16.494 --> 00:48:17.535
+<v Speaker 1>in and
+
+00:48:18.654 --> 00:48:20.015
+<v Speaker 1>pipeline run
+
+00:48:20.335 --> 00:48:21.535
+<v Speaker 1>logs last.
+
+00:48:22.500 --> 00:48:24.260
+<v Speaker 1>Running, so this might take a little bit
+
+00:48:24.260 --> 00:48:26.580
+<v Speaker 1>of time. Oh, yeah. I mean, that's actually
+
+00:48:26.580 --> 00:48:28.820
+<v Speaker 0>building that container image with both on there.
+
+00:48:28.820 --> 00:48:30.580
+<v Speaker 0>Right? So Yeah. Yeah. I mean, I think
+
+00:48:30.580 --> 00:48:31.380
+<v Speaker 1>maybe
+
+00:48:31.380 --> 00:48:33.620
+<v Speaker 1>looking about a minute or so. Oh. Oh,
+
+00:48:33.620 --> 00:48:33.940
+<v Speaker 1>no.
+
+00:48:43.345 --> 00:48:44.785
+<v Speaker 1>I've I've been in the what it is.
+
+00:48:50.099 --> 00:48:52.260
+<v Speaker 1>You get code succeeded.
+
+00:48:54.579 --> 00:48:56.420
+<v Speaker 0>No Docker file? Yeah. Great. So I know
+
+00:48:56.420 --> 00:48:58.180
+<v Speaker 1>what it is. So this is
+
+00:48:58.500 --> 00:49:00.579
+<v Speaker 1>I'm gonna build this is we do need
+
+00:49:00.579 --> 00:49:03.045
+<v Speaker 1>a pipeline run for this because
+
+00:49:03.045 --> 00:49:04.165
+<v Speaker 1>it's multiple
+
+00:49:04.165 --> 00:49:05.205
+<v Speaker 1>containers.
+
+00:49:06.325 --> 00:49:07.605
+<v Speaker 1>I think that this is really just a
+
+00:49:07.605 --> 00:49:09.525
+<v Speaker 1>limitation of Tekton. Just now, had a conversation
+
+00:49:09.525 --> 00:49:11.525
+<v Speaker 1>here since I'm in didn't quite get what
+
+00:49:11.525 --> 00:49:13.605
+<v Speaker 1>I was going. So so what I'm gonna
+
+00:49:13.605 --> 00:49:14.805
+<v Speaker 1>do here is I'm gonna write a pipe
+
+00:49:14.885 --> 00:49:16.165
+<v Speaker 1>I've got a pipeline run ready for this.
+
+00:49:16.170 --> 00:49:19.450
+<v Speaker 1>K. So let's do pipe build source pipeline
+
+00:49:19.690 --> 00:49:21.130
+<v Speaker 1>run dot yamo.
+
+00:49:21.849 --> 00:49:23.290
+<v Speaker 1>Mhmm. What I'm gonna do is here, gonna
+
+00:49:23.290 --> 00:49:25.290
+<v Speaker 1>create what's called a volume clean template.
+
+00:49:25.609 --> 00:49:26.809
+<v Speaker 1>And that's
+
+00:49:29.545 --> 00:49:31.145
+<v Speaker 1>what it really is is a way to
+
+00:49:31.145 --> 00:49:32.985
+<v Speaker 1>clean a bit of your PVC space. Right?
+
+00:49:32.985 --> 00:49:34.585
+<v Speaker 1>So I'm just gonna grab a gigabyte. Sorry.
+
+00:49:34.585 --> 00:49:35.545
+<v Speaker 1>Dude, if you get more of that, you're
+
+00:49:35.545 --> 00:49:36.745
+<v Speaker 1>at least not more in trouble.
+
+00:49:37.545 --> 00:49:39.065
+<v Speaker 1>And then we change
+
+00:49:39.385 --> 00:49:40.265
+<v Speaker 1>this
+
+00:49:40.425 --> 00:49:42.665
+<v Speaker 1>to push it to
+
+00:49:47.000 --> 00:49:48.600
+<v Speaker 1>it's gonna do all the same things. Right?
+
+00:49:48.600 --> 00:49:50.760
+<v Speaker 1>It's nothing not any different from the PV.
+
+00:49:51.560 --> 00:49:53.400
+<v Speaker 1>It's say for this, it's gonna provide
+
+00:49:53.640 --> 00:49:54.600
+<v Speaker 1>PCB
+
+00:49:54.600 --> 00:49:56.360
+<v Speaker 1>back into and if if you think about
+
+00:49:56.360 --> 00:49:59.255
+<v Speaker 1>it, empty doors are for the light span
+
+00:49:59.255 --> 00:50:01.175
+<v Speaker 1>of the pod
+
+00:50:01.655 --> 00:50:03.815
+<v Speaker 1>because we have multiple pods when we for
+
+00:50:03.815 --> 00:50:05.415
+<v Speaker 1>each of the the steps or each of
+
+00:50:05.415 --> 00:50:06.215
+<v Speaker 1>the tasks
+
+00:50:06.295 --> 00:50:07.575
+<v Speaker 1>and we are
+
+00:50:08.855 --> 00:50:11.655
+<v Speaker 1>okay. Create I guess if almost like a
+
+00:50:11.655 --> 00:50:12.615
+<v Speaker 1>pound doesn't fancy.
+
+00:50:13.230 --> 00:50:15.150
+<v Speaker 0>So we have a question which I think
+
+00:50:15.150 --> 00:50:16.510
+<v Speaker 0>fits some of what you're doing right now
+
+00:50:16.510 --> 00:50:18.670
+<v Speaker 0>as well. So just to clarify,
+
+00:50:18.670 --> 00:50:20.270
+<v Speaker 0>the PVC template,
+
+00:50:20.590 --> 00:50:22.030
+<v Speaker 0>the shared data
+
+00:50:23.790 --> 00:50:25.869
+<v Speaker 0>PVC that we're sharing across the pipeline is
+
+00:50:25.869 --> 00:50:28.110
+<v Speaker 0>specific to that run of the pipeline. Is
+
+00:50:28.110 --> 00:50:30.355
+<v Speaker 0>that right? Yes. So Andreas is
+
+00:50:31.954 --> 00:50:33.394
+<v Speaker 0>Andreas is just asking, is there a way
+
+00:50:33.394 --> 00:50:34.914
+<v Speaker 0>for us to actually have global state that
+
+00:50:34.914 --> 00:50:36.435
+<v Speaker 0>we can inject onto multiple
+
+00:50:36.515 --> 00:50:38.835
+<v Speaker 0>pipelines for cache libraries? I guess, like, composer
+
+00:50:38.835 --> 00:50:41.954
+<v Speaker 0>caches from PHP, pypi from Python. Yes. You
+
+00:50:41.954 --> 00:50:42.194
+<v Speaker 1>can.
+
+00:50:43.109 --> 00:50:44.549
+<v Speaker 1>So you don't if you don't use a
+
+00:50:44.549 --> 00:50:46.470
+<v Speaker 1>template so what so there's two different ways
+
+00:50:46.470 --> 00:50:49.109
+<v Speaker 1>to specify a volume for a a pipeline
+
+00:50:49.109 --> 00:50:51.030
+<v Speaker 1>run. You can be explicit
+
+00:50:51.349 --> 00:50:53.589
+<v Speaker 1>and actually just reference a volume and and
+
+00:50:53.589 --> 00:50:55.509
+<v Speaker 1>and the get clone task will allow you
+
+00:50:55.509 --> 00:50:57.995
+<v Speaker 1>to get code even if the content already
+
+00:50:57.995 --> 00:51:00.155
+<v Speaker 1>exists. You can create a parameter option to
+
+00:51:00.155 --> 00:51:01.915
+<v Speaker 1>that. So you could share the same p
+
+00:51:01.915 --> 00:51:03.515
+<v Speaker 1>b c and do a git clone and
+
+00:51:03.515 --> 00:51:05.435
+<v Speaker 1>then, you know, cache and see if use
+
+00:51:05.435 --> 00:51:06.635
+<v Speaker 1>an order or something like that. You could
+
+00:51:06.635 --> 00:51:08.715
+<v Speaker 1>cache the the results in with that. So,
+
+00:51:08.715 --> 00:51:11.355
+<v Speaker 1>yes, you either got templates which are created
+
+00:51:11.355 --> 00:51:13.470
+<v Speaker 1>and are tied to the lifespan of the
+
+00:51:13.470 --> 00:51:16.350
+<v Speaker 1>pipeline run or you have a fixed volume
+
+00:51:16.350 --> 00:51:18.030
+<v Speaker 1>and you can just mount that in any
+
+00:51:18.030 --> 00:51:20.270
+<v Speaker 1>pipeline run that you want. Nice.
+
+00:51:20.990 --> 00:51:22.910
+<v Speaker 1>So let's see where are we. Let's see
+
+00:51:22.910 --> 00:51:24.350
+<v Speaker 1>where are we. Where are we? We're still
+
+00:51:24.350 --> 00:51:25.550
+<v Speaker 1>running. We
+
+00:51:25.790 --> 00:51:28.165
+<v Speaker 1>oh, wow. It's quite impressively. That's hardware you've
+
+00:51:28.165 --> 00:51:30.724
+<v Speaker 1>got running at it. Parmel Parmel is the
+
+00:51:30.724 --> 00:51:32.005
+<v Speaker 0>only way you run Kubernetes.
+
+00:51:32.244 --> 00:51:33.765
+<v Speaker 1>I'm not I'm I'm not even doing that
+
+00:51:33.765 --> 00:51:36.165
+<v Speaker 1>for a week, you know. And so let's
+
+00:51:36.165 --> 00:51:37.125
+<v Speaker 1>go
+
+00:51:37.765 --> 00:51:40.165
+<v Speaker 1>oh, I've got to log in to hub.docker.com.
+
+00:51:40.980 --> 00:51:42.740
+<v Speaker 1>Here, this is not gonna be fun.
+
+00:51:43.619 --> 00:51:44.740
+<v Speaker 1>Okay. You just have to trust me on
+
+00:51:44.740 --> 00:51:46.100
+<v Speaker 1>this. There's a Christian image.
+
+00:51:46.340 --> 00:51:48.180
+<v Speaker 1>This is gonna create a whole new profile,
+
+00:51:48.180 --> 00:51:50.260
+<v Speaker 1>so I didn't have more my history. Not
+
+00:51:50.260 --> 00:51:51.780
+<v Speaker 1>that my history really That
+
+00:51:52.420 --> 00:51:54.885
+<v Speaker 0>is actually pushed to the to the docker
+
+00:51:54.885 --> 00:51:56.645
+<v Speaker 0>hub. Right? With your credentials.
+
+00:51:56.725 --> 00:51:58.245
+<v Speaker 0>I mean, you don't need to show us
+
+00:51:58.245 --> 00:51:59.605
+<v Speaker 0>that, but I guess you just created a
+
+00:51:59.605 --> 00:52:02.085
+<v Speaker 0>secret inside the the cluster that Tekton has
+
+00:52:02.085 --> 00:52:04.325
+<v Speaker 0>access to. Yes. Okay. That's why I choose
+
+00:52:04.325 --> 00:52:05.685
+<v Speaker 1>that earlier. So, basically,
+
+00:52:06.339 --> 00:52:07.619
+<v Speaker 1>you did that here, you you saw the
+
+00:52:07.619 --> 00:52:08.740
+<v Speaker 1>thing where did it, right, so you can
+
+00:52:08.740 --> 00:52:11.059
+<v Speaker 1>do it here. Right? So create a secret
+
+00:52:11.059 --> 00:52:14.099
+<v Speaker 1>from your from home Docker config JSON. Right?
+
+00:52:14.099 --> 00:52:15.700
+<v Speaker 1>So it needs to a Docker config JSON.
+
+00:52:15.700 --> 00:52:18.260
+<v Speaker 1>Yep. And Tekton will automatically make sure that
+
+00:52:18.260 --> 00:52:20.260
+<v Speaker 1>that's available as your config JSON, which is
+
+00:52:20.260 --> 00:52:23.075
+<v Speaker 1>you're off to pushing up to GitHub.
+
+00:52:23.234 --> 00:52:26.035
+<v Speaker 1>GitHub or to whatever your your thing is.
+
+00:52:26.035 --> 00:52:29.234
+<v Speaker 1>And so, essentially, it takes the secrets that
+
+00:52:29.234 --> 00:52:31.795
+<v Speaker 1>are associated with the service account that's actually
+
+00:52:31.795 --> 00:52:32.675
+<v Speaker 1>doing the work
+
+00:52:33.635 --> 00:52:35.315
+<v Speaker 1>and we'll we'll bind those things.
+
+00:52:36.080 --> 00:52:37.840
+<v Speaker 1>So it's kind of fairly simple. So we
+
+00:52:37.840 --> 00:52:38.960
+<v Speaker 1>got our image, but I mean, as you
+
+00:52:38.960 --> 00:52:40.080
+<v Speaker 1>can see, it didn't take all that long
+
+00:52:40.080 --> 00:52:42.160
+<v Speaker 1>to build, did all of the Dockerfile
+
+00:52:42.400 --> 00:52:43.360
+<v Speaker 1>compilation
+
+00:52:46.000 --> 00:52:48.240
+<v Speaker 1>we're good to go there. Okay. So that's
+
+00:52:48.545 --> 00:52:50.305
+<v Speaker 1>the so let's I'm gonna do one other
+
+00:52:50.305 --> 00:52:51.585
+<v Speaker 1>thing here. Right? So what I'm gonna do
+
+00:52:51.585 --> 00:52:54.385
+<v Speaker 1>is I'm gonna add a a test task
+
+00:52:54.385 --> 00:52:56.225
+<v Speaker 1>in. It's what I call this code.
+
+00:52:57.185 --> 00:53:00.145
+<v Speaker 1>Go test task dot yamo. So it's because,
+
+00:53:00.145 --> 00:53:02.799
+<v Speaker 1>you know, generally, you don't just build code,
+
+00:53:02.799 --> 00:53:04.640
+<v Speaker 1>you probably went all into it beforehand.
+
+00:53:04.720 --> 00:53:06.160
+<v Speaker 1>So what I've got here is a really,
+
+00:53:06.160 --> 00:53:07.040
+<v Speaker 1>really simple
+
+00:53:07.599 --> 00:53:09.119
+<v Speaker 1>go test task. So what does it do?
+
+00:53:09.119 --> 00:53:10.640
+<v Speaker 1>Does a mod setup to make sure that
+
+00:53:10.640 --> 00:53:12.240
+<v Speaker 1>all of our things are pulled.
+
+00:53:13.119 --> 00:53:15.520
+<v Speaker 1>It runs GoVet. It runs CILint and then
+
+00:53:15.520 --> 00:53:17.119
+<v Speaker 1>it runs go test on the source code.
+
+00:53:17.285 --> 00:53:18.965
+<v Speaker 1>And so if any of those things
+
+00:53:20.325 --> 00:53:22.405
+<v Speaker 1>fail, then we want our pipeline to fail.
+
+00:53:22.405 --> 00:53:23.685
+<v Speaker 1>We don't wanna build the image if, you
+
+00:53:23.685 --> 00:53:25.845
+<v Speaker 1>know, if the code's not good. So what
+
+00:53:25.845 --> 00:53:27.845
+<v Speaker 1>I'm gonna do is oops. I'm gonna do
+
+00:53:27.845 --> 00:53:29.365
+<v Speaker 1>a kube
+
+00:53:29.445 --> 00:53:30.485
+<v Speaker 1>create.
+
+00:53:30.645 --> 00:53:32.950
+<v Speaker 1>K. So this is gonna create that task
+
+00:53:32.950 --> 00:53:33.670
+<v Speaker 1>for us.
+
+00:53:34.390 --> 00:53:35.830
+<v Speaker 1>And then what I'm gonna do is I'm
+
+00:53:35.830 --> 00:53:37.270
+<v Speaker 1>gonna go to the pipeline, which is the
+
+00:53:37.270 --> 00:53:37.910
+<v Speaker 1>build.
+
+00:53:38.150 --> 00:53:38.790
+<v Speaker 1>I'm
+
+00:53:40.310 --> 00:53:41.350
+<v Speaker 1>going to
+
+00:53:43.590 --> 00:53:43.990
+<v Speaker 1>here.
+
+00:53:50.135 --> 00:53:51.895
+<v Speaker 1>Almost do this one by hand.
+
+00:53:53.575 --> 00:53:54.934
+<v Speaker 1>But then if I if I screw it
+
+00:53:54.934 --> 00:53:56.855
+<v Speaker 1>up, I'll spend ten minutes trying to figure
+
+00:53:56.855 --> 00:53:58.055
+<v Speaker 1>it. So let's put this in. So I've
+
+00:53:58.055 --> 00:54:00.330
+<v Speaker 1>said that check sources, check source should run
+
+00:54:00.330 --> 00:54:01.610
+<v Speaker 1>after clone source
+
+00:54:02.490 --> 00:54:03.770
+<v Speaker 1>and it it just maps in the thing
+
+00:54:03.770 --> 00:54:05.210
+<v Speaker 1>here. But what I want build image to
+
+00:54:05.210 --> 00:54:07.210
+<v Speaker 1>do is to run after check.
+
+00:54:07.530 --> 00:54:10.250
+<v Speaker 1>So k. So we've got the sequence. We're
+
+00:54:10.250 --> 00:54:11.610
+<v Speaker 1>seeing it. Clone it,
+
+00:54:11.850 --> 00:54:12.490
+<v Speaker 1>check it,
+
+00:54:13.164 --> 00:54:15.964
+<v Speaker 1>build the image. That makes sense? Yeah. Pretty
+
+00:54:15.964 --> 00:54:17.244
+<v Speaker 0>pretty standard
+
+00:54:17.484 --> 00:54:19.885
+<v Speaker 0>build process, I guess, for most people. Yep.
+
+00:54:21.565 --> 00:54:22.445
+<v Speaker 1>It's okay.
+
+00:54:23.164 --> 00:54:23.964
+<v Speaker 1>Yeah.
+
+00:54:24.765 --> 00:54:26.525
+<v Speaker 1>K. So now we'll just wanna we'll get
+
+00:54:26.525 --> 00:54:27.484
+<v Speaker 1>a new pipeline run.
+
+00:54:30.080 --> 00:54:31.440
+<v Speaker 1>We would be
+
+00:54:31.920 --> 00:54:33.360
+<v Speaker 1>yes. Here.
+
+00:54:34.400 --> 00:54:37.600
+<v Speaker 1>Do Tekton pass by they should hopefully feed.
+
+00:54:37.600 --> 00:54:39.360
+<v Speaker 1>Yeah. I'm going to feed.
+
+00:54:40.160 --> 00:54:41.440
+<v Speaker 1>And the filling test,
+
+00:54:42.615 --> 00:54:44.135
+<v Speaker 1>which we used to show how to get
+
+00:54:44.135 --> 00:54:45.575
+<v Speaker 1>up. And we're we're doing okay for time,
+
+00:54:45.575 --> 00:54:48.455
+<v Speaker 1>I think. Yeah. Maybe we'll get there.
+
+00:54:49.735 --> 00:54:51.575
+<v Speaker 1>Let's keep that first.
+
+00:54:52.135 --> 00:54:53.495
+<v Speaker 0>So can you just run
+
+00:54:54.260 --> 00:54:56.740
+<v Speaker 0>keep control get task run? What that also
+
+00:54:56.740 --> 00:54:58.900
+<v Speaker 0>works. Right? I mean, are all just CRDs.
+
+00:54:58.900 --> 00:55:00.740
+<v Speaker 1>Yeah. Yeah. Yeah. I see.
+
+00:55:02.500 --> 00:55:04.339
+<v Speaker 0>Let me get there. Yes. Cool. I like
+
+00:55:04.339 --> 00:55:06.260
+<v Speaker 0>it. Yeah. So we I mean, they are
+
+00:55:06.260 --> 00:55:08.664
+<v Speaker 1>just CRs. Tekton is nice because it gives
+
+00:55:08.664 --> 00:55:09.705
+<v Speaker 1>obviously some
+
+00:55:10.105 --> 00:55:13.145
+<v Speaker 1>localized knowledge to the the actual output of
+
+00:55:13.145 --> 00:55:15.545
+<v Speaker 1>the things. But ultimately, you can just
+
+00:55:15.785 --> 00:55:16.984
+<v Speaker 1>the right thing. So let's see. Where are
+
+00:55:16.984 --> 00:55:18.345
+<v Speaker 1>we? Oh, where were the task room listed
+
+00:55:18.345 --> 00:55:18.585
+<v Speaker 1>here?
+
+00:55:21.600 --> 00:55:22.400
+<v Speaker 1>Oh.
+
+00:55:22.560 --> 00:55:24.000
+<v Speaker 1>Yep. So it's still running.
+
+00:55:24.400 --> 00:55:26.160
+<v Speaker 1>It's right. I guess it's in a bit
+
+00:55:26.160 --> 00:55:28.240
+<v Speaker 0>a bit more last time, isn't it? Mine
+
+00:55:28.240 --> 00:55:30.320
+<v Speaker 1>as well. I guess I mean, is there
+
+00:55:30.320 --> 00:55:32.080
+<v Speaker 0>a way for us to find out what
+
+00:55:32.080 --> 00:55:33.920
+<v Speaker 0>what task is on right now if it's
+
+00:55:33.920 --> 00:55:35.280
+<v Speaker 0>on the the the run?
+
+00:55:35.600 --> 00:55:36.000
+<v Speaker 1>Yeah.
+
+00:55:37.005 --> 00:55:38.685
+<v Speaker 1>Should be able to see
+
+00:55:39.805 --> 00:55:40.685
+<v Speaker 1>awesome.
+
+00:55:40.845 --> 00:55:42.925
+<v Speaker 1>Right. So our code is broken.
+
+00:55:43.085 --> 00:55:44.845
+<v Speaker 1>Deliberately so I promise. Your code is broken.
+
+00:55:44.845 --> 00:55:45.724
+<v Speaker 0>Mine's the same.
+
+00:55:46.765 --> 00:55:48.845
+<v Speaker 1>Okay. My code is broken.
+
+00:55:49.484 --> 00:55:50.920
+<v Speaker 1>So we will come back to fixing this
+
+00:55:50.920 --> 00:55:52.120
+<v Speaker 1>once we start to go down the event
+
+00:55:52.120 --> 00:55:53.560
+<v Speaker 1>listener and we'll see how we can by
+
+00:55:53.560 --> 00:55:55.480
+<v Speaker 1>pushing this, we can trigger a new build
+
+00:55:55.480 --> 00:55:56.440
+<v Speaker 1>automatically.
+
+00:55:56.680 --> 00:55:59.080
+<v Speaker 1>So it's easy enough to insert tasks into
+
+00:55:59.080 --> 00:56:01.320
+<v Speaker 1>the pipeline. And what you'll notice is if
+
+00:56:01.320 --> 00:56:01.960
+<v Speaker 1>we look at it,
+
+00:56:03.725 --> 00:56:06.365
+<v Speaker 1>that it didn't execute the image build. Right?
+
+00:56:06.365 --> 00:56:07.885
+<v Speaker 1>So you can see that it it did
+
+00:56:07.885 --> 00:56:09.885
+<v Speaker 1>the clone, it did the go there, it
+
+00:56:09.885 --> 00:56:11.165
+<v Speaker 1>did the go test,
+
+00:56:11.325 --> 00:56:13.085
+<v Speaker 1>and then it failed at that point. And
+
+00:56:13.085 --> 00:56:14.765
+<v Speaker 1>if we go to the dashboard,
+
+00:56:15.405 --> 00:56:17.405
+<v Speaker 1>and look at our pipeline runs, you can
+
+00:56:17.405 --> 00:56:19.405
+<v Speaker 1>see that it builds towards pipeline
+
+00:56:19.860 --> 00:56:22.340
+<v Speaker 1>and it has field.
+
+00:56:22.420 --> 00:56:23.700
+<v Speaker 1>So you can see that it got where
+
+00:56:23.700 --> 00:56:25.460
+<v Speaker 1>it got to and which bit field. It's
+
+00:56:25.460 --> 00:56:26.260
+<v Speaker 1>quite nice.
+
+00:56:26.740 --> 00:56:28.820
+<v Speaker 1>Dashboard is nice. TKN is nice.
+
+00:56:29.540 --> 00:56:31.620
+<v Speaker 1>Almost all of these things are just providing
+
+00:56:31.620 --> 00:56:33.620
+<v Speaker 1>views of the cube resources as you can
+
+00:56:33.620 --> 00:56:36.165
+<v Speaker 1>imagine. K. So all that's quite cool.
+
+00:56:37.125 --> 00:56:38.805
+<v Speaker 1>So what do I wanna do next? Great.
+
+00:56:38.805 --> 00:56:40.245
+<v Speaker 1>Well, we're gonna look at
+
+00:56:41.045 --> 00:56:44.325
+<v Speaker 1>an event listener. An event listeners are part
+
+00:56:44.325 --> 00:56:46.325
+<v Speaker 1>of Tekton triggers, so they're the kind of
+
+00:56:46.325 --> 00:56:49.130
+<v Speaker 1>other side of this. So the very first
+
+00:56:49.130 --> 00:56:51.049
+<v Speaker 1>thing I'm going to do, I'm going because
+
+00:56:51.049 --> 00:56:52.569
+<v Speaker 1>I'm gonna cheat a little bit here. Right?
+
+00:56:52.569 --> 00:56:55.609
+<v Speaker 1>So I'm gonna grab this permissions dot yamo.
+
+00:56:56.170 --> 00:56:58.730
+<v Speaker 1>Really, this is permissions to allow Tekton
+
+00:56:58.985 --> 00:57:00.345
+<v Speaker 1>to execute
+
+00:57:00.425 --> 00:57:01.465
+<v Speaker 1>containers
+
+00:57:01.465 --> 00:57:03.225
+<v Speaker 1>in the default namespace. You always have to
+
+00:57:03.225 --> 00:57:04.985
+<v Speaker 1>go to Tekton pipeline's namespace.
+
+00:57:05.465 --> 00:57:07.545
+<v Speaker 1>But there's reasons for, like, it's just easier
+
+00:57:07.545 --> 00:57:09.625
+<v Speaker 1>to cheat like this. So we need to
+
+00:57:09.625 --> 00:57:11.545
+<v Speaker 1>do a keep a control apply. You can
+
+00:57:11.545 --> 00:57:12.825
+<v Speaker 1>go and grab the permissions if you want
+
+00:57:12.825 --> 00:57:15.500
+<v Speaker 1>to. You see it's create demo role and
+
+00:57:15.500 --> 00:57:17.180
+<v Speaker 1>a demo cluster role and a demo role
+
+00:57:17.180 --> 00:57:19.099
+<v Speaker 1>being done and a demo service account. There's
+
+00:57:19.099 --> 00:57:19.820
+<v Speaker 1>nothing
+
+00:57:19.900 --> 00:57:21.900
+<v Speaker 1>tremendously remarkable here. So what I'm gonna do
+
+00:57:21.900 --> 00:57:22.540
+<v Speaker 1>is
+
+00:57:22.700 --> 00:57:25.100
+<v Speaker 1>I'm gonna grab this event listener.
+
+00:57:26.540 --> 00:57:28.065
+<v Speaker 1>So let's look at what this is. So
+
+00:57:28.065 --> 00:57:29.905
+<v Speaker 1>this is an event listener. So an event
+
+00:57:29.905 --> 00:57:32.305
+<v Speaker 1>listener is basically a way for ingress for
+
+00:57:32.305 --> 00:57:33.505
+<v Speaker 1>for JSON
+
+00:57:33.505 --> 00:57:36.704
+<v Speaker 1>bodies to come in and to trigger something.
+
+00:57:36.704 --> 00:57:39.105
+<v Speaker 1>So what does it trigger? Well, in this
+
+00:57:39.105 --> 00:57:41.265
+<v Speaker 1>case, there's no filter. Okay? So we just
+
+00:57:41.265 --> 00:57:42.545
+<v Speaker 1>get this thing that says whenever you get
+
+00:57:42.545 --> 00:57:43.425
+<v Speaker 1>something that comes in,
+
+00:57:44.920 --> 00:57:46.840
+<v Speaker 1>use the bindings, which we're gonna see in
+
+00:57:46.840 --> 00:57:47.480
+<v Speaker 1>a second.
+
+00:57:48.200 --> 00:57:49.480
+<v Speaker 1>In fact, I should probably bind them all
+
+00:57:49.480 --> 00:57:51.080
+<v Speaker 1>together in one file. No. I won't do
+
+00:57:51.080 --> 00:57:51.720
+<v Speaker 1>it with that.
+
+00:57:52.920 --> 00:57:54.120
+<v Speaker 1>You can see how that could go badly
+
+00:57:54.120 --> 00:57:54.600
+<v Speaker 1>wrong.
+
+00:57:55.000 --> 00:57:56.920
+<v Speaker 1>So we've got this binding
+
+00:57:56.920 --> 00:57:59.320
+<v Speaker 1>and template. So once you see what a
+
+00:57:59.320 --> 00:58:01.214
+<v Speaker 1>binding looks like, these make a bit more
+
+00:58:01.214 --> 00:58:03.375
+<v Speaker 1>sense. I'm gonna steal it in here.
+
+00:58:04.974 --> 00:58:06.494
+<v Speaker 1>Binding demo. So
+
+00:58:08.174 --> 00:58:09.935
+<v Speaker 1>metadata demo binding.
+
+00:58:10.095 --> 00:58:11.615
+<v Speaker 1>And so this is our our main binding,
+
+00:58:11.615 --> 00:58:13.535
+<v Speaker 1>which we referenced in the the event listener.
+
+00:58:15.950 --> 00:58:16.590
+<v Speaker 1>And
+
+00:58:18.510 --> 00:58:20.270
+<v Speaker 1>so this is, whenever you get it, go
+
+00:58:20.270 --> 00:58:21.869
+<v Speaker 1>and extract. So what we're gonna do here
+
+00:58:21.869 --> 00:58:24.750
+<v Speaker 1>is this this thing here, body is adjacent
+
+00:58:24.750 --> 00:58:26.750
+<v Speaker 1>path specification. So this is go and get
+
+00:58:26.750 --> 00:58:29.055
+<v Speaker 1>the body which is provided as the JSON
+
+00:58:29.295 --> 00:58:31.615
+<v Speaker 1>whatever the HTTP body only works with JSON,
+
+00:58:31.615 --> 00:58:34.255
+<v Speaker 1>though, because let me remember. It doesn't support
+
+00:58:34.255 --> 00:58:36.415
+<v Speaker 1>anything other than JSON. Yes. So this is
+
+00:58:36.415 --> 00:58:37.615
+<v Speaker 1>what the JSON
+
+00:58:38.175 --> 00:58:40.095
+<v Speaker 1>body that you receive will have a message
+
+00:58:40.095 --> 00:58:42.630
+<v Speaker 1>key at the top label order. So extract
+
+00:58:42.630 --> 00:58:45.030
+<v Speaker 1>that out into a parameter called message.
+
+00:58:45.190 --> 00:58:47.030
+<v Speaker 1>Alright? So that's kind of obvious what that's
+
+00:58:47.030 --> 00:58:47.590
+<v Speaker 1>doing.
+
+00:58:48.710 --> 00:58:50.309
+<v Speaker 1>And then we're gonna create this template. So
+
+00:58:50.309 --> 00:58:52.869
+<v Speaker 1>templates are a bit weird because they are
+
+00:58:52.869 --> 00:58:53.910
+<v Speaker 1>very powerful,
+
+00:58:54.309 --> 00:58:54.789
+<v Speaker 1>but also,
+
+00:58:56.605 --> 00:58:57.405
+<v Speaker 1>please.
+
+00:58:57.485 --> 00:58:58.925
+<v Speaker 1>So what this is is
+
+00:58:59.165 --> 00:59:01.645
+<v Speaker 1>this template needs a parameter called message.
+
+00:59:01.885 --> 00:59:04.125
+<v Speaker 1>It's just a description message. I was really
+
+00:59:04.125 --> 00:59:05.645
+<v Speaker 1>bored earlier. You can tell.
+
+00:59:06.445 --> 00:59:09.005
+<v Speaker 1>Right? So we got resource templates and so
+
+00:59:09.005 --> 00:59:10.765
+<v Speaker 1>the resource templates are
+
+00:59:11.485 --> 00:59:14.020
+<v Speaker 1>think of these like like YAMLs for pipeline
+
+00:59:14.020 --> 00:59:15.380
+<v Speaker 1>runs and things like that.
+
+00:59:15.619 --> 00:59:17.540
+<v Speaker 1>And the only difference is they get dynamically
+
+00:59:17.540 --> 00:59:18.500
+<v Speaker 1>evaluated
+
+00:59:18.579 --> 00:59:19.619
+<v Speaker 1>when the
+
+00:59:19.940 --> 00:59:21.860
+<v Speaker 1>trigger is executing
+
+00:59:22.420 --> 00:59:24.180
+<v Speaker 1>correctly. So in other words, and what it
+
+00:59:24.180 --> 00:59:26.085
+<v Speaker 1>really does is it extracts the values from
+
+00:59:26.085 --> 00:59:28.165
+<v Speaker 1>the event listener. So it's it's from the
+
+00:59:28.165 --> 00:59:28.965
+<v Speaker 1>binding,
+
+00:59:28.965 --> 00:59:30.805
+<v Speaker 1>well, so it's demo binding.
+
+00:59:30.885 --> 00:59:33.125
+<v Speaker 1>So it extracts that and then it puts
+
+00:59:33.125 --> 00:59:35.125
+<v Speaker 1>it into the pipeline. So this thing here,
+
+00:59:35.125 --> 00:59:38.165
+<v Speaker 1>t t, so trigger template dot params dot
+
+00:59:38.165 --> 00:59:38.565
+<v Speaker 1>message.
+
+00:59:39.390 --> 00:59:40.990
+<v Speaker 1>Okay. So it's gonna call our demo pipe
+
+00:59:40.990 --> 00:59:42.589
+<v Speaker 1>in from earlier, the one that didn't do
+
+00:59:42.589 --> 00:59:44.349
+<v Speaker 1>very much. It just passed through hello world
+
+00:59:44.349 --> 00:59:44.830
+<v Speaker 1>and
+
+00:59:45.309 --> 00:59:47.550
+<v Speaker 1>it's going to apply
+
+00:59:48.030 --> 00:59:50.829
+<v Speaker 1>a pipeline run for it and extract the
+
+00:59:50.829 --> 00:59:52.510
+<v Speaker 1>body from some JSON body that we're gonna
+
+00:59:52.510 --> 00:59:55.285
+<v Speaker 1>fire at it and execute that pipeline. Instead
+
+00:59:55.285 --> 00:59:56.725
+<v Speaker 1>of doing, like, t k and run and
+
+00:59:56.725 --> 00:59:57.845
+<v Speaker 1>put in a parameter,
+
+00:59:57.925 --> 00:59:59.605
+<v Speaker 1>we can do the whole thing. So let's
+
+00:59:59.605 --> 01:00:00.325
+<v Speaker 1>do t,
+
+01:00:00.645 --> 01:00:02.885
+<v Speaker 1>apply minus f demo
+
+01:00:02.885 --> 01:00:03.685
+<v Speaker 1>template.
+
+01:00:03.685 --> 01:00:05.205
+<v Speaker 1>This is gonna be boring. I can see
+
+01:00:05.205 --> 01:00:07.125
+<v Speaker 1>why I was thinking of doing it. Binding.
+
+01:00:17.440 --> 01:00:18.640
+<v Speaker 1>So remember.
+
+01:00:19.280 --> 01:00:20.560
+<v Speaker 1>We've now got this thing. So let's do
+
+01:00:20.560 --> 01:00:21.760
+<v Speaker 1>k get all.
+
+01:00:22.160 --> 01:00:23.600
+<v Speaker 1>K get pods would have been poor.
+
+01:00:25.855 --> 01:00:27.295
+<v Speaker 1>Actually, services would have been even
+
+01:00:28.095 --> 01:00:29.615
+<v Speaker 1>so we can see that we've got this
+
+01:00:30.175 --> 01:00:32.495
+<v Speaker 1>EL demo event listener here.
+
+01:00:32.895 --> 01:00:35.055
+<v Speaker 1>Yep. Okay. So it's listening on port eighty
+
+01:00:35.055 --> 01:00:35.615
+<v Speaker 1>eighty.
+
+01:00:36.015 --> 01:00:38.495
+<v Speaker 1>And so this basically waits for HTTP requests
+
+01:00:38.495 --> 01:00:40.250
+<v Speaker 1>to come in. So what I'm gonna do
+
+01:00:40.250 --> 01:00:41.770
+<v Speaker 1>is I'm gonna very quickly do another very
+
+01:00:41.770 --> 01:00:44.170
+<v Speaker 1>key port forward. Do I have to be
+
+01:00:44.170 --> 01:00:45.130
+<v Speaker 1>to read this one?
+
+01:00:45.450 --> 01:00:46.250
+<v Speaker 1>Service,
+
+01:00:46.250 --> 01:00:46.970
+<v Speaker 1>Yale
+
+01:00:47.210 --> 01:00:48.650
+<v Speaker 1>demo event,
+
+01:00:48.970 --> 01:00:50.010
+<v Speaker 1>listener,
+
+01:00:51.290 --> 01:00:51.770
+<v Speaker 1>80.
+
+01:00:53.625 --> 01:00:55.225
+<v Speaker 1>Should do yep. Okay.
+
+01:00:55.945 --> 01:00:57.705
+<v Speaker 1>And what we're gonna do is we're gonna
+
+01:00:57.705 --> 01:00:58.265
+<v Speaker 1>need
+
+01:01:00.105 --> 01:01:01.865
+<v Speaker 1>Carl to send the body.
+
+01:01:02.585 --> 01:01:04.185
+<v Speaker 1>Okay. So you can see that this is
+
+01:01:04.185 --> 01:01:06.950
+<v Speaker 1>gonna be content type application JSON. Message is
+
+01:01:06.950 --> 01:01:09.349
+<v Speaker 1>coming from JSON to HTTP local host eighty
+
+01:01:09.349 --> 01:01:09.910
+<v Speaker 1>eighty.
+
+01:01:10.789 --> 01:01:11.510
+<v Speaker 1>Okay.
+
+01:01:11.990 --> 01:01:13.190
+<v Speaker 1>So if we know
+
+01:01:13.349 --> 01:01:14.309
+<v Speaker 1>Tekton
+
+01:01:14.309 --> 01:01:15.670
+<v Speaker 1>pipeline run
+
+01:01:15.670 --> 01:01:16.470
+<v Speaker 1>west,
+
+01:01:17.910 --> 01:01:19.589
+<v Speaker 1>should see oh, do we we broke it
+
+01:01:19.589 --> 01:01:21.109
+<v Speaker 1>earlier, didn't we? We did.
+
+01:01:22.265 --> 01:01:23.705
+<v Speaker 1>And we didn't put it back. Okay. Well,
+
+01:01:23.705 --> 01:01:24.745
+<v Speaker 1>here we go. But I debug it in
+
+01:01:24.745 --> 01:01:26.745
+<v Speaker 1>there. Have to get in pipeline run.
+
+01:01:27.065 --> 01:01:27.625
+<v Speaker 1>I
+
+01:01:34.830 --> 01:01:37.390
+<v Speaker 0>Probably still trying to run the the field
+
+01:01:37.390 --> 01:01:38.910
+<v Speaker 0>dash Rawkode command.
+
+01:01:39.070 --> 01:01:39.870
+<v Speaker 1>Absolutely.
+
+01:01:40.190 --> 01:01:40.990
+<v Speaker 1>Tim.
+
+01:01:42.510 --> 01:01:43.870
+<v Speaker 0>So we we have a couple more comments
+
+01:01:43.870 --> 01:01:44.910
+<v Speaker 0>while you fix that So
+
+01:01:46.030 --> 01:01:48.190
+<v Speaker 0>first, Thomas says, hey. Hey, Thomas. Nice to
+
+01:01:48.190 --> 01:01:48.590
+<v Speaker 0>see you.
+
+01:01:49.515 --> 01:01:52.234
+<v Speaker 0>We then got Vincent who says we can
+
+01:01:52.234 --> 01:01:54.234
+<v Speaker 0>pass dash f to follow the live logs
+
+01:01:54.234 --> 01:01:56.875
+<v Speaker 0>of a task run pipeline run, I guess,
+
+01:01:56.875 --> 01:01:57.755
+<v Speaker 0>which is cool.
+
+01:01:58.875 --> 01:02:00.555
+<v Speaker 0>And then Andres is asking,
+
+01:02:00.954 --> 01:02:03.674
+<v Speaker 0>is it possible to run build without being
+
+01:02:03.674 --> 01:02:05.510
+<v Speaker 0>a privileged container?
+
+01:02:06.869 --> 01:02:08.230
+<v Speaker 0>There is ruthless
+
+01:02:08.230 --> 01:02:09.030
+<v Speaker 0>builder.
+
+01:02:09.830 --> 01:02:11.510
+<v Speaker 0>So it's definitely possible.
+
+01:02:11.590 --> 01:02:13.510
+<v Speaker 0>However, I'm assuming Vincent maybe works on the
+
+01:02:13.510 --> 01:02:14.550
+<v Speaker 0>Tekton project.
+
+01:02:14.790 --> 01:02:16.950
+<v Speaker 0>He's also just said that that there's some
+
+01:02:16.950 --> 01:02:18.869
+<v Speaker 0>limitations with the current version of the task,
+
+01:02:18.915 --> 01:02:20.755
+<v Speaker 0>but that's about to change. So it sounds
+
+01:02:20.755 --> 01:02:22.355
+<v Speaker 0>like rootless container
+
+01:02:22.515 --> 01:02:25.315
+<v Speaker 0>building container image building with builder is coming
+
+01:02:25.315 --> 01:02:26.835
+<v Speaker 0>soon, which is cool.
+
+01:02:29.395 --> 01:02:31.555
+<v Speaker 1>So params.
+
+01:02:31.715 --> 01:02:32.275
+<v Speaker 1>Name, I think.
+
+01:02:33.880 --> 01:02:35.720
+<v Speaker 1>We're getting some more security.
+
+01:02:36.360 --> 01:02:38.200
+<v Speaker 0>I should admit you break that task earlier.
+
+01:02:38.200 --> 01:02:39.160
+<v Speaker 0>I'm sorry. Mean,
+
+01:02:41.240 --> 01:02:43.240
+<v Speaker 1>debugging is hard. Like, well, I mean, so
+
+01:02:43.240 --> 01:02:45.720
+<v Speaker 1>we're gonna get our Tekton pipeline run.
+
+01:02:48.415 --> 01:02:50.895
+<v Speaker 1>This and we should see it being successful.
+
+01:02:50.895 --> 01:02:53.295
+<v Speaker 1>I think it's right. So this time,
+
+01:02:53.535 --> 01:02:55.375
+<v Speaker 1>as you can guess, because the JSON says
+
+01:02:55.375 --> 01:02:57.215
+<v Speaker 1>from JSON, we're gonna do Tekton
+
+01:02:58.974 --> 01:03:00.015
+<v Speaker 1>pipeline
+
+01:03:00.494 --> 01:03:01.855
+<v Speaker 1>run logs
+
+01:03:01.855 --> 01:03:02.494
+<v Speaker 1>last.
+
+01:03:03.900 --> 01:03:05.660
+<v Speaker 1>And you should see
+
+01:03:05.820 --> 01:03:07.420
+<v Speaker 1>k. So
+
+01:03:07.820 --> 01:03:08.700
+<v Speaker 1>if we do a quick
+
+01:03:09.420 --> 01:03:11.180
+<v Speaker 1>k. Get log
+
+01:03:11.900 --> 01:03:13.020
+<v Speaker 1>deploy
+
+01:03:13.740 --> 01:03:15.740
+<v Speaker 1>l demo event.
+
+01:03:19.115 --> 01:03:21.995
+<v Speaker 1>See what actually logged out. So
+
+01:03:22.395 --> 01:03:23.915
+<v Speaker 1>and this is for debugging. Right? So you
+
+01:03:23.915 --> 01:03:25.434
+<v Speaker 1>you you you're getting I'm debugging things. So
+
+01:03:25.434 --> 01:03:27.434
+<v Speaker 1>it says here, like, it it created a
+
+01:03:27.434 --> 01:03:30.075
+<v Speaker 1>resource Tekton dev v one beta resource
+
+01:03:30.795 --> 01:03:32.875
+<v Speaker 1>with a message name from JSON. You can
+
+01:03:32.875 --> 01:03:34.200
+<v Speaker 1>see that this is the kind resource stuff.
+
+01:03:34.200 --> 01:03:35.160
+<v Speaker 1>If it fails,
+
+01:03:35.240 --> 01:03:37.560
+<v Speaker 1>you will get messages in here complaining bitterly
+
+01:03:37.560 --> 01:03:39.640
+<v Speaker 1>about whatever the problem is that you've just
+
+01:03:39.640 --> 01:03:40.280
+<v Speaker 1>triggered.
+
+01:03:40.680 --> 01:03:41.080
+<v Speaker 1>Usually,
+
+01:03:41.720 --> 01:03:43.320
+<v Speaker 1>the one area that it can be difficult
+
+01:03:43.320 --> 01:03:44.200
+<v Speaker 1>to debug
+
+01:03:44.440 --> 01:03:47.240
+<v Speaker 1>is if you're not totally familiar with the
+
+01:03:47.240 --> 01:03:49.880
+<v Speaker 1>body, the JSON body that's coming in and
+
+01:03:49.265 --> 01:03:50.785
+<v Speaker 1>you're gonna come I'm gonna come on to
+
+01:03:50.785 --> 01:03:52.545
+<v Speaker 1>show you some more like, cooler bits of
+
+01:03:52.545 --> 01:03:53.985
+<v Speaker 1>this. We'll go for another five minutes and
+
+01:03:53.985 --> 01:03:55.665
+<v Speaker 1>see how far we get. So basically, we
+
+01:03:55.665 --> 01:03:57.745
+<v Speaker 1>have it and we're running pipelines from things.
+
+01:03:57.745 --> 01:03:59.665
+<v Speaker 1>So there is a thing here
+
+01:04:00.545 --> 01:04:02.785
+<v Speaker 1>called the GitHub interceptor
+
+01:04:03.759 --> 01:04:05.599
+<v Speaker 1>And what it does is
+
+01:04:05.759 --> 01:04:06.720
+<v Speaker 1>it takes,
+
+01:04:07.039 --> 01:04:09.119
+<v Speaker 1>like, GitHub push events and allows you to
+
+01:04:09.119 --> 01:04:11.200
+<v Speaker 1>off them and then decide that you only
+
+01:04:11.200 --> 01:04:12.960
+<v Speaker 1>want to run on a push event. Okay?
+
+01:04:12.960 --> 01:04:14.079
+<v Speaker 1>So what we can do
+
+01:04:14.400 --> 01:04:16.480
+<v Speaker 1>is let me we yeah. We'll see how
+
+01:04:16.480 --> 01:04:17.599
+<v Speaker 1>do for time here. Right? So we've got
+
+01:04:17.599 --> 01:04:18.240
+<v Speaker 1>a very quick one.
+
+01:04:19.755 --> 01:04:21.915
+<v Speaker 0>So this just means that we can use
+
+01:04:21.915 --> 01:04:24.474
+<v Speaker 0>this GitHub interceptor that whenever we merge to
+
+01:04:24.474 --> 01:04:27.755
+<v Speaker 0>the main branch, we send something to Tekton,
+
+01:04:27.755 --> 01:04:30.954
+<v Speaker 0>which triggers the trigger. Yes. So this here
+
+01:04:32.920 --> 01:04:33.880
+<v Speaker 1>says
+
+01:04:36.280 --> 01:04:37.640
+<v Speaker 1>use the demo account.
+
+01:04:38.040 --> 01:04:39.320
+<v Speaker 1>So you then get so what this is
+
+01:04:39.320 --> 01:04:41.080
+<v Speaker 1>gonna do is also gonna validate the web
+
+01:04:41.080 --> 01:04:43.240
+<v Speaker 1>hook come from GitHub. Right? So it's like
+
+01:04:43.240 --> 01:04:45.480
+<v Speaker 1>the secret name and secret token here are
+
+01:04:45.480 --> 01:04:47.765
+<v Speaker 1>ways of saying that the, you know, that
+
+01:04:47.765 --> 01:04:49.925
+<v Speaker 1>web GitHub can sign
+
+01:04:49.925 --> 01:04:50.485
+<v Speaker 1>the
+
+01:04:50.725 --> 01:04:53.205
+<v Speaker 1>the body of the web of the request
+
+01:04:53.205 --> 01:04:55.125
+<v Speaker 1>and so it sends you a push event.
+
+01:04:55.605 --> 01:04:57.285
+<v Speaker 1>So this kind of thing here says, like,
+
+01:04:57.285 --> 01:04:59.125
+<v Speaker 1>you know, make sure that it's coming from
+
+01:04:59.125 --> 01:05:01.685
+<v Speaker 1>GitHub with our shared secret and it's a
+
+01:05:01.685 --> 01:05:02.165
+<v Speaker 1>push event.
+
+01:05:02.940 --> 01:05:04.619
+<v Speaker 1>And we'll give you a slightly different template
+
+01:05:04.619 --> 01:05:07.020
+<v Speaker 1>and binding. So let's go with the
+
+01:05:07.660 --> 01:05:08.540
+<v Speaker 1>in here.
+
+01:05:11.980 --> 01:05:12.780
+<v Speaker 1>Called it.
+
+01:05:14.795 --> 01:05:16.475
+<v Speaker 1>One of the nice things about this though
+
+01:05:16.475 --> 01:05:18.715
+<v Speaker 1>is that you can make this kinda compatible
+
+01:05:18.715 --> 01:05:19.835
+<v Speaker 1>with multiple
+
+01:05:20.715 --> 01:05:21.675
+<v Speaker 1>upstreams.
+
+01:05:21.675 --> 01:05:23.835
+<v Speaker 1>Right? So when you think about it, GitLab
+
+01:05:23.835 --> 01:05:26.155
+<v Speaker 1>uses pretty different JSON bodies,
+
+01:05:26.395 --> 01:05:28.315
+<v Speaker 1>but it's the same values that really like
+
+01:05:28.315 --> 01:05:30.400
+<v Speaker 1>a commit and a URL or the kind
+
+01:05:30.400 --> 01:05:31.920
+<v Speaker 1>of things we're gonna get from it. So
+
+01:05:31.920 --> 01:05:32.800
+<v Speaker 1>you can actually
+
+01:05:33.360 --> 01:05:35.760
+<v Speaker 1>kind of write a standard
+
+01:05:36.400 --> 01:05:37.680
+<v Speaker 1>build template,
+
+01:05:37.680 --> 01:05:40.160
+<v Speaker 1>but but how you can get the parameters
+
+01:05:40.160 --> 01:05:42.474
+<v Speaker 1>to run that template can be different. So
+
+01:05:42.474 --> 01:05:43.994
+<v Speaker 1>we've got our page. So this is basically,
+
+01:05:43.994 --> 01:05:46.155
+<v Speaker 1>like, body head commit ID and body repository
+
+01:05:46.155 --> 01:05:48.555
+<v Speaker 1>call neural. So these come from
+
+01:05:49.195 --> 01:05:51.275
+<v Speaker 1>this. So you can see, like, if we
+
+01:05:51.275 --> 01:05:52.555
+<v Speaker 1>look at the push event
+
+01:05:53.115 --> 01:05:53.435
+<v Speaker 1>commit
+
+01:05:54.234 --> 01:05:54.795
+<v Speaker 0>just
+
+01:05:55.195 --> 01:05:56.234
+<v Speaker 0>a little bit more.
+
+01:05:57.500 --> 01:05:58.700
+<v Speaker 1>Yep. There we go.
+
+01:05:59.099 --> 01:06:00.380
+<v Speaker 1>So let's see what we get. We're getting
+
+01:06:00.380 --> 01:06:02.700
+<v Speaker 1>body dot head commit. So if we look
+
+01:06:02.700 --> 01:06:04.140
+<v Speaker 1>at head commit,
+
+01:06:04.220 --> 01:06:05.420
+<v Speaker 1>you can see you're gonna get, like, an
+
+01:06:05.420 --> 01:06:06.940
+<v Speaker 1>ID coming in. Yeah. So we're gonna get
+
+01:06:06.940 --> 01:06:09.180
+<v Speaker 1>a SHA and they get repository URL. So
+
+01:06:09.180 --> 01:06:11.740
+<v Speaker 1>we're gonna we'll get clone URL. So that's
+
+01:06:12.215 --> 01:06:14.695
+<v Speaker 1>actually get it from the hook event, like,
+
+01:06:14.695 --> 01:06:16.615
+<v Speaker 1>coming in if we want to. Yep.
+
+01:06:17.255 --> 01:06:19.975
+<v Speaker 1>The last part of this work here, and
+
+01:06:19.975 --> 01:06:22.215
+<v Speaker 1>we're hoping to get this build finished,
+
+01:06:22.215 --> 01:06:24.930
+<v Speaker 1>so we can fix this for build, will
+
+01:06:24.930 --> 01:06:25.490
+<v Speaker 1>be
+
+01:06:26.770 --> 01:06:28.370
+<v Speaker 1>build code template.
+
+01:06:29.330 --> 01:06:29.890
+<v Speaker 1>This
+
+01:06:30.609 --> 01:06:31.250
+<v Speaker 1>here,
+
+01:06:32.770 --> 01:06:33.490
+<v Speaker 1>I think it
+
+01:06:35.330 --> 01:06:36.290
+<v Speaker 1>there we go.
+
+01:06:36.609 --> 01:06:39.025
+<v Speaker 1>So this is a template that is gonna
+
+01:06:39.025 --> 01:06:40.225
+<v Speaker 1>extract the
+
+01:06:40.945 --> 01:06:41.585
+<v Speaker 1>oh.
+
+01:06:41.905 --> 01:06:44.065
+<v Speaker 1>Yeah. Yeah. It's okay. I'm just checking something.
+
+01:06:44.625 --> 01:06:47.025
+<v Speaker 1>So this is gonna extract the image,
+
+01:06:47.425 --> 01:06:49.585
+<v Speaker 1>the the the repo, the ref from the
+
+01:06:49.585 --> 01:06:50.705
+<v Speaker 1>hook request
+
+01:06:51.265 --> 01:06:52.145
+<v Speaker 1>and then put the image.
+
+01:06:53.049 --> 01:06:56.090
+<v Speaker 1>You can't really hear there are you can
+
+01:06:56.250 --> 01:06:57.690
+<v Speaker 1>with a more advanced thing that I'm probably
+
+01:06:57.690 --> 01:06:59.049
+<v Speaker 1>not gonna get time to get to today,
+
+01:06:59.049 --> 01:06:59.849
+<v Speaker 1>but that's okay.
+
+01:07:00.329 --> 01:07:02.089
+<v Speaker 1>But you can actually use like sale to
+
+01:07:02.089 --> 01:07:03.690
+<v Speaker 1>extract some of these fields and then use
+
+01:07:03.690 --> 01:07:05.130
+<v Speaker 1>that to to work out which image that
+
+01:07:05.130 --> 01:07:06.809
+<v Speaker 1>you want to touch the to where to.
+
+01:07:06.809 --> 01:07:08.185
+<v Speaker 1>But we can see that we're gonna get
+
+01:07:08.185 --> 01:07:10.025
+<v Speaker 1>some bits extracted from the binding
+
+01:07:10.185 --> 01:07:12.345
+<v Speaker 1>and it's gonna put it in
+
+01:07:12.905 --> 01:07:15.224
+<v Speaker 1>k. So what I'm going to do is
+
+01:07:15.224 --> 01:07:15.945
+<v Speaker 1>k. Get
+
+01:07:16.665 --> 01:07:18.425
+<v Speaker 1>I'm gonna do that real listener so I
+
+01:07:18.425 --> 01:07:18.905
+<v Speaker 1>can
+
+01:07:20.330 --> 01:07:22.090
+<v Speaker 1>And then I'm gonna bring it in and
+
+01:07:22.090 --> 01:07:23.290
+<v Speaker 1>look, and then we'll see if we can
+
+01:07:23.290 --> 01:07:25.690
+<v Speaker 1>get a build from a push with GitHub.
+
+01:07:25.690 --> 01:07:27.450
+<v Speaker 1>Cool. How we how long we got? Two,
+
+01:07:27.450 --> 01:07:28.970
+<v Speaker 1>three minutes? Okay. It's okay.
+
+01:07:29.210 --> 01:07:31.130
+<v Speaker 1>Wait. Yeah. Oh, demo.
+
+01:07:33.635 --> 01:07:37.075
+<v Speaker 1>Cool. And so, k, create that was k.
+
+01:07:40.275 --> 01:07:42.115
+<v Speaker 1>Create build code template.
+
+01:07:42.994 --> 01:07:43.555
+<v Speaker 1>Definitely,
+
+01:07:44.835 --> 01:07:46.195
+<v Speaker 1>it'd been even cooler, wouldn't it?
+
+01:07:46.675 --> 01:07:47.315
+<v Speaker 1>Yeah.
+
+01:07:48.595 --> 01:07:50.099
+<v Speaker 1>Cool. Main safe GitHub
+
+01:07:50.099 --> 01:07:51.380
+<v Speaker 1>push binding
+
+01:07:51.619 --> 01:07:54.740
+<v Speaker 1>and create main safe GitHub event listener.
+
+01:07:55.220 --> 01:07:57.220
+<v Speaker 1>Remember that the GitHub event listener is
+
+01:07:57.940 --> 01:08:00.099
+<v Speaker 1>really just the only difference between that and
+
+01:08:00.099 --> 01:08:02.339
+<v Speaker 1>the previous one is we've got this interceptor
+
+01:08:02.339 --> 01:08:05.195
+<v Speaker 1>that's saying, like, only allow GitHub requests that
+
+01:08:05.195 --> 01:08:06.635
+<v Speaker 1>have a valid secret and that are push
+
+01:08:06.635 --> 01:08:08.075
+<v Speaker 1>events to come through here.
+
+01:08:08.555 --> 01:08:10.555
+<v Speaker 1>Okay? You can it doesn't have support for
+
+01:08:10.555 --> 01:08:12.155
+<v Speaker 1>picking out branches
+
+01:08:12.155 --> 01:08:13.675
+<v Speaker 1>or any of that kind of thing.
+
+01:08:13.995 --> 01:08:15.515
+<v Speaker 1>You can do that. Don't worry about it,
+
+01:08:15.515 --> 01:08:17.354
+<v Speaker 1>but not with the the GitHub secret not
+
+01:08:17.354 --> 01:08:18.795
+<v Speaker 1>with the GitHub interceptor.
+
+01:08:19.020 --> 01:08:20.380
+<v Speaker 1>And what it says is like and so
+
+01:08:20.380 --> 01:08:22.859
+<v Speaker 1>an interceptor basically says, if any these return
+
+01:08:22.859 --> 01:08:26.779
+<v Speaker 1>an error, then don't use this trigger and
+
+01:08:26.779 --> 01:08:28.859
+<v Speaker 1>you can have multiple triggers. You see, this
+
+01:08:28.859 --> 01:08:30.540
+<v Speaker 1>can be duplicated as many things as you
+
+01:08:30.540 --> 01:08:33.340
+<v Speaker 1>want with different templates and different bindings
+
+01:08:33.505 --> 01:08:35.185
+<v Speaker 1>and you just detect which one you care
+
+01:08:35.185 --> 01:08:36.785
+<v Speaker 1>about and then execute. So all of the
+
+01:08:36.785 --> 01:08:39.185
+<v Speaker 1>ones that where the interceptors don't reject the
+
+01:08:39.185 --> 01:08:41.585
+<v Speaker 1>request will execute. So if you've got, like,
+
+01:08:41.585 --> 01:08:44.545
+<v Speaker 1>50 inter triggers in there then, you know,
+
+01:08:44.545 --> 01:08:46.625
+<v Speaker 1>50 could actually start to execute at the
+
+01:08:46.625 --> 01:08:47.905
+<v Speaker 1>same time. Yep. But
+
+01:08:49.390 --> 01:08:51.550
+<v Speaker 1>probably you don't because you filter them out.
+
+01:08:52.430 --> 01:08:54.670
+<v Speaker 0>And I can write my own interceptors. Is
+
+01:08:54.670 --> 01:08:55.149
+<v Speaker 0>that
+
+01:08:55.550 --> 01:08:56.189
+<v Speaker 1>think I
+
+01:08:57.870 --> 01:08:59.790
+<v Speaker 1>mean, there's I mean, in for that actually.
+
+01:09:00.350 --> 01:09:02.764
+<v Speaker 1>To be honest, sale will probably cover about
+
+01:09:02.764 --> 01:09:03.645
+<v Speaker 1>90%
+
+01:09:03.645 --> 01:09:06.284
+<v Speaker 1>of your use cases. So there's a Google
+
+01:09:06.364 --> 01:09:09.404
+<v Speaker 1>expression language called c l or sale.
+
+01:09:10.364 --> 01:09:12.764
+<v Speaker 1>I'm gonna run
+
+01:09:14.364 --> 01:09:14.925
+<v Speaker 1>the
+
+01:09:15.600 --> 01:09:17.439
+<v Speaker 1>run the service that was running.
+
+01:09:18.159 --> 01:09:18.959
+<v Speaker 1>So
+
+01:09:20.239 --> 01:09:21.279
+<v Speaker 1>you can do it like that. So let
+
+01:09:21.279 --> 01:09:22.719
+<v Speaker 1>me just do a quick end drop.
+
+01:09:30.495 --> 01:09:32.095
+<v Speaker 1>Oh, yeah. That should be okay. I will
+
+01:09:32.095 --> 01:09:34.255
+<v Speaker 1>restart that. What I'm gonna do
+
+01:09:35.615 --> 01:09:36.575
+<v Speaker 1>is
+
+01:09:38.814 --> 01:09:40.975
+<v Speaker 1>what's my my port here?
+
+01:09:42.640 --> 01:09:45.920
+<v Speaker 1>Oh, it's not yeah. It's not it's k
+
+01:09:45.920 --> 01:09:46.559
+<v Speaker 1>get
+
+01:09:46.720 --> 01:09:47.680
+<v Speaker 1>services.
+
+01:09:59.665 --> 01:10:02.225
+<v Speaker 0>Right now, Kevin's just angry, because you want
+
+01:10:02.225 --> 01:10:03.344
+<v Speaker 0>to be able to have to get a
+
+01:10:03.344 --> 01:10:05.344
+<v Speaker 0>hub event go to your machine and be
+
+01:10:05.344 --> 01:10:07.425
+<v Speaker 0>forwarded onto the Kubernetes cluster, because I gave
+
+01:10:07.425 --> 01:10:09.425
+<v Speaker 0>you a Kubernetes cluster with no ingress.
+
+01:10:09.585 --> 01:10:11.960
+<v Speaker 1>Yeah. But don't worry about it. Doesn't make
+
+01:10:11.960 --> 01:10:13.239
+<v Speaker 1>you a bad person, dude.
+
+01:10:15.320 --> 01:10:18.360
+<v Speaker 1>So let's go go demo.
+
+01:10:19.880 --> 01:10:20.760
+<v Speaker 1>Let's go to
+
+01:10:21.400 --> 01:10:23.880
+<v Speaker 1>this is so big. It's really well.
+
+01:10:24.120 --> 01:10:25.800
+<v Speaker 0>It looks great for us though, Kevin. So
+
+01:10:25.960 --> 01:10:26.440
+<v Speaker 0>You
+
+01:10:27.400 --> 01:10:28.755
+<v Speaker 1>know, for me it's like, where are we
+
+01:10:28.755 --> 01:10:28.995
+<v Speaker 1>really
+
+01:10:30.595 --> 01:10:31.715
+<v Speaker 1>so let me
+
+01:10:32.675 --> 01:10:34.835
+<v Speaker 1>oops. Let's see. Let's see. So let's do
+
+01:10:34.835 --> 01:10:35.475
+<v Speaker 1>this.
+
+01:10:35.795 --> 01:10:37.475
+<v Speaker 1>P load URL. So this is, as you
+
+01:10:37.475 --> 01:10:39.075
+<v Speaker 1>can see, just a standard webhook
+
+01:10:39.570 --> 01:10:40.929
+<v Speaker 1>and GitHub.
+
+01:10:41.170 --> 01:10:42.849
+<v Speaker 1>So what did my what did Ingram get
+
+01:10:42.849 --> 01:10:44.289
+<v Speaker 1>me? It got me
+
+01:10:45.810 --> 01:10:47.730
+<v Speaker 1>I run Ingram. Yes. Let's grab that.
+
+01:10:52.465 --> 01:10:53.985
+<v Speaker 1>Here's in the darkness.
+
+01:10:54.465 --> 01:10:57.425
+<v Speaker 1>There we go. Come on. Oh, jeez. This
+
+01:10:57.425 --> 01:10:58.545
+<v Speaker 1>is hard. There we go.
+
+01:10:59.265 --> 01:11:00.145
+<v Speaker 1>That yeah.
+
+01:11:00.785 --> 01:11:03.025
+<v Speaker 1>Or not. That's it. Got it. Okay. So
+
+01:11:03.025 --> 01:11:04.225
+<v Speaker 1>let me pop that in here.
+
+01:11:05.470 --> 01:11:06.190
+<v Speaker 1>In
+
+01:11:08.590 --> 01:11:10.030
+<v Speaker 1>secret, because I happen to know what that
+
+01:11:10.030 --> 01:11:11.950
+<v Speaker 1>is. And so this is just like, you
+
+01:11:11.950 --> 01:11:14.110
+<v Speaker 1>know, push events and and things like that.
+
+01:11:14.110 --> 01:11:15.790
+<v Speaker 1>So Yep. That's gonna be cool.
+
+01:11:16.670 --> 01:11:19.230
+<v Speaker 1>So if you remember right, we there was
+
+01:11:19.230 --> 01:11:20.875
+<v Speaker 1>a bug earlier
+
+01:11:20.875 --> 01:11:23.595
+<v Speaker 1>in the test. Remember the code that was
+
+01:11:23.595 --> 01:11:25.355
+<v Speaker 1>failing to do it? So what I'm gonna
+
+01:11:25.355 --> 01:11:25.835
+<v Speaker 1>do
+
+01:11:26.395 --> 01:11:28.875
+<v Speaker 1>is I'm gonna do git checkout minus b
+
+01:11:28.875 --> 01:11:29.835
+<v Speaker 1>fix
+
+01:11:30.315 --> 01:11:30.875
+<v Speaker 1>demo.
+
+01:11:34.510 --> 01:11:35.150
+<v Speaker 0>Package
+
+01:11:37.870 --> 01:11:38.670
+<v Speaker 1>demo
+
+01:11:40.030 --> 01:11:40.830
+<v Speaker 1>handler
+
+01:11:40.830 --> 01:11:41.710
+<v Speaker 1>test.
+
+01:11:42.350 --> 01:11:45.150
+<v Speaker 1>Let me see. So is written for another
+
+01:11:45.150 --> 01:11:45.869
+<v Speaker 1>thing.
+
+01:11:46.030 --> 01:11:47.550
+<v Speaker 1>So what we see is f
+
+01:11:48.165 --> 01:11:49.764
+<v Speaker 1>radius URL
+
+01:11:49.844 --> 01:11:51.204
+<v Speaker 1>equals empty,
+
+01:11:53.605 --> 01:11:54.804
+<v Speaker 1>key dot skip.
+
+01:11:56.405 --> 01:11:58.804
+<v Speaker 1>I'm gonna make this return empty if there's
+
+01:11:58.804 --> 01:11:59.045
+<v Speaker 1>nothing.
+
+01:12:01.100 --> 01:12:03.420
+<v Speaker 1>I don't really care about it. So let's
+
+01:12:03.420 --> 01:12:05.740
+<v Speaker 1>say go test up and make sure that
+
+01:12:05.740 --> 01:12:07.179
+<v Speaker 1>actually runs in between them.
+
+01:12:07.900 --> 01:12:09.739
+<v Speaker 1>See that in there? So we can, you
+
+01:12:10.060 --> 01:12:14.445
+<v Speaker 1>know, that's good. Right? So let's do git.git
+
+01:12:14.445 --> 01:12:15.805
+<v Speaker 1>commit. Mainstream.
+
+01:12:17.805 --> 01:12:18.685
+<v Speaker 0>Text stuff.
+
+01:12:21.085 --> 01:12:23.725
+<v Speaker 1>Push. It's gonna complain. Get get push.
+
+01:12:24.125 --> 01:12:25.645
+<v Speaker 1>I should really see it there as an
+
+01:12:25.645 --> 01:12:26.685
+<v Speaker 1>option. Yep.
+
+01:12:28.020 --> 01:12:29.380
+<v Speaker 1>Had it at some point and then every
+
+01:12:29.380 --> 01:12:30.099
+<v Speaker 1>time I change machine
+
+01:12:30.900 --> 01:12:33.460
+<v Speaker 1>Right. So I've just done a push. So
+
+01:12:33.460 --> 01:12:35.059
+<v Speaker 1>if we go to our web hook in
+
+01:12:35.059 --> 01:12:36.499
+<v Speaker 1>in giant form,
+
+01:12:37.219 --> 01:12:39.699
+<v Speaker 1>we should see a recent delivery. Excellent. Right.
+
+01:12:39.699 --> 01:12:41.699
+<v Speaker 1>So that means it's it's simply push on
+
+01:12:41.699 --> 01:12:43.284
+<v Speaker 1>to Ingrok.
+
+01:12:43.525 --> 01:12:46.885
+<v Speaker 1>Ingrok will then take that and forward it
+
+01:12:46.885 --> 01:12:47.764
+<v Speaker 1>to your
+
+01:12:48.645 --> 01:12:50.565
+<v Speaker 1>bare metal cloud thing.
+
+01:12:51.925 --> 01:12:52.804
+<v Speaker 1>And now,
+
+01:12:53.045 --> 01:12:54.405
+<v Speaker 1>if we do Tekton,
+
+01:12:57.510 --> 01:12:59.189
+<v Speaker 1>Tekton run this.
+
+01:13:00.869 --> 01:13:03.030
+<v Speaker 1>It's awesome. It's building a source. Right? So
+
+01:13:03.030 --> 01:13:05.030
+<v Speaker 1>Tekton, Tekton run,
+
+01:13:05.270 --> 01:13:07.989
+<v Speaker 1>logs. This could take about what? Forty seconds
+
+01:13:07.989 --> 01:13:08.869
+<v Speaker 1>or something like that.
+
+01:13:10.085 --> 01:13:11.685
+<v Speaker 0>Add the dash f flag and we'll follow
+
+01:13:11.685 --> 01:13:13.925
+<v Speaker 0>along. Let's see if that works. Yeah. Thanks.
+
+01:13:13.925 --> 01:13:14.805
+<v Speaker 1>Yeah. Yeah. Yeah.
+
+01:13:15.205 --> 01:13:16.485
+<v Speaker 1>Can we do that one there?
+
+01:13:18.805 --> 01:13:19.525
+<v Speaker 1>Awesome.
+
+01:13:19.845 --> 01:13:21.205
+<v Speaker 1>So you can see that it's gonna run
+
+01:13:21.205 --> 01:13:22.965
+<v Speaker 1>the test and see the field maybe or
+
+01:13:22.965 --> 01:13:24.245
+<v Speaker 1>not. Thank you, Vincent.
+
+01:13:25.110 --> 01:13:26.870
+<v Speaker 1>I was chatting to you yesterday anyway.
+
+01:13:27.590 --> 01:13:29.110
+<v Speaker 1>Right. So, you know, our tests are now
+
+01:13:29.110 --> 01:13:30.870
+<v Speaker 1>passed. Test has passed. Yep. So it's going
+
+01:13:30.870 --> 01:13:33.270
+<v Speaker 0>to the build. The build. Build. Yep.
+
+01:13:35.110 --> 01:13:37.030
+<v Speaker 0>There we go. Nice. Very cool.
+
+01:13:40.515 --> 01:13:41.954
+<v Speaker 1>So we're at fifteen nineteen.
+
+01:13:42.115 --> 01:13:43.955
+<v Speaker 1>That's not too bad for him. We'll probably
+
+01:13:43.955 --> 01:13:45.955
+<v Speaker 1>finish out of that. If you're really keen,
+
+01:13:45.955 --> 01:13:47.075
+<v Speaker 1>I can do a second part of it.
+
+01:13:47.075 --> 01:13:48.755
+<v Speaker 1>There's all the other stuff that do. So
+
+01:13:48.755 --> 01:13:50.275
+<v Speaker 1>we sell and stuff like that. But we,
+
+01:13:50.275 --> 01:13:52.340
+<v Speaker 1>you know, an hour and fifteen minutes is
+
+01:13:52.340 --> 01:13:54.820
+<v Speaker 1>probably long enough for most people's attention span.
+
+01:13:56.260 --> 01:13:58.179
+<v Speaker 1>This is good. Good. Get registered to UBI.
+
+01:13:58.179 --> 01:13:59.619
+<v Speaker 1>I mean, we can fix that.
+
+01:14:00.420 --> 01:14:02.260
+<v Speaker 0>Yeah. That's awesome. Really really cool.
+
+01:14:03.155 --> 01:14:04.755
+<v Speaker 1>Great. So we just pushed them. So what
+
+01:14:04.755 --> 01:14:06.994
+<v Speaker 1>we did there was we configured
+
+01:14:07.875 --> 01:14:10.114
+<v Speaker 1>Tekton to receive so let's go back and
+
+01:14:10.114 --> 01:14:11.954
+<v Speaker 1>look at our our things. We
+
+01:14:13.155 --> 01:14:13.954
+<v Speaker 1>we
+
+01:14:14.515 --> 01:14:15.155
+<v Speaker 1>have
+
+01:14:16.114 --> 01:14:17.715
+<v Speaker 1>GitHub event listener.
+
+01:14:18.410 --> 01:14:20.570
+<v Speaker 1>So it will check for pushes and it
+
+01:14:20.570 --> 01:14:22.330
+<v Speaker 1>will validate the incoming hooks.
+
+01:14:22.490 --> 01:14:24.250
+<v Speaker 1>It then hands that off to the GitHub
+
+01:14:24.250 --> 01:14:25.370
+<v Speaker 1>push binding.
+
+01:14:27.370 --> 01:14:29.130
+<v Speaker 1>That's what you're pulling out the commit and
+
+01:14:29.130 --> 01:14:30.170
+<v Speaker 1>the clone URL.
+
+01:14:30.895 --> 01:14:32.895
+<v Speaker 1>That then goes to the github to the
+
+01:14:32.895 --> 01:14:34.975
+<v Speaker 1>build codes. I call it I tried to
+
+01:14:34.975 --> 01:14:36.815
+<v Speaker 1>call it that to to see that it
+
+01:14:36.815 --> 01:14:38.175
+<v Speaker 1>really is kind of generic as long as
+
+01:14:38.175 --> 01:14:40.255
+<v Speaker 1>you can get a git ref to it
+
+01:14:40.255 --> 01:14:41.454
+<v Speaker 1>and a source URL,
+
+01:14:41.614 --> 01:14:43.534
+<v Speaker 1>then it can create a build
+
+01:14:44.094 --> 01:14:46.030
+<v Speaker 1>for you. So you can see that that
+
+01:14:46.030 --> 01:14:47.870
+<v Speaker 1>then passed through and and did the right
+
+01:14:47.870 --> 01:14:48.350
+<v Speaker 1>thing,
+
+01:14:48.990 --> 01:14:50.830
+<v Speaker 1>creates a volume and and does all the
+
+01:14:50.830 --> 01:14:51.310
+<v Speaker 1>things.
+
+01:14:51.870 --> 01:14:53.790
+<v Speaker 1>This is let's go look at our on
+
+01:14:53.790 --> 01:14:55.390
+<v Speaker 1>our dashboard.
+
+01:14:55.390 --> 01:14:57.310
+<v Speaker 1>We should see our pipeline running here.
+
+01:14:58.635 --> 01:15:00.315
+<v Speaker 1>There we go. One build source. So it
+
+01:15:00.315 --> 01:15:01.514
+<v Speaker 1>took about a minute and thirty nine seconds
+
+01:15:01.514 --> 01:15:03.354
+<v Speaker 1>to build. It's not too bad actually.
+
+01:15:03.994 --> 01:15:05.835
+<v Speaker 1>And that's including all of the checks and
+
+01:15:05.835 --> 01:15:07.034
+<v Speaker 1>things like that.
+
+01:15:07.994 --> 01:15:08.715
+<v Speaker 1>Alright.
+
+01:15:09.195 --> 01:15:09.594
+<v Speaker 0>Perfect.
+
+01:15:10.810 --> 01:15:12.330
+<v Speaker 1>You know, we got to we did get
+
+01:15:12.330 --> 01:15:14.090
+<v Speaker 1>to build in source code from
+
+01:15:14.330 --> 01:15:16.010
+<v Speaker 1>from a git push which was what I
+
+01:15:16.010 --> 01:15:18.410
+<v Speaker 1>was aiming for. Trust me, I had like
+
+01:15:20.090 --> 01:15:22.650
+<v Speaker 1>I always stuff like sale interceptors debugging
+
+01:15:22.650 --> 01:15:24.730
+<v Speaker 1>Versus code Versus code is quite nice on
+
+01:15:24.730 --> 01:15:26.685
+<v Speaker 1>this. You get like some pretty cool UI,
+
+01:15:26.685 --> 01:15:28.445
+<v Speaker 1>shows all the tasks and the pipelines.
+
+01:15:28.844 --> 01:15:30.045
+<v Speaker 1>Or what I believe is a pretty cool
+
+01:15:30.045 --> 01:15:31.644
+<v Speaker 1>UI for Versus code.
+
+01:15:32.925 --> 01:15:33.965
+<v Speaker 0>That's alright.
+
+01:15:34.445 --> 01:15:35.725
+<v Speaker 0>Is there anything else you wanna show before
+
+01:15:35.725 --> 01:15:37.965
+<v Speaker 0>I pop your screen off? No. No. I
+
+01:15:37.965 --> 01:15:38.844
+<v Speaker 1>think we'll Alright.
+
+01:15:41.280 --> 01:15:43.199
+<v Speaker 0>So that was that was awesome. It really
+
+01:15:43.199 --> 01:15:45.840
+<v Speaker 0>could see Tekton working start to finish including
+
+01:15:45.840 --> 01:15:48.159
+<v Speaker 0>that. Get help where put coming in, building,
+
+01:15:48.159 --> 01:15:48.800
+<v Speaker 0>pushing,
+
+01:15:48.960 --> 01:15:51.280
+<v Speaker 0>all of that. The PVs for carrying the
+
+01:15:51.280 --> 01:15:54.320
+<v Speaker 0>state, the sequential ordering. Lots of really useful
+
+01:15:54.320 --> 01:15:56.000
+<v Speaker 0>information there. So thank you for putting that
+
+01:15:56.000 --> 01:15:59.304
+<v Speaker 0>together. For the people watching, the guest and
+
+01:15:59.304 --> 01:16:00.425
+<v Speaker 0>the repositories
+
+01:16:00.425 --> 01:16:02.344
+<v Speaker 0>that Kevin's used will stack in the show
+
+01:16:02.344 --> 01:16:04.025
+<v Speaker 0>notes so you'll be able to follow along.
+
+01:16:05.225 --> 01:16:06.665
+<v Speaker 0>And I think we can just finish with
+
+01:16:06.665 --> 01:16:08.344
+<v Speaker 0>a very brief question then that we didn't
+
+01:16:08.344 --> 01:16:10.425
+<v Speaker 0>ask at the start is what does Tekton
+
+01:16:10.425 --> 01:16:10.745
+<v Speaker 0>mean?
+
+01:16:12.100 --> 01:16:13.540
+<v Speaker 1>So it's
+
+01:16:13.700 --> 01:16:16.100
+<v Speaker 1>ancient Greek for craftsman
+
+01:16:16.100 --> 01:16:17.300
+<v Speaker 1>or artisan
+
+01:16:17.540 --> 01:16:19.940
+<v Speaker 1>and so, like, you know, don't keep a
+
+01:16:19.940 --> 01:16:21.460
+<v Speaker 1>Greek name for things when you're building a
+
+01:16:21.460 --> 01:16:23.860
+<v Speaker 1>a docker thing. Either that or some weird
+
+01:16:23.860 --> 01:16:24.900
+<v Speaker 1>ship related
+
+01:16:25.625 --> 01:16:26.105
+<v Speaker 1>they
+
+01:16:26.425 --> 01:16:29.065
+<v Speaker 1>opted for an ancient Greek for craftsman.
+
+01:16:29.225 --> 01:16:30.825
+<v Speaker 1>Yeah. It's just kinda nice to see. We
+
+01:16:30.825 --> 01:16:32.825
+<v Speaker 0>must be running a nautical puns for names
+
+01:16:32.825 --> 01:16:34.665
+<v Speaker 0>or products by now anyway. So
+
+01:16:35.305 --> 01:16:36.825
+<v Speaker 0>alright. Well, thank you very much. I know
+
+01:16:36.825 --> 01:16:38.025
+<v Speaker 0>we went a little bit over. I think
+
+01:16:38.025 --> 01:16:39.390
+<v Speaker 0>you've you've taken time out of your day
+
+01:16:39.390 --> 01:16:40.590
+<v Speaker 0>for that. So just, you know, thank you
+
+01:16:40.590 --> 01:16:41.949
+<v Speaker 0>very much for joining us, for sharing that.
+
+01:16:41.949 --> 01:16:43.230
+<v Speaker 0>I hope you have an awesome rest of
+
+01:16:43.230 --> 01:16:44.590
+<v Speaker 0>your day, and I'll hopefully speak to you
+
+01:16:44.590 --> 01:16:46.910
+<v Speaker 0>again soon, Kevin. Thank you. Thank you. Bye.
+
+01:16:46.910 --> 01:16:47.630
+<v Speaker 0>Cheers. Bye.

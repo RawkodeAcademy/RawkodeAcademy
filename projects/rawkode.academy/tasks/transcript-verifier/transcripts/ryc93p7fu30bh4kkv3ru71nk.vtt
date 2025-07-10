@@ -1,0 +1,1019 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 5ade8e40-1fa2-439a-ac4c-037282a4e21b
+Created: 2025-04-29T14:36:30.429Z
+Duration: 806.2498
+Channels: 1
+
+00:00:00.240 --> 00:00:03.280
+<v Speaker 0>Welcome back to the complete guide to Spin.
+
+00:00:03.360 --> 00:00:06.560
+<v Speaker 0>Spin is a framework for building micro services
+
+00:00:06.560 --> 00:00:07.839
+<v Speaker 0>and WebAssembly.
+
+00:00:07.839 --> 00:00:10.080
+<v Speaker 0>Today, I'm gonna guide you through the Rust
+
+00:00:10.080 --> 00:00:10.959
+<v Speaker 0>SDK.
+
+00:00:10.960 --> 00:00:11.999
+<v Speaker 0>Let's get started.
+
+00:00:12.240 --> 00:00:12.639
+<v Speaker 0>Alright.
+
+00:00:13.405 --> 00:00:15.325
+<v Speaker 0>So, for this Rust SDK,
+
+00:00:15.325 --> 00:00:17.244
+<v Speaker 0>I'm gonna guide you through each of the
+
+00:00:17.244 --> 00:00:19.244
+<v Speaker 0>points listed in this markdown file.
+
+00:00:20.045 --> 00:00:22.525
+<v Speaker 0>One, we're gonna write our first endpoint or
+
+00:00:22.525 --> 00:00:24.925
+<v Speaker 0>at least modify what Spin has generated for
+
+00:00:24.925 --> 00:00:25.165
+<v Speaker 0>us.
+
+00:00:26.060 --> 00:00:28.460
+<v Speaker 0>Next, we'll take a look at extracting information
+
+00:00:28.460 --> 00:00:29.980
+<v Speaker 0>from the HTTP headers,
+
+00:00:30.140 --> 00:00:31.180
+<v Speaker 0>then the body,
+
+00:00:31.500 --> 00:00:33.100
+<v Speaker 0>then some query params,
+
+00:00:33.500 --> 00:00:35.900
+<v Speaker 0>then a small gotcha with working with Spin
+
+00:00:35.900 --> 00:00:38.380
+<v Speaker 0>getting the HTTP domain that your application was
+
+00:00:38.380 --> 00:00:42.875
+<v Speaker 0>served on. And lastly, making an outbound HTTP
+
+00:00:42.875 --> 00:00:43.675
+<v Speaker 0>request.
+
+00:00:44.395 --> 00:00:46.715
+<v Speaker 0>So let's start with our endpoint.
+
+00:00:47.515 --> 00:00:51.595
+<v Speaker 0>When you generate in your HTTP rust microservice,
+
+00:00:51.595 --> 00:00:53.915
+<v Speaker 0>you get a lib dot r s.
+
+00:00:54.430 --> 00:00:57.150
+<v Speaker 0>The scaffolding has already generated everything that you
+
+00:00:57.150 --> 00:00:58.750
+<v Speaker 0>need for your first endpoint
+
+00:00:59.070 --> 00:01:01.950
+<v Speaker 0>and all it takes is using the macro
+
+00:01:01.950 --> 00:01:02.990
+<v Speaker 0>HTTP
+
+00:01:02.990 --> 00:01:04.270
+<v Speaker 0>underscore component.
+
+00:01:04.830 --> 00:01:06.510
+<v Speaker 0>Now it doesn't matter what you call this
+
+00:01:06.510 --> 00:01:08.604
+<v Speaker 0>function, but it probably makes sense for this
+
+00:01:08.604 --> 00:01:11.005
+<v Speaker 0>function to represent the endpoint that you're serving.
+
+00:01:12.524 --> 00:01:15.325
+<v Speaker 0>Now, how is this endpoint routed? Well, we
+
+00:01:15.325 --> 00:01:17.165
+<v Speaker 0>use the spin dot toml.
+
+00:01:17.405 --> 00:01:18.924
+<v Speaker 0>If we take a look at the HTTP
+
+00:01:18.924 --> 00:01:21.244
+<v Speaker 0>trigger, you can see that we're serving over
+
+00:01:21.244 --> 00:01:21.884
+<v Speaker 0>slash
+
+00:01:22.470 --> 00:01:24.790
+<v Speaker 0>And we're actually matching on all
+
+00:01:25.030 --> 00:01:26.150
+<v Speaker 0>sub paths.
+
+00:01:26.710 --> 00:01:28.550
+<v Speaker 0>That just means that our endpoint and this
+
+00:01:28.550 --> 00:01:29.350
+<v Speaker 0>application
+
+00:01:29.350 --> 00:01:31.910
+<v Speaker 0>will actually be all paths.
+
+00:01:32.230 --> 00:01:34.550
+<v Speaker 0>Now because spend services are so easy to
+
+00:01:34.550 --> 00:01:37.204
+<v Speaker 0>write, it probably makes sense to generate a
+
+00:01:37.204 --> 00:01:39.844
+<v Speaker 0>new spin micro service for every endpoint.
+
+00:01:41.284 --> 00:01:43.045
+<v Speaker 0>And then you're just modifying the trigger with
+
+00:01:43.045 --> 00:01:44.484
+<v Speaker 0>a path that you want to capture.
+
+00:01:44.884 --> 00:01:47.125
+<v Speaker 0>However, if you prefer to go to more
+
+00:01:47.125 --> 00:01:48.085
+<v Speaker 0>monolithic approach,
+
+00:01:48.710 --> 00:01:50.950
+<v Speaker 0>there's nothing stopping you from bringing in any
+
+00:01:50.950 --> 00:01:52.869
+<v Speaker 0>Rust based router or even just a match
+
+00:01:52.869 --> 00:01:55.350
+<v Speaker 0>statement into your function here and handling the
+
+00:01:55.350 --> 00:01:56.390
+<v Speaker 0>routing yourself.
+
+00:01:56.869 --> 00:01:59.110
+<v Speaker 0>However, I feel that best practice leans towards
+
+00:01:59.110 --> 00:02:01.990
+<v Speaker 0>one microservice for each endpoint and as such
+
+00:02:01.990 --> 00:02:02.869
+<v Speaker 0>we're going to do that.
+
+00:02:03.795 --> 00:02:06.115
+<v Speaker 0>So to show that for today, we'll change
+
+00:02:06.115 --> 00:02:08.275
+<v Speaker 0>our base to be slash hello
+
+00:02:08.275 --> 00:02:09.235
+<v Speaker 0>world and
+
+00:02:09.475 --> 00:02:12.195
+<v Speaker 0>our component trigger to only match on this
+
+00:02:12.195 --> 00:02:12.835
+<v Speaker 0>path.
+
+00:02:13.315 --> 00:02:14.675
+<v Speaker 0>Now, we can run
+
+00:02:15.315 --> 00:02:16.355
+<v Speaker 0>spin build
+
+00:02:17.180 --> 00:02:19.260
+<v Speaker 0>And then we can run spin up follow
+
+00:02:19.260 --> 00:02:21.659
+<v Speaker 0>all. Follow all is gonna get us the
+
+00:02:21.659 --> 00:02:23.500
+<v Speaker 0>logs from our component.
+
+00:02:24.459 --> 00:02:26.300
+<v Speaker 0>So now we can run curl
+
+00:02:27.099 --> 00:02:28.220
+<v Speaker 0>localhost
+
+00:02:28.299 --> 00:02:29.500
+<v Speaker 0>3,000
+
+00:02:29.500 --> 00:02:30.220
+<v Speaker 0>hello
+
+00:02:30.700 --> 00:02:31.019
+<v Speaker 0>world.
+
+00:02:31.715 --> 00:02:34.675
+<v Speaker 0>And we get hello fermion from our endpoint.
+
+00:02:35.475 --> 00:02:36.915
+<v Speaker 0>If we run this again
+
+00:02:37.075 --> 00:02:38.595
+<v Speaker 0>on the root path,
+
+00:02:39.635 --> 00:02:41.075
+<v Speaker 0>we actually find
+
+00:02:41.795 --> 00:02:43.075
+<v Speaker 0>as we get a photo for.
+
+00:02:43.629 --> 00:02:45.629
+<v Speaker 0>And this is what we want. We only
+
+00:02:45.629 --> 00:02:48.269
+<v Speaker 0>want our service to be responsible for the
+
+00:02:48.269 --> 00:02:50.030
+<v Speaker 0>one path at our application.
+
+00:02:54.590 --> 00:02:54.830
+<v Speaker 0>Check.
+
+00:02:55.805 --> 00:02:58.444
+<v Speaker 0>So how do we grab request headers? The
+
+00:02:58.444 --> 00:03:00.205
+<v Speaker 0>spin project provides
+
+00:03:00.444 --> 00:03:02.924
+<v Speaker 0>request and response objects that you can work
+
+00:03:02.924 --> 00:03:05.325
+<v Speaker 0>with within spin services.
+
+00:03:06.765 --> 00:03:08.605
+<v Speaker 0>As such, you can actually see that we
+
+00:03:08.605 --> 00:03:10.770
+<v Speaker 0>have a print statement to print all of
+
+00:03:10.770 --> 00:03:13.650
+<v Speaker 0>the headers from our application to the terminal.
+
+00:03:14.450 --> 00:03:16.690
+<v Speaker 0>So already we're accessing
+
+00:03:16.690 --> 00:03:17.970
+<v Speaker 0>the headers here.
+
+00:03:18.930 --> 00:03:20.370
+<v Speaker 0>So let's just confirm
+
+00:03:20.370 --> 00:03:21.810
+<v Speaker 0>the behavior that we expect.
+
+00:03:22.265 --> 00:03:25.225
+<v Speaker 0>We can run curl dash h,
+
+00:03:26.825 --> 00:03:29.305
+<v Speaker 0>x name Rawkode. We're providing our own custom
+
+00:03:29.305 --> 00:03:30.185
+<v Speaker 0>header here,
+
+00:03:30.665 --> 00:03:32.585
+<v Speaker 0>where we have local host
+
+00:03:32.825 --> 00:03:34.025
+<v Speaker 0>3,000
+
+00:03:34.185 --> 00:03:35.225
+<v Speaker 0>on hello world.
+
+00:03:37.150 --> 00:03:39.390
+<v Speaker 0>And as you can see here, our header
+
+00:03:39.390 --> 00:03:42.350
+<v Speaker 0>has been propagated and printed by our HTTP
+
+00:03:42.350 --> 00:03:43.070
+<v Speaker 0>endpoint.
+
+00:03:43.870 --> 00:03:45.950
+<v Speaker 0>Now, if you only want to access one
+
+00:03:45.950 --> 00:03:47.230
+<v Speaker 0>specific header,
+
+00:03:47.390 --> 00:03:49.150
+<v Speaker 0>like the Rawkode name header.
+
+00:03:50.775 --> 00:03:52.295
+<v Speaker 0>And we can do a request
+
+00:03:52.614 --> 00:03:53.735
+<v Speaker 0>headers
+
+00:03:54.215 --> 00:03:55.015
+<v Speaker 0>get.
+
+00:03:55.974 --> 00:03:57.335
+<v Speaker 0>Where we can ask
+
+00:03:58.295 --> 00:03:59.495
+<v Speaker 0>for x name
+
+00:03:59.974 --> 00:04:02.375
+<v Speaker 0>and now we can change our print statement
+
+00:04:02.375 --> 00:04:04.694
+<v Speaker 0>to only print the Rawkode name.
+
+00:04:05.330 --> 00:04:07.410
+<v Speaker 0>Let's run spin build
+
+00:04:08.450 --> 00:04:10.450
+<v Speaker 0>and spin up follow
+
+00:04:11.329 --> 00:04:12.050
+<v Speaker 0>all.
+
+00:04:17.010 --> 00:04:17.889
+<v Speaker 0>And now you see,
+
+00:04:18.675 --> 00:04:20.675
+<v Speaker 0>we have an option string for the value
+
+00:04:20.675 --> 00:04:22.595
+<v Speaker 0>of our header of Rawkode.
+
+00:04:22.755 --> 00:04:24.915
+<v Speaker 0>If we get a typo or we forget
+
+00:04:24.915 --> 00:04:27.555
+<v Speaker 0>this about header, we'll get a none value.
+
+00:04:27.555 --> 00:04:29.155
+<v Speaker 0>Just like you would expect with any piece
+
+00:04:29.155 --> 00:04:30.115
+<v Speaker 0>of Rust code.
+
+00:04:30.835 --> 00:04:31.635
+<v Speaker 0>Headers,
+
+00:04:31.794 --> 00:04:32.275
+<v Speaker 0>check.
+
+00:04:33.780 --> 00:04:36.099
+<v Speaker 0>So now let's take a look at getting
+
+00:04:36.099 --> 00:04:37.540
+<v Speaker 0>the request body.
+
+00:04:38.740 --> 00:04:40.500
+<v Speaker 0>Now there is a little bit of type
+
+00:04:40.500 --> 00:04:42.819
+<v Speaker 0>juggling that has to be done to successfully
+
+00:04:42.819 --> 00:04:45.460
+<v Speaker 0>get the body as a Rust string.
+
+00:04:46.275 --> 00:04:48.435
+<v Speaker 0>Let's take a look. Let's start with let
+
+00:04:48.435 --> 00:04:49.635
+<v Speaker 0>body equals
+
+00:04:49.635 --> 00:04:50.675
+<v Speaker 0>request
+
+00:04:51.155 --> 00:04:52.275
+<v Speaker 0>dot body.
+
+00:04:53.075 --> 00:04:55.635
+<v Speaker 0>Rust analyzer kicks in and tells us that
+
+00:04:55.635 --> 00:04:57.635
+<v Speaker 0>we have a reference to option
+
+00:04:57.875 --> 00:04:58.355
+<v Speaker 0>bytes.
+
+00:04:59.270 --> 00:05:01.270
+<v Speaker 0>Okay. So let's be good to our citizens
+
+00:05:01.270 --> 00:05:03.350
+<v Speaker 0>and instead of just unwrapping,
+
+00:05:03.990 --> 00:05:05.510
+<v Speaker 0>we're going to do a match
+
+00:05:05.990 --> 00:05:07.350
+<v Speaker 0>and could copilot
+
+00:05:08.230 --> 00:05:09.110
+<v Speaker 0>like so.
+
+00:05:10.870 --> 00:05:12.310
+<v Speaker 0>Now, when we have
+
+00:05:12.974 --> 00:05:15.455
+<v Speaker 0>bytes from the body, we just return them
+
+00:05:15.455 --> 00:05:16.655
+<v Speaker 0>to our variable.
+
+00:05:17.055 --> 00:05:18.495
+<v Speaker 0>If we get a none, we're going to
+
+00:05:18.495 --> 00:05:20.735
+<v Speaker 0>return a status of 400
+
+00:05:21.455 --> 00:05:22.815
+<v Speaker 0>to our client.
+
+00:05:24.495 --> 00:05:24.895
+<v Speaker 0>Next,
+
+00:05:25.590 --> 00:05:27.430
+<v Speaker 0>if you need this as a string,
+
+00:05:28.870 --> 00:05:31.110
+<v Speaker 0>let's say body string equals
+
+00:05:31.669 --> 00:05:32.390
+<v Speaker 0>string
+
+00:05:33.510 --> 00:05:36.310
+<v Speaker 0>from UTF eight body to vector.
+
+00:05:36.790 --> 00:05:38.070
+<v Speaker 0>Now, why do we have to do this
+
+00:05:38.070 --> 00:05:38.790
+<v Speaker 0>little dance?
+
+00:05:39.974 --> 00:05:40.535
+<v Speaker 0>Well,
+
+00:05:41.175 --> 00:05:43.974
+<v Speaker 0>WebAssembly and Rust and Spin are all fairly
+
+00:05:43.974 --> 00:05:45.175
+<v Speaker 0>performance systems.
+
+00:05:45.574 --> 00:05:47.495
+<v Speaker 0>As such they use Rust,
+
+00:05:47.655 --> 00:05:48.455
+<v Speaker 0>Bytes,
+
+00:05:48.935 --> 00:05:49.815
+<v Speaker 0>Bytes,
+
+00:05:49.974 --> 00:05:52.854
+<v Speaker 0>which is a zero copy slice implementation
+
+00:05:53.014 --> 00:05:55.175
+<v Speaker 0>that makes a very fast networking code.
+
+00:05:55.920 --> 00:05:57.600
+<v Speaker 0>But for you to work with them and
+
+00:05:57.600 --> 00:06:00.480
+<v Speaker 0>your endpoint, you probably wanna coerce them into
+
+00:06:00.480 --> 00:06:01.280
+<v Speaker 0>a string.
+
+00:06:01.840 --> 00:06:04.400
+<v Speaker 0>Now the string trait does provide a from
+
+00:06:04.400 --> 00:06:05.520
+<v Speaker 0>UTFE,
+
+00:06:05.600 --> 00:06:07.680
+<v Speaker 0>which we can use on a vector of
+
+00:06:07.680 --> 00:06:08.080
+<v Speaker 0>bytes.
+
+00:06:08.665 --> 00:06:11.145
+<v Speaker 0>And baits baits does provide a two vec
+
+00:06:11.145 --> 00:06:13.945
+<v Speaker 0>function that we can call on the baits.
+
+00:06:14.505 --> 00:06:16.825
+<v Speaker 0>This does return our result, so we can
+
+00:06:16.825 --> 00:06:19.385
+<v Speaker 0>use question mark to throw the error to
+
+00:06:19.385 --> 00:06:21.065
+<v Speaker 0>the client
+
+00:06:20.740 --> 00:06:22.500
+<v Speaker 0>or just get back a string.
+
+00:06:22.819 --> 00:06:24.900
+<v Speaker 0>If you wanna handle this differently, you can
+
+00:06:24.900 --> 00:06:27.699
+<v Speaker 0>of course match and do whatever you need.
+
+00:06:28.500 --> 00:06:29.939
+<v Speaker 0>But we are gonna be happy with just
+
+00:06:29.939 --> 00:06:30.740
+<v Speaker 0>a string.
+
+00:06:31.060 --> 00:06:33.219
+<v Speaker 0>From here, we can now do another print
+
+00:06:33.219 --> 00:06:35.620
+<v Speaker 0>line and say the body is
+
+00:06:37.344 --> 00:06:38.465
+<v Speaker 0>body string.
+
+00:06:42.224 --> 00:06:43.025
+<v Speaker 0>Like so.
+
+00:06:43.824 --> 00:06:45.745
+<v Speaker 0>So let's pop back to our terminal,
+
+00:06:46.705 --> 00:06:48.065
+<v Speaker 0>run spin build
+
+00:06:48.145 --> 00:06:49.025
+<v Speaker 0>and follow-up.
+
+00:06:49.850 --> 00:06:52.490
+<v Speaker 0>Now we can run our curl command like
+
+00:06:52.490 --> 00:06:53.050
+<v Speaker 0>so.
+
+00:06:54.170 --> 00:06:56.250
+<v Speaker 0>And we see that our body is empty.
+
+00:06:56.970 --> 00:06:58.810
+<v Speaker 0>So just to make sure everything works as
+
+00:06:58.810 --> 00:06:59.610
+<v Speaker 0>expected,
+
+00:07:00.090 --> 00:07:02.970
+<v Speaker 0>let's provide an empty JSON string like so.
+
+00:07:04.605 --> 00:07:05.805
+<v Speaker 0>So there is a little bit of a
+
+00:07:05.805 --> 00:07:07.725
+<v Speaker 0>type dance required to get the body as
+
+00:07:07.725 --> 00:07:09.645
+<v Speaker 0>a string with the Rust SDK,
+
+00:07:09.965 --> 00:07:11.885
+<v Speaker 0>but once you know how to do it,
+
+00:07:11.885 --> 00:07:13.965
+<v Speaker 0>it's there whenever you need it.
+
+00:07:14.845 --> 00:07:16.925
+<v Speaker 0>Next, let's take a look at getting the
+
+00:07:16.925 --> 00:07:17.885
+<v Speaker 0>query parameters.
+
+00:07:18.550 --> 00:07:20.310
+<v Speaker 0>So let's pop back to our code
+
+00:07:21.110 --> 00:07:23.110
+<v Speaker 0>and we'll just remove all the stuff from
+
+00:07:23.110 --> 00:07:23.910
+<v Speaker 0>our body.
+
+00:07:24.710 --> 00:07:27.270
+<v Speaker 0>And now we're going to do print ln
+
+00:07:28.470 --> 00:07:29.270
+<v Speaker 0>query string,
+
+00:07:32.695 --> 00:07:35.495
+<v Speaker 0>like so. But if we pop open request,
+
+00:07:35.975 --> 00:07:37.575
+<v Speaker 0>as much as Copilot would love there to
+
+00:07:37.575 --> 00:07:39.655
+<v Speaker 0>be a query string function, unfortunately,
+
+00:07:40.055 --> 00:07:40.855
+<v Speaker 0>there is not.
+
+00:07:41.335 --> 00:07:44.535
+<v Speaker 0>Instead, you have to pull out the URI
+
+00:07:45.575 --> 00:07:47.415
+<v Speaker 0>where we can request the query.
+
+00:07:48.560 --> 00:07:49.920
+<v Speaker 0>And right now, I'm just going to do
+
+00:07:49.920 --> 00:07:52.160
+<v Speaker 0>an unwrap or default, so that we can
+
+00:07:52.160 --> 00:07:54.960
+<v Speaker 0>do to print on the command line. The
+
+00:07:54.960 --> 00:07:56.960
+<v Speaker 0>default for that should just be an empty
+
+00:07:56.960 --> 00:07:57.280
+<v Speaker 0>string.
+
+00:08:01.475 --> 00:08:04.115
+<v Speaker 0>So we'll run spin build and follow,
+
+00:08:05.235 --> 00:08:07.795
+<v Speaker 0>and we're just gonna do a simple curl
+
+00:08:09.155 --> 00:08:10.355
+<v Speaker 0>to hello world.
+
+00:08:10.915 --> 00:08:12.915
+<v Speaker 0>As you can see, our query string is
+
+00:08:12.915 --> 00:08:13.635
+<v Speaker 0>non existent.
+
+00:08:14.610 --> 00:08:16.689
+<v Speaker 0>So, let's modify that and to do so,
+
+00:08:16.689 --> 00:08:18.770
+<v Speaker 0>we'll need to wrap our curl in quotes.
+
+00:08:19.009 --> 00:08:20.449
+<v Speaker 0>And I can say that my name is
+
+00:08:20.449 --> 00:08:22.930
+<v Speaker 0>Rawkode and my age is 21.
+
+00:08:23.009 --> 00:08:23.729
+<v Speaker 0>And
+
+00:08:24.770 --> 00:08:26.930
+<v Speaker 0>now our query string is printed out in
+
+00:08:26.930 --> 00:08:27.889
+<v Speaker 0>the logs above.
+
+00:08:29.645 --> 00:08:31.805
+<v Speaker 0>Now, you don't need to parse this query
+
+00:08:31.805 --> 00:08:32.845
+<v Speaker 0>string yourself.
+
+00:08:33.485 --> 00:08:35.885
+<v Speaker 0>Because we're using Rust, we have access to
+
+00:08:35.885 --> 00:08:38.205
+<v Speaker 0>whole world of Rust create.
+
+00:08:38.365 --> 00:08:39.645
+<v Speaker 0>So let's add
+
+00:08:39.885 --> 00:08:41.804
+<v Speaker 0>the query string create,
+
+00:08:42.765 --> 00:08:43.245
+<v Speaker 0>like so.
+
+00:08:44.209 --> 00:08:46.610
+<v Speaker 0>Now we call query string,
+
+00:08:47.009 --> 00:08:48.050
+<v Speaker 0>queryfy,
+
+00:08:48.769 --> 00:08:51.010
+<v Speaker 0>passing in our query string.
+
+00:08:51.410 --> 00:08:53.089
+<v Speaker 0>Now this is going to return
+
+00:08:55.490 --> 00:08:57.170
+<v Speaker 0>a vector of tuples
+
+00:08:57.495 --> 00:09:00.295
+<v Speaker 0>with the key and values from the query.
+
+00:09:01.415 --> 00:09:03.415
+<v Speaker 0>Now we can iterate over the key value
+
+00:09:03.415 --> 00:09:06.535
+<v Speaker 0>pairs like so. You can grab an iterator
+
+00:09:08.535 --> 00:09:09.575
+<v Speaker 0>for each
+
+00:09:09.815 --> 00:09:12.420
+<v Speaker 0>and print, print, print. Thank you Copilot.
+
+00:09:13.300 --> 00:09:15.380
+<v Speaker 0>Now we can run spin build,
+
+00:09:15.699 --> 00:09:16.500
+<v Speaker 0>like so.
+
+00:09:17.620 --> 00:09:20.100
+<v Speaker 0>And bring back our query command, bring back
+
+00:09:20.100 --> 00:09:21.380
+<v Speaker 0>our curl command.
+
+00:09:22.260 --> 00:09:24.740
+<v Speaker 0>And we can see our name and age.
+
+00:09:24.740 --> 00:09:25.459
+<v Speaker 0>Awesome.
+
+00:09:25.779 --> 00:09:29.535
+<v Speaker 0>Next and last, making an outbound HTTP request.
+
+00:09:29.615 --> 00:09:31.535
+<v Speaker 0>So it's likely at some point your spend
+
+00:09:31.535 --> 00:09:34.015
+<v Speaker 0>microservice will want to talk to other parts
+
+00:09:34.015 --> 00:09:37.135
+<v Speaker 0>of the internet or other spend microservices.
+
+00:09:37.695 --> 00:09:39.774
+<v Speaker 0>And to do so is really simple.
+
+00:09:42.430 --> 00:09:44.190
+<v Speaker 0>We can grab the spend,
+
+00:09:45.230 --> 00:09:46.670
+<v Speaker 0>the spend SDK,
+
+00:09:47.389 --> 00:09:48.269
+<v Speaker 0>HTTP
+
+00:09:48.269 --> 00:09:49.230
+<v Speaker 0>and
+
+00:09:49.230 --> 00:09:49.950
+<v Speaker 0>send.
+
+00:09:50.509 --> 00:09:52.509
+<v Speaker 0>This gives us the ability to send an
+
+00:09:52.509 --> 00:09:54.750
+<v Speaker 0>HTTP request to whatever we want.
+
+00:09:55.389 --> 00:09:57.230
+<v Speaker 0>We can use the HTTP
+
+00:09:57.584 --> 00:09:58.545
+<v Speaker 0>request
+
+00:09:58.704 --> 00:09:59.584
+<v Speaker 0>builder
+
+00:10:00.865 --> 00:10:03.425
+<v Speaker 0>to build up our HTTP query.
+
+00:10:04.625 --> 00:10:07.345
+<v Speaker 0>So first we'll do method of get
+
+00:10:09.185 --> 00:10:10.704
+<v Speaker 0>to google.com
+
+00:10:14.910 --> 00:10:16.590
+<v Speaker 0>with no body,
+
+00:10:17.950 --> 00:10:18.830
+<v Speaker 0>like so.
+
+00:10:20.670 --> 00:10:22.270
+<v Speaker 0>Now this does return
+
+00:10:22.830 --> 00:10:24.270
+<v Speaker 0>a result object,
+
+00:10:25.310 --> 00:10:27.150
+<v Speaker 0>so we need to add a couple of
+
+00:10:27.150 --> 00:10:27.870
+<v Speaker 0>question marks.
+
+00:10:29.615 --> 00:10:31.855
+<v Speaker 0>We can grab the response from the outbound
+
+00:10:31.855 --> 00:10:33.295
+<v Speaker 0>request like so.
+
+00:10:33.935 --> 00:10:35.375
+<v Speaker 0>Next, we could use it much like a
+
+00:10:35.375 --> 00:10:37.855
+<v Speaker 0>proxy, I just dump that straight to the
+
+00:10:37.935 --> 00:10:38.815
+<v Speaker 0>calling client.
+
+00:10:47.649 --> 00:10:49.810
+<v Speaker 0>Now this is complaining and it's because the
+
+00:10:49.810 --> 00:10:52.930
+<v Speaker 0>errors are different. We can fix that with
+
+00:10:52.930 --> 00:10:54.209
+<v Speaker 0>map error.
+
+00:10:55.410 --> 00:10:55.810
+<v Speaker 0>Now,
+
+00:10:58.654 --> 00:10:59.695
+<v Speaker 0>we can run,
+
+00:11:00.334 --> 00:11:01.615
+<v Speaker 0>spin build
+
+00:11:02.654 --> 00:11:03.935
+<v Speaker 0>and spin up
+
+00:11:04.255 --> 00:11:05.135
+<v Speaker 0>follow
+
+00:11:05.615 --> 00:11:06.095
+<v Speaker 0>all.
+
+00:11:08.820 --> 00:11:10.980
+<v Speaker 0>We can jump back to our favorite kernel
+
+00:11:10.980 --> 00:11:12.500
+<v Speaker 0>command, like so.
+
+00:11:13.780 --> 00:11:15.620
+<v Speaker 0>Now we are presented with an error message
+
+00:11:15.620 --> 00:11:16.820
+<v Speaker 0>right off the bat.
+
+00:11:17.140 --> 00:11:17.940
+<v Speaker 0>Spin
+
+00:11:18.820 --> 00:11:20.660
+<v Speaker 0>tries to be as secure as possible.
+
+00:11:21.195 --> 00:11:23.595
+<v Speaker 0>And as such, you have to specifically allow
+
+00:11:23.595 --> 00:11:27.195
+<v Speaker 0>outbound request to certain destinations and domains.
+
+00:11:27.755 --> 00:11:29.675
+<v Speaker 0>So let's modify our spin.toml
+
+00:11:29.675 --> 00:11:32.155
+<v Speaker 0>to allow a request to google.com.
+
+00:11:34.475 --> 00:11:36.155
+<v Speaker 0>So here is our spin.toml.
+
+00:11:39.090 --> 00:11:41.570
+<v Speaker 0>On the component and on each component,
+
+00:11:41.730 --> 00:11:44.450
+<v Speaker 0>you can choose to allow outbound traffic.
+
+00:11:45.090 --> 00:11:47.650
+<v Speaker 0>As such, we could just do an unsecure
+
+00:11:47.650 --> 00:11:48.690
+<v Speaker 0>allow all
+
+00:11:49.185 --> 00:11:51.905
+<v Speaker 0>and this will at least get us running,
+
+00:11:52.945 --> 00:11:54.865
+<v Speaker 0>so that we can run a request.
+
+00:12:00.945 --> 00:12:01.745
+<v Speaker 0>Like so.
+
+00:12:02.465 --> 00:12:04.625
+<v Speaker 0>Now we have
+
+00:12:04.190 --> 00:12:05.390
+<v Speaker 0>a WebAssembly
+
+00:12:05.390 --> 00:12:06.910
+<v Speaker 0>HTTP proxy
+
+00:12:07.230 --> 00:12:09.950
+<v Speaker 0>to any website that we want. Well, kind
+
+00:12:09.950 --> 00:12:10.510
+<v Speaker 0>of.
+
+00:12:11.950 --> 00:12:13.709
+<v Speaker 0>So let's secure this just a little bit
+
+00:12:13.709 --> 00:12:14.350
+<v Speaker 0>more.
+
+00:12:15.070 --> 00:12:16.750
+<v Speaker 0>Instead of doing and secure all,
+
+00:12:19.465 --> 00:12:21.705
+<v Speaker 0>let's just allow google.com.
+
+00:12:22.265 --> 00:12:24.745
+<v Speaker 0>Now this shouldn't change our application
+
+00:12:28.025 --> 00:12:30.105
+<v Speaker 0>and we still get all the outputs from
+
+00:12:30.105 --> 00:12:31.145
+<v Speaker 0>the Google request.
+
+00:12:32.390 --> 00:12:34.070
+<v Speaker 0>So let's make one more change
+
+00:12:34.710 --> 00:12:35.990
+<v Speaker 0>to LibRS
+
+00:12:36.230 --> 00:12:39.670
+<v Speaker 0>and this time we'll call github.com.
+
+00:12:41.430 --> 00:12:42.630
+<v Speaker 0>We do a build,
+
+00:12:42.950 --> 00:12:44.070
+<v Speaker 0>we do a curl
+
+00:12:44.325 --> 00:12:46.085
+<v Speaker 0>and destination not allowed.
+
+00:12:46.325 --> 00:12:47.045
+<v Speaker 0>Perfect.
+
+00:12:47.285 --> 00:12:49.685
+<v Speaker 0>So make an outbound HTTP request
+
+00:12:50.005 --> 00:12:52.245
+<v Speaker 0>using the Spin SDK for Rust.
+
+00:12:52.485 --> 00:12:54.645
+<v Speaker 0>It's just a few lines of code. Remember
+
+00:12:54.645 --> 00:12:56.085
+<v Speaker 0>to update your Spin.TOML,
+
+00:12:56.450 --> 00:12:58.610
+<v Speaker 0>Be very specific about the outbound request that
+
+00:12:58.610 --> 00:13:01.490
+<v Speaker 0>you expect to improve your security posture.
+
+00:13:02.529 --> 00:13:03.490
+<v Speaker 0>And that's it.
+
+00:13:04.450 --> 00:13:06.610
+<v Speaker 0>That is your introduction to the Rust SDK
+
+00:13:06.610 --> 00:13:07.490
+<v Speaker 0>for Spin.
+
+00:13:07.730 --> 00:13:10.325
+<v Speaker 0>Happy hacking. If you ever need any help,
+
+00:13:10.325 --> 00:13:12.565
+<v Speaker 0>drop into the comments, reach me on Twitter,
+
+00:13:12.565 --> 00:13:15.125
+<v Speaker 0>or join the Fermion Discord. I'll see you
+
+00:13:15.125 --> 00:13:15.605
+<v Speaker 0>there.
+
+00:13:16.085 --> 00:13:16.565
+<v Speaker 0>Have fun.

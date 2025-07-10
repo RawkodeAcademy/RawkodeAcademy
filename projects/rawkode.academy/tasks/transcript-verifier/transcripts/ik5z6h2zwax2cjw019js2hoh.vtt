@@ -1,0 +1,362 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 3d36f626-a5e9-473d-aa85-a97c8d00fc40
+Created: 2025-04-29T20:15:24.555Z
+Duration: 273.85107
+Channels: 1
+
+00:00:01.280 --> 00:00:02.639
+<v Speaker 0>Hey, how's it going?
+
+00:00:03.439 --> 00:00:05.440
+<v Speaker 0>Today I'm gonna take a few minutes to
+
+00:00:05.440 --> 00:00:06.960
+<v Speaker 0>talk about InfluxDB,
+
+00:00:06.960 --> 00:00:08.639
+<v Speaker 0>Flux and Tables.
+
+00:00:09.280 --> 00:00:11.120
+<v Speaker 0>This is a response
+
+00:00:11.280 --> 00:00:13.759
+<v Speaker 0>to a question that I came across on
+
+00:00:13.759 --> 00:00:16.625
+<v Speaker 0>Twitter on InfluxDB from Tyus.
+
+00:00:17.025 --> 00:00:18.865
+<v Speaker 0>Hey Tyus, how is it going?
+
+00:00:20.385 --> 00:00:22.385
+<v Speaker 0>And Tyus said, I'm doing a from range
+
+00:00:22.385 --> 00:00:23.985
+<v Speaker 0>filter pivot filter sort.
+
+00:00:25.585 --> 00:00:27.665
+<v Speaker 0>Why are the results not being sorted?
+
+00:00:28.369 --> 00:00:30.849
+<v Speaker 0>And this is actually a really common question
+
+00:00:30.849 --> 00:00:33.809
+<v Speaker 0>and it just comes down to understanding how
+
+00:00:34.050 --> 00:00:36.850
+<v Speaker 0>flux returns as results as a set of
+
+00:00:36.850 --> 00:00:37.730
+<v Speaker 0>tables
+
+00:00:38.050 --> 00:00:41.185
+<v Speaker 0>and not as a single source of data
+
+00:00:41.665 --> 00:00:43.825
+<v Speaker 0>and we'll look at that as an example.
+
+00:00:43.905 --> 00:00:45.425
+<v Speaker 0>Now the answer here you can see in
+
+00:00:45.425 --> 00:00:48.145
+<v Speaker 0>my reply is just to flatten those tables
+
+00:00:48.145 --> 00:00:49.425
+<v Speaker 0>with an empty group.
+
+00:00:50.945 --> 00:00:52.145
+<v Speaker 0>So let's
+
+00:00:52.145 --> 00:00:54.625
+<v Speaker 0>use an example from my own data.
+
+00:00:55.320 --> 00:00:57.640
+<v Speaker 0>So what I have here is my InfluxDB.
+
+00:00:58.440 --> 00:01:00.760
+<v Speaker 0>It is where I store all of the
+
+00:01:00.760 --> 00:01:02.920
+<v Speaker 0>metrics from the videos that I produced and
+
+00:01:02.920 --> 00:01:04.040
+<v Speaker 0>upload to YouTube
+
+00:01:04.680 --> 00:01:05.479
+<v Speaker 0>and
+
+00:01:05.640 --> 00:01:07.240
+<v Speaker 0>what we can see here is if I
+
+00:01:06.795 --> 00:01:08.634
+<v Speaker 0>just know, click submit to show this is
+
+00:01:08.634 --> 00:01:12.075
+<v Speaker 0>fresh data is that we have a set
+
+00:01:12.155 --> 00:01:13.354
+<v Speaker 0>of results
+
+00:01:13.354 --> 00:01:16.395
+<v Speaker 0>here and a single table. You know, zero
+
+00:01:16.395 --> 00:01:17.755
+<v Speaker 0>zero zero zero zero.
+
+00:01:18.314 --> 00:01:20.314
+<v Speaker 0>With the name of the video
+
+00:01:20.820 --> 00:01:24.100
+<v Speaker 0>and how many views that has received and
+
+00:01:24.100 --> 00:01:26.340
+<v Speaker 0>aggregate across all 10 windows.
+
+00:01:28.500 --> 00:01:30.900
+<v Speaker 0>Now, in order to show why this is
+
+00:01:30.900 --> 00:01:31.460
+<v Speaker 0>necessary,
+
+00:01:33.315 --> 00:01:35.315
+<v Speaker 0>I would just take out
+
+00:01:36.675 --> 00:01:39.155
+<v Speaker 0>some of this query. Right? When we're moving
+
+00:01:39.155 --> 00:01:41.555
+<v Speaker 0>a group assignment group and a top which
+
+00:01:41.555 --> 00:01:42.915
+<v Speaker 0>is just a sort and
+
+00:01:43.635 --> 00:01:44.355
+<v Speaker 0>a
+
+00:01:46.040 --> 00:01:47.320
+<v Speaker 0>top end filter.
+
+00:01:48.200 --> 00:01:50.840
+<v Speaker 0>Now, what we can see here is, well
+
+00:01:50.840 --> 00:01:52.600
+<v Speaker 0>we still have a table zero but now
+
+00:01:52.600 --> 00:01:54.920
+<v Speaker 0>we have a table one, table two,
+
+00:01:55.400 --> 00:01:56.439
+<v Speaker 0>table three
+
+00:01:56.760 --> 00:01:59.159
+<v Speaker 0>all the way down to table
+
+00:01:59.479 --> 00:02:00.360
+<v Speaker 0>97.
+
+00:02:01.725 --> 00:02:03.165
+<v Speaker 0>And this is because
+
+00:02:04.125 --> 00:02:07.485
+<v Speaker 0>we are getting the default group key
+
+00:02:07.965 --> 00:02:10.845
+<v Speaker 0>which is on the tags within the bucket.
+
+00:02:12.045 --> 00:02:14.045
+<v Speaker 0>This was much better explained
+
+00:02:14.045 --> 00:02:14.605
+<v Speaker 0>visually.
+
+00:02:15.050 --> 00:02:15.690
+<v Speaker 0>So
+
+00:02:16.250 --> 00:02:18.730
+<v Speaker 0>what we can see is you know classic
+
+00:02:18.730 --> 00:02:21.129
+<v Speaker 0>time series data here and that each of
+
+00:02:21.129 --> 00:02:23.450
+<v Speaker 0>these lines represents one of my videos and
+
+00:02:23.450 --> 00:02:25.450
+<v Speaker 0>how it performed over time
+
+00:02:26.090 --> 00:02:29.129
+<v Speaker 0>and that uses the tags within the bucket
+
+00:02:29.129 --> 00:02:31.004
+<v Speaker 0>to work out what the group will be
+
+00:02:31.004 --> 00:02:33.165
+<v Speaker 0>by default. In this case it is the
+
+00:02:33.165 --> 00:02:34.365
+<v Speaker 0>video ID.
+
+00:02:35.644 --> 00:02:36.285
+<v Speaker 0>So
+
+00:02:36.685 --> 00:02:38.285
+<v Speaker 0>one of the things that we can do
+
+00:02:38.605 --> 00:02:40.605
+<v Speaker 0>is, you know, say I just want to
+
+00:02:40.605 --> 00:02:41.245
+<v Speaker 0>sum,
+
+00:02:41.965 --> 00:02:44.209
+<v Speaker 0>no longer, I'm no longer getting what we
+
+00:02:44.209 --> 00:02:46.370
+<v Speaker 0>would consider time series data because we're not
+
+00:02:46.370 --> 00:02:49.090
+<v Speaker 0>looking at a time or window. I'm using
+
+00:02:49.090 --> 00:02:50.850
+<v Speaker 0>the default group key
+
+00:02:51.090 --> 00:02:54.370
+<v Speaker 0>and calculating the total number of minutes viewed
+
+00:02:54.370 --> 00:02:57.465
+<v Speaker 0>for each video. So there's no time dimension
+
+00:02:57.465 --> 00:02:58.585
+<v Speaker 0>here anymore.
+
+00:03:00.025 --> 00:03:00.745
+<v Speaker 0>Now,
+
+00:03:01.785 --> 00:03:05.385
+<v Speaker 0>you can still see that that some happens
+
+00:03:05.385 --> 00:03:07.225
+<v Speaker 0>on the default group key which is per
+
+00:03:07.225 --> 00:03:09.865
+<v Speaker 0>video. So I still have my 97
+
+00:03:09.865 --> 00:03:10.425
+<v Speaker 0>tables.
+
+00:03:11.620 --> 00:03:13.220
+<v Speaker 0>This cannot be sorted
+
+00:03:14.180 --> 00:03:17.060
+<v Speaker 0>and because the sort happens with an inside
+
+00:03:17.060 --> 00:03:18.740
+<v Speaker 0>of each table
+
+00:03:19.300 --> 00:03:21.220
+<v Speaker 0>and in fact if I bring in the
+
+00:03:21.220 --> 00:03:22.180
+<v Speaker 0>top end,
+
+00:03:22.260 --> 00:03:24.580
+<v Speaker 0>you'll see I still get 97
+
+00:03:24.580 --> 00:03:25.380
+<v Speaker 0>tables
+
+00:03:26.215 --> 00:03:29.095
+<v Speaker 0>because the top end also works within the
+
+00:03:29.095 --> 00:03:29.735
+<v Speaker 0>table
+
+00:03:30.135 --> 00:03:32.055
+<v Speaker 0>and the only way to get around this
+
+00:03:32.055 --> 00:03:34.215
+<v Speaker 0>or to get something that you can aggregate
+
+00:03:34.215 --> 00:03:37.095
+<v Speaker 0>across all series is to do a flat
+
+00:03:37.095 --> 00:03:37.495
+<v Speaker 0>group.
+
+00:03:39.050 --> 00:03:40.810
+<v Speaker 0>When I bring in this and I'll take
+
+00:03:40.810 --> 00:03:42.410
+<v Speaker 0>out the topic in for a moment,
+
+00:03:42.730 --> 00:03:45.130
+<v Speaker 0>you'll see we get one single table with
+
+00:03:45.130 --> 00:03:47.770
+<v Speaker 0>97 entries, 97 records.
+
+00:03:48.250 --> 00:03:50.650
+<v Speaker 0>Now we have a data and a position
+
+00:03:50.650 --> 00:03:53.015
+<v Speaker 0>that can be sorted because it all lives
+
+00:03:53.015 --> 00:03:54.614
+<v Speaker 0>in a single table and in fact if
+
+00:03:54.614 --> 00:03:56.055
+<v Speaker 0>I bring in my top end again, we're
+
+00:03:56.055 --> 00:03:57.415
+<v Speaker 0>back to the initial query
+
+00:03:57.655 --> 00:03:59.015
+<v Speaker 0>and we can see
+
+00:04:00.055 --> 00:04:01.735
+<v Speaker 0>exactly what we expect.
+
+00:04:04.455 --> 00:04:05.495
+<v Speaker 0>So what does that mean?
+
+00:04:07.010 --> 00:04:09.410
+<v Speaker 0>Understand that Flux returns things
+
+00:04:09.490 --> 00:04:11.250
+<v Speaker 0>based on the default group which is the
+
+00:04:11.250 --> 00:04:13.490
+<v Speaker 0>tags within the data and you will get
+
+00:04:13.490 --> 00:04:15.570
+<v Speaker 0>one table for each unique series.
+
+00:04:16.130 --> 00:04:18.450
+<v Speaker 0>Any filter, any sort
+
+00:04:18.450 --> 00:04:19.649
+<v Speaker 0>that happens
+
+00:04:20.085 --> 00:04:22.325
+<v Speaker 0>at that level is per table.
+
+00:04:23.285 --> 00:04:24.805
+<v Speaker 0>If you want to work across all the
+
+00:04:24.805 --> 00:04:26.485
+<v Speaker 0>tables with all of your data you need
+
+00:04:26.485 --> 00:04:28.405
+<v Speaker 0>to do the flat group and then you
+
+00:04:28.405 --> 00:04:30.245
+<v Speaker 0>will get the results that you expect.
+
+00:04:30.805 --> 00:04:32.485
+<v Speaker 0>I hope that helps, have a great day
+
+00:04:32.485 --> 00:04:33.445
+<v Speaker 0>and I'll speak to you soon.

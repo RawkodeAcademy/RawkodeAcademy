@@ -1,0 +1,6062 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 230b08ab-66ed-4e12-935a-b2140b31bcf1
+Created: 2025-04-29T22:09:29.247Z
+Duration: 5382.0225
+Channels: 1
+
+00:03:06.595 --> 00:03:07.555
+<v Speaker 0>Hello,
+
+00:03:07.635 --> 00:03:09.635
+<v Speaker 0>and welcome to today's session.
+
+00:03:10.035 --> 00:03:12.115
+<v Speaker 0>Today, we are taking a look at Cilium,
+
+00:03:12.115 --> 00:03:14.595
+<v Speaker 0>a CNI implementation for Kubernetes.
+
+00:03:14.835 --> 00:03:16.595
+<v Speaker 0>And I am very fortunate to be joined
+
+00:03:16.595 --> 00:03:19.170
+<v Speaker 0>by Ilya here, who is a member of
+
+00:03:19.170 --> 00:03:21.330
+<v Speaker 0>the team at ISO Valiant, who are the
+
+00:03:21.330 --> 00:03:22.930
+<v Speaker 0>creators and maintainers
+
+00:03:23.170 --> 00:03:26.610
+<v Speaker 0>of Cilium. Hello, Ilya. How are you? Hi,
+
+00:03:26.610 --> 00:03:28.290
+<v Speaker 1>David. How are you doing? I'm rather quite
+
+00:03:28.290 --> 00:03:28.850
+<v Speaker 1>well.
+
+00:03:29.730 --> 00:03:31.250
+<v Speaker 0>I'm doing very well as well. Thank you
+
+00:03:31.250 --> 00:03:33.405
+<v Speaker 0>very much. A lovely autumn day here in
+
+00:03:33.405 --> 00:03:33.965
+<v Speaker 1>London.
+
+00:03:34.685 --> 00:03:36.285
+<v Speaker 0>Well, yeah. It's getting pretty cold up here
+
+00:03:36.285 --> 00:03:38.045
+<v Speaker 0>in Scotland too, actually. I think this is
+
+00:03:38.045 --> 00:03:40.685
+<v Speaker 0>the coldest day we've had yet. Like, I'm
+
+00:03:40.685 --> 00:03:42.525
+<v Speaker 0>actually I'm gonna put the heating back on
+
+00:03:42.525 --> 00:03:44.525
+<v Speaker 0>soon. That's where we're getting to now. That's
+
+00:03:44.525 --> 00:03:45.725
+<v Speaker 1>right. Yeah. Yeah.
+
+00:03:46.285 --> 00:03:46.845
+<v Speaker 0>So
+
+00:03:47.290 --> 00:03:49.530
+<v Speaker 0>I think we're gonna break the formula a
+
+00:03:49.530 --> 00:03:50.490
+<v Speaker 0>little bit today
+
+00:03:50.570 --> 00:03:51.610
+<v Speaker 0>because
+
+00:03:52.890 --> 00:03:54.890
+<v Speaker 0>I had done a little bit of preparation,
+
+00:03:55.210 --> 00:03:57.370
+<v Speaker 0>which means I have used the cluster API
+
+00:03:57.370 --> 00:03:59.050
+<v Speaker 0>to spin up a Kubernetes cluster.
+
+00:03:59.465 --> 00:04:02.585
+<v Speaker 0>However, it's currently in a pending state because
+
+00:04:02.585 --> 00:04:04.425
+<v Speaker 0>a cluster cannot become ready until it has
+
+00:04:04.425 --> 00:04:05.705
+<v Speaker 0>a CNI implementation.
+
+00:04:06.105 --> 00:04:08.105
+<v Speaker 0>So what I wanna do is we'll jump
+
+00:04:08.105 --> 00:04:11.225
+<v Speaker 0>straight in to deploy and install Cilium.
+
+00:04:11.225 --> 00:04:12.470
+<v Speaker 0>And then we'll jump back and we'll have
+
+00:04:12.470 --> 00:04:14.470
+<v Speaker 0>a little bit of a conversation around what
+
+00:04:14.470 --> 00:04:16.790
+<v Speaker 0>Cilium is, why it exists, etcetera. You alright
+
+00:04:16.790 --> 00:04:19.029
+<v Speaker 0>with that plan? Sounds good to me.
+
+00:04:20.149 --> 00:04:20.950
+<v Speaker 0>Awesome.
+
+00:04:20.950 --> 00:04:22.070
+<v Speaker 0>Alright. So
+
+00:04:22.790 --> 00:04:25.910
+<v Speaker 0>that means we need my screen like so.
+
+00:04:29.205 --> 00:04:30.485
+<v Speaker 0>There we go.
+
+00:04:32.245 --> 00:04:34.485
+<v Speaker 0>And we pop over here. So as you
+
+00:04:34.485 --> 00:04:36.405
+<v Speaker 0>can see, I have run
+
+00:04:36.884 --> 00:04:38.245
+<v Speaker 0>cube control
+
+00:04:38.405 --> 00:04:41.845
+<v Speaker 0>passing on the special cluster API cube config.
+
+00:04:42.110 --> 00:04:44.430
+<v Speaker 0>I've ran get nodes and you can see
+
+00:04:46.430 --> 00:04:48.510
+<v Speaker 0>we're still in our not ready state.
+
+00:04:48.910 --> 00:04:50.910
+<v Speaker 0>So that means I have to install Cilium.
+
+00:04:51.790 --> 00:04:52.510
+<v Speaker 0>Mhmm.
+
+00:04:53.310 --> 00:04:54.910
+<v Speaker 0>But I assume that if I ask you
+
+00:04:54.910 --> 00:04:56.190
+<v Speaker 0>how to do that, you're gonna tell me
+
+00:04:56.190 --> 00:04:59.085
+<v Speaker 0>to go to the documentation. So That's right.
+
+00:05:02.525 --> 00:05:03.405
+<v Speaker 1>There
+
+00:05:03.405 --> 00:05:05.565
+<v Speaker 1>may be a guide for for Packet that
+
+00:05:05.565 --> 00:05:07.485
+<v Speaker 1>you could have a look at.
+
+00:05:09.004 --> 00:05:10.925
+<v Speaker 0>So I would say this is a self
+
+00:05:10.925 --> 00:05:13.260
+<v Speaker 0>managed Kubernetes. So. You
+
+00:05:13.740 --> 00:05:15.100
+<v Speaker 0>can see I've clicked on a few links
+
+00:05:15.100 --> 00:05:15.740
+<v Speaker 0>already.
+
+00:05:15.980 --> 00:05:17.500
+<v Speaker 1>I think I did. Yeah.
+
+00:05:18.380 --> 00:05:20.460
+<v Speaker 0>And then managed etcd.
+
+00:05:23.180 --> 00:05:23.820
+<v Speaker 1>Alright.
+
+00:05:23.980 --> 00:05:25.980
+<v Speaker 0>So do you recommend Helm? Do you recommend
+
+00:05:26.495 --> 00:05:27.375
+<v Speaker 0>something else?
+
+00:05:27.855 --> 00:05:30.335
+<v Speaker 1>Yeah. So I think you could either go
+
+00:05:30.335 --> 00:05:31.935
+<v Speaker 1>with Helm or Quickstart.
+
+00:05:32.655 --> 00:05:35.695
+<v Speaker 1>Quickstart is basically just the the default kinda
+
+00:05:35.695 --> 00:05:36.655
+<v Speaker 1>Helm setup.
+
+00:05:37.055 --> 00:05:39.615
+<v Speaker 1>So it's just like the Helm chart rendered
+
+00:05:39.695 --> 00:05:40.655
+<v Speaker 1>with Helm template.
+
+00:05:41.380 --> 00:05:44.020
+<v Speaker 1>So, yeah, I think using Helm is fine.
+
+00:05:44.419 --> 00:05:46.180
+<v Speaker 1>I don't think you wanna be on the
+
+00:05:46.180 --> 00:05:47.540
+<v Speaker 1>manage that CD page.
+
+00:05:49.460 --> 00:05:52.020
+<v Speaker 0>No? Yeah. You wanna go to quick start.
+
+00:05:52.020 --> 00:05:55.155
+<v Speaker 1>I think quick installation. Yeah. Gotcha. Okay. And
+
+00:05:55.155 --> 00:05:56.355
+<v Speaker 1>I think there are two options. There is
+
+00:05:56.355 --> 00:05:58.435
+<v Speaker 1>a flat manifest and there's a helm option
+
+00:05:59.475 --> 00:06:01.875
+<v Speaker 1>from what I remember. There's just a flat
+
+00:06:01.875 --> 00:06:03.955
+<v Speaker 1>manifest. Is there a helm option down below?
+
+00:06:05.955 --> 00:06:07.955
+<v Speaker 1>No. Look like. Okay. Fine. Let's just try
+
+00:06:07.955 --> 00:06:09.635
+<v Speaker 1>that. That that that should just work.
+
+00:06:10.570 --> 00:06:11.690
+<v Speaker 0>Just work.
+
+00:06:12.810 --> 00:06:14.410
+<v Speaker 0>That's my favorite sentence.
+
+00:06:15.530 --> 00:06:17.130
+<v Speaker 1>That's the purpose of this
+
+00:06:17.690 --> 00:06:20.090
+<v Speaker 1>flat manifest that it just has all the
+
+00:06:20.090 --> 00:06:20.810
+<v Speaker 1>defaults.
+
+00:06:21.610 --> 00:06:24.090
+<v Speaker 0>Alright. So we have a service account. We
+
+00:06:24.090 --> 00:06:26.465
+<v Speaker 0>have a config map. We some r back
+
+00:06:26.465 --> 00:06:27.265
+<v Speaker 0>configuration.
+
+00:06:27.265 --> 00:06:29.425
+<v Speaker 0>We've got a daemon set and a deployment.
+
+00:06:29.425 --> 00:06:31.585
+<v Speaker 0>Oh, a Cilium operator as well. It's it's
+
+00:06:31.585 --> 00:06:34.705
+<v Speaker 0>Cilium. Yeah. And it goes into the cube
+
+00:06:34.705 --> 00:06:36.945
+<v Speaker 1>system namespace normally like this.
+
+00:06:37.905 --> 00:06:39.825
+<v Speaker 0>Alright. I guess we should validate.
+
+00:06:40.319 --> 00:06:41.040
+<v Speaker 0>Yeah.
+
+00:06:41.520 --> 00:06:43.039
+<v Speaker 0>I I like this actually. I hadn't noticed
+
+00:06:43.039 --> 00:06:45.280
+<v Speaker 0>this previously, but copy first line instead of
+
+00:06:45.280 --> 00:06:47.120
+<v Speaker 0>copy all. That's pretty sweet. I like that.
+
+00:06:47.120 --> 00:06:48.320
+<v Speaker 1>Goodness. Yeah.
+
+00:06:48.719 --> 00:06:51.199
+<v Speaker 0>Alright. So this runs a cube system get
+
+00:06:51.199 --> 00:06:51.759
+<v Speaker 0>pods.
+
+00:06:53.254 --> 00:06:55.095
+<v Speaker 1>Oh, no. We got a crash lit.
+
+00:06:58.134 --> 00:06:59.574
+<v Speaker 1>Hey. Let's have a look. It will probably
+
+00:06:59.574 --> 00:07:01.414
+<v Speaker 1>tell us what I mean, it should tell
+
+00:07:01.414 --> 00:07:03.574
+<v Speaker 1>us what what is happening. Is it just
+
+00:07:03.574 --> 00:07:05.414
+<v Speaker 0>because the operator is not ready yet?
+
+00:07:06.120 --> 00:07:07.560
+<v Speaker 1>No. No. Yeah.
+
+00:07:08.120 --> 00:07:10.040
+<v Speaker 1>The operator is not required for
+
+00:07:10.760 --> 00:07:12.200
+<v Speaker 1>for Cilium to start.
+
+00:07:12.680 --> 00:07:14.600
+<v Speaker 0>Alright. Let's take a look at some
+
+00:07:15.160 --> 00:07:17.080
+<v Speaker 1>Yeah. I've not run Cilium on a packet.
+
+00:07:17.080 --> 00:07:18.600
+<v Speaker 1>So, you know, it's a thing.
+
+00:07:21.665 --> 00:07:23.585
+<v Speaker 0>Okay. So it's in the initialization.
+
+00:07:23.585 --> 00:07:25.585
+<v Speaker 0>Oh, I'm not passing. Oh, I just deployed
+
+00:07:25.585 --> 00:07:26.865
+<v Speaker 0>that to the wrong cluster.
+
+00:07:27.745 --> 00:07:30.145
+<v Speaker 1>Oh, have you? Deployed that to Docker for
+
+00:07:30.145 --> 00:07:32.945
+<v Speaker 0>Mac. Oh, that's why it's crashing. Okay. Yeah.
+
+00:07:32.945 --> 00:07:34.385
+<v Speaker 1>It does crash on Docker for Mac.
+
+00:07:35.100 --> 00:07:36.300
+<v Speaker 0>Sorry.
+
+00:07:36.540 --> 00:07:39.980
+<v Speaker 0>Okay. So we need my special cube config.
+
+00:07:44.700 --> 00:07:48.380
+<v Speaker 0>Copy. Quick start dot cube config.
+
+00:07:48.620 --> 00:07:49.260
+<v Speaker 1>Is it
+
+00:07:50.405 --> 00:07:51.205
+<v Speaker 1>intentional
+
+00:07:51.445 --> 00:07:53.045
+<v Speaker 1>dot company?
+
+00:07:53.525 --> 00:07:55.525
+<v Speaker 1>Or is it Oh, no. It's it's definitely
+
+00:07:55.525 --> 00:07:56.645
+<v Speaker 0>just me.
+
+00:07:57.365 --> 00:07:59.605
+<v Speaker 0>Generally, when things go wrong, it's always my
+
+00:07:59.605 --> 00:08:00.645
+<v Speaker 0>fault. So
+
+00:08:02.405 --> 00:08:04.245
+<v Speaker 0>it would now install it to the correct
+
+00:08:04.245 --> 00:08:04.725
+<v Speaker 0>cluster.
+
+00:08:05.960 --> 00:08:07.479
+<v Speaker 0>And so we now need to go for
+
+00:08:07.479 --> 00:08:10.120
+<v Speaker 0>the cube system namespace and get pods. Right?
+
+00:08:10.120 --> 00:08:11.639
+<v Speaker 1>You need a you need, like, a speech
+
+00:08:11.639 --> 00:08:13.000
+<v Speaker 1>bubble there, David.
+
+00:08:13.320 --> 00:08:14.520
+<v Speaker 1>It's always my fault.
+
+00:08:15.080 --> 00:08:17.639
+<v Speaker 0>It's always my fault. Yeah. Okay. Goes wrong.
+
+00:08:18.865 --> 00:08:21.185
+<v Speaker 0>That's looking better. Right? That says running now.
+
+00:08:21.185 --> 00:08:23.585
+<v Speaker 0>Not healthy, but running. That's progress. Oh, sweet.
+
+00:08:23.585 --> 00:08:24.625
+<v Speaker 1>Yeah. Sweet.
+
+00:08:24.865 --> 00:08:25.825
+<v Speaker 1>Which should stop.
+
+00:08:26.385 --> 00:08:28.705
+<v Speaker 0>I'm sorry to worry. Sorry. No worries.
+
+00:08:29.345 --> 00:08:31.185
+<v Speaker 1>So if you if you look at the
+
+00:08:31.185 --> 00:08:33.025
+<v Speaker 1>logs of one of the Cilium parts, just
+
+00:08:33.025 --> 00:08:33.745
+<v Speaker 1>to verify that,
+
+00:08:34.450 --> 00:08:35.970
+<v Speaker 1>it is truly happy.
+
+00:08:38.370 --> 00:08:39.809
+<v Speaker 0>K. Let's grab
+
+00:08:40.450 --> 00:08:41.490
+<v Speaker 0>one here.
+
+00:08:44.850 --> 00:08:47.615
+<v Speaker 0>Yep. I mean Yeah. I'm assuming that looks
+
+00:08:47.615 --> 00:08:49.135
+<v Speaker 0>alright. So I can now run that Yeah.
+
+00:08:49.295 --> 00:08:51.855
+<v Speaker 1>Yeah. Validate one. Right? Yeah. That's right. Yeah.
+
+00:08:51.855 --> 00:08:54.015
+<v Speaker 1>So there's I we did that. Okay. Yeah.
+
+00:08:54.255 --> 00:08:55.615
+<v Speaker 1>The connectivity test.
+
+00:08:56.095 --> 00:08:57.215
+<v Speaker 0>Oh, that one. Alright.
+
+00:08:59.440 --> 00:09:02.320
+<v Speaker 0>Okay. So this is applying a manifest?
+
+00:09:02.560 --> 00:09:04.240
+<v Speaker 1>That's right. And it's just, like, a bunch
+
+00:09:04.240 --> 00:09:06.720
+<v Speaker 1>of pods that that try to talk to
+
+00:09:06.720 --> 00:09:07.120
+<v Speaker 1>each other.
+
+00:09:11.225 --> 00:09:13.625
+<v Speaker 1>So there's like a an echo server and
+
+00:09:13.625 --> 00:09:14.665
+<v Speaker 1>and
+
+00:09:15.465 --> 00:09:17.385
+<v Speaker 1>some crawl based
+
+00:09:17.705 --> 00:09:19.145
+<v Speaker 1>readiness probes.
+
+00:09:19.705 --> 00:09:21.945
+<v Speaker 0>Alright. I'll trust you. Let's let's just copy
+
+00:09:21.945 --> 00:09:22.745
+<v Speaker 0>and paste.
+
+00:09:23.480 --> 00:09:25.880
+<v Speaker 0>Only I'll remember. But I should just export
+
+00:09:25.880 --> 00:09:28.120
+<v Speaker 0>that environment variable for my cube config, shouldn't
+
+00:09:28.120 --> 00:09:29.480
+<v Speaker 0>I? I'll do it after.
+
+00:09:30.280 --> 00:09:31.480
+<v Speaker 0>Does that apply?
+
+00:09:32.920 --> 00:09:33.240
+<v Speaker 0>Alright.
+
+00:09:35.894 --> 00:09:38.214
+<v Speaker 0>Oh, no. Dot cube config.
+
+00:09:40.055 --> 00:09:42.295
+<v Speaker 0>And that's gonna get annoying quickly, so let's
+
+00:09:42.535 --> 00:09:43.735
+<v Speaker 0>let's apply.
+
+00:09:46.134 --> 00:09:48.375
+<v Speaker 0>And then oh, it creates a lot. Alright.
+
+00:09:48.375 --> 00:09:49.894
+<v Speaker 0>And then export
+
+00:09:49.930 --> 00:09:51.770
+<v Speaker 0>cube config.
+
+00:09:52.090 --> 00:09:53.450
+<v Speaker 0>There. I've I've got it in my history
+
+00:09:53.450 --> 00:09:55.130
+<v Speaker 0>already. Okay. Nice.
+
+00:09:55.530 --> 00:09:57.530
+<v Speaker 0>So let's just run
+
+00:09:57.610 --> 00:10:01.370
+<v Speaker 0>get pods, correct cluster. Good. I'm happy. Mhmm.
+
+00:10:02.425 --> 00:10:04.745
+<v Speaker 1>And this is keep system there. Right? So
+
+00:10:04.745 --> 00:10:06.584
+<v Speaker 1>if you do get pods minus a,
+
+00:10:06.904 --> 00:10:07.704
+<v Speaker 1>capital a
+
+00:10:10.425 --> 00:10:11.545
+<v Speaker 1>yeah.
+
+00:10:11.865 --> 00:10:14.504
+<v Speaker 1>So the default namespace now has those
+
+00:10:15.890 --> 00:10:17.730
+<v Speaker 1>connectivity test pods.
+
+00:10:17.970 --> 00:10:20.930
+<v Speaker 1>So we can see that they're still creating.
+
+00:10:23.970 --> 00:10:25.970
+<v Speaker 0>Alright. Let's just run a rewatch.
+
+00:10:27.250 --> 00:10:27.650
+<v Speaker 1>Yep.
+
+00:10:30.505 --> 00:10:32.345
+<v Speaker 0>So I guess that's just pulling images right
+
+00:10:32.345 --> 00:10:34.345
+<v Speaker 0>now. I'm gonna assume this is
+
+00:10:35.065 --> 00:10:37.545
+<v Speaker 0>hopefully quickly gonna start parallel.
+
+00:10:37.785 --> 00:10:40.105
+<v Speaker 1>Yeah. Yeah. I think it's fairly quick. Time
+
+00:10:40.105 --> 00:10:40.825
+<v Speaker 0>to drink coffee.
+
+00:10:46.980 --> 00:10:48.579
+<v Speaker 0>There we go. There's one.
+
+00:10:50.579 --> 00:10:52.420
+<v Speaker 0>Alright. So we got
+
+00:10:53.060 --> 00:10:55.540
+<v Speaker 0>so this connectivity test is
+
+00:10:55.925 --> 00:10:58.404
+<v Speaker 0>is it testing network policies based on some
+
+00:10:58.404 --> 00:10:59.445
+<v Speaker 0>of these names?
+
+00:10:59.605 --> 00:11:00.725
+<v Speaker 1>It just
+
+00:11:01.045 --> 00:11:02.084
+<v Speaker 1>it just
+
+00:11:02.324 --> 00:11:03.605
+<v Speaker 1>test connectivity
+
+00:11:03.605 --> 00:11:05.524
+<v Speaker 1>within the cluster and
+
+00:11:06.004 --> 00:11:06.884
+<v Speaker 1>and outbound.
+
+00:11:08.390 --> 00:11:11.030
+<v Speaker 0>Yeah. Because I see pod to it denied
+
+00:11:11.030 --> 00:11:12.150
+<v Speaker 0>CNP.
+
+00:11:12.150 --> 00:11:14.550
+<v Speaker 1>Yeah. I think I think there's there's one
+
+00:11:14.550 --> 00:11:15.910
+<v Speaker 1>policy tested that's
+
+00:11:16.310 --> 00:11:18.710
+<v Speaker 1>CNP is a Cilium network policy.
+
+00:11:19.110 --> 00:11:19.350
+<v Speaker 1>And
+
+00:11:21.115 --> 00:11:23.915
+<v Speaker 1>and most of them are, you know, pods
+
+00:11:23.915 --> 00:11:26.235
+<v Speaker 1>on different nodes, pods on the same node,
+
+00:11:26.955 --> 00:11:30.235
+<v Speaker 1>pods to Google, pods to some other
+
+00:11:30.475 --> 00:11:31.835
+<v Speaker 1>fairly reliable
+
+00:11:31.995 --> 00:11:32.955
+<v Speaker 1>Internet addresses.
+
+00:11:34.530 --> 00:11:36.050
+<v Speaker 0>Alright. So can
+
+00:11:36.530 --> 00:11:37.970
+<v Speaker 0>I'm gonna do one thing,
+
+00:11:38.530 --> 00:11:40.690
+<v Speaker 0>and that's just confirm that these are not
+
+00:11:40.690 --> 00:11:41.890
+<v Speaker 0>stuck pending.
+
+00:11:41.970 --> 00:11:44.210
+<v Speaker 1>Yep. Let's just check that then. Anything, and
+
+00:11:44.210 --> 00:11:46.050
+<v Speaker 0>then we can I I actually do the
+
+00:11:46.050 --> 00:11:48.290
+<v Speaker 0>the conversational part where we talk about Cilium?
+
+00:11:48.290 --> 00:11:48.450
+<v Speaker 0>So
+
+00:11:49.665 --> 00:11:51.905
+<v Speaker 0>so let's just describe that pod.
+
+00:11:53.185 --> 00:11:53.985
+<v Speaker 0>Oh.
+
+00:11:54.785 --> 00:11:57.505
+<v Speaker 0>Post IPAM failure range is full.
+
+00:11:58.385 --> 00:11:59.904
+<v Speaker 1>Okay.
+
+00:11:59.904 --> 00:12:02.625
+<v Speaker 1>So let's have a look at
+
+00:12:03.025 --> 00:12:04.145
+<v Speaker 1>Cilium pods.
+
+00:12:06.759 --> 00:12:07.480
+<v Speaker 0>Okay.
+
+00:12:10.600 --> 00:12:12.920
+<v Speaker 1>Yeah. Okay. So they're running.
+
+00:12:14.120 --> 00:12:15.800
+<v Speaker 1>Operator is also running.
+
+00:12:20.485 --> 00:12:23.365
+<v Speaker 0>Do you want some logs from from what
+
+00:12:23.365 --> 00:12:24.805
+<v Speaker 0>does the setter mean? Can we start with
+
+00:12:24.805 --> 00:12:26.165
+<v Speaker 0>that? What does that mean if it's unable
+
+00:12:26.165 --> 00:12:28.725
+<v Speaker 0>to allocate IP via local Cilium agent?
+
+00:12:29.205 --> 00:12:30.404
+<v Speaker 0>Range is full.
+
+00:12:31.800 --> 00:12:33.000
+<v Speaker 1>Right. So
+
+00:12:33.480 --> 00:12:36.280
+<v Speaker 1>well, this is, you know, one of the
+
+00:12:36.520 --> 00:12:38.840
+<v Speaker 1>so there are multiple different
+
+00:12:39.800 --> 00:12:41.000
+<v Speaker 1>IPAM modes
+
+00:12:41.160 --> 00:12:42.200
+<v Speaker 1>in Cilium.
+
+00:12:43.080 --> 00:12:43.880
+<v Speaker 1>And
+
+00:12:44.415 --> 00:12:45.615
+<v Speaker 1>the quick start
+
+00:12:46.015 --> 00:12:47.775
+<v Speaker 1>picks the default
+
+00:12:48.255 --> 00:12:50.975
+<v Speaker 1>IPAM mode, which I'm just going to double
+
+00:12:50.975 --> 00:12:51.855
+<v Speaker 1>check now.
+
+00:12:52.654 --> 00:12:54.575
+<v Speaker 1>Or you can double check it, actually. If
+
+00:12:54.575 --> 00:12:56.175
+<v Speaker 1>you if you
+
+00:12:57.050 --> 00:12:58.410
+<v Speaker 1>if you grab that
+
+00:12:58.890 --> 00:13:01.370
+<v Speaker 1>Cilium quick start manifest.
+
+00:13:05.610 --> 00:13:07.610
+<v Speaker 0>Yeah. This one here. Right? Yeah.
+
+00:13:08.330 --> 00:13:08.649
+<v Speaker 1>Yeah.
+
+00:13:10.485 --> 00:13:11.845
+<v Speaker 1>So if you look for
+
+00:13:12.645 --> 00:13:13.605
+<v Speaker 1>IPAM
+
+00:13:14.485 --> 00:13:16.245
+<v Speaker 1>The pool? Cluster pool.
+
+00:13:16.725 --> 00:13:17.445
+<v Speaker 1>Okay.
+
+00:13:18.005 --> 00:13:20.645
+<v Speaker 1>Yeah. I think that has certain implications.
+
+00:13:23.140 --> 00:13:23.780
+<v Speaker 1>Like,
+
+00:13:24.180 --> 00:13:26.980
+<v Speaker 1>if you look in Cilium docs, the IPAM
+
+00:13:26.980 --> 00:13:27.620
+<v Speaker 1>section,
+
+00:13:28.580 --> 00:13:30.500
+<v Speaker 1>I think, basically, we just need something else
+
+00:13:30.500 --> 00:13:30.820
+<v Speaker 1>for
+
+00:13:31.300 --> 00:13:33.060
+<v Speaker 1>it's not so much packet, actually. It would
+
+00:13:33.060 --> 00:13:34.100
+<v Speaker 1>be cluster API.
+
+00:13:37.095 --> 00:13:38.135
+<v Speaker 1>IPAM.
+
+00:13:38.695 --> 00:13:39.495
+<v Speaker 1>Your
+
+00:13:39.575 --> 00:13:41.575
+<v Speaker 1>Azure page for some reason?
+
+00:13:43.175 --> 00:13:44.535
+<v Speaker 0>I'll
+
+00:13:44.535 --> 00:13:45.975
+<v Speaker 0>just click on documentation.
+
+00:13:46.055 --> 00:13:49.000
+<v Speaker 0>I just Yeah. This go away. Didn't find
+
+00:13:49.000 --> 00:13:50.600
+<v Speaker 0>anything for iPads.
+
+00:13:50.680 --> 00:13:51.160
+<v Speaker 0>Oh,
+
+00:13:52.520 --> 00:13:53.000
+<v Speaker 0>okay.
+
+00:13:53.880 --> 00:13:55.240
+<v Speaker 0>So
+
+00:13:58.920 --> 00:13:59.240
+<v Speaker 1>Yeah.
+
+00:13:59.815 --> 00:14:01.735
+<v Speaker 1>Yeah. I would say that. I would say
+
+00:14:01.735 --> 00:14:06.615
+<v Speaker 1>that. I'm
+
+00:14:06.615 --> 00:14:07.575
+<v Speaker 0>not sure.
+
+00:14:08.535 --> 00:14:09.815
+<v Speaker 0>Advanced networking, maybe?
+
+00:14:16.630 --> 00:14:19.110
+<v Speaker 1>I've done cluster pool. So okay. I'm just
+
+00:14:19.110 --> 00:14:21.029
+<v Speaker 1>looking at the documentation
+
+00:14:21.029 --> 00:14:22.550
+<v Speaker 1>for cluster pool.
+
+00:14:26.035 --> 00:14:27.075
+<v Speaker 1>So we can
+
+00:14:27.475 --> 00:14:29.875
+<v Speaker 1>check that. Let me So I've I've got
+
+00:14:30.115 --> 00:14:33.075
+<v Speaker 0>two IPAM modes here in the docs. CRD
+
+00:14:33.075 --> 00:14:35.875
+<v Speaker 0>backed IPAM or CRD backed Cilium cluster pool
+
+00:14:35.875 --> 00:14:36.675
+<v Speaker 0>IPAM.
+
+00:14:36.755 --> 00:14:38.995
+<v Speaker 1>Yeah. So let's have a look at
+
+00:14:40.420 --> 00:14:41.459
+<v Speaker 1>cluster pool
+
+00:14:43.380 --> 00:14:45.060
+<v Speaker 1>because that appears to be the one that
+
+00:14:45.060 --> 00:14:46.260
+<v Speaker 1>we are currently using.
+
+00:14:46.660 --> 00:14:49.779
+<v Speaker 1>Oh, yes. So, yeah, we need to check
+
+00:14:49.779 --> 00:14:52.500
+<v Speaker 1>cluster pool IP before pod CIDR.
+
+00:14:54.395 --> 00:14:56.075
+<v Speaker 1>So if you look back at the
+
+00:14:56.395 --> 00:14:57.675
+<v Speaker 1>at that manifest
+
+00:14:57.995 --> 00:14:58.395
+<v Speaker 0>Mhmm.
+
+00:14:59.115 --> 00:15:01.675
+<v Speaker 1>What do we have here? Cluster pull I
+
+00:15:01.675 --> 00:15:02.955
+<v Speaker 1>p v four CIDR.
+
+00:15:03.195 --> 00:15:04.795
+<v Speaker 1>If you just go back to where I
+
+00:15:04.795 --> 00:15:05.595
+<v Speaker 1>found was.
+
+00:15:06.475 --> 00:15:08.315
+<v Speaker 1>So it's 10
+
+00:15:08.475 --> 00:15:09.275
+<v Speaker 1>slash eight.
+
+00:15:09.740 --> 00:15:10.380
+<v Speaker 1>Okay.
+
+00:15:11.019 --> 00:15:13.899
+<v Speaker 1>And then p four mask size 24.
+
+00:15:15.740 --> 00:15:18.540
+<v Speaker 1>Okay. Well, that's well, this should work
+
+00:15:18.779 --> 00:15:20.860
+<v Speaker 1>unless you think this might challenge.
+
+00:15:21.019 --> 00:15:23.834
+<v Speaker 0>That's clashing with the packet private network. Oh,
+
+00:15:23.834 --> 00:15:25.435
+<v Speaker 1>okay. So if you
+
+00:15:26.235 --> 00:15:28.635
+<v Speaker 1>if you basically grab this manifest
+
+00:15:28.635 --> 00:15:30.235
+<v Speaker 1>and store it locally
+
+00:15:30.954 --> 00:15:31.915
+<v Speaker 1>and then
+
+00:15:32.475 --> 00:15:34.154
+<v Speaker 1>We'll make some changes. Yeah.
+
+00:15:36.779 --> 00:15:39.980
+<v Speaker 0>I think we impromptu debug hackathon. So That's
+
+00:15:39.980 --> 00:15:40.540
+<v Speaker 1>right.
+
+00:15:42.940 --> 00:15:44.860
+<v Speaker 0>So if I search for IPAM,
+
+00:15:44.860 --> 00:15:48.860
+<v Speaker 0>we're just gonna change this to be
+
+00:15:50.265 --> 00:15:51.545
+<v Speaker 0>68.
+
+00:15:52.185 --> 00:15:53.145
+<v Speaker 0>Yeah.
+
+00:15:53.305 --> 00:15:55.545
+<v Speaker 0>Yeah. We're alright with that? Yeah. And two
+
+00:15:55.545 --> 00:15:58.265
+<v Speaker 1>slash 24 for the nodes is just fine.
+
+00:15:58.585 --> 00:16:00.585
+<v Speaker 1>So the second parameter is how much a
+
+00:16:00.585 --> 00:16:02.769
+<v Speaker 1>node gets. So this is good.
+
+00:16:03.490 --> 00:16:05.810
+<v Speaker 0>Alright. So do I need to uninstall or
+
+00:16:05.810 --> 00:16:07.569
+<v Speaker 0>can I apply this over the top? Up
+
+00:16:07.810 --> 00:16:10.690
+<v Speaker 1>apply and restart Cilium manifests
+
+00:16:10.850 --> 00:16:11.810
+<v Speaker 1>Cilium pods.
+
+00:16:16.834 --> 00:16:19.634
+<v Speaker 0>K. So I can do a Cube apply
+
+00:16:19.954 --> 00:16:20.915
+<v Speaker 0>Cilium.
+
+00:16:21.235 --> 00:16:21.954
+<v Speaker 1>Yeah.
+
+00:16:23.634 --> 00:16:25.154
+<v Speaker 1>Yeah. This is fine.
+
+00:16:25.875 --> 00:16:27.555
+<v Speaker 0>And then you want me to delete and
+
+00:16:27.555 --> 00:16:28.834
+<v Speaker 0>restart those? Yeah.
+
+00:16:32.030 --> 00:16:35.630
+<v Speaker 0>Alright. So cube system, delete pods. Can I
+
+00:16:35.630 --> 00:16:38.190
+<v Speaker 0>do a label side? Yeah. So Kate's up.
+
+00:16:38.510 --> 00:16:39.470
+<v Speaker 1>Cilium.
+
+00:16:41.390 --> 00:16:41.870
+<v Speaker 0>Yeah. Yeah.
+
+00:16:43.635 --> 00:16:44.515
+<v Speaker 1>Nice.
+
+00:16:44.995 --> 00:16:46.435
+<v Speaker 1>And I
+
+00:16:47.075 --> 00:16:49.635
+<v Speaker 1>forgot if Cilium operator had the same label
+
+00:16:49.635 --> 00:16:50.675
+<v Speaker 1>or not, but
+
+00:16:52.275 --> 00:16:53.555
+<v Speaker 1>I think
+
+00:16:54.595 --> 00:16:56.835
+<v Speaker 1>you might want to to, yeah, to kick
+
+00:16:56.835 --> 00:16:58.115
+<v Speaker 1>Cilium operator as well.
+
+00:17:01.730 --> 00:17:02.450
+<v Speaker 1>Maybe.
+
+00:17:03.650 --> 00:17:04.369
+<v Speaker 1>Yeah.
+
+00:17:05.650 --> 00:17:07.410
+<v Speaker 0>I just believe it's two. Yeah. There's just
+
+00:17:07.410 --> 00:17:08.289
+<v Speaker 1>two of them.
+
+00:17:11.170 --> 00:17:11.650
+<v Speaker 0>Alright.
+
+00:17:13.054 --> 00:17:15.454
+<v Speaker 0>So in theory, give that a minute, and
+
+00:17:15.454 --> 00:17:16.335
+<v Speaker 0>we should
+
+00:17:17.054 --> 00:17:19.934
+<v Speaker 0>potentially see some other ones here spanging up
+
+00:17:19.934 --> 00:17:22.894
+<v Speaker 0>as the IPAM IPAM error goes away.
+
+00:17:23.135 --> 00:17:23.934
+<v Speaker 0>Yep.
+
+00:17:25.849 --> 00:17:27.849
+<v Speaker 0>Let's see how Cilium looks.
+
+00:17:33.370 --> 00:17:34.650
+<v Speaker 0>Alright. Let's
+
+00:17:34.650 --> 00:17:35.930
+<v Speaker 0>just pull down some logs.
+
+00:17:38.455 --> 00:17:40.534
+<v Speaker 1>I think this seriously works now.
+
+00:17:41.575 --> 00:17:42.374
+<v Speaker 1>See that?
+
+00:17:43.095 --> 00:17:43.654
+<v Speaker 1>Yeah.
+
+00:17:49.495 --> 00:17:50.934
+<v Speaker 1>Let's let's have a look at the at
+
+00:17:50.934 --> 00:17:52.135
+<v Speaker 1>the connectivity test pods.
+
+00:17:52.820 --> 00:17:55.220
+<v Speaker 1>I think they started coming up. Okay.
+
+00:17:56.980 --> 00:17:59.299
+<v Speaker 1>No? Still still failing?
+
+00:18:00.020 --> 00:18:01.700
+<v Speaker 0>They might just need to check as well,
+
+00:18:01.700 --> 00:18:02.740
+<v Speaker 0>actually. They could be
+
+00:18:03.220 --> 00:18:05.540
+<v Speaker 1>Oh, yeah. They could be still It's just
+
+00:18:05.540 --> 00:18:08.575
+<v Speaker 0>kind of a limbo as it were.
+
+00:18:09.855 --> 00:18:12.175
+<v Speaker 0>We'll delete the echoes and we'll see Mhmm.
+
+00:18:12.255 --> 00:18:13.934
+<v Speaker 0>If that little nudge helps.
+
+00:18:27.450 --> 00:18:29.370
+<v Speaker 1>No. They're not describing that.
+
+00:18:30.170 --> 00:18:31.690
+<v Speaker 0>Well Still the same error.
+
+00:18:33.815 --> 00:18:36.374
+<v Speaker 0>As we could always uninstall Cilium and
+
+00:18:38.934 --> 00:18:39.575
+<v Speaker 0>Mhmm.
+
+00:18:39.975 --> 00:18:40.934
+<v Speaker 0>Reinstall.
+
+00:18:42.615 --> 00:18:44.695
+<v Speaker 0>Yeah. So we're still getting the same IPAM
+
+00:18:44.695 --> 00:18:47.495
+<v Speaker 0>ranges full. How can we confirm that change
+
+00:18:47.495 --> 00:18:48.215
+<v Speaker 0>took place?
+
+00:18:49.169 --> 00:18:50.369
+<v Speaker 1>Yeah.
+
+00:18:50.850 --> 00:18:51.889
+<v Speaker 1>So we can
+
+00:18:52.370 --> 00:18:54.209
+<v Speaker 1>yeah. That's that's a good question.
+
+00:18:57.889 --> 00:19:00.370
+<v Speaker 1>I think if you exact into this one
+
+00:19:00.370 --> 00:19:01.649
+<v Speaker 1>of the Cilium parts.
+
+00:19:02.289 --> 00:19:02.690
+<v Speaker 0>Yep.
+
+00:19:03.595 --> 00:19:04.714
+<v Speaker 0>Grab this one.
+
+00:19:07.355 --> 00:19:08.554
+<v Speaker 1>And you can run
+
+00:19:09.995 --> 00:19:12.394
+<v Speaker 1>you could just run Cilium
+
+00:19:12.635 --> 00:19:13.434
+<v Speaker 1>command.
+
+00:19:14.475 --> 00:19:17.274
+<v Speaker 1>Yep. And it has a bunch of
+
+00:19:19.450 --> 00:19:21.849
+<v Speaker 1>things. Yes. For example okay.
+
+00:19:26.010 --> 00:19:27.769
+<v Speaker 1>For example, take a look at node.
+
+00:19:30.649 --> 00:19:32.090
+<v Speaker 1>Cilium status, actually.
+
+00:19:35.615 --> 00:19:36.894
+<v Speaker 1>What are we saying?
+
+00:19:37.135 --> 00:19:39.695
+<v Speaker 0>This 10 seems to still be here.
+
+00:19:40.015 --> 00:19:40.894
+<v Speaker 1>That's
+
+00:19:42.495 --> 00:19:43.455
+<v Speaker 0>And this.
+
+00:19:44.575 --> 00:19:45.934
+<v Speaker 1>I okay. Right.
+
+00:19:46.789 --> 00:19:49.029
+<v Speaker 0>So that's And there's there's a config map
+
+00:19:49.029 --> 00:19:50.950
+<v Speaker 1>mounted in the Cilium pod.
+
+00:19:53.830 --> 00:19:56.070
+<v Speaker 1>If you look at mounts
+
+00:19:57.429 --> 00:19:59.190
+<v Speaker 1>I forgot what it was, but there's a
+
+00:19:59.429 --> 00:20:00.470
+<v Speaker 1>there's config map mount.
+
+00:20:03.035 --> 00:20:05.995
+<v Speaker 1>Yeah. That's a TMP sitting config map.
+
+00:20:08.075 --> 00:20:08.794
+<v Speaker 1>Yep.
+
+00:20:09.675 --> 00:20:10.475
+<v Speaker 1>And what does
+
+00:20:13.755 --> 00:20:17.100
+<v Speaker 1>yeah. IPAM is still cluster pool cluster pool
+
+00:20:17.100 --> 00:20:18.779
+<v Speaker 1>IP before CIDR.
+
+00:20:23.340 --> 00:20:24.220
+<v Speaker 0>Okay.
+
+00:20:24.220 --> 00:20:26.140
+<v Speaker 0>Let's just delete
+
+00:20:26.140 --> 00:20:28.299
+<v Speaker 0>on the entire thing, and and then we'll
+
+00:20:28.299 --> 00:20:29.419
+<v Speaker 0>just put it back up and see what
+
+00:20:29.419 --> 00:20:29.580
+<v Speaker 0>happens.
+
+00:20:35.154 --> 00:20:38.115
+<v Speaker 0>Okay. So let's confirm.
+
+00:20:42.890 --> 00:20:45.849
+<v Speaker 0>Quite over yet. Mhmm. Give it a minute.
+
+00:20:46.330 --> 00:20:47.849
+<v Speaker 0>I wish you have to tell a joke.
+
+00:20:52.409 --> 00:20:54.330
+<v Speaker 1>I don't have any jokes today.
+
+00:20:55.304 --> 00:20:57.465
+<v Speaker 1>I I did hear good news. You probably
+
+00:20:57.465 --> 00:21:00.184
+<v Speaker 1>saw my tweet, but not necessarily all of
+
+00:21:00.184 --> 00:21:00.744
+<v Speaker 1>our
+
+00:21:01.945 --> 00:21:03.544
+<v Speaker 1>the the attendance watched
+
+00:21:03.945 --> 00:21:06.745
+<v Speaker 1>saw that tweet. And the they they they
+
+00:21:06.745 --> 00:21:08.664
+<v Speaker 1>found that dogs can detect coronavirus.
+
+00:21:09.570 --> 00:21:12.609
+<v Speaker 0>Oh, wow. Dogs detecting coronavirus.
+
+00:21:14.049 --> 00:21:16.450
+<v Speaker 1>Sounds pretty cool. I mean, can you imagine,
+
+00:21:16.450 --> 00:21:16.929
+<v Speaker 1>like,
+
+00:21:18.130 --> 00:21:18.929
+<v Speaker 1>basically,
+
+00:21:19.010 --> 00:21:20.929
+<v Speaker 1>within ten seconds, they can tell.
+
+00:21:22.565 --> 00:21:23.445
+<v Speaker 0>Wow.
+
+00:21:23.924 --> 00:21:24.404
+<v Speaker 1>Yeah.
+
+00:21:25.525 --> 00:21:26.725
+<v Speaker 1>I'm impressed.
+
+00:21:26.885 --> 00:21:27.524
+<v Speaker 1>Yep.
+
+00:21:28.165 --> 00:21:30.405
+<v Speaker 0>I'm I'm pretty sure in the past, I've
+
+00:21:30.405 --> 00:21:33.045
+<v Speaker 0>read or or seen a story about dogs
+
+00:21:33.045 --> 00:21:35.285
+<v Speaker 0>able to detect cancer as well and even
+
+00:21:35.285 --> 00:21:36.005
+<v Speaker 0>Parkinson's.
+
+00:21:36.600 --> 00:21:37.320
+<v Speaker 1>Wow.
+
+00:21:37.480 --> 00:21:39.320
+<v Speaker 0>So I'm I mean, I guess I'm not
+
+00:21:39.320 --> 00:21:40.760
+<v Speaker 0>entirely surprised,
+
+00:21:40.760 --> 00:21:41.960
+<v Speaker 0>but still astounded.
+
+00:21:43.559 --> 00:21:44.840
+<v Speaker 0>Okay. So let's
+
+00:21:45.800 --> 00:21:47.640
+<v Speaker 0>see if Cilium is back up and running.
+
+00:21:49.815 --> 00:21:50.855
+<v Speaker 1>Not yet.
+
+00:21:51.015 --> 00:21:52.774
+<v Speaker 1>There's some parts that are pending.
+
+00:21:54.775 --> 00:21:56.695
+<v Speaker 0>And I'll what I'll do is I'm gonna
+
+00:21:56.695 --> 00:21:59.015
+<v Speaker 0>grab this network connectivity check.
+
+00:22:02.455 --> 00:22:03.095
+<v Speaker 0>Fail.
+
+00:22:05.390 --> 00:22:07.309
+<v Speaker 1>Okay. And delete
+
+00:22:07.309 --> 00:22:09.550
+<v Speaker 0>that those pods and then just redeploy them
+
+00:22:09.550 --> 00:22:11.790
+<v Speaker 0>again. I wanna give it the best opportunity
+
+00:22:11.790 --> 00:22:13.549
+<v Speaker 0>I can. Mhmm.
+
+00:22:15.390 --> 00:22:17.390
+<v Speaker 0>Where was that quick start guide? There we
+
+00:22:17.390 --> 00:22:17.950
+<v Speaker 0>go. Yeah.
+
+00:22:20.075 --> 00:22:23.835
+<v Speaker 0>Self managed, quick installations, scroll down the bottom.
+
+00:22:23.835 --> 00:22:25.915
+<v Speaker 0>We want this one here.
+
+00:22:26.635 --> 00:22:28.955
+<v Speaker 0>So I can do a key delete. Mhmm.
+
+00:22:31.675 --> 00:22:33.355
+<v Speaker 0>I've got a QPS detail command.
+
+00:22:38.720 --> 00:22:40.720
+<v Speaker 0>They're all gone. Now
+
+00:22:41.680 --> 00:22:44.400
+<v Speaker 0>should we confirm the IPAM range again? Or
+
+00:22:44.400 --> 00:22:46.800
+<v Speaker 0>are you confident if I just apply
+
+00:22:46.800 --> 00:22:48.880
+<v Speaker 0>this that we make it a bit further
+
+00:22:48.880 --> 00:22:49.200
+<v Speaker 0>forward?
+
+00:22:50.635 --> 00:22:52.795
+<v Speaker 1>Well, let's let's let's double check. Let's just,
+
+00:22:52.795 --> 00:22:53.914
+<v Speaker 1>like, play safe.
+
+00:22:54.955 --> 00:22:56.715
+<v Speaker 1>Alright. So you wanna exec into one of
+
+00:22:56.715 --> 00:22:59.674
+<v Speaker 1>the Cilium pods. Yep. Keep system l, Kate's
+
+00:22:59.674 --> 00:23:00.394
+<v Speaker 1>Epsilon.
+
+00:23:01.275 --> 00:23:01.755
+<v Speaker 1>Oh, yeah.
+
+00:23:03.090 --> 00:23:04.929
+<v Speaker 0>Yep. And bash.
+
+00:23:05.330 --> 00:23:08.210
+<v Speaker 0>I can then go to cam cilium
+
+00:23:08.850 --> 00:23:11.970
+<v Speaker 0>and cluster poo I p four cider.
+
+00:23:12.130 --> 00:23:14.930
+<v Speaker 0>Alright. I mean, that Okay. That's that's good.
+
+00:23:14.930 --> 00:23:16.210
+<v Speaker 1>And cilium status?
+
+00:23:19.945 --> 00:23:20.585
+<v Speaker 0>Oh.
+
+00:23:24.345 --> 00:23:25.145
+<v Speaker 1>Yeah. That's
+
+00:23:31.490 --> 00:23:33.969
+<v Speaker 1>Maybe maybe it reads this from
+
+00:23:36.450 --> 00:23:38.049
+<v Speaker 1>from also okay. Well,
+
+00:23:38.769 --> 00:23:41.249
+<v Speaker 1>I have a suggestion from my colleague here,
+
+00:23:41.730 --> 00:23:43.090
+<v Speaker 1>one option that we could try.
+
+00:23:43.665 --> 00:23:45.745
+<v Speaker 1>Okay. But could you could you also just
+
+00:23:45.745 --> 00:23:48.465
+<v Speaker 1>list files in this config map real quick?
+
+00:23:48.625 --> 00:23:49.265
+<v Speaker 0>Yeah.
+
+00:23:50.865 --> 00:23:53.825
+<v Speaker 1>Is there
+
+00:23:59.919 --> 00:24:01.199
+<v Speaker 1>Enable PPO.
+
+00:24:01.200 --> 00:24:03.360
+<v Speaker 1>Uh-huh. Let's check here. I'm
+
+00:24:03.360 --> 00:24:05.440
+<v Speaker 1>just looking out for a native
+
+00:24:07.200 --> 00:24:10.639
+<v Speaker 1>native routing cider. It's not here. Shall we
+
+00:24:10.885 --> 00:24:14.725
+<v Speaker 1>shall we switch to Helm now? Because, clearly,
+
+00:24:14.725 --> 00:24:15.605
+<v Speaker 1>quick start
+
+00:24:15.924 --> 00:24:17.284
+<v Speaker 1>doesn't work in this.
+
+00:24:17.765 --> 00:24:19.924
+<v Speaker 1>So quick start definitely works on Minikube, for
+
+00:24:19.924 --> 00:24:20.484
+<v Speaker 1>example,
+
+00:24:21.765 --> 00:24:24.004
+<v Speaker 1>as is without any modifications. But,
+
+00:24:24.405 --> 00:24:24.804
+<v Speaker 1>clearly, here,
+
+00:24:25.300 --> 00:24:28.100
+<v Speaker 1>we we'd we'd benefit from using Helm now.
+
+00:24:28.420 --> 00:24:30.260
+<v Speaker 1>This Helm has all the all the options,
+
+00:24:30.260 --> 00:24:32.180
+<v Speaker 1>and the suggestion that my colleague just made
+
+00:24:32.180 --> 00:24:33.940
+<v Speaker 1>refers to a Helm
+
+00:24:35.300 --> 00:24:35.860
+<v Speaker 1>value.
+
+00:24:37.625 --> 00:24:38.425
+<v Speaker 0>Alright.
+
+00:24:38.585 --> 00:24:39.225
+<v Speaker 0>So
+
+00:24:39.625 --> 00:24:40.585
+<v Speaker 0>delete
+
+00:24:40.745 --> 00:24:41.785
+<v Speaker 0>delete.
+
+00:24:42.505 --> 00:24:44.585
+<v Speaker 0>Okay. We're now c and I list once
+
+00:24:44.585 --> 00:24:46.425
+<v Speaker 0>more. Mhmm. So
+
+00:24:46.425 --> 00:24:48.345
+<v Speaker 0>we're gonna deploy with
+
+00:24:48.345 --> 00:24:48.825
+<v Speaker 0>help.
+
+00:24:51.070 --> 00:24:53.310
+<v Speaker 1>Yeah. So, yeah, if you go for
+
+00:24:59.070 --> 00:25:01.790
+<v Speaker 1>yeah. If you just with manage that CD,
+
+00:25:01.790 --> 00:25:02.350
+<v Speaker 1>I guess.
+
+00:25:03.710 --> 00:25:04.110
+<v Speaker 1>Right.
+
+00:25:04.945 --> 00:25:07.025
+<v Speaker 1>So but you don't you just, yeah, just
+
+00:25:07.025 --> 00:25:09.825
+<v Speaker 1>don't use those as CD flags, basically. Just
+
+00:25:12.225 --> 00:25:14.065
+<v Speaker 1>you don't care about those. You said version
+
+00:25:14.065 --> 00:25:16.305
+<v Speaker 1>and namespace, and then and then any values
+
+00:25:16.305 --> 00:25:16.865
+<v Speaker 1>that
+
+00:25:17.450 --> 00:25:18.970
+<v Speaker 1>you might wanna specify.
+
+00:25:19.050 --> 00:25:21.049
+<v Speaker 1>And I think we'd be looking to
+
+00:25:21.690 --> 00:25:22.570
+<v Speaker 1>use
+
+00:25:24.730 --> 00:25:26.090
+<v Speaker 0>Oh, I guess we should grab the default
+
+00:25:26.090 --> 00:25:27.930
+<v Speaker 0>values. Right? That's right. Yeah.
+
+00:25:33.015 --> 00:25:34.295
+<v Speaker 0>Let's just make sure I'm in the right
+
+00:25:34.295 --> 00:25:35.015
+<v Speaker 0>place.
+
+00:25:35.175 --> 00:25:35.894
+<v Speaker 0>Yeah.
+
+00:25:36.855 --> 00:25:38.215
+<v Speaker 0>Oh, there's no values there.
+
+00:25:46.460 --> 00:25:49.100
+<v Speaker 0>Alright. I guess I can just Yep.
+
+00:25:49.420 --> 00:25:50.460
+<v Speaker 0>Download it.
+
+00:25:52.140 --> 00:25:54.300
+<v Speaker 1>Oh, wait. The values file would be in
+
+00:25:54.300 --> 00:25:57.340
+<v Speaker 1>the in the repo, maybe. Yeah. So if
+
+00:25:57.340 --> 00:25:58.460
+<v Speaker 1>you go to the
+
+00:26:00.065 --> 00:26:01.905
+<v Speaker 1>I mean, default values will
+
+00:26:02.385 --> 00:26:04.625
+<v Speaker 1>will be there anyway. So
+
+00:26:05.105 --> 00:26:06.785
+<v Speaker 1>but what I would
+
+00:26:08.145 --> 00:26:10.225
+<v Speaker 1>suggest is that
+
+00:26:15.680 --> 00:26:17.200
+<v Speaker 0>Search for helm
+
+00:26:18.240 --> 00:26:18.800
+<v Speaker 0>now.
+
+00:26:26.095 --> 00:26:27.695
+<v Speaker 0>Should I just use minikip?
+
+00:26:28.575 --> 00:26:30.095
+<v Speaker 1>Oh, we could we could run it on
+
+00:26:30.095 --> 00:26:32.014
+<v Speaker 1>minikip first. Yeah. Of course. I think it
+
+00:26:32.014 --> 00:26:34.735
+<v Speaker 1>is possible that the cluster API setup will
+
+00:26:34.735 --> 00:26:35.695
+<v Speaker 1>need a little bit more work.
+
+00:26:42.610 --> 00:26:44.530
+<v Speaker 0>Alright. Hopefully, that won't take too long. That
+
+00:26:44.530 --> 00:26:45.490
+<v Speaker 0>should just take
+
+00:26:46.930 --> 00:26:49.090
+<v Speaker 0>oh, do I need to destroy my old
+
+00:26:49.090 --> 00:26:51.010
+<v Speaker 0>mini cube and pass in some sort of
+
+00:26:51.010 --> 00:26:53.965
+<v Speaker 0>flag for this CNI or just apply some
+
+00:26:54.045 --> 00:26:56.365
+<v Speaker 1>Good question. I think, Keith, you might want
+
+00:26:56.365 --> 00:26:56.924
+<v Speaker 1>to
+
+00:26:57.725 --> 00:26:59.644
+<v Speaker 1>I'm not entirely sure if mini cube
+
+00:27:00.205 --> 00:27:02.925
+<v Speaker 1>enables CNI mode by default at the moment.
+
+00:27:04.140 --> 00:27:05.900
+<v Speaker 1>As in it didn't used to do that,
+
+00:27:05.900 --> 00:27:07.419
+<v Speaker 1>but maybe that had changed.
+
+00:27:09.020 --> 00:27:11.100
+<v Speaker 0>Let's take a look at the option. Also,
+
+00:27:11.100 --> 00:27:13.500
+<v Speaker 1>you wanna unexplored onset your cube config. Right?
+
+00:27:22.065 --> 00:27:24.705
+<v Speaker 0>Okay. Let's see what we got here.
+
+00:27:27.665 --> 00:27:28.385
+<v Speaker 0>CNA.
+
+00:27:28.945 --> 00:27:30.545
+<v Speaker 0>Yeah. Okay. So I can just do dash
+
+00:27:30.545 --> 00:27:33.150
+<v Speaker 0>dash c and I equals Cilium. You can
+
+00:27:33.150 --> 00:27:33.870
+<v Speaker 1>do that.
+
+00:27:35.630 --> 00:27:37.070
+<v Speaker 1>And if it's an old version, we can
+
+00:27:37.070 --> 00:27:37.710
+<v Speaker 1>upgrade.
+
+00:27:42.990 --> 00:27:44.750
+<v Speaker 0>So I guess it's important to note here
+
+00:27:44.750 --> 00:27:46.885
+<v Speaker 0>then that those the issues with the quick
+
+00:27:46.885 --> 00:27:48.885
+<v Speaker 0>start YAML is just with the cluster API,
+
+00:27:48.885 --> 00:27:50.485
+<v Speaker 0>and that's not something that people should really
+
+00:27:50.485 --> 00:27:51.605
+<v Speaker 0>expect to happen
+
+00:27:52.325 --> 00:27:53.605
+<v Speaker 0>on another cluster.
+
+00:27:54.165 --> 00:27:55.685
+<v Speaker 1>Well, I was a little bit hopeful in
+
+00:27:55.685 --> 00:27:56.405
+<v Speaker 1>suggesting that.
+
+00:28:01.909 --> 00:28:03.510
+<v Speaker 1>I should make it work. It'd be nice
+
+00:28:03.510 --> 00:28:05.429
+<v Speaker 1>to to have a blog post about that.
+
+00:28:06.230 --> 00:28:08.870
+<v Speaker 0>Oh, yeah. We we we can we'll have
+
+00:28:08.870 --> 00:28:09.749
+<v Speaker 0>that later.
+
+00:28:09.990 --> 00:28:11.510
+<v Speaker 0>Mhmm. So this
+
+00:28:14.045 --> 00:28:15.645
+<v Speaker 0>Oh, there we go. Okay. So Cilium is
+
+00:28:15.645 --> 00:28:17.405
+<v Speaker 0>now just spinning up. So that's happening. Oh,
+
+00:28:17.405 --> 00:28:19.165
+<v Speaker 1>sweet. Do you wanna check what version are
+
+00:28:19.165 --> 00:28:20.125
+<v Speaker 1>we getting there?
+
+00:28:21.325 --> 00:28:23.085
+<v Speaker 1>It just described that part or whatever.
+
+00:28:27.130 --> 00:28:28.010
+<v Speaker 0>Describe
+
+00:28:28.010 --> 00:28:30.010
+<v Speaker 0>part 70 m b.
+
+00:28:31.450 --> 00:28:34.010
+<v Speaker 1>Yep. Looks good. I'll grab
+
+00:28:35.210 --> 00:28:35.850
+<v Speaker 0>Mitch.
+
+00:28:40.145 --> 00:28:42.465
+<v Speaker 0>I took the scraper. No. Okay.
+
+00:28:42.945 --> 00:28:44.384
+<v Speaker 0>Yeah. Of course.
+
+00:28:45.985 --> 00:28:46.705
+<v Speaker 0>Okay.
+
+00:28:46.945 --> 00:28:48.304
+<v Speaker 0>Image. Image. Image.
+
+00:28:48.545 --> 00:28:49.985
+<v Speaker 0>We got one eight zero.
+
+00:28:50.625 --> 00:28:53.025
+<v Speaker 1>Okay. Yeah. We can, you know, we can
+
+00:28:53.025 --> 00:28:54.465
+<v Speaker 1>do a minor upgrade on that, but
+
+00:28:56.640 --> 00:28:59.039
+<v Speaker 1>not not necessary for for the purpose of
+
+00:28:59.039 --> 00:28:59.999
+<v Speaker 1>the demo anyway.
+
+00:29:00.559 --> 00:29:02.960
+<v Speaker 0>Alright. I think we're good. I think we've
+
+00:29:02.960 --> 00:29:04.720
+<v Speaker 0>we've got a little bit installed on our
+
+00:29:04.720 --> 00:29:06.479
+<v Speaker 0>ManyKube cluster. Sweet.
+
+00:29:06.720 --> 00:29:08.640
+<v Speaker 1>So you wanna install the connectivity check?
+
+00:29:10.215 --> 00:29:12.055
+<v Speaker 0>Yes. It should still be
+
+00:29:14.935 --> 00:29:17.735
+<v Speaker 0>nope. Okay. I'll grab that URL again.
+
+00:29:21.015 --> 00:29:22.455
+<v Speaker 0>That's the quick start.
+
+00:29:24.390 --> 00:29:25.510
+<v Speaker 0>Connectivity.
+
+00:29:25.510 --> 00:29:26.950
+<v Speaker 0>Oh, that was over here.
+
+00:29:30.470 --> 00:29:32.710
+<v Speaker 1>So question to you. Like, does does the
+
+00:29:32.710 --> 00:29:35.030
+<v Speaker 1>cluster API provider for Pocket support any of
+
+00:29:35.030 --> 00:29:36.950
+<v Speaker 1>the CNIs with, like, just, you know,
+
+00:29:37.965 --> 00:29:39.485
+<v Speaker 1>network name or whatever?
+
+00:29:41.165 --> 00:29:43.245
+<v Speaker 1>Like, by specifying you could can you specify
+
+00:29:43.245 --> 00:29:45.085
+<v Speaker 1>a name of a network and get it
+
+00:29:45.165 --> 00:29:45.965
+<v Speaker 1>set up?
+
+00:29:48.045 --> 00:29:49.485
+<v Speaker 0>I'm not entirely sure, to be honest.
+
+00:29:51.790 --> 00:29:53.149
+<v Speaker 0>Yeah. I'm not sure.
+
+00:29:53.870 --> 00:29:54.909
+<v Speaker 0>I
+
+00:29:56.430 --> 00:29:57.950
+<v Speaker 0>I just I I wonder if this is
+
+00:29:57.950 --> 00:29:59.790
+<v Speaker 0>a packet specific thing. The fact that it
+
+00:29:59.790 --> 00:30:01.870
+<v Speaker 0>was pulling out that ten zero six makes
+
+00:30:01.870 --> 00:30:02.910
+<v Speaker 0>me think that
+
+00:30:04.205 --> 00:30:06.445
+<v Speaker 0>something's going on there. I mean, I'll look
+
+00:30:06.445 --> 00:30:08.285
+<v Speaker 0>into that after this session. Yeah. Of course.
+
+00:30:08.285 --> 00:30:10.365
+<v Speaker 1>Yeah. At least probably I'll write about it
+
+00:30:10.365 --> 00:30:12.685
+<v Speaker 0>for sure because I'm definitely my my interest
+
+00:30:12.685 --> 00:30:15.405
+<v Speaker 0>is I'm very curious. My interest is peak.
+
+00:30:15.645 --> 00:30:16.205
+<v Speaker 0>So
+
+00:30:17.290 --> 00:30:19.130
+<v Speaker 0>this is much better now. It's running through
+
+00:30:19.130 --> 00:30:20.570
+<v Speaker 0>all of these tests. Sweet.
+
+00:30:21.370 --> 00:30:22.890
+<v Speaker 0>I guess that's a good thing that we've
+
+00:30:22.890 --> 00:30:24.410
+<v Speaker 0>not got anything and I crashed it back
+
+00:30:24.410 --> 00:30:27.210
+<v Speaker 0>off or any other That's looking good to
+
+00:30:27.210 --> 00:30:27.770
+<v Speaker 1>me. Yeah.
+
+00:30:29.405 --> 00:30:31.005
+<v Speaker 1>Yeah. Some of these take a little while
+
+00:30:31.005 --> 00:30:32.684
+<v Speaker 1>to stabilize. So yeah.
+
+00:30:33.645 --> 00:30:35.565
+<v Speaker 0>Alright. So should we talk about Cilium just
+
+00:30:35.565 --> 00:30:38.125
+<v Speaker 0>now then? Yeah. Absolutely. Yeah. Yeah. We got
+
+00:30:38.125 --> 00:30:40.045
+<v Speaker 0>a little bit distracted there, but we are
+
+00:30:40.045 --> 00:30:41.085
+<v Speaker 0>Okay. So
+
+00:30:41.245 --> 00:30:42.365
+<v Speaker 0>why don't we start with
+
+00:30:43.159 --> 00:30:44.039
+<v Speaker 0>just,
+
+00:30:44.039 --> 00:30:46.039
+<v Speaker 0>you know, the the CNI and what that
+
+00:30:46.039 --> 00:30:48.919
+<v Speaker 0>means for Kubernetes and people using Kubernetes?
+
+00:30:49.799 --> 00:30:52.039
+<v Speaker 0>Yes. What is the container networking interface?
+
+00:30:53.000 --> 00:30:54.599
+<v Speaker 1>Yeah. I mean, there are many
+
+00:30:54.840 --> 00:30:56.919
+<v Speaker 1>many things I could say about it, but
+
+00:30:57.195 --> 00:30:59.835
+<v Speaker 1>I just remember starting with Kubernetes back in
+
+00:30:59.835 --> 00:31:00.394
+<v Speaker 1>the day when
+
+00:31:01.434 --> 00:31:03.274
+<v Speaker 1>like, it was my first
+
+00:31:04.955 --> 00:31:07.914
+<v Speaker 1>Kubernetes related project to make BeavNet at the
+
+00:31:07.914 --> 00:31:10.154
+<v Speaker 1>time work with Kubernetes.
+
+00:31:11.150 --> 00:31:14.830
+<v Speaker 1>And and that basically required to install it
+
+00:31:14.830 --> 00:31:16.910
+<v Speaker 1>required me to install Kubernetes in a certain
+
+00:31:16.910 --> 00:31:17.629
+<v Speaker 1>manner.
+
+00:31:18.910 --> 00:31:19.390
+<v Speaker 1>And that
+
+00:31:20.270 --> 00:31:22.509
+<v Speaker 1>well, basically, you just had to make
+
+00:31:23.070 --> 00:31:25.630
+<v Speaker 1>Docker networking somehow work for Kubernetes.
+
+00:31:27.365 --> 00:31:30.005
+<v Speaker 1>You know, basically, you had to configure Docker
+
+00:31:30.005 --> 00:31:32.565
+<v Speaker 1>bridge in a particular way, and then Kubernetes
+
+00:31:32.565 --> 00:31:34.004
+<v Speaker 1>would just leverage that.
+
+00:31:34.325 --> 00:31:36.644
+<v Speaker 1>But that didn't give you enough flexibility,
+
+00:31:37.284 --> 00:31:38.485
+<v Speaker 1>and that
+
+00:31:38.850 --> 00:31:39.970
+<v Speaker 1>was sort of
+
+00:31:40.370 --> 00:31:44.370
+<v Speaker 1>implicit rather than explicit. You kind of implicitly
+
+00:31:44.370 --> 00:31:47.330
+<v Speaker 1>configured the underlying infrastructure to to do certain
+
+00:31:47.330 --> 00:31:49.169
+<v Speaker 1>things with regards to networking.
+
+00:31:49.890 --> 00:31:51.490
+<v Speaker 1>The Kubernetes had zero
+
+00:31:52.705 --> 00:31:55.104
+<v Speaker 1>knowledge of what is going on there.
+
+00:31:56.465 --> 00:31:59.345
+<v Speaker 1>So that, you know, sort of worked for
+
+00:31:59.345 --> 00:32:01.904
+<v Speaker 1>the early days of Kubernetes, but then the
+
+00:32:04.919 --> 00:32:07.479
+<v Speaker 1>docker plug ins proposal had been floated,
+
+00:32:07.879 --> 00:32:08.440
+<v Speaker 1>the
+
+00:32:08.919 --> 00:32:10.519
+<v Speaker 1>lead network plug ins.
+
+00:32:11.559 --> 00:32:12.759
+<v Speaker 1>And that
+
+00:32:12.759 --> 00:32:16.519
+<v Speaker 1>had challenges when when we tried to that
+
+00:32:16.519 --> 00:32:18.924
+<v Speaker 1>that API had challenges when we tried to
+
+00:32:18.924 --> 00:32:20.284
+<v Speaker 1>integrate it with Kubernetes.
+
+00:32:20.845 --> 00:32:23.724
+<v Speaker 1>It required, essentially, its own k v store.
+
+00:32:24.845 --> 00:32:26.844
+<v Speaker 1>It was designed for Docker Swarm
+
+00:32:27.485 --> 00:32:30.284
+<v Speaker 0>Alright. And Docker Swarm's k v store
+
+00:32:30.524 --> 00:32:31.484
+<v Speaker 1>effectively.
+
+00:32:31.565 --> 00:32:32.445
+<v Speaker 1>And
+
+00:32:33.830 --> 00:32:36.150
+<v Speaker 1>it's just a very rough summary. If anybody
+
+00:32:36.150 --> 00:32:38.390
+<v Speaker 1>is hearing this and want to correct me,
+
+00:32:38.470 --> 00:32:40.470
+<v Speaker 1>please feel feel free to tweet at me.
+
+00:32:40.470 --> 00:32:42.790
+<v Speaker 1>But this is a very rough summary of
+
+00:32:42.790 --> 00:32:43.430
+<v Speaker 1>the
+
+00:32:43.670 --> 00:32:44.630
+<v Speaker 1>of the history
+
+00:32:45.115 --> 00:32:47.914
+<v Speaker 1>on this matter. And the CNI proposal had
+
+00:32:47.914 --> 00:32:49.195
+<v Speaker 1>been floated by
+
+00:32:50.315 --> 00:32:51.835
+<v Speaker 1>folks from CoreOS.
+
+00:32:52.154 --> 00:32:53.354
+<v Speaker 1>And and
+
+00:32:53.995 --> 00:32:56.235
+<v Speaker 1>then, you know, it got actually adopted by
+
+00:32:56.235 --> 00:32:59.090
+<v Speaker 1>the the the wider Kubernetes community,
+
+00:32:59.090 --> 00:32:59.489
+<v Speaker 1>and
+
+00:32:59.890 --> 00:33:01.249
+<v Speaker 1>now all network
+
+00:33:01.970 --> 00:33:04.289
+<v Speaker 1>plugins for Kubernetes implement CNI.
+
+00:33:04.610 --> 00:33:07.410
+<v Speaker 1>And that's the way to interact with
+
+00:33:09.425 --> 00:33:10.945
+<v Speaker 1>you know, it's it's like it's the interface
+
+00:33:10.945 --> 00:33:13.345
+<v Speaker 1>between Cubelet and the the network plug in.
+
+00:33:13.425 --> 00:33:15.425
+<v Speaker 0>So I guess what's important for people then
+
+00:33:15.425 --> 00:33:17.825
+<v Speaker 0>to understand here is that the CNI gives
+
+00:33:17.825 --> 00:33:20.385
+<v Speaker 0>them the flexibility, the option, the choice, whatever
+
+00:33:20.385 --> 00:33:22.480
+<v Speaker 0>their you know, whatever's driving them to pick
+
+00:33:22.480 --> 00:33:24.720
+<v Speaker 0>a CNI implementation. And, clearly, they can swap
+
+00:33:24.720 --> 00:33:26.080
+<v Speaker 0>them out as they wish
+
+00:33:26.560 --> 00:33:28.160
+<v Speaker 0>to any them. Yeah.
+
+00:33:28.160 --> 00:33:30.800
+<v Speaker 1>It's it's a little bit challenging at present
+
+00:33:30.800 --> 00:33:33.920
+<v Speaker 1>to swap out a network in a
+
+00:33:34.325 --> 00:33:37.125
+<v Speaker 1>in a live cluster. So migration
+
+00:33:37.125 --> 00:33:37.764
+<v Speaker 1>is
+
+00:33:38.325 --> 00:33:39.684
+<v Speaker 1>is still a
+
+00:33:42.405 --> 00:33:44.005
+<v Speaker 1>the kind of one of the less mature
+
+00:33:44.005 --> 00:33:46.085
+<v Speaker 1>features of of the the
+
+00:33:46.900 --> 00:33:47.700
+<v Speaker 1>CNI
+
+00:33:47.860 --> 00:33:48.580
+<v Speaker 1>spec.
+
+00:33:48.660 --> 00:33:51.540
+<v Speaker 1>And, you know, it's like CNI is often
+
+00:33:51.540 --> 00:33:53.380
+<v Speaker 1>easy when that's, I guess, one of my
+
+00:33:53.380 --> 00:33:55.220
+<v Speaker 1>main challenges. When you say CNI,
+
+00:33:55.300 --> 00:33:57.539
+<v Speaker 1>I'm thinking of the of the actual spec
+
+00:33:57.940 --> 00:34:00.660
+<v Speaker 1>of the container network interface that that I
+
+00:34:00.660 --> 00:34:03.265
+<v Speaker 1>referred to. But people use it much more
+
+00:34:03.265 --> 00:34:05.585
+<v Speaker 1>broadly. And I think you were actually
+
+00:34:06.065 --> 00:34:07.665
+<v Speaker 1>hoping that I'll tell you something a bit
+
+00:34:07.665 --> 00:34:08.785
+<v Speaker 1>more broad than that.
+
+00:34:11.344 --> 00:34:13.265
+<v Speaker 1>And that that's that's kind of a problem,
+
+00:34:13.265 --> 00:34:14.945
+<v Speaker 1>I guess, that people who've been around for
+
+00:34:14.945 --> 00:34:17.630
+<v Speaker 1>a while have with some of this terminology.
+
+00:34:17.949 --> 00:34:20.829
+<v Speaker 1>Anyway, what I'm trying to what I'm trying
+
+00:34:20.829 --> 00:34:21.869
+<v Speaker 1>to say is that
+
+00:34:23.549 --> 00:34:26.349
+<v Speaker 1>more most people actually refer to CNI as
+
+00:34:26.349 --> 00:34:29.310
+<v Speaker 1>a a network implementation for Kubernetes
+
+00:34:29.869 --> 00:34:32.324
+<v Speaker 1>and not the interface that that I seem
+
+00:34:32.324 --> 00:34:34.405
+<v Speaker 1>to think about every time you mention it.
+
+00:34:35.284 --> 00:34:36.965
+<v Speaker 0>Yeah. That that's too scary for me to
+
+00:34:36.965 --> 00:34:38.885
+<v Speaker 0>try and understand the interface that I've been
+
+00:34:38.885 --> 00:34:40.565
+<v Speaker 0>to. I've been so distanced from it. I
+
+00:34:40.565 --> 00:34:42.005
+<v Speaker 0>mean, I I didn't my knowledge of it
+
+00:34:42.005 --> 00:34:43.605
+<v Speaker 0>is purely as a consumer and not as
+
+00:34:43.605 --> 00:34:46.690
+<v Speaker 0>a contributor or That's right. Yeah. So
+
+00:34:47.010 --> 00:34:47.250
+<v Speaker 1>a
+
+00:34:49.010 --> 00:34:50.930
+<v Speaker 1>you know, so Cilium is one of the
+
+00:34:50.930 --> 00:34:53.810
+<v Speaker 1>network implementations. It does implement the CNI interface,
+
+00:34:54.290 --> 00:34:56.450
+<v Speaker 1>and you can install it in pretty much
+
+00:34:56.450 --> 00:34:57.570
+<v Speaker 1>any Kubernetes cluster.
+
+00:34:58.325 --> 00:35:00.085
+<v Speaker 1>You may need to tweak parameters as we
+
+00:35:00.085 --> 00:35:03.285
+<v Speaker 1>just saw earlier for request API provider.
+
+00:35:04.565 --> 00:35:05.205
+<v Speaker 1>The
+
+00:35:06.644 --> 00:35:08.885
+<v Speaker 1>main advantage of Cilium is that it relies
+
+00:35:08.885 --> 00:35:10.724
+<v Speaker 1>on the latest and greatest
+
+00:35:11.045 --> 00:35:13.125
+<v Speaker 1>kernel based technology where
+
+00:35:14.480 --> 00:35:18.160
+<v Speaker 1>where essentially Cilium hooks directly into the kernel
+
+00:35:18.720 --> 00:35:20.320
+<v Speaker 1>using eBPF,
+
+00:35:20.720 --> 00:35:23.280
+<v Speaker 1>which is the kernel extension mechanism, effectively.
+
+00:35:24.640 --> 00:35:27.440
+<v Speaker 1>One of ways I can describe eBPF is
+
+00:35:27.440 --> 00:35:29.280
+<v Speaker 1>that, basically, with eBPF, you can
+
+00:35:29.845 --> 00:35:32.325
+<v Speaker 1>reimplement the entire TCP IP stack if you
+
+00:35:32.325 --> 00:35:33.285
+<v Speaker 1>really wish to.
+
+00:35:35.125 --> 00:35:36.405
+<v Speaker 1>So, you know,
+
+00:35:36.725 --> 00:35:38.725
+<v Speaker 1>that that enables you to do a lot.
+
+00:35:38.725 --> 00:35:40.565
+<v Speaker 1>That enables you to optimize a lot of
+
+00:35:40.565 --> 00:35:41.125
+<v Speaker 1>things. Right?
+
+00:35:41.700 --> 00:35:42.340
+<v Speaker 1>So
+
+00:35:42.740 --> 00:35:45.859
+<v Speaker 1>for example, one of very cool optimizations that
+
+00:35:45.859 --> 00:35:47.220
+<v Speaker 1>Cilium offers
+
+00:35:47.380 --> 00:35:48.740
+<v Speaker 1>is that when
+
+00:35:49.220 --> 00:35:50.100
+<v Speaker 1>Istio
+
+00:35:50.660 --> 00:35:52.900
+<v Speaker 1>when pods that are running on Istio are
+
+00:35:52.900 --> 00:35:55.619
+<v Speaker 1>talking to to to their sidecars on local
+
+00:35:55.619 --> 00:35:58.555
+<v Speaker 1>host, that doesn't have to hit the the
+
+00:35:58.555 --> 00:35:59.675
+<v Speaker 1>bottom of the stack.
+
+00:36:00.315 --> 00:36:01.035
+<v Speaker 1>We
+
+00:36:01.195 --> 00:36:02.795
+<v Speaker 1>essentially short circuit
+
+00:36:03.035 --> 00:36:04.155
+<v Speaker 1>the communication
+
+00:36:04.555 --> 00:36:06.315
+<v Speaker 1>of local host to local host,
+
+00:36:07.275 --> 00:36:09.595
+<v Speaker 1>improving system Istio performance dramatically.
+
+00:36:10.640 --> 00:36:12.400
+<v Speaker 1>I don't have figures of hand, but that's
+
+00:36:12.400 --> 00:36:14.000
+<v Speaker 1>just one of the examples that I think
+
+00:36:14.000 --> 00:36:16.480
+<v Speaker 1>illustrates pretty well what what sort of things
+
+00:36:16.480 --> 00:36:18.320
+<v Speaker 1>that Cilium can do.
+
+00:36:21.920 --> 00:36:24.320
+<v Speaker 0>Okay. That that that makes sense to me.
+
+00:36:24.320 --> 00:36:25.760
+<v Speaker 0>Yeah. I mean, I guess it's some of
+
+00:36:25.760 --> 00:36:27.605
+<v Speaker 0>it. Sorry. Anya, go ahead. Some of the
+
+00:36:27.605 --> 00:36:28.885
+<v Speaker 1>other major
+
+00:36:28.885 --> 00:36:30.485
+<v Speaker 1>elements are like,
+
+00:36:31.285 --> 00:36:33.525
+<v Speaker 1>instead of relying on
+
+00:36:34.085 --> 00:36:35.365
+<v Speaker 1>IP tables
+
+00:36:35.365 --> 00:36:38.484
+<v Speaker 1>or something like IPVS for load balancing of
+
+00:36:38.484 --> 00:36:39.205
+<v Speaker 1>services
+
+00:36:39.365 --> 00:36:40.645
+<v Speaker 1>inside a cluster,
+
+00:36:41.045 --> 00:36:41.445
+<v Speaker 1>essentially,
+
+00:36:42.620 --> 00:36:45.740
+<v Speaker 1>we can replace Kube proxy with eBPF
+
+00:36:45.900 --> 00:36:47.820
+<v Speaker 1>based implementation as well.
+
+00:36:48.780 --> 00:36:51.340
+<v Speaker 0>Ah, very cool. Which effectively eliminates
+
+00:36:51.340 --> 00:36:53.420
+<v Speaker 1>any any use of IP tables.
+
+00:36:54.984 --> 00:36:57.865
+<v Speaker 0>Well, I mean, as a former SRE has
+
+00:36:57.865 --> 00:36:59.545
+<v Speaker 0>had to has had to deal with IP
+
+00:36:59.545 --> 00:37:01.865
+<v Speaker 0>tables and contract over my my lifetime of
+
+00:37:01.865 --> 00:37:03.705
+<v Speaker 0>administration, I'm happy to see the back of
+
+00:37:03.705 --> 00:37:05.785
+<v Speaker 0>IP tables if that is an option. So
+
+00:37:05.785 --> 00:37:07.465
+<v Speaker 1>Yeah. That's right. And one one of the
+
+00:37:07.465 --> 00:37:09.390
+<v Speaker 1>one of the the challenges that that IP
+
+00:37:09.390 --> 00:37:10.430
+<v Speaker 1>tables has
+
+00:37:10.670 --> 00:37:12.750
+<v Speaker 1>at scale is that it just doesn't perform
+
+00:37:12.750 --> 00:37:13.390
+<v Speaker 1>too well
+
+00:37:14.030 --> 00:37:16.030
+<v Speaker 0>Yeah. For sure. When you're when you're doing
+
+00:37:16.030 --> 00:37:17.070
+<v Speaker 1>network policy
+
+00:37:17.230 --> 00:37:19.390
+<v Speaker 1>or or when you're doing
+
+00:37:20.109 --> 00:37:22.510
+<v Speaker 1>a load balancing in a large Kubernetes cluster.
+
+00:37:24.455 --> 00:37:26.535
+<v Speaker 0>Okay. So would you say that,
+
+00:37:26.935 --> 00:37:29.175
+<v Speaker 0>you know, all not all CNI implementations are
+
+00:37:29.175 --> 00:37:30.455
+<v Speaker 0>alike. Right? I mean, they all have a
+
+00:37:30.455 --> 00:37:32.775
+<v Speaker 0>similar API surface that they conform to, but
+
+00:37:32.775 --> 00:37:35.015
+<v Speaker 0>Cilium offers stuff above and beyond that. It
+
+00:37:35.015 --> 00:37:37.095
+<v Speaker 0>gives people That's right. Like, those performance benefits
+
+00:37:37.095 --> 00:37:38.650
+<v Speaker 0>you were just talking about. Yeah. That's right.
+
+00:37:38.650 --> 00:37:40.090
+<v Speaker 1>And Cilium does
+
+00:37:40.330 --> 00:37:42.570
+<v Speaker 1>get a little bit into this
+
+00:37:42.650 --> 00:37:44.250
+<v Speaker 1>the service mesh territory
+
+00:37:45.530 --> 00:37:48.170
+<v Speaker 1>by integrating with Istio, but also so on
+
+00:37:48.170 --> 00:37:49.530
+<v Speaker 1>its own, we have, for example,
+
+00:37:50.685 --> 00:37:53.405
+<v Speaker 1>layer seven policies. So you could you could
+
+00:37:53.405 --> 00:37:56.925
+<v Speaker 1>you could define policies on, like, HTTP
+
+00:37:57.645 --> 00:37:58.285
+<v Speaker 1>level.
+
+00:37:59.805 --> 00:38:02.125
+<v Speaker 1>So you could, for example, deny certain requests
+
+00:38:02.125 --> 00:38:04.125
+<v Speaker 1>unless they contain a particular header.
+
+00:38:05.480 --> 00:38:08.760
+<v Speaker 0>Right. Okay. I think I understand that. So
+
+00:38:10.280 --> 00:38:12.359
+<v Speaker 0>that's would you say that this the secret
+
+00:38:12.359 --> 00:38:14.920
+<v Speaker 0>sauce of Cilium then is eBPF? Is that
+
+00:38:14.920 --> 00:38:17.400
+<v Speaker 0>what's really allowing for all of these unique
+
+00:38:17.400 --> 00:38:19.400
+<v Speaker 0>features to exist? Is that integration
+
+00:38:19.480 --> 00:38:21.375
+<v Speaker 0>really tight integration with the with the kernel?
+
+00:38:21.375 --> 00:38:22.495
+<v Speaker 0>Right. Absolutely.
+
+00:38:22.735 --> 00:38:24.015
+<v Speaker 0>Okay. Excellent.
+
+00:38:24.175 --> 00:38:26.975
+<v Speaker 0>Well, I think we're in a position let
+
+00:38:26.975 --> 00:38:28.895
+<v Speaker 0>me pop this back up on the screen.
+
+00:38:30.575 --> 00:38:31.295
+<v Speaker 0>Oh,
+
+00:38:31.615 --> 00:38:33.135
+<v Speaker 0>nope. That one. There we go.
+
+00:38:34.110 --> 00:38:36.190
+<v Speaker 0>I think all of those tests have run
+
+00:38:36.190 --> 00:38:37.870
+<v Speaker 0>except for one.
+
+00:38:39.470 --> 00:38:41.470
+<v Speaker 0>Oh, we still got a few pending.
+
+00:38:43.150 --> 00:38:45.470
+<v Speaker 0>You know, you'd actually take a while. So
+
+00:38:45.470 --> 00:38:48.430
+<v Speaker 0>will we just start playing with this
+
+00:38:48.144 --> 00:38:50.464
+<v Speaker 0>and remove the connectivity test? Are you comfortable
+
+00:38:50.464 --> 00:38:52.464
+<v Speaker 0>with that? Sure. Yeah. Sure.
+
+00:38:52.704 --> 00:38:55.025
+<v Speaker 1>Alright. Yeah. Look, you know, some of these
+
+00:38:55.025 --> 00:38:56.625
+<v Speaker 1>will be pending because it's a single node
+
+00:38:56.625 --> 00:38:58.785
+<v Speaker 1>cluster, David. Oh, yeah. Of course. Yeah. I
+
+00:38:58.785 --> 00:39:00.384
+<v Speaker 0>mean, we're running on many no. We don't
+
+00:39:00.384 --> 00:39:02.510
+<v Speaker 0>have access to, like, that worker pool. There's
+
+00:39:02.510 --> 00:39:04.030
+<v Speaker 0>a whole bunch of constraints there.
+
+00:39:04.349 --> 00:39:07.310
+<v Speaker 1>That's right. Because because these tests are testing
+
+00:39:07.390 --> 00:39:09.230
+<v Speaker 1>node to node communication as well.
+
+00:39:09.790 --> 00:39:10.430
+<v Speaker 0>Oh,
+
+00:39:11.869 --> 00:39:14.349
+<v Speaker 0>but that would explain why these multi node
+
+00:39:14.349 --> 00:39:16.430
+<v Speaker 0>and the node ones are probably never gonna
+
+00:39:16.430 --> 00:39:19.465
+<v Speaker 0>be quite happy. So I can do delete
+
+00:39:19.465 --> 00:39:20.345
+<v Speaker 0>pods
+
+00:39:20.425 --> 00:39:21.225
+<v Speaker 0>all,
+
+00:39:21.545 --> 00:39:23.385
+<v Speaker 0>and I should only Oh, they'll come back.
+
+00:39:23.385 --> 00:39:24.745
+<v Speaker 1>No. You you you
+
+00:39:25.465 --> 00:39:27.625
+<v Speaker 1>just want to delete the pods. Yeah. Yeah.
+
+00:39:27.625 --> 00:39:30.585
+<v Speaker 0>These are deployments. Okay. Yeah. Didn't notice the
+
+00:39:30.585 --> 00:39:32.505
+<v Speaker 0>the triple. Delete deployments all.
+
+00:39:33.789 --> 00:39:35.390
+<v Speaker 0>Delete deployment.
+
+00:39:35.789 --> 00:39:36.349
+<v Speaker 0>Alright.
+
+00:39:37.710 --> 00:39:38.590
+<v Speaker 0>Boom.
+
+00:39:39.470 --> 00:39:42.670
+<v Speaker 0>So let me pop open an error. I'm
+
+00:39:42.670 --> 00:39:44.829
+<v Speaker 0>assuming we're gonna need some YAML here. So
+
+00:39:46.454 --> 00:39:49.654
+<v Speaker 1>For sure. We probably want something running on
+
+00:39:49.654 --> 00:39:52.135
+<v Speaker 0>our cluster in order to play with it.
+
+00:39:52.214 --> 00:39:54.214
+<v Speaker 1>So there's a there's there's the
+
+00:39:54.775 --> 00:39:56.855
+<v Speaker 1>there's a Star Wars demo if you like.
+
+00:39:57.015 --> 00:39:58.055
+<v Speaker 0>Oh, nice. Okay.
+
+00:39:59.370 --> 00:40:01.130
+<v Speaker 0>And how do I find the Star Wars
+
+00:40:01.130 --> 00:40:01.930
+<v Speaker 0>demo?
+
+00:40:03.050 --> 00:40:05.210
+<v Speaker 1>See if you scroll down. I think the
+
+00:40:07.210 --> 00:40:08.330
+<v Speaker 1>yeah. If you go to next.
+
+00:40:12.945 --> 00:40:14.945
+<v Speaker 1>Okay. No. It takes you to that was,
+
+00:40:14.945 --> 00:40:15.425
+<v Speaker 1>like
+
+00:40:15.825 --> 00:40:16.945
+<v Speaker 0>A tutorial?
+
+00:40:16.945 --> 00:40:19.425
+<v Speaker 1>Maybe. Yeah. Yeah. Yeah. Yeah. Yeah. For example.
+
+00:40:19.425 --> 00:40:19.585
+<v Speaker 1>Yeah.
+
+00:40:26.570 --> 00:40:28.330
+<v Speaker 0>So identity aware,
+
+00:40:28.330 --> 00:40:30.810
+<v Speaker 0>lock in, like Yeah. No. For example, identity
+
+00:40:30.810 --> 00:40:34.250
+<v Speaker 1>aware, HTTP aware policy enforcement. That sounds fun.
+
+00:40:34.890 --> 00:40:37.770
+<v Speaker 1>So this is as mini cube. Right? This
+
+00:40:37.770 --> 00:40:40.410
+<v Speaker 0>is mini cube. Yep. Yeah. And if you
+
+00:40:40.410 --> 00:40:41.369
+<v Speaker 1>just scroll down,
+
+00:40:42.234 --> 00:40:43.035
+<v Speaker 1>this will deploy
+
+00:40:44.474 --> 00:40:45.675
+<v Speaker 1>this will tell you how to deploy the
+
+00:40:45.675 --> 00:40:46.715
+<v Speaker 1>Star Wars demo.
+
+00:40:46.955 --> 00:40:48.955
+<v Speaker 1>I can see references to that already.
+
+00:40:49.755 --> 00:40:51.915
+<v Speaker 0>Do I need to do this e d
+
+00:40:51.835 --> 00:40:54.474
+<v Speaker 0>PDF, man? No. No. No. That that's that
+
+00:40:54.635 --> 00:40:57.020
+<v Speaker 1>that's I'm assuming that's out of date, actually.
+
+00:40:57.020 --> 00:40:57.100
+<v Speaker 1>So
+
+00:40:58.620 --> 00:41:00.460
+<v Speaker 0>Alright. So we're gonna take this first lane
+
+00:41:00.460 --> 00:41:02.060
+<v Speaker 0>here, which deploys
+
+00:41:02.620 --> 00:41:04.780
+<v Speaker 0>the Star Wars app. Okay. Cool.
+
+00:41:05.180 --> 00:41:06.780
+<v Speaker 0>And there is a warning here at the
+
+00:41:06.780 --> 00:41:08.540
+<v Speaker 0>top. What I'm gonna do is apply that
+
+00:41:08.540 --> 00:41:10.515
+<v Speaker 0>YAML, and then it tells me that if
+
+00:41:10.515 --> 00:41:12.195
+<v Speaker 0>I haven't read the introduction to Cilium and
+
+00:41:12.195 --> 00:41:14.515
+<v Speaker 0>Hubble yet, you would encourage that. So I
+
+00:41:14.515 --> 00:41:16.035
+<v Speaker 0>don't know what Hubble is. So maybe you
+
+00:41:16.035 --> 00:41:17.795
+<v Speaker 0>could answer that question for us. Oh, yeah.
+
+00:41:17.795 --> 00:41:18.355
+<v Speaker 1>Absolutely.
+
+00:41:20.355 --> 00:41:22.115
+<v Speaker 1>We should probably install Hubble, actually.
+
+00:41:24.130 --> 00:41:25.970
+<v Speaker 1>You see, we should have used the
+
+00:41:26.530 --> 00:41:28.530
+<v Speaker 1>Helm chart that enables us to do more
+
+00:41:28.530 --> 00:41:29.650
+<v Speaker 1>Humble as well.
+
+00:41:30.050 --> 00:41:31.170
+<v Speaker 1>Anyway so,
+
+00:41:31.970 --> 00:41:35.010
+<v Speaker 1>yeah, Hubble offers visibility
+
+00:41:35.010 --> 00:41:35.810
+<v Speaker 1>into
+
+00:41:36.450 --> 00:41:38.450
+<v Speaker 1>network flows inside of your cluster
+
+00:41:39.865 --> 00:41:41.305
+<v Speaker 1>and visibility
+
+00:41:41.305 --> 00:41:42.105
+<v Speaker 1>into,
+
+00:41:42.425 --> 00:41:43.625
+<v Speaker 1>you know, for example,
+
+00:41:45.145 --> 00:41:46.265
+<v Speaker 1>policy verdicts
+
+00:41:46.265 --> 00:41:46.905
+<v Speaker 1>and
+
+00:41:47.785 --> 00:41:49.625
+<v Speaker 1>and some such things. So you can you
+
+00:41:49.625 --> 00:41:51.065
+<v Speaker 1>can actually see what what is going on
+
+00:41:51.065 --> 00:41:52.585
+<v Speaker 1>and when policies apply and
+
+00:41:53.530 --> 00:41:56.090
+<v Speaker 1>other such things. It has a CLI and
+
+00:41:56.090 --> 00:41:56.890
+<v Speaker 1>a UI.
+
+00:41:57.290 --> 00:41:59.210
+<v Speaker 1>We can get to using Hubble later on.
+
+00:41:59.210 --> 00:42:01.370
+<v Speaker 1>Let's let's let's try the
+
+00:42:03.530 --> 00:42:04.650
+<v Speaker 1>Star Wars demo.
+
+00:42:05.130 --> 00:42:07.370
+<v Speaker 1>Yeah. I think this would be in default
+
+00:42:07.370 --> 00:42:08.250
+<v Speaker 1>namespace.
+
+00:42:08.410 --> 00:42:09.925
+<v Speaker 0>Yep. It looks like we've got two desktops,
+
+00:42:09.925 --> 00:42:12.005
+<v Speaker 0>one type error, and an x wing running
+
+00:42:12.005 --> 00:42:12.965
+<v Speaker 0>in our cluster.
+
+00:42:13.125 --> 00:42:15.045
+<v Speaker 1>Cool. And there are probably some services as
+
+00:42:15.045 --> 00:42:15.445
+<v Speaker 1>well?
+
+00:42:18.645 --> 00:42:20.885
+<v Speaker 0>Yeah. Okay. Yep. We still have the connectivity
+
+00:42:20.885 --> 00:42:22.405
+<v Speaker 1>desk. We have the desktop service.
+
+00:42:22.910 --> 00:42:24.830
+<v Speaker 1>Okay. Can you can you reach the the
+
+00:42:24.830 --> 00:42:27.310
+<v Speaker 1>Death Star service or pull forward it?
+
+00:42:27.950 --> 00:42:28.750
+<v Speaker 0>Can.
+
+00:42:29.390 --> 00:42:31.310
+<v Speaker 0>I I get really weird with things lying
+
+00:42:31.310 --> 00:42:33.070
+<v Speaker 0>around that shouldn't be there. Yeah. I know.
+
+00:42:33.790 --> 00:42:35.790
+<v Speaker 0>Right. Okay. So we wanna port forward the
+
+00:42:35.790 --> 00:42:37.710
+<v Speaker 0>SBC to the Death Star.
+
+00:42:38.315 --> 00:42:39.115
+<v Speaker 0>Mhmm.
+
+00:42:39.195 --> 00:42:41.115
+<v Speaker 0>On port eighty eight eighty eight.
+
+00:42:41.915 --> 00:42:43.755
+<v Speaker 0>So this must be a web service.
+
+00:42:45.035 --> 00:42:46.715
+<v Speaker 0>Yeah. Is that correct?
+
+00:42:47.435 --> 00:42:48.795
+<v Speaker 1>Yeah.
+
+00:42:49.195 --> 00:42:51.195
+<v Speaker 1>I think you could try slash v one.
+
+00:42:53.310 --> 00:42:55.710
+<v Speaker 1>Yeah. Right. It has a few endpoints. Yep.
+
+00:42:56.910 --> 00:42:57.470
+<v Speaker 1>Cool.
+
+00:42:57.790 --> 00:42:59.870
+<v Speaker 1>Alright. So if you go back to the
+
+00:43:01.470 --> 00:43:02.830
+<v Speaker 1>to the tutorial
+
+00:43:04.430 --> 00:43:06.590
+<v Speaker 0>Oh, I cannot I was
+
+00:43:06.565 --> 00:43:08.005
+<v Speaker 0>navigating looking for the whole Of
+
+00:43:09.445 --> 00:43:10.885
+<v Speaker 0>course. We'll go back.
+
+00:43:11.205 --> 00:43:13.285
+<v Speaker 0>There we go. Right. Sorry. I won't touch
+
+00:43:13.285 --> 00:43:15.445
+<v Speaker 0>anything else until I That's fine. Thought you
+
+00:43:15.445 --> 00:43:16.085
+<v Speaker 0>tell me.
+
+00:43:17.045 --> 00:43:19.285
+<v Speaker 0>Okay. So we did this step here. We've
+
+00:43:19.285 --> 00:43:20.885
+<v Speaker 0>confirmed the parts of service.
+
+00:43:22.630 --> 00:43:24.630
+<v Speaker 1>And we can take a look at the
+
+00:43:24.630 --> 00:43:25.990
+<v Speaker 1>Cilium endpoints.
+
+00:43:28.790 --> 00:43:30.070
+<v Speaker 1>Yeah. Or
+
+00:43:30.390 --> 00:43:31.910
+<v Speaker 1>you could you could just do
+
+00:43:32.790 --> 00:43:34.310
+<v Speaker 1>you yeah. You can just do
+
+00:43:34.710 --> 00:43:36.070
+<v Speaker 1>Kukulo get
+
+00:43:36.635 --> 00:43:37.595
+<v Speaker 1>CEB
+
+00:43:37.595 --> 00:43:39.115
+<v Speaker 1>for Cilium endpoint.
+
+00:43:40.714 --> 00:43:43.115
+<v Speaker 0>Okay. So get Cilium
+
+00:43:43.115 --> 00:43:44.155
+<v Speaker 0>endpoints.
+
+00:43:45.275 --> 00:43:47.194
+<v Speaker 1>All All namespaces,
+
+00:43:47.194 --> 00:43:47.434
+<v Speaker 1>I suppose.
+
+00:43:49.390 --> 00:43:50.350
+<v Speaker 0>Don't matter.
+
+00:43:52.510 --> 00:43:53.710
+<v Speaker 1>I wonder why.
+
+00:43:56.350 --> 00:43:58.430
+<v Speaker 1>Okay. If you exec into one of the
+
+00:43:58.430 --> 00:44:00.030
+<v Speaker 1>Cilium pods and do what the,
+
+00:44:03.515 --> 00:44:05.355
+<v Speaker 1>no, the the command above
+
+00:44:05.595 --> 00:44:07.755
+<v Speaker 1>Oh. It did an exec into the the
+
+00:44:07.755 --> 00:44:10.635
+<v Speaker 1>Cilium pod and did Cilium endpoint Okay.
+
+00:44:11.355 --> 00:44:14.234
+<v Speaker 0>So keep system get pods
+
+00:44:14.520 --> 00:44:15.240
+<v Speaker 0>at
+
+00:44:15.320 --> 00:44:16.120
+<v Speaker 0>IT
+
+00:44:16.120 --> 00:44:19.560
+<v Speaker 0>Cilium v bash Cilium
+
+00:44:19.800 --> 00:44:20.760
+<v Speaker 0>endpoint.
+
+00:44:20.760 --> 00:44:21.240
+<v Speaker 0>Okay.
+
+00:44:24.360 --> 00:44:24.920
+<v Speaker 1>So
+
+00:44:25.320 --> 00:44:26.840
+<v Speaker 1>this is
+
+00:44:29.315 --> 00:44:29.795
+<v Speaker 1>okay.
+
+00:44:31.875 --> 00:44:34.915
+<v Speaker 1>So, well, it doesn't actually look like
+
+00:44:37.795 --> 00:44:40.115
+<v Speaker 1>it looks like something isn't working actually,
+
+00:44:41.070 --> 00:44:42.590
+<v Speaker 1>because we should see the
+
+00:44:43.150 --> 00:44:44.590
+<v Speaker 1>the pods from
+
+00:44:45.630 --> 00:44:47.470
+<v Speaker 1>from default namespace here.
+
+00:44:48.190 --> 00:44:49.950
+<v Speaker 1>Can you do list dash
+
+00:44:50.590 --> 00:44:50.910
+<v Speaker 1>help?
+
+00:44:54.765 --> 00:44:55.485
+<v Speaker 0>Yep.
+
+00:44:58.125 --> 00:44:59.565
+<v Speaker 1>Jason now has
+
+00:44:59.965 --> 00:45:01.645
+<v Speaker 1>okay. So it actually
+
+00:45:05.740 --> 00:45:08.140
+<v Speaker 0>So can you help me understand what's happened
+
+00:45:08.140 --> 00:45:10.380
+<v Speaker 0>here? We have deployed some pods. Now it's
+
+00:45:10.700 --> 00:45:13.100
+<v Speaker 1>Yeah. So for for each of for each
+
+00:45:13.100 --> 00:45:14.860
+<v Speaker 1>of the pods, Cilium creates
+
+00:45:15.820 --> 00:45:17.340
+<v Speaker 1>an endpoint object.
+
+00:45:17.340 --> 00:45:19.100
+<v Speaker 1>So it creates an identity for each of
+
+00:45:19.100 --> 00:45:19.500
+<v Speaker 1>the pod.
+
+00:45:22.805 --> 00:45:25.605
+<v Speaker 1>So and the the step in the
+
+00:45:27.204 --> 00:45:29.285
+<v Speaker 1>in the tutorial is to confirm that we
+
+00:45:29.285 --> 00:45:30.565
+<v Speaker 1>have these identities.
+
+00:45:30.964 --> 00:45:33.045
+<v Speaker 1>And, clearly, we don't we don't have them
+
+00:45:33.045 --> 00:45:36.190
+<v Speaker 1>here right now. I think it is possible.
+
+00:45:36.589 --> 00:45:38.349
+<v Speaker 1>Unfortunately, suspecting that
+
+00:45:40.430 --> 00:45:42.509
+<v Speaker 1>Minicube installed Cilium,
+
+00:45:42.509 --> 00:45:44.589
+<v Speaker 1>but some configuration is missing.
+
+00:45:45.470 --> 00:45:48.029
+<v Speaker 0>I wonder if that was because my Minicube
+
+00:45:48.029 --> 00:45:50.335
+<v Speaker 0>was kind of existing. So I'm gonna feel
+
+00:45:50.335 --> 00:45:52.015
+<v Speaker 0>brave and restart
+
+00:45:52.175 --> 00:45:54.655
+<v Speaker 0>it and redeploy all of that stuff within
+
+00:45:54.655 --> 00:45:56.015
+<v Speaker 0>a blink of an eye.
+
+00:45:56.415 --> 00:45:57.215
+<v Speaker 1>Alright.
+
+00:45:57.215 --> 00:45:59.055
+<v Speaker 1>Yeah. We can we can chat more about
+
+00:45:59.055 --> 00:46:00.335
+<v Speaker 1>e b p f and
+
+00:46:01.215 --> 00:46:02.095
+<v Speaker 1>other cool tech.
+
+00:46:03.090 --> 00:46:05.170
+<v Speaker 0>So I'm assuming I mean, maybe I should
+
+00:46:05.170 --> 00:46:07.730
+<v Speaker 0>have copied that command from the actual quick
+
+00:46:07.730 --> 00:46:09.250
+<v Speaker 0>start, but I think c n I c
+
+00:46:09.250 --> 00:46:11.250
+<v Speaker 0>m should be it. And So that that
+
+00:46:11.250 --> 00:46:13.650
+<v Speaker 1>that, you know, that brings about one of
+
+00:46:13.650 --> 00:46:16.450
+<v Speaker 1>the challenges that that I mentioned earlier, that
+
+00:46:15.855 --> 00:46:16.734
+<v Speaker 1>installing,
+
+00:46:16.895 --> 00:46:19.215
+<v Speaker 1>any network into an existing cluster
+
+00:46:21.535 --> 00:46:23.775
+<v Speaker 1>is a tricky business.
+
+00:46:25.295 --> 00:46:28.095
+<v Speaker 0>Yeah. It's not something that you know, most
+
+00:46:28.410 --> 00:46:30.410
+<v Speaker 0>most normal customers are not gonna be messing
+
+00:46:30.410 --> 00:46:32.569
+<v Speaker 0>around with their CNI implementation once it's up
+
+00:46:32.569 --> 00:46:34.330
+<v Speaker 0>and working. That's Right. You know,
+
+00:46:35.450 --> 00:46:37.690
+<v Speaker 0>my crazy attitude. So
+
+00:46:38.809 --> 00:46:40.490
+<v Speaker 0>let's make sure Cilium is
+
+00:46:41.865 --> 00:46:44.585
+<v Speaker 1>It is, however, something that that that has
+
+00:46:44.585 --> 00:46:46.345
+<v Speaker 1>been done. There was actually a blog post
+
+00:46:46.345 --> 00:46:48.505
+<v Speaker 1>recently where somebody migrated.
+
+00:46:50.025 --> 00:46:51.945
+<v Speaker 1>Was it Monza? I I thought it was
+
+00:46:52.025 --> 00:46:52.905
+<v Speaker 1>Sky Bet.
+
+00:46:53.145 --> 00:46:56.099
+<v Speaker 1>JetStack wrote the blog post. Oh, there must
+
+00:46:56.099 --> 00:46:58.020
+<v Speaker 0>be more than one then. There was a
+
+00:46:58.259 --> 00:47:01.140
+<v Speaker 0>talk at cube con from the Monzo team
+
+00:47:01.140 --> 00:47:02.259
+<v Speaker 0>where
+
+00:47:02.259 --> 00:47:04.579
+<v Speaker 0>they were talking about doing a live migration
+
+00:47:04.579 --> 00:47:06.260
+<v Speaker 0>of their CNI implementation.
+
+00:47:07.140 --> 00:47:08.740
+<v Speaker 0>I can't remember what they're room for. I
+
+00:47:08.740 --> 00:47:11.140
+<v Speaker 0>think they moved away from Flanagan into Calico,
+
+00:47:11.355 --> 00:47:14.395
+<v Speaker 0>and they did that live without any downtime,
+
+00:47:14.395 --> 00:47:16.635
+<v Speaker 0>which was pretty impressive.
+
+00:47:17.115 --> 00:47:18.955
+<v Speaker 1>Yes. So that that was one more more
+
+00:47:18.955 --> 00:47:21.755
+<v Speaker 1>recent, like, couple of weeks ago, blog post
+
+00:47:21.755 --> 00:47:23.035
+<v Speaker 1>that documented
+
+00:47:23.035 --> 00:47:23.835
+<v Speaker 1>migration
+
+00:47:23.835 --> 00:47:26.475
+<v Speaker 1>from I don't remember which provider to Cilium.
+
+00:47:29.599 --> 00:47:32.000
+<v Speaker 1>They didn't if it it is, a multi
+
+00:47:32.000 --> 00:47:32.960
+<v Speaker 1>step downs
+
+00:47:34.079 --> 00:47:36.480
+<v Speaker 1>or shall I say many step downs.
+
+00:47:38.319 --> 00:47:40.160
+<v Speaker 0>So I'm trying to work out why my
+
+00:47:40.160 --> 00:47:43.185
+<v Speaker 0>core DNS has decided it gonna run there.
+
+00:47:43.185 --> 00:47:45.425
+<v Speaker 0>I am having the worst luck with my
+
+00:47:45.425 --> 00:47:46.545
+<v Speaker 0>cluster today.
+
+00:47:47.505 --> 00:47:48.385
+<v Speaker 1>Uh-oh.
+
+00:47:51.745 --> 00:47:54.225
+<v Speaker 0>A minus n cube system
+
+00:47:54.305 --> 00:47:55.265
+<v Speaker 0>describe
+
+00:47:55.265 --> 00:47:55.825
+<v Speaker 0>pod.
+
+00:48:04.640 --> 00:48:06.000
+<v Speaker 0>Yeah. That's broken.
+
+00:48:10.885 --> 00:48:12.325
+<v Speaker 0>It's a commonality
+
+00:48:12.325 --> 00:48:13.605
+<v Speaker 0>of errors today.
+
+00:48:13.845 --> 00:48:14.645
+<v Speaker 1>Okay.
+
+00:48:16.725 --> 00:48:17.445
+<v Speaker 1>Maybe
+
+00:48:20.325 --> 00:48:20.965
+<v Speaker 1>which
+
+00:48:21.605 --> 00:48:22.885
+<v Speaker 1>sorry. Can you can you show me the
+
+00:48:22.885 --> 00:48:23.525
+<v Speaker 1>output of the
+
+00:48:24.325 --> 00:48:26.859
+<v Speaker 1>of Minicube when you started it up? Yeah.
+
+00:48:26.859 --> 00:48:27.980
+<v Speaker 0>Of course. So
+
+00:48:30.859 --> 00:48:32.780
+<v Speaker 1>it said something about Docker driver, and I
+
+00:48:32.780 --> 00:48:34.380
+<v Speaker 1>wasn't entirely sure what that means.
+
+00:48:35.339 --> 00:48:37.180
+<v Speaker 0>Oh, yeah. My Minikube runs on Docker for
+
+00:48:37.180 --> 00:48:38.700
+<v Speaker 0>Mac. Is that a problem?
+
+00:48:39.180 --> 00:48:39.580
+<v Speaker 1>Oh.
+
+00:48:48.075 --> 00:48:50.715
+<v Speaker 1>Why not kind? Kind actually works.
+
+00:48:51.835 --> 00:48:53.595
+<v Speaker 0>But that runs in Docker for Mac too.
+
+00:48:53.595 --> 00:48:56.890
+<v Speaker 0>Right? Yeah. But we we we we had
+
+00:48:56.890 --> 00:48:58.730
+<v Speaker 1>a guide for that. Okay.
+
+00:48:59.450 --> 00:49:00.570
+<v Speaker 1>Well, let's
+
+00:49:01.930 --> 00:49:02.570
+<v Speaker 1>yeah.
+
+00:49:03.050 --> 00:49:05.050
+<v Speaker 1>Let's do do you have some
+
+00:49:06.730 --> 00:49:08.330
+<v Speaker 1>you have some hypervisor available?
+
+00:49:12.635 --> 00:49:13.515
+<v Speaker 0>I'm thinking
+
+00:49:13.915 --> 00:49:15.275
+<v Speaker 0>I I have no idea.
+
+00:49:16.155 --> 00:49:17.435
+<v Speaker 0>I forgot many.
+
+00:49:18.315 --> 00:49:19.035
+<v Speaker 0>We
+
+00:49:19.915 --> 00:49:21.275
+<v Speaker 0>do have access to this.
+
+00:49:23.180 --> 00:49:24.779
+<v Speaker 1>You know what? There's a there's a kind
+
+00:49:25.099 --> 00:49:25.500
+<v Speaker 1>there's a
+
+00:49:26.220 --> 00:49:28.140
+<v Speaker 1>yeah. We can try and fix that one.
+
+00:49:29.740 --> 00:49:30.380
+<v Speaker 1>Okay.
+
+00:49:33.180 --> 00:49:33.980
+<v Speaker 1>Okay.
+
+00:49:33.980 --> 00:49:34.619
+<v Speaker 1>So
+
+00:49:34.859 --> 00:49:36.460
+<v Speaker 1>so tell me tell me a little bit
+
+00:49:36.460 --> 00:49:36.940
+<v Speaker 1>about this.
+
+00:49:38.785 --> 00:49:42.145
+<v Speaker 1>This is using IP before four addresses
+
+00:49:42.465 --> 00:49:45.025
+<v Speaker 1>in the one four seven range on the
+
+00:49:45.025 --> 00:49:47.585
+<v Speaker 1>host side. Right? So that's the public IP
+
+00:49:47.585 --> 00:49:49.745
+<v Speaker 0>addresses. Every pop over here, it got the
+
+00:49:49.745 --> 00:49:52.320
+<v Speaker 0>the private oh, sorry. So, yeah. It took
+
+00:49:52.320 --> 00:49:55.600
+<v Speaker 0>a 1080. So 1080. Yeah. Okay. Oh, can
+
+00:49:55.600 --> 00:49:57.840
+<v Speaker 1>you can you show me your cluster API
+
+00:49:57.840 --> 00:49:58.800
+<v Speaker 1>configs?
+
+00:50:00.480 --> 00:50:01.760
+<v Speaker 0>That I can do.
+
+00:50:02.480 --> 00:50:03.520
+<v Speaker 1>Yeah. That'd be handy.
+
+00:50:06.595 --> 00:50:08.355
+<v Speaker 1>Yep. Dot the m o s. So
+
+00:50:11.555 --> 00:50:14.515
+<v Speaker 1>that specifies some CIDRs initially. Right?
+
+00:50:16.595 --> 00:50:18.755
+<v Speaker 0>It does. Yes. So if I pull up.
+
+00:50:20.690 --> 00:50:21.250
+<v Speaker 1>Yeah.
+
+00:50:21.809 --> 00:50:25.250
+<v Speaker 1>So pod CIDR is is that. So
+
+00:50:25.890 --> 00:50:28.049
+<v Speaker 1>and service CIDR is 172.
+
+00:50:28.049 --> 00:50:28.609
+<v Speaker 1>So
+
+00:50:29.490 --> 00:50:31.170
+<v Speaker 1>what we can do is
+
+00:50:32.930 --> 00:50:35.650
+<v Speaker 1>just just reuse this when we
+
+00:50:37.145 --> 00:50:38.905
+<v Speaker 1>when we configure Cilium.
+
+00:50:39.465 --> 00:50:42.985
+<v Speaker 0>I thought we did use 1921680016.
+
+00:50:44.025 --> 00:50:45.945
+<v Speaker 0>I pull up the Cilium.YAML
+
+00:50:45.945 --> 00:50:48.265
+<v Speaker 0>here. Yeah. But let's let's just use the
+
+00:50:48.265 --> 00:50:48.905
+<v Speaker 1>Helm
+
+00:50:51.950 --> 00:50:55.069
+<v Speaker 1>chart instead. Right? Okay. Let's let's take a
+
+00:50:55.069 --> 00:50:56.350
+<v Speaker 0>look at that then. So
+
+00:50:57.390 --> 00:50:59.230
+<v Speaker 1>Yeah. Let me just give you the exact
+
+00:50:59.230 --> 00:51:00.110
+<v Speaker 1>command, actually,
+
+00:51:00.589 --> 00:51:02.750
+<v Speaker 1>because I think I I have something handy
+
+00:51:02.750 --> 00:51:03.309
+<v Speaker 1>that
+
+00:51:03.815 --> 00:51:06.535
+<v Speaker 1>that might just might just work. So
+
+00:51:09.175 --> 00:51:10.295
+<v Speaker 1>it would be
+
+00:51:12.135 --> 00:51:12.855
+<v Speaker 1>well,
+
+00:51:13.255 --> 00:51:15.255
+<v Speaker 1>can use Helm template, I guess.
+
+00:51:16.870 --> 00:51:19.110
+<v Speaker 1>Is there a chat window in this? Yeah.
+
+00:51:19.110 --> 00:51:20.950
+<v Speaker 0>On the right hand side, there's private chat.
+
+00:51:20.950 --> 00:51:22.470
+<v Speaker 0>Feel free to drop it in there. Oh,
+
+00:51:22.470 --> 00:51:24.070
+<v Speaker 0>we actually have a few comments.
+
+00:51:24.630 --> 00:51:26.070
+<v Speaker 0>So you
+
+00:51:28.484 --> 00:51:29.365
+<v Speaker 1>oh, yeah.
+
+00:51:32.805 --> 00:51:35.045
+<v Speaker 1>So if you try this
+
+00:51:36.885 --> 00:51:38.404
+<v Speaker 1>let me just drop some of the things
+
+00:51:38.404 --> 00:51:39.365
+<v Speaker 1>that are unrelated.
+
+00:51:40.520 --> 00:51:42.839
+<v Speaker 1>Cluster pool so we can have a fairly
+
+00:51:42.839 --> 00:51:44.200
+<v Speaker 1>explicit configuration.
+
+00:51:44.760 --> 00:51:50.040
+<v Speaker 1>And did you say it's 19268Dot0Dot0Slash16.
+
+00:51:50.280 --> 00:51:51.400
+<v Speaker 1>Dot 6 8
+
+00:51:51.800 --> 00:51:53.400
+<v Speaker 1>Slash 16. Yep.
+
+00:51:55.605 --> 00:51:57.285
+<v Speaker 1>So and we're gonna do that
+
+00:51:58.165 --> 00:51:58.885
+<v Speaker 1>for
+
+00:51:59.845 --> 00:52:01.685
+<v Speaker 1>cluster pool a p v four
+
+00:52:02.245 --> 00:52:04.405
+<v Speaker 1>and the native routing slider.
+
+00:52:07.650 --> 00:52:09.170
+<v Speaker 1>Yeah. And then,
+
+00:52:10.930 --> 00:52:13.329
+<v Speaker 1>yes, we can keep the p of
+
+00:52:15.250 --> 00:52:16.290
+<v Speaker 1>Yeah. And
+
+00:52:17.809 --> 00:52:19.809
+<v Speaker 1>global endpoint routes too.
+
+00:52:21.365 --> 00:52:23.525
+<v Speaker 1>Okay. Let's try this, and I think this
+
+00:52:23.525 --> 00:52:25.365
+<v Speaker 1>is gonna be a good starting point.
+
+00:52:27.285 --> 00:52:30.325
+<v Speaker 0>Mhmm. Awesome thing. I don't know about formatting.
+
+00:52:30.325 --> 00:52:32.165
+<v Speaker 1>You might have to fix it up.
+
+00:52:33.900 --> 00:52:37.579
+<v Speaker 0>Alright. So I already run this. Yeah. Cool.
+
+00:52:37.579 --> 00:52:38.940
+<v Speaker 0>So I should be able to do this
+
+00:52:38.940 --> 00:52:41.660
+<v Speaker 0>template. It should Yeah. Well, you wanna get
+
+00:52:41.660 --> 00:52:44.300
+<v Speaker 1>rid of the backslashes or or insert. Yeah.
+
+00:52:44.380 --> 00:52:47.075
+<v Speaker 0>Yep. Yeah. Yeah. Good idea to save that
+
+00:52:47.075 --> 00:52:49.075
+<v Speaker 1>in a in a little file.
+
+00:52:50.515 --> 00:52:51.155
+<v Speaker 1>Yep.
+
+00:52:52.355 --> 00:52:55.635
+<v Speaker 0>We'll call this Helm template s h.
+
+00:52:55.795 --> 00:52:56.194
+<v Speaker 1>Yep.
+
+00:52:57.650 --> 00:52:59.810
+<v Speaker 1>That's that's our YAML. So we'll call this
+
+00:52:59.810 --> 00:53:00.930
+<v Speaker 0>Cilium
+
+00:53:00.930 --> 00:53:02.770
+<v Speaker 0>Helm dot YAML.
+
+00:53:04.290 --> 00:53:06.050
+<v Speaker 1>And And do you have something in this
+
+00:53:06.210 --> 00:53:07.890
+<v Speaker 1>do you still have Cilium in the cube
+
+00:53:07.890 --> 00:53:08.690
+<v Speaker 1>system namespace?
+
+00:53:09.905 --> 00:53:13.345
+<v Speaker 0>So let's reexport our cube config. Let's get
+
+00:53:13.345 --> 00:53:14.545
+<v Speaker 0>our pods.
+
+00:53:20.545 --> 00:53:21.744
+<v Speaker 1>Are you in the same directory?
+
+00:53:25.299 --> 00:53:26.339
+<v Speaker 0>Yes.
+
+00:53:27.779 --> 00:53:28.339
+<v Speaker 0>I
+
+00:53:29.859 --> 00:53:32.740
+<v Speaker 0>can do this manually. So kubect config.
+
+00:53:33.859 --> 00:53:34.500
+<v Speaker 0>Why
+
+00:53:38.660 --> 00:53:41.355
+<v Speaker 0>is it speaking to one two seven?
+
+00:53:42.475 --> 00:53:43.275
+<v Speaker 1>Oh,
+
+00:53:43.275 --> 00:53:45.035
+<v Speaker 1>you know what? Your mini cube has updated
+
+00:53:45.035 --> 00:53:45.755
+<v Speaker 1>your
+
+00:53:46.075 --> 00:53:47.995
+<v Speaker 1>copy click start cube config.
+
+00:53:51.595 --> 00:53:52.395
+<v Speaker 0>Did it?
+
+00:53:52.635 --> 00:53:55.435
+<v Speaker 1>I suspect. Let's have a look. Oh, no.
+
+00:53:55.435 --> 00:53:56.075
+<v Speaker 0>I'm I'm
+
+00:53:57.089 --> 00:53:58.770
+<v Speaker 0>please don't have done that.
+
+00:53:59.089 --> 00:54:00.690
+<v Speaker 0>Oh, we can get it again. Hold on.
+
+00:54:00.690 --> 00:54:02.530
+<v Speaker 0>So I need to
+
+00:54:04.690 --> 00:54:06.530
+<v Speaker 0>to CTL.
+
+00:54:07.970 --> 00:54:09.410
+<v Speaker 0>Let's just do it this way.
+
+00:54:09.650 --> 00:54:11.170
+<v Speaker 0>Woah. It's a lot of stuff.
+
+00:54:11.715 --> 00:54:13.475
+<v Speaker 0>Alright.
+
+00:54:16.035 --> 00:54:18.115
+<v Speaker 0>So there is a there
+
+00:54:19.235 --> 00:54:21.155
+<v Speaker 0>is a guide here, and this has the
+
+00:54:21.155 --> 00:54:23.235
+<v Speaker 0>command I need, which goes into my management
+
+00:54:23.235 --> 00:54:25.395
+<v Speaker 0>cluster and gets me my KubeConfig.
+
+00:54:26.890 --> 00:54:30.330
+<v Speaker 0>We will write this back to that directory.
+
+00:54:32.250 --> 00:54:33.610
+<v Speaker 0>I am on the wrong
+
+00:54:34.330 --> 00:54:36.090
+<v Speaker 0>cluster. Oh, because I'm on Munich.
+
+00:54:40.845 --> 00:54:42.685
+<v Speaker 0>I'm a major disaster.
+
+00:54:42.685 --> 00:54:43.325
+<v Speaker 0>Alright.
+
+00:54:44.365 --> 00:54:46.605
+<v Speaker 0>So let's change the context,
+
+00:54:46.605 --> 00:54:47.885
+<v Speaker 0>docker desktop.
+
+00:54:47.885 --> 00:54:48.765
+<v Speaker 0>Now I can get my
+
+00:54:50.525 --> 00:54:52.045
+<v Speaker 0>I don't know how you hit me.
+
+00:54:53.450 --> 00:54:55.369
+<v Speaker 1>How many classes do you have, David?
+
+00:54:57.289 --> 00:54:59.210
+<v Speaker 0>One to a few, it would appear.
+
+00:55:00.890 --> 00:55:01.849
+<v Speaker 1>I use
+
+00:55:02.569 --> 00:55:04.570
+<v Speaker 0>I'm gonna just drop this shell.
+
+00:55:05.210 --> 00:55:05.930
+<v Speaker 0>Let's
+
+00:55:07.994 --> 00:55:09.994
+<v Speaker 0>I I think it's just confused.
+
+00:55:10.395 --> 00:55:12.234
+<v Speaker 0>Yeah. It is just confused.
+
+00:55:12.795 --> 00:55:15.275
+<v Speaker 0>Cool. Yeah. Yeah. Really?
+
+00:55:15.674 --> 00:55:17.035
+<v Speaker 0>So which means I should now be able
+
+00:55:17.035 --> 00:55:18.635
+<v Speaker 0>to get my
+
+00:55:20.829 --> 00:55:21.950
+<v Speaker 1>Your copy
+
+00:55:22.349 --> 00:55:23.150
+<v Speaker 1>configuration.
+
+00:55:24.030 --> 00:55:25.470
+<v Speaker 1>Yeah. Like,
+
+00:55:26.190 --> 00:55:28.270
+<v Speaker 1>keep config. Yeah. Which is now my copy
+
+00:55:28.270 --> 00:55:31.150
+<v Speaker 0>config. I'm gonna reexport this. I'm gonna then
+
+00:55:31.150 --> 00:55:32.589
+<v Speaker 0>do get pods.
+
+00:55:34.985 --> 00:55:36.345
+<v Speaker 0>Right. That
+
+00:55:36.505 --> 00:55:38.265
+<v Speaker 0>Oh, yeah. And we have no Cilium. We're
+
+00:55:38.265 --> 00:55:41.145
+<v Speaker 0>currently in the c and I free zone.
+
+00:55:41.705 --> 00:55:43.465
+<v Speaker 1>How did we get back there? Oh, did
+
+00:55:43.465 --> 00:55:45.785
+<v Speaker 1>you delete it from the previous attempt, or
+
+00:55:45.785 --> 00:55:46.985
+<v Speaker 1>is this is your backup cluster?
+
+00:55:47.440 --> 00:55:49.360
+<v Speaker 0>No. This is the first cluster we were
+
+00:55:49.360 --> 00:55:52.480
+<v Speaker 0>playing with, and we deleted the Cilium implementation.
+
+00:55:52.640 --> 00:55:54.960
+<v Speaker 0>And I would just just confirm.
+
+00:55:55.360 --> 00:55:56.880
+<v Speaker 0>Yeah. Yeah. Right? So this is a If
+
+00:55:56.880 --> 00:55:58.960
+<v Speaker 1>you yeah. So if you if you do
+
+00:55:58.960 --> 00:56:01.360
+<v Speaker 1>Cube Cuddle create an s Cilium.
+
+00:56:05.635 --> 00:56:07.635
+<v Speaker 1>Yeah. Sweet. And now
+
+00:56:07.955 --> 00:56:10.195
+<v Speaker 1>try that Helm template command.
+
+00:56:10.675 --> 00:56:12.835
+<v Speaker 1>Yeah. You already did that, so just apply
+
+00:56:12.835 --> 00:56:14.515
+<v Speaker 1>that. And now
+
+00:56:14.515 --> 00:56:16.515
+<v Speaker 1>check pods in the Cilium namespace.
+
+00:56:22.160 --> 00:56:22.800
+<v Speaker 0>Right.
+
+00:56:23.120 --> 00:56:24.080
+<v Speaker 0>That looks good.
+
+00:56:24.640 --> 00:56:25.200
+<v Speaker 1>Yep.
+
+00:56:26.240 --> 00:56:28.800
+<v Speaker 1>Okay. Are we gonna brave the connectivity test
+
+00:56:28.800 --> 00:56:30.000
+<v Speaker 0>again? So
+
+00:56:30.000 --> 00:56:31.600
+<v Speaker 1>if you if you if you if you
+
+00:56:31.600 --> 00:56:33.120
+<v Speaker 1>pop into one of the Cilium pods, and
+
+00:56:33.120 --> 00:56:34.605
+<v Speaker 1>let's just check Cilium status.
+
+00:56:35.565 --> 00:56:37.805
+<v Speaker 0>Okay. So we want Cilium
+
+00:56:37.805 --> 00:56:39.645
+<v Speaker 0>exec. I should have given you this command
+
+00:56:39.645 --> 00:56:42.045
+<v Speaker 1>there now. I'm sure it's gonna work now.
+
+00:56:42.365 --> 00:56:43.565
+<v Speaker 0>Cilium
+
+00:56:45.325 --> 00:56:46.285
+<v Speaker 0>oh, IT.
+
+00:56:46.525 --> 00:56:47.485
+<v Speaker 0>Yeah. Okay.
+
+00:56:49.750 --> 00:56:52.790
+<v Speaker 0>Means I wanna run Cilium Health status. Was
+
+00:56:52.790 --> 00:56:55.910
+<v Speaker 0>that right? No? Oh, just status. Status. Woo.
+
+00:56:58.230 --> 00:56:59.349
+<v Speaker 1>I think it's looking good.
+
+00:57:00.474 --> 00:57:01.915
+<v Speaker 1>Endpoints unreachable.
+
+00:57:01.915 --> 00:57:04.795
+<v Speaker 1>Maybe that's I just know that. The
+
+00:57:06.395 --> 00:57:09.835
+<v Speaker 1>the IPAM part looks looks good. It does
+
+00:57:09.835 --> 00:57:12.714
+<v Speaker 0>look good. Yes. Yes, man. Yeah. We're getting
+
+00:57:12.714 --> 00:57:12.954
+<v Speaker 1>there.
+
+00:57:13.619 --> 00:57:15.859
+<v Speaker 1>Alright. So now the connectivity check.
+
+00:57:16.260 --> 00:57:17.859
+<v Speaker 1>Let's deploy that to
+
+00:57:19.059 --> 00:57:20.980
+<v Speaker 1>to the default namespace again.
+
+00:57:23.140 --> 00:57:24.099
+<v Speaker 0>This one.
+
+00:57:25.460 --> 00:57:26.980
+<v Speaker 0>Yes. Is this fish?
+
+00:57:29.375 --> 00:57:32.095
+<v Speaker 0>No. Z Shell with a lot of plugins.
+
+00:57:33.855 --> 00:57:35.295
+<v Speaker 0>A lot of plugins.
+
+00:57:35.375 --> 00:57:37.135
+<v Speaker 1>I like mine without any.
+
+00:57:40.494 --> 00:57:40.734
+<v Speaker 1>Cool.
+
+00:57:41.400 --> 00:57:42.440
+<v Speaker 1>Yeah. It looks like
+
+00:57:43.000 --> 00:57:44.440
+<v Speaker 1>so if you do now
+
+00:57:46.200 --> 00:57:48.040
+<v Speaker 1>k. Get c p
+
+00:57:48.280 --> 00:57:49.800
+<v Speaker 1>in the default namespace.
+
+00:57:49.960 --> 00:57:52.440
+<v Speaker 1>There should be some sentiment points there.
+
+00:57:53.255 --> 00:57:54.775
+<v Speaker 1>No. Not yet. Okay.
+
+00:57:56.935 --> 00:57:58.535
+<v Speaker 0>This is also kinda
+
+00:57:59.735 --> 00:58:02.615
+<v Speaker 1>Oh, no. Again, really. Is this a is
+
+00:58:02.615 --> 00:58:03.655
+<v Speaker 1>this a new one?
+
+00:58:05.095 --> 00:58:07.655
+<v Speaker 1>13 seconds. Yeah. It looks like. Okay. Yes.
+
+00:58:07.655 --> 00:58:08.695
+<v Speaker 0>This is a new one.
+
+00:58:12.190 --> 00:58:14.109
+<v Speaker 0>Yeah. It says the range
+
+00:58:14.750 --> 00:58:16.270
+<v Speaker 0>is full.
+
+00:58:19.069 --> 00:58:20.430
+<v Speaker 1>Yeah. I don't get why that happens.
+
+00:58:23.925 --> 00:58:24.645
+<v Speaker 1>Okay.
+
+00:58:29.925 --> 00:58:31.045
+<v Speaker 0>Let's
+
+00:58:33.765 --> 00:58:36.085
+<v Speaker 0>back in here. So Mhmm. When I'm when
+
+00:58:36.085 --> 00:58:37.685
+<v Speaker 0>I'm working with Cilium and we have problems
+
+00:58:37.685 --> 00:58:39.790
+<v Speaker 0>like this, right, we have the Cilium CLI.
+
+00:58:39.790 --> 00:58:41.070
+<v Speaker 0>What what can I do with the Cilium
+
+00:58:41.070 --> 00:58:41.870
+<v Speaker 0>CLI?
+
+00:58:41.950 --> 00:58:43.710
+<v Speaker 1>We can have a look at Cilium status
+
+00:58:43.710 --> 00:58:44.590
+<v Speaker 1>once again.
+
+00:58:47.390 --> 00:58:49.470
+<v Speaker 1>So it is complaining about anything.
+
+00:58:51.204 --> 00:58:53.525
+<v Speaker 1>Doesn't look like. It looks healthy.
+
+00:58:54.165 --> 00:58:56.244
+<v Speaker 1>Looks like it's using the I don't know.
+
+00:58:56.244 --> 00:58:56.645
+<v Speaker 1>So
+
+00:59:00.885 --> 00:59:01.925
+<v Speaker 0>what does it mean?
+
+00:59:02.244 --> 00:59:04.085
+<v Speaker 0>So the node is reachable. This is the
+
+00:59:04.085 --> 00:59:06.964
+<v Speaker 0>private IPs of the node. That seems
+
+00:59:06.670 --> 00:59:07.950
+<v Speaker 0>cool, but it can't
+
+00:59:09.470 --> 00:59:11.390
+<v Speaker 0>because I have one of eight reachable. Does
+
+00:59:11.390 --> 00:59:13.150
+<v Speaker 0>this mean the Cilium agents aren't able to
+
+00:59:13.150 --> 00:59:14.350
+<v Speaker 0>speak to one another?
+
+00:59:15.710 --> 00:59:16.350
+<v Speaker 1>Oh,
+
+00:59:16.750 --> 00:59:19.150
+<v Speaker 1>do you have any security groups in there
+
+00:59:19.150 --> 00:59:20.110
+<v Speaker 1>or anything like that?
+
+00:59:23.865 --> 00:59:27.224
+<v Speaker 0>No. The these are these can these
+
+00:59:27.224 --> 00:59:29.385
+<v Speaker 0>can all pretty much reach each other. There
+
+00:59:29.385 --> 00:59:30.265
+<v Speaker 0>shouldn't be
+
+00:59:30.664 --> 00:59:33.224
+<v Speaker 1>So yeah. So, basically, between nodes, all ports
+
+00:59:33.224 --> 00:59:35.750
+<v Speaker 1>are open That's correct. As far as bucket
+
+00:59:35.750 --> 00:59:38.310
+<v Speaker 1>is concerned. Okay. So inside the Cilium pod,
+
+00:59:38.310 --> 00:59:39.430
+<v Speaker 1>you could also run
+
+00:59:39.670 --> 00:59:40.630
+<v Speaker 1>Cilium
+
+00:59:41.030 --> 00:59:41.670
+<v Speaker 1>health.
+
+00:59:42.230 --> 00:59:43.030
+<v Speaker 1>Cilium
+
+00:59:43.270 --> 00:59:45.830
+<v Speaker 1>yeah. I think there's Cilium dash health, actually.
+
+00:59:46.710 --> 00:59:48.470
+<v Speaker 1>There's a separate command, Cilium dash health.
+
+00:59:49.644 --> 00:59:50.525
+<v Speaker 1>David
+
+00:59:50.684 --> 00:59:53.325
+<v Speaker 1>dash health. Just sitting in dash health.
+
+00:59:54.204 --> 00:59:54.925
+<v Speaker 0>Sorry.
+
+00:59:55.164 --> 00:59:57.565
+<v Speaker 0>Alright. There we go. Status.
+
+00:59:59.325 --> 01:00:00.924
+<v Speaker 0>Okay. So we got a couple of written
+
+01:00:00.924 --> 01:00:02.444
+<v Speaker 0>to host issues here.
+
+01:00:05.039 --> 01:00:07.519
+<v Speaker 0>So the ICMP stack is fine. HTTP is
+
+01:00:07.519 --> 01:00:10.720
+<v Speaker 0>fine. And then the so what is endpoint
+
+01:00:10.880 --> 01:00:11.759
+<v Speaker 0>connectivity?
+
+01:00:11.759 --> 01:00:13.680
+<v Speaker 0>Where is this 1000214
+
+01:00:13.680 --> 01:00:15.440
+<v Speaker 0>coming from? Because that's not gonna work on
+
+01:00:15.440 --> 01:00:15.759
+<v Speaker 0>the packet.
+
+01:00:17.535 --> 01:00:20.415
+<v Speaker 1>Yeah. I wonder why this is what we
+
+01:00:20.415 --> 01:00:22.015
+<v Speaker 1>are seeing here once again.
+
+01:00:22.734 --> 01:00:23.375
+<v Speaker 1>So
+
+01:00:24.255 --> 01:00:24.895
+<v Speaker 1>this
+
+01:00:26.255 --> 01:00:27.615
+<v Speaker 1>this would be
+
+01:00:27.855 --> 01:00:29.295
+<v Speaker 1>a node IP.
+
+01:00:30.095 --> 01:00:31.934
+<v Speaker 1>I guess, can you do get nodes?
+
+01:00:34.710 --> 01:00:37.110
+<v Speaker 0>You mean control get notes. Right? Yeah. Yeah.
+
+01:00:37.110 --> 01:00:38.390
+<v Speaker 1>Yeah. All wide.
+
+01:00:42.710 --> 01:00:42.870
+<v Speaker 0>Yeah.
+
+01:00:45.755 --> 01:00:46.635
+<v Speaker 1>No.
+
+01:00:46.635 --> 01:00:48.635
+<v Speaker 1>10 Can we can we change?
+
+01:00:48.635 --> 01:00:51.195
+<v Speaker 0>I mean, I'm assuming this endpoint subnetsider
+
+01:00:51.195 --> 01:00:54.075
+<v Speaker 0>is coming from the Cilium configuration. Can we
+
+01:00:54.075 --> 01:00:56.395
+<v Speaker 0>override that to not be 10? So this
+
+01:00:56.395 --> 01:00:57.755
+<v Speaker 1>is okay. So that's
+
+01:00:57.915 --> 01:01:00.635
+<v Speaker 1>oh, these are these are pods that are
+
+01:01:02.600 --> 01:01:05.400
+<v Speaker 1>that had been running before Cilium was installed.
+
+01:01:07.480 --> 01:01:08.120
+<v Speaker 1>Right?
+
+01:01:08.680 --> 01:01:10.840
+<v Speaker 1>So can you can you do get pod
+
+01:01:11.000 --> 01:01:13.080
+<v Speaker 1>pods in cube system
+
+01:01:13.240 --> 01:01:14.200
+<v Speaker 1>or wide as well?
+
+01:01:17.825 --> 01:01:18.545
+<v Speaker 1>Yeah.
+
+01:01:18.705 --> 01:01:19.425
+<v Speaker 1>So
+
+01:01:20.305 --> 01:01:22.465
+<v Speaker 1>but that that at CD pod, what about
+
+01:01:22.465 --> 01:01:24.465
+<v Speaker 1>it? Can you show it to me?
+
+01:01:25.984 --> 01:01:28.225
+<v Speaker 1>Is this is that at CD pod showing
+
+01:01:28.225 --> 01:01:28.625
+<v Speaker 1>up here?
+
+01:01:30.020 --> 01:01:32.260
+<v Speaker 0>Hold on. Let me just do a chip
+
+01:01:32.260 --> 01:01:33.620
+<v Speaker 0>system get pods.
+
+01:01:34.180 --> 01:01:37.300
+<v Speaker 1>Yeah. Okay. HCD copy. Yeah. And chip system
+
+01:01:37.300 --> 01:01:38.660
+<v Speaker 1>get pods all wide.
+
+01:01:41.300 --> 01:01:43.940
+<v Speaker 1>Yeah. Okay. Alright. The one is
+
+01:01:44.099 --> 01:01:44.740
+<v Speaker 0>here.
+
+01:01:47.605 --> 01:01:48.964
+<v Speaker 0>Oh, yeah. Where is this?
+
+01:01:50.565 --> 01:01:52.565
+<v Speaker 1>Yeah. What are all those IPs now?
+
+01:01:56.005 --> 01:01:58.005
+<v Speaker 1>What's the what what's the
+
+01:01:58.520 --> 01:02:01.000
+<v Speaker 1>+1 080? 1 4 7 is public, basically.
+
+01:02:01.000 --> 01:02:01.880
+<v Speaker 1>Is that the case?
+
+01:02:03.480 --> 01:02:05.160
+<v Speaker 1>And +1 0801080
+
+01:02:05.160 --> 01:02:07.320
+<v Speaker 1>is your private one. Right? Yeah. +1 080
+
+01:02:07.320 --> 01:02:09.400
+<v Speaker 0>is our private network. 147 is our public
+
+01:02:09.400 --> 01:02:12.295
+<v Speaker 0>network. So you you so you basically have
+
+01:02:12.295 --> 01:02:15.415
+<v Speaker 1>private node public nodes and private
+
+01:02:15.415 --> 01:02:16.375
+<v Speaker 1>control point.
+
+01:02:17.655 --> 01:02:18.135
+<v Speaker 1>Is that
+
+01:02:18.855 --> 01:02:19.575
+<v Speaker 1>Yes.
+
+01:02:19.655 --> 01:02:20.695
+<v Speaker 1>Okay. Cool.
+
+01:02:21.575 --> 01:02:22.215
+<v Speaker 1>Yeah.
+
+01:02:23.175 --> 01:02:23.895
+<v Speaker 1>So
+
+01:02:24.350 --> 01:02:26.590
+<v Speaker 1>it's trying to hit the
+
+01:02:27.390 --> 01:02:28.510
+<v Speaker 1>and I guess
+
+01:02:29.150 --> 01:02:30.990
+<v Speaker 1>yeah. So you are saying that wouldn't work
+
+01:02:30.990 --> 01:02:32.590
+<v Speaker 1>on the packet network because of
+
+01:02:33.470 --> 01:02:36.270
+<v Speaker 0>Oh, so when I said that, my concern
+
+01:02:36.270 --> 01:02:38.984
+<v Speaker 0>was the let me just exit back into
+
+01:02:38.984 --> 01:02:39.945
+<v Speaker 0>the computer.
+
+01:02:40.665 --> 01:02:41.785
+<v Speaker 0>When we ran
+
+01:02:41.944 --> 01:02:43.625
+<v Speaker 0>the health cluster,
+
+01:02:44.025 --> 01:02:47.865
+<v Speaker 0>this endpoint coming pivot to 1002254,
+
+01:02:48.665 --> 01:02:50.425
+<v Speaker 0>I mean, packet's not gonna let you hit
+
+01:02:50.425 --> 01:02:53.464
+<v Speaker 0>the TCP stack on its private network range
+
+01:02:53.120 --> 01:02:55.200
+<v Speaker 0>without blocking traffic because it'll think you're trying
+
+01:02:55.200 --> 01:02:56.960
+<v Speaker 0>to jump over to other projects or to
+
+01:02:56.960 --> 01:02:57.440
+<v Speaker 0>other
+
+01:02:57.840 --> 01:03:00.560
+<v Speaker 0>machines that aren't under your ownership. I assume
+
+01:03:00.560 --> 01:03:03.520
+<v Speaker 0>this endpoint connectivity cider is something that Cilium
+
+01:03:03.520 --> 01:03:05.120
+<v Speaker 0>is creating within the cluster,
+
+01:03:05.724 --> 01:03:07.645
+<v Speaker 0>which I thought may have been causing confusing.
+
+01:03:07.645 --> 01:03:09.484
+<v Speaker 0>But that was me speculating, to be honest.
+
+01:03:09.484 --> 01:03:12.765
+<v Speaker 1>It's it's actually it's like all Cilium pods
+
+01:03:12.765 --> 01:03:14.765
+<v Speaker 1>want to talk to one another on port
+
+01:03:14.765 --> 01:03:15.965
+<v Speaker 1>4240.
+
+01:03:17.565 --> 01:03:19.645
+<v Speaker 1>So they're just pinging one another on those
+
+01:03:19.645 --> 01:03:22.260
+<v Speaker 1>ports. But how where's this IP address coming
+
+01:03:22.260 --> 01:03:23.860
+<v Speaker 0>from? It's what's got my
+
+01:03:24.500 --> 01:03:26.020
+<v Speaker 1>That would be a
+
+01:03:26.980 --> 01:03:29.380
+<v Speaker 1>I think it would be a node IP
+
+01:03:29.380 --> 01:03:30.580
+<v Speaker 1>for one of the
+
+01:03:32.420 --> 01:03:34.580
+<v Speaker 1>one of the control plane nodes.
+
+01:03:35.335 --> 01:03:37.815
+<v Speaker 0>No. Not in the ten zero two range.
+
+01:03:38.055 --> 01:03:39.255
+<v Speaker 1>No? Okay.
+
+01:03:39.735 --> 01:03:41.175
+<v Speaker 1>Let's
+
+01:03:41.175 --> 01:03:42.695
+<v Speaker 1>just have a quick look. I
+
+01:03:43.015 --> 01:03:45.095
+<v Speaker 0>can do that from get nodes. So Yeah.
+
+01:03:45.095 --> 01:03:45.815
+<v Speaker 1>Yeah. Yeah. Yeah.
+
+01:03:46.790 --> 01:03:48.070
+<v Speaker 1>No. 10.
+
+01:03:48.070 --> 01:03:50.310
+<v Speaker 1>10 eighties. Okay. Well, I I I then
+
+01:03:50.310 --> 01:03:51.910
+<v Speaker 1>don't understand why there is a 10 o.
+
+01:03:59.484 --> 01:04:00.925
+<v Speaker 1>Oh oh, wait.
+
+01:04:01.165 --> 01:04:03.085
+<v Speaker 1>No. Didn't
+
+01:04:03.085 --> 01:04:03.724
+<v Speaker 1>we see that in
+
+01:04:04.605 --> 01:04:07.165
+<v Speaker 1>on one of the city pods or
+
+01:04:07.885 --> 01:04:10.525
+<v Speaker 1>what was that? No. I don't believe
+
+01:04:10.525 --> 01:04:12.869
+<v Speaker 0>so. So there's no IP address. Yeah. I
+
+01:04:12.869 --> 01:04:14.630
+<v Speaker 1>know. We're we're not using that. We're using
+
+01:04:14.630 --> 01:04:16.070
+<v Speaker 1>+1 92. It's right.
+
+01:04:17.589 --> 01:04:18.310
+<v Speaker 1>Weird.
+
+01:04:22.390 --> 01:04:24.390
+<v Speaker 0>Okay. So
+
+01:04:23.785 --> 01:04:25.945
+<v Speaker 0>my end sync was telling me this is
+
+01:04:25.945 --> 01:04:27.785
+<v Speaker 0>in the Cilium configuration.
+
+01:04:27.865 --> 01:04:30.025
+<v Speaker 0>So I could go to
+
+01:04:31.145 --> 01:04:32.665
+<v Speaker 1>Yeah. Here.
+
+01:04:32.745 --> 01:04:34.665
+<v Speaker 1>Yeah. That's right. Yeah. You can double check.
+
+01:04:34.905 --> 01:04:36.025
+<v Speaker 1>We've configured
+
+01:04:36.425 --> 01:04:39.570
+<v Speaker 1>yeah. Let's let's do this. Yeah. Yeah. No.
+
+01:04:39.570 --> 01:04:41.890
+<v Speaker 1>It's not it's not there. Right? So one
+
+01:04:41.890 --> 01:04:43.570
+<v Speaker 1>thing that you can,
+
+01:04:45.490 --> 01:04:47.490
+<v Speaker 1>yeah, check once again,
+
+01:04:47.650 --> 01:04:48.930
+<v Speaker 1>Cilium status.
+
+01:04:49.170 --> 01:04:49.810
+<v Speaker 1>Yep.
+
+01:04:50.050 --> 01:04:52.370
+<v Speaker 1>Just double check that it's reporting the IPAM
+
+01:04:52.370 --> 01:04:53.490
+<v Speaker 1>as healthy, doesn't it?
+
+01:04:54.825 --> 01:04:57.224
+<v Speaker 1>Yeah. It's it's reporting that two out of
+
+01:04:57.224 --> 01:04:59.385
+<v Speaker 1>two fifty five are allocated.
+
+01:05:00.585 --> 01:05:02.665
+<v Speaker 1>Right. So there there should be plenty of
+
+01:05:02.665 --> 01:05:03.945
+<v Speaker 1>IPs to go about.
+
+01:05:05.465 --> 01:05:08.345
+<v Speaker 0>Okay. So I Somehow the allocations are not
+
+01:05:08.345 --> 01:05:08.744
+<v Speaker 1>working.
+
+01:05:09.210 --> 01:05:11.369
+<v Speaker 0>So the hypothesis right now is that that
+
+01:05:11.369 --> 01:05:12.250
+<v Speaker 0>100
+
+01:05:12.250 --> 01:05:14.810
+<v Speaker 0>IP address is some sort of hungover thing
+
+01:05:14.810 --> 01:05:16.010
+<v Speaker 0>from the previous
+
+01:05:17.050 --> 01:05:19.290
+<v Speaker 0>deployment? I mean, we did reuse a cluster.
+
+01:05:19.290 --> 01:05:22.170
+<v Speaker 0>So I Oh, yeah. That's right. So yeah.
+
+01:05:22.170 --> 01:05:24.410
+<v Speaker 1>I see I see that that's actually possible
+
+01:05:24.410 --> 01:05:24.890
+<v Speaker 1>that
+
+01:05:25.674 --> 01:05:26.795
+<v Speaker 1>we tried to
+
+01:05:27.355 --> 01:05:29.755
+<v Speaker 1>that that Cilium stored some state, and it's
+
+01:05:29.755 --> 01:05:31.515
+<v Speaker 1>just trying to reuse that. Yeah. Because we
+
+01:05:31.515 --> 01:05:33.515
+<v Speaker 0>deleted all the pods, but I'm assuming other
+
+01:05:33.515 --> 01:05:36.234
+<v Speaker 0>secrets contact map. And we run Cilium command
+
+01:05:36.315 --> 01:05:38.635
+<v Speaker 1>yeah. Exactly. They they could be they
+
+01:05:38.635 --> 01:05:40.474
+<v Speaker 1>could be something stored in the on the
+
+01:05:40.474 --> 01:05:43.010
+<v Speaker 1>machine. So if you run Cilium command once
+
+01:05:43.010 --> 01:05:45.170
+<v Speaker 1>again, I think there was a a way
+
+01:05:45.170 --> 01:05:46.050
+<v Speaker 1>to to
+
+01:05:46.370 --> 01:05:48.130
+<v Speaker 1>start a service preflight.
+
+01:05:48.770 --> 01:05:49.650
+<v Speaker 1>Let's see.
+
+01:05:49.970 --> 01:05:52.770
+<v Speaker 0>Clean up the Clean up. Yeah. Yeah. Do
+
+01:05:52.770 --> 01:05:54.770
+<v Speaker 1>clean up. You might wanna do it on
+
+01:05:54.770 --> 01:05:55.490
+<v Speaker 1>every
+
+01:05:57.515 --> 01:05:58.635
+<v Speaker 0>On every pod?
+
+01:06:01.035 --> 01:06:01.835
+<v Speaker 1>Okay.
+
+01:06:02.075 --> 01:06:03.915
+<v Speaker 1>Alright. It doesn't work from within a part
+
+01:06:03.915 --> 01:06:04.795
+<v Speaker 1>of a sling.
+
+01:06:07.435 --> 01:06:09.595
+<v Speaker 1>If you reboot the machines
+
+01:06:12.980 --> 01:06:14.420
+<v Speaker 1>that Uh-huh.
+
+01:06:14.420 --> 01:06:15.540
+<v Speaker 1>Yeah. Fix it.
+
+01:06:17.940 --> 01:06:19.700
+<v Speaker 0>You know, things are not going to plan,
+
+01:06:19.700 --> 01:06:21.460
+<v Speaker 0>but this is fun. I'm enjoying
+
+01:06:21.619 --> 01:06:24.339
+<v Speaker 1>It's it's quite fun, David. Yeah. You're challenging
+
+01:06:24.339 --> 01:06:24.900
+<v Speaker 1>me, definitely.
+
+01:06:26.325 --> 01:06:27.765
+<v Speaker 0>So we wanna reboot
+
+01:06:28.165 --> 01:06:30.325
+<v Speaker 0>every note. Right? Yeah.
+
+01:06:30.885 --> 01:06:32.725
+<v Speaker 1>What our views are saying.
+
+01:06:39.920 --> 01:06:42.079
+<v Speaker 0>So a reboot probably gonna take us around
+
+01:06:42.079 --> 01:06:44.720
+<v Speaker 0>one minute. But just to kinda provide an
+
+01:06:44.720 --> 01:06:46.319
+<v Speaker 0>idea of what's going on to people that
+
+01:06:46.319 --> 01:06:49.680
+<v Speaker 0>just joined us and going, what the then
+
+01:06:49.680 --> 01:06:51.440
+<v Speaker 0>we had a cluster. So we
+
+01:06:52.085 --> 01:06:53.285
+<v Speaker 0>deployed Cilium
+
+01:06:53.285 --> 01:06:54.085
+<v Speaker 0>to it
+
+01:06:54.885 --> 01:06:56.964
+<v Speaker 0>and Yeah. Used the default configuration. We were
+
+01:06:56.964 --> 01:06:59.285
+<v Speaker 0>following a quick start gate. Unfortunately, that default
+
+01:06:59.285 --> 01:07:02.404
+<v Speaker 0>configuration did have conflicts with the packets private
+
+01:07:02.404 --> 01:07:04.005
+<v Speaker 0>network IP address range.
+
+01:07:05.070 --> 01:07:06.590
+<v Speaker 0>So we abandoned our plan and went to
+
+01:07:06.590 --> 01:07:08.270
+<v Speaker 0>mini cube, but then we ran into problems
+
+01:07:08.270 --> 01:07:09.630
+<v Speaker 0>with mini cube because
+
+01:07:09.950 --> 01:07:11.790
+<v Speaker 0>I am running it in Docker for Mac.
+
+01:07:11.790 --> 01:07:13.950
+<v Speaker 0>Because, you know, I know well, I should
+
+01:07:13.950 --> 01:07:16.110
+<v Speaker 0>know better. I didn't know better. And I'm
+
+01:07:16.110 --> 01:07:19.070
+<v Speaker 0>putting earlier here through an awful lot. We've
+
+01:07:19.070 --> 01:07:19.790
+<v Speaker 0>come
+
+01:07:20.030 --> 01:07:22.795
+<v Speaker 0>back to our packet Kubernetes cluster,
+
+01:07:23.115 --> 01:07:24.475
+<v Speaker 0>and we customized
+
+01:07:24.475 --> 01:07:27.675
+<v Speaker 0>using the helm command and templated our own
+
+01:07:27.755 --> 01:07:29.995
+<v Speaker 0>unique Snowflake, you said they have those which
+
+01:07:29.995 --> 01:07:32.875
+<v Speaker 0>should work with the packet. Private IP for
+
+01:07:32.875 --> 01:07:33.995
+<v Speaker 0>IPv
+
+01:07:33.995 --> 01:07:35.595
+<v Speaker 0>for network. Unfortunately,
+
+01:07:35.595 --> 01:07:36.155
+<v Speaker 0>we think
+
+01:07:36.950 --> 01:07:37.750
+<v Speaker 0>that
+
+01:07:37.750 --> 01:07:40.150
+<v Speaker 0>that left some traces of the old configuration
+
+01:07:40.150 --> 01:07:41.910
+<v Speaker 0>on the machine. So we are now rebooting
+
+01:07:41.910 --> 01:07:42.710
+<v Speaker 0>them all,
+
+01:07:43.990 --> 01:07:46.069
+<v Speaker 0>and we should be able to monitor that
+
+01:07:46.069 --> 01:07:48.230
+<v Speaker 0>coming back when one of the control blend
+
+01:07:48.230 --> 01:07:51.315
+<v Speaker 0>nodes comes back via get nodes. So this
+
+01:07:51.315 --> 01:07:53.315
+<v Speaker 0>may just take another moment. Is there anything
+
+01:07:53.315 --> 01:07:55.315
+<v Speaker 0>I missed? Do you think I covered This
+
+01:07:55.315 --> 01:07:56.915
+<v Speaker 1>is very good. Yeah. Yeah. I mean, the
+
+01:07:56.915 --> 01:07:58.835
+<v Speaker 1>the the just to clarify,
+
+01:07:58.915 --> 01:08:02.035
+<v Speaker 1>David hasn't installed Cilium on Packet
+
+01:08:02.515 --> 01:08:05.155
+<v Speaker 1>or any other cluster API based setup.
+
+01:08:06.300 --> 01:08:09.180
+<v Speaker 1>I have not installed Cilium in a packet
+
+01:08:09.180 --> 01:08:11.740
+<v Speaker 1>or a cluster API based setup yet.
+
+01:08:12.140 --> 01:08:15.820
+<v Speaker 1>I had been playing with other providers recently,
+
+01:08:15.820 --> 01:08:17.979
+<v Speaker 1>but not cluster API
+
+01:08:18.060 --> 01:08:18.939
+<v Speaker 1>and not packet.
+
+01:08:19.944 --> 01:08:22.185
+<v Speaker 1>So here we go. It's been it's been
+
+01:08:22.185 --> 01:08:24.024
+<v Speaker 1>a challenge for both of us, and I
+
+01:08:24.024 --> 01:08:26.505
+<v Speaker 1>think I think we're getting close. I think
+
+01:08:26.505 --> 01:08:28.745
+<v Speaker 1>we should be able to sort it out
+
+01:08:28.745 --> 01:08:29.465
+<v Speaker 1>before
+
+01:08:30.505 --> 01:08:31.625
+<v Speaker 1>before the show ends.
+
+01:08:33.330 --> 01:08:35.570
+<v Speaker 0>Well, I mean, we can always chalk this
+
+01:08:35.570 --> 01:08:38.610
+<v Speaker 0>one down as oops and and revisit this
+
+01:08:38.610 --> 01:08:40.530
+<v Speaker 0>another day once I've once I am more
+
+01:08:40.530 --> 01:08:42.290
+<v Speaker 0>familiar with cluster API for sure. Yeah.
+
+01:08:44.625 --> 01:08:46.705
+<v Speaker 1>Definitely. And, you know, it'd be nice to
+
+01:08:46.705 --> 01:08:48.305
+<v Speaker 1>to to have a little blog post or
+
+01:08:48.305 --> 01:08:48.864
+<v Speaker 1>guide
+
+01:08:49.665 --> 01:08:52.785
+<v Speaker 1>on installing Cilium on cluster API and perhaps
+
+01:08:52.785 --> 01:08:55.745
+<v Speaker 1>Packet or or possibly any other cluster API
+
+01:08:55.745 --> 01:08:58.064
+<v Speaker 1>provider. I mean, really, I should have done
+
+01:08:58.064 --> 01:09:01.479
+<v Speaker 0>is configure the cluster my cluster API cluster
+
+01:09:01.479 --> 01:09:04.679
+<v Speaker 0>with a a VXLAN on the packet side
+
+01:09:04.679 --> 01:09:06.279
+<v Speaker 0>so that we had free range of our
+
+01:09:06.279 --> 01:09:06.840
+<v Speaker 0>own
+
+01:09:07.319 --> 01:09:08.520
+<v Speaker 0>you know, we could do carte blanche for
+
+01:09:08.520 --> 01:09:09.559
+<v Speaker 0>our IP address
+
+01:09:09.960 --> 01:09:11.880
+<v Speaker 0>Mhmm. System there. Yeah. But you don't want
+
+01:09:11.880 --> 01:09:14.715
+<v Speaker 1>to do two two two like, you don't
+
+01:09:14.715 --> 01:09:16.395
+<v Speaker 1>wanna tunnel over a tunnel. Right?
+
+01:09:17.515 --> 01:09:19.755
+<v Speaker 1>Because Cilium sets up a VXLAN tunnel itself
+
+01:09:19.755 --> 01:09:20.395
+<v Speaker 1>as well.
+
+01:09:21.435 --> 01:09:22.795
+<v Speaker 0>Oh, okay. Right.
+
+01:09:23.595 --> 01:09:25.435
+<v Speaker 0>So I guess if I had used overlay
+
+01:09:25.515 --> 01:09:28.070
+<v Speaker 1>I should say. And cluster API. We still
+
+01:09:28.070 --> 01:09:29.830
+<v Speaker 0>have that config there. Right? So, I mean
+
+01:09:30.149 --> 01:09:30.790
+<v Speaker 1>Yeah.
+
+01:09:31.830 --> 01:09:33.830
+<v Speaker 0>It it would have been a simple
+
+01:09:34.550 --> 01:09:35.189
+<v Speaker 0>Alright.
+
+01:09:37.030 --> 01:09:40.149
+<v Speaker 1>So has has anything come back? Are we
+
+01:09:40.149 --> 01:09:40.870
+<v Speaker 1>seeing any
+
+01:09:41.545 --> 01:09:44.585
+<v Speaker 1>any machines rebooting in packet consult?
+
+01:09:46.665 --> 01:09:47.944
+<v Speaker 0>Let's take a look.
+
+01:09:50.505 --> 01:09:52.585
+<v Speaker 0>Well, let's use the band
+
+01:09:53.064 --> 01:09:55.465
+<v Speaker 0>and see how far then to the reboot
+
+01:09:55.465 --> 01:09:56.105
+<v Speaker 0>this is.
+
+01:09:59.590 --> 01:10:00.390
+<v Speaker 0>YubiKey.
+
+01:10:15.605 --> 01:10:16.724
+<v Speaker 0>Normally,
+
+01:10:18.965 --> 01:10:20.965
+<v Speaker 0>things would be talking to me by now.
+
+01:10:23.770 --> 01:10:26.010
+<v Speaker 0>Let's jump back down here where I'm getting
+
+01:10:26.010 --> 01:10:26.570
+<v Speaker 0>notes.
+
+01:10:40.915 --> 01:10:42.435
+<v Speaker 0>Oh, there we go. Okay. So that machine
+
+01:10:42.435 --> 01:10:44.515
+<v Speaker 0>was just the rebate was taking a little
+
+01:10:44.515 --> 01:10:46.515
+<v Speaker 0>bit longer. That's a kernel. Mhmm.
+
+01:10:48.480 --> 01:10:50.719
+<v Speaker 0>I'll leave that out of band console running
+
+01:10:50.719 --> 01:10:52.159
+<v Speaker 0>so we get a good idea when that
+
+01:10:52.159 --> 01:10:53.599
+<v Speaker 0>control plane is happy.
+
+01:10:54.639 --> 01:10:56.480
+<v Speaker 0>And that should mean we can start getting
+
+01:10:56.480 --> 01:10:58.559
+<v Speaker 0>a response to the key, get nodes, and
+
+01:10:58.559 --> 01:10:59.359
+<v Speaker 0>fingers
+
+01:10:59.920 --> 01:11:01.679
+<v Speaker 0>crossed, all the machines roughly come up at
+
+01:11:01.679 --> 01:11:02.400
+<v Speaker 0>the same time.
+
+01:11:13.494 --> 01:11:15.655
+<v Speaker 1>So yeah. And then there's also one more
+
+01:11:15.655 --> 01:11:18.935
+<v Speaker 1>option to try if we are not
+
+01:11:19.800 --> 01:11:21.560
+<v Speaker 1>not seeing good results, but I think we
+
+01:11:21.560 --> 01:11:23.400
+<v Speaker 1>should be fine. I think I think there's
+
+01:11:23.400 --> 01:11:25.080
+<v Speaker 1>just some some odd leftovers
+
+01:11:25.240 --> 01:11:26.600
+<v Speaker 1>from the last
+
+01:11:28.280 --> 01:11:30.360
+<v Speaker 1>from the first attempt of installing Cilium with
+
+01:11:30.360 --> 01:11:31.800
+<v Speaker 1>configuration
+
+01:11:31.800 --> 01:11:33.400
+<v Speaker 1>that wasn't that wasn't correct.
+
+01:11:34.835 --> 01:11:36.594
+<v Speaker 0>So does Cilium use
+
+01:11:36.995 --> 01:11:39.635
+<v Speaker 0>custom resources to store state, like endpoints and
+
+01:11:39.635 --> 01:11:40.594
+<v Speaker 0>stuff? Yeah.
+
+01:11:40.835 --> 01:11:43.074
+<v Speaker 0>There was It does use custom resources. That's
+
+01:11:43.074 --> 01:11:43.635
+<v Speaker 1>right.
+
+01:11:43.875 --> 01:11:45.554
+<v Speaker 1>Yeah. For a few things.
+
+01:11:45.875 --> 01:11:47.554
+<v Speaker 1>We we will need to check those as
+
+01:11:47.554 --> 01:11:49.395
+<v Speaker 1>well, but the
+
+01:11:50.329 --> 01:11:51.369
+<v Speaker 1>it does it
+
+01:11:51.929 --> 01:11:53.929
+<v Speaker 1>does save some state on the
+
+01:11:56.170 --> 01:11:58.969
+<v Speaker 1>on on the machine as in inside the
+
+01:11:58.969 --> 01:11:59.689
+<v Speaker 1>kernel.
+
+01:12:00.650 --> 01:12:03.864
+<v Speaker 1>When you when you restart Cilium, it basically
+
+01:12:04.265 --> 01:12:07.144
+<v Speaker 1>doesn't take the network down, right, as most
+
+01:12:09.304 --> 01:12:11.704
+<v Speaker 1>as most network plug ins for Kubernetes.
+
+01:12:12.025 --> 01:12:15.250
+<v Speaker 0>Alright. We are back in business. Oh, sweet.
+
+01:12:15.250 --> 01:12:17.970
+<v Speaker 1>Okay. Cool. Alright. And all of our nodes
+
+01:12:17.970 --> 01:12:20.290
+<v Speaker 1>and things are back now? They are. They're
+
+01:12:20.290 --> 01:12:21.170
+<v Speaker 0>all ready.
+
+01:12:21.490 --> 01:12:23.489
+<v Speaker 1>Oh, that's that's
+
+01:12:24.130 --> 01:12:26.770
+<v Speaker 1>that's magic. Yeah. That was a good bet.
+
+01:12:26.770 --> 01:12:28.610
+<v Speaker 1>Alright. Let's go. At least one thing went
+
+01:12:28.610 --> 01:12:29.489
+<v Speaker 0>our way. Right?
+
+01:12:29.890 --> 01:12:32.105
+<v Speaker 1>Yeah. We can jump back into the Cilium
+
+01:12:32.265 --> 01:12:33.705
+<v Speaker 1>one of the Cilium pods.
+
+01:12:37.305 --> 01:12:38.025
+<v Speaker 1>The
+
+01:12:38.825 --> 01:12:39.625
+<v Speaker 1>system's
+
+01:12:39.785 --> 01:12:41.065
+<v Speaker 1>I guess that's
+
+01:12:45.270 --> 01:12:46.630
+<v Speaker 0>Cilium pods
+
+01:12:46.870 --> 01:12:49.270
+<v Speaker 0>aren't quite there yet. Oh, in Cilium namespace
+
+01:12:49.270 --> 01:12:51.750
+<v Speaker 1>now. Right? Oh, yeah. That's right. Okay.
+
+01:12:52.710 --> 01:12:53.190
+<v Speaker 0>Cilium.
+
+01:12:55.895 --> 01:12:58.375
+<v Speaker 0>The first one, we want bash. And you
+
+01:12:58.375 --> 01:12:59.335
+<v Speaker 0>want me to run add
+
+01:13:00.135 --> 01:13:01.655
+<v Speaker 0>test. Cilium status.
+
+01:13:03.655 --> 01:13:04.695
+<v Speaker 0>Not quite ready yet.
+
+01:13:08.720 --> 01:13:11.200
+<v Speaker 0>Oh, no. I've just had the the job.
+
+01:13:11.200 --> 01:13:12.160
+<v Speaker 0>It would seem
+
+01:13:17.440 --> 01:13:19.520
+<v Speaker 0>Internet down Cilium agent.
+
+01:13:20.995 --> 01:13:23.875
+<v Speaker 1>Oh, yeah. Okay. The well, wait.
+
+01:13:24.995 --> 01:13:27.635
+<v Speaker 1>Can you do describe one of them?
+
+01:13:29.155 --> 01:13:31.555
+<v Speaker 1>Yeah. Okay. Cool. This seems to be maybe
+
+01:13:31.555 --> 01:13:33.555
+<v Speaker 0>one of the yeah. I'm not sure what
+
+01:13:33.555 --> 01:13:35.155
+<v Speaker 0>happened there. So Cilium,
+
+01:13:35.155 --> 01:13:37.310
+<v Speaker 0>just do this. Yep.
+
+01:13:37.630 --> 01:13:38.349
+<v Speaker 0>Okay.
+
+01:13:41.630 --> 01:13:42.270
+<v Speaker 1>So
+
+01:13:43.070 --> 01:13:43.710
+<v Speaker 1>and
+
+01:13:44.110 --> 01:13:45.550
+<v Speaker 1>and Cilium dash health.
+
+01:13:52.055 --> 01:13:53.015
+<v Speaker 1>Status. Yeah.
+
+01:13:54.615 --> 01:13:56.295
+<v Speaker 1>I think this is looking a little bit
+
+01:13:56.295 --> 01:13:56.935
+<v Speaker 1>better.
+
+01:13:58.775 --> 01:14:01.335
+<v Speaker 1>There's still some odd oh, no. There's still
+
+01:14:01.335 --> 01:14:03.860
+<v Speaker 1>some tender dose. Okay. So if we have
+
+01:14:03.860 --> 01:14:04.659
+<v Speaker 1>a look at
+
+01:14:05.219 --> 01:14:05.860
+<v Speaker 1>oh.
+
+01:14:08.020 --> 01:14:10.579
+<v Speaker 0>I mean, this one local host is so
+
+01:14:10.579 --> 01:14:12.579
+<v Speaker 0>the problem is going to be connected to
+
+01:14:12.579 --> 01:14:14.980
+<v Speaker 0>this. Yeah. David, what you do want is
+
+01:14:14.980 --> 01:14:15.940
+<v Speaker 1>make
+
+01:14:16.295 --> 01:14:19.175
+<v Speaker 1>you after installing Cilium into cluster, you you
+
+01:14:19.175 --> 01:14:21.494
+<v Speaker 1>you really want to bring all the pods
+
+01:14:21.574 --> 01:14:24.054
+<v Speaker 1>into into Cilium management. Right?
+
+01:14:24.375 --> 01:14:26.695
+<v Speaker 1>So I think it is possible that some
+
+01:14:26.695 --> 01:14:27.414
+<v Speaker 1>of those
+
+01:14:29.255 --> 01:14:31.335
+<v Speaker 1>stale entries are due to
+
+01:14:33.460 --> 01:14:34.739
+<v Speaker 1>due due
+
+01:14:34.739 --> 01:14:36.820
+<v Speaker 1>to the fact that those pods aren't fully
+
+01:14:36.820 --> 01:14:38.579
+<v Speaker 1>managed by Cilium yet. So
+
+01:14:39.060 --> 01:14:40.580
+<v Speaker 1>can we can you just, like, try and
+
+01:14:40.580 --> 01:14:41.860
+<v Speaker 1>kick some of those pods?
+
+01:14:42.179 --> 01:14:44.340
+<v Speaker 1>We did just now, but the but some
+
+01:14:44.340 --> 01:14:46.580
+<v Speaker 1>of those pods came up before Cilium started
+
+01:14:46.580 --> 01:14:46.900
+<v Speaker 1>up.
+
+01:14:48.045 --> 01:14:48.765
+<v Speaker 1>Right?
+
+01:14:48.925 --> 01:14:50.765
+<v Speaker 1>That is, like, one of the challenge of
+
+01:14:50.765 --> 01:14:51.805
+<v Speaker 1>network migration
+
+01:14:52.125 --> 01:14:54.205
+<v Speaker 1>and drop out from that pod. And, yeah,
+
+01:14:54.205 --> 01:14:56.525
+<v Speaker 1>look in Cilium in the cube system namespace.
+
+01:14:56.525 --> 01:14:57.165
+<v Speaker 1>And, basically,
+
+01:14:58.765 --> 01:15:02.445
+<v Speaker 1>if you can just do cube cuddle delete
+
+01:15:01.590 --> 01:15:04.949
+<v Speaker 1>pods and keep system dash dash all.
+
+01:15:08.630 --> 01:15:11.670
+<v Speaker 0>Never run this in production, anyone. But what
+
+01:15:11.670 --> 01:15:12.949
+<v Speaker 1>you can do no. What what you can
+
+01:15:12.949 --> 01:15:14.869
+<v Speaker 1>do, David, is actually just, like, kick some
+
+01:15:14.869 --> 01:15:16.150
+<v Speaker 1>of these pods first.
+
+01:15:17.429 --> 01:15:18.945
+<v Speaker 0>I'm more than happy to kick them all.
+
+01:15:18.945 --> 01:15:20.385
+<v Speaker 0>Nothing bad's gonna happen.
+
+01:15:20.784 --> 01:15:23.104
+<v Speaker 1>Yeah. We just rebooted the whole thing. Okay.
+
+01:15:23.105 --> 01:15:25.665
+<v Speaker 0>But the parts would have the containers would
+
+01:15:25.665 --> 01:15:28.065
+<v Speaker 0>have been stopped and restarted rather than recreated,
+
+01:15:28.065 --> 01:15:31.185
+<v Speaker 0>wouldn't I? So this actually will proper kick
+
+01:15:31.185 --> 01:15:31.425
+<v Speaker 0>them.
+
+01:15:33.630 --> 01:15:34.989
+<v Speaker 0>Potentially. Alright.
+
+01:15:36.270 --> 01:15:37.470
+<v Speaker 0>I'm not gonna wait for that to come
+
+01:15:37.470 --> 01:15:39.950
+<v Speaker 0>back. We'll just come in here and we'll
+
+01:15:39.950 --> 01:15:42.270
+<v Speaker 0>kinda watch that. I'll come back this way.
+
+01:15:42.270 --> 01:15:42.830
+<v Speaker 1>Yeah.
+
+01:15:44.510 --> 01:15:46.995
+<v Speaker 0>For twenty seconds, twenty seconds, twenty seconds. We
+
+01:15:46.995 --> 01:15:49.235
+<v Speaker 0>still got a couple of proxies disappearing.
+
+01:15:49.554 --> 01:15:50.755
+<v Speaker 0>CoreDNS.
+
+01:15:51.955 --> 01:15:53.554
+<v Speaker 1>Yeah. I mean, some of them are having
+
+01:15:53.554 --> 01:15:54.434
+<v Speaker 0>some issues.
+
+01:15:54.675 --> 01:15:56.514
+<v Speaker 1>Some of them are in the in the
+
+01:15:56.514 --> 01:15:57.874
+<v Speaker 1>host network namespace,
+
+01:15:57.875 --> 01:15:57.955
+<v Speaker 1>but,
+
+01:15:59.340 --> 01:16:01.260
+<v Speaker 1>you know, I don't need to worry about
+
+01:16:01.260 --> 01:16:04.140
+<v Speaker 1>filtering those out. So, yeah, this this is
+
+01:16:04.140 --> 01:16:04.860
+<v Speaker 1>looking
+
+01:16:05.740 --> 01:16:07.820
+<v Speaker 1>like we're getting some of those pods restarting
+
+01:16:07.820 --> 01:16:09.660
+<v Speaker 1>now. So if you jump back into that
+
+01:16:09.660 --> 01:16:11.980
+<v Speaker 1>Cilium pod and check
+
+01:16:12.300 --> 01:16:13.740
+<v Speaker 1>Cilium health status again,
+
+01:16:20.745 --> 01:16:22.985
+<v Speaker 0>So let me So can do can you
+
+01:16:22.665 --> 01:16:24.344
+<v Speaker 1>the the Cilium
+
+01:16:24.665 --> 01:16:25.945
+<v Speaker 1>endpoint list
+
+01:16:26.505 --> 01:16:27.305
+<v Speaker 1>now?
+
+01:16:27.545 --> 01:16:28.985
+<v Speaker 1>So what endpoints do we have?
+
+01:16:30.710 --> 01:16:32.550
+<v Speaker 0>Oh, yep. Oh, it's like that part. Yeah.
+
+01:16:32.630 --> 01:16:33.910
+<v Speaker 0>Endpoint
+
+01:16:33.910 --> 01:16:34.870
+<v Speaker 0>list.
+
+01:16:36.950 --> 01:16:37.830
+<v Speaker 1>So
+
+01:16:38.390 --> 01:16:39.110
+<v Speaker 1>there's there's
+
+01:16:41.350 --> 01:16:43.670
+<v Speaker 1>what is that one? Yeah. No. It doesn't
+
+01:16:43.670 --> 01:16:44.790
+<v Speaker 1>look like we have actually,
+
+01:16:46.844 --> 01:16:48.844
+<v Speaker 1>yeah. We have a node. Right?
+
+01:16:50.844 --> 01:16:53.324
+<v Speaker 1>And we don't have any any port endpoints
+
+01:16:53.324 --> 01:16:53.965
+<v Speaker 1>here.
+
+01:16:54.364 --> 01:16:55.485
+<v Speaker 1>Alright. So
+
+01:16:55.804 --> 01:16:57.885
+<v Speaker 0>Where does Cilium store the IP addresses of
+
+01:16:57.885 --> 01:16:58.605
+<v Speaker 0>all the agents?
+
+01:16:59.940 --> 01:17:02.340
+<v Speaker 1>Oh, yeah. In Cilium node object. Let's have
+
+01:17:02.340 --> 01:17:04.100
+<v Speaker 1>a look at those. So if you look
+
+01:17:04.100 --> 01:17:05.860
+<v Speaker 1>at if you oh, yeah. Well, you can
+
+01:17:05.860 --> 01:17:08.100
+<v Speaker 1>have a look at here. Node list, yeah,
+
+01:17:08.100 --> 01:17:10.340
+<v Speaker 1>for example. Yeah. So these these are wrong.
+
+01:17:10.340 --> 01:17:10.900
+<v Speaker 0>Right?
+
+01:17:11.620 --> 01:17:13.460
+<v Speaker 1>Yeah. These are wrong. What?
+
+01:17:14.805 --> 01:17:15.364
+<v Speaker 1>Yeah.
+
+01:17:15.844 --> 01:17:17.525
+<v Speaker 1>That is that is that is a problem.
+
+01:17:17.525 --> 01:17:19.045
+<v Speaker 1>And one of them is is fine, but
+
+01:17:19.045 --> 01:17:21.045
+<v Speaker 1>the the other ones are are old.
+
+01:17:21.364 --> 01:17:23.445
+<v Speaker 1>So we want to
+
+01:17:24.005 --> 01:17:26.485
+<v Speaker 1>probably try and clear some of those CRDs.
+
+01:17:28.369 --> 01:17:29.729
+<v Speaker 1>I think that's,
+
+01:17:29.889 --> 01:17:33.170
+<v Speaker 1>yeah, that's where it's gone wrong, man. So
+
+01:17:33.170 --> 01:17:34.690
+<v Speaker 0>if I do get Oh, have a look
+
+01:17:34.690 --> 01:17:35.570
+<v Speaker 1>have a look at the
+
+01:17:37.010 --> 01:17:39.889
+<v Speaker 1>yeah. Not CEP. No. They do
+
+01:17:41.489 --> 01:17:42.210
+<v Speaker 1>Cilium
+
+01:17:43.055 --> 01:17:43.855
+<v Speaker 1>nodes.
+
+01:17:46.575 --> 01:17:47.455
+<v Speaker 1>Yeah.
+
+01:17:48.095 --> 01:17:49.935
+<v Speaker 0>So we just delete all of them. Right?
+
+01:17:50.495 --> 01:17:51.935
+<v Speaker 1>I think it should be fine. Yeah.
+
+01:17:56.860 --> 01:17:59.660
+<v Speaker 0>An agent should recreate them, I would imagine.
+
+01:18:00.540 --> 01:18:01.260
+<v Speaker 1>Yeah.
+
+01:18:04.140 --> 01:18:06.140
+<v Speaker 1>It's not like a production cluster or anything.
+
+01:18:06.140 --> 01:18:08.140
+<v Speaker 1>Right? We're kinda we're kinda learning. I think
+
+01:18:08.140 --> 01:18:09.980
+<v Speaker 1>this is this is this is cool learning
+
+01:18:09.980 --> 01:18:12.445
+<v Speaker 1>experience by the Seriously, I am learning
+
+01:18:12.685 --> 01:18:15.085
+<v Speaker 0>a lot about debugging this stuff. Okay. I
+
+01:18:15.085 --> 01:18:17.005
+<v Speaker 1>have one node come back.
+
+01:18:17.485 --> 01:18:18.125
+<v Speaker 1>Okay.
+
+01:18:19.005 --> 01:18:21.325
+<v Speaker 0>I mean, not just the agent parts. Would
+
+01:18:21.325 --> 01:18:21.645
+<v Speaker 0>that help?
+
+01:18:23.850 --> 01:18:25.450
+<v Speaker 0>I do get part I mean, if I
+
+01:18:25.450 --> 01:18:26.490
+<v Speaker 0>just restart
+
+01:18:26.490 --> 01:18:27.210
+<v Speaker 0>all the
+
+01:18:28.010 --> 01:18:28.969
+<v Speaker 1>Operators
+
+01:18:29.930 --> 01:18:30.730
+<v Speaker 1>rather.
+
+01:18:32.010 --> 01:18:33.370
+<v Speaker 0>It's okay. Do you want me to restart
+
+01:18:33.370 --> 01:18:34.650
+<v Speaker 0>the operators?
+
+01:18:36.810 --> 01:18:37.210
+<v Speaker 1>Why not?
+
+01:18:38.485 --> 01:18:41.685
+<v Speaker 0>I assumed, I guess, incorrectly, that Cilium nodes
+
+01:18:41.685 --> 01:18:44.085
+<v Speaker 0>would be created by each of the agents.
+
+01:18:44.085 --> 01:18:46.085
+<v Speaker 0>Would they would they not manage their own
+
+01:18:46.325 --> 01:18:47.125
+<v Speaker 0>node?
+
+01:18:47.365 --> 01:18:49.285
+<v Speaker 1>I think it's it's operator, but
+
+01:18:52.239 --> 01:18:53.360
+<v Speaker 1>from memory.
+
+01:18:53.600 --> 01:18:54.239
+<v Speaker 1>Again.
+
+01:18:54.560 --> 01:18:57.040
+<v Speaker 1>Okay. So now we have one Cilium node.
+
+01:18:57.040 --> 01:18:57.920
+<v Speaker 1>That's brilliant.
+
+01:18:58.159 --> 01:19:00.239
+<v Speaker 0>I'm gonna delete it. I'm I'm just gonna
+
+01:19:00.480 --> 01:19:03.119
+<v Speaker 1>Yeah. Let's yeah. Let's delete all all the
+
+01:19:03.119 --> 01:19:04.239
+<v Speaker 1>Cilium pods. Yeah.
+
+01:19:07.625 --> 01:19:09.785
+<v Speaker 0>Okay. So now I wanna see the pods
+
+01:19:09.785 --> 01:19:11.465
+<v Speaker 0>coming back, and I wanna see that Cilium
+
+01:19:11.465 --> 01:19:13.145
+<v Speaker 0>node list looking really good, and I want
+
+01:19:13.145 --> 01:19:14.585
+<v Speaker 0>this campaign to work.
+
+01:19:17.864 --> 01:19:18.265
+<v Speaker 1>Okay.
+
+01:19:20.510 --> 01:19:21.630
+<v Speaker 1>Alright.
+
+01:19:22.430 --> 01:19:25.310
+<v Speaker 1>Oh, sweet. Okay. Good. Yeah. Okay. And now
+
+01:19:25.310 --> 01:19:26.670
+<v Speaker 1>back into a
+
+01:19:27.230 --> 01:19:29.230
+<v Speaker 1>any of the Cilium pods and just double
+
+01:19:29.230 --> 01:19:29.790
+<v Speaker 1>check
+
+01:19:30.270 --> 01:19:31.230
+<v Speaker 1>what are we seeing.
+
+01:19:32.265 --> 01:19:32.825
+<v Speaker 1>Cilium
+
+01:19:33.625 --> 01:19:35.945
+<v Speaker 1>yeah. And they're, like, Cilium health status
+
+01:19:36.265 --> 01:19:38.905
+<v Speaker 1>on node list. Just looking good, David. Yeah.
+
+01:19:38.905 --> 01:19:40.425
+<v Speaker 1>We we're getting to fix this.
+
+01:19:40.905 --> 01:19:41.465
+<v Speaker 1>Alright.
+
+01:19:43.785 --> 01:19:44.585
+<v Speaker 1>Okay.
+
+01:19:44.665 --> 01:19:46.990
+<v Speaker 1>Oh, this is this is this is much
+
+01:19:46.990 --> 01:19:48.830
+<v Speaker 1>closer. Right? There's there's some
+
+01:19:49.230 --> 01:19:50.670
+<v Speaker 1>sort of happiness here.
+
+01:19:53.710 --> 01:19:54.430
+<v Speaker 0>Where are those
+
+01:19:55.470 --> 01:19:57.790
+<v Speaker 0>oh, wait. Okay. But this this is probably
+
+01:19:57.790 --> 01:20:00.225
+<v Speaker 1>the That's better. This is good. Yeah. This
+
+01:20:00.225 --> 01:20:01.824
+<v Speaker 1>is this is at least trying to use
+
+01:20:01.985 --> 01:20:04.465
+<v Speaker 1>some existing IP addresses and not, like,
+
+01:20:05.344 --> 01:20:07.344
+<v Speaker 1>non existing ones. Okay.
+
+01:20:08.145 --> 01:20:09.505
+<v Speaker 1>Okay. Cool.
+
+01:20:10.145 --> 01:20:12.864
+<v Speaker 1>But there's there's, like, connectivity issue between private
+
+01:20:12.864 --> 01:20:13.824
+<v Speaker 1>nodes and
+
+01:20:14.065 --> 01:20:14.945
+<v Speaker 1>public nodes. Right?
+
+01:20:16.070 --> 01:20:18.070
+<v Speaker 1>So you're saying that the private node public
+
+01:20:18.070 --> 01:20:19.590
+<v Speaker 1>nodes wouldn't be able to reach
+
+01:20:19.989 --> 01:20:21.349
+<v Speaker 1>private IPs?
+
+01:20:25.510 --> 01:20:28.070
+<v Speaker 0>I don't understand. Sorry. So you you said
+
+01:20:28.070 --> 01:20:29.349
+<v Speaker 1>there are two types of nodes in this
+
+01:20:29.349 --> 01:20:30.630
+<v Speaker 1>cluster. You said there's
+
+01:20:31.015 --> 01:20:31.815
+<v Speaker 1>there are
+
+01:20:33.015 --> 01:20:35.735
+<v Speaker 1>there there are public Every node has a
+
+01:20:35.735 --> 01:20:37.815
+<v Speaker 0>private IP and a public IP. Oh, oh,
+
+01:20:37.815 --> 01:20:40.215
+<v Speaker 1>okay. Sorry. I misunderstood that earlier.
+
+01:20:40.455 --> 01:20:42.535
+<v Speaker 1>Okay. Okay. So I think this is this
+
+01:20:42.535 --> 01:20:44.055
+<v Speaker 1>is this is probably fine.
+
+01:20:47.340 --> 01:20:48.860
+<v Speaker 1>And this
+
+01:20:48.860 --> 01:20:50.619
+<v Speaker 1>is this is definitely better.
+
+01:20:52.140 --> 01:20:55.580
+<v Speaker 1>And there's no confusing stuff in here that
+
+01:20:55.580 --> 01:20:56.780
+<v Speaker 1>I can see anymore.
+
+01:20:57.260 --> 01:21:00.525
+<v Speaker 1>And does this this seems like there's more
+
+01:21:00.525 --> 01:21:01.485
+<v Speaker 1>entries now?
+
+01:21:01.725 --> 01:21:02.284
+<v Speaker 1>Yeah.
+
+01:21:02.925 --> 01:21:03.565
+<v Speaker 1>And
+
+01:21:04.125 --> 01:21:07.005
+<v Speaker 1>so it's gonna default, namespace default. Yeah. So
+
+01:21:07.005 --> 01:21:10.285
+<v Speaker 1>you can now see these echo b pods
+
+01:21:10.285 --> 01:21:11.885
+<v Speaker 1>from the default namespace
+
+01:21:12.250 --> 01:21:12.889
+<v Speaker 1>with
+
+01:21:13.369 --> 01:21:15.929
+<v Speaker 1>we we see the Cilium endpoints associated with
+
+01:21:17.449 --> 01:21:19.610
+<v Speaker 0>So those yeah. Those tests are all actually
+
+01:21:19.610 --> 01:21:20.489
+<v Speaker 0>running now.
+
+01:21:21.130 --> 01:21:22.169
+<v Speaker 1>Oh, sweet.
+
+01:21:23.770 --> 01:21:24.170
+<v Speaker 1>Okay.
+
+01:21:25.255 --> 01:21:28.135
+<v Speaker 1>And they are some of them are even
+
+01:21:28.135 --> 01:21:29.014
+<v Speaker 1>succeeding.
+
+01:21:29.415 --> 01:21:31.495
+<v Speaker 0>They are. Yeah. They're they're getting there. So
+
+01:21:31.495 --> 01:21:34.215
+<v Speaker 0>the connectivity test now seem to be doing
+
+01:21:34.215 --> 01:21:35.415
+<v Speaker 0>as we expected.
+
+01:21:35.735 --> 01:21:37.415
+<v Speaker 1>You you almost have the notes for the
+
+01:21:37.415 --> 01:21:38.375
+<v Speaker 1>blog post now, David,
+
+01:21:41.150 --> 01:21:42.590
+<v Speaker 1>which we can review.
+
+01:21:44.350 --> 01:21:44.830
+<v Speaker 1>So
+
+01:21:46.670 --> 01:21:47.390
+<v Speaker 1>okay.
+
+01:21:47.710 --> 01:21:51.949
+<v Speaker 1>Okay. That's that's definitely way better than earlier.
+
+01:21:52.350 --> 01:21:54.510
+<v Speaker 0>So we'd be brave and deploy the Star
+
+01:21:54.510 --> 01:21:56.684
+<v Speaker 0>Wars demo? We
+
+01:21:57.085 --> 01:21:57.885
+<v Speaker 1>can just
+
+01:21:58.685 --> 01:22:01.324
+<v Speaker 1>oh, look. There's a crash look there. Multi
+
+01:22:01.324 --> 01:22:02.445
+<v Speaker 1>note headless.
+
+01:22:02.605 --> 01:22:03.084
+<v Speaker 1>Okay.
+
+01:22:03.485 --> 01:22:05.085
+<v Speaker 1>Anyway, yeah, we can try the Star Wars
+
+01:22:05.085 --> 01:22:07.005
+<v Speaker 1>demo. Why not? But if you can you
+
+01:22:07.005 --> 01:22:09.180
+<v Speaker 1>can just also try, like, keep CQL get
+
+01:22:09.180 --> 01:22:10.540
+<v Speaker 1>CEP and have a look if there are
+
+01:22:10.540 --> 01:22:13.179
+<v Speaker 1>any Cilium endpoints just to sort of
+
+01:22:13.900 --> 01:22:14.860
+<v Speaker 1>understand that.
+
+01:22:15.180 --> 01:22:17.420
+<v Speaker 0>They're hard. Yeah. Sweet.
+
+01:22:17.580 --> 01:22:19.900
+<v Speaker 1>And you could, like, basically inspect some of
+
+01:22:19.900 --> 01:22:22.620
+<v Speaker 1>these, and you can find out some some
+
+01:22:22.620 --> 01:22:25.304
+<v Speaker 1>of the the information that Cilium stores about
+
+01:22:25.304 --> 01:22:27.465
+<v Speaker 1>each of the pods and confirm this whole
+
+01:22:27.465 --> 01:22:28.344
+<v Speaker 1>idea of
+
+01:22:29.625 --> 01:22:30.744
+<v Speaker 1>port identity.
+
+01:22:34.184 --> 01:22:34.505
+<v Speaker 1>Yeah.
+
+01:22:36.560 --> 01:22:38.080
+<v Speaker 0>So what do I what do I have
+
+01:22:38.080 --> 01:22:39.280
+<v Speaker 0>here? What's important?
+
+01:22:42.000 --> 01:22:44.719
+<v Speaker 0>Okay. So ignore the managed bit. Alright. So
+
+01:22:45.040 --> 01:22:45.760
+<v Speaker 1>So
+
+01:22:47.120 --> 01:22:48.159
+<v Speaker 1>it's just
+
+01:22:49.680 --> 01:22:51.840
+<v Speaker 1>a
+
+01:22:51.065 --> 01:22:51.945
+<v Speaker 1>representation
+
+01:22:51.945 --> 01:22:52.185
+<v Speaker 1>of
+
+01:22:52.824 --> 01:22:55.705
+<v Speaker 0>Alright. Okay. Of a pod. And there there's
+
+01:22:55.705 --> 01:22:57.624
+<v Speaker 1>an ID being assigned to it
+
+01:22:59.065 --> 01:23:00.905
+<v Speaker 1>and a set of labels, and then you
+
+01:23:00.905 --> 01:23:02.744
+<v Speaker 1>can use these labels to express
+
+01:23:04.185 --> 01:23:04.744
+<v Speaker 1>policy.
+
+01:23:07.010 --> 01:23:08.610
+<v Speaker 0>Okay. So let's
+
+01:23:09.410 --> 01:23:12.770
+<v Speaker 1>I think we have, like, mostly working configuration
+
+01:23:12.770 --> 01:23:14.770
+<v Speaker 1>then. I think there are few few few
+
+01:23:14.770 --> 01:23:16.930
+<v Speaker 1>things that that we'll need to to do
+
+01:23:16.930 --> 01:23:18.610
+<v Speaker 1>some more homework on, but
+
+01:23:19.010 --> 01:23:20.450
+<v Speaker 1>I think this is
+
+01:23:20.685 --> 01:23:22.605
+<v Speaker 1>this is pretty good for for a first
+
+01:23:22.605 --> 01:23:23.565
+<v Speaker 1>time install,
+
+01:23:23.725 --> 01:23:24.445
+<v Speaker 1>you know,
+
+01:23:25.325 --> 01:23:26.764
+<v Speaker 1>in the new provider.
+
+01:23:27.725 --> 01:23:29.885
+<v Speaker 0>Oh, yeah. Definitely. Like I said, this has
+
+01:23:29.885 --> 01:23:31.645
+<v Speaker 0>been very valuable for me just to get
+
+01:23:31.645 --> 01:23:33.725
+<v Speaker 0>to kinda learn what things are are doing.
+
+01:23:33.965 --> 01:23:34.285
+<v Speaker 0>Mhmm.
+
+01:23:36.530 --> 01:23:37.329
+<v Speaker 0>So if I
+
+01:23:39.809 --> 01:23:41.489
+<v Speaker 0>I'm gonna deploy the Star Wars thing again
+
+01:23:41.489 --> 01:23:43.650
+<v Speaker 0>because I'm just Yeah. I'm feeling really brave
+
+01:23:43.650 --> 01:23:45.010
+<v Speaker 0>now after all of that.
+
+01:23:46.770 --> 01:23:49.489
+<v Speaker 1>I can't feel any braver than that. Alright.
+
+01:23:50.505 --> 01:23:52.505
+<v Speaker 0>So what does the Star Wars demo
+
+01:23:53.545 --> 01:23:55.784
+<v Speaker 1>do? Just a couple of parts.
+
+01:23:57.625 --> 01:23:58.264
+<v Speaker 1>The
+
+01:23:59.225 --> 01:24:00.985
+<v Speaker 1>the idea is that there is a
+
+01:24:01.864 --> 01:24:02.985
+<v Speaker 1>there's a Death Star
+
+01:24:05.280 --> 01:24:06.960
+<v Speaker 1>thing that has an API,
+
+01:24:08.320 --> 01:24:09.920
+<v Speaker 1>and you can
+
+01:24:11.280 --> 01:24:12.800
+<v Speaker 1>destroy the desk star
+
+01:24:13.520 --> 01:24:15.040
+<v Speaker 1>by using the API.
+
+01:24:16.000 --> 01:24:19.040
+<v Speaker 1>But you can implement policy that seals
+
+01:24:19.875 --> 01:24:20.755
+<v Speaker 1>the
+
+01:24:21.555 --> 01:24:22.675
+<v Speaker 1>the endpoint
+
+01:24:22.835 --> 01:24:24.675
+<v Speaker 1>that that allows you to destroy the death
+
+01:24:24.675 --> 01:24:25.315
+<v Speaker 1>star.
+
+01:24:25.875 --> 01:24:28.514
+<v Speaker 1>And you could override the response, for example.
+
+01:24:28.595 --> 01:24:31.235
+<v Speaker 1>So it's like a potentially vulnerable service
+
+01:24:31.555 --> 01:24:33.155
+<v Speaker 1>that you can protect through policy.
+
+01:24:34.699 --> 01:24:35.659
+<v Speaker 0>Okay. So
+
+01:24:36.060 --> 01:24:38.860
+<v Speaker 0>quickly scanning this page on the demo then.
+
+01:24:38.860 --> 01:24:40.300
+<v Speaker 0>It's saying that
+
+01:24:40.620 --> 01:24:42.219
+<v Speaker 0>any ship labeled
+
+01:24:42.780 --> 01:24:45.739
+<v Speaker 0>any pods labeled with org equals empire
+
+01:24:46.060 --> 01:24:49.260
+<v Speaker 0>are allowed to communicate with the desk there.
+
+01:24:49.260 --> 01:24:49.580
+<v Speaker 1>Yeah.
+
+01:24:50.195 --> 01:24:52.275
+<v Speaker 0>Means if I run this command
+
+01:24:53.075 --> 01:24:53.795
+<v Speaker 0>Mhmm.
+
+01:24:59.715 --> 01:25:01.475
+<v Speaker 0>Oh, no. That's not gonna work
+
+01:25:02.050 --> 01:25:02.930
+<v Speaker 0>because
+
+01:25:04.130 --> 01:25:06.210
+<v Speaker 0>core DNS. Oh, no. Core DNS is running
+
+01:25:06.210 --> 01:25:08.450
+<v Speaker 0>there. Oh, why did that not Oh, great.
+
+01:25:08.610 --> 01:25:09.890
+<v Speaker 1>Sweet. Okay.
+
+01:25:13.570 --> 01:25:15.490
+<v Speaker 1>And it's all in default namespace now. Right?
+
+01:25:15.695 --> 01:25:17.935
+<v Speaker 1>No. It's in keep sis is it no.
+
+01:25:17.935 --> 01:25:20.015
+<v Speaker 1>It's it's in default. Right? The the Star
+
+01:25:20.015 --> 01:25:22.175
+<v Speaker 1>Wars demo is in default namespace, David?
+
+01:25:22.655 --> 01:25:24.575
+<v Speaker 0>Yeah. So I'll just click second to this
+
+01:25:24.575 --> 01:25:25.215
+<v Speaker 0>part.
+
+01:25:26.015 --> 01:25:28.495
+<v Speaker 1>Yeah. Let's do that. Go into the x
+
+01:25:28.495 --> 01:25:29.935
+<v Speaker 0>wing. I always like them.
+
+01:25:31.570 --> 01:25:33.650
+<v Speaker 0>I'm gonna check if DNS is working then.
+
+01:25:33.650 --> 01:25:36.050
+<v Speaker 0>So that's our default
+
+01:25:36.050 --> 01:25:38.210
+<v Speaker 0>s c c cluster local.
+
+01:25:38.530 --> 01:25:39.090
+<v Speaker 1>No.
+
+01:25:40.130 --> 01:25:42.050
+<v Speaker 1>But that would be a service IP campaign
+
+01:25:42.050 --> 01:25:42.290
+<v Speaker 1>game.
+
+01:25:43.865 --> 01:25:45.065
+<v Speaker 0>But I just wanted to see if it
+
+01:25:45.065 --> 01:25:46.825
+<v Speaker 0>would resolve. Yeah. I can use Oh, yeah.
+
+01:25:46.825 --> 01:25:48.105
+<v Speaker 0>Alright. I know. I get you.
+
+01:25:48.665 --> 01:25:51.545
+<v Speaker 0>I think Now let's look up maybe.
+
+01:25:56.500 --> 01:25:57.460
+<v Speaker 1>The store.
+
+01:26:00.980 --> 01:26:02.820
+<v Speaker 1>Can you ping ping your DNS?
+
+01:26:04.740 --> 01:26:06.660
+<v Speaker 1>Can you can you resolve Google or whatever?
+
+01:26:13.114 --> 01:26:15.755
+<v Speaker 0>I remember right. The IP address for cluster
+
+01:26:15.755 --> 01:26:18.074
+<v Speaker 0>DNS is 1000986.
+
+01:26:29.700 --> 01:26:31.620
+<v Speaker 0>Why have we got oh, yeah. The service
+
+01:26:31.620 --> 01:26:33.060
+<v Speaker 0>is so called QTNS.
+
+01:26:33.060 --> 01:26:33.220
+<v Speaker 0>So,
+
+01:26:36.355 --> 01:26:38.355
+<v Speaker 0>yeah, I can't But it's a service IP.
+
+01:26:38.355 --> 01:26:39.555
+<v Speaker 1>You can't ping it again.
+
+01:26:40.995 --> 01:26:41.875
+<v Speaker 1>Can you
+
+01:26:42.355 --> 01:26:43.875
+<v Speaker 1>yeah. Check check resolve con.
+
+01:26:50.290 --> 01:26:51.729
+<v Speaker 1>So this is
+
+01:26:53.010 --> 01:26:55.250
+<v Speaker 1>name server, the same one that we just
+
+01:26:55.250 --> 01:26:55.809
+<v Speaker 1>tried.
+
+01:26:56.290 --> 01:26:58.929
+<v Speaker 1>Okay. And if you try a nest lookup
+
+01:26:58.929 --> 01:26:59.570
+<v Speaker 1>for
+
+01:27:00.770 --> 01:27:01.489
+<v Speaker 1>Kubernetes
+
+01:27:04.770 --> 01:27:05.170
+<v Speaker 0>right.
+
+01:27:05.824 --> 01:27:07.584
+<v Speaker 0>DNS is definitely broken.
+
+01:27:07.745 --> 01:27:09.665
+<v Speaker 1>Somehow DNS is broken. That's
+
+01:27:14.145 --> 01:27:15.665
+<v Speaker 0>Alright. Let's
+
+01:27:15.665 --> 01:27:17.745
+<v Speaker 0>not try and fix. No. No. I think
+
+01:27:17.745 --> 01:27:19.585
+<v Speaker 1>I think you definitely need to investigate that.
+
+01:27:21.230 --> 01:27:23.469
+<v Speaker 1>But one thing I'd recommend is that, you
+
+01:27:23.469 --> 01:27:26.110
+<v Speaker 1>know, try and try and somehow hook Cilium
+
+01:27:26.110 --> 01:27:28.909
+<v Speaker 1>installation directly into the cluster API
+
+01:27:31.230 --> 01:27:32.110
+<v Speaker 1>provisioning
+
+01:27:33.070 --> 01:27:33.469
+<v Speaker 1>phase.
+
+01:27:35.105 --> 01:27:37.025
+<v Speaker 1>Right? So you you you you can you
+
+01:27:37.025 --> 01:27:39.264
+<v Speaker 1>could get Cilium installed from the get go,
+
+01:27:41.265 --> 01:27:43.505
+<v Speaker 1>and no funny business, hopefully.
+
+01:27:44.625 --> 01:27:47.585
+<v Speaker 0>Well, I think I'll make that my homework
+
+01:27:47.340 --> 01:27:49.419
+<v Speaker 0>for the next week or so and
+
+01:27:49.659 --> 01:27:51.980
+<v Speaker 0>really dig into this and make sure that
+
+01:27:51.980 --> 01:27:53.900
+<v Speaker 0>I can get Cilium working
+
+01:27:54.139 --> 01:27:55.980
+<v Speaker 0>properly with the cluster API. I think that's
+
+01:27:55.980 --> 01:27:56.860
+<v Speaker 0>really important,
+
+01:27:57.179 --> 01:27:58.940
+<v Speaker 0>especially with the power and the features that
+
+01:27:58.940 --> 01:28:00.540
+<v Speaker 0>Cilium brings to the table is the CNI
+
+01:28:00.540 --> 01:28:02.300
+<v Speaker 0>implementation. I I really do want us to
+
+01:28:02.300 --> 01:28:04.835
+<v Speaker 0>work well on packet with the cluster API.
+
+01:28:04.835 --> 01:28:08.035
+<v Speaker 0>So I will continue to fight the good
+
+01:28:08.035 --> 01:28:09.875
+<v Speaker 0>fate here, and I get a nice blog
+
+01:28:09.875 --> 01:28:12.195
+<v Speaker 0>post out, making this easy for people to
+
+01:28:12.195 --> 01:28:14.675
+<v Speaker 0>consume and use as well. I wanna just
+
+01:28:14.675 --> 01:28:16.114
+<v Speaker 0>thank you for your time. I know that
+
+01:28:16.114 --> 01:28:17.074
+<v Speaker 0>was a bit of a slog,
+
+01:28:17.730 --> 01:28:19.330
+<v Speaker 0>and there was a lot of things thrown
+
+01:28:19.330 --> 01:28:20.690
+<v Speaker 0>at you there that we kinda had to
+
+01:28:20.690 --> 01:28:22.530
+<v Speaker 0>try and debug. But you know what? That's
+
+01:28:22.530 --> 01:28:25.730
+<v Speaker 0>computers. Things don't always work, and you gotta
+
+01:28:25.730 --> 01:28:28.210
+<v Speaker 0>be prepared for that battle. So I really
+
+01:28:28.210 --> 01:28:30.210
+<v Speaker 0>appreciate your help and perseverance as we try
+
+01:28:30.210 --> 01:28:31.970
+<v Speaker 0>to get that working. It was good to
+
+01:28:31.970 --> 01:28:33.945
+<v Speaker 1>see you, David. Yeah. You too. So I
+
+01:28:33.945 --> 01:28:35.785
+<v Speaker 0>am thank you very much. For watching. Thanks.
+
+01:28:35.785 --> 01:28:37.385
+<v Speaker 1>Thanks. Yeah. Thank you for your time, and
+
+01:28:37.385 --> 01:28:39.065
+<v Speaker 0>we'll definitely do a part two of this
+
+01:28:39.065 --> 01:28:40.505
+<v Speaker 0>once I I iron out the kinks of
+
+01:28:40.505 --> 01:28:42.425
+<v Speaker 0>the cluster API implementation, and we'll see what
+
+01:28:42.425 --> 01:28:44.425
+<v Speaker 0>happens then. So have a great day, everyone,
+
+01:28:44.425 --> 01:28:45.305
+<v Speaker 0>and thanks again, Julio.

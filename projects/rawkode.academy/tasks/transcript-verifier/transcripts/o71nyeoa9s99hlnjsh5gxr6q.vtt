@@ -1,0 +1,4838 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 855e2aa9-4771-45bb-a32e-ecc6c86776b9
+Created: 2025-04-29T23:06:43.023Z
+Duration: 3584.9934
+Channels: 1
+
+00:00:02.240 --> 00:00:04.800
+<v Speaker 0>Hello, everyone. Thank you for joining us today.
+
+00:00:05.440 --> 00:00:07.919
+<v Speaker 0>Today, I have the pleasure of having Alex
+
+00:00:07.919 --> 00:00:10.240
+<v Speaker 0>Ellis join me so that we can do
+
+00:00:10.240 --> 00:00:12.795
+<v Speaker 0>a walk through of the OpenFaaS repositories by
+
+00:00:12.795 --> 00:00:14.635
+<v Speaker 0>analyzing the commits with a tool that I've
+
+00:00:14.635 --> 00:00:16.315
+<v Speaker 0>been working on called git series,
+
+00:00:16.875 --> 00:00:18.715
+<v Speaker 0>in which we load all of the commits
+
+00:00:18.715 --> 00:00:20.795
+<v Speaker 0>and the deltas within the commits into influx
+
+00:00:20.795 --> 00:00:22.715
+<v Speaker 0>DB to see what we can learn.
+
+00:00:23.355 --> 00:00:25.275
+<v Speaker 0>First, hello, Alex. How are you?
+
+00:00:26.050 --> 00:00:28.130
+<v Speaker 1>Hello, David. Good to see you.
+
+00:00:29.170 --> 00:00:30.609
+<v Speaker 1>I think I've heard you talking about the
+
+00:00:30.609 --> 00:00:33.250
+<v Speaker 1>Git series program a few times,
+
+00:00:34.930 --> 00:00:36.850
+<v Speaker 1>and was sort of interested when you reached
+
+00:00:36.850 --> 00:00:38.449
+<v Speaker 1>out to find out a bit more about
+
+00:00:38.449 --> 00:00:39.970
+<v Speaker 1>what your tool is doing and how you
+
+00:00:39.970 --> 00:00:40.610
+<v Speaker 1>put it together.
+
+00:00:41.285 --> 00:00:43.045
+<v Speaker 1>And maybe I can give a bit of
+
+00:00:43.045 --> 00:00:43.685
+<v Speaker 1>flavor
+
+00:00:44.405 --> 00:00:46.325
+<v Speaker 1>to what you're seeing and a bit more
+
+00:00:46.325 --> 00:00:47.125
+<v Speaker 1>context.
+
+00:00:47.685 --> 00:00:49.125
+<v Speaker 1>So, yeah, I'm interested to see what we
+
+00:00:49.125 --> 00:00:49.925
+<v Speaker 1>can get to.
+
+00:00:50.725 --> 00:00:54.245
+<v Speaker 0>Yeah. So this was conference driven development. I
+
+00:00:54.245 --> 00:00:55.125
+<v Speaker 0>submitted
+
+00:00:55.125 --> 00:00:57.690
+<v Speaker 0>a talk called get lost in time series
+
+00:00:57.690 --> 00:00:58.970
+<v Speaker 0>to try and showcase
+
+00:01:00.010 --> 00:01:02.330
+<v Speaker 0>new novel use cases for time series that
+
+00:01:02.330 --> 00:01:04.810
+<v Speaker 0>goes beyond the basics, Linux system monitoring. Like,
+
+00:01:04.810 --> 00:01:06.010
+<v Speaker 0>we all we've all done it. We all
+
+00:01:06.010 --> 00:01:07.770
+<v Speaker 0>know how to do that, but I wanted
+
+00:01:07.770 --> 00:01:10.085
+<v Speaker 0>to try and find something different. And the
+
+00:01:10.085 --> 00:01:12.245
+<v Speaker 0>top got accepted and I went, oh, shit.
+
+00:01:12.245 --> 00:01:13.765
+<v Speaker 0>I need to write this tool now.
+
+00:01:14.565 --> 00:01:16.965
+<v Speaker 0>And that's what we'll show. So
+
+00:01:17.685 --> 00:01:19.445
+<v Speaker 0>let's get up to speed.
+
+00:01:20.325 --> 00:01:21.765
+<v Speaker 0>I will share
+
+00:01:23.890 --> 00:01:25.090
+<v Speaker 0>my screen.
+
+00:01:28.290 --> 00:01:30.530
+<v Speaker 0>Just yeah. Can you see my dashboard?
+
+00:01:31.250 --> 00:01:34.875
+<v Speaker 1>Yeah. I can see it. Awesome. Alright. So
+
+00:01:35.755 --> 00:01:38.155
+<v Speaker 0>this is a tool that is hosted on
+
+00:01:38.155 --> 00:01:39.034
+<v Speaker 0>GitLab
+
+00:01:39.994 --> 00:01:41.755
+<v Speaker 0>and written in Go.
+
+00:01:42.555 --> 00:01:45.674
+<v Speaker 0>The funny story is there is another version
+
+00:01:46.235 --> 00:01:47.515
+<v Speaker 0>written in Rust.
+
+00:01:49.640 --> 00:01:53.320
+<v Speaker 0>So we have getthat.com/Rawkode/getseries,
+
+00:01:53.399 --> 00:01:55.000
+<v Speaker 0>which is the Rust version.
+
+00:01:55.799 --> 00:01:57.560
+<v Speaker 0>I had a few challenges with that other
+
+00:01:57.560 --> 00:01:59.720
+<v Speaker 0>than my own inability to write good Rust
+
+00:01:59.720 --> 00:02:02.039
+<v Speaker 0>codes, which is getting better all the time.
+
+00:02:02.039 --> 00:02:05.705
+<v Speaker 0>But the let get library for Rust was
+
+00:02:05.705 --> 00:02:08.345
+<v Speaker 0>single threaded to no concurrency and then support
+
+00:02:08.345 --> 00:02:12.265
+<v Speaker 0>async await. So processing slightly larger repositories
+
+00:02:12.425 --> 00:02:14.185
+<v Speaker 0>proved to be quite cumbersome.
+
+00:02:15.010 --> 00:02:17.170
+<v Speaker 0>So I fell back to the my more
+
+00:02:17.170 --> 00:02:19.970
+<v Speaker 0>familiar tooling, which was go and rewrote the
+
+00:02:19.970 --> 00:02:22.050
+<v Speaker 0>tool here. You're more than welcome to to
+
+00:02:22.050 --> 00:02:23.730
+<v Speaker 0>compare this, run it yourself on your own
+
+00:02:23.730 --> 00:02:26.290
+<v Speaker 0>repositories and have some fun. Just noticed you
+
+00:02:26.290 --> 00:02:27.655
+<v Speaker 1>don't have a read me in this in
+
+00:02:27.655 --> 00:02:28.535
+<v Speaker 1>this version.
+
+00:02:28.935 --> 00:02:30.775
+<v Speaker 1>But in the rest one, it seemed like
+
+00:02:30.775 --> 00:02:32.135
+<v Speaker 1>you run the tool and then you pipe
+
+00:02:32.135 --> 00:02:33.735
+<v Speaker 1>it to influx right.
+
+00:02:33.815 --> 00:02:37.095
+<v Speaker 0>That is correct. Effectively doing a generating insert
+
+00:02:37.095 --> 00:02:37.895
+<v Speaker 1>statements.
+
+00:02:39.335 --> 00:02:41.815
+<v Speaker 0>Very similar. So, yeah, you point us at
+
+00:02:41.815 --> 00:02:44.350
+<v Speaker 0>a repository, you give it the analyze command,
+
+00:02:44.350 --> 00:02:46.430
+<v Speaker 0>and you can it's best out raw line
+
+00:02:46.430 --> 00:02:48.190
+<v Speaker 0>protocol, which is like the
+
+00:02:48.750 --> 00:02:50.670
+<v Speaker 0>it's just the raw format that influx to
+
+00:02:50.670 --> 00:02:53.230
+<v Speaker 0>be understands for rate endpoints without doing any
+
+00:02:53.230 --> 00:02:53.870
+<v Speaker 0>conversion.
+
+00:02:54.190 --> 00:02:56.190
+<v Speaker 0>Okay. And then just take that to influx
+
+00:02:56.190 --> 00:02:56.830
+<v Speaker 0>rate
+
+00:02:57.444 --> 00:02:58.005
+<v Speaker 0>or
+
+00:02:58.245 --> 00:03:00.084
+<v Speaker 0>there is an example report What's that look
+
+00:03:00.084 --> 00:03:01.685
+<v Speaker 1>like? It's a line.
+
+00:03:02.004 --> 00:03:02.565
+<v Speaker 1>Yeah.
+
+00:03:02.885 --> 00:03:05.685
+<v Speaker 0>Oh, here's some I prepared earlier. Oh, no.
+
+00:03:06.325 --> 00:03:08.645
+<v Speaker 0>It's not there. I'll share
+
+00:03:08.885 --> 00:03:12.190
+<v Speaker 0>my whole screen this time, which k. Never
+
+00:03:12.190 --> 00:03:14.030
+<v Speaker 0>goes wrong. Right? So so
+
+00:03:16.670 --> 00:03:18.830
+<v Speaker 0>this is my CloudVM
+
+00:03:18.830 --> 00:03:21.470
+<v Speaker 0>where I processed all of the OpenFaaS
+
+00:03:21.470 --> 00:03:23.870
+<v Speaker 0>line protocol. Now if I just check one
+
+00:03:23.870 --> 00:03:24.830
+<v Speaker 0>that's small
+
+00:03:25.745 --> 00:03:27.745
+<v Speaker 1>The name would be small. The Cloud Functions
+
+00:03:27.745 --> 00:03:30.065
+<v Speaker 1>one will be pretty small. Alright. Let's go
+
+00:03:30.065 --> 00:03:31.745
+<v Speaker 0>for the Cloud Functions
+
+00:03:32.305 --> 00:03:33.105
+<v Speaker 0>then
+
+00:03:35.745 --> 00:03:36.545
+<v Speaker 0>oh,
+
+00:03:36.545 --> 00:03:37.425
+<v Speaker 0>let's
+
+00:03:38.480 --> 00:03:40.000
+<v Speaker 0>yeah. I think I suppose as big as
+
+00:03:40.000 --> 00:03:40.880
+<v Speaker 0>I can get it, but it said it's
+
+00:03:40.880 --> 00:03:43.760
+<v Speaker 0>going too legible. But this is a lane
+
+00:03:43.760 --> 00:03:45.200
+<v Speaker 0>of lane protocol.
+
+00:03:46.160 --> 00:03:49.600
+<v Speaker 0>It essentially starts with a metric or measurement
+
+00:03:49.600 --> 00:03:50.080
+<v Speaker 0>name.
+
+00:03:50.425 --> 00:03:52.265
+<v Speaker 0>So this is actually analyzing one of the
+
+00:03:52.265 --> 00:03:54.025
+<v Speaker 0>lines. This is one of the deltas where
+
+00:03:54.025 --> 00:03:55.145
+<v Speaker 0>they get history.
+
+00:03:55.465 --> 00:03:57.944
+<v Speaker 0>It then applies a bunch of tags which
+
+00:03:57.944 --> 00:03:59.465
+<v Speaker 0>allow us to slice and dice this data
+
+00:03:59.465 --> 00:04:00.665
+<v Speaker 0>at query time.
+
+00:04:01.065 --> 00:04:02.745
+<v Speaker 0>So you can see here, we have a
+
+00:04:02.745 --> 00:04:03.545
+<v Speaker 0>fair amount
+
+00:04:03.940 --> 00:04:04.980
+<v Speaker 0>of tags.
+
+00:04:05.459 --> 00:04:07.220
+<v Speaker 0>So when we analyze a line from the
+
+00:04:07.220 --> 00:04:08.580
+<v Speaker 0>ref log, we
+
+00:04:09.060 --> 00:04:11.700
+<v Speaker 0>add a host, an owner, and a repository,
+
+00:04:11.700 --> 00:04:14.260
+<v Speaker 0>which allows us to identify where the change
+
+00:04:14.260 --> 00:04:15.060
+<v Speaker 0>came from.
+
+00:04:15.459 --> 00:04:17.860
+<v Speaker 0>Right. We added from GitLab, for instance, it
+
+00:04:17.860 --> 00:04:18.500
+<v Speaker 1>would be
+
+00:04:18.995 --> 00:04:20.274
+<v Speaker 1>a different host.
+
+00:04:20.595 --> 00:04:24.355
+<v Speaker 1>Yeah. Exactly. So this is GitHub OpenFaaS cloud
+
+00:04:24.355 --> 00:04:25.555
+<v Speaker 0>functions dot Git.
+
+00:04:25.794 --> 00:04:28.915
+<v Speaker 0>We have a status annotation a tag on
+
+00:04:28.915 --> 00:04:30.835
+<v Speaker 0>a line changes, which tells whether the line
+
+00:04:30.835 --> 00:04:31.875
+<v Speaker 0>was added or deleted,
+
+00:04:32.330 --> 00:04:34.970
+<v Speaker 0>the directory in which the change occurred,
+
+00:04:36.010 --> 00:04:38.650
+<v Speaker 0>the file name, the extension is then broken
+
+00:04:38.650 --> 00:04:40.170
+<v Speaker 0>down just because we wanna be able to
+
+00:04:40.170 --> 00:04:41.770
+<v Speaker 0>create it up on its own. We have
+
+00:04:41.770 --> 00:04:43.850
+<v Speaker 0>the author name, the author email,
+
+00:04:44.090 --> 00:04:46.330
+<v Speaker 0>and whether I was able to detect a
+
+00:04:46.330 --> 00:04:47.210
+<v Speaker 0>comment marker
+
+00:04:47.755 --> 00:04:49.755
+<v Speaker 0>as really crude code if you look at
+
+00:04:49.755 --> 00:04:51.995
+<v Speaker 0>it, I'm basically looking for a hash symbol
+
+00:04:51.995 --> 00:04:53.275
+<v Speaker 0>or a double slash
+
+00:04:53.515 --> 00:04:55.435
+<v Speaker 0>or a slash star, I think.
+
+00:04:55.835 --> 00:04:58.155
+<v Speaker 0>So it's not sophisticated, but it will hopefully
+
+00:04:58.155 --> 00:05:01.195
+<v Speaker 0>give us a little bit of insight into
+
+00:05:01.500 --> 00:05:04.380
+<v Speaker 0>when documentation was added to the project or
+
+00:05:04.380 --> 00:05:06.700
+<v Speaker 0>whether the project started with documentation.
+
+00:05:07.180 --> 00:05:08.460
+<v Speaker 0>Good for identifying,
+
+00:05:09.020 --> 00:05:11.100
+<v Speaker 0>you know, hackathons generally produce a lot of
+
+00:05:11.100 --> 00:05:13.740
+<v Speaker 0>documentation for projects you can see. Contents
+
+00:05:13.980 --> 00:05:17.095
+<v Speaker 1>there. That must be quite a burden on
+
+00:05:17.095 --> 00:05:19.335
+<v Speaker 1>the database to import all the contents of
+
+00:05:19.335 --> 00:05:20.295
+<v Speaker 1>every delta.
+
+00:05:21.815 --> 00:05:24.295
+<v Speaker 1>Like, we've got the exact type of change,
+
+00:05:24.295 --> 00:05:26.935
+<v Speaker 1>right, on each line. Well, yeah. So the
+
+00:05:26.935 --> 00:05:29.200
+<v Speaker 0>reason I add the contents is really because
+
+00:05:29.200 --> 00:05:31.600
+<v Speaker 0>I like to filter projects commits for swear
+
+00:05:31.600 --> 00:05:33.680
+<v Speaker 0>words and then see how much they swear.
+
+00:05:34.480 --> 00:05:36.160
+<v Speaker 0>But this space here means that it's no
+
+00:05:36.160 --> 00:05:37.680
+<v Speaker 0>longer a tag and this is stored as
+
+00:05:37.680 --> 00:05:40.560
+<v Speaker 0>a field. So it's not indexed. So searching
+
+00:05:40.640 --> 00:05:43.280
+<v Speaker 0>is much slower. Yeah. You couldn't index that
+
+00:05:43.280 --> 00:05:46.134
+<v Speaker 1>really. But what you could do is something
+
+00:05:46.134 --> 00:05:48.215
+<v Speaker 1>I did at my at university actually is
+
+00:05:48.215 --> 00:05:49.095
+<v Speaker 1>I wrote a
+
+00:05:49.895 --> 00:05:51.495
+<v Speaker 1>a tool that would basically do a bit
+
+00:05:51.495 --> 00:05:51.975
+<v Speaker 1>of
+
+00:05:52.695 --> 00:05:55.414
+<v Speaker 1>something called, like, t TDIF.
+
+00:05:55.414 --> 00:05:57.095
+<v Speaker 1>I don't know the exact terminology now, but
+
+00:05:57.095 --> 00:05:59.000
+<v Speaker 1>you could you could find the density of
+
+00:05:59.000 --> 00:06:00.680
+<v Speaker 1>terms relative to the catalog.
+
+00:06:01.160 --> 00:06:03.640
+<v Speaker 1>You could add the most interesting ones.
+
+00:06:04.520 --> 00:06:05.800
+<v Speaker 1>I don't know. Can you do a kind
+
+00:06:05.800 --> 00:06:06.200
+<v Speaker 1>of
+
+00:06:07.640 --> 00:06:08.440
+<v Speaker 1>array,
+
+00:06:08.680 --> 00:06:10.680
+<v Speaker 1>or does it just have to be comment
+
+00:06:10.680 --> 00:06:11.080
+<v Speaker 1>value?
+
+00:06:12.405 --> 00:06:14.485
+<v Speaker 0>Yeah. And, of course, d b fields only
+
+00:06:14.485 --> 00:06:17.685
+<v Speaker 0>store a string or integer or numeric types.
+
+00:06:17.925 --> 00:06:19.605
+<v Speaker 1>Okay. No worries.
+
+00:06:20.245 --> 00:06:20.885
+<v Speaker 1>Mhmm.
+
+00:06:21.125 --> 00:06:23.365
+<v Speaker 1>And have you got the commit message here?
+
+00:06:25.605 --> 00:06:26.645
+<v Speaker 0>Yes.
+
+00:06:26.645 --> 00:06:27.205
+<v Speaker 0>So
+
+00:06:27.729 --> 00:06:29.729
+<v Speaker 0>because this is the line, we won't see
+
+00:06:29.729 --> 00:06:32.050
+<v Speaker 0>it there, but it'll be great on commit.
+
+00:06:32.050 --> 00:06:33.729
+<v Speaker 1>Actually, just above there's a word that says
+
+00:06:33.729 --> 00:06:34.370
+<v Speaker 1>commit.
+
+00:06:34.689 --> 00:06:37.729
+<v Speaker 0>Yeah. So because this is a VM, I
+
+00:06:37.729 --> 00:06:39.729
+<v Speaker 0>I can't seem to clear anything or at
+
+00:06:39.729 --> 00:06:41.250
+<v Speaker 0>least maybe this is just a Google Cloud
+
+00:06:41.250 --> 00:06:43.169
+<v Speaker 0>thing, but let's just try and highlight this.
+
+00:06:44.985 --> 00:06:46.585
+<v Speaker 0>So we do have a commit here. So
+
+00:06:46.585 --> 00:06:48.664
+<v Speaker 0>the tags are very similar. We have the
+
+00:06:48.664 --> 00:06:50.265
+<v Speaker 0>author where it came from.
+
+00:06:50.585 --> 00:06:52.585
+<v Speaker 0>The fields are slightly different. We now have
+
+00:06:52.585 --> 00:06:54.824
+<v Speaker 0>how many files are modified in this commit.
+
+00:06:54.824 --> 00:06:56.985
+<v Speaker 0>We have the total sum of insertions and
+
+00:06:56.985 --> 00:06:57.384
+<v Speaker 0>deletions.
+
+00:06:58.000 --> 00:07:00.240
+<v Speaker 0>We do store the sha as well so
+
+00:07:00.240 --> 00:07:02.160
+<v Speaker 0>that we can then do something with that
+
+00:07:02.160 --> 00:07:04.000
+<v Speaker 0>commit if we choose to, and we have
+
+00:07:04.000 --> 00:07:05.280
+<v Speaker 0>the commit message here.
+
+00:07:07.199 --> 00:07:09.199
+<v Speaker 1>That's great. So you got lines,
+
+00:07:09.199 --> 00:07:11.520
+<v Speaker 1>and that's one series. You've got commit. That's
+
+00:07:11.520 --> 00:07:13.535
+<v Speaker 1>another series. Have you got anything else that
+
+00:07:13.535 --> 00:07:14.255
+<v Speaker 1>you'd do?
+
+00:07:15.215 --> 00:07:16.335
+<v Speaker 0>Yes.
+
+00:07:16.335 --> 00:07:18.495
+<v Speaker 0>But why don't we browse that from here?
+
+00:07:18.495 --> 00:07:20.735
+<v Speaker 0>So let's leave the dashboard for the time
+
+00:07:20.735 --> 00:07:21.295
+<v Speaker 0>being.
+
+00:07:22.175 --> 00:07:24.415
+<v Speaker 0>We'll come to the data explorer,
+
+00:07:24.574 --> 00:07:25.935
+<v Speaker 0>which is gonna be a bit nicer than
+
+00:07:25.935 --> 00:07:27.775
+<v Speaker 0>just looking at the line protocol itself.
+
+00:07:28.270 --> 00:07:30.830
+<v Speaker 0>When did the OpenFaaS when was first commit?
+
+00:07:30.830 --> 00:07:33.710
+<v Speaker 0>You could put you could put 2016.
+
+00:07:33.870 --> 00:07:34.990
+<v Speaker 1>'20 '16.
+
+00:07:35.469 --> 00:07:36.030
+<v Speaker 1>Yeah.
+
+00:07:37.550 --> 00:07:39.389
+<v Speaker 0>Alright. So this is the measurements that we
+
+00:07:39.389 --> 00:07:40.750
+<v Speaker 0>have. So we see in the line.
+
+00:07:41.324 --> 00:07:44.044
+<v Speaker 0>We've seen commit. We also have tags so
+
+00:07:44.044 --> 00:07:46.125
+<v Speaker 0>that we can track the releases that were
+
+00:07:46.125 --> 00:07:47.725
+<v Speaker 0>tagged with the repository.
+
+00:07:47.884 --> 00:07:50.285
+<v Speaker 0>And we do some interesting
+
+00:07:50.285 --> 00:07:53.005
+<v Speaker 0>stuff with the file itself. So we we
+
+00:07:53.565 --> 00:07:55.724
+<v Speaker 0>track when a fail was added and removed
+
+00:07:55.724 --> 00:07:56.764
+<v Speaker 0>from the repository,
+
+00:07:57.460 --> 00:07:59.300
+<v Speaker 0>breaking that down by extension to try and
+
+00:07:59.300 --> 00:08:01.140
+<v Speaker 0>identify what kind of code
+
+00:08:01.300 --> 00:08:03.940
+<v Speaker 0>has come and gone with the
+
+00:08:04.260 --> 00:08:04.980
+<v Speaker 0>repository.
+
+00:08:05.300 --> 00:08:06.820
+<v Speaker 0>What I found really interesting when I was
+
+00:08:06.820 --> 00:08:09.460
+<v Speaker 0>processing the influx DB report itself is you
+
+00:08:09.460 --> 00:08:12.419
+<v Speaker 0>can actually visualize that transition from JavaScript to
+
+00:08:12.419 --> 00:08:12.900
+<v Speaker 0>TypeScript
+
+00:08:13.375 --> 00:08:15.295
+<v Speaker 0>because the JavaScript code has this big line
+
+00:08:15.295 --> 00:08:17.055
+<v Speaker 0>gone up, and then TypeScript comes up and
+
+00:08:17.055 --> 00:08:19.695
+<v Speaker 0>JavaScript falls off a cliff. So Interesting.
+
+00:08:20.095 --> 00:08:22.015
+<v Speaker 1>So I'm I'm seeing the
+
+00:08:22.415 --> 00:08:24.415
+<v Speaker 1>the the sort of outer
+
+00:08:24.575 --> 00:08:26.575
+<v Speaker 1>part of this, the database to call it,
+
+00:08:26.575 --> 00:08:28.440
+<v Speaker 1>the git series, and then I'm seeing a
+
+00:08:28.440 --> 00:08:29.960
+<v Speaker 1>number of measurements, but I don't see the
+
+00:08:29.960 --> 00:08:32.200
+<v Speaker 1>extension as a field for that measurement
+
+00:08:32.280 --> 00:08:34.200
+<v Speaker 1>in your view now.
+
+00:08:35.720 --> 00:08:38.200
+<v Speaker 0>Yes. Because that is a tag. So we
+
+00:08:38.200 --> 00:08:40.600
+<v Speaker 0>filter looking at a specific field. Okay. So
+
+00:08:40.600 --> 00:08:42.360
+<v Speaker 1>we can browse on there. We can have
+
+00:08:42.360 --> 00:08:43.160
+<v Speaker 1>access flex
+
+00:08:45.385 --> 00:08:46.425
+<v Speaker 1>the UI
+
+00:08:46.825 --> 00:08:48.584
+<v Speaker 1>for a long time. It seems to have
+
+00:08:48.584 --> 00:08:49.225
+<v Speaker 1>changed
+
+00:08:49.385 --> 00:08:50.665
+<v Speaker 1>the redesign.
+
+00:08:51.225 --> 00:08:53.785
+<v Speaker 0>Yes. So today, we are running the two
+
+00:08:53.785 --> 00:08:55.305
+<v Speaker 0>point o beta release.
+
+00:08:55.670 --> 00:08:57.990
+<v Speaker 0>This new shiny allows us to play with
+
+00:08:57.990 --> 00:08:59.990
+<v Speaker 0>the new query language, which is functional. So
+
+00:08:59.990 --> 00:09:02.070
+<v Speaker 0>if I show you that let's see.
+
+00:09:03.990 --> 00:09:06.310
+<v Speaker 0>Let's just look at the last thirty days
+
+00:09:06.390 --> 00:09:08.950
+<v Speaker 0>of files and hit submit. We can view
+
+00:09:08.950 --> 00:09:09.670
+<v Speaker 0>the raw data,
+
+00:09:11.035 --> 00:09:12.875
+<v Speaker 0>And we can see that we have the
+
+00:09:12.875 --> 00:09:13.675
+<v Speaker 0>author,
+
+00:09:14.875 --> 00:09:16.715
+<v Speaker 0>the directory that's failed existing.
+
+00:09:17.115 --> 00:09:18.715
+<v Speaker 0>As we spoke about just before we went
+
+00:09:18.715 --> 00:09:20.075
+<v Speaker 0>live, we're gonna see a lot of those
+
+00:09:20.075 --> 00:09:21.195
+<v Speaker 0>vendor directory.
+
+00:09:21.435 --> 00:09:22.075
+<v Speaker 1>And
+
+00:09:22.875 --> 00:09:24.475
+<v Speaker 1>we can exclude on that as well, right,
+
+00:09:24.475 --> 00:09:26.530
+<v Speaker 1>because we know where it is. We we
+
+00:09:26.530 --> 00:09:28.690
+<v Speaker 0>can exclude. Yeah. Because that's the tag, we
+
+00:09:28.690 --> 00:09:30.610
+<v Speaker 0>can try and use the regex filter to
+
+00:09:30.610 --> 00:09:32.850
+<v Speaker 0>say, don't show me anything within the vendor.
+
+00:09:33.090 --> 00:09:33.730
+<v Speaker 0>And
+
+00:09:34.210 --> 00:09:35.810
+<v Speaker 0>whether the fail was modified or whether it
+
+00:09:35.810 --> 00:09:37.490
+<v Speaker 0>was new. And you have PromQL as well,
+
+00:09:37.490 --> 00:09:38.610
+<v Speaker 1>don't you? So I remember there was a
+
+00:09:38.610 --> 00:09:41.965
+<v Speaker 1>big sort of controversy about influx and Prometheus
+
+00:09:41.965 --> 00:09:44.445
+<v Speaker 1>and then Influx went and implemented the PromQL
+
+00:09:44.445 --> 00:09:46.125
+<v Speaker 1>language. Is that still available?
+
+00:09:47.405 --> 00:09:49.165
+<v Speaker 0>So there's a transpiler,
+
+00:09:49.165 --> 00:09:50.205
+<v Speaker 0>which is in its
+
+00:09:50.765 --> 00:09:53.485
+<v Speaker 0>early days. It's not something that is n
+
+00:09:53.485 --> 00:09:55.005
+<v Speaker 0>two point x at this point in time.
+
+00:09:55.350 --> 00:09:57.750
+<v Speaker 1>Okay. But the PromQL transpiler,
+
+00:09:58.070 --> 00:10:00.390
+<v Speaker 0>the plan being you can use PromQL to
+
+00:10:00.390 --> 00:10:02.870
+<v Speaker 0>transpile to flux, which is the language that
+
+00:10:02.870 --> 00:10:03.670
+<v Speaker 0>we see here.
+
+00:10:04.070 --> 00:10:05.510
+<v Speaker 1>Right. Okay. That's interesting.
+
+00:10:07.525 --> 00:10:10.405
+<v Speaker 0>And Julius from the Prometheus team has been
+
+00:10:10.405 --> 00:10:12.165
+<v Speaker 0>working on that for influx.
+
+00:10:12.245 --> 00:10:13.525
+<v Speaker 0>Yeah. It's quite exciting.
+
+00:10:13.765 --> 00:10:15.685
+<v Speaker 0>I haven't followed the status of it in
+
+00:10:15.685 --> 00:10:18.165
+<v Speaker 0>the last month or so, but hopefully, it's
+
+00:10:18.165 --> 00:10:19.525
+<v Speaker 0>still coming along pretty well.
+
+00:10:19.925 --> 00:10:20.245
+<v Speaker 1>Okay.
+
+00:10:21.130 --> 00:10:23.050
+<v Speaker 1>Now this isn't the sequel that I'm used
+
+00:10:23.050 --> 00:10:25.690
+<v Speaker 1>to seeing all the No. In fact, q
+
+00:10:25.690 --> 00:10:27.610
+<v Speaker 0>l was the query language from influx d
+
+00:10:27.610 --> 00:10:29.529
+<v Speaker 0>b one. Because we're using influx d b
+
+00:10:29.529 --> 00:10:31.370
+<v Speaker 0>two, we're using the new shiny
+
+00:10:31.450 --> 00:10:32.330
+<v Speaker 0>functional
+
+00:10:32.730 --> 00:10:33.850
+<v Speaker 0>Mhmm. Flux language.
+
+00:10:34.265 --> 00:10:35.865
+<v Speaker 1>Can I can I go back and use
+
+00:10:35.865 --> 00:10:37.145
+<v Speaker 1>what I know or do I just have
+
+00:10:37.145 --> 00:10:38.425
+<v Speaker 1>to figure this out?
+
+00:10:38.985 --> 00:10:41.225
+<v Speaker 0>You will be able to soon. So there
+
+00:10:41.225 --> 00:10:43.545
+<v Speaker 0>is a current work in progress right now
+
+00:10:43.545 --> 00:10:46.665
+<v Speaker 0>within influx data to provide influx q l
+
+00:10:47.610 --> 00:10:49.930
+<v Speaker 0>compatibility mode for people who want to continue
+
+00:10:49.930 --> 00:10:51.690
+<v Speaker 0>using that SQL like language.
+
+00:10:52.010 --> 00:10:52.730
+<v Speaker 1>Cool.
+
+00:10:54.730 --> 00:10:57.530
+<v Speaker 0>Okay. So we kind of discussed get series
+
+00:10:57.530 --> 00:10:58.490
+<v Speaker 0>as a tool.
+
+00:10:58.810 --> 00:11:00.410
+<v Speaker 0>I've shown you the output.
+
+00:11:00.490 --> 00:11:03.395
+<v Speaker 0>I use telegraph to import that to influx
+
+00:11:03.395 --> 00:11:05.714
+<v Speaker 0>d b. The example is on get series
+
+00:11:05.714 --> 00:11:06.835
+<v Speaker 0>dash example,
+
+00:11:07.154 --> 00:11:09.154
+<v Speaker 0>where you can see the Telegraph configuration and
+
+00:11:09.154 --> 00:11:11.395
+<v Speaker 0>a dark compose file for spinning up influx
+
+00:11:11.395 --> 00:11:12.275
+<v Speaker 0>d b two.
+
+00:11:12.755 --> 00:11:15.315
+<v Speaker 0>The only other thing that I have done
+
+00:11:15.795 --> 00:11:18.980
+<v Speaker 0>before we started streaming today was apply this
+
+00:11:18.980 --> 00:11:21.620
+<v Speaker 0>packager dot yamo. So and in flux d
+
+00:11:21.620 --> 00:11:24.100
+<v Speaker 0>b two also supports a manifest format very
+
+00:11:24.100 --> 00:11:25.300
+<v Speaker 0>similar to Kubernetes.
+
+00:11:26.020 --> 00:11:28.020
+<v Speaker 0>This allows us to create the buckets, create
+
+00:11:28.020 --> 00:11:28.820
+<v Speaker 0>variables,
+
+00:11:29.300 --> 00:11:31.795
+<v Speaker 0>and create dashboards. Everything that we're gonna look
+
+00:11:31.795 --> 00:11:35.235
+<v Speaker 0>at today was applied from this massive 1,800
+
+00:11:35.235 --> 00:11:36.515
+<v Speaker 0>lines of YAML.
+
+00:11:37.235 --> 00:11:37.875
+<v Speaker 0>So
+
+00:11:38.115 --> 00:11:40.995
+<v Speaker 0>what that what that gave us was How
+
+00:11:40.995 --> 00:11:42.835
+<v Speaker 1>do find writing those files? I mean, is
+
+00:11:42.835 --> 00:11:44.995
+<v Speaker 1>that something that I can generate once I've
+
+00:11:45.420 --> 00:11:46.860
+<v Speaker 1>keyed it in in the UI, or do
+
+00:11:46.860 --> 00:11:48.460
+<v Speaker 1>I need to write it there and then
+
+00:11:49.020 --> 00:11:51.180
+<v Speaker 1>keep applying it until the UI looks as
+
+00:11:51.180 --> 00:11:52.060
+<v Speaker 1>I want it?
+
+00:11:53.180 --> 00:11:55.580
+<v Speaker 0>Yes. You can definitely use the UI, and
+
+00:11:55.580 --> 00:11:57.100
+<v Speaker 0>then you can export
+
+00:11:57.420 --> 00:12:00.404
+<v Speaker 0>any of the dashboards individually from here. Or
+
+00:12:00.404 --> 00:12:02.964
+<v Speaker 0>using the CLI tool, you can export everything
+
+00:12:02.964 --> 00:12:05.125
+<v Speaker 0>from your instance, and it will give you
+
+00:12:05.125 --> 00:12:07.365
+<v Speaker 0>the YAML file there. And what did you
+
+00:12:07.365 --> 00:12:09.125
+<v Speaker 1>do for yours? Because it's quite long, isn't
+
+00:12:09.125 --> 00:12:10.325
+<v Speaker 1>it? It's quite a few bits and pieces
+
+00:12:10.325 --> 00:12:11.045
+<v Speaker 1>in there.
+
+00:12:11.925 --> 00:12:14.380
+<v Speaker 0>Yes. I I built in the UI and
+
+00:12:14.380 --> 00:12:16.459
+<v Speaker 0>I export to YAML. Although,
+
+00:12:16.940 --> 00:12:19.500
+<v Speaker 0>I am rather active right now
+
+00:12:19.980 --> 00:12:22.779
+<v Speaker 0>on influx DB just in it.
+
+00:12:23.579 --> 00:12:24.459
+<v Speaker 1>Yeah.
+
+00:12:24.459 --> 00:12:25.579
+<v Speaker 1>That will make things
+
+00:12:25.995 --> 00:12:28.075
+<v Speaker 1>a bit more programmatic.
+
+00:12:28.475 --> 00:12:30.395
+<v Speaker 0>So I've been working on this for a
+
+00:12:30.395 --> 00:12:32.714
+<v Speaker 0>good couple of months now. It's got decent
+
+00:12:32.714 --> 00:12:34.235
+<v Speaker 0>support. There are a few things that I
+
+00:12:34.235 --> 00:12:36.075
+<v Speaker 0>still need to improve in it
+
+00:12:36.555 --> 00:12:39.500
+<v Speaker 1>Mhmm. To support more of the types. And
+
+00:12:39.500 --> 00:12:40.940
+<v Speaker 0>I kinda I took a step back a
+
+00:12:40.940 --> 00:12:42.620
+<v Speaker 0>little bit just because the influx d b
+
+00:12:42.620 --> 00:12:44.780
+<v Speaker 0>to package our component
+
+00:12:45.020 --> 00:12:47.580
+<v Speaker 0>was just starting to approach being generally available.
+
+00:12:47.580 --> 00:12:49.100
+<v Speaker 0>So now that that is my plan is
+
+00:12:49.100 --> 00:12:51.100
+<v Speaker 0>to go back and complete those bindings for
+
+00:12:51.100 --> 00:12:53.455
+<v Speaker 0>JSON. JSON at JSON. I don't know which
+
+00:12:53.455 --> 00:12:54.575
+<v Speaker 0>one is prepared.
+
+00:12:55.135 --> 00:12:55.855
+<v Speaker 1>Nice.
+
+00:12:56.975 --> 00:12:58.495
+<v Speaker 0>Alright. So let's take a look at the
+
+00:12:58.495 --> 00:13:01.295
+<v Speaker 0>first dashboard then. So we have four available
+
+00:13:01.295 --> 00:13:03.295
+<v Speaker 0>to us today. It's the overview, which is
+
+00:13:03.295 --> 00:13:04.895
+<v Speaker 0>gonna allow us to take a high level
+
+00:13:04.895 --> 00:13:06.895
+<v Speaker 0>look at all of the OpenFaaS repositories that
+
+00:13:06.895 --> 00:13:08.890
+<v Speaker 0>I imported. We'll then kinda do a deep
+
+00:13:08.890 --> 00:13:10.170
+<v Speaker 0>dive into one or two of the more
+
+00:13:10.170 --> 00:13:12.490
+<v Speaker 0>interesting ones using your judgment there.
+
+00:13:12.890 --> 00:13:14.410
+<v Speaker 0>The last two dashboards
+
+00:13:15.530 --> 00:13:17.210
+<v Speaker 0>are very much a work in progress. I'm
+
+00:13:17.210 --> 00:13:18.330
+<v Speaker 0>curious to see what we get out of
+
+00:13:18.330 --> 00:13:19.930
+<v Speaker 0>them. But that's one here, the year on
+
+00:13:19.930 --> 00:13:20.170
+<v Speaker 0>year,
+
+00:13:20.765 --> 00:13:22.365
+<v Speaker 0>tries to show you
+
+00:13:22.685 --> 00:13:24.685
+<v Speaker 0>just like a side by side comparison of
+
+00:13:24.685 --> 00:13:26.685
+<v Speaker 0>each year that the project has been active.
+
+00:13:26.765 --> 00:13:28.365
+<v Speaker 0>And the wall of shame, which is really
+
+00:13:28.365 --> 00:13:30.845
+<v Speaker 0>poorly named, and I apologize. But it tries
+
+00:13:30.845 --> 00:13:32.285
+<v Speaker 0>to just do something a bit more fun
+
+00:13:32.285 --> 00:13:33.245
+<v Speaker 0>with the data. So
+
+00:13:34.040 --> 00:13:35.880
+<v Speaker 0>for open source, I don't think it's gonna
+
+00:13:35.880 --> 00:13:37.480
+<v Speaker 0>be that useful. But if you run this
+
+00:13:37.480 --> 00:13:39.880
+<v Speaker 0>on a private repository within an organization,
+
+00:13:39.880 --> 00:13:42.279
+<v Speaker 0>it'll give you interesting stats, like, needs time
+
+00:13:42.279 --> 00:13:44.279
+<v Speaker 0>off, who's been committing more than four days
+
+00:13:44.279 --> 00:13:45.240
+<v Speaker 0>a week for three
+
+00:13:45.639 --> 00:13:47.665
+<v Speaker 0>months or something like that. So Boom. It
+
+00:13:47.665 --> 00:13:49.504
+<v Speaker 0>try it tries to build, like, leaderboards and
+
+00:13:49.504 --> 00:13:50.065
+<v Speaker 0>and
+
+00:13:50.464 --> 00:13:52.464
+<v Speaker 1>Alright. I'd be able to see that.
+
+00:13:52.865 --> 00:13:54.785
+<v Speaker 0>Alright. So we'll start with the overview.
+
+00:13:55.584 --> 00:13:57.824
+<v Speaker 0>Let me move this out of way.
+
+00:13:58.065 --> 00:13:58.785
+<v Speaker 0>Cool.
+
+00:13:59.185 --> 00:14:01.024
+<v Speaker 0>So you said 2016.
+
+00:14:01.105 --> 00:14:03.270
+<v Speaker 0>Let's just push this back a little bit
+
+00:14:03.270 --> 00:14:05.190
+<v Speaker 0>and try and find that first commit.
+
+00:14:05.590 --> 00:14:07.670
+<v Speaker 1>First commit should be right at the end.
+
+00:14:08.070 --> 00:14:09.270
+<v Speaker 0>It is.
+
+00:14:10.630 --> 00:14:11.670
+<v Speaker 1>So That's really
+
+00:14:12.950 --> 00:14:14.070
+<v Speaker 1>December. Yeah.
+
+00:14:16.055 --> 00:14:20.214
+<v Speaker 0>Yep. We got 19 commits before the 01/01/2017.
+
+00:14:20.295 --> 00:14:22.855
+<v Speaker 0>So this was a Christmas hobby project then
+
+00:14:22.855 --> 00:14:23.574
+<v Speaker 0>that
+
+00:14:23.735 --> 00:14:26.375
+<v Speaker 0>spiraling out of control. No. It started before
+
+00:14:26.375 --> 00:14:27.255
+<v Speaker 1>that, actually.
+
+00:14:27.815 --> 00:14:28.774
+<v Speaker 1>It was called
+
+00:14:30.990 --> 00:14:33.630
+<v Speaker 1>dis dispatch, phone call dispatch, and it was
+
+00:14:33.630 --> 00:14:35.870
+<v Speaker 1>a Node. Js application I'd written,
+
+00:14:36.030 --> 00:14:38.830
+<v Speaker 1>publicized. It got really popular. But then I
+
+00:14:38.830 --> 00:14:41.230
+<v Speaker 1>decided to rewrite it in Go and submit
+
+00:14:41.230 --> 00:14:42.670
+<v Speaker 1>it as a docker phone call hack.
+
+00:14:44.714 --> 00:14:46.555
+<v Speaker 1>And so I think about November, I had
+
+00:14:46.555 --> 00:14:47.995
+<v Speaker 1>the code on my computer. I pushed it
+
+00:14:47.995 --> 00:14:50.154
+<v Speaker 1>up in in December then.
+
+00:14:50.315 --> 00:14:51.915
+<v Speaker 1>Just carried on as you see it quite
+
+00:14:51.915 --> 00:14:53.195
+<v Speaker 1>regularly from then.
+
+00:14:54.315 --> 00:14:55.194
+<v Speaker 0>Nice.
+
+00:14:55.910 --> 00:14:59.110
+<v Speaker 0>So are we gonna see that JavaScript nodes
+
+00:14:59.110 --> 00:15:01.509
+<v Speaker 0>transition, or was that essentially Maybe that was
+
+00:15:01.509 --> 00:15:03.190
+<v Speaker 1>a different that was in a different place.
+
+00:15:03.190 --> 00:15:05.430
+<v Speaker 1>That was right one, throw it away.
+
+00:15:05.990 --> 00:15:08.149
+<v Speaker 1>We can find that repo later, but it's
+
+00:15:08.149 --> 00:15:11.155
+<v Speaker 1>not in the OpenFaaS org. Okay. No problem.
+
+00:15:12.195 --> 00:15:14.435
+<v Speaker 1>What will we see? I guess at some
+
+00:15:14.435 --> 00:15:16.115
+<v Speaker 1>point, when we do if we delete the
+
+00:15:16.115 --> 00:15:17.875
+<v Speaker 1>vendor folder in the Go code, we'll see
+
+00:15:17.875 --> 00:15:19.315
+<v Speaker 1>the code base get a lot a lot
+
+00:15:19.315 --> 00:15:20.115
+<v Speaker 1>smaller
+
+00:15:20.595 --> 00:15:21.635
+<v Speaker 1>at some point,
+
+00:15:22.115 --> 00:15:23.075
+<v Speaker 1>but not just yet.
+
+00:15:25.070 --> 00:15:27.630
+<v Speaker 0>Yeah. Yeah. I think we we definitely we'll
+
+00:15:27.630 --> 00:15:29.070
+<v Speaker 0>try and filter that out when we get
+
+00:15:29.070 --> 00:15:30.830
+<v Speaker 0>down to the the weeds of things for
+
+00:15:30.830 --> 00:15:33.230
+<v Speaker 0>sure. Now the first thing that's jumping out
+
+00:15:33.230 --> 00:15:35.390
+<v Speaker 0>to me are these peaks at Christmas
+
+00:15:35.725 --> 00:15:37.405
+<v Speaker 0>each year. Do
+
+00:15:37.965 --> 00:15:39.245
+<v Speaker 0>you tend to do a lot of coding
+
+00:15:39.245 --> 00:15:40.605
+<v Speaker 0>over the I have to do it a
+
+00:15:40.605 --> 00:15:41.405
+<v Speaker 1>bit slower
+
+00:15:41.485 --> 00:15:43.165
+<v Speaker 1>so that I can see I can't read
+
+00:15:43.165 --> 00:15:44.765
+<v Speaker 1>it when you move the mouse that fast.
+
+00:15:45.085 --> 00:15:47.960
+<v Speaker 1>Oh, sorry. That's that's October then. That's not
+
+00:15:48.040 --> 00:15:50.040
+<v Speaker 0>So we got yeah. It's just before, like,
+
+00:15:50.040 --> 00:15:53.000
+<v Speaker 0>the progressive break. And here we have November.
+
+00:15:53.400 --> 00:15:55.240
+<v Speaker 0>So October, November seems to be where you
+
+00:15:55.240 --> 00:15:56.280
+<v Speaker 0>find your stride.
+
+00:15:56.920 --> 00:15:59.240
+<v Speaker 1>Well, it's probably related to things that were
+
+00:15:59.240 --> 00:16:00.760
+<v Speaker 1>going on there. And as we say with
+
+00:16:00.760 --> 00:16:01.720
+<v Speaker 1>the rendering,
+
+00:16:01.800 --> 00:16:04.165
+<v Speaker 1>it that could just be that someone added
+
+00:16:04.165 --> 00:16:05.685
+<v Speaker 1>a dependency that had a lot of code
+
+00:16:05.685 --> 00:16:06.245
+<v Speaker 1>there.
+
+00:16:06.885 --> 00:16:09.365
+<v Speaker 1>It might not necessarily be what it looks
+
+00:16:09.365 --> 00:16:10.645
+<v Speaker 1>like. So perhaps
+
+00:16:10.965 --> 00:16:13.285
+<v Speaker 1>there was something that we added in the
+
+00:16:13.285 --> 00:16:14.405
+<v Speaker 1>Kubernetes client.
+
+00:16:16.260 --> 00:16:18.020
+<v Speaker 0>So this is just the number of commits
+
+00:16:18.020 --> 00:16:19.940
+<v Speaker 0>we're looking at just now? So is it
+
+00:16:19.940 --> 00:16:22.340
+<v Speaker 0>kind of k. So that commits rather than
+
+00:16:22.340 --> 00:16:24.660
+<v Speaker 1>the lines. In which case, yeah, then
+
+00:16:26.100 --> 00:16:27.700
+<v Speaker 1>the vendor folder wouldn't come into that.
+
+00:16:28.595 --> 00:16:30.515
+<v Speaker 0>No. So this is a pull everything out
+
+00:16:30.515 --> 00:16:32.675
+<v Speaker 0>of get series over a dashboard time range.
+
+00:16:32.675 --> 00:16:35.075
+<v Speaker 0>We're gonna filter the measurements on the commits.
+
+00:16:35.235 --> 00:16:36.915
+<v Speaker 0>We're pulling on the message just because we
+
+00:16:36.915 --> 00:16:38.435
+<v Speaker 0>need some field to count.
+
+00:16:38.675 --> 00:16:40.915
+<v Speaker 0>We flatten the table structure, which we can
+
+00:16:40.915 --> 00:16:43.075
+<v Speaker 0>talk about if we wanna get into how
+
+00:16:43.075 --> 00:16:45.180
+<v Speaker 0>flux works, but we flatten it and then
+
+00:16:45.180 --> 00:16:47.180
+<v Speaker 0>we do an aggregation over a window. So
+
+00:16:47.180 --> 00:16:48.300
+<v Speaker 0>we're breaking down
+
+00:16:48.620 --> 00:16:51.100
+<v Speaker 0>the commits into monthly chunks, and we do
+
+00:16:51.100 --> 00:16:53.740
+<v Speaker 0>account of those commits within that window. I
+
+00:16:53.740 --> 00:16:55.100
+<v Speaker 1>mean, I suppose the first thing that you
+
+00:16:55.100 --> 00:16:56.779
+<v Speaker 1>see there is that
+
+00:16:57.100 --> 00:16:58.305
+<v Speaker 1>at some point,
+
+00:16:58.625 --> 00:17:01.345
+<v Speaker 1>the first before the first peak, when was
+
+00:17:01.345 --> 00:17:01.904
+<v Speaker 1>that?
+
+00:17:03.185 --> 00:17:06.625
+<v Speaker 1>Sorry. The first big peak. I go back
+
+00:17:06.625 --> 00:17:08.224
+<v Speaker 1>to the beginning of the curve at the
+
+00:17:08.224 --> 00:17:08.944
+<v Speaker 1>bottom.
+
+00:17:09.424 --> 00:17:11.025
+<v Speaker 1>Where are we at? We're
+
+00:17:11.825 --> 00:17:12.865
+<v Speaker 1>that's interesting.
+
+00:17:13.639 --> 00:17:16.359
+<v Speaker 1>We we're after the first DockerCon where I
+
+00:17:16.359 --> 00:17:17.399
+<v Speaker 1>presented this
+
+00:17:17.559 --> 00:17:18.919
+<v Speaker 1>in Austin, Texas,
+
+00:17:19.880 --> 00:17:22.039
+<v Speaker 1>and we already moved over to having a
+
+00:17:22.039 --> 00:17:24.440
+<v Speaker 1>Kubernetes provider. We go back a bit further
+
+00:17:24.440 --> 00:17:25.559
+<v Speaker 1>till we get to about April.
+
+00:17:26.595 --> 00:17:28.434
+<v Speaker 1>I think it was April, May was when
+
+00:17:28.434 --> 00:17:30.835
+<v Speaker 1>that presentation was. It was just after that
+
+00:17:30.835 --> 00:17:31.554
+<v Speaker 1>that
+
+00:17:31.715 --> 00:17:34.275
+<v Speaker 1>I decided we needed Kubernetes support in OpenFaaS.
+
+00:17:34.275 --> 00:17:35.875
+<v Speaker 1>You can see how early on it was
+
+00:17:35.875 --> 00:17:37.554
+<v Speaker 1>in the lifespan it was put in.
+
+00:17:40.140 --> 00:17:42.220
+<v Speaker 1>And then the FaaS CLI came about after
+
+00:17:42.220 --> 00:17:44.140
+<v Speaker 1>that, which is potentially
+
+00:17:44.140 --> 00:17:47.259
+<v Speaker 1>why we've got that. That's, like, the third
+
+00:17:48.059 --> 00:17:48.859
+<v Speaker 1>blob.
+
+00:17:49.980 --> 00:17:51.100
+<v Speaker 1>The community
+
+00:17:51.100 --> 00:17:53.100
+<v Speaker 1>started contributing more then as well.
+
+00:17:53.665 --> 00:17:56.544
+<v Speaker 1>Have we got a breakdown of total contributors?
+
+00:17:56.865 --> 00:17:59.345
+<v Speaker 0>We do. Two two cells down from here.
+
+00:17:59.345 --> 00:18:00.705
+<v Speaker 0>So we'll get to there in just a
+
+00:18:00.705 --> 00:18:03.024
+<v Speaker 0>moment. Can you bring it up perhaps and
+
+00:18:03.105 --> 00:18:04.945
+<v Speaker 1>show a Nick that what we might see
+
+00:18:04.945 --> 00:18:06.305
+<v Speaker 1>is you should correlate it.
+
+00:18:08.390 --> 00:18:10.309
+<v Speaker 1>But they they come inside.
+
+00:18:13.190 --> 00:18:15.350
+<v Speaker 1>I mean, that doesn't look right either because
+
+00:18:15.350 --> 00:18:16.070
+<v Speaker 1>there's
+
+00:18:16.310 --> 00:18:18.230
+<v Speaker 1>hundreds of contributors. And if this is the
+
+00:18:18.230 --> 00:18:18.870
+<v Speaker 1>whole
+
+00:18:21.125 --> 00:18:22.804
+<v Speaker 1>history, that didn't look right.
+
+00:18:27.685 --> 00:18:29.205
+<v Speaker 0>So there's 372
+
+00:18:29.205 --> 00:18:31.845
+<v Speaker 0>contributors across the entire time. But are correct?
+
+00:18:31.845 --> 00:18:34.085
+<v Speaker 1>Do I have 284
+
+00:18:33.660 --> 00:18:35.020
+<v Speaker 1>on our metrics?
+
+00:18:36.380 --> 00:18:39.580
+<v Speaker 0>Alright. Let me refresh this dashboard.
+
+00:18:41.100 --> 00:18:43.420
+<v Speaker 0>Jump back down. If it is some discrepancy
+
+00:18:43.420 --> 00:18:43.820
+<v Speaker 1>there.
+
+00:18:45.875 --> 00:18:48.195
+<v Speaker 0>Let's see what this query is doing. So
+
+00:18:48.195 --> 00:18:49.554
+<v Speaker 0>we pull out
+
+00:18:50.995 --> 00:18:52.355
+<v Speaker 0>all of the commits.
+
+00:18:54.275 --> 00:18:55.955
+<v Speaker 0>Now it depends on
+
+00:18:56.435 --> 00:18:57.395
+<v Speaker 0>the
+
+00:18:57.395 --> 00:19:00.275
+<v Speaker 0>merge process for these projects because if you
+
+00:19:00.275 --> 00:19:02.989
+<v Speaker 0>use merge commits, I may have to remove
+
+00:19:03.710 --> 00:19:06.270
+<v Speaker 0>the filtering out basis. But remove it anyway,
+
+00:19:06.270 --> 00:19:08.350
+<v Speaker 1>see what happens. Yeah. So we do it
+
+00:19:08.350 --> 00:19:10.269
+<v Speaker 0>unique on the author email.
+
+00:19:10.270 --> 00:19:12.029
+<v Speaker 1>Okay. Let's submit this.
+
+00:19:14.909 --> 00:19:16.909
+<v Speaker 1>Still doesn't still looks very low.
+
+00:19:22.615 --> 00:19:23.255
+<v Speaker 1>Is
+
+00:19:23.575 --> 00:19:25.415
+<v Speaker 1>it a commit you're looking for? I mean,
+
+00:19:25.415 --> 00:19:26.855
+<v Speaker 1>we do rebases on it.
+
+00:19:30.710 --> 00:19:31.350
+<v Speaker 0>Okay.
+
+00:19:31.590 --> 00:19:33.830
+<v Speaker 0>Let let's debug. Right? I'm gonna copy this.
+
+00:19:33.830 --> 00:19:35.510
+<v Speaker 1>And the author email, as I saw in
+
+00:19:35.510 --> 00:19:37.830
+<v Speaker 1>your previous query, was mine for all of
+
+00:19:37.830 --> 00:19:39.430
+<v Speaker 1>them. So I think what you might need
+
+00:19:39.430 --> 00:19:41.270
+<v Speaker 1>is a committer email or you might need
+
+00:19:41.270 --> 00:19:42.310
+<v Speaker 1>another field there,
+
+00:19:43.455 --> 00:19:45.534
+<v Speaker 1>which might be where it's going wrong.
+
+00:19:47.215 --> 00:19:48.894
+<v Speaker 1>What other columns have you got?
+
+00:19:49.535 --> 00:19:51.855
+<v Speaker 0>Let's go back to our data explorer and
+
+00:19:51.855 --> 00:19:54.095
+<v Speaker 0>try and work this out. I saw Lucas
+
+00:19:54.415 --> 00:19:56.015
+<v Speaker 1>last commits into FASD.
+
+00:19:56.980 --> 00:19:58.500
+<v Speaker 1>If you look at the last thirty days,
+
+00:19:58.500 --> 00:20:01.380
+<v Speaker 1>maybe there'll be there was some data there.
+
+00:20:01.380 --> 00:20:03.220
+<v Speaker 0>Pull this all out. We'll just look at
+
+00:20:03.220 --> 00:20:05.700
+<v Speaker 0>commits, and I wanna grip by
+
+00:20:06.580 --> 00:20:07.219
+<v Speaker 0>oh,
+
+00:20:07.779 --> 00:20:09.139
+<v Speaker 0>I've angered it. There we go.
+
+00:20:13.965 --> 00:20:15.725
+<v Speaker 0>Let's just write it in flux.
+
+00:20:17.165 --> 00:20:19.165
+<v Speaker 0>We want to group by
+
+00:20:19.405 --> 00:20:20.365
+<v Speaker 0>column,
+
+00:20:22.445 --> 00:20:23.405
+<v Speaker 0>author,
+
+00:20:23.725 --> 00:20:24.365
+<v Speaker 0>email.
+
+00:20:34.630 --> 00:20:36.710
+<v Speaker 1>Yeah. That's the problem. It's that that you're
+
+00:20:36.710 --> 00:20:38.950
+<v Speaker 1>effectively using the wrong field. I think you
+
+00:20:38.950 --> 00:20:40.550
+<v Speaker 1>need to use author name
+
+00:20:41.245 --> 00:20:43.645
+<v Speaker 1>because when it's rebased, it's not
+
+00:20:51.485 --> 00:20:52.765
+<v Speaker 0>oh, we got an error.
+
+00:20:55.600 --> 00:20:57.039
+<v Speaker 0>What's going on here?
+
+00:20:57.920 --> 00:21:00.480
+<v Speaker 0>These are all of the commit objects.
+
+00:21:02.480 --> 00:21:05.120
+<v Speaker 0>We have author name and email there. Oh,
+
+00:21:05.120 --> 00:21:06.400
+<v Speaker 1>Dan and author name. I'm pretty sure I
+
+00:21:06.400 --> 00:21:08.320
+<v Speaker 1>saw Lucas in there recently.
+
+00:21:09.280 --> 00:21:09.600
+<v Speaker 1>Yeah.
+
+00:21:10.235 --> 00:21:11.115
+<v Speaker 1>Ken.
+
+00:21:11.115 --> 00:21:11.675
+<v Speaker 1>But
+
+00:21:13.435 --> 00:21:15.035
+<v Speaker 1>the email isn't changing.
+
+00:21:15.435 --> 00:21:17.275
+<v Speaker 1>So what you need to do is
+
+00:21:17.595 --> 00:21:19.675
+<v Speaker 1>because of the way it's rebased I had
+
+00:21:19.675 --> 00:21:21.115
+<v Speaker 1>this one. I was working with the Git
+
+00:21:21.115 --> 00:21:22.715
+<v Speaker 1>API because Derek,
+
+00:21:22.875 --> 00:21:26.489
+<v Speaker 1>our bot, can generate very detailed release notes
+
+00:21:26.490 --> 00:21:28.570
+<v Speaker 1>and the specific fields you need to pull
+
+00:21:28.570 --> 00:21:29.129
+<v Speaker 1>out
+
+00:21:29.610 --> 00:21:31.850
+<v Speaker 1>to get back to the original email.
+
+00:21:33.610 --> 00:21:35.210
+<v Speaker 1>So if you were able to use author
+
+00:21:35.210 --> 00:21:36.890
+<v Speaker 1>name instead, I don't know why your group
+
+00:21:36.890 --> 00:21:37.850
+<v Speaker 1>command
+
+00:21:37.850 --> 00:21:40.135
+<v Speaker 1>isn't working. It should be better.
+
+00:21:40.375 --> 00:21:41.975
+<v Speaker 0>Well, I think that's an
+
+00:21:42.215 --> 00:21:44.135
+<v Speaker 0>we've got a schema collision.
+
+00:21:44.135 --> 00:21:47.015
+<v Speaker 0>So I think one of the author names
+
+00:21:47.015 --> 00:21:47.735
+<v Speaker 0>is
+
+00:21:48.215 --> 00:21:49.335
+<v Speaker 0>a float value.
+
+00:21:52.399 --> 00:21:53.279
+<v Speaker 1>Interesting.
+
+00:21:53.360 --> 00:21:55.200
+<v Speaker 1>What about put a where in there? Could
+
+00:21:55.200 --> 00:21:57.119
+<v Speaker 1>you put a where where it's a string?
+
+00:21:58.320 --> 00:22:00.159
+<v Speaker 1>Is one of them a null maybe?
+
+00:22:03.759 --> 00:22:06.240
+<v Speaker 0>I'm not sure how to handle this just
+
+00:22:06.240 --> 00:22:08.320
+<v Speaker 0>now. Let's
+
+00:22:07.725 --> 00:22:09.325
+<v Speaker 0>come back in here and see if we
+
+00:22:09.325 --> 00:22:11.485
+<v Speaker 0>can modify it on our graph.
+
+00:22:11.725 --> 00:22:12.365
+<v Speaker 0>So
+
+00:22:14.365 --> 00:22:15.645
+<v Speaker 0>configure,
+
+00:22:15.645 --> 00:22:17.244
+<v Speaker 0>and I'm just gonna change this.
+
+00:22:19.885 --> 00:22:22.765
+<v Speaker 0>Alright. That may be better then. Looks better.
+
+00:22:23.160 --> 00:22:24.280
+<v Speaker 1>Looks closer.
+
+00:22:24.840 --> 00:22:27.320
+<v Speaker 1>Okay. Now you see that big peak there?
+
+00:22:27.320 --> 00:22:28.840
+<v Speaker 1>I think if you somehow able to pull
+
+00:22:28.840 --> 00:22:31.400
+<v Speaker 1>that graph up to underneath the commits, we
+
+00:22:31.400 --> 00:22:32.760
+<v Speaker 1>might see them correlate.
+
+00:22:34.760 --> 00:22:36.280
+<v Speaker 0>Sorry. What were you what were you suggesting
+
+00:22:36.280 --> 00:22:38.434
+<v Speaker 0>there? Put the contributors
+
+00:22:39.155 --> 00:22:39.955
+<v Speaker 1>graph
+
+00:22:39.955 --> 00:22:40.835
+<v Speaker 1>up,
+
+00:22:40.915 --> 00:22:42.915
+<v Speaker 1>drop it underneath the commits once we can
+
+00:22:42.915 --> 00:22:43.875
+<v Speaker 1>see them together.
+
+00:22:45.475 --> 00:22:47.475
+<v Speaker 1>So imagine you can do that. So just
+
+00:22:47.555 --> 00:22:48.835
+<v Speaker 1>yeah. If you plunk it.
+
+00:22:55.290 --> 00:22:57.850
+<v Speaker 0>Did I not drag it? Let's try again.
+
+00:22:58.090 --> 00:23:00.010
+<v Speaker 0>Alright. Come with me.
+
+00:23:00.570 --> 00:23:01.530
+<v Speaker 0>There
+
+00:23:01.690 --> 00:23:02.490
+<v Speaker 0>we go.
+
+00:23:03.530 --> 00:23:04.650
+<v Speaker 0>And over here.
+
+00:23:06.475 --> 00:23:07.115
+<v Speaker 0>Yep. So
+
+00:23:07.835 --> 00:23:09.835
+<v Speaker 1>So that I think that's kind of indicative
+
+00:23:09.835 --> 00:23:11.274
+<v Speaker 1>of what happened in the project as well
+
+00:23:11.274 --> 00:23:13.434
+<v Speaker 1>as well as those peaks, which is that
+
+00:23:13.434 --> 00:23:15.434
+<v Speaker 1>more people, more commits.
+
+00:23:15.595 --> 00:23:17.914
+<v Speaker 1>After the DockerCon event, we went and added
+
+00:23:17.914 --> 00:23:19.755
+<v Speaker 1>the Kubernetes support more or less on my
+
+00:23:19.755 --> 00:23:21.195
+<v Speaker 1>own, but then we create a CLI.
+
+00:23:21.940 --> 00:23:24.420
+<v Speaker 1>And there might be a way that you
+
+00:23:24.420 --> 00:23:26.820
+<v Speaker 1>can add to this graph what repo it
+
+00:23:26.820 --> 00:23:29.380
+<v Speaker 1>is so we can project it by
+
+00:23:29.860 --> 00:23:31.860
+<v Speaker 1>how many contributions and what repo they were
+
+00:23:31.860 --> 00:23:33.060
+<v Speaker 1>a member of. I don't know if you
+
+00:23:33.060 --> 00:23:33.780
+<v Speaker 1>can do that.
+
+00:23:35.140 --> 00:23:37.325
+<v Speaker 0>So we do break it down here. So
+
+00:23:37.325 --> 00:23:40.045
+<v Speaker 0>let's first get rid of this colon, and
+
+00:23:40.045 --> 00:23:42.125
+<v Speaker 0>then we will update the queries
+
+00:23:42.125 --> 00:23:44.764
+<v Speaker 0>so that they're all using the author name
+
+00:23:45.725 --> 00:23:47.804
+<v Speaker 0>so that we don't have any
+
+00:23:48.045 --> 00:23:48.845
+<v Speaker 0>weirdness.
+
+00:23:49.420 --> 00:23:51.820
+<v Speaker 1>And then you've got a reference to offer
+
+00:23:51.820 --> 00:23:53.500
+<v Speaker 1>email above that to remove.
+
+00:23:53.820 --> 00:23:55.580
+<v Speaker 1>I don't know if you wanna remove that.
+
+00:23:56.940 --> 00:23:58.940
+<v Speaker 0>We'll just we'll keep the gap stuff in
+
+00:23:58.940 --> 00:24:01.100
+<v Speaker 0>unless we noticed a problem.
+
+00:24:01.100 --> 00:24:01.420
+<v Speaker 0>So
+
+00:24:03.175 --> 00:24:05.095
+<v Speaker 0>what we can see here is
+
+00:24:05.335 --> 00:24:06.695
+<v Speaker 0>the contributions
+
+00:24:06.855 --> 00:24:08.375
+<v Speaker 0>were in FaaS
+
+00:24:08.695 --> 00:24:10.615
+<v Speaker 0>CLI and FaaS
+
+00:24:11.255 --> 00:24:13.495
+<v Speaker 1>Well, FaaS CLI came about at that point
+
+00:24:13.495 --> 00:24:15.895
+<v Speaker 1>because at DockerCon when I showed this off,
+
+00:24:15.975 --> 00:24:18.410
+<v Speaker 1>there wasn't a CLI. So it was bash
+
+00:24:18.410 --> 00:24:20.890
+<v Speaker 1>files that built the OpenFaaS containers. Now we've
+
+00:24:20.890 --> 00:24:23.210
+<v Speaker 1>got FastCLI build and FastCLI up.
+
+00:24:25.289 --> 00:24:27.770
+<v Speaker 0>And then we have Fastnetis,
+
+00:24:27.770 --> 00:24:29.049
+<v Speaker 0>the first submit
+
+00:24:29.289 --> 00:24:32.010
+<v Speaker 0>really early. So what's that? August 2017?
+
+00:24:32.595 --> 00:24:34.595
+<v Speaker 1>Yeah. Okay. So it late it was open
+
+00:24:34.595 --> 00:24:37.475
+<v Speaker 1>sourced or put on online later than I
+
+00:24:37.475 --> 00:24:38.755
+<v Speaker 1>thought. I thought it was just after that
+
+00:24:38.755 --> 00:24:39.635
+<v Speaker 1>DockerCon.
+
+00:24:39.635 --> 00:24:41.475
+<v Speaker 1>Obviously, it was a little bit later.
+
+00:24:43.475 --> 00:24:44.835
+<v Speaker 1>And then that one
+
+00:24:45.475 --> 00:24:47.955
+<v Speaker 1>it's quite interesting to see that one spikes
+
+00:24:47.990 --> 00:24:49.429
+<v Speaker 1>that's being developed.
+
+00:24:53.030 --> 00:24:55.350
+<v Speaker 0>Yeah. Definitely. We had a lot of traction
+
+00:24:55.350 --> 00:24:58.150
+<v Speaker 1>around blog posts and events of people going
+
+00:24:58.150 --> 00:24:59.910
+<v Speaker 1>out and doing that. So we've got more
+
+00:24:59.910 --> 00:25:01.670
+<v Speaker 1>people contributing to the FaaS repo,
+
+00:25:02.345 --> 00:25:03.784
+<v Speaker 1>that number going up.
+
+00:25:04.425 --> 00:25:06.905
+<v Speaker 0>Yeah. And and what's the FaaS provider that
+
+00:25:06.905 --> 00:25:08.825
+<v Speaker 0>kicked off around the same time? Yeah. So
+
+00:25:08.825 --> 00:25:10.345
+<v Speaker 1>that was to support the
+
+00:25:11.065 --> 00:25:13.065
+<v Speaker 1>the work for Fasenetis so that
+
+00:25:14.910 --> 00:25:16.590
+<v Speaker 1>it was effectively
+
+00:25:16.670 --> 00:25:18.590
+<v Speaker 1>hardcoded to to Swarm.
+
+00:25:18.990 --> 00:25:21.550
+<v Speaker 1>At that point, introduced a REST API, HTTP
+
+00:25:21.550 --> 00:25:22.510
+<v Speaker 1>REST API,
+
+00:25:22.750 --> 00:25:26.110
+<v Speaker 1>and Fast Provider became the like a a
+
+00:25:26.110 --> 00:25:28.990
+<v Speaker 1>standard, and then Fastenetis implemented it.
+
+00:25:29.665 --> 00:25:32.065
+<v Speaker 1>And that later, FastWarm
+
+00:25:32.065 --> 00:25:34.225
+<v Speaker 1>got broken out of FaaS, and then it
+
+00:25:34.225 --> 00:25:35.505
+<v Speaker 1>implements that as well.
+
+00:25:36.785 --> 00:25:37.505
+<v Speaker 0>And
+
+00:25:38.065 --> 00:25:39.185
+<v Speaker 0>do you know off the top of your
+
+00:25:39.185 --> 00:25:41.185
+<v Speaker 0>head before I I hover, but what's this
+
+00:25:41.185 --> 00:25:42.865
+<v Speaker 0>big orange peak?
+
+00:25:44.225 --> 00:25:44.945
+<v Speaker 0>Where are you?
+
+00:25:46.520 --> 00:25:48.760
+<v Speaker 0>Just at the end of twenty eighteen, the
+
+00:25:48.760 --> 00:25:51.320
+<v Speaker 0>orange peak. Your mouse isn't
+
+00:25:51.400 --> 00:25:53.640
+<v Speaker 0>where you think it is. Well, if I
+
+00:25:53.640 --> 00:25:55.080
+<v Speaker 0>hover over it, it'll tell you what the
+
+00:25:55.080 --> 00:25:56.840
+<v Speaker 0>repo is. I was trying not to.
+
+00:25:57.160 --> 00:25:59.800
+<v Speaker 1>Okay. You mean that massive one there?
+
+00:26:00.635 --> 00:26:03.115
+<v Speaker 1>That is probably the workshop.
+
+00:26:03.835 --> 00:26:05.595
+<v Speaker 1>If it's not the workshop, it might be
+
+00:26:05.595 --> 00:26:06.715
+<v Speaker 1>OpenFaaS cloud.
+
+00:26:06.955 --> 00:26:09.115
+<v Speaker 0>It was OpenFaaS cloud. Yeah.
+
+00:26:10.715 --> 00:26:12.875
+<v Speaker 0>So that kicked off when We can find
+
+00:26:12.875 --> 00:26:14.715
+<v Speaker 1>out when the workshop was created on here
+
+00:26:14.715 --> 00:26:15.035
+<v Speaker 1>as well.
+
+00:26:15.790 --> 00:26:17.550
+<v Speaker 1>And I think it was some way in
+
+00:26:17.550 --> 00:26:19.230
+<v Speaker 1>2018 because I did it with my team
+
+00:26:19.230 --> 00:26:20.190
+<v Speaker 1>at VMware.
+
+00:26:20.910 --> 00:26:22.830
+<v Speaker 0>I didn't import the workshop.
+
+00:26:23.150 --> 00:26:25.149
+<v Speaker 1>We didn't. No. Sorry.
+
+00:26:27.230 --> 00:26:28.670
+<v Speaker 1>But do you see FaaS swarm is in
+
+00:26:28.670 --> 00:26:31.375
+<v Speaker 1>there? And if you can single one out,
+
+00:26:31.375 --> 00:26:32.575
+<v Speaker 1>I don't know if you can filter one
+
+00:26:32.575 --> 00:26:34.335
+<v Speaker 1>out. Look at FaaS swarm,
+
+00:26:34.895 --> 00:26:37.054
+<v Speaker 1>you see basically almost
+
+00:26:37.455 --> 00:26:40.495
+<v Speaker 1>never changes in history and that's because
+
+00:26:40.895 --> 00:26:42.815
+<v Speaker 1>the API has been super stable.
+
+00:26:44.090 --> 00:26:45.930
+<v Speaker 1>Yep. Even when it was being actively hacked
+
+00:26:45.930 --> 00:26:47.610
+<v Speaker 1>on by doc the Docker team, it was
+
+00:26:47.610 --> 00:26:48.170
+<v Speaker 1>not
+
+00:26:48.570 --> 00:26:51.050
+<v Speaker 1>a pain to work with compared to Kubernetes
+
+00:26:51.050 --> 00:26:52.090
+<v Speaker 1>go client.
+
+00:26:52.970 --> 00:26:55.130
+<v Speaker 0>So we can filter out here, but we
+
+00:26:55.130 --> 00:26:57.370
+<v Speaker 0>could also do the deeper dive on the
+
+00:26:57.370 --> 00:26:59.125
+<v Speaker 0>next dashboard too.
+
+00:26:59.365 --> 00:27:00.245
+<v Speaker 0>So FaaS
+
+00:27:00.405 --> 00:27:02.485
+<v Speaker 0>swarm like that? Yeah.
+
+00:27:05.925 --> 00:27:06.405
+<v Speaker 0>No.
+
+00:27:09.860 --> 00:27:11.700
+<v Speaker 0>I'm not sure I've got this right. Is
+
+00:27:11.700 --> 00:27:13.059
+<v Speaker 0>that task net is
+
+00:27:13.860 --> 00:27:14.980
+<v Speaker 0>task d.
+
+00:27:16.100 --> 00:27:17.940
+<v Speaker 1>Yeah. You've got something wrong in your query.
+
+00:27:17.940 --> 00:27:19.780
+<v Speaker 0>I definitely have something wrong in my query.
+
+00:27:19.780 --> 00:27:21.860
+<v Speaker 0>Let's just drop this back out.
+
+00:27:21.940 --> 00:27:22.900
+<v Speaker 0>Submit.
+
+00:27:22.900 --> 00:27:24.900
+<v Speaker 0>And then we'll use this wonderful raw data.
+
+00:27:26.475 --> 00:27:29.355
+<v Speaker 0>And we can see oh, it's dot dot
+
+00:27:29.355 --> 00:27:31.995
+<v Speaker 0>get on the end. Okay. Got it. Yeah.
+
+00:27:31.995 --> 00:27:34.554
+<v Speaker 0>So that's warm dot get.
+
+00:27:35.035 --> 00:27:36.075
+<v Speaker 0>That's better.
+
+00:27:36.795 --> 00:27:38.635
+<v Speaker 0>Nice. There's there's swaddswarm.
+
+00:27:40.250 --> 00:27:42.169
+<v Speaker 1>And even though there's a peak there,
+
+00:27:43.289 --> 00:27:44.809
+<v Speaker 1>I guess we're not really looking at the
+
+00:27:44.809 --> 00:27:46.330
+<v Speaker 1>commits now. We're looking at the the amount
+
+00:27:46.330 --> 00:27:47.609
+<v Speaker 1>of contributors, but
+
+00:27:48.010 --> 00:27:49.210
+<v Speaker 1>it's pretty flat.
+
+00:27:50.570 --> 00:27:52.409
+<v Speaker 0>Yeah. I guess, I mean, Kubernetes
+
+00:27:52.845 --> 00:27:55.164
+<v Speaker 0>just took over then, especially over the last
+
+00:27:55.164 --> 00:27:57.485
+<v Speaker 0>eighteen months. I'm curious about these little
+
+00:27:58.365 --> 00:28:00.284
+<v Speaker 1>They're just sort of tweaks, maybe for the
+
+00:28:00.284 --> 00:28:01.085
+<v Speaker 1>documentation,
+
+00:28:01.164 --> 00:28:02.924
+<v Speaker 1>updating the Golang version.
+
+00:28:04.605 --> 00:28:06.365
+<v Speaker 1>It's not being deprecated yet.
+
+00:28:08.920 --> 00:28:09.559
+<v Speaker 1>What
+
+00:28:10.679 --> 00:28:12.440
+<v Speaker 1>is the wavy one in the background? That's
+
+00:28:12.440 --> 00:28:13.559
+<v Speaker 1>the FaaS, isn't it?
+
+00:28:14.760 --> 00:28:16.440
+<v Speaker 0>The the pink wavy?
+
+00:28:16.679 --> 00:28:18.440
+<v Speaker 1>Yeah. Yep. That's FaaS.
+
+00:28:18.679 --> 00:28:20.040
+<v Speaker 1>Where's FaaS d come in?
+
+00:28:21.755 --> 00:28:23.675
+<v Speaker 1>Let me find that. It'd be in the
+
+00:28:23.675 --> 00:28:25.675
+<v Speaker 1>last sort of it'd be in 2019,
+
+00:28:25.675 --> 00:28:26.475
+<v Speaker 1>I think.
+
+00:28:27.355 --> 00:28:28.955
+<v Speaker 1>Let's just I thought the color of it
+
+00:28:28.955 --> 00:28:29.434
+<v Speaker 1>there.
+
+00:28:30.875 --> 00:28:33.675
+<v Speaker 0>So there is a change in the master
+
+00:28:33.675 --> 00:28:35.675
+<v Speaker 0>branch of influx DB that allows you to
+
+00:28:35.675 --> 00:28:37.770
+<v Speaker 0>change how these tooltips work. So you can
+
+00:28:37.770 --> 00:28:40.010
+<v Speaker 0>filter on an individual series, but it's not
+
+00:28:40.010 --> 00:28:41.610
+<v Speaker 0>on the dock. I'm legit.
+
+00:28:42.250 --> 00:28:44.250
+<v Speaker 0>I added that feature because I got really
+
+00:28:44.250 --> 00:28:46.890
+<v Speaker 0>frustrated with to get series analysis. Mhmm.
+
+00:28:48.330 --> 00:28:49.610
+<v Speaker 0>Because there's a lot of series, and I
+
+00:28:49.610 --> 00:28:51.130
+<v Speaker 0>wanna be able to pick how I interact
+
+00:28:51.130 --> 00:28:52.755
+<v Speaker 0>with it. So you want to take a
+
+00:28:52.755 --> 00:28:54.675
+<v Speaker 0>look at FaaS d. Right?
+
+00:28:57.075 --> 00:28:58.035
+<v Speaker 0>There we go.
+
+00:29:00.835 --> 00:29:02.355
+<v Speaker 1>Oh. First
+
+00:29:04.060 --> 00:29:06.140
+<v Speaker 1>just me just show you then. Oh, actually,
+
+00:29:06.140 --> 00:29:08.380
+<v Speaker 1>you know, the thing about this is is
+
+00:29:08.380 --> 00:29:10.460
+<v Speaker 1>that it's more complicated than that because it
+
+00:29:10.460 --> 00:29:11.660
+<v Speaker 1>was in my account
+
+00:29:11.900 --> 00:29:14.140
+<v Speaker 1>and it was called FaaS container d.
+
+00:29:14.780 --> 00:29:18.060
+<v Speaker 1>So, again, this is why context is is
+
+00:29:18.060 --> 00:29:18.940
+<v Speaker 1>everything really,
+
+00:29:19.495 --> 00:29:22.054
+<v Speaker 1>is it started a lot earlier as fast
+
+00:29:22.054 --> 00:29:24.054
+<v Speaker 1>container d, and then at some point,
+
+00:29:24.375 --> 00:29:27.095
+<v Speaker 1>I created FASD and then decided they both
+
+00:29:27.095 --> 00:29:28.294
+<v Speaker 1>needed to live together,
+
+00:29:29.095 --> 00:29:30.375
+<v Speaker 1>and that isn't reflected.
+
+00:29:33.070 --> 00:29:35.390
+<v Speaker 1>Yeah. That's So it wasn't the renamed repo.
+
+00:29:35.390 --> 00:29:36.990
+<v Speaker 1>It was You can share all this this
+
+00:29:36.990 --> 00:29:39.070
+<v Speaker 0>context now, which is great. Yeah.
+
+00:29:40.270 --> 00:29:42.669
+<v Speaker 1>Really, we've got some releases done underneath that.
+
+00:29:42.669 --> 00:29:44.510
+<v Speaker 1>I like I like that colorful graph. It's
+
+00:29:44.510 --> 00:29:45.469
+<v Speaker 1>very pretty.
+
+00:29:46.909 --> 00:29:49.764
+<v Speaker 0>Yep. We also have light mode, if you
+
+00:29:49.764 --> 00:29:51.684
+<v Speaker 0>prefer that. I don't know if that's maybe
+
+00:29:51.684 --> 00:29:54.004
+<v Speaker 0>a bit bright. Harsh. Yeah.
+
+00:29:56.325 --> 00:29:58.164
+<v Speaker 0>Depending on my mood, how I switch between
+
+00:29:58.164 --> 00:29:58.724
+<v Speaker 0>them.
+
+00:29:59.125 --> 00:30:01.590
+<v Speaker 0>Okay. So we do have release information. The
+
+00:30:01.590 --> 00:30:03.190
+<v Speaker 0>first sale that we have here is just
+
+00:30:03.190 --> 00:30:04.149
+<v Speaker 0>kind of a
+
+00:30:04.549 --> 00:30:06.309
+<v Speaker 0>look at the cadence of all the projects.
+
+00:30:06.549 --> 00:30:07.990
+<v Speaker 0>I don't know if there's actually any use
+
+00:30:07.990 --> 00:30:09.669
+<v Speaker 0>in this one yet. I haven't found one.
+
+00:30:09.669 --> 00:30:11.830
+<v Speaker 0>But when we break that down by repository,
+
+00:30:11.830 --> 00:30:13.350
+<v Speaker 0>I think it gets a little bit more
+
+00:30:13.350 --> 00:30:14.070
+<v Speaker 0>interesting.
+
+00:30:14.710 --> 00:30:16.789
+<v Speaker 1>I also think, like, when is the first
+
+00:30:16.789 --> 00:30:19.804
+<v Speaker 1>release? When did you start doing release hygiene?
+
+00:30:21.404 --> 00:30:24.124
+<v Speaker 1>And having had a project running
+
+00:30:24.445 --> 00:30:25.325
+<v Speaker 1>effectively
+
+00:30:26.524 --> 00:30:27.245
+<v Speaker 1>for three
+
+00:30:28.205 --> 00:30:29.965
+<v Speaker 1>for two months, maybe
+
+00:30:30.300 --> 00:30:32.460
+<v Speaker 1>maybe about just over two months before the
+
+00:30:32.460 --> 00:30:33.980
+<v Speaker 1>first release tag there.
+
+00:30:34.220 --> 00:30:35.980
+<v Speaker 1>And then does that mean there was three
+
+00:30:35.980 --> 00:30:36.940
+<v Speaker 1>at that point?
+
+00:30:37.580 --> 00:30:40.140
+<v Speaker 0>Yes. So that means in January 2017, you
+
+00:30:40.140 --> 00:30:41.580
+<v Speaker 0>had three releases.
+
+00:30:41.820 --> 00:30:42.700
+<v Speaker 1>That's
+
+00:30:42.700 --> 00:30:45.404
+<v Speaker 1>not January. It's February, isn't it? Well, this
+
+00:30:45.565 --> 00:30:47.965
+<v Speaker 0>window is at the February, which means the
+
+00:30:47.965 --> 00:30:49.644
+<v Speaker 0>releases happened a month earlier.
+
+00:30:50.205 --> 00:30:52.284
+<v Speaker 1>Oh, okay. So if we break this down,
+
+00:30:52.284 --> 00:30:54.365
+<v Speaker 0>like, we are looking at monthly.
+
+00:30:54.365 --> 00:30:56.124
+<v Speaker 0>But if we break that down to weekly,
+
+00:30:56.764 --> 00:30:58.605
+<v Speaker 0>you'll actually see the weekly Alright. It varies.
+
+00:30:58.605 --> 00:30:58.924
+<v Speaker 0>Plus.
+
+00:31:00.080 --> 00:31:02.240
+<v Speaker 0>Yeah. So we've got one in
+
+00:31:02.800 --> 00:31:05.000
+<v Speaker 0>the January 5. So the January
+
+00:31:05.000 --> 00:31:05.919
+<v Speaker 0>2017,
+
+00:31:05.920 --> 00:31:08.240
+<v Speaker 0>another So it's very soon after the after
+
+00:31:08.240 --> 00:31:10.160
+<v Speaker 1>the repo was done. Yeah.
+
+00:31:11.295 --> 00:31:12.975
+<v Speaker 0>If you want, we can do it daily,
+
+00:31:16.175 --> 00:31:19.135
+<v Speaker 1>but probably not as useful. One of the
+
+00:31:19.135 --> 00:31:21.775
+<v Speaker 1>things that the source d team found when
+
+00:31:21.775 --> 00:31:22.975
+<v Speaker 1>they were looking at it, and they didn't
+
+00:31:22.975 --> 00:31:25.720
+<v Speaker 1>have any context was why you're releasing multiple
+
+00:31:25.720 --> 00:31:26.759
+<v Speaker 1>times per day.
+
+00:31:27.240 --> 00:31:27.799
+<v Speaker 1>And,
+
+00:31:28.600 --> 00:31:32.039
+<v Speaker 1>basically, it's because the releases generate the artifacts.
+
+00:31:32.600 --> 00:31:34.279
+<v Speaker 1>And if you merge a PR,
+
+00:31:34.360 --> 00:31:36.200
+<v Speaker 1>you want to have that available for people
+
+00:31:36.695 --> 00:31:38.775
+<v Speaker 1>to test or to update a composed file
+
+00:31:38.775 --> 00:31:40.535
+<v Speaker 1>or to just do an update and drag
+
+00:31:40.535 --> 00:31:41.174
+<v Speaker 1>it in.
+
+00:31:41.495 --> 00:31:43.495
+<v Speaker 1>It's very cumbersome to to sort of get
+
+00:31:43.495 --> 00:31:45.415
+<v Speaker 1>someone to run through developer instructions just to
+
+00:31:45.415 --> 00:31:47.095
+<v Speaker 1>do a build to get an artifact to
+
+00:31:47.095 --> 00:31:47.735
+<v Speaker 1>run it.
+
+00:31:48.695 --> 00:31:50.070
+<v Speaker 1>And if it looks stable, if you're happy
+
+00:31:50.070 --> 00:31:51.670
+<v Speaker 1>with it, you cut a release. Then maybe
+
+00:31:51.670 --> 00:31:53.270
+<v Speaker 1>something else came in that you weren't expecting
+
+00:31:53.270 --> 00:31:55.190
+<v Speaker 1>that's also we might as well have that
+
+00:31:55.190 --> 00:31:55.830
+<v Speaker 1>as well.
+
+00:31:56.950 --> 00:31:58.550
+<v Speaker 1>And then you get a new artifact for
+
+00:31:58.550 --> 00:31:59.350
+<v Speaker 1>each one.
+
+00:31:59.670 --> 00:32:01.910
+<v Speaker 1>It's pretty much free storage on GitHub and
+
+00:32:01.910 --> 00:32:02.790
+<v Speaker 1>and Docker Hub.
+
+00:32:04.735 --> 00:32:05.615
+<v Speaker 0>Yeah.
+
+00:32:06.335 --> 00:32:08.175
+<v Speaker 0>I think something that's standing out to me
+
+00:32:08.175 --> 00:32:11.455
+<v Speaker 0>from from this graph here is that
+
+00:32:11.455 --> 00:32:14.015
+<v Speaker 0>you you mentioned that the the some sort
+
+00:32:14.015 --> 00:32:16.335
+<v Speaker 0>of migration or moving of of FASD, but
+
+00:32:16.335 --> 00:32:17.535
+<v Speaker 0>what we actually see is
+
+00:32:18.040 --> 00:32:20.760
+<v Speaker 0>there's 23 releases initially, and I'm gonna assume
+
+00:32:20.760 --> 00:32:23.480
+<v Speaker 0>those happened. Those tags were migrated from the
+
+00:32:23.480 --> 00:32:26.040
+<v Speaker 0>other repo maybe? I don't think they were.
+
+00:32:26.040 --> 00:32:28.040
+<v Speaker 1>I don't know why there's 23 tags. I
+
+00:32:28.040 --> 00:32:29.720
+<v Speaker 1>don't know what that is. Let's see if
+
+00:32:29.720 --> 00:32:31.664
+<v Speaker 0>we can. You could look into you could
+
+00:32:31.664 --> 00:32:33.504
+<v Speaker 1>look on GitHub and find out.
+
+00:32:33.905 --> 00:32:35.504
+<v Speaker 0>I mean, they all happen
+
+00:32:35.985 --> 00:32:38.384
+<v Speaker 0>very quickly. Like, how quickly?
+
+00:32:38.705 --> 00:32:40.945
+<v Speaker 0>Okay. Let's go to enter daily, and then
+
+00:32:40.945 --> 00:32:43.585
+<v Speaker 0>let's just zoom into this window.
+
+00:32:45.509 --> 00:32:46.149
+<v Speaker 0>So
+
+00:32:46.470 --> 00:32:47.269
+<v Speaker 0>seven
+
+00:32:47.350 --> 00:32:51.589
+<v Speaker 0>on the first day, 12/24/2019,
+
+00:32:53.029 --> 00:32:53.669
+<v Speaker 0>'4
+
+00:32:54.070 --> 00:32:55.589
+<v Speaker 0>on the twenty fifth.
+
+00:32:56.470 --> 00:32:58.070
+<v Speaker 1>It seems a bit high to me. I'm
+
+00:32:58.070 --> 00:32:59.590
+<v Speaker 1>not sure
+
+00:32:59.035 --> 00:33:01.115
+<v Speaker 1>what that is unless it's
+
+00:33:02.315 --> 00:33:04.555
+<v Speaker 0>Okay. So let's let's we're gonna look at
+
+00:33:04.555 --> 00:33:06.315
+<v Speaker 0>the deep dive dashboard, and that's what actually
+
+00:33:06.315 --> 00:33:08.395
+<v Speaker 0>less the individual releases as a table. So
+
+00:33:08.395 --> 00:33:10.715
+<v Speaker 0>let's just take a look at the FaaS
+
+00:33:10.715 --> 00:33:13.115
+<v Speaker 0>d repo the FaaS d repo there.
+
+00:33:13.870 --> 00:33:16.910
+<v Speaker 1>There is actually 47 releases of this, and
+
+00:33:16.910 --> 00:33:18.350
+<v Speaker 1>I'm now
+
+00:33:18.910 --> 00:33:20.909
+<v Speaker 1>struggling to think why
+
+00:33:22.030 --> 00:33:23.389
+<v Speaker 1>there'd be so many.
+
+00:33:24.910 --> 00:33:27.390
+<v Speaker 1>I wonder if this was when
+
+00:33:28.555 --> 00:33:31.435
+<v Speaker 1>we got some odd untagged release then. I'm
+
+00:33:31.435 --> 00:33:32.555
+<v Speaker 1>not sure what that is.
+
+00:33:34.955 --> 00:33:37.435
+<v Speaker 0>Well, my scatter plot is
+
+00:33:37.675 --> 00:33:38.395
+<v Speaker 0>broken. I
+
+00:33:38.795 --> 00:33:40.795
+<v Speaker 1>do wonder if I was sort of fighting
+
+00:33:40.795 --> 00:33:42.475
+<v Speaker 1>Travis
+
+00:33:41.779 --> 00:33:44.100
+<v Speaker 1>for a little bit. I don't know. No.
+
+00:33:44.100 --> 00:33:45.700
+<v Speaker 1>They do seem to have assets on from
+
+00:33:45.700 --> 00:33:48.019
+<v Speaker 1>quite early on. Don't know why.
+
+00:33:50.980 --> 00:33:52.740
+<v Speaker 1>Oh, you had too much Christmas pudding.
+
+00:33:55.674 --> 00:33:58.154
+<v Speaker 0>So this is a scatter plot visualization of
+
+00:33:58.154 --> 00:34:00.315
+<v Speaker 0>the existing above. I use scatter plots as
+
+00:34:00.315 --> 00:34:02.075
+<v Speaker 0>a way to kind of identify outliers.
+
+00:34:02.075 --> 00:34:03.114
+<v Speaker 0>We can see
+
+00:34:03.274 --> 00:34:06.075
+<v Speaker 0>FaaS CLI have quite a heavy release.
+
+00:34:06.649 --> 00:34:09.050
+<v Speaker 0>I don't know what happened here, but twelve
+
+00:34:09.050 --> 00:34:11.530
+<v Speaker 0>and thirteen releases across two months.
+
+00:34:12.010 --> 00:34:12.730
+<v Speaker 0>And
+
+00:34:13.210 --> 00:34:16.010
+<v Speaker 1>OpenFaaS cloud is obviously think the I was
+
+00:34:16.010 --> 00:34:17.690
+<v Speaker 1>getting a lot of interest
+
+00:34:17.690 --> 00:34:19.449
+<v Speaker 1>from the community. It was it needed to
+
+00:34:19.449 --> 00:34:21.369
+<v Speaker 1>be built from scratch and every command that
+
+00:34:21.369 --> 00:34:21.770
+<v Speaker 1>was added.
+
+00:34:23.195 --> 00:34:25.114
+<v Speaker 1>It was useful to have a release and
+
+00:34:25.114 --> 00:34:26.635
+<v Speaker 1>get it tested again to the hands of
+
+00:34:26.635 --> 00:34:27.755
+<v Speaker 1>users properly.
+
+00:34:31.275 --> 00:34:32.635
+<v Speaker 0>And my I see it's supposed to be
+
+00:34:32.635 --> 00:34:34.875
+<v Speaker 0>a histogram, which looks like it's rather broken.
+
+00:34:34.875 --> 00:34:36.395
+<v Speaker 0>So hopefully, we can see that on the
+
+00:34:36.395 --> 00:34:37.275
+<v Speaker 0>deep dive dashboard.
+
+00:34:38.880 --> 00:34:40.480
+<v Speaker 0>So the last thing I want to show
+
+00:34:40.480 --> 00:34:41.920
+<v Speaker 0>off in the overview one
+
+00:34:42.319 --> 00:34:44.159
+<v Speaker 0>is we can have the ability to break
+
+00:34:44.159 --> 00:34:46.159
+<v Speaker 0>down by looking at the type of code
+
+00:34:46.159 --> 00:34:47.280
+<v Speaker 0>that was added.
+
+00:34:47.520 --> 00:34:49.920
+<v Speaker 0>No surprise that, you know, Go is pretty
+
+00:34:49.920 --> 00:34:51.599
+<v Speaker 0>prominent across these repositories.
+
+00:34:53.975 --> 00:34:55.895
+<v Speaker 1>There'll be go. There'll be bash. There's a
+
+00:34:55.895 --> 00:34:57.975
+<v Speaker 1>YAML mark there'll be a lot of markdown.
+
+00:34:57.975 --> 00:34:59.895
+<v Speaker 1>See, that's almost like the second biggest.
+
+00:35:00.215 --> 00:35:02.295
+<v Speaker 1>And it's bit of JavaScript and HTML in
+
+00:35:02.295 --> 00:35:03.095
+<v Speaker 1>there as well.
+
+00:35:03.815 --> 00:35:05.175
+<v Speaker 1>No extensions.
+
+00:35:05.575 --> 00:35:07.415
+<v Speaker 0>I'm not sure of it. Parsing them?
+
+00:35:09.070 --> 00:35:12.109
+<v Speaker 0>Yep. We got shell scripts. We got YAML.
+
+00:35:12.109 --> 00:35:14.030
+<v Speaker 0>In fact, if we just zoom in to
+
+00:35:14.030 --> 00:35:15.710
+<v Speaker 0>this bottom oh, there's still lot going on
+
+00:35:15.710 --> 00:35:16.590
+<v Speaker 0>here. Okay.
+
+00:35:17.070 --> 00:35:17.950
+<v Speaker 0>PEMs,
+
+00:35:17.950 --> 00:35:18.349
+<v Speaker 0>r,
+
+00:35:20.315 --> 00:35:21.995
+<v Speaker 0>lock fail. Okay.
+
+00:35:23.195 --> 00:35:24.795
+<v Speaker 0>We got a fair amount of stuff going
+
+00:35:24.795 --> 00:35:25.435
+<v Speaker 0>on here.
+
+00:35:26.315 --> 00:35:28.235
+<v Speaker 0>This is just breaking it up by repository
+
+00:35:28.235 --> 00:35:30.155
+<v Speaker 0>because all of the repos are primarily go.
+
+00:35:30.155 --> 00:35:31.755
+<v Speaker 0>I don't think we're gonna get anything particularly
+
+00:35:31.755 --> 00:35:33.355
+<v Speaker 0>useful from this, so we'll skip over.
+
+00:35:34.650 --> 00:35:36.970
+<v Speaker 0>But the last bit on the overview, I
+
+00:35:36.970 --> 00:35:38.970
+<v Speaker 0>I to call this I've
+
+00:35:38.970 --> 00:35:40.730
+<v Speaker 1>got to just interrupt someone
+
+00:35:40.730 --> 00:35:43.850
+<v Speaker 1>on OpenFaaS Slack has said spikes in October.
+
+00:35:44.410 --> 00:35:45.770
+<v Speaker 1>Was it Hacktoberfest?
+
+00:35:47.055 --> 00:35:47.855
+<v Speaker 1>Ah.
+
+00:35:48.015 --> 00:35:50.335
+<v Speaker 1>Yes. It would have been because we participate
+
+00:35:50.335 --> 00:35:51.695
+<v Speaker 1>quite actively in that.
+
+00:35:52.575 --> 00:35:54.734
+<v Speaker 1>Yeah. And those will be merged ones. Right?
+
+00:35:54.734 --> 00:35:56.175
+<v Speaker 1>Because the spam ones wouldn't have made it
+
+00:35:56.175 --> 00:35:57.375
+<v Speaker 1>into the guest room.
+
+00:35:57.855 --> 00:36:01.080
+<v Speaker 0>Yes. We I only analyzed the the master
+
+00:36:01.080 --> 00:36:03.720
+<v Speaker 0>branch. Yeah. Not not the GitHub API,
+
+00:36:04.040 --> 00:36:05.000
+<v Speaker 1>which is better.
+
+00:36:05.480 --> 00:36:06.840
+<v Speaker 1>Because I remember I asked I was asking
+
+00:36:06.840 --> 00:36:08.440
+<v Speaker 1>you earlier because I was wondering if you're
+
+00:36:08.440 --> 00:36:10.120
+<v Speaker 1>like well, now that you're live on a
+
+00:36:10.120 --> 00:36:12.200
+<v Speaker 1>webinar, give me admin access to your GitHub
+
+00:36:12.200 --> 00:36:14.120
+<v Speaker 1>organizations so we can import the data.
+
+00:36:14.440 --> 00:36:16.734
+<v Speaker 1>And, unfortunately, you would get cloning, which is
+
+00:36:16.734 --> 00:36:18.015
+<v Speaker 1>I think is a nice way of doing
+
+00:36:18.015 --> 00:36:18.415
+<v Speaker 1>it.
+
+00:36:19.535 --> 00:36:21.375
+<v Speaker 0>Yeah. It works well, I think. And you
+
+00:36:21.375 --> 00:36:23.055
+<v Speaker 0>can do it for any public repository. One
+
+00:36:23.055 --> 00:36:24.494
+<v Speaker 0>of the other use cases I've I've been
+
+00:36:24.494 --> 00:36:26.815
+<v Speaker 0>trying to use get series for is making
+
+00:36:26.815 --> 00:36:29.055
+<v Speaker 0>decisions on when to adopt different what what
+
+00:36:29.055 --> 00:36:31.980
+<v Speaker 0>which service mesh should you use? Well, you
+
+00:36:31.980 --> 00:36:33.420
+<v Speaker 0>you can import all of them and see
+
+00:36:33.420 --> 00:36:35.100
+<v Speaker 0>which ones are more vibrant, has the most
+
+00:36:35.100 --> 00:36:37.580
+<v Speaker 0>contributors, and is actively or has a stable
+
+00:36:37.580 --> 00:36:39.180
+<v Speaker 0>release cadence. You know, those those are the
+
+00:36:39.180 --> 00:36:40.300
+<v Speaker 0>things that we probably
+
+00:36:40.540 --> 00:36:43.260
+<v Speaker 0>don't spend enough time investigating when we adopt.
+
+00:36:43.260 --> 00:36:43.420
+<v Speaker 0>Yeah.
+
+00:36:45.055 --> 00:36:47.055
+<v Speaker 0>Yeah. So this last bit is the how
+
+00:36:47.055 --> 00:36:50.015
+<v Speaker 0>to get help. So are there any esoteric
+
+00:36:50.015 --> 00:36:53.215
+<v Speaker 0>programming languages used across any of the OpenFaaS
+
+00:36:53.215 --> 00:36:54.095
+<v Speaker 0>reports?
+
+00:36:55.695 --> 00:36:56.575
+<v Speaker 1>Guess the last
+
+00:36:57.090 --> 00:36:59.090
+<v Speaker 1>The only thing that comes to mind is
+
+00:36:59.090 --> 00:37:01.410
+<v Speaker 1>probably, like, the r file, which is one
+
+00:37:01.410 --> 00:37:03.410
+<v Speaker 1>of the samples that from the community.
+
+00:37:05.410 --> 00:37:08.770
+<v Speaker 0>And for some weird reason, I don't see
+
+00:37:09.010 --> 00:37:11.650
+<v Speaker 0>r. Let's try do we have Python? When
+
+00:37:11.650 --> 00:37:12.210
+<v Speaker 1>you do r.
+
+00:37:12.835 --> 00:37:14.355
+<v Speaker 0>It was. Yeah. I'm not sure why it's
+
+00:37:14.355 --> 00:37:16.195
+<v Speaker 0>not showing up on my lovely table here.
+
+00:37:16.195 --> 00:37:17.635
+<v Speaker 0>Do you know what names are gonna show
+
+00:37:17.635 --> 00:37:18.755
+<v Speaker 0>up on the Python?
+
+00:37:22.995 --> 00:37:24.115
+<v Speaker 1>There's examples
+
+00:37:24.435 --> 00:37:25.635
+<v Speaker 1>potential examples
+
+00:37:26.870 --> 00:37:29.110
+<v Speaker 1>for that. Let me handle that p y.
+
+00:37:29.430 --> 00:37:31.430
+<v Speaker 0>I'm sorry. Contributor. Who who would rate the
+
+00:37:31.430 --> 00:37:33.350
+<v Speaker 0>Python on the OpenFaaS projects?
+
+00:37:34.150 --> 00:37:36.790
+<v Speaker 0>Me, probably. You. Lucas?
+
+00:37:37.270 --> 00:37:39.350
+<v Speaker 0>No. It's it looks like it's a 26
+
+00:37:39.350 --> 00:37:41.510
+<v Speaker 0>commits of Python fails you have on your
+
+00:37:41.635 --> 00:37:44.115
+<v Speaker 1>your Remember that author email is incorrect. We
+
+00:37:44.115 --> 00:37:45.555
+<v Speaker 1>need to look at the author name.
+
+00:37:46.035 --> 00:37:49.155
+<v Speaker 0>I see. Probably some from Ivana probably and
+
+00:37:49.155 --> 00:37:49.955
+<v Speaker 1>Martin.
+
+00:37:50.675 --> 00:37:51.635
+<v Speaker 1>You are correct.
+
+00:37:56.840 --> 00:37:59.080
+<v Speaker 0>Yeah. It's a bit better actually. Let's
+
+00:38:03.240 --> 00:38:03.960
+<v Speaker 0>so
+
+00:38:04.360 --> 00:38:07.320
+<v Speaker 0>yeah. You're still the top three. I love
+
+00:38:07.320 --> 00:38:08.840
+<v Speaker 0>your different names across these.
+
+00:38:10.055 --> 00:38:11.734
+<v Speaker 1>The Alex one is surprising. I'm not sure
+
+00:38:11.734 --> 00:38:13.414
+<v Speaker 1>what that one was. That might have been
+
+00:38:13.414 --> 00:38:15.255
+<v Speaker 1>at the beginning when I when I didn't
+
+00:38:15.255 --> 00:38:16.935
+<v Speaker 1>know how to get get properly.
+
+00:38:17.255 --> 00:38:18.615
+<v Speaker 1>And there's a little bit when I worked
+
+00:38:18.615 --> 00:38:19.494
+<v Speaker 1>at VMware.
+
+00:38:19.815 --> 00:38:21.494
+<v Speaker 1>If you look at dot go, you should
+
+00:38:21.494 --> 00:38:23.255
+<v Speaker 1>see some Alex Alice brackets
+
+00:38:23.700 --> 00:38:24.500
+<v Speaker 1>OpenFaaS
+
+00:38:24.500 --> 00:38:25.300
+<v Speaker 1>limited.
+
+00:38:25.619 --> 00:38:27.140
+<v Speaker 1>Yep. Some AlexLS.
+
+00:38:27.140 --> 00:38:28.980
+<v Speaker 1>I'm surprised we've not got any
+
+00:38:29.220 --> 00:38:31.780
+<v Speaker 1>AlexLS VMware, but maybe that's because
+
+00:38:32.420 --> 00:38:34.099
+<v Speaker 0>There was a Python. It went in the
+
+00:38:34.099 --> 00:38:34.900
+<v Speaker 1>top five.
+
+00:38:35.300 --> 00:38:35.540
+<v Speaker 1>Yeah.
+
+00:38:36.755 --> 00:38:38.195
+<v Speaker 0>And if we take a look at How
+
+00:38:38.195 --> 00:38:39.235
+<v Speaker 1>about MDs?
+
+00:38:39.315 --> 00:38:39.795
+<v Speaker 1>I don't
+
+00:38:40.595 --> 00:38:42.435
+<v Speaker 0>Alright. MD. Yeah. Let's take a look at
+
+00:38:42.435 --> 00:38:44.835
+<v Speaker 0>markdown. Let's look at our managing directors.
+
+00:38:47.715 --> 00:38:48.835
+<v Speaker 1>Yeah. Okay.
+
+00:38:48.995 --> 00:38:50.435
+<v Speaker 1>So he's writing a lot of docs when
+
+00:38:50.435 --> 00:38:51.475
+<v Speaker 1>I was at VMware.
+
+00:38:52.940 --> 00:38:55.099
+<v Speaker 1>John's been active. Luke's is really active as
+
+00:38:55.099 --> 00:38:55.500
+<v Speaker 1>well.
+
+00:38:57.740 --> 00:38:58.540
+<v Speaker 0>Cool.
+
+00:38:59.019 --> 00:39:00.460
+<v Speaker 0>Yeah. So this is I I think this
+
+00:39:00.460 --> 00:39:01.900
+<v Speaker 0>table is good if especially if you join
+
+00:39:01.900 --> 00:39:04.220
+<v Speaker 0>an organization and they're analyzing their commits this
+
+00:39:04.220 --> 00:39:05.500
+<v Speaker 0>way and you wanna know who to go
+
+00:39:05.500 --> 00:39:07.019
+<v Speaker 0>speak to to get help with Python or
+
+00:39:07.019 --> 00:39:09.505
+<v Speaker 0>Ruby or Rust, like, I think this is
+
+00:39:09.505 --> 00:39:10.945
+<v Speaker 0>a a nice way to do it. But
+
+00:39:10.945 --> 00:39:13.585
+<v Speaker 0>we don't have a great spread of stuff
+
+00:39:13.585 --> 00:39:15.345
+<v Speaker 0>here. Is that some SQL? But I I
+
+00:39:15.345 --> 00:39:16.945
+<v Speaker 1>do actually like that too. I like the
+
+00:39:16.945 --> 00:39:17.905
+<v Speaker 1>approach of
+
+00:39:18.945 --> 00:39:19.425
+<v Speaker 1>let's
+
+00:39:20.120 --> 00:39:22.360
+<v Speaker 1>let's see who's been touching what files, and
+
+00:39:22.360 --> 00:39:24.760
+<v Speaker 1>then we can tap them up for support,
+
+00:39:24.760 --> 00:39:27.480
+<v Speaker 1>throw it over the wall to them. You're
+
+00:39:27.480 --> 00:39:29.400
+<v Speaker 0>gonna love to deep dive dashboard then. There's
+
+00:39:29.400 --> 00:39:33.080
+<v Speaker 0>a time series based code owners analysis
+
+00:39:33.080 --> 00:39:34.120
+<v Speaker 0>as well. So
+
+00:39:35.615 --> 00:39:37.694
+<v Speaker 0>so what's written in c? I'm curious. There's
+
+00:39:37.694 --> 00:39:39.935
+<v Speaker 0>a fair number of c commits here. Probably
+
+00:39:42.015 --> 00:39:42.815
+<v Speaker 1>vended
+
+00:39:42.815 --> 00:39:44.095
+<v Speaker 1>c go code
+
+00:39:44.335 --> 00:39:46.175
+<v Speaker 1>rather than anything that's actually
+
+00:39:47.319 --> 00:39:48.119
+<v Speaker 1>used.
+
+00:39:48.119 --> 00:39:50.039
+<v Speaker 1>We don't even build in c code. I
+
+00:39:50.039 --> 00:39:51.800
+<v Speaker 1>bet that there's some
+
+00:39:52.280 --> 00:39:53.800
+<v Speaker 1>vendor stuff that's got
+
+00:39:54.119 --> 00:39:55.320
+<v Speaker 1>craft in it.
+
+00:39:57.160 --> 00:39:59.960
+<v Speaker 0>Okay. Where's your repository at? Also a sample
+
+00:39:59.960 --> 00:40:01.160
+<v Speaker 1>project
+
+00:40:02.244 --> 00:40:03.765
+<v Speaker 1>of a c function.
+
+00:40:04.805 --> 00:40:05.925
+<v Speaker 1>Alright. We
+
+00:40:07.445 --> 00:40:09.045
+<v Speaker 0>said FAST. Right? Let me take a look
+
+00:40:09.045 --> 00:40:10.645
+<v Speaker 0>at that first. Oh, yeah.
+
+00:40:15.125 --> 00:40:17.205
+<v Speaker 0>So this is our commit count.
+
+00:40:21.180 --> 00:40:23.580
+<v Speaker 0>That's a relatively new project. I can't remember
+
+00:40:23.580 --> 00:40:25.740
+<v Speaker 0>what we were trying to identify with this.
+
+00:40:26.380 --> 00:40:27.020
+<v Speaker 1>Okay.
+
+00:40:27.580 --> 00:40:27.820
+<v Speaker 1>So
+
+00:40:28.380 --> 00:40:30.140
+<v Speaker 0>Yeah. There's a release. That's what we wanted
+
+00:40:30.140 --> 00:40:31.420
+<v Speaker 0>to because we had that high number of
+
+00:40:31.420 --> 00:40:32.780
+<v Speaker 0>release. Yeah. I just had a look on
+
+00:40:32.780 --> 00:40:33.180
+<v Speaker 1>GitHub.
+
+00:40:34.205 --> 00:40:35.645
+<v Speaker 1>I'm not really sure. It just it's like
+
+00:40:35.645 --> 00:40:35.885
+<v Speaker 1>that
+
+00:40:36.765 --> 00:40:38.205
+<v Speaker 1>maybe that was the best way to share
+
+00:40:38.205 --> 00:40:39.805
+<v Speaker 1>binaries for people at the time
+
+00:40:41.165 --> 00:40:44.125
+<v Speaker 1>because working on a Mac, you don't get
+
+00:40:44.925 --> 00:40:47.005
+<v Speaker 1>you couldn't build it on a Mac at
+
+00:40:47.005 --> 00:40:48.685
+<v Speaker 1>the time or in the tests because
+
+00:40:50.730 --> 00:40:52.490
+<v Speaker 1>it needed WeaveNet,
+
+00:40:52.810 --> 00:40:53.530
+<v Speaker 1>which is
+
+00:40:53.930 --> 00:40:54.890
+<v Speaker 1>Linux only.
+
+00:40:55.130 --> 00:40:56.890
+<v Speaker 1>This is one of the weirdest projects in
+
+00:40:56.890 --> 00:40:59.210
+<v Speaker 1>OpenFaaS because you can only work on it
+
+00:40:59.210 --> 00:41:01.464
+<v Speaker 1>on Linux, and it's only for Linux. You
+
+00:41:01.464 --> 00:41:02.905
+<v Speaker 1>can't run it on a Mac and connect
+
+00:41:02.905 --> 00:41:05.865
+<v Speaker 1>to a Docker instance. So meant to be,
+
+00:41:05.865 --> 00:41:07.145
+<v Speaker 1>like, self contained
+
+00:41:07.385 --> 00:41:08.425
+<v Speaker 1>serverless.
+
+00:41:08.425 --> 00:41:10.345
+<v Speaker 1>Drop it on a VM stateless.
+
+00:41:10.345 --> 00:41:12.345
+<v Speaker 1>Doesn't scale beyond one node. You can do,
+
+00:41:12.345 --> 00:41:14.744
+<v Speaker 1>like, a RAID style if you want.
+
+00:41:16.430 --> 00:41:18.109
+<v Speaker 1>You know, close the box, never open it
+
+00:41:18.109 --> 00:41:19.230
+<v Speaker 1>again type of thing.
+
+00:41:20.109 --> 00:41:21.470
+<v Speaker 0>Alright. Okay.
+
+00:41:22.510 --> 00:41:24.270
+<v Speaker 0>Well, based on that, I just I've just
+
+00:41:24.270 --> 00:41:26.030
+<v Speaker 0>switched over to FaaS ninety's unless you wanna
+
+00:41:26.030 --> 00:41:27.630
+<v Speaker 0>pick something else just to kinda run through
+
+00:41:27.630 --> 00:41:30.190
+<v Speaker 0>this dashboard. Go for it. FaaS ninety's done.
+
+00:41:30.765 --> 00:41:32.925
+<v Speaker 0>So this is the commit
+
+00:41:33.164 --> 00:41:34.924
+<v Speaker 0>graph again. Only this time, we're breaking it
+
+00:41:34.924 --> 00:41:37.484
+<v Speaker 0>down to look at the insertions and deletions.
+
+00:41:37.484 --> 00:41:40.205
+<v Speaker 0>So we can see the blue lines
+
+00:41:41.645 --> 00:41:43.565
+<v Speaker 0>are lot of insertions. So this is obviously
+
+00:41:43.565 --> 00:41:45.405
+<v Speaker 0>early days where we're writing lots and lots
+
+00:41:45.405 --> 00:41:45.964
+<v Speaker 0>of code.
+
+00:41:46.599 --> 00:41:48.440
+<v Speaker 0>There's obviously some sort of large
+
+00:41:49.480 --> 00:41:51.480
+<v Speaker 0>change was made here. So the purple is
+
+00:41:51.480 --> 00:41:52.520
+<v Speaker 0>our deletions.
+
+00:41:53.880 --> 00:41:56.040
+<v Speaker 1>Even Likely.
+
+00:41:56.760 --> 00:41:58.599
+<v Speaker 0>Well, I think that would choose an insertion
+
+00:41:58.599 --> 00:42:00.680
+<v Speaker 0>because you wouldn't be modifying any code.
+
+00:42:01.415 --> 00:42:03.015
+<v Speaker 1>Deletion, didn't you say?
+
+00:42:03.655 --> 00:42:05.575
+<v Speaker 0>Yeah. But when the insertions and deletions are
+
+00:42:05.575 --> 00:42:07.575
+<v Speaker 0>both tracking each other like this, it generally
+
+00:42:07.575 --> 00:42:09.175
+<v Speaker 0>means files are modified.
+
+00:42:09.494 --> 00:42:10.855
+<v Speaker 0>Because the way, obviously, if you think of
+
+00:42:10.855 --> 00:42:12.775
+<v Speaker 0>a get patch, there's a insertion and a
+
+00:42:12.775 --> 00:42:14.215
+<v Speaker 0>deletion. Upstream
+
+00:42:14.295 --> 00:42:16.930
+<v Speaker 1>vendor dependency was changed, but not the name
+
+00:42:16.930 --> 00:42:17.890
+<v Speaker 1>didn't change.
+
+00:42:21.410 --> 00:42:22.850
+<v Speaker 1>Don't know. Yeah.
+
+00:42:22.850 --> 00:42:24.370
+<v Speaker 1>At some point, what you you what you
+
+00:42:24.370 --> 00:42:25.650
+<v Speaker 1>need is maybe to
+
+00:42:25.890 --> 00:42:27.410
+<v Speaker 1>to zoom in on that and see the
+
+00:42:27.410 --> 00:42:28.050
+<v Speaker 1>raw data.
+
+00:42:29.975 --> 00:42:31.815
+<v Speaker 0>I think we have access to the commits
+
+00:42:31.815 --> 00:42:33.975
+<v Speaker 0>further down, if I remember correctly.
+
+00:42:34.215 --> 00:42:35.895
+<v Speaker 0>Yeah. The other thing that stands out here
+
+00:42:35.895 --> 00:42:37.895
+<v Speaker 0>is we have test two double peaks, one
+
+00:42:37.895 --> 00:42:40.215
+<v Speaker 0>of a massive deletion followed by
+
+00:42:40.455 --> 00:42:42.295
+<v Speaker 0>two sizable insertions.
+
+00:42:43.420 --> 00:42:44.380
+<v Speaker 0>This
+
+00:42:44.380 --> 00:42:45.100
+<v Speaker 0>was
+
+00:42:45.340 --> 00:42:46.980
+<v Speaker 0>when? March
+
+00:42:46.980 --> 00:42:47.900
+<v Speaker 0>2019,
+
+00:42:48.220 --> 00:42:49.980
+<v Speaker 0>just over a year ago.
+
+00:42:50.300 --> 00:42:52.780
+<v Speaker 0>Well, it could delete it. I think to
+
+00:42:52.780 --> 00:42:55.180
+<v Speaker 1>make sense of this, we need to exclude
+
+00:42:55.180 --> 00:42:56.380
+<v Speaker 1>on the rejects
+
+00:42:56.380 --> 00:42:58.140
+<v Speaker 1>anything with the word vendor in it.
+
+00:42:59.515 --> 00:43:00.875
+<v Speaker 1>Otherwise, it's just
+
+00:43:01.515 --> 00:43:03.995
+<v Speaker 1>too it's not particularly representative.
+
+00:43:04.555 --> 00:43:06.395
+<v Speaker 0>Alright. Tell you what, let's jump down to
+
+00:43:06.395 --> 00:43:09.035
+<v Speaker 0>the the directory breakdown. So first, we'll take
+
+00:43:09.035 --> 00:43:10.075
+<v Speaker 0>a look at
+
+00:43:11.380 --> 00:43:14.420
+<v Speaker 0>March 2018 and then March 2019, and we'll
+
+00:43:14.420 --> 00:43:17.140
+<v Speaker 0>see what we can see was modified. So
+
+00:43:17.140 --> 00:43:19.060
+<v Speaker 0>we'll come back to the things we're skipping,
+
+00:43:19.060 --> 00:43:19.620
+<v Speaker 0>but
+
+00:43:20.900 --> 00:43:22.100
+<v Speaker 0>if we take a look,
+
+00:43:27.565 --> 00:43:30.365
+<v Speaker 0>the directory is here. So March
+
+00:43:30.365 --> 00:43:31.165
+<v Speaker 0>2018
+
+00:43:31.325 --> 00:43:32.605
+<v Speaker 0>was indeed a massive
+
+00:43:33.005 --> 00:43:35.885
+<v Speaker 0>not massive. The sizable vendor change. So the
+
+00:43:36.045 --> 00:43:37.404
+<v Speaker 0>JSON iterator
+
+00:43:37.404 --> 00:43:39.085
+<v Speaker 0>seems to have been brought in
+
+00:43:39.885 --> 00:43:40.285
+<v Speaker 0>and,
+
+00:43:42.260 --> 00:43:43.860
+<v Speaker 0>yeah, a few others.
+
+00:43:44.580 --> 00:43:46.340
+<v Speaker 1>Got some stuff in the helm chart as
+
+00:43:46.340 --> 00:43:46.900
+<v Speaker 1>well.
+
+00:43:47.460 --> 00:43:49.460
+<v Speaker 1>Again, vendor, vendor, vendor, vendor.
+
+00:43:49.780 --> 00:43:51.540
+<v Speaker 1>We need to we probably need to have
+
+00:43:51.540 --> 00:43:52.260
+<v Speaker 1>a look at
+
+00:43:53.140 --> 00:43:56.505
+<v Speaker 1>excluding that. It's a prefix of vendor. Just
+
+00:43:56.505 --> 00:43:58.424
+<v Speaker 1>have another look. So there should be some
+
+00:43:58.424 --> 00:44:00.505
+<v Speaker 1>interesting information in here.
+
+00:44:01.305 --> 00:44:03.625
+<v Speaker 1>That is a bit wood for the trees.
+
+00:44:03.865 --> 00:44:05.385
+<v Speaker 1>Alright. So what do we not want to
+
+00:44:05.385 --> 00:44:05.945
+<v Speaker 0>see?
+
+00:44:06.744 --> 00:44:07.785
+<v Speaker 0>Filter
+
+00:44:08.184 --> 00:44:09.224
+<v Speaker 0>f n
+
+00:44:10.109 --> 00:44:13.070
+<v Speaker 0>r. And you know what? I purely
+
+00:44:13.309 --> 00:44:15.549
+<v Speaker 0>I'm not that familiar with the reject syntax,
+
+00:44:15.549 --> 00:44:16.990
+<v Speaker 0>but we're gonna try and work this out.
+
+00:44:16.990 --> 00:44:18.829
+<v Speaker 1>You could do the contains because we don't
+
+00:44:18.829 --> 00:44:21.070
+<v Speaker 1>have any files that say vendor that
+
+00:44:21.309 --> 00:44:23.230
+<v Speaker 1>at the end. I know vendors always at
+
+00:44:23.230 --> 00:44:23.549
+<v Speaker 1>the beginning.
+
+00:44:24.215 --> 00:44:28.055
+<v Speaker 0>So I think if we do this,
+
+00:44:30.455 --> 00:44:31.495
+<v Speaker 0>we want
+
+00:44:33.975 --> 00:44:35.975
+<v Speaker 0>to filter on not vendor.
+
+00:44:40.980 --> 00:44:42.980
+<v Speaker 0>I got very lucky that that worked.
+
+00:44:44.180 --> 00:44:45.940
+<v Speaker 1>Well, let's look at the graph first.
+
+00:44:47.539 --> 00:44:49.539
+<v Speaker 0>Yeah. So all the vendor changes I did
+
+00:44:49.539 --> 00:44:51.859
+<v Speaker 1>get lucky there. So I'm seeing a YAML
+
+00:44:51.859 --> 00:44:52.579
+<v Speaker 1>folder
+
+00:44:53.035 --> 00:44:53.915
+<v Speaker 1>peaking.
+
+00:44:53.995 --> 00:44:55.835
+<v Speaker 1>Again, that is something that we generate from
+
+00:44:55.835 --> 00:44:57.355
+<v Speaker 1>the chart now. We used to maintain it
+
+00:44:57.355 --> 00:44:59.435
+<v Speaker 1>separately. It's now generated from the chart.
+
+00:45:00.635 --> 00:45:02.955
+<v Speaker 1>Lucas made a change that is really useful
+
+00:45:02.955 --> 00:45:04.795
+<v Speaker 1>because we used to maintain both. Now we
+
+00:45:05.100 --> 00:45:06.860
+<v Speaker 1>have the chance to source the truth. That
+
+00:45:06.860 --> 00:45:09.580
+<v Speaker 1>spits out YAML for x eight six, for
+
+00:45:09.580 --> 00:45:11.020
+<v Speaker 1>ARM 64.
+
+00:45:13.580 --> 00:45:15.420
+<v Speaker 0>Okay. Oh, yeah. You can see the chart
+
+00:45:15.420 --> 00:45:17.020
+<v Speaker 0>as well popping in here.
+
+00:45:17.260 --> 00:45:18.700
+<v Speaker 0>We got the documentation.
+
+00:45:18.780 --> 00:45:19.020
+<v Speaker 0>Good.
+
+00:45:20.055 --> 00:45:21.655
+<v Speaker 0>And, of course, it's a gold project. I
+
+00:45:21.655 --> 00:45:23.175
+<v Speaker 0>I see something I see all the time
+
+00:45:23.175 --> 00:45:25.655
+<v Speaker 0>with gold projects is all the code lives
+
+00:45:25.655 --> 00:45:27.815
+<v Speaker 0>in the root directory for so long, and
+
+00:45:27.815 --> 00:45:28.375
+<v Speaker 0>then
+
+00:45:29.015 --> 00:45:30.935
+<v Speaker 0>they start to migrate and move it into
+
+00:45:30.935 --> 00:45:33.974
+<v Speaker 0>subdirectories and packages and stuff like that. OpenFaaS
+
+00:45:33.974 --> 00:45:35.650
+<v Speaker 0>seems or FastNetis seems
+
+00:45:36.210 --> 00:45:38.290
+<v Speaker 0>to kinda follow that same pattern. Yeah. Because
+
+00:45:38.290 --> 00:45:40.770
+<v Speaker 1>we merged in another controller called the operator
+
+00:45:40.770 --> 00:45:43.250
+<v Speaker 1>that worked in CRDs into this code base
+
+00:45:43.250 --> 00:45:45.970
+<v Speaker 1>right at the end, probably that last peak
+
+00:45:46.130 --> 00:45:48.530
+<v Speaker 1>or the one before it, and then added
+
+00:45:48.530 --> 00:45:49.330
+<v Speaker 1>more folders.
+
+00:45:50.345 --> 00:45:52.665
+<v Speaker 1>So more code, more folders,
+
+00:45:52.825 --> 00:45:54.505
+<v Speaker 1>potentially why there's a dip.
+
+00:45:57.704 --> 00:46:00.265
+<v Speaker 1>Actually, a server folder coming in.
+
+00:46:00.744 --> 00:46:02.345
+<v Speaker 1>The package server maybe.
+
+00:46:03.820 --> 00:46:06.300
+<v Speaker 1>The docket have directory changing a little bit.
+
+00:46:06.700 --> 00:46:09.420
+<v Speaker 1>Keeping our templates up to date for issues
+
+00:46:09.420 --> 00:46:10.620
+<v Speaker 1>and PRs.
+
+00:46:10.859 --> 00:46:13.579
+<v Speaker 1>Yeah. Got the connector came in. And so
+
+00:46:13.579 --> 00:46:15.099
+<v Speaker 1>what we started to do, use the FastNet
+
+00:46:15.099 --> 00:46:16.060
+<v Speaker 1>as repo for
+
+00:46:16.485 --> 00:46:18.645
+<v Speaker 1>the charts for other other
+
+00:46:20.165 --> 00:46:21.445
+<v Speaker 1>things that we wanted.
+
+00:46:22.245 --> 00:46:24.165
+<v Speaker 1>So they weren't all in separate repos all
+
+00:46:24.165 --> 00:46:26.565
+<v Speaker 1>in one. So that's connected. I've acted that.
+
+00:46:26.565 --> 00:46:29.045
+<v Speaker 1>The MQTT connector, that's got its chart in
+
+00:46:29.045 --> 00:46:30.165
+<v Speaker 1>there. Chrome connector.
+
+00:46:32.130 --> 00:46:33.970
+<v Speaker 0>Yeah. You can see all that kinda popping
+
+00:46:33.970 --> 00:46:36.290
+<v Speaker 0>up. End to end tests and then all
+
+00:46:36.290 --> 00:46:38.050
+<v Speaker 0>the package directory says you've
+
+00:46:38.290 --> 00:46:40.450
+<v Speaker 1>Yeah. Broken stuff down. Nice.
+
+00:46:41.490 --> 00:46:44.690
+<v Speaker 0>Okay. Well, this new. That looks interesting as
+
+00:46:44.690 --> 00:46:45.250
+<v Speaker 1>well.
+
+00:46:45.569 --> 00:46:46.450
+<v Speaker 1>Underneath it.
+
+00:46:48.005 --> 00:46:49.525
+<v Speaker 0>Yeah. So this tracks
+
+00:46:50.085 --> 00:46:52.405
+<v Speaker 0>new fails added to the repository
+
+00:46:52.565 --> 00:46:54.565
+<v Speaker 0>and looks at their extension.
+
+00:46:56.005 --> 00:46:58.405
+<v Speaker 0>So that really good way of seeing migrations
+
+00:46:58.405 --> 00:46:59.285
+<v Speaker 0>from JavaScript
+
+00:46:59.580 --> 00:47:02.300
+<v Speaker 0>to TypeScript or from, you know, CSS to
+
+00:47:02.300 --> 00:47:04.380
+<v Speaker 0>SaaS, but I don't think we're gonna see
+
+00:47:04.380 --> 00:47:05.260
+<v Speaker 0>anything
+
+00:47:05.580 --> 00:47:07.660
+<v Speaker 0>prominent across these repositories.
+
+00:47:07.660 --> 00:47:10.300
+<v Speaker 0>Again, just with it being primarily go.
+
+00:47:11.340 --> 00:47:13.100
+<v Speaker 1>No. And as I say, if we
+
+00:47:13.515 --> 00:47:15.355
+<v Speaker 1>if we drop the vendor cache out of
+
+00:47:15.355 --> 00:47:16.635
+<v Speaker 1>some of the repos, you just see a
+
+00:47:16.635 --> 00:47:17.835
+<v Speaker 1>massive drop.
+
+00:47:20.954 --> 00:47:23.194
+<v Speaker 0>Let's jump back up here. So
+
+00:47:25.530 --> 00:47:28.010
+<v Speaker 0>that's our commit one. So something else we
+
+00:47:28.010 --> 00:47:29.850
+<v Speaker 0>tried to do with get series
+
+00:47:30.250 --> 00:47:33.050
+<v Speaker 0>is try to make easy for newcomers to
+
+00:47:33.050 --> 00:47:35.610
+<v Speaker 0>see what the commit patterns are within a
+
+00:47:35.610 --> 00:47:38.650
+<v Speaker 0>repository by analyzing the size of those commits.
+
+00:47:39.195 --> 00:47:40.795
+<v Speaker 0>So what we have here is the ninetieth
+
+00:47:40.795 --> 00:47:43.835
+<v Speaker 0>quantile, the fiftieth quantile, and the first quantile.
+
+00:47:44.395 --> 00:47:45.915
+<v Speaker 0>So it's very rare that you'd see a
+
+00:47:45.915 --> 00:47:48.875
+<v Speaker 0>commit larger than this or smaller than this.
+
+00:47:49.115 --> 00:47:50.875
+<v Speaker 0>So let's just ignore the one because it's
+
+00:47:50.875 --> 00:47:53.995
+<v Speaker 0>not very interesting. This is also not normalized.
+
+00:47:53.995 --> 00:47:55.970
+<v Speaker 1>Is it? This is including vendor?
+
+00:47:57.890 --> 00:48:00.290
+<v Speaker 0>Yeah. Because this happens on a commit level,
+
+00:48:00.290 --> 00:48:02.290
+<v Speaker 0>we don't actually understand the contents of the
+
+00:48:02.290 --> 00:48:04.690
+<v Speaker 0>commit when we build these queries. So
+
+00:48:07.494 --> 00:48:09.415
+<v Speaker 0>yeah. So I guess that's not gonna be
+
+00:48:09.415 --> 00:48:09.655
+<v Speaker 0>as
+
+00:48:11.734 --> 00:48:13.815
+<v Speaker 0>yeah. Maybe the numbers aren't as great because
+
+00:48:13.815 --> 00:48:15.335
+<v Speaker 0>of those vendor changes.
+
+00:48:15.575 --> 00:48:17.335
+<v Speaker 0>Mhmm. Mhmm. But we can see roughly the
+
+00:48:17.335 --> 00:48:20.214
+<v Speaker 0>effective quantile is you modify two files and
+
+00:48:20.214 --> 00:48:22.690
+<v Speaker 0>add 11 lines of code. Anywhere from there
+
+00:48:22.690 --> 00:48:24.930
+<v Speaker 0>up to a 55 lines of code across
+
+00:48:24.930 --> 00:48:27.090
+<v Speaker 0>12 files. So I think what you're seeing
+
+00:48:27.090 --> 00:48:29.490
+<v Speaker 0>here is small type of faxes
+
+00:48:29.570 --> 00:48:32.530
+<v Speaker 0>up to vendor changes. So quite a a
+
+00:48:32.530 --> 00:48:34.610
+<v Speaker 0>broad spectrum of what normal would be there,
+
+00:48:34.610 --> 00:48:35.410
+<v Speaker 0>I guess. Yeah.
+
+00:48:36.684 --> 00:48:38.285
+<v Speaker 0>Alright. What else do we have to send?
+
+00:48:38.285 --> 00:48:40.444
+<v Speaker 1>We get we we're sort of running running
+
+00:48:40.444 --> 00:48:42.045
+<v Speaker 1>out of time now. I wondered what you
+
+00:48:42.045 --> 00:48:44.125
+<v Speaker 1>referred to graphs that look like.
+
+00:48:45.005 --> 00:48:45.885
+<v Speaker 1>Yes.
+
+00:48:46.285 --> 00:48:48.204
+<v Speaker 1>At some time at some point, you might
+
+00:48:48.204 --> 00:48:50.845
+<v Speaker 1>wanna think about, like, a word map based
+
+00:48:50.845 --> 00:48:52.045
+<v Speaker 1>upon the commit message.
+
+00:48:52.869 --> 00:48:54.710
+<v Speaker 1>If you sort of break it down, I
+
+00:48:54.710 --> 00:48:55.670
+<v Speaker 1>don't know if you could do that in
+
+00:48:55.670 --> 00:48:57.350
+<v Speaker 1>influx or maybe do it separately.
+
+00:48:58.390 --> 00:49:00.710
+<v Speaker 1>Get, like, a like, how many times have
+
+00:49:00.710 --> 00:49:02.630
+<v Speaker 1>you been using the word add, update,
+
+00:49:03.510 --> 00:49:03.830
+<v Speaker 1>bug,
+
+00:49:05.365 --> 00:49:07.045
+<v Speaker 1>and that sort of thing. That would be
+
+00:49:07.045 --> 00:49:07.685
+<v Speaker 1>interesting.
+
+00:49:08.085 --> 00:49:09.685
+<v Speaker 0>Yeah. There are definitely things we can do
+
+00:49:09.685 --> 00:49:11.525
+<v Speaker 0>there. We can't do the word map or
+
+00:49:11.525 --> 00:49:13.605
+<v Speaker 0>the tokenization on influx, but I could do
+
+00:49:13.605 --> 00:49:16.325
+<v Speaker 0>that as a preprocessor and Yeah. Yeah. Those
+
+00:49:16.485 --> 00:49:18.645
+<v Speaker 1>aggregate looking at earlier. I mean, you wouldn't
+
+00:49:18.540 --> 00:49:19.740
+<v Speaker 1>necessarily be able to put it in as
+
+00:49:19.740 --> 00:49:22.620
+<v Speaker 1>a as an array, but it could be
+
+00:49:22.620 --> 00:49:23.660
+<v Speaker 1>another table
+
+00:49:24.140 --> 00:49:25.660
+<v Speaker 1>that you put in
+
+00:49:27.500 --> 00:49:29.500
+<v Speaker 1>that's sort of a bit more denormalized.
+
+00:49:29.500 --> 00:49:31.260
+<v Speaker 1>Doesn't necessarily correlate back.
+
+00:49:32.495 --> 00:49:34.495
+<v Speaker 1>Yeah. Well, you actually have the ability on
+
+00:49:34.495 --> 00:49:36.975
+<v Speaker 0>this table to filter by commits
+
+00:49:37.295 --> 00:49:39.215
+<v Speaker 0>Yeah. Such for Kubernetes. These
+
+00:49:39.615 --> 00:49:41.375
+<v Speaker 0>are the commits that mentioned Kubernetes
+
+00:49:41.375 --> 00:49:43.295
+<v Speaker 0>as a raw string.
+
+00:49:43.535 --> 00:49:45.215
+<v Speaker 0>The other thing is we have here before
+
+00:49:45.215 --> 00:49:46.975
+<v Speaker 0>we move on are just the ability to
+
+00:49:46.975 --> 00:49:47.615
+<v Speaker 0>break down
+
+00:49:49.210 --> 00:49:51.450
+<v Speaker 0>by directory, which is more of a
+
+00:49:51.690 --> 00:49:54.250
+<v Speaker 0>a backup plan. If you had conventional
+
+00:49:54.250 --> 00:49:56.410
+<v Speaker 0>or semantic commits, there's also the ability to
+
+00:49:56.410 --> 00:49:58.490
+<v Speaker 0>break down by whether there's a feature, a
+
+00:49:58.490 --> 00:50:00.730
+<v Speaker 0>bug fix, etcetera, which is what this graph
+
+00:50:00.730 --> 00:50:01.050
+<v Speaker 0>shows.
+
+00:50:02.365 --> 00:50:03.005
+<v Speaker 0>So
+
+00:50:03.565 --> 00:50:06.125
+<v Speaker 0>the commits aren't in that format, so we
+
+00:50:06.125 --> 00:50:08.045
+<v Speaker 0>can't get too much.
+
+00:50:08.685 --> 00:50:09.805
+<v Speaker 0>Alright. Let's
+
+00:50:10.125 --> 00:50:12.365
+<v Speaker 0>jump through the last two and then
+
+00:50:12.525 --> 00:50:14.220
+<v Speaker 0>we can let you get back up. Again.
+
+00:50:14.220 --> 00:50:15.660
+<v Speaker 1>You could actually find
+
+00:50:16.060 --> 00:50:17.820
+<v Speaker 1>what's the perfect spot looking for the word
+
+00:50:17.820 --> 00:50:18.620
+<v Speaker 1>closes.
+
+00:50:19.660 --> 00:50:21.260
+<v Speaker 1>We normally use that keyword.
+
+00:50:21.420 --> 00:50:23.020
+<v Speaker 0>That's a good point. Yeah. We could do
+
+00:50:23.020 --> 00:50:23.500
+<v Speaker 0>that.
+
+00:50:25.340 --> 00:50:27.900
+<v Speaker 0>So this is the year on year analysis.
+
+00:50:27.900 --> 00:50:29.375
+<v Speaker 0>So for this to work, I need to
+
+00:50:29.375 --> 00:50:31.214
+<v Speaker 0>do twenty nineteen o one zero one and
+
+00:50:31.214 --> 00:50:33.135
+<v Speaker 0>twenty twenty o one.
+
+00:50:36.895 --> 00:50:38.895
+<v Speaker 0>And we can see this
+
+00:50:39.535 --> 00:50:41.135
+<v Speaker 0>these are the
+
+00:50:42.670 --> 00:50:44.910
+<v Speaker 0>commit counts across year after year
+
+00:50:45.390 --> 00:50:46.430
+<v Speaker 0>by month.
+
+00:50:47.310 --> 00:50:49.950
+<v Speaker 0>As I said, this dashboard's not that interesting
+
+00:50:49.950 --> 00:50:53.310
+<v Speaker 0>yet. The author breakdown is slightly more interesting.
+
+00:50:53.310 --> 00:50:56.615
+<v Speaker 0>So we can see Three different Alex's versions
+
+00:50:56.935 --> 00:50:58.535
+<v Speaker 1>of me in there somehow.
+
+00:50:58.855 --> 00:51:02.215
+<v Speaker 0>Yeah. So your biggest commit year was 2017.
+
+00:51:02.855 --> 00:51:05.255
+<v Speaker 0>And this purple line here, at least towards
+
+00:51:05.255 --> 00:51:07.575
+<v Speaker 0>the end was really, really strong. Medal of
+
+00:51:07.575 --> 00:51:07.975
+<v Speaker 0>the year,
+
+00:51:08.559 --> 00:51:10.160
+<v Speaker 0>you got 2019
+
+00:51:10.160 --> 00:51:11.920
+<v Speaker 0>was a really strong year, but the end
+
+00:51:11.920 --> 00:51:13.680
+<v Speaker 0>of 2019 being a bit calmer. The other
+
+00:51:13.680 --> 00:51:14.559
+<v Speaker 1>thing is we've got a bit
+
+00:51:15.200 --> 00:51:16.400
+<v Speaker 1>we've got another organization
+
+00:51:16.400 --> 00:51:18.319
+<v Speaker 1>that has commits in it as well that
+
+00:51:18.319 --> 00:51:19.440
+<v Speaker 1>isn't represented here.
+
+00:51:20.525 --> 00:51:21.725
+<v Speaker 1>OpenFaaS
+
+00:51:21.725 --> 00:51:22.605
+<v Speaker 1>incubator.
+
+00:51:22.605 --> 00:51:24.125
+<v Speaker 1>I see Lucas has got quite a few
+
+00:51:24.125 --> 00:51:26.285
+<v Speaker 1>commits now. I'd expect to see that too.
+
+00:51:27.085 --> 00:51:29.485
+<v Speaker 0>Yeah. His twenty twenty years started up really
+
+00:51:29.485 --> 00:51:31.885
+<v Speaker 0>strong. I'm sure he's probably got a a
+
+00:51:31.885 --> 00:51:35.085
+<v Speaker 0>strong finish on 2019 somewhere. If we could
+
+00:51:35.619 --> 00:51:37.460
+<v Speaker 0>maybe just do that and find that.
+
+00:51:38.180 --> 00:51:39.940
+<v Speaker 0>I am cautious of time.
+
+00:51:41.220 --> 00:51:43.060
+<v Speaker 0>And these work on a semantic commits. I
+
+00:51:43.060 --> 00:51:44.660
+<v Speaker 0>could modify these to work on a directory
+
+00:51:44.660 --> 00:51:46.820
+<v Speaker 0>for projects that don't have semantic commits.
+
+00:51:47.300 --> 00:51:49.140
+<v Speaker 0>Mhmm. Let's move on to the wall of
+
+00:51:49.140 --> 00:51:49.540
+<v Speaker 0>shame.
+
+00:51:51.795 --> 00:51:53.555
+<v Speaker 0>Now this one is a little bit
+
+00:51:53.875 --> 00:51:56.515
+<v Speaker 0>memory and CPU intensive. So I'm gonna try
+
+00:51:56.515 --> 00:51:58.115
+<v Speaker 0>and run it across everything.
+
+00:51:58.995 --> 00:52:00.675
+<v Speaker 0>And if it takes too long, we'll drop
+
+00:52:00.675 --> 00:52:01.955
+<v Speaker 0>it down to maybe two years.
+
+00:52:04.400 --> 00:52:06.480
+<v Speaker 0>You can see that timer is going up.
+
+00:52:06.480 --> 00:52:09.040
+<v Speaker 0>So this first does a leaderboard for the
+
+00:52:09.040 --> 00:52:11.040
+<v Speaker 0>most commits within a given window. So the
+
+00:52:11.040 --> 00:52:13.680
+<v Speaker 0>most commits in any given month, and no
+
+00:52:13.680 --> 00:52:15.920
+<v Speaker 0>surprise, you're top in the charts.
+
+00:52:17.815 --> 00:52:20.215
+<v Speaker 0>And so your your month with the most
+
+00:52:20.215 --> 00:52:21.415
+<v Speaker 0>commits ever
+
+00:52:21.495 --> 00:52:22.135
+<v Speaker 0>was
+
+00:52:22.375 --> 00:52:25.095
+<v Speaker 0>October 2017 with a 82
+
+00:52:25.095 --> 00:52:25.495
+<v Speaker 0>commits.
+
+00:52:31.170 --> 00:52:34.450
+<v Speaker 0>Yeah. 2017 is obviously a really busy year
+
+00:52:34.450 --> 00:52:35.970
+<v Speaker 0>for you working on at
+
+00:52:36.210 --> 00:52:38.530
+<v Speaker 0>least, like, you joined VMware in 2018.
+
+00:52:39.090 --> 00:52:39.410
+<v Speaker 0>Yeah.
+
+00:52:42.305 --> 00:52:43.905
+<v Speaker 0>Yeah. There we go again.
+
+00:52:45.345 --> 00:52:47.265
+<v Speaker 0>Maybe I did ask too much of this
+
+00:52:47.265 --> 00:52:47.905
+<v Speaker 0>machine.
+
+00:52:48.464 --> 00:52:50.305
+<v Speaker 1>I got a 19 and then 18 and
+
+00:52:50.305 --> 00:52:52.545
+<v Speaker 1>a 19 somehow mixed up there.
+
+00:52:54.384 --> 00:52:57.410
+<v Speaker 0>We're sorry? Ordering to something right. Alright. So
+
+00:52:57.410 --> 00:52:59.010
+<v Speaker 0>this is ordered by a number of commits
+
+00:52:59.010 --> 00:53:00.450
+<v Speaker 0>and then the month from which those commits
+
+00:53:00.450 --> 00:53:01.970
+<v Speaker 0>will occur. So Okay.
+
+00:53:03.330 --> 00:53:05.970
+<v Speaker 0>Now down here, what we have are
+
+00:53:06.450 --> 00:53:08.130
+<v Speaker 0>not so great for open source, but for
+
+00:53:08.130 --> 00:53:10.530
+<v Speaker 0>private repositories, quite useful. It will show you,
+
+00:53:10.805 --> 00:53:13.525
+<v Speaker 0>if you join this organization, how many days
+
+00:53:13.525 --> 00:53:16.405
+<v Speaker 0>will you commit code to master, so measurable
+
+00:53:16.405 --> 00:53:18.245
+<v Speaker 0>code on a monthly basis.
+
+00:53:18.565 --> 00:53:21.205
+<v Speaker 0>For open source projects, even analyzing influx DB
+
+00:53:21.205 --> 00:53:23.445
+<v Speaker 0>itself, these numbers are extremely skewed.
+
+00:53:24.540 --> 00:53:26.780
+<v Speaker 0>So, yeah, not that useful for open source,
+
+00:53:26.780 --> 00:53:27.900
+<v Speaker 0>but you can see that
+
+00:53:29.100 --> 00:53:31.180
+<v Speaker 0>in fact, let's just start by day.
+
+00:53:32.940 --> 00:53:33.580
+<v Speaker 0>Oh,
+
+00:53:34.220 --> 00:53:35.660
+<v Speaker 0>early on and then
+
+00:53:36.375 --> 00:53:39.095
+<v Speaker 0>yeah, so the peak number of commits per
+
+00:53:39.095 --> 00:53:39.735
+<v Speaker 0>day
+
+00:53:40.535 --> 00:53:42.135
+<v Speaker 0>was are in 2018.
+
+00:53:43.175 --> 00:53:45.015
+<v Speaker 0>And I guess these numbers are dropping because
+
+00:53:45.015 --> 00:53:47.175
+<v Speaker 0>of, you know, COVID maybe gone over the
+
+00:53:47.175 --> 00:53:48.215
+<v Speaker 0>last few months. I don't know if you
+
+00:53:48.215 --> 00:53:50.215
+<v Speaker 0>noticed a drop in contributions over the last
+
+00:53:50.820 --> 00:53:52.660
+<v Speaker 1>There's not a lot of people that contribute
+
+00:53:52.660 --> 00:53:55.220
+<v Speaker 1>in on a regular basis. The fees for
+
+00:53:55.220 --> 00:53:57.300
+<v Speaker 1>sporadic or they they're taking a bit longer.
+
+00:53:57.300 --> 00:53:58.260
+<v Speaker 1>We've also got
+
+00:53:58.740 --> 00:53:59.940
+<v Speaker 1>the n x project,
+
+00:54:00.180 --> 00:54:02.500
+<v Speaker 1>catch up in arcade, where some people are
+
+00:54:02.500 --> 00:54:04.580
+<v Speaker 1>making commits there instead. And as I said,
+
+00:54:04.580 --> 00:54:07.035
+<v Speaker 1>there's another reap there's another org called OpenFaaS
+
+00:54:07.035 --> 00:54:07.995
+<v Speaker 1>incubator,
+
+00:54:08.555 --> 00:54:10.474
+<v Speaker 1>and some commits end up going there instead
+
+00:54:10.474 --> 00:54:11.435
+<v Speaker 1>of into
+
+00:54:11.515 --> 00:54:12.635
+<v Speaker 1>OpenFaaS.
+
+00:54:13.194 --> 00:54:16.075
+<v Speaker 1>Ah, okay. Cool. But, yeah, COVID isn't great
+
+00:54:16.075 --> 00:54:17.755
+<v Speaker 1>for sponsorship
+
+00:54:17.755 --> 00:54:18.155
+<v Speaker 1>or
+
+00:54:19.109 --> 00:54:21.910
+<v Speaker 1>consulting work or get up commence. It's
+
+00:54:22.630 --> 00:54:24.630
+<v Speaker 1>yeah. All for your health for that matter.
+
+00:54:26.390 --> 00:54:28.390
+<v Speaker 0>And we'll finish up with the
+
+00:54:28.630 --> 00:54:31.430
+<v Speaker 0>last graph, which again for open source is
+
+00:54:31.430 --> 00:54:32.070
+<v Speaker 0>really
+
+00:54:33.234 --> 00:54:34.755
+<v Speaker 0>doesn't provide a lot of value. But for
+
+00:54:34.755 --> 00:54:37.795
+<v Speaker 0>private organizations, being able to understand and classify
+
+00:54:37.795 --> 00:54:40.115
+<v Speaker 0>what a week of work looks like, and
+
+00:54:40.115 --> 00:54:42.195
+<v Speaker 0>then how long someone has been with the
+
+00:54:42.195 --> 00:54:43.235
+<v Speaker 0>time off.
+
+00:54:43.795 --> 00:54:46.195
+<v Speaker 0>So currently, the query will look for more
+
+00:54:46.195 --> 00:54:46.835
+<v Speaker 0>than
+
+00:54:47.155 --> 00:54:49.960
+<v Speaker 0>four days of commits and any given seven
+
+00:54:49.960 --> 00:54:51.080
+<v Speaker 0>day period,
+
+00:54:51.080 --> 00:54:52.840
+<v Speaker 0>and that counts as a working week. And
+
+00:54:52.840 --> 00:54:53.800
+<v Speaker 0>it would seem,
+
+00:54:54.200 --> 00:54:55.480
+<v Speaker 0>based on the numbers we've seen above in
+
+00:54:55.480 --> 00:54:57.400
+<v Speaker 0>the leaderboard, you know, towards the end of
+
+00:54:57.400 --> 00:54:59.240
+<v Speaker 0>twenty seventeen, you worked on us eighteen weeks
+
+00:54:59.240 --> 00:54:59.880
+<v Speaker 0>straight.
+
+00:55:00.120 --> 00:55:01.560
+<v Speaker 1>Mhmm. A of commits.
+
+00:55:02.465 --> 00:55:04.225
+<v Speaker 0>At the end of twenty nineteen, you went
+
+00:55:04.225 --> 00:55:05.265
+<v Speaker 0>for twelve
+
+00:55:05.665 --> 00:55:06.865
+<v Speaker 0>weeks without
+
+00:55:07.025 --> 00:55:09.265
+<v Speaker 0>with committing something every day. Now, of course,
+
+00:55:09.265 --> 00:55:10.945
+<v Speaker 0>you're merging a lot of these branches and
+
+00:55:10.945 --> 00:55:12.305
+<v Speaker 0>this does work on
+
+00:55:13.745 --> 00:55:15.425
+<v Speaker 0>or maybe this is alter name. I'm not
+
+00:55:15.425 --> 00:55:15.665
+<v Speaker 0>sure.
+
+00:55:16.240 --> 00:55:17.760
+<v Speaker 0>I would actually yeah. It looks like it
+
+00:55:17.760 --> 00:55:20.160
+<v Speaker 0>is. So was there anything large that happened
+
+00:55:20.160 --> 00:55:21.760
+<v Speaker 0>at the end of twenty nineteen that you
+
+00:55:21.760 --> 00:55:22.480
+<v Speaker 0>were just
+
+00:55:22.960 --> 00:55:24.560
+<v Speaker 0>putting in a lot of work there?
+
+00:55:26.560 --> 00:55:27.920
+<v Speaker 1>Yeah. I think so.
+
+00:55:28.480 --> 00:55:30.240
+<v Speaker 1>I think towards the end of twenty nineteen,
+
+00:55:33.625 --> 00:55:34.905
+<v Speaker 1>I was basically
+
+00:55:35.145 --> 00:55:36.025
+<v Speaker 1>independent
+
+00:55:36.025 --> 00:55:36.745
+<v Speaker 1>then
+
+00:55:37.464 --> 00:55:40.185
+<v Speaker 1>and trying to hold up going from a
+
+00:55:40.185 --> 00:55:42.345
+<v Speaker 1>team of four full time people to
+
+00:55:42.825 --> 00:55:43.465
+<v Speaker 1>me.
+
+00:55:43.785 --> 00:55:45.865
+<v Speaker 1>I was trying to sort of
+
+00:55:46.560 --> 00:55:48.640
+<v Speaker 1>take the load on, I think.
+
+00:55:49.760 --> 00:55:50.320
+<v Speaker 1>So
+
+00:55:50.560 --> 00:55:51.920
+<v Speaker 1>if you look at if you look at
+
+00:55:51.920 --> 00:55:52.960
+<v Speaker 1>my GitHub
+
+00:55:53.680 --> 00:55:55.040
+<v Speaker 1>bathroom tiles,
+
+00:55:55.920 --> 00:55:56.880
+<v Speaker 1>you'll see
+
+00:55:57.520 --> 00:55:59.440
+<v Speaker 1>a similar effect. And I think
+
+00:56:00.405 --> 00:56:02.485
+<v Speaker 1>this year, there's some days because I've done
+
+00:56:02.485 --> 00:56:04.005
+<v Speaker 1>more client work now.
+
+00:56:04.325 --> 00:56:06.405
+<v Speaker 1>You'll see some gaps in the tiles.
+
+00:56:06.565 --> 00:56:08.245
+<v Speaker 1>If you look at the year before, you
+
+00:56:08.245 --> 00:56:10.325
+<v Speaker 1>probably see that it's quite dense.
+
+00:56:10.885 --> 00:56:12.405
+<v Speaker 1>See, from about February,
+
+00:56:14.110 --> 00:56:16.110
+<v Speaker 1>we start to see some gaps. But I
+
+00:56:16.110 --> 00:56:17.790
+<v Speaker 1>think, basically, twenty
+
+00:56:18.270 --> 00:56:20.750
+<v Speaker 1>twenty twenty nineteen, if you can click on
+
+00:56:20.750 --> 00:56:22.590
+<v Speaker 1>it, I think it will update.
+
+00:56:24.590 --> 00:56:26.475
+<v Speaker 1>Let's see if it does or not. What
+
+00:56:26.475 --> 00:56:28.715
+<v Speaker 0>will update? Sorry? 2019.
+
+00:56:30.315 --> 00:56:31.515
+<v Speaker 1>Does that update you?
+
+00:56:31.915 --> 00:56:33.755
+<v Speaker 0>I don't think so. Yes. It does. You
+
+00:56:33.755 --> 00:56:34.795
+<v Speaker 1>see, basically,
+
+00:56:34.955 --> 00:56:36.395
+<v Speaker 1>other than a little bit of time in
+
+00:56:36.395 --> 00:56:37.035
+<v Speaker 1>March,
+
+00:56:37.435 --> 00:56:40.875
+<v Speaker 1>pretty much working solid every day on on
+
+00:56:40.875 --> 00:56:41.595
+<v Speaker 1>open source.
+
+00:56:42.130 --> 00:56:42.690
+<v Speaker 1>So
+
+00:56:43.250 --> 00:56:44.290
+<v Speaker 1>2020,
+
+00:56:44.290 --> 00:56:46.050
+<v Speaker 1>a bit more client work. I was explaining
+
+00:56:46.050 --> 00:56:48.130
+<v Speaker 1>this in a in a Twitter thread. So
+
+00:56:48.130 --> 00:56:49.650
+<v Speaker 1>I saw one one of these guys has
+
+00:56:49.650 --> 00:56:51.730
+<v Speaker 1>got himself up to $10 a month in
+
+00:56:51.810 --> 00:56:52.770
+<v Speaker 1>sponsorships.
+
+00:56:54.145 --> 00:56:55.345
+<v Speaker 1>I think it's a bit of a luxury,
+
+00:56:55.345 --> 00:56:56.545
+<v Speaker 1>really. I mean, if you can get to
+
+00:56:56.545 --> 00:56:57.905
+<v Speaker 1>that point, it's
+
+00:56:58.305 --> 00:57:00.625
+<v Speaker 1>similar to a low paid job in IT,
+
+00:57:00.625 --> 00:57:02.545
+<v Speaker 1>like an intern or junior salary
+
+00:57:02.945 --> 00:57:03.985
+<v Speaker 1>in dollars.
+
+00:57:04.465 --> 00:57:06.065
+<v Speaker 1>It was certainly enough to kinda keep things
+
+00:57:06.065 --> 00:57:08.870
+<v Speaker 1>afloat and concentrate on the project. For me,
+
+00:57:09.670 --> 00:57:11.190
+<v Speaker 1>you know, you can see those gaps in
+
+00:57:11.190 --> 00:57:13.670
+<v Speaker 1>having sort sort of done the consulting work
+
+00:57:13.670 --> 00:57:15.750
+<v Speaker 1>to pay the bills, and I'm developing a
+
+00:57:15.750 --> 00:57:17.030
+<v Speaker 1>business there because,
+
+00:57:17.750 --> 00:57:19.110
+<v Speaker 1>you know, in the long in the long
+
+00:57:19.110 --> 00:57:19.830
+<v Speaker 1>run without
+
+00:57:20.225 --> 00:57:21.985
+<v Speaker 1>sufficient contributors,
+
+00:57:22.305 --> 00:57:25.025
+<v Speaker 1>without full time staff, it is very difficult
+
+00:57:25.185 --> 00:57:27.905
+<v Speaker 1>to keep open source project going. I mean,
+
+00:57:28.225 --> 00:57:29.345
+<v Speaker 1>if you don't have a job, you don't
+
+00:57:29.345 --> 00:57:31.505
+<v Speaker 1>have anybody paying you to do that. It's
+
+00:57:31.745 --> 00:57:33.665
+<v Speaker 1>the option there aren't many options for you.
+
+00:57:33.665 --> 00:57:35.025
+<v Speaker 1>And it's just how much can you afford
+
+00:57:35.025 --> 00:57:35.425
+<v Speaker 1>to give.
+
+00:57:37.480 --> 00:57:38.200
+<v Speaker 0>Yeah.
+
+00:57:39.000 --> 00:57:40.040
+<v Speaker 0>Alright. Well,
+
+00:57:40.440 --> 00:57:42.600
+<v Speaker 0>that was really interesting from my point of
+
+00:57:42.600 --> 00:57:45.000
+<v Speaker 0>view. I hope this the stats gonna give
+
+00:57:45.000 --> 00:57:46.120
+<v Speaker 0>you a little bit of insight into your
+
+00:57:46.120 --> 00:57:47.720
+<v Speaker 0>own project that maybe you didn't have before.
+
+00:57:48.535 --> 00:57:50.535
+<v Speaker 0>And and, you know, it was really good
+
+00:57:50.535 --> 00:57:51.975
+<v Speaker 0>of you to join me today. So thank
+
+00:57:51.975 --> 00:57:54.055
+<v Speaker 0>you, Alex. Yeah. I've sent a few screenshots
+
+00:57:54.055 --> 00:57:55.415
+<v Speaker 1>out. We have to take a look at
+
+00:57:55.415 --> 00:57:57.415
+<v Speaker 1>some of the more interesting graphs.
+
+00:57:57.975 --> 00:57:59.815
+<v Speaker 1>Looking forward to see how this project develops.
+
+00:57:59.815 --> 00:58:00.775
+<v Speaker 1>And, actually, I wonder
+
+00:58:02.230 --> 00:58:04.150
+<v Speaker 1>if at some point you you might sort
+
+00:58:04.150 --> 00:58:06.470
+<v Speaker 1>of host the data that you've ingested somewhere
+
+00:58:07.030 --> 00:58:08.790
+<v Speaker 1>in a read only mode. You can have
+
+00:58:08.790 --> 00:58:09.910
+<v Speaker 1>a look at it or
+
+00:58:10.150 --> 00:58:12.150
+<v Speaker 1>maybe do an export. Maybe you could write
+
+00:58:12.150 --> 00:58:14.390
+<v Speaker 1>an OpenFaaS function to export something from the
+
+00:58:14.390 --> 00:58:17.755
+<v Speaker 1>Prometheus data and run a scratch. Nice.
+
+00:58:18.635 --> 00:58:20.875
+<v Speaker 0>Yeah. Our our kind of cloud team are
+
+00:58:20.875 --> 00:58:24.075
+<v Speaker 0>are working on public buckets that people can
+
+00:58:24.075 --> 00:58:25.915
+<v Speaker 0>consume and build their own dashboards on data.
+
+00:58:25.915 --> 00:58:27.675
+<v Speaker 0>And we're actually working on the ability to
+
+00:58:27.675 --> 00:58:30.395
+<v Speaker 0>embed those graphs and sales into other
+
+00:58:30.880 --> 00:58:31.680
+<v Speaker 0>websites
+
+00:58:31.680 --> 00:58:33.440
+<v Speaker 0>and projects as well. So, I mean, hopefully,
+
+00:58:33.440 --> 00:58:35.440
+<v Speaker 0>over time, as the project kind of evolves,
+
+00:58:35.440 --> 00:58:36.960
+<v Speaker 0>we can get more of that data available
+
+00:58:36.960 --> 00:58:39.040
+<v Speaker 0>to people to play with without doing the
+
+00:58:39.040 --> 00:58:40.960
+<v Speaker 0>the hard bit of importing approach. I guess,
+
+00:58:40.960 --> 00:58:42.640
+<v Speaker 1>finally, the question I'd have for you is,
+
+00:58:42.640 --> 00:58:44.995
+<v Speaker 1>is it practical that somebody could go to
+
+00:58:44.995 --> 00:58:47.155
+<v Speaker 1>the the repo that you have here and
+
+00:58:47.155 --> 00:58:48.835
+<v Speaker 1>get to what we saw today? Or do
+
+00:58:48.835 --> 00:58:50.275
+<v Speaker 1>they need is this things I need to
+
+00:58:50.275 --> 00:58:51.635
+<v Speaker 1>know? I noticed there wasn't a read me
+
+00:58:51.635 --> 00:58:52.915
+<v Speaker 1>file, for instance. So what
+
+00:58:53.475 --> 00:58:54.835
+<v Speaker 1>are you planning to add one?
+
+00:58:55.155 --> 00:58:56.995
+<v Speaker 0>Yeah. Of course. So the read me,
+
+00:58:57.880 --> 00:58:59.880
+<v Speaker 0>as this was conference driven development, I just
+
+00:58:59.880 --> 00:59:01.080
+<v Speaker 0>had to make it work so I could
+
+00:59:01.080 --> 00:59:02.920
+<v Speaker 0>record my talk. Yeah. You know, there's a
+
+00:59:02.920 --> 00:59:04.200
+<v Speaker 0>lot of things that are missing. There's no
+
+00:59:04.200 --> 00:59:05.560
+<v Speaker 0>test, which I'd love to add to the
+
+00:59:05.560 --> 00:59:07.160
+<v Speaker 0>project. There was no documentation.
+
+00:59:07.240 --> 00:59:08.760
+<v Speaker 0>But in order to get to where I
+
+00:59:08.760 --> 00:59:11.560
+<v Speaker 0>should in order to have to grasp that
+
+00:59:11.560 --> 00:59:13.215
+<v Speaker 0>I should be, all you need to do
+
+00:59:13.215 --> 00:59:15.455
+<v Speaker 0>is run get series analysis, run the telegraph
+
+00:59:15.455 --> 00:59:17.775
+<v Speaker 0>config, and everything works. Apply that package or
+
+00:59:17.775 --> 00:59:20.015
+<v Speaker 0>dot YAML. But it takes, five minutes to
+
+00:59:20.015 --> 00:59:20.975
+<v Speaker 0>get up and running.
+
+00:59:21.375 --> 00:59:23.135
+<v Speaker 0>Well, you've got instructions for that,
+
+00:59:24.670 --> 00:59:26.670
+<v Speaker 1>do you publish them or retweet it if
+
+00:59:26.670 --> 00:59:28.590
+<v Speaker 1>anyone's listening or watching this later on and
+
+00:59:28.590 --> 00:59:29.790
+<v Speaker 1>wants to try it with their project. I'm
+
+00:59:29.790 --> 00:59:30.990
+<v Speaker 1>sure there's loads of people that would love
+
+00:59:30.990 --> 00:59:32.670
+<v Speaker 1>to sort of dig through their repos.
+
+00:59:32.910 --> 00:59:34.670
+<v Speaker 0>Yeah. Well, I promise to you and anyone
+
+00:59:34.670 --> 00:59:36.430
+<v Speaker 0>watching that I will have a read me
+
+00:59:36.430 --> 00:59:37.630
+<v Speaker 0>added to the project today.
+
+00:59:38.378 --> 00:59:39.178
+<v Speaker 0>Today.
+
+00:59:39.178 --> 00:59:40.938
+<v Speaker 0>I will do it today. Very cool. For
+
+00:59:40.938 --> 00:59:41.978
+<v Speaker 0>sure. Excellent.
+
+00:59:42.138 --> 00:59:43.978
+<v Speaker 0>Alright. Alright. Well, thank you for joining me
+
+00:59:43.978 --> 00:59:44.778
+<v Speaker 0>again, Alex. I was

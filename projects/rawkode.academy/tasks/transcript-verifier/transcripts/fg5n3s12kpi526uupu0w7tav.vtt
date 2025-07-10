@@ -1,0 +1,938 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 81fec9e3-5bc9-4c5a-94e9-9fcf8a1c3b9b
+Created: 2025-04-29T16:45:12.401Z
+Duration: 718.22296
+Channels: 1
+
+00:00:06.560 --> 00:00:07.360
+<v Speaker 0>Okay.
+
+00:00:08.160 --> 00:00:10.240
+<v Speaker 0>Welcome to part four of the complete guide
+
+00:00:10.240 --> 00:00:11.280
+<v Speaker 0>to InfluxDB two.
+
+00:00:12.445 --> 00:00:14.845
+<v Speaker 0>In this tutorial, we're gonna be taking a
+
+00:00:14.845 --> 00:00:17.724
+<v Speaker 0>look at collecting metrics with Telegraph.
+
+00:00:18.125 --> 00:00:21.805
+<v Speaker 0>Telegraph is one of my most favoritest tools
+
+00:00:21.805 --> 00:00:22.525
+<v Speaker 0>ever
+
+00:00:22.845 --> 00:00:25.885
+<v Speaker 0>because it has just such
+
+00:00:25.885 --> 00:00:26.845
+<v Speaker 0>extensive
+
+00:00:26.845 --> 00:00:27.404
+<v Speaker 0>support
+
+00:00:28.260 --> 00:00:29.780
+<v Speaker 0>for collecting metrics
+
+00:00:30.260 --> 00:00:32.420
+<v Speaker 0>from anywhere, and I mean almost
+
+00:00:32.420 --> 00:00:33.220
+<v Speaker 0>anywhere.
+
+00:00:33.860 --> 00:00:36.180
+<v Speaker 0>I've given many talks on Telegraph over the
+
+00:00:36.180 --> 00:00:40.100
+<v Speaker 0>years, specifically around cloud native architectures and patterns
+
+00:00:40.100 --> 00:00:42.180
+<v Speaker 0>for scaling your metric collection pipeline.
+
+00:00:43.565 --> 00:00:45.965
+<v Speaker 0>I will be giving that lecture on this
+
+00:00:45.965 --> 00:00:48.525
+<v Speaker 0>course again with some new details
+
+00:00:48.685 --> 00:00:49.645
+<v Speaker 0>and tips,
+
+00:00:49.885 --> 00:00:52.605
+<v Speaker 0>so stay tuned for that. Today, we want
+
+00:00:52.605 --> 00:00:55.565
+<v Speaker 0>to understand how to start collecting metrics with
+
+00:00:55.565 --> 00:00:56.205
+<v Speaker 0>Telegraph.
+
+00:00:58.150 --> 00:01:00.230
+<v Speaker 0>Here is our InfluxDB that we have set
+
+00:01:00.230 --> 00:01:01.110
+<v Speaker 0>up previously,
+
+00:01:01.670 --> 00:01:04.230
+<v Speaker 0>and we are not collecting any metrics.
+
+00:01:04.550 --> 00:01:06.390
+<v Speaker 0>We have the buckets that we created on
+
+00:01:06.390 --> 00:01:07.430
+<v Speaker 0>the last tutorial,
+
+00:01:08.230 --> 00:01:09.110
+<v Speaker 0>but that's it.
+
+00:01:10.485 --> 00:01:13.125
+<v Speaker 0>Now we can jump over to our Telegraph
+
+00:01:13.125 --> 00:01:14.805
+<v Speaker 0>configuration here and we'll just delete the one
+
+00:01:14.805 --> 00:01:17.045
+<v Speaker 0>that we created when we were experimenting.
+
+00:01:17.204 --> 00:01:18.965
+<v Speaker 0>We'll do that again. We're going to create
+
+00:01:18.965 --> 00:01:20.725
+<v Speaker 0>a system one, we're going to store it
+
+00:01:20.725 --> 00:01:22.804
+<v Speaker 0>for one hour and we're going to click
+
+00:01:22.804 --> 00:01:23.204
+<v Speaker 0>continue.
+
+00:01:24.350 --> 00:01:26.110
+<v Speaker 0>We will name this system
+
+00:01:26.110 --> 00:01:26.990
+<v Speaker 0>monitoring,
+
+00:01:27.710 --> 00:01:29.070
+<v Speaker 0>some good
+
+00:01:29.150 --> 00:01:29.950
+<v Speaker 0>description,
+
+00:01:30.830 --> 00:01:32.350
+<v Speaker 0>and we will click create.
+
+00:01:32.990 --> 00:01:34.990
+<v Speaker 0>Now, what we're to do this time is
+
+00:01:34.990 --> 00:01:36.750
+<v Speaker 0>copy this to the clipboard
+
+00:01:36.910 --> 00:01:37.870
+<v Speaker 0>and export it,
+
+00:01:38.565 --> 00:01:39.925
+<v Speaker 0>and copy this
+
+00:01:40.085 --> 00:01:41.205
+<v Speaker 0>and run it.
+
+00:01:41.845 --> 00:01:44.645
+<v Speaker 0>So what we're doing here is exporting our
+
+00:01:44.645 --> 00:01:46.565
+<v Speaker 0>Influx token, which I now see that is
+
+00:01:46.565 --> 00:01:49.605
+<v Speaker 0>slightly covered by the header, but that's okay.
+
+00:01:50.325 --> 00:01:53.490
+<v Speaker 0>We're using something in Telegraph that's relatively new,
+
+00:01:53.570 --> 00:01:55.730
+<v Speaker 0>which is the remote configuration
+
+00:01:55.730 --> 00:01:57.890
+<v Speaker 0>and that you can actually store your Telegraph
+
+00:01:57.890 --> 00:02:00.050
+<v Speaker 0>TOML files as GitHub guests
+
+00:02:00.450 --> 00:02:04.770
+<v Speaker 0>on static site hosts like S3, GCS, Netlify,
+
+00:02:04.770 --> 00:02:05.410
+<v Speaker 0>any of these things,
+
+00:02:06.325 --> 00:02:09.205
+<v Speaker 0>and just tell Telegraph to consume them, provided
+
+00:02:09.205 --> 00:02:11.044
+<v Speaker 0>they're in a public endpoint or something that
+
+00:02:11.044 --> 00:02:12.325
+<v Speaker 0>you have secured locally.
+
+00:02:12.645 --> 00:02:15.205
+<v Speaker 0>There's also options for providing authentication for these
+
+00:02:15.205 --> 00:02:16.965
+<v Speaker 0>endpoints, but we won't be covering that today.
+
+00:02:19.240 --> 00:02:20.840
+<v Speaker 0>So we can hit return
+
+00:02:21.880 --> 00:02:24.040
+<v Speaker 0>and our Telegraph has started.
+
+00:02:24.680 --> 00:02:26.040
+<v Speaker 0>And what we should see,
+
+00:02:26.840 --> 00:02:29.160
+<v Speaker 0>hopefully, in around ten seconds time,
+
+00:02:29.640 --> 00:02:32.600
+<v Speaker 0>that it begins to write metrics to our
+
+00:02:32.600 --> 00:02:33.480
+<v Speaker 0>InfluxDB
+
+00:02:33.480 --> 00:02:33.960
+<v Speaker 0>instance.
+
+00:02:35.115 --> 00:02:37.515
+<v Speaker 0>Now some useful output from Telegraph when you
+
+00:02:37.515 --> 00:02:40.075
+<v Speaker 0>get started is the loaded inputs.
+
+00:02:40.795 --> 00:02:42.795
+<v Speaker 0>Really, you want to ensure that the plugins
+
+00:02:42.795 --> 00:02:44.555
+<v Speaker 0>that you have enabled appear here.
+
+00:02:45.115 --> 00:02:47.355
+<v Speaker 0>We're not using aggregators or processors, although we
+
+00:02:47.355 --> 00:02:49.115
+<v Speaker 0>will have tutorials on them later,
+
+00:02:49.970 --> 00:02:52.209
+<v Speaker 0>and we are writing our data to InfluxDB
+
+00:02:52.209 --> 00:02:53.090
+<v Speaker 0>v2.
+
+00:02:53.650 --> 00:02:55.970
+<v Speaker 0>And if we pop over here and say
+
+00:02:55.970 --> 00:02:57.250
+<v Speaker 0>listen for data,
+
+00:02:57.489 --> 00:02:59.170
+<v Speaker 0>we'll see connection found.
+
+00:02:59.569 --> 00:03:02.049
+<v Speaker 0>So it looks like everything is working just
+
+00:03:02.049 --> 00:03:02.689
+<v Speaker 0>as expected.
+
+00:03:04.125 --> 00:03:05.885
+<v Speaker 0>We can click on one hour and now
+
+00:03:05.885 --> 00:03:08.925
+<v Speaker 0>we see our measurements showing up in
+
+00:03:09.565 --> 00:03:10.845
+<v Speaker 0>our InfluxDB.
+
+00:03:11.885 --> 00:03:13.805
+<v Speaker 0>We'll change the window to five minutes and
+
+00:03:13.805 --> 00:03:15.485
+<v Speaker 0>we can see we have this nice steady
+
+00:03:15.485 --> 00:03:17.005
+<v Speaker 0>line for the usage
+
+00:03:17.005 --> 00:03:17.645
+<v Speaker 0>guest.
+
+00:03:18.739 --> 00:03:20.180
+<v Speaker 0>And if we take a look at network,
+
+00:03:20.180 --> 00:03:22.340
+<v Speaker 0>it may be a bit more active,
+
+00:03:23.540 --> 00:03:25.780
+<v Speaker 0>perhaps not, but that's okay. And we can
+
+00:03:25.780 --> 00:03:27.459
+<v Speaker 0>start to see those metrics coming in now,
+
+00:03:27.459 --> 00:03:29.140
+<v Speaker 0>and of course my face is covering up
+
+00:03:29.140 --> 00:03:30.340
+<v Speaker 0>the most useful bit.
+
+00:03:31.459 --> 00:03:31.859
+<v Speaker 0>Now,
+
+00:03:33.145 --> 00:03:35.785
+<v Speaker 0>configuring and working with Telegraph is really
+
+00:03:36.585 --> 00:03:39.705
+<v Speaker 0>simple, straightforward, trivial. You just have to configure
+
+00:03:39.705 --> 00:03:41.385
+<v Speaker 0>it a couple of times to really get
+
+00:03:41.385 --> 00:03:42.745
+<v Speaker 0>to grips with what you're doing.
+
+00:03:43.065 --> 00:03:44.345
+<v Speaker 0>So we're to make a few changes to
+
+00:03:44.345 --> 00:03:45.385
+<v Speaker 0>our Telegraph config.
+
+00:03:46.230 --> 00:03:47.670
+<v Speaker 0>We're going to come to here, we're going
+
+00:03:47.670 --> 00:03:49.670
+<v Speaker 0>to click on it, and this allows us
+
+00:03:49.670 --> 00:03:51.030
+<v Speaker 0>to copy and paste
+
+00:03:51.990 --> 00:03:53.350
+<v Speaker 0>the whole thing.
+
+00:03:57.350 --> 00:03:57.910
+<v Speaker 0>Like so.
+
+00:03:59.695 --> 00:04:02.815
+<v Speaker 0>So there's a fair amount of comments,
+
+00:04:03.775 --> 00:04:05.615
+<v Speaker 0>but you'll see here that we have the
+
+00:04:05.615 --> 00:04:08.975
+<v Speaker 0>agent configuration block, which is denoted here by
+
+00:04:08.975 --> 00:04:10.575
+<v Speaker 0>a single square parens.
+
+00:04:10.815 --> 00:04:12.575
+<v Speaker 0>We can configure the interval at which we
+
+00:04:12.575 --> 00:04:13.695
+<v Speaker 0>wish to collect our metrics.
+
+00:04:14.700 --> 00:04:16.460
+<v Speaker 0>We can set the round interval.
+
+00:04:16.620 --> 00:04:18.700
+<v Speaker 0>This is great when you have Telegraph running
+
+00:04:18.700 --> 00:04:21.660
+<v Speaker 0>across multiple nodes in your infrastructure and you
+
+00:04:21.660 --> 00:04:24.300
+<v Speaker 0>want the time alignment on your metrics to
+
+00:04:24.300 --> 00:04:24.940
+<v Speaker 0>work.
+
+00:04:25.580 --> 00:04:27.500
+<v Speaker 0>So that means that if you have your
+
+00:04:27.500 --> 00:04:29.995
+<v Speaker 0>interval set ten seconds, as the example here
+
+00:04:29.995 --> 00:04:31.675
+<v Speaker 0>is kind of showing us,
+
+00:04:31.995 --> 00:04:34.075
+<v Speaker 0>that every point that will be written to
+
+00:04:34.075 --> 00:04:35.275
+<v Speaker 0>our InfluxDB
+
+00:04:35.275 --> 00:04:37.915
+<v Speaker 0>will be on the hour with zero seconds,
+
+00:04:38.235 --> 00:04:41.275
+<v Speaker 0>ten seconds, twenty seconds, thirty seconds, forty seconds,
+
+00:04:41.275 --> 00:04:43.355
+<v Speaker 0>fifty seconds, and then back to zero.
+
+00:04:44.800 --> 00:04:46.240
+<v Speaker 0>Just means you don't have to do any
+
+00:04:46.240 --> 00:04:47.040
+<v Speaker 0>juggling
+
+00:04:47.680 --> 00:04:49.920
+<v Speaker 0>if the telegraphs are not all started up
+
+00:04:49.920 --> 00:04:52.800
+<v Speaker 0>precisely at the same time across your machines.
+
+00:04:53.760 --> 00:04:54.960
+<v Speaker 0>Now, two of my
+
+00:04:55.360 --> 00:04:57.975
+<v Speaker 0>favorite flags the Telegraph config are the metric
+
+00:04:57.975 --> 00:05:00.615
+<v Speaker 0>batch size and the metric buffer limit.
+
+00:05:00.695 --> 00:05:02.055
+<v Speaker 0>This is how you get
+
+00:05:02.375 --> 00:05:03.175
+<v Speaker 0>your resiliency
+
+00:05:04.215 --> 00:05:06.695
+<v Speaker 0>when you are collecting metrics with Telegraph.
+
+00:05:07.495 --> 00:05:08.695
+<v Speaker 0>The metric batch size,
+
+00:05:09.390 --> 00:05:11.950
+<v Speaker 0>Telegraph will attempt to collect that many metrics
+
+00:05:11.950 --> 00:05:14.030
+<v Speaker 0>and write them to the output so that
+
+00:05:14.030 --> 00:05:16.510
+<v Speaker 0>you're not writing a single metric with every
+
+00:05:16.510 --> 00:05:17.230
+<v Speaker 0>request.
+
+00:05:17.390 --> 00:05:19.710
+<v Speaker 0>It's going to increase the throughput and performance
+
+00:05:19.710 --> 00:05:20.910
+<v Speaker 0>of your Telegraph agent.
+
+00:05:21.725 --> 00:05:24.365
+<v Speaker 0>The metric buffer limit is there in case
+
+00:05:24.365 --> 00:05:26.205
+<v Speaker 0>your output should happen to be down or
+
+00:05:26.205 --> 00:05:28.285
+<v Speaker 0>throw in errors. If your database is down
+
+00:05:28.285 --> 00:05:30.285
+<v Speaker 0>and Telegraph cannot write to it, it's going
+
+00:05:30.285 --> 00:05:32.845
+<v Speaker 0>to hold up to 10,000 points in memory
+
+00:05:33.005 --> 00:05:34.605
+<v Speaker 0>and drop the oldest
+
+00:05:34.685 --> 00:05:35.965
+<v Speaker 0>if it comes to that.
+
+00:05:36.650 --> 00:05:38.330
+<v Speaker 0>You can set this to whatever value you
+
+00:05:38.330 --> 00:05:40.650
+<v Speaker 0>want. You really need to understand how important
+
+00:05:40.650 --> 00:05:42.889
+<v Speaker 0>your metrics are and how much memory you
+
+00:05:42.889 --> 00:05:45.050
+<v Speaker 0>have available for this telegraph to be able
+
+00:05:45.050 --> 00:05:46.810
+<v Speaker 0>to store those in memory if required.
+
+00:05:48.855 --> 00:05:51.095
+<v Speaker 0>We have a collection jitter. This is a
+
+00:05:51.095 --> 00:05:54.055
+<v Speaker 0>parameter which allows each of the Telegraph plugins
+
+00:05:54.055 --> 00:05:56.855
+<v Speaker 0>to stagger the request that they make to
+
+00:05:56.855 --> 00:05:58.375
+<v Speaker 0>the system for metrics.
+
+00:05:59.095 --> 00:06:02.580
+<v Speaker 0>You don't normally want to have ten, twenty,
+
+00:06:02.580 --> 00:06:05.380
+<v Speaker 0>30, a hundred, a thousand telegraph agents collecting
+
+00:06:05.380 --> 00:06:08.020
+<v Speaker 0>metrics from similar endpoints or similar systems
+
+00:06:08.500 --> 00:06:10.420
+<v Speaker 0>and all hitting them at the same time.
+
+00:06:10.420 --> 00:06:12.180
+<v Speaker 0>So we can jitter the collection just to
+
+00:06:12.180 --> 00:06:13.220
+<v Speaker 0>avoid things like that.
+
+00:06:14.805 --> 00:06:16.805
+<v Speaker 0>The flush interval allows us to see how
+
+00:06:16.805 --> 00:06:19.125
+<v Speaker 0>often we should write to our output. We
+
+00:06:19.125 --> 00:06:21.525
+<v Speaker 0>have a collection interval and then a flush
+
+00:06:21.525 --> 00:06:22.405
+<v Speaker 0>interval,
+
+00:06:22.805 --> 00:06:23.685
+<v Speaker 0>and we can
+
+00:06:24.164 --> 00:06:27.319
+<v Speaker 0>jitter the flush as well. So if you
+
+00:06:27.319 --> 00:06:29.960
+<v Speaker 0>do happen to have a hundred telegraphs running
+
+00:06:29.960 --> 00:06:32.039
+<v Speaker 0>on a hundred machines, all right into a
+
+00:06:32.039 --> 00:06:34.199
+<v Speaker 0>single database, you don't want them all to
+
+00:06:34.199 --> 00:06:36.440
+<v Speaker 0>land at the exact same millisecond,
+
+00:06:36.919 --> 00:06:39.159
+<v Speaker 0>potentially bad. So you can use a jitter
+
+00:06:39.159 --> 00:06:40.199
+<v Speaker 0>to stack with that too.
+
+00:06:43.905 --> 00:06:44.625
+<v Speaker 0>Okay.
+
+00:06:45.425 --> 00:06:46.385
+<v Speaker 0>Precision.
+
+00:06:47.104 --> 00:06:49.505
+<v Speaker 0>You can tell Telegraph to
+
+00:06:50.385 --> 00:06:52.785
+<v Speaker 0>store higher resolution metrics
+
+00:06:52.865 --> 00:06:56.640
+<v Speaker 0>by storing the timestamp of collection in nanoseconds,
+
+00:06:56.640 --> 00:06:58.960
+<v Speaker 0>milliseconds, microseconds, or seconds.
+
+00:07:00.880 --> 00:07:02.480
+<v Speaker 0>Debug is the first thing we're going to
+
+00:07:02.480 --> 00:07:04.160
+<v Speaker 0>change today, and we're going to enable that
+
+00:07:04.160 --> 00:07:05.760
+<v Speaker 0>to true so that we can understand what
+
+00:07:05.760 --> 00:07:07.280
+<v Speaker 0>is happening when we run Telegraph.
+
+00:07:11.505 --> 00:07:12.225
+<v Speaker 0>No.
+
+00:07:12.625 --> 00:07:15.345
+<v Speaker 0>Omet hostname is a flag that is entirely
+
+00:07:15.345 --> 00:07:17.105
+<v Speaker 0>optional, and I want to talk about it
+
+00:07:17.105 --> 00:07:18.305
+<v Speaker 0>right now. So
+
+00:07:18.785 --> 00:07:21.825
+<v Speaker 0>if you're running Telegraph in an ephemeral environment
+
+00:07:22.319 --> 00:07:25.520
+<v Speaker 0>where maybe it's containers, maybe it's Kubernetes,
+
+00:07:25.520 --> 00:07:28.000
+<v Speaker 0>then storing the host name of where Telegraph
+
+00:07:28.000 --> 00:07:30.080
+<v Speaker 0>runs may not be that important to your
+
+00:07:30.080 --> 00:07:31.440
+<v Speaker 0>overall metric strategy.
+
+00:07:32.560 --> 00:07:34.800
+<v Speaker 0>However, in more traditional environments where you look
+
+00:07:34.800 --> 00:07:37.395
+<v Speaker 0>after your infrastructure and you take care of
+
+00:07:37.395 --> 00:07:39.634
+<v Speaker 0>each of those machines, then understanding
+
+00:07:39.634 --> 00:07:41.395
+<v Speaker 0>the host name may be important.
+
+00:07:42.034 --> 00:07:43.315
+<v Speaker 0>So if you're collecting
+
+00:07:43.875 --> 00:07:44.835
+<v Speaker 0>operating
+
+00:07:44.835 --> 00:07:46.195
+<v Speaker 0>system level metrics,
+
+00:07:46.275 --> 00:07:48.115
+<v Speaker 0>yes, keep the host name there.
+
+00:07:48.930 --> 00:07:51.970
+<v Speaker 0>If you're running an ephemeral environment as containers,
+
+00:07:52.130 --> 00:07:54.050
+<v Speaker 0>probably best to just admit that you don't
+
+00:07:54.050 --> 00:07:56.210
+<v Speaker 0>really want the pod name or container name
+
+00:07:56.210 --> 00:07:57.650
+<v Speaker 0>to be available as a host name. It
+
+00:07:57.650 --> 00:07:59.490
+<v Speaker 0>doesn't make a lot of sense there.
+
+00:08:00.450 --> 00:08:01.170
+<v Speaker 0>Okay,
+
+00:08:01.330 --> 00:08:04.130
+<v Speaker 0>now we're going to leave our output configured,
+
+00:08:05.145 --> 00:08:07.145
+<v Speaker 0>but we're going to leverage something else that
+
+00:08:07.145 --> 00:08:09.225
+<v Speaker 0>is very cool about Telegraph and that you
+
+00:08:09.225 --> 00:08:12.265
+<v Speaker 0>can actually write your metrics to multiple locations.
+
+00:08:14.025 --> 00:08:16.185
+<v Speaker 0>So as well as writing to InfluxDB two,
+
+00:08:16.185 --> 00:08:18.265
+<v Speaker 0>we want to understand what these metrics look
+
+00:08:18.265 --> 00:08:20.490
+<v Speaker 0>like so we can see them in our
+
+00:08:20.490 --> 00:08:23.129
+<v Speaker 0>system. Maybe we're doing some sort of experimentation,
+
+00:08:23.129 --> 00:08:24.410
+<v Speaker 0>testing, or debugging,
+
+00:08:24.970 --> 00:08:27.130
+<v Speaker 0>and we can just say, write these files
+
+00:08:27.210 --> 00:08:28.410
+<v Speaker 0>to standard out.
+
+00:08:28.889 --> 00:08:32.089
+<v Speaker 0>So we're gonna have live feedback from Tenograph
+
+00:08:32.089 --> 00:08:34.330
+<v Speaker 0>as it attempts, or as it is collecting
+
+00:08:34.330 --> 00:08:37.325
+<v Speaker 0>these metrics. We'll sell right onto InfluxDB two.
+
+00:08:37.485 --> 00:08:38.684
+<v Speaker 0>What I see a lot of people doing
+
+00:08:38.684 --> 00:08:41.405
+<v Speaker 0>is trying to InfluxDB two and InfluxDB one
+
+00:08:41.405 --> 00:08:43.565
+<v Speaker 0>and maybe Thanos and maybe M3.
+
+00:08:44.205 --> 00:08:46.125
+<v Speaker 0>You you may just be experimenting with what
+
+00:08:46.125 --> 00:08:47.725
+<v Speaker 0>back end store you need for your metrics
+
+00:08:47.725 --> 00:08:49.940
+<v Speaker 0>and that's okay. Telegraph can just hook in
+
+00:08:49.940 --> 00:08:51.300
+<v Speaker 0>there and work with anything.
+
+00:08:52.420 --> 00:08:54.020
+<v Speaker 0>We're not going go over the inputs, they're
+
+00:08:54.020 --> 00:08:55.700
+<v Speaker 0>all mostly self explanatory.
+
+00:08:55.940 --> 00:08:57.700
+<v Speaker 0>What I will show you is how to
+
+00:08:57.700 --> 00:08:59.700
+<v Speaker 0>understand the inputs that are available and how
+
+00:08:59.700 --> 00:09:00.500
+<v Speaker 0>to configure them.
+
+00:09:02.755 --> 00:09:04.355
+<v Speaker 0>The best thing you can do is go
+
+00:09:04.355 --> 00:09:06.035
+<v Speaker 0>to the Telegraph repository.
+
+00:09:06.195 --> 00:09:09.395
+<v Speaker 0>That's github.com/influxdata/telegraph.
+
+00:09:09.795 --> 00:09:11.955
+<v Speaker 0>From here, you can click on plugins.
+
+00:09:12.755 --> 00:09:14.755
+<v Speaker 0>You will see inputs and outputs. Those are
+
+00:09:14.755 --> 00:09:16.995
+<v Speaker 0>the two that you will use the most
+
+00:09:16.200 --> 00:09:17.400
+<v Speaker 0>with inputs
+
+00:09:17.640 --> 00:09:19.480
+<v Speaker 0>being the one that you wanna be, maybe
+
+00:09:19.480 --> 00:09:21.240
+<v Speaker 0>you're perhaps more curious about and want to
+
+00:09:21.240 --> 00:09:21.880
+<v Speaker 0>understand.
+
+00:09:22.120 --> 00:09:23.560
+<v Speaker 0>You can scroll up and down this and
+
+00:09:23.560 --> 00:09:25.240
+<v Speaker 0>you'll see all of the systems that Telegraph
+
+00:09:25.240 --> 00:09:26.040
+<v Speaker 0>knows how
+
+00:09:26.600 --> 00:09:27.640
+<v Speaker 0>to fetch metrics from.
+
+00:09:30.035 --> 00:09:32.995
+<v Speaker 0>What we'll do is we will go to
+
+00:09:33.235 --> 00:09:34.275
+<v Speaker 0>Prometheus.
+
+00:09:34.755 --> 00:09:36.435
+<v Speaker 0>We will click on this. We want to
+
+00:09:36.435 --> 00:09:39.075
+<v Speaker 0>be able to collect some Prometheus metrics.
+
+00:09:40.835 --> 00:09:43.635
+<v Speaker 0>You can see an example from the configuration
+
+00:09:43.955 --> 00:09:45.475
+<v Speaker 0>of how to enable it.
+
+00:09:45.795 --> 00:09:47.690
+<v Speaker 0>If there are any optional flags, they're all
+
+00:09:47.690 --> 00:09:49.770
+<v Speaker 0>available here and we can uncomment them or
+
+00:09:49.770 --> 00:09:51.290
+<v Speaker 0>copy and paste the code that we need
+
+00:09:51.290 --> 00:09:52.490
+<v Speaker 0>for the configuration.
+
+00:09:53.370 --> 00:09:55.370
+<v Speaker 0>At the bottom of every readme for these
+
+00:09:55.370 --> 00:09:57.770
+<v Speaker 0>plugins is an example of the output too.
+
+00:09:59.065 --> 00:10:01.065
+<v Speaker 0>We'll see here, these are the metrics that
+
+00:10:01.065 --> 00:10:03.464
+<v Speaker 0>are going to emitted
+
+00:10:03.464 --> 00:10:04.024
+<v Speaker 0>by
+
+00:10:05.625 --> 00:10:06.745
+<v Speaker 0>this plugin.
+
+00:10:08.665 --> 00:10:10.505
+<v Speaker 0>We'll add one more metric
+
+00:10:10.904 --> 00:10:12.024
+<v Speaker 0>to our configuration.
+
+00:10:12.920 --> 00:10:14.759
+<v Speaker 0>And I have a Prometheus running on my
+
+00:10:14.759 --> 00:10:16.759
+<v Speaker 0>local machine, and hopefully, we should see some
+
+00:10:16.759 --> 00:10:18.440
+<v Speaker 0>metrics come from here.
+
+00:10:20.920 --> 00:10:23.399
+<v Speaker 0>So now we're just going to run Telegraph
+
+00:10:23.399 --> 00:10:25.560
+<v Speaker 0>like we did before, but instead of a
+
+00:10:25.560 --> 00:10:27.275
+<v Speaker 0>remote configuration, we are going to use the
+
+00:10:27.275 --> 00:10:28.155
+<v Speaker 0>telegraph.com
+
+00:10:28.155 --> 00:10:30.395
+<v Speaker 0>that we have just edited and saved on
+
+00:10:30.395 --> 00:10:31.355
+<v Speaker 0>our machine.
+
+00:10:31.675 --> 00:10:33.435
+<v Speaker 0>We will hit return, and within a few
+
+00:10:33.435 --> 00:10:35.835
+<v Speaker 0>seconds, we should start to see one extra
+
+00:10:35.835 --> 00:10:38.155
+<v Speaker 0>debug output, which we already have here,
+
+00:10:38.795 --> 00:10:41.355
+<v Speaker 0>and the output fail plugin, which is going
+
+00:10:41.355 --> 00:10:43.250
+<v Speaker 0>to spit a whole bunch of metrics, like
+
+00:10:43.250 --> 00:10:45.250
+<v Speaker 0>so to our terminal.
+
+00:10:45.410 --> 00:10:47.250
+<v Speaker 0>This allows us to confirm that we're seeing
+
+00:10:47.250 --> 00:10:48.530
+<v Speaker 0>what we expect to see.
+
+00:10:49.970 --> 00:10:52.370
+<v Speaker 0>Now we can jump over to here, click
+
+00:10:52.370 --> 00:10:53.890
+<v Speaker 0>cancel on this and explore,
+
+00:10:55.025 --> 00:10:57.185
+<v Speaker 0>And now we have more metrics and measurements
+
+00:10:57.185 --> 00:10:59.745
+<v Speaker 0>available inside of our OneAir bucket.
+
+00:11:00.065 --> 00:11:01.985
+<v Speaker 0>You can see the Prometheus style ones all
+
+00:11:01.985 --> 00:11:03.585
+<v Speaker 0>start with go underscore
+
+00:11:03.585 --> 00:11:05.665
+<v Speaker 0>because it's using the Go runtime to understand
+
+00:11:05.665 --> 00:11:07.105
+<v Speaker 0>that Prometheus is healthy.
+
+00:11:07.745 --> 00:11:10.225
+<v Speaker 0>There's some Prometheus specific ones below here.
+
+00:11:11.610 --> 00:11:13.610
+<v Speaker 0>So we have configured Telegraph.
+
+00:11:13.770 --> 00:11:16.410
+<v Speaker 0>We understand some of the agent configuration to
+
+00:11:16.410 --> 00:11:18.970
+<v Speaker 0>change the interval, the flush interval, the batch
+
+00:11:18.970 --> 00:11:19.930
+<v Speaker 0>and buffering,
+
+00:11:19.930 --> 00:11:21.850
+<v Speaker 0>as well as any jitter that may be
+
+00:11:21.850 --> 00:11:22.970
+<v Speaker 0>needed for our environment.
+
+00:11:23.735 --> 00:11:26.135
+<v Speaker 0>We know how to use the Telegraph GitHub
+
+00:11:26.135 --> 00:11:29.335
+<v Speaker 0>page to find new plugins and understand our
+
+00:11:29.335 --> 00:11:30.935
+<v Speaker 0>configuration and output.
+
+00:11:31.415 --> 00:11:33.655
+<v Speaker 0>And we can run Telegraph with remote configurations
+
+00:11:33.655 --> 00:11:36.455
+<v Speaker 0>or local configurations to get metrics written to
+
+00:11:36.455 --> 00:11:37.335
+<v Speaker 0>our InfluxDB.
+
+00:11:38.820 --> 00:11:40.820
+<v Speaker 0>So, I hope that helps. We'll be doing
+
+00:11:40.820 --> 00:11:41.540
+<v Speaker 0>more.
+
+00:11:42.980 --> 00:11:44.900
+<v Speaker 0>So, I hope that helps. We'll be doing
+
+00:11:44.900 --> 00:11:46.900
+<v Speaker 0>much more with Telegraph
+
+00:11:46.900 --> 00:11:49.380
+<v Speaker 0>throughout this course, and I look forward to
+
+00:11:49.380 --> 00:11:51.460
+<v Speaker 0>sharing it with you more. Have a great
+
+00:11:51.460 --> 00:11:51.620
+<v Speaker 0>day.

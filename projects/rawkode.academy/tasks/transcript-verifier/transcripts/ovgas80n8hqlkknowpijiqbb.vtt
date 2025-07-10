@@ -1,0 +1,1100 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 48864a7d-1e90-461a-87a6-0ca5cec94fff
+Created: 2025-04-29T12:06:47.406Z
+Duration: 865.7626
+Channels: 1
+
+00:00:00.000 --> 00:00:02.320
+<v Speaker 0>Today's video, I'm going to show you three
+
+00:00:02.320 --> 00:00:05.279
+<v Speaker 0>pretty cool tricks to enhance your application
+
+00:00:05.279 --> 00:00:06.880
+<v Speaker 0>using ngrok.
+
+00:00:07.839 --> 00:00:09.440
+<v Speaker 0>We'll be using ngrok
+
+00:00:09.440 --> 00:00:11.120
+<v Speaker 0>to protect an endpoint,
+
+00:00:11.599 --> 00:00:15.120
+<v Speaker 0>to restrict an endpoint using geolocation facilities,
+
+00:00:16.305 --> 00:00:19.185
+<v Speaker 0>and to improve the security posture of our
+
+00:00:19.185 --> 00:00:19.985
+<v Speaker 0>application.
+
+00:00:20.945 --> 00:00:22.224
+<v Speaker 0>Let's have some fun.
+
+00:00:25.904 --> 00:00:26.544
+<v Speaker 0>Okay.
+
+00:00:26.705 --> 00:00:29.345
+<v Speaker 0>So, let's start with the application
+
+00:00:29.345 --> 00:00:29.825
+<v Speaker 0>first.
+
+00:00:30.880 --> 00:00:33.440
+<v Speaker 0>Now I've kept the application super,
+
+00:00:33.520 --> 00:00:34.480
+<v Speaker 0>super simple.
+
+00:00:34.800 --> 00:00:36.079
+<v Speaker 0>It's just here
+
+00:00:36.480 --> 00:00:39.120
+<v Speaker 0>to enable us to dive in to ngrok
+
+00:00:39.120 --> 00:00:39.840
+<v Speaker 0>features.
+
+00:00:40.720 --> 00:00:43.360
+<v Speaker 0>Now that's maybe just my excuse for giving
+
+00:00:43.360 --> 00:00:45.440
+<v Speaker 0>you an API with black text on a
+
+00:00:45.440 --> 00:00:46.239
+<v Speaker 0>white background.
+
+00:00:47.735 --> 00:00:49.255
+<v Speaker 0>But what we have here is a Deno
+
+00:00:49.255 --> 00:00:50.055
+<v Speaker 0>application
+
+00:00:50.375 --> 00:00:53.175
+<v Speaker 0>configured with a router and some Prometheus metrics.
+
+00:00:54.375 --> 00:00:57.415
+<v Speaker 0>We create a path counter so that in
+
+00:00:57.415 --> 00:01:00.695
+<v Speaker 0>each route within our application or API, whatever
+
+00:01:00.695 --> 00:01:03.610
+<v Speaker 0>you wanna call it, and we increment this
+
+00:01:03.610 --> 00:01:05.770
+<v Speaker 0>based on the path that we hit.
+
+00:01:06.090 --> 00:01:07.770
+<v Speaker 0>As we hit the home page and hello
+
+00:01:07.770 --> 00:01:10.250
+<v Speaker 0>world, we increment. As we hit slash howdy
+
+00:01:10.250 --> 00:01:12.409
+<v Speaker 0>and howdy world, we increment.
+
+00:01:12.810 --> 00:01:15.210
+<v Speaker 0>These metrics will also be exposed on slash
+
+00:01:15.210 --> 00:01:15.690
+<v Speaker 0>metrics.
+
+00:01:16.155 --> 00:01:17.755
+<v Speaker 0>And one of the first things that we
+
+00:01:17.755 --> 00:01:20.235
+<v Speaker 0>want to do with ngrok is just protect
+
+00:01:20.235 --> 00:01:23.515
+<v Speaker 0>the metrics endpoint from unsuspecting traffic.
+
+00:01:24.795 --> 00:01:27.115
+<v Speaker 0>We then listen or bind our application on
+
+00:01:27.115 --> 00:01:29.835
+<v Speaker 0>local host 127001.
+
+00:01:29.835 --> 00:01:32.470
+<v Speaker 0>So this is a private by default application
+
+00:01:32.710 --> 00:01:34.070
+<v Speaker 0>on port 8,000.
+
+00:01:35.350 --> 00:01:37.510
+<v Speaker 0>Now as private as I run it on
+
+00:01:37.510 --> 00:01:39.190
+<v Speaker 0>local host and as we push it to
+
+00:01:39.190 --> 00:01:41.909
+<v Speaker 0>production and to maybe a container or Kubernetes,
+
+00:01:41.909 --> 00:01:44.035
+<v Speaker 0>it would be private to the pod unless
+
+00:01:44.035 --> 00:01:47.395
+<v Speaker 0>we hook an extra infrastructure concerns to expose
+
+00:01:47.395 --> 00:01:48.595
+<v Speaker 0>that to the world.
+
+00:01:49.635 --> 00:01:51.715
+<v Speaker 0>Now because we're gonna be showing off ngrok,
+
+00:01:51.715 --> 00:01:53.155
+<v Speaker 0>what we need to do first is run
+
+00:01:53.155 --> 00:01:55.955
+<v Speaker 0>this application and
+
+00:01:54.770 --> 00:01:56.690
+<v Speaker 0>expose it with ngrok.
+
+00:01:57.250 --> 00:01:59.570
+<v Speaker 0>So here, I have a README file with
+
+00:01:59.570 --> 00:02:01.170
+<v Speaker 0>a d n r run command that allows
+
+00:02:01.170 --> 00:02:02.930
+<v Speaker 0>me to run my API.
+
+00:02:03.490 --> 00:02:04.370
+<v Speaker 0>Like so.
+
+00:02:05.570 --> 00:02:08.610
+<v Speaker 0>I'm then using ngrok locally to say, let's
+
+00:02:08.115 --> 00:02:10.675
+<v Speaker 0>expose port 8,000 over HTTP
+
+00:02:10.675 --> 00:02:13.955
+<v Speaker 0>on my domain, rawcode.ngrok.dev.
+
+00:02:14.435 --> 00:02:16.115
+<v Speaker 0>Now I'm not gonna guide you through the
+
+00:02:16.115 --> 00:02:18.755
+<v Speaker 0>installation of ngrok locally. You can use Next
+
+00:02:18.755 --> 00:02:19.395
+<v Speaker 0>Shell,
+
+00:02:20.035 --> 00:02:22.435
+<v Speaker 0>your system package manager, a container,
+
+00:02:23.130 --> 00:02:24.970
+<v Speaker 0>or whatever you like.
+
+00:02:25.930 --> 00:02:26.730
+<v Speaker 0>For me,
+
+00:02:27.209 --> 00:02:28.490
+<v Speaker 0>I'll do run block.
+
+00:02:29.930 --> 00:02:32.090
+<v Speaker 0>So now let's head over to our web
+
+00:02:32.090 --> 00:02:34.890
+<v Speaker 0>browser and see what our wonderful application
+
+00:02:34.890 --> 00:02:35.530
+<v Speaker 0>looks like.
+
+00:02:36.675 --> 00:02:40.435
+<v Speaker 0>So let's go to localhost port 8,000.
+
+00:02:41.795 --> 00:02:43.155
+<v Speaker 0>And here we have
+
+00:02:43.235 --> 00:02:44.355
+<v Speaker 0>hello, world.
+
+00:02:45.075 --> 00:02:47.395
+<v Speaker 0>We can now change that to Howdy,
+
+00:02:47.635 --> 00:02:48.754
+<v Speaker 0>and we get Howdy World.
+
+00:02:49.670 --> 00:02:51.510
+<v Speaker 0>One more time, we go to metrics, and
+
+00:02:51.510 --> 00:02:52.950
+<v Speaker 0>we see that we've had both of these
+
+00:02:52.950 --> 00:02:54.870
+<v Speaker 0>pass one time.
+
+00:02:56.150 --> 00:02:57.750
+<v Speaker 0>We can also go to
+
+00:02:57.830 --> 00:02:59.590
+<v Speaker 0>ngrok.dev
+
+00:02:59.670 --> 00:03:00.630
+<v Speaker 0>like so.
+
+00:03:00.790 --> 00:03:03.269
+<v Speaker 0>And I accidentally went to metrics, so let's
+
+00:03:03.269 --> 00:03:04.150
+<v Speaker 0>go to route,
+
+00:03:05.515 --> 00:03:06.715
+<v Speaker 0>go to howdy,
+
+00:03:07.595 --> 00:03:09.915
+<v Speaker 0>and then pop back to metrics, where now
+
+00:03:09.915 --> 00:03:13.115
+<v Speaker 0>we've had both pages of the application twice.
+
+00:03:13.355 --> 00:03:15.115
+<v Speaker 0>And if we refresh the local one, you'll
+
+00:03:15.115 --> 00:03:17.195
+<v Speaker 0>see that these are the exact same application.
+
+00:03:18.150 --> 00:03:20.310
+<v Speaker 0>All we've done is use ngrok to make
+
+00:03:20.310 --> 00:03:22.310
+<v Speaker 0>this available on the public Internet.
+
+00:03:23.030 --> 00:03:25.349
+<v Speaker 0>Now as cool as that is, ngrok has
+
+00:03:25.349 --> 00:03:26.950
+<v Speaker 0>been around for over a decade, and we're
+
+00:03:26.950 --> 00:03:29.830
+<v Speaker 0>all fully aware that ngrok makes this workflow
+
+00:03:29.989 --> 00:03:30.629
+<v Speaker 0>trivial.
+
+00:03:31.625 --> 00:03:32.185
+<v Speaker 0>So
+
+00:03:32.425 --> 00:03:34.825
+<v Speaker 0>let's take a look at a recent feature
+
+00:03:34.825 --> 00:03:36.745
+<v Speaker 0>added to ngrok cloud,
+
+00:03:37.465 --> 00:03:38.345
+<v Speaker 0>traffic
+
+00:03:38.504 --> 00:03:39.465
+<v Speaker 0>policies.
+
+00:03:40.105 --> 00:03:41.385
+<v Speaker 0>Okay. So,
+
+00:03:41.705 --> 00:03:42.105
+<v Speaker 0>again,
+
+00:03:43.690 --> 00:03:46.730
+<v Speaker 0>just like a moment ago, ngrok is running.
+
+00:03:48.170 --> 00:03:50.410
+<v Speaker 0>I can browse around via
+
+00:03:51.450 --> 00:03:53.610
+<v Speaker 0>Rawkode.ngrok.dev
+
+00:03:53.770 --> 00:03:55.610
+<v Speaker 0>between the home page and Howdy.
+
+00:03:56.955 --> 00:03:59.435
+<v Speaker 0>Here, I have a GCP Cloud Shell where
+
+00:03:59.435 --> 00:04:00.795
+<v Speaker 0>I can also curl
+
+00:04:00.795 --> 00:04:01.754
+<v Speaker 0>ngrok,
+
+00:04:01.754 --> 00:04:03.754
+<v Speaker 0>Rawkode.ngrok.dev,
+
+00:04:03.754 --> 00:04:05.195
+<v Speaker 0>and I see hello world,
+
+00:04:05.995 --> 00:04:06.795
+<v Speaker 0>Howdy,
+
+00:04:07.034 --> 00:04:07.834
+<v Speaker 0>and, of course,
+
+00:04:10.220 --> 00:04:11.260
+<v Speaker 0>metrics.
+
+00:04:12.540 --> 00:04:13.900
+<v Speaker 0>What I want to do now
+
+00:04:15.020 --> 00:04:16.540
+<v Speaker 0>is stop ngrok
+
+00:04:18.459 --> 00:04:20.940
+<v Speaker 0>and show you the second version of this
+
+00:04:20.940 --> 00:04:21.339
+<v Speaker 0>command.
+
+00:04:23.275 --> 00:04:23.915
+<v Speaker 0>Here,
+
+00:04:24.075 --> 00:04:25.035
+<v Speaker 0>we're going to
+
+00:04:25.435 --> 00:04:27.514
+<v Speaker 0>run it just as we did before, the
+
+00:04:27.514 --> 00:04:30.315
+<v Speaker 0>exact same command. However, we're going to add
+
+00:04:30.315 --> 00:04:32.475
+<v Speaker 0>our traffic policy file.
+
+00:04:33.675 --> 00:04:34.955
+<v Speaker 0>And now if we hit run,
+
+00:04:39.520 --> 00:04:41.040
+<v Speaker 0>we can sell browse
+
+00:04:42.800 --> 00:04:43.600
+<v Speaker 0>locally.
+
+00:04:45.040 --> 00:04:45.920
+<v Speaker 0>However,
+
+00:04:46.000 --> 00:04:47.120
+<v Speaker 0>from GCP,
+
+00:04:47.760 --> 00:04:50.240
+<v Speaker 0>the connection is immediately rejected.
+
+00:04:51.775 --> 00:04:52.415
+<v Speaker 0>Why?
+
+00:04:54.335 --> 00:04:56.014
+<v Speaker 0>Well, let's take a look at our traffic
+
+00:04:56.014 --> 00:04:57.135
+<v Speaker 0>policy file.
+
+00:04:58.095 --> 00:04:59.775
+<v Speaker 0>Here, I said,
+
+00:05:00.095 --> 00:05:01.775
+<v Speaker 0>on a TCP connection,
+
+00:05:02.495 --> 00:05:04.655
+<v Speaker 0>we wish to restrict the IPs
+
+00:05:05.410 --> 00:05:06.050
+<v Speaker 0>with
+
+00:05:06.370 --> 00:05:07.250
+<v Speaker 0>enforce.
+
+00:05:07.570 --> 00:05:09.730
+<v Speaker 0>We could set this default to test out
+
+00:05:09.730 --> 00:05:13.410
+<v Speaker 0>new policies. However, for this simple example, we're
+
+00:05:13.410 --> 00:05:15.010
+<v Speaker 0>gonna enforce it by default.
+
+00:05:15.889 --> 00:05:18.345
+<v Speaker 0>And these are the two IP I p
+
+00:05:18.345 --> 00:05:20.425
+<v Speaker 0>v four and the infamous I p v
+
+00:05:20.425 --> 00:05:21.145
+<v Speaker 0>six,
+
+00:05:21.545 --> 00:05:22.905
+<v Speaker 0>for my machine
+
+00:05:22.985 --> 00:05:24.185
+<v Speaker 0>on this network.
+
+00:05:25.145 --> 00:05:27.385
+<v Speaker 0>Meaning, if anyone else tries to access our
+
+00:05:27.385 --> 00:05:29.465
+<v Speaker 0>application, it's going to fail. But, of course,
+
+00:05:30.590 --> 00:05:33.070
+<v Speaker 0>what's the point now? Right? It's the exact
+
+00:05:33.070 --> 00:05:35.070
+<v Speaker 0>same as if I just ran it locally
+
+00:05:35.070 --> 00:05:37.790
+<v Speaker 0>bound to 127001.
+
+00:05:38.430 --> 00:05:41.150
+<v Speaker 0>Now the secret sauce of traffic policies is
+
+00:05:41.150 --> 00:05:42.750
+<v Speaker 0>the common expression language.
+
+00:05:43.805 --> 00:05:45.485
+<v Speaker 0>We can actually modify
+
+00:05:45.565 --> 00:05:46.285
+<v Speaker 0>this
+
+00:05:47.165 --> 00:05:49.725
+<v Speaker 0>to only restrict a certain endpoint.
+
+00:05:50.525 --> 00:05:52.525
+<v Speaker 0>So let's go take a look at the
+
+00:05:52.525 --> 00:05:53.965
+<v Speaker 0>ngrok documentation.
+
+00:05:56.525 --> 00:05:59.110
+<v Speaker 0>This is the traffic policy page, which is
+
+00:05:59.110 --> 00:06:01.910
+<v Speaker 0>currently in preview, but we like to fly
+
+00:06:01.910 --> 00:06:04.390
+<v Speaker 0>things on the edge and unstable as often
+
+00:06:04.390 --> 00:06:07.190
+<v Speaker 0>as we can. It makes things more fun.
+
+00:06:08.230 --> 00:06:10.390
+<v Speaker 0>We can pop down to restrict IPs
+
+00:06:10.755 --> 00:06:13.315
+<v Speaker 0>where we'll see a nice example of how
+
+00:06:13.315 --> 00:06:15.075
+<v Speaker 0>to do this, very similar to what I
+
+00:06:15.075 --> 00:06:17.235
+<v Speaker 0>have done in my application.
+
+00:06:18.835 --> 00:06:20.755
+<v Speaker 0>But we want to tailor this
+
+00:06:20.915 --> 00:06:21.875
+<v Speaker 0>using
+
+00:06:22.195 --> 00:06:22.755
+<v Speaker 0>expressions.
+
+00:06:25.410 --> 00:06:27.170
+<v Speaker 0>We have access to a whole bunch of
+
+00:06:27.170 --> 00:06:30.370
+<v Speaker 0>variables within the common expression framework,
+
+00:06:31.010 --> 00:06:34.050
+<v Speaker 0>which has been enriched or augmented by ngrok
+
+00:06:34.370 --> 00:06:36.955
+<v Speaker 0>to provide even more context. If we click
+
+00:06:36.955 --> 00:06:38.955
+<v Speaker 0>on connection variables here, you'll see that we
+
+00:06:38.955 --> 00:06:41.835
+<v Speaker 0>only have a access to a small number.
+
+00:06:42.475 --> 00:06:45.115
+<v Speaker 0>Now that's just because we were using a
+
+00:06:45.115 --> 00:06:46.555
+<v Speaker 0>TCP connection
+
+00:06:46.555 --> 00:06:47.995
+<v Speaker 0>and not HTTP.
+
+00:06:48.930 --> 00:06:50.850
+<v Speaker 0>So we come to HTTP
+
+00:06:51.169 --> 00:06:52.210
+<v Speaker 0>and overview.
+
+00:06:52.610 --> 00:06:54.530
+<v Speaker 0>We can click on expressions.
+
+00:06:54.530 --> 00:06:56.530
+<v Speaker 0>We can click on request
+
+00:06:56.530 --> 00:06:57.410
+<v Speaker 0>variables.
+
+00:06:58.530 --> 00:07:01.410
+<v Speaker 0>And now we have the understanding
+
+00:07:01.490 --> 00:07:03.330
+<v Speaker 0>of an HTTP
+
+00:07:03.330 --> 00:07:05.615
+<v Speaker 0>request. Okay. So let's scroll down,
+
+00:07:06.655 --> 00:07:08.575
+<v Speaker 0>and then we see request
+
+00:07:08.655 --> 00:07:09.535
+<v Speaker 0>URL
+
+00:07:09.695 --> 00:07:11.055
+<v Speaker 0>and request
+
+00:07:11.135 --> 00:07:12.095
+<v Speaker 0>URL
+
+00:07:12.175 --> 00:07:12.895
+<v Speaker 0>path.
+
+00:07:13.455 --> 00:07:14.335
+<v Speaker 0>Oh, that's port.
+
+00:07:17.460 --> 00:07:18.180
+<v Speaker 0>Path.
+
+00:07:18.900 --> 00:07:20.340
+<v Speaker 0>So we copy this,
+
+00:07:20.820 --> 00:07:22.420
+<v Speaker 0>and what we want to do is push
+
+00:07:22.420 --> 00:07:23.540
+<v Speaker 0>actions down,
+
+00:07:23.620 --> 00:07:26.980
+<v Speaker 0>but correctly formatted, and drop in our expression.
+
+00:07:27.860 --> 00:07:30.100
+<v Speaker 0>We can update this to be slash metrics.
+
+00:07:31.655 --> 00:07:33.975
+<v Speaker 0>So now what we're saying is if the
+
+00:07:33.975 --> 00:07:36.535
+<v Speaker 0>request path starts with metrics,
+
+00:07:37.175 --> 00:07:39.735
+<v Speaker 0>restrict it to these IP addresses.
+
+00:07:41.095 --> 00:07:43.815
+<v Speaker 0>So we can kill our ngrok process, head
+
+00:07:43.815 --> 00:07:45.575
+<v Speaker 0>back to the README, and say run.
+
+00:07:46.789 --> 00:07:47.669
+<v Speaker 0>Like so.
+
+00:07:49.190 --> 00:07:51.190
+<v Speaker 0>Now if we head back to the service,
+
+00:07:51.830 --> 00:07:53.510
+<v Speaker 0>we can still get to howdy,
+
+00:07:53.750 --> 00:07:55.350
+<v Speaker 0>we can still get to hello,
+
+00:07:56.870 --> 00:07:58.230
+<v Speaker 0>and we can still see
+
+00:07:58.550 --> 00:07:59.030
+<v Speaker 0>metrics.
+
+00:08:00.805 --> 00:08:03.205
+<v Speaker 0>If we pop over to a GCP cloud
+
+00:08:03.205 --> 00:08:03.925
+<v Speaker 0>shell,
+
+00:08:04.405 --> 00:08:06.405
+<v Speaker 0>we can run h t t p s,
+
+00:08:06.884 --> 00:08:07.764
+<v Speaker 0>Rawkode,
+
+00:08:07.764 --> 00:08:08.565
+<v Speaker 0>ngrok.
+
+00:08:08.565 --> 00:08:10.324
+<v Speaker 0>Dev, we get hello,
+
+00:08:10.884 --> 00:08:11.764
+<v Speaker 0>we get howdy,
+
+00:08:14.210 --> 00:08:16.690
+<v Speaker 0>but we don't get metrics.
+
+00:08:16.690 --> 00:08:19.410
+<v Speaker 0>And we can actually see the request was
+
+00:08:19.410 --> 00:08:20.210
+<v Speaker 0>blocked
+
+00:08:20.450 --> 00:08:21.810
+<v Speaker 0>by the endpoint's
+
+00:08:21.810 --> 00:08:22.690
+<v Speaker 0>IP
+
+00:08:22.930 --> 00:08:23.890
+<v Speaker 0>restriction.
+
+00:08:24.610 --> 00:08:25.330
+<v Speaker 0>Sweet.
+
+00:08:25.890 --> 00:08:26.370
+<v Speaker 0>Okay.
+
+00:08:28.005 --> 00:08:29.845
+<v Speaker 0>Now we're gonna try something a little bit
+
+00:08:29.845 --> 00:08:30.485
+<v Speaker 0>different.
+
+00:08:31.045 --> 00:08:33.125
+<v Speaker 0>I've added a new endpoint to our application
+
+00:08:33.125 --> 00:08:36.165
+<v Speaker 0>slash u k that says, hello, u k.
+
+00:08:37.044 --> 00:08:40.885
+<v Speaker 0>We're gonna add a geo restriction to this
+
+00:08:40.885 --> 00:08:43.380
+<v Speaker 0>endpoint so that only the people in The
+
+00:08:43.380 --> 00:08:45.540
+<v Speaker 0>UK can see The UK page.
+
+00:08:46.580 --> 00:08:49.300
+<v Speaker 0>Heading back over to the traffic policy documentation,
+
+00:08:50.500 --> 00:08:52.580
+<v Speaker 0>we can click on expressions overview,
+
+00:08:52.660 --> 00:08:54.260
+<v Speaker 0>and we'll see that we have access to
+
+00:08:54.260 --> 00:08:55.220
+<v Speaker 0>connection
+
+00:08:55.300 --> 00:08:56.340
+<v Speaker 0>geo variables.
+
+00:08:56.865 --> 00:08:59.505
+<v Speaker 0>Now these actually are available on TCP and
+
+00:08:59.505 --> 00:09:00.945
+<v Speaker 0>on HTTP.
+
+00:09:00.945 --> 00:09:04.145
+<v Speaker 0>However, we wanna send a response over HTTP,
+
+00:09:04.145 --> 00:09:07.185
+<v Speaker 0>so we're going to continue using on HTTP
+
+00:09:07.185 --> 00:09:07.745
+<v Speaker 0>request.
+
+00:09:09.260 --> 00:09:10.779
+<v Speaker 0>We click on this. We can see that
+
+00:09:10.779 --> 00:09:14.460
+<v Speaker 0>we have access to city, country, country code,
+
+00:09:14.460 --> 00:09:16.860
+<v Speaker 0>latitude, radius, etcetera, etcetera.
+
+00:09:17.660 --> 00:09:19.820
+<v Speaker 0>What we want to do is filter by
+
+00:09:19.820 --> 00:09:20.300
+<v Speaker 0>country.
+
+00:09:22.855 --> 00:09:25.015
+<v Speaker 0>So we'll copy this expression
+
+00:09:25.255 --> 00:09:27.975
+<v Speaker 0>and head back to our traffic policy doc.
+
+00:09:29.815 --> 00:09:31.415
+<v Speaker 0>Here, we can add a new
+
+00:09:31.735 --> 00:09:32.455
+<v Speaker 0>expression
+
+00:09:32.695 --> 00:09:33.255
+<v Speaker 0>like so,
+
+00:09:35.990 --> 00:09:38.709
+<v Speaker 0>making sure we got the right formatting.
+
+00:09:39.110 --> 00:09:41.430
+<v Speaker 0>And I'll set this to United
+
+00:09:41.430 --> 00:09:42.389
+<v Speaker 0>Kingdom.
+
+00:09:45.990 --> 00:09:48.389
+<v Speaker 0>Next, we wanna add our actions,
+
+00:09:50.264 --> 00:09:52.265
+<v Speaker 0>and we can add a type
+
+00:09:52.825 --> 00:09:53.785
+<v Speaker 0>deny
+
+00:09:54.105 --> 00:09:55.464
+<v Speaker 0>with a config
+
+00:09:56.904 --> 00:09:58.024
+<v Speaker 0>of status
+
+00:09:58.264 --> 00:09:59.065
+<v Speaker 0>code
+
+00:09:59.464 --> 00:10:00.665
+<v Speaker 0>404.
+
+00:10:00.904 --> 00:10:02.584
+<v Speaker 0>We can just make it look like this
+
+00:10:02.584 --> 00:10:05.800
+<v Speaker 0>page does not exist to anyone outside of
+
+00:10:05.800 --> 00:10:06.680
+<v Speaker 0>The UK.
+
+00:10:07.720 --> 00:10:10.920
+<v Speaker 0>Now to find the deny and disconfiguration,
+
+00:10:10.920 --> 00:10:12.600
+<v Speaker 0>you can just click on actions,
+
+00:10:12.680 --> 00:10:13.480
+<v Speaker 0>deny,
+
+00:10:14.360 --> 00:10:16.200
+<v Speaker 0>and you'll see that status code is the
+
+00:10:16.200 --> 00:10:17.815
+<v Speaker 0>only accepted property,
+
+00:10:17.815 --> 00:10:20.455
+<v Speaker 0>and there are plenty of examples throughout ngrok's
+
+00:10:20.455 --> 00:10:21.495
+<v Speaker 0>documentation.
+
+00:10:21.975 --> 00:10:23.415
+<v Speaker 0>Great work, ngrok.
+
+00:10:25.095 --> 00:10:27.255
+<v Speaker 0>Heading back over here, we can go to
+
+00:10:27.255 --> 00:10:28.135
+<v Speaker 0>our README,
+
+00:10:28.215 --> 00:10:29.895
+<v Speaker 0>make sure our application is running,
+
+00:10:30.950 --> 00:10:32.870
+<v Speaker 0>and run ngrok again.
+
+00:10:34.950 --> 00:10:37.350
+<v Speaker 0>We head over to our browser.
+
+00:10:37.590 --> 00:10:39.510
+<v Speaker 0>It looks like it's already tried to refresh,
+
+00:10:39.510 --> 00:10:41.110
+<v Speaker 0>and we're getting a four zero four.
+
+00:10:41.830 --> 00:10:42.790
+<v Speaker 0>Now
+
+00:10:43.495 --> 00:10:46.454
+<v Speaker 0>that's because we didn't restrict the path in
+
+00:10:46.454 --> 00:10:48.214
+<v Speaker 0>which we want to block the country.
+
+00:10:48.535 --> 00:10:50.055
+<v Speaker 0>And I'm kinda glad that it has blocked
+
+00:10:50.055 --> 00:10:51.495
+<v Speaker 0>the country even though I am in The
+
+00:10:51.495 --> 00:10:53.254
+<v Speaker 0>UK because it means that we have to
+
+00:10:53.254 --> 00:10:55.894
+<v Speaker 0>debug this and work out how it represents
+
+00:10:55.894 --> 00:10:57.814
+<v Speaker 0>The UK as a country name.
+
+00:10:58.980 --> 00:11:00.740
+<v Speaker 0>What we'll do is say that we only
+
+00:11:00.740 --> 00:11:03.220
+<v Speaker 0>want us to apply to slash UK and
+
+00:11:03.220 --> 00:11:05.380
+<v Speaker 0>we will stop ngrok.
+
+00:11:06.260 --> 00:11:07.459
+<v Speaker 0>We'll hit run,
+
+00:11:08.100 --> 00:11:09.459
+<v Speaker 0>go to the browser,
+
+00:11:10.339 --> 00:11:13.220
+<v Speaker 0>and our howdy works, but our UK
+
+00:11:13.535 --> 00:11:14.415
+<v Speaker 0>does not.
+
+00:11:15.055 --> 00:11:17.774
+<v Speaker 0>So let's modify this. And instead of doing
+
+00:11:17.774 --> 00:11:19.855
+<v Speaker 0>a deny, we're going to do something else.
+
+00:11:20.334 --> 00:11:22.894
+<v Speaker 0>We're actually going to send a custom
+
+00:11:23.535 --> 00:11:24.495
+<v Speaker 0>response.
+
+00:11:25.694 --> 00:11:27.615
+<v Speaker 0>We can configure this much like we did
+
+00:11:27.615 --> 00:11:28.574
+<v Speaker 0>with the deny.
+
+00:11:29.510 --> 00:11:31.430
+<v Speaker 0>And to get the properties that we need,
+
+00:11:31.430 --> 00:11:33.270
+<v Speaker 0>we'll head back to the documentation
+
+00:11:33.510 --> 00:11:35.350
+<v Speaker 0>and click on custom response.
+
+00:11:36.550 --> 00:11:38.870
+<v Speaker 0>We can continue to set a status code,
+
+00:11:39.350 --> 00:11:40.470
+<v Speaker 0>only this time
+
+00:11:40.790 --> 00:11:42.470
+<v Speaker 0>we can set content
+
+00:11:42.790 --> 00:11:43.510
+<v Speaker 0>and
+
+00:11:43.670 --> 00:11:44.150
+<v Speaker 0>headers.
+
+00:11:45.395 --> 00:11:48.275
+<v Speaker 0>So status code, it's gonna continue to be
+
+00:11:48.275 --> 00:11:50.915
+<v Speaker 0>four zero four. The content will be some
+
+00:11:50.915 --> 00:11:52.515
+<v Speaker 0>HTML string.
+
+00:11:52.915 --> 00:11:54.115
+<v Speaker 0>And the headers,
+
+00:11:54.195 --> 00:11:56.275
+<v Speaker 0>we probably want to set
+
+00:11:58.850 --> 00:11:59.649
+<v Speaker 0>content
+
+00:12:00.449 --> 00:12:01.089
+<v Speaker 0>type,
+
+00:12:03.970 --> 00:12:06.209
+<v Speaker 0>and we'll leave that as text plain.
+
+00:12:07.170 --> 00:12:08.449
+<v Speaker 0>And we'll just say, sorry,
+
+00:12:09.105 --> 00:12:10.145
+<v Speaker 0>This page
+
+00:12:10.785 --> 00:12:11.904
+<v Speaker 0>is only
+
+00:12:12.705 --> 00:12:14.305
+<v Speaker 0>available in The UK.
+
+00:12:15.105 --> 00:12:16.385
+<v Speaker 0>You are from
+
+00:12:17.745 --> 00:12:18.785
+<v Speaker 0>Congeo
+
+00:12:18.785 --> 00:12:19.665
+<v Speaker 0>country.
+
+00:12:20.464 --> 00:12:22.130
+<v Speaker 0>Now we know that this should work because
+
+00:12:22.130 --> 00:12:24.130
+<v Speaker 0>it tells us here in the documentation that
+
+00:12:24.130 --> 00:12:27.250
+<v Speaker 0>the cell interpolation is enabled on this field.
+
+00:12:28.610 --> 00:12:31.010
+<v Speaker 0>So let's go back and run ngrok again.
+
+00:12:34.214 --> 00:12:36.055
+<v Speaker 0>We can head back to this page and
+
+00:12:36.055 --> 00:12:36.855
+<v Speaker 0>refresh.
+
+00:12:40.134 --> 00:12:42.615
+<v Speaker 0>And it tells me that I am ending
+
+00:12:42.615 --> 00:12:43.894
+<v Speaker 0>in United Kingdom,
+
+00:12:44.535 --> 00:12:46.535
+<v Speaker 0>which just makes this all a little bit
+
+00:12:46.535 --> 00:12:47.495
+<v Speaker 0>more amusing
+
+00:12:48.760 --> 00:12:49.720
+<v Speaker 0>for you.
+
+00:12:51.480 --> 00:12:52.200
+<v Speaker 0>Okay.
+
+00:12:54.040 --> 00:12:56.120
+<v Speaker 0>So let's head back over here.
+
+00:12:56.600 --> 00:12:58.760
+<v Speaker 0>And, of course, there's always something silly.
+
+00:12:59.080 --> 00:13:01.960
+<v Speaker 0>We want to block when the country is
+
+00:13:01.960 --> 00:13:02.600
+<v Speaker 0>not
+
+00:13:03.240 --> 00:13:04.815
+<v Speaker 0>The United Kingdom.
+
+00:13:06.175 --> 00:13:08.575
+<v Speaker 0>So let's kill that first process,
+
+00:13:08.975 --> 00:13:10.335
+<v Speaker 0>rerun ngrok,
+
+00:13:10.335 --> 00:13:12.015
+<v Speaker 0>head back to the browser,
+
+00:13:12.415 --> 00:13:14.975
+<v Speaker 0>and refresh. And, of course, we get hello
+
+00:13:14.975 --> 00:13:15.455
+<v Speaker 0>UK.
+
+00:13:17.790 --> 00:13:18.350
+<v Speaker 0>So
+
+00:13:19.630 --> 00:13:21.390
+<v Speaker 0>let's run curl
+
+00:13:21.390 --> 00:13:26.990
+<v Speaker 0>htpsRawkodengrok.dev/uk.
+
+00:13:28.405 --> 00:13:30.485
+<v Speaker 0>And now our Cloud Shell tells us that
+
+00:13:30.485 --> 00:13:33.445
+<v Speaker 0>it cannot access this website because we are
+
+00:13:33.445 --> 00:13:34.405
+<v Speaker 0>in Belgium,
+
+00:13:34.805 --> 00:13:36.325
+<v Speaker 0>but we haven't affected
+
+00:13:37.525 --> 00:13:38.805
+<v Speaker 0>any other page.
+
+00:13:39.525 --> 00:13:39.925
+<v Speaker 0>Perfect.
+
+00:13:41.050 --> 00:13:43.370
+<v Speaker 0>So I hope you see just how powerful
+
+00:13:43.370 --> 00:13:46.410
+<v Speaker 0>traffic policies for ngrok can be, and we've
+
+00:13:46.410 --> 00:13:48.170
+<v Speaker 0>barely scratched the surface.
+
+00:13:49.610 --> 00:13:52.329
+<v Speaker 0>Go explore the documentation where you'll find examples
+
+00:13:52.329 --> 00:13:53.209
+<v Speaker 0>of
+
+00:13:53.825 --> 00:13:55.105
+<v Speaker 0>JWT validation
+
+00:13:57.505 --> 00:13:58.785
+<v Speaker 0>for your endpoints.
+
+00:13:59.585 --> 00:14:02.465
+<v Speaker 0>You can disable and secure TLS ciphers,
+
+00:14:02.785 --> 00:14:04.065
+<v Speaker 0>enable compression,
+
+00:14:05.105 --> 00:14:08.305
+<v Speaker 0>and add and remove HTTP headers to request
+
+00:14:09.340 --> 00:14:10.060
+<v Speaker 0>all
+
+00:14:10.620 --> 00:14:12.940
+<v Speaker 0>through a simple YAML interface.
+
+00:14:14.017 --> 00:14:16.577
+<v Speaker 0>I hope you enjoyed this video. Please remember
+
+00:14:16.577 --> 00:14:18.497
+<v Speaker 0>to thumbs up and share the video with
+
+00:14:18.497 --> 00:14:19.377
+<v Speaker 0>your colleagues.
+
+00:14:19.857 --> 00:14:21.857
+<v Speaker 0>Until next time. Have a great day.

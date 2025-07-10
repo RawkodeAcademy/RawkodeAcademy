@@ -1,0 +1,5291 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 13dfc862-565e-4164-a130-15e5a5039a54
+Created: 2025-04-29T22:06:19.209Z
+Duration: 4005.0198
+Channels: 1
+
+00:01:19.050 --> 00:01:22.010
+<v Speaker 0>Hello, and welcome to today's episode.
+
+00:01:22.410 --> 00:01:25.770
+<v Speaker 0>I am joined by Dmitry Kalining from VMware.
+
+00:01:25.770 --> 00:01:28.090
+<v Speaker 0>He is the maintainer of Carvel, an open
+
+00:01:28.090 --> 00:01:30.490
+<v Speaker 0>source tool chain for deploying to Kubernetes
+
+00:01:30.490 --> 00:01:32.010
+<v Speaker 0>and making our lives easier.
+
+00:01:32.845 --> 00:01:34.365
+<v Speaker 0>Hello, Dimitri. How are you?
+
+00:01:34.685 --> 00:01:37.005
+<v Speaker 1>Hey, David. Thanks for having me. I'm pretty
+
+00:01:37.005 --> 00:01:38.765
+<v Speaker 1>good. Awesome.
+
+00:01:38.924 --> 00:01:40.924
+<v Speaker 0>I I'm looking forward to this. Deploying to
+
+00:01:40.924 --> 00:01:43.564
+<v Speaker 0>Kubernetes is is far from an enjoyable experience
+
+00:01:43.564 --> 00:01:45.164
+<v Speaker 0>depending on the tools that we're using, and
+
+00:01:45.164 --> 00:01:47.360
+<v Speaker 0>I'm I'm hoping that you're gonna show me
+
+00:01:47.360 --> 00:01:49.040
+<v Speaker 0>some stuff today that's that's gonna change my
+
+00:01:49.040 --> 00:01:51.520
+<v Speaker 0>life for the better. Right? Hopefully.
+
+00:01:52.240 --> 00:01:54.640
+<v Speaker 0>Do you want to just then spend the
+
+00:01:54.640 --> 00:01:56.799
+<v Speaker 0>next minute? I mean, feel free to tell
+
+00:01:56.799 --> 00:01:59.280
+<v Speaker 0>us about Carvel and what problem it's trying
+
+00:01:59.280 --> 00:02:01.119
+<v Speaker 0>to solve and the different components that make
+
+00:02:01.119 --> 00:02:01.360
+<v Speaker 0>it up.
+
+00:02:02.205 --> 00:02:03.325
+<v Speaker 1>Sure. Sure.
+
+00:02:05.165 --> 00:02:07.485
+<v Speaker 1>Carvel started about a year ago.
+
+00:02:08.365 --> 00:02:10.445
+<v Speaker 1>It was actually known as k fourteen s
+
+00:02:10.445 --> 00:02:11.165
+<v Speaker 1>before.
+
+00:02:11.565 --> 00:02:13.325
+<v Speaker 1>We recently renamed it to Carvel.
+
+00:02:14.460 --> 00:02:17.340
+<v Speaker 1>It it started out as a few projects
+
+00:02:17.340 --> 00:02:18.700
+<v Speaker 1>that I was
+
+00:02:18.940 --> 00:02:19.900
+<v Speaker 1>working on
+
+00:02:20.460 --> 00:02:22.700
+<v Speaker 1>trying to improve what I
+
+00:02:23.420 --> 00:02:24.300
+<v Speaker 1>saw
+
+00:02:24.300 --> 00:02:27.420
+<v Speaker 1>as not a necessarily great experience deploying and
+
+00:02:27.675 --> 00:02:30.155
+<v Speaker 1>managing configuration for Kubernetes.
+
+00:02:30.475 --> 00:02:32.155
+<v Speaker 1>I think at the time, I was trying
+
+00:02:32.155 --> 00:02:33.035
+<v Speaker 1>to deploy
+
+00:02:33.595 --> 00:02:35.195
+<v Speaker 1>Knative to my cluster.
+
+00:02:35.675 --> 00:02:36.235
+<v Speaker 1>And,
+
+00:02:36.795 --> 00:02:38.235
+<v Speaker 1>you know, at the time, I think Knative
+
+00:02:38.235 --> 00:02:39.835
+<v Speaker 1>had a hard dependency on Istio.
+
+00:02:40.490 --> 00:02:42.569
+<v Speaker 1>And so I also had to install Istio,
+
+00:02:42.569 --> 00:02:44.650
+<v Speaker 1>and then, you know, Knative had about a
+
+00:02:44.650 --> 00:02:47.770
+<v Speaker 1>hundred different Kubernetes resources. So as you update
+
+00:02:48.090 --> 00:02:48.890
+<v Speaker 1>throughout,
+
+00:02:50.170 --> 00:02:51.930
+<v Speaker 1>you know, versions, it was kinda hard to
+
+00:02:51.930 --> 00:02:53.930
+<v Speaker 1>track what should be deleted, what should be
+
+00:02:53.930 --> 00:02:56.785
+<v Speaker 1>created, updated, etcetera. Right? Does
+
+00:02:56.785 --> 00:02:59.425
+<v Speaker 1>some of that stuff, but I just didn't
+
+00:02:59.425 --> 00:03:00.065
+<v Speaker 1>quite
+
+00:03:00.385 --> 00:03:02.465
+<v Speaker 1>feel like I had, you know, fine grained
+
+00:03:02.465 --> 00:03:03.585
+<v Speaker 1>control over that.
+
+00:03:04.305 --> 00:03:05.105
+<v Speaker 1>And then,
+
+00:03:05.505 --> 00:03:07.584
+<v Speaker 1>you know, as I was kind of playing
+
+00:03:07.584 --> 00:03:10.305
+<v Speaker 1>around and trying to deploy things to Kubernetes,
+
+00:03:11.460 --> 00:03:12.500
+<v Speaker 1>I've also
+
+00:03:13.140 --> 00:03:15.620
+<v Speaker 1>dealt with a, you know, several helm charts,
+
+00:03:15.620 --> 00:03:17.860
+<v Speaker 1>and I always found it to be quite
+
+00:03:18.740 --> 00:03:22.500
+<v Speaker 1>cumbersome to deal with textual templating. So
+
+00:03:23.140 --> 00:03:25.140
+<v Speaker 1>I ended up kind of digging in into
+
+00:03:25.140 --> 00:03:26.020
+<v Speaker 1>that area as well.
+
+00:03:27.355 --> 00:03:30.315
+<v Speaker 1>And so the first tool that came out
+
+00:03:30.315 --> 00:03:32.395
+<v Speaker 1>of all that was YTT.
+
+00:03:32.395 --> 00:03:35.755
+<v Speaker 1>This was the the the structural templating tool
+
+00:03:36.075 --> 00:03:37.195
+<v Speaker 1>for YAML.
+
+00:03:37.835 --> 00:03:40.075
+<v Speaker 1>The second tool, I believe, came out was
+
+00:03:40.155 --> 00:03:40.795
+<v Speaker 1>CAPP,
+
+00:03:41.530 --> 00:03:43.610
+<v Speaker 1>or I guess some people call it CAPP.
+
+00:03:43.769 --> 00:03:45.130
+<v Speaker 1>That's for deploying
+
+00:03:45.849 --> 00:03:48.489
+<v Speaker 1>configuration to Kubernetes and kind of managing it
+
+00:03:48.489 --> 00:03:49.210
+<v Speaker 1>over time.
+
+00:03:49.769 --> 00:03:51.930
+<v Speaker 1>And then there's actually a few few other
+
+00:03:51.930 --> 00:03:54.489
+<v Speaker 1>tools. They're probably less known than these two.
+
+00:03:55.435 --> 00:03:57.995
+<v Speaker 1>K build is probably the next one that
+
+00:03:58.075 --> 00:04:01.035
+<v Speaker 1>folks hear about. It kind of helps you
+
+00:04:01.114 --> 00:04:03.595
+<v Speaker 1>integrate your Docker building into
+
+00:04:03.675 --> 00:04:04.875
+<v Speaker 1>this Kubernetes
+
+00:04:04.875 --> 00:04:06.315
+<v Speaker 1>deployment workflow.
+
+00:04:07.755 --> 00:04:09.035
+<v Speaker 1>So, yeah, that was that was kind of
+
+00:04:09.035 --> 00:04:12.510
+<v Speaker 1>a small history of of Carvel.
+
+00:04:13.310 --> 00:04:15.470
+<v Speaker 0>Yeah. So when we when I said tooltune
+
+00:04:15.470 --> 00:04:18.510
+<v Speaker 0>earlier, I mean, it's definitely something instead of
+
+00:04:18.510 --> 00:04:20.350
+<v Speaker 0>tools that are trying to kind of improve
+
+00:04:20.350 --> 00:04:22.910
+<v Speaker 0>the developer experience across the entire lifetime of
+
+00:04:22.910 --> 00:04:24.955
+<v Speaker 0>a Kubernetes application, It's kind of the vibe
+
+00:04:24.955 --> 00:04:26.635
+<v Speaker 0>I was getting from all the different moving
+
+00:04:26.635 --> 00:04:27.995
+<v Speaker 0>parts and stuff like that.
+
+00:04:28.715 --> 00:04:30.315
+<v Speaker 1>Yeah. Well, one one of the key points
+
+00:04:30.315 --> 00:04:31.355
+<v Speaker 1>that I was
+
+00:04:32.395 --> 00:04:33.595
+<v Speaker 1>trying to
+
+00:04:34.395 --> 00:04:37.115
+<v Speaker 1>to explore is how do you actually have
+
+00:04:37.115 --> 00:04:40.370
+<v Speaker 1>this separate tools that do these distinct
+
+00:04:40.530 --> 00:04:43.650
+<v Speaker 1>things like deployment versus configuration management? How do
+
+00:04:43.650 --> 00:04:45.330
+<v Speaker 1>you keep the how do you keep them
+
+00:04:45.330 --> 00:04:47.410
+<v Speaker 1>separate but yet have them play
+
+00:04:47.570 --> 00:04:49.810
+<v Speaker 1>very well together? So kind of following the
+
+00:04:49.810 --> 00:04:50.690
+<v Speaker 1>Unix philosophy.
+
+00:04:52.155 --> 00:04:54.875
+<v Speaker 0>Yeah. That makes sense. Total sense. So let's
+
+00:04:54.875 --> 00:04:56.715
+<v Speaker 0>just pull up. I have
+
+00:04:57.915 --> 00:05:00.235
+<v Speaker 0>a website shared here.
+
+00:05:01.435 --> 00:05:03.275
+<v Speaker 0>And what we can see is that you
+
+00:05:03.275 --> 00:05:05.835
+<v Speaker 0>kinda broke this down into two sets of
+
+00:05:05.835 --> 00:05:07.980
+<v Speaker 0>tools. So we got, I guess, what are
+
+00:05:07.980 --> 00:05:09.660
+<v Speaker 0>the core tools on the top, and then
+
+00:05:09.660 --> 00:05:11.580
+<v Speaker 0>you've got some more experimental stuff, I guess,
+
+00:05:11.580 --> 00:05:12.940
+<v Speaker 0>that you're working on on the bottom.
+
+00:05:13.820 --> 00:05:16.140
+<v Speaker 1>That's right. So this is actually behind Carvel.
+
+00:05:16.140 --> 00:05:18.860
+<v Speaker 1>There's now a team at VMware. And after
+
+00:05:19.180 --> 00:05:21.980
+<v Speaker 1>various deliberations and whatnot, we decided to kind
+
+00:05:21.980 --> 00:05:23.625
+<v Speaker 1>of separate
+
+00:05:24.425 --> 00:05:25.785
+<v Speaker 1>this high level,
+
+00:05:26.265 --> 00:05:29.625
+<v Speaker 1>quite mature tools from something that we're experimenting
+
+00:05:29.625 --> 00:05:32.025
+<v Speaker 1>or, you know, messing around with.
+
+00:05:32.825 --> 00:05:34.105
+<v Speaker 0>Yeah. That makes sense.
+
+00:05:34.505 --> 00:05:35.145
+<v Speaker 0>So
+
+00:05:35.320 --> 00:05:37.320
+<v Speaker 0>today, we're gonna get hands on with these
+
+00:05:37.320 --> 00:05:39.720
+<v Speaker 0>tools, which I'm very happy about. But before
+
+00:05:39.720 --> 00:05:40.920
+<v Speaker 0>we do that, I guess,
+
+00:05:41.720 --> 00:05:43.720
+<v Speaker 0>would it be fair to say that these
+
+00:05:43.720 --> 00:05:46.919
+<v Speaker 0>tools directly compete with customized and helm and
+
+00:05:46.919 --> 00:05:48.600
+<v Speaker 0>just write in straight up YAML? Like, this
+
+00:05:48.600 --> 00:05:50.039
+<v Speaker 0>is this is a tool chain to replace
+
+00:05:50.039 --> 00:05:51.915
+<v Speaker 0>all of that from people's lives.
+
+00:05:52.475 --> 00:05:53.835
+<v Speaker 1>That's right. Yep.
+
+00:05:54.395 --> 00:05:55.195
+<v Speaker 1>Yep.
+
+00:05:55.595 --> 00:05:58.475
+<v Speaker 0>Okay. I'm definitely excited then. One of my
+
+00:05:58.475 --> 00:06:00.315
+<v Speaker 0>biggest think I ran out of it. That's
+
+00:06:00.315 --> 00:06:02.810
+<v Speaker 0>probably on a weekly basis on Twitter, But
+
+00:06:02.810 --> 00:06:05.130
+<v Speaker 0>just using Go templates inside of Helm charts
+
+00:06:05.130 --> 00:06:08.090
+<v Speaker 0>and fighting with wrangling YAML value files to
+
+00:06:08.090 --> 00:06:10.810
+<v Speaker 0>me is just is is quite cumbersome. And
+
+00:06:10.810 --> 00:06:12.250
+<v Speaker 0>I'm hoping that there are some of the
+
+00:06:12.250 --> 00:06:13.690
+<v Speaker 0>tools that we look at today can make
+
+00:06:13.690 --> 00:06:14.410
+<v Speaker 0>that a lot better.
+
+00:06:15.425 --> 00:06:17.345
+<v Speaker 0>Do you use Go templates language? Is that
+
+00:06:17.345 --> 00:06:17.985
+<v Speaker 0>a thing?
+
+00:06:19.425 --> 00:06:21.345
+<v Speaker 1>You mean outside of ITT?
+
+00:06:21.505 --> 00:06:22.065
+<v Speaker 1>Or
+
+00:06:23.665 --> 00:06:26.305
+<v Speaker 1>occasionally, you know, still have to deal with
+
+00:06:26.305 --> 00:06:29.850
+<v Speaker 1>various configurations here and there. Yeah. I I
+
+00:06:29.850 --> 00:06:31.770
+<v Speaker 0>I should probably just bake the bullet and
+
+00:06:31.770 --> 00:06:33.370
+<v Speaker 0>start learning it and get better at it
+
+00:06:33.370 --> 00:06:35.610
+<v Speaker 0>instead of complaining about it. But then what
+
+00:06:35.610 --> 00:06:36.810
+<v Speaker 0>would I what would I run about on
+
+00:06:36.810 --> 00:06:37.930
+<v Speaker 0>Twitter otherwise? So
+
+00:06:38.650 --> 00:06:40.330
+<v Speaker 1>That's why I gotta have some material.
+
+00:06:42.435 --> 00:06:45.075
+<v Speaker 0>Alright. So step one of every every episode
+
+00:06:45.075 --> 00:06:46.514
+<v Speaker 0>that I do here is how do I
+
+00:06:46.514 --> 00:06:48.835
+<v Speaker 0>install the tools? What is the the fact
+
+00:06:48.835 --> 00:06:51.155
+<v Speaker 0>to best definitive way for me to install
+
+00:06:51.155 --> 00:06:52.595
+<v Speaker 0>the Carvel toolchain?
+
+00:06:53.955 --> 00:06:55.635
+<v Speaker 1>You can scroll down
+
+00:06:56.030 --> 00:06:57.789
+<v Speaker 1>a little bit down to the page, and
+
+00:06:57.789 --> 00:07:00.830
+<v Speaker 1>there's a a few installation methods there.
+
+00:07:02.030 --> 00:07:03.870
+<v Speaker 1>Since these are separate
+
+00:07:03.870 --> 00:07:04.590
+<v Speaker 1>tools,
+
+00:07:04.910 --> 00:07:06.669
+<v Speaker 1>you know, you can either use a script
+
+00:07:06.669 --> 00:07:08.270
+<v Speaker 1>to install them all together,
+
+00:07:09.155 --> 00:07:11.955
+<v Speaker 1>or you can select individual tools from their
+
+00:07:11.955 --> 00:07:13.315
+<v Speaker 1>GitHub, download
+
+00:07:13.634 --> 00:07:14.914
+<v Speaker 1>releases
+
+00:07:14.914 --> 00:07:17.155
+<v Speaker 1>pages, or you can, you know, use Brew,
+
+00:07:17.155 --> 00:07:19.235
+<v Speaker 1>for example, if you're on Mac. Or actually,
+
+00:07:19.235 --> 00:07:21.740
+<v Speaker 1>Brew works on Linux, I found out. So
+
+00:07:21.740 --> 00:07:23.980
+<v Speaker 1>some someone someone wanted to use Brew on
+
+00:07:23.980 --> 00:07:25.100
+<v Speaker 1>Linux. So
+
+00:07:25.500 --> 00:07:26.140
+<v Speaker 1>it's
+
+00:07:27.020 --> 00:07:28.620
+<v Speaker 1>quite caught off guard there.
+
+00:07:29.500 --> 00:07:31.980
+<v Speaker 0>Yeah. I mean, I'm I've been I joined
+
+00:07:32.060 --> 00:07:34.380
+<v Speaker 0>I started a new possession recently with Packet,
+
+00:07:34.380 --> 00:07:35.900
+<v Speaker 0>and I got a Mac as part of
+
+00:07:35.900 --> 00:07:38.315
+<v Speaker 0>that role. And I'm still fighting against it.
+
+00:07:38.315 --> 00:07:39.995
+<v Speaker 0>I like, I am a Linux user and
+
+00:07:39.995 --> 00:07:41.914
+<v Speaker 0>trying to get myself accustomed to brew as
+
+00:07:41.914 --> 00:07:43.595
+<v Speaker 0>package manager. I mean, I come from Arch
+
+00:07:43.595 --> 00:07:45.354
+<v Speaker 0>Linux. I've got the AUR there, and it's
+
+00:07:45.354 --> 00:07:47.914
+<v Speaker 0>just everything in the world is packaged. Yep.
+
+00:07:48.730 --> 00:07:50.650
+<v Speaker 0>So I'm no stranger to Carvel Bash either,
+
+00:07:50.650 --> 00:07:52.170
+<v Speaker 0>but I will play it safe with the
+
+00:07:52.170 --> 00:07:52.890
+<v Speaker 0>brew tap.
+
+00:07:55.450 --> 00:07:57.130
+<v Speaker 0>At least then I'll get some more chats.
+
+00:07:57.530 --> 00:07:59.210
+<v Speaker 1>Hey. It's actually as you can see, the
+
+00:07:59.210 --> 00:08:01.130
+<v Speaker 1>the brew tap is still called k 14
+
+00:08:01.130 --> 00:08:03.130
+<v Speaker 1>s. We've been slowly
+
+00:08:04.615 --> 00:08:07.415
+<v Speaker 1>updating the names. Recently renamed the
+
+00:08:07.975 --> 00:08:09.975
+<v Speaker 1>Slack channel in our Kubernetes,
+
+00:08:10.535 --> 00:08:11.255
+<v Speaker 1>I guess,
+
+00:08:11.655 --> 00:08:14.535
+<v Speaker 1>in the Kubernetes Slack from k 14 s
+
+00:08:14.535 --> 00:08:15.095
+<v Speaker 1>to Carvel.
+
+00:08:15.990 --> 00:08:18.710
+<v Speaker 0>So what what inspired that name change then?
+
+00:08:20.470 --> 00:08:22.230
+<v Speaker 1>Inspired might be a
+
+00:08:23.670 --> 00:08:26.550
+<v Speaker 1>wrong name for that, but within VMware,
+
+00:08:27.670 --> 00:08:28.870
+<v Speaker 1>there is certain
+
+00:08:29.685 --> 00:08:30.965
+<v Speaker 1>naming guidelines.
+
+00:08:30.965 --> 00:08:32.725
+<v Speaker 1>And so this was one
+
+00:08:33.125 --> 00:08:35.605
+<v Speaker 1>of the one of the things that we
+
+00:08:35.605 --> 00:08:38.325
+<v Speaker 1>wanted to comply with and be friendly to
+
+00:08:38.325 --> 00:08:40.804
+<v Speaker 1>marketing and other folks within the organization.
+
+00:08:42.230 --> 00:08:44.070
+<v Speaker 1>Yeah. The the k fourteen s name was
+
+00:08:44.070 --> 00:08:46.550
+<v Speaker 1>just something that, me and my friend picked
+
+00:08:46.550 --> 00:08:47.350
+<v Speaker 1>as
+
+00:08:47.589 --> 00:08:49.589
+<v Speaker 1>a short thing to type.
+
+00:08:51.029 --> 00:08:53.029
+<v Speaker 1>But, you know, it was never meant to
+
+00:08:53.029 --> 00:08:55.525
+<v Speaker 1>be a kind of a top level marketing
+
+00:08:55.525 --> 00:08:57.525
+<v Speaker 1>name. Well, if the Internet is to be
+
+00:08:57.525 --> 00:09:00.565
+<v Speaker 0>believed, the k fourteen s is Kubernetes tools.
+
+00:09:00.965 --> 00:09:02.085
+<v Speaker 1>That is right.
+
+00:09:02.645 --> 00:09:06.085
+<v Speaker 1>We actually counted those letters, but then somebody
+
+00:09:06.085 --> 00:09:08.310
+<v Speaker 1>told us that you're not supposed to count
+
+00:09:08.310 --> 00:09:11.350
+<v Speaker 1>the space between Kubernetes and tools. So
+
+00:09:11.750 --> 00:09:13.589
+<v Speaker 1>at that point, we just said, you know
+
+00:09:13.589 --> 00:09:14.149
+<v Speaker 1>what?
+
+00:09:14.950 --> 00:09:17.510
+<v Speaker 1>K k 13 s would be unlucky. So
+
+00:09:17.510 --> 00:09:19.350
+<v Speaker 1>we went with k 14 s.
+
+00:09:20.149 --> 00:09:22.944
+<v Speaker 0>I like it. Alright. So now that my
+
+00:09:22.944 --> 00:09:25.504
+<v Speaker 0>brew is finished, this should mean, in theory,
+
+00:09:25.504 --> 00:09:27.345
+<v Speaker 0>if I could access the YTT.
+
+00:09:27.824 --> 00:09:28.545
+<v Speaker 0>Yeah.
+
+00:09:29.024 --> 00:09:31.264
+<v Speaker 0>K b l d. Oh,
+
+00:09:32.064 --> 00:09:33.105
+<v Speaker 0>k. Excellent.
+
+00:09:35.550 --> 00:09:36.350
+<v Speaker 0>I
+
+00:09:36.750 --> 00:09:37.790
+<v Speaker 0>guess now
+
+00:09:38.430 --> 00:09:40.030
+<v Speaker 0>and it would help if for once in
+
+00:09:40.030 --> 00:09:42.110
+<v Speaker 0>LA if I remember to start Docker before,
+
+00:09:42.110 --> 00:09:43.790
+<v Speaker 0>you know, the the call. But we'll give
+
+00:09:43.790 --> 00:09:45.310
+<v Speaker 0>that thirty seconds to get healthy, and I
+
+00:09:45.310 --> 00:09:46.910
+<v Speaker 0>should have a working Kubernetes cluster.
+
+00:09:48.225 --> 00:09:50.545
+<v Speaker 1>What what's the what's the choice over here
+
+00:09:50.545 --> 00:09:52.785
+<v Speaker 1>for how you run Kubernetes? Do you typically
+
+00:09:52.785 --> 00:09:53.665
+<v Speaker 1>use a
+
+00:09:53.985 --> 00:09:56.705
+<v Speaker 1>built in Docker built in Kubernetes and Docker
+
+00:09:56.705 --> 00:09:57.665
+<v Speaker 1>or something
+
+00:09:57.985 --> 00:09:58.145
+<v Speaker 1>else?
+
+00:09:59.280 --> 00:10:01.040
+<v Speaker 0>So I keep changing. I've been playing a
+
+00:10:01.040 --> 00:10:01.840
+<v Speaker 0>lot lately.
+
+00:10:02.080 --> 00:10:04.720
+<v Speaker 0>I've been battling with Kines running inside of
+
+00:10:04.720 --> 00:10:07.520
+<v Speaker 0>Docker for Mac, which works pretty well. I'm
+
+00:10:07.520 --> 00:10:09.440
+<v Speaker 0>also I really like MiniKube.
+
+00:10:09.760 --> 00:10:11.840
+<v Speaker 0>I just like the direction that they're going
+
+00:10:11.840 --> 00:10:14.815
+<v Speaker 0>in, and I've been trying to use that
+
+00:10:14.815 --> 00:10:17.295
+<v Speaker 0>with the new VMware fusion 12.
+
+00:10:17.535 --> 00:10:19.535
+<v Speaker 0>But Oh. Because it got the new player
+
+00:10:19.535 --> 00:10:21.055
+<v Speaker 0>release, which is like a week old or
+
+00:10:21.055 --> 00:10:21.615
+<v Speaker 0>whatever.
+
+00:10:21.935 --> 00:10:23.695
+<v Speaker 0>Mhmm. But it's free for personal use. So
+
+00:10:23.695 --> 00:10:25.775
+<v Speaker 0>now I can use that for hopefully a
+
+00:10:25.775 --> 00:10:26.815
+<v Speaker 0>slightly better experience.
+
+00:10:27.660 --> 00:10:29.260
+<v Speaker 1>Yeah. I'm a big fan of Minikube as
+
+00:10:29.260 --> 00:10:31.180
+<v Speaker 1>well just for the sake that it
+
+00:10:31.500 --> 00:10:33.740
+<v Speaker 1>comes with a Docker instance that you can,
+
+00:10:33.740 --> 00:10:35.899
+<v Speaker 1>you know, directly build and it's available to
+
+00:10:35.899 --> 00:10:36.700
+<v Speaker 1>the cluster.
+
+00:10:37.180 --> 00:10:38.620
+<v Speaker 0>Well, yeah, I have run into a few
+
+00:10:38.620 --> 00:10:41.339
+<v Speaker 0>problems running kind inside Docker Docker for Mac.
+
+00:10:41.355 --> 00:10:41.995
+<v Speaker 0>So
+
+00:10:42.795 --> 00:10:44.875
+<v Speaker 0>edge cases usually, but they
+
+00:10:45.115 --> 00:10:46.075
+<v Speaker 0>quite prominent.
+
+00:10:46.394 --> 00:10:49.115
+<v Speaker 0>Alright. So we've got the tools installed. I
+
+00:10:49.115 --> 00:10:52.875
+<v Speaker 0>am assuming now I have a cluster
+
+00:10:53.595 --> 00:10:54.394
+<v Speaker 0>I could spell.
+
+00:11:01.300 --> 00:11:03.620
+<v Speaker 0>That is my Docker from Mac cluster because
+
+00:11:03.620 --> 00:11:05.700
+<v Speaker 0>I see VPN kit and I've got oh,
+
+00:11:05.700 --> 00:11:07.940
+<v Speaker 0>I've got some cluster API stuff running, but
+
+00:11:07.940 --> 00:11:09.380
+<v Speaker 0>we'll just ignore that for now.
+
+00:11:10.260 --> 00:11:11.700
+<v Speaker 0>So
+
+00:11:11.214 --> 00:11:13.774
+<v Speaker 0>when we were chatting earlier, we're talking about
+
+00:11:13.774 --> 00:11:15.455
+<v Speaker 0>the direction that we wanted to play with
+
+00:11:15.455 --> 00:11:16.815
+<v Speaker 0>these tools. Now we could have jumped straight
+
+00:11:16.815 --> 00:11:18.895
+<v Speaker 0>into YTT, which is the the
+
+00:11:19.855 --> 00:11:22.095
+<v Speaker 0>templating side of the YAML aspect of it.
+
+00:11:22.095 --> 00:11:23.214
+<v Speaker 0>But you were also saying that it may
+
+00:11:23.214 --> 00:11:24.654
+<v Speaker 0>actually make more sense of trying to play
+
+00:11:24.654 --> 00:11:26.240
+<v Speaker 0>with key app first
+
+00:11:26.400 --> 00:11:28.480
+<v Speaker 0>to deploy a workload to our cluster.
+
+00:11:28.800 --> 00:11:30.480
+<v Speaker 1>So That's right. I think let's go with
+
+00:11:30.480 --> 00:11:32.880
+<v Speaker 0>that. How how do I use KeyApp, and
+
+00:11:32.880 --> 00:11:34.800
+<v Speaker 0>how do I deploy something to my cluster?
+
+00:11:36.080 --> 00:11:39.200
+<v Speaker 1>Well, I guess one way to
+
+00:11:39.805 --> 00:11:41.965
+<v Speaker 1>to look at CAP is that it's meant
+
+00:11:41.965 --> 00:11:42.525
+<v Speaker 1>to
+
+00:11:44.045 --> 00:11:47.325
+<v Speaker 1>track the resources that you're deploying to the
+
+00:11:47.325 --> 00:11:49.085
+<v Speaker 1>cluster. And the way it tracks it is
+
+00:11:49.085 --> 00:11:51.885
+<v Speaker 1>by applying a label, and then it associates
+
+00:11:51.990 --> 00:11:54.070
+<v Speaker 1>a name to it. So you should be
+
+00:11:54.070 --> 00:11:56.470
+<v Speaker 1>able to take any plain YAML out there,
+
+00:11:56.470 --> 00:11:59.350
+<v Speaker 1>maybe some kind of a Kubernetes example of
+
+00:11:59.350 --> 00:12:00.390
+<v Speaker 1>sorts somewhere,
+
+00:12:01.029 --> 00:12:03.830
+<v Speaker 1>and just use the deploy command under k
+
+00:12:03.830 --> 00:12:04.630
+<v Speaker 1>app
+
+00:12:05.095 --> 00:12:06.695
+<v Speaker 1>to to deploy it.
+
+00:12:07.015 --> 00:12:09.735
+<v Speaker 0>Okay. So one other thing, I maintain some
+
+00:12:09.735 --> 00:12:10.775
+<v Speaker 0>helm charts
+
+00:12:10.935 --> 00:12:13.495
+<v Speaker 0>for influx DB. I did template out some
+
+00:12:13.495 --> 00:12:15.975
+<v Speaker 0>YAML, which we can use with. But for
+
+00:12:15.975 --> 00:12:17.575
+<v Speaker 0>the sake of the key app stuff, what
+
+00:12:17.575 --> 00:12:19.015
+<v Speaker 0>I'm gonna say is let's just
+
+00:12:19.500 --> 00:12:21.500
+<v Speaker 0>keep it really simple for now
+
+00:12:23.340 --> 00:12:26.300
+<v Speaker 0>by NGINX with the most basic configuration I
+
+00:12:26.300 --> 00:12:27.340
+<v Speaker 0>can think of.
+
+00:12:29.900 --> 00:12:32.380
+<v Speaker 0>That will be okay for the demonstration purposes.
+
+00:12:32.380 --> 00:12:32.940
+<v Speaker 0>Yeah?
+
+00:12:33.420 --> 00:12:34.780
+<v Speaker 1>Should be. Should be.
+
+00:12:35.555 --> 00:12:37.714
+<v Speaker 0>So what you said there was I can
+
+00:12:37.714 --> 00:12:39.235
+<v Speaker 0>use key app, and it has some sort
+
+00:12:39.235 --> 00:12:42.274
+<v Speaker 0>of deploy sub command. Yeah. Yep.
+
+00:12:42.995 --> 00:12:45.394
+<v Speaker 0>And does that just work like my like,
+
+00:12:45.394 --> 00:12:47.634
+<v Speaker 0>the role that It's gonna be yeah. It's
+
+00:12:47.634 --> 00:12:48.514
+<v Speaker 1>gonna be dash f.
+
+00:12:49.550 --> 00:12:51.470
+<v Speaker 1>And but in addition to dash f, you'll
+
+00:12:51.470 --> 00:12:53.389
+<v Speaker 1>have to throw in dash a, which stands
+
+00:12:53.389 --> 00:12:55.389
+<v Speaker 1>for the name of the app.
+
+00:12:56.670 --> 00:12:58.589
+<v Speaker 0>I have to name my app. So I
+
+00:12:58.589 --> 00:13:00.110
+<v Speaker 0>can just call that NGINX?
+
+00:13:00.110 --> 00:13:00.750
+<v Speaker 1>Sounds good.
+
+00:13:03.935 --> 00:13:05.695
+<v Speaker 1>Yep. There it is.
+
+00:13:06.255 --> 00:13:07.855
+<v Speaker 0>So this is telling me that it has
+
+00:13:07.855 --> 00:13:10.095
+<v Speaker 0>to make some changes to my cluster. So
+
+00:13:10.095 --> 00:13:12.175
+<v Speaker 0>already, this is doing some sort of,
+
+00:13:12.735 --> 00:13:15.375
+<v Speaker 0>I don't know, preemptive reconciliation. It's looking at
+
+00:13:15.375 --> 00:13:17.215
+<v Speaker 0>what's in my cluster, looking at those labels
+
+00:13:17.215 --> 00:13:18.310
+<v Speaker 0>you mentioned, and trying to trying to work
+
+00:13:18.310 --> 00:13:20.230
+<v Speaker 0>out what changes are actually gonna happen.
+
+00:13:20.709 --> 00:13:21.750
+<v Speaker 1>Right. So it's so it
+
+00:13:22.709 --> 00:13:24.790
+<v Speaker 1>you know, I I believe most folks are
+
+00:13:24.790 --> 00:13:27.509
+<v Speaker 1>familiar with Terraform. Right? And within Terraform, there's
+
+00:13:27.509 --> 00:13:30.389
+<v Speaker 1>this idea of planning and then applying the
+
+00:13:30.389 --> 00:13:32.654
+<v Speaker 1>change set that it planned. Right? And so
+
+00:13:32.654 --> 00:13:35.214
+<v Speaker 1>we've done same exact thing in CAP where
+
+00:13:35.375 --> 00:13:36.335
+<v Speaker 1>we first
+
+00:13:36.495 --> 00:13:37.615
+<v Speaker 1>do a planning
+
+00:13:37.935 --> 00:13:40.095
+<v Speaker 1>session of what what's going to happen. And
+
+00:13:40.095 --> 00:13:41.695
+<v Speaker 1>as you can see over here, we have
+
+00:13:41.695 --> 00:13:44.175
+<v Speaker 1>a single resource, and the operation of it
+
+00:13:44.175 --> 00:13:46.330
+<v Speaker 1>is going to be create because CAP didn't
+
+00:13:46.330 --> 00:13:48.650
+<v Speaker 1>find that resource in the cluster.
+
+00:13:49.690 --> 00:13:52.170
+<v Speaker 1>And then it just presented you that plan.
+
+00:13:52.250 --> 00:13:53.770
+<v Speaker 1>So you can go ahead and apply the
+
+00:13:53.770 --> 00:13:54.330
+<v Speaker 1>plan.
+
+00:13:55.130 --> 00:13:55.690
+<v Speaker 1>And
+
+00:13:56.490 --> 00:13:59.095
+<v Speaker 1>CAP promises you that it's going to do
+
+00:13:59.095 --> 00:14:01.175
+<v Speaker 1>only what's in the plan. Right? So it's
+
+00:14:01.175 --> 00:14:02.935
+<v Speaker 1>not gonna go off and, like, change something
+
+00:14:02.935 --> 00:14:05.415
+<v Speaker 1>else. So you can be a % certain
+
+00:14:05.415 --> 00:14:07.655
+<v Speaker 1>whatever is shown to you. That's what's gonna
+
+00:14:07.655 --> 00:14:07.895
+<v Speaker 1>happen.
+
+00:14:09.350 --> 00:14:11.590
+<v Speaker 0>Alright. So I can see that it's created
+
+00:14:11.590 --> 00:14:13.670
+<v Speaker 0>my deployment as then
+
+00:14:14.310 --> 00:14:15.110
+<v Speaker 0>waiting
+
+00:14:15.110 --> 00:14:17.750
+<v Speaker 0>for changes. So it's actually observing the replica
+
+00:14:17.750 --> 00:14:19.590
+<v Speaker 0>sets in the pods being created?
+
+00:14:19.830 --> 00:14:22.310
+<v Speaker 1>That's right. Yep. We wanted to make it
+
+00:14:22.310 --> 00:14:23.510
+<v Speaker 1>a little bit more
+
+00:14:25.295 --> 00:14:28.095
+<v Speaker 1>friendly to finding out what's actually happening in
+
+00:14:28.095 --> 00:14:29.535
+<v Speaker 1>the cluster. A lot of times, right, you
+
+00:14:29.535 --> 00:14:31.055
+<v Speaker 1>just deploy a bunch of stuff and you
+
+00:14:31.055 --> 00:14:32.815
+<v Speaker 1>have no idea when it's done.
+
+00:14:33.774 --> 00:14:35.855
+<v Speaker 1>So CAP has some
+
+00:14:36.654 --> 00:14:38.014
+<v Speaker 1>effect to logic
+
+00:14:38.255 --> 00:14:39.375
+<v Speaker 1>for
+
+00:14:39.930 --> 00:14:42.730
+<v Speaker 1>checking out various resources and you know? So
+
+00:14:42.730 --> 00:14:44.570
+<v Speaker 1>this this case, I think it's deployment. Right?
+
+00:14:44.570 --> 00:14:46.330
+<v Speaker 1>So it knows how to wait for a
+
+00:14:46.330 --> 00:14:49.050
+<v Speaker 1>deployment based on the deployment status.
+
+00:14:49.530 --> 00:14:51.450
+<v Speaker 0>Okay. And, hopefully, it's useful information
+
+00:14:52.085 --> 00:14:53.925
+<v Speaker 1>to to know. You know, it looks like
+
+00:14:53.925 --> 00:14:56.085
+<v Speaker 1>the container was pending to be created, and
+
+00:14:56.085 --> 00:14:57.765
+<v Speaker 1>then eventually they're created.
+
+00:14:58.485 --> 00:14:59.925
+<v Speaker 0>So, I mean, the first thing that's jumping
+
+00:14:59.925 --> 00:15:02.325
+<v Speaker 0>right into my head now is that what
+
+00:15:02.325 --> 00:15:03.045
+<v Speaker 0>if I
+
+00:15:03.525 --> 00:15:04.405
+<v Speaker 0>break this
+
+00:15:05.130 --> 00:15:07.529
+<v Speaker 0>as what does Keyapt do? Like, let's say
+
+00:15:07.529 --> 00:15:09.209
+<v Speaker 0>I come in here and
+
+00:15:09.610 --> 00:15:11.769
+<v Speaker 0>and let's put those resource constraints back in.
+
+00:15:11.769 --> 00:15:13.610
+<v Speaker 0>Right? And if I set them far too
+
+00:15:13.610 --> 00:15:14.330
+<v Speaker 0>small
+
+00:15:15.450 --> 00:15:17.209
+<v Speaker 0>to the point where NGINX won't be able
+
+00:15:17.209 --> 00:15:20.545
+<v Speaker 0>to start, does that trigger anything with CAP?
+
+00:15:21.505 --> 00:15:23.904
+<v Speaker 1>It might. It depends what the
+
+00:15:25.505 --> 00:15:28.545
+<v Speaker 1>what the resource, I guess, is bubbling up
+
+00:15:28.545 --> 00:15:30.464
+<v Speaker 1>to its status. Right? So it depends if
+
+00:15:30.464 --> 00:15:32.384
+<v Speaker 1>the deployment is showing that kind of information.
+
+00:15:33.200 --> 00:15:35.280
+<v Speaker 1>CAP may also sometimes look it into the
+
+00:15:35.280 --> 00:15:38.000
+<v Speaker 1>associated resources, like the pods that are related
+
+00:15:38.000 --> 00:15:39.200
+<v Speaker 1>to the deployment
+
+00:15:39.360 --> 00:15:41.840
+<v Speaker 1>and raise some of their information, you know,
+
+00:15:41.840 --> 00:15:43.360
+<v Speaker 1>bubble up that to the user.
+
+00:15:43.760 --> 00:15:45.120
+<v Speaker 1>We actually recently
+
+00:15:45.360 --> 00:15:46.480
+<v Speaker 1>I think I had a
+
+00:15:46.735 --> 00:15:48.095
+<v Speaker 1>what was it? I
+
+00:15:48.495 --> 00:15:50.335
+<v Speaker 1>don't remember. There was there was actually a
+
+00:15:50.335 --> 00:15:52.895
+<v Speaker 1>request in improving some of this logic to
+
+00:15:52.895 --> 00:15:54.415
+<v Speaker 1>show this other
+
+00:15:56.015 --> 00:15:57.055
+<v Speaker 1>more rarely
+
+00:15:57.135 --> 00:15:58.575
+<v Speaker 1>seen condition pop up.
+
+00:15:59.790 --> 00:16:01.630
+<v Speaker 1>But it it depends. I mean, we can
+
+00:16:01.630 --> 00:16:03.150
+<v Speaker 1>check it out and see what happens.
+
+00:16:04.590 --> 00:16:06.830
+<v Speaker 0>Okay. So this is our first update. It's
+
+00:16:06.830 --> 00:16:07.550
+<v Speaker 0>now Yep.
+
+00:16:08.110 --> 00:16:11.150
+<v Speaker 1>Actually created the labels, and it's telling me
+
+00:16:11.935 --> 00:16:14.574
+<v Speaker 1>You can you can even do maybe if
+
+00:16:14.574 --> 00:16:16.894
+<v Speaker 1>you control c out of this and then
+
+00:16:16.894 --> 00:16:19.454
+<v Speaker 1>run the same command but with dash c,
+
+00:16:20.735 --> 00:16:23.454
+<v Speaker 1>you'll you'll see some, hopefully, diff over here
+
+00:16:23.454 --> 00:16:25.295
+<v Speaker 1>that shows you what's actually being changed.
+
+00:16:25.890 --> 00:16:27.890
+<v Speaker 0>That's nice. I like So that diff is
+
+00:16:27.890 --> 00:16:28.930
+<v Speaker 1>per resource.
+
+00:16:31.090 --> 00:16:33.170
+<v Speaker 0>Okay. I like that flag. Like, I actually
+
+00:16:33.170 --> 00:16:35.810
+<v Speaker 0>see in the the depth essentially before I
+
+00:16:35.810 --> 00:16:37.650
+<v Speaker 0>have to apply. It's pretty nice. Yep.
+
+00:16:39.715 --> 00:16:41.875
+<v Speaker 1>So it looks like NGINX is pretty happy.
+
+00:16:43.315 --> 00:16:45.715
+<v Speaker 0>Well, I saw I was I'm attached to
+
+00:16:45.715 --> 00:16:47.635
+<v Speaker 0>NGINX. In terms of it just didn't care.
+
+00:16:47.635 --> 00:16:50.115
+<v Speaker 0>So You may you may have to really
+
+00:16:50.515 --> 00:16:52.195
+<v Speaker 1>get this. I'm not even sure if that's
+
+00:16:52.195 --> 00:16:52.915
+<v Speaker 1>gonna
+
+00:16:53.890 --> 00:16:56.130
+<v Speaker 1>yeah. What if we pick a tag that
+
+00:16:56.130 --> 00:16:58.130
+<v Speaker 0>doesn't exist? Will that trigger some sort of
+
+00:16:58.130 --> 00:16:58.930
+<v Speaker 0>failures?
+
+00:16:59.410 --> 00:17:01.330
+<v Speaker 1>Yeah. I think so. I mean, there should
+
+00:17:01.330 --> 00:17:03.250
+<v Speaker 1>be somewhere somewhere image
+
+00:17:03.650 --> 00:17:03.890
+<v Speaker 1>pull.
+
+00:17:05.815 --> 00:17:07.575
+<v Speaker 0>Yeah. We should get an image from Microsoft.
+
+00:17:07.575 --> 00:17:09.175
+<v Speaker 0>So we can see that if again, which
+
+00:17:09.175 --> 00:17:11.015
+<v Speaker 0>I I really like that feature. That's pretty
+
+00:17:11.015 --> 00:17:11.575
+<v Speaker 0>nice.
+
+00:17:13.655 --> 00:17:15.095
+<v Speaker 0>And then we go. I see a four
+
+00:17:15.095 --> 00:17:15.974
+<v Speaker 0>zero four.
+
+00:17:16.695 --> 00:17:18.375
+<v Speaker 1>Yeah. So ending list.
+
+00:17:19.069 --> 00:17:22.109
+<v Speaker 1>Yep. So by by default, capital eight
+
+00:17:22.910 --> 00:17:23.789
+<v Speaker 1>until
+
+00:17:24.349 --> 00:17:26.430
+<v Speaker 1>so this is kinda interesting. Right? Because there's
+
+00:17:26.430 --> 00:17:29.390
+<v Speaker 1>no you know, Kubernetes is continuously reconsidering.
+
+00:17:29.390 --> 00:17:31.550
+<v Speaker 1>Right? Because maybe the the the engine x
+
+00:17:31.550 --> 00:17:33.310
+<v Speaker 1>44 is gonna show up in the next
+
+00:17:33.310 --> 00:17:34.670
+<v Speaker 1>five minutes. Right? Who knows? Right?
+
+00:17:35.845 --> 00:17:36.565
+<v Speaker 1>But
+
+00:17:36.725 --> 00:17:39.605
+<v Speaker 1>various resources, right, have defined their own rules,
+
+00:17:39.605 --> 00:17:43.125
+<v Speaker 1>like deployment, I think, as a a condition
+
+00:17:43.125 --> 00:17:45.845
+<v Speaker 1>that indicates that the deployment isn't progressing after
+
+00:17:45.845 --> 00:17:47.445
+<v Speaker 1>some time. Right? And you can actually tweak
+
+00:17:47.445 --> 00:17:49.390
+<v Speaker 1>it, I think, on the deployment. So CAP
+
+00:17:49.390 --> 00:17:51.070
+<v Speaker 1>follows those kinda
+
+00:17:51.710 --> 00:17:54.190
+<v Speaker 1>rules just by observing the status, but it
+
+00:17:54.190 --> 00:17:56.429
+<v Speaker 1>also has a global time out for fifteen
+
+00:17:56.429 --> 00:17:57.549
+<v Speaker 1>minutes, I think.
+
+00:17:58.350 --> 00:17:59.790
+<v Speaker 1>So if we see the air for fifteen
+
+00:17:59.790 --> 00:18:02.095
+<v Speaker 1>minutes, CAP will tell you that, you know,
+
+00:18:02.095 --> 00:18:03.695
+<v Speaker 1>nothing is really progressing.
+
+00:18:03.695 --> 00:18:06.014
+<v Speaker 1>It's probably time to give up. Obviously, that's
+
+00:18:06.014 --> 00:18:07.214
+<v Speaker 1>configurable, but
+
+00:18:08.495 --> 00:18:10.335
+<v Speaker 1>best case scenario is that you wanna be
+
+00:18:10.335 --> 00:18:11.934
+<v Speaker 1>actually changing
+
+00:18:13.375 --> 00:18:14.975
+<v Speaker 1>you wanna be changing the
+
+00:18:16.110 --> 00:18:19.150
+<v Speaker 1>your resources to have this tight feedback loop.
+
+00:18:19.150 --> 00:18:21.230
+<v Speaker 1>Right? The most common might be, like, adding
+
+00:18:21.230 --> 00:18:24.270
+<v Speaker 1>a readiness probe to your pod, right, such
+
+00:18:24.270 --> 00:18:26.990
+<v Speaker 1>that they don't just immediately become available. They,
+
+00:18:28.115 --> 00:18:30.035
+<v Speaker 1>you know, they they take their time to
+
+00:18:30.035 --> 00:18:31.075
+<v Speaker 1>start up properly.
+
+00:18:32.275 --> 00:18:32.915
+<v Speaker 0>Okay.
+
+00:18:33.715 --> 00:18:36.035
+<v Speaker 0>Well yeah. Let's not watch it for fifteen
+
+00:18:36.035 --> 00:18:37.875
+<v Speaker 0>minutes. So I just reverted
+
+00:18:37.875 --> 00:18:40.355
+<v Speaker 0>reverted that image change, apply that to my
+
+00:18:40.355 --> 00:18:43.070
+<v Speaker 0>cluster. I've now got I've got it just
+
+00:18:43.070 --> 00:18:44.590
+<v Speaker 0>kinda saying, yeah, we're good. If I run
+
+00:18:44.590 --> 00:18:45.309
+<v Speaker 0>that again,
+
+00:18:45.870 --> 00:18:47.390
+<v Speaker 0>it's just saying, hey. There's nothing to do.
+
+00:18:47.390 --> 00:18:49.710
+<v Speaker 0>It's in the walk, and we're good. Yeah.
+
+00:18:49.710 --> 00:18:51.710
+<v Speaker 1>Cool cool other command actually is cap and
+
+00:18:51.710 --> 00:18:52.429
+<v Speaker 1>stacked.
+
+00:18:52.510 --> 00:18:54.909
+<v Speaker 1>If you give it a dash a nginx,
+
+00:18:55.310 --> 00:18:56.510
+<v Speaker 1>you should be able to see,
+
+00:18:58.675 --> 00:19:00.755
+<v Speaker 1>you know, what's what's part of this app.
+
+00:19:01.075 --> 00:19:03.395
+<v Speaker 1>We might even see the old pod. Not
+
+00:19:03.395 --> 00:19:04.995
+<v Speaker 1>the old pod is already gone. But you
+
+00:19:04.995 --> 00:19:07.635
+<v Speaker 1>can actually see that Kubernetes
+
+00:19:07.635 --> 00:19:08.755
+<v Speaker 1>actually keeps
+
+00:19:08.835 --> 00:19:10.835
+<v Speaker 1>few replica sets. Right? And I think that
+
+00:19:10.835 --> 00:19:12.435
+<v Speaker 1>depends on, like, the history
+
+00:19:12.570 --> 00:19:14.889
+<v Speaker 1>parameter of a deployment or something like that.
+
+00:19:15.769 --> 00:19:17.690
+<v Speaker 1>I guess it's for fast rollback or something
+
+00:19:17.690 --> 00:19:18.969
+<v Speaker 1>like that. Yeah.
+
+00:19:20.330 --> 00:19:22.889
+<v Speaker 1>This kinda gives you a maybe a full
+
+00:19:22.889 --> 00:19:25.289
+<v Speaker 1>view of what's what's cap seeing under this
+
+00:19:25.289 --> 00:19:25.450
+<v Speaker 1>app.
+
+00:19:26.495 --> 00:19:28.015
+<v Speaker 0>Oh, yeah. I guess we've got a bit
+
+00:19:28.015 --> 00:19:30.575
+<v Speaker 0>of a contrived deployment right now, a very
+
+00:19:30.575 --> 00:19:32.255
+<v Speaker 0>basic engine x. There's not a lot going
+
+00:19:32.255 --> 00:19:34.095
+<v Speaker 0>on, but I can see how that inspect
+
+00:19:34.095 --> 00:19:36.175
+<v Speaker 0>passing in the app name
+
+00:19:36.495 --> 00:19:38.495
+<v Speaker 0>and getting back that list of resources that
+
+00:19:38.495 --> 00:19:39.455
+<v Speaker 0>have been deployed together.
+
+00:19:40.050 --> 00:19:42.050
+<v Speaker 0>I guess, in a real world or production
+
+00:19:42.050 --> 00:19:44.610
+<v Speaker 0>like scenario where I'm deploying a real microservice,
+
+00:19:44.610 --> 00:19:46.690
+<v Speaker 0>which maybe has a back end database, has
+
+00:19:46.690 --> 00:19:49.730
+<v Speaker 0>contact maps and secrets, like, this inspect view
+
+00:19:49.730 --> 00:19:51.650
+<v Speaker 0>is actually gonna be much more useful in
+
+00:19:51.650 --> 00:19:52.290
+<v Speaker 0>that scenario.
+
+00:19:53.285 --> 00:19:55.285
+<v Speaker 1>It's definitely I've I've actually learned quite a
+
+00:19:55.285 --> 00:19:55.764
+<v Speaker 1>bit
+
+00:19:56.405 --> 00:19:57.124
+<v Speaker 1>after
+
+00:19:58.565 --> 00:19:59.684
+<v Speaker 1>digging in on
+
+00:20:00.005 --> 00:20:02.884
+<v Speaker 1>what kind of various resources get created.
+
+00:20:02.885 --> 00:20:04.804
+<v Speaker 1>Like, you know, a lot of people know
+
+00:20:04.804 --> 00:20:06.405
+<v Speaker 1>about, like, kubectl get all,
+
+00:20:06.900 --> 00:20:09.220
+<v Speaker 1>but get all actually doesn't show you everything.
+
+00:20:09.220 --> 00:20:10.580
+<v Speaker 1>Right? It only shows you the things that
+
+00:20:10.580 --> 00:20:13.060
+<v Speaker 1>are tagged as all or whatever,
+
+00:20:13.060 --> 00:20:14.900
+<v Speaker 1>I guess, the proper term is not tagged
+
+00:20:14.900 --> 00:20:15.540
+<v Speaker 1>probably.
+
+00:20:15.780 --> 00:20:17.940
+<v Speaker 1>But there's there's quite a lot other, you
+
+00:20:17.940 --> 00:20:20.260
+<v Speaker 1>know, sets of resources. And so inspect actually
+
+00:20:20.260 --> 00:20:20.580
+<v Speaker 1>is
+
+00:20:21.085 --> 00:20:23.085
+<v Speaker 1>quite quite interesting to look at.
+
+00:20:24.525 --> 00:20:25.165
+<v Speaker 1>Yeah.
+
+00:20:25.725 --> 00:20:26.605
+<v Speaker 0>Awesome.
+
+00:20:27.325 --> 00:20:30.205
+<v Speaker 0>So is there anything else within KeyApp that
+
+00:20:30.205 --> 00:20:31.245
+<v Speaker 0>we should take a look at?
+
+00:20:35.510 --> 00:20:37.110
+<v Speaker 1>Well, it it kind of
+
+00:20:39.429 --> 00:20:41.110
+<v Speaker 1>the way to put it, there there's a
+
+00:20:41.110 --> 00:20:42.950
+<v Speaker 1>lot of kind of opinions
+
+00:20:42.950 --> 00:20:45.429
+<v Speaker 1>that I've baked into it working with area
+
+00:20:45.590 --> 00:20:47.990
+<v Speaker 1>various other systems before Kubernetes.
+
+00:20:48.150 --> 00:20:49.670
+<v Speaker 1>I I've been, I guess, in the
+
+00:20:50.365 --> 00:20:53.004
+<v Speaker 1>deployment and configuration game for some time, and
+
+00:20:53.085 --> 00:20:54.205
+<v Speaker 1>so Cap tries
+
+00:20:54.845 --> 00:20:55.404
+<v Speaker 1>to,
+
+00:20:56.284 --> 00:20:58.684
+<v Speaker 1>I guess, bake in a lot of interesting
+
+00:20:58.684 --> 00:20:59.484
+<v Speaker 1>features
+
+00:20:59.645 --> 00:21:01.565
+<v Speaker 1>that are helpful. For example, one of them
+
+00:21:01.565 --> 00:21:02.125
+<v Speaker 1>is
+
+00:21:04.059 --> 00:21:07.019
+<v Speaker 1>a lot of people run into a
+
+00:21:07.260 --> 00:21:10.379
+<v Speaker 1>challenge when a resource needs to change,
+
+00:21:11.020 --> 00:21:13.580
+<v Speaker 1>but Kubernetes doesn't allow you to change that
+
+00:21:13.580 --> 00:21:14.700
+<v Speaker 1>resource because,
+
+00:21:14.700 --> 00:21:17.020
+<v Speaker 1>I don't know, it's the field is immutable
+
+00:21:17.020 --> 00:21:19.235
+<v Speaker 1>or something like that. Right? And so from
+
+00:21:19.235 --> 00:21:22.034
+<v Speaker 1>a kind of a declarative perspective, right, how
+
+00:21:22.034 --> 00:21:23.794
+<v Speaker 1>do you actually deal with that? Right? Nobody
+
+00:21:24.115 --> 00:21:25.794
+<v Speaker 1>wants to be sitting there and doing all
+
+00:21:25.794 --> 00:21:27.794
+<v Speaker 1>kinds of manual changes to your cluster. Right?
+
+00:21:27.794 --> 00:21:31.235
+<v Speaker 1>So cap, for example, has special annotations
+
+00:21:31.235 --> 00:21:33.990
+<v Speaker 1>to control various behavior of what it what
+
+00:21:33.990 --> 00:21:36.230
+<v Speaker 1>it can do. So it it can say,
+
+00:21:36.230 --> 00:21:38.310
+<v Speaker 1>for example, if you see that the resource
+
+00:21:38.310 --> 00:21:39.350
+<v Speaker 1>is invalid
+
+00:21:40.950 --> 00:21:43.990
+<v Speaker 1>and you've marked off explicitly that resource this
+
+00:21:43.990 --> 00:21:46.390
+<v Speaker 1>resource is okay to recreate
+
+00:21:46.390 --> 00:21:48.470
+<v Speaker 1>for updates, then it will automatically do this
+
+00:21:48.470 --> 00:21:50.205
+<v Speaker 1>kinda work for you.
+
+00:21:51.485 --> 00:21:52.924
+<v Speaker 1>So, yeah, that is
+
+00:21:54.205 --> 00:21:56.765
+<v Speaker 1>you know, I guess as people start using
+
+00:21:56.765 --> 00:21:59.325
+<v Speaker 1>CAP in their environments, they they start, you
+
+00:21:59.325 --> 00:22:01.165
+<v Speaker 1>know, asking interesting question. Like, how do I
+
+00:22:01.165 --> 00:22:02.285
+<v Speaker 1>order, for example,
+
+00:22:03.370 --> 00:22:07.290
+<v Speaker 1>running a DB migration job before actually updating
+
+00:22:07.290 --> 00:22:09.850
+<v Speaker 1>the deployment, things like that? And so cap,
+
+00:22:09.850 --> 00:22:12.570
+<v Speaker 1>for example, as a feature for ordering
+
+00:22:12.730 --> 00:22:14.650
+<v Speaker 1>the the changes to be applied to a
+
+00:22:14.650 --> 00:22:14.970
+<v Speaker 1>cluster.
+
+00:22:15.945 --> 00:22:18.024
+<v Speaker 1>So, yeah, there there's there's a few interesting
+
+00:22:19.145 --> 00:22:21.304
+<v Speaker 1>sneaky, I guess, maybe features that
+
+00:22:21.465 --> 00:22:22.585
+<v Speaker 1>that are not
+
+00:22:24.265 --> 00:22:26.265
+<v Speaker 1>that you don't have to use, but you
+
+00:22:26.265 --> 00:22:27.865
+<v Speaker 1>can kind of opt into.
+
+00:22:29.200 --> 00:22:29.760
+<v Speaker 0>Okay.
+
+00:22:30.960 --> 00:22:33.200
+<v Speaker 0>So let's talk about this with a little
+
+00:22:33.200 --> 00:22:34.960
+<v Speaker 0>bit of a wider scope now then. Do
+
+00:22:34.960 --> 00:22:35.760
+<v Speaker 0>you see
+
+00:22:36.160 --> 00:22:38.160
+<v Speaker 0>CAP as a tool that people would use
+
+00:22:38.160 --> 00:22:39.120
+<v Speaker 0>to deploy
+
+00:22:39.280 --> 00:22:39.840
+<v Speaker 0>normal
+
+00:22:41.415 --> 00:22:43.975
+<v Speaker 0>Kubernetes manifest like we were doing? Or you
+
+00:22:43.975 --> 00:22:45.575
+<v Speaker 0>you probably see it in a way that
+
+00:22:45.575 --> 00:22:47.815
+<v Speaker 0>people should be having YTT
+
+00:22:47.815 --> 00:22:48.775
+<v Speaker 0>manifests
+
+00:22:48.775 --> 00:22:51.255
+<v Speaker 0>with cap deploying them as a resource. Does
+
+00:22:51.255 --> 00:22:52.775
+<v Speaker 0>that make sense? Or have I got that
+
+00:22:52.775 --> 00:22:53.255
+<v Speaker 0>wrong?
+
+00:22:55.740 --> 00:22:58.619
+<v Speaker 1>So the beauty of, I guess, embracing
+
+00:22:58.860 --> 00:22:59.580
+<v Speaker 1>this
+
+00:22:59.899 --> 00:23:01.899
+<v Speaker 1>you know, solving these problems in, you know,
+
+00:23:01.899 --> 00:23:03.980
+<v Speaker 1>in multiple tool, right, is that really it's
+
+00:23:03.980 --> 00:23:06.275
+<v Speaker 1>up to the user to decide what kind
+
+00:23:06.275 --> 00:23:07.315
+<v Speaker 1>of complexity
+
+00:23:07.395 --> 00:23:09.794
+<v Speaker 1>they need to tackle in their workflow. Right?
+
+00:23:09.794 --> 00:23:11.154
+<v Speaker 1>Some users, of course,
+
+00:23:11.475 --> 00:23:14.115
+<v Speaker 1>wanna be able to have configuration that could
+
+00:23:14.115 --> 00:23:15.955
+<v Speaker 1>be applied to multiple environments.
+
+00:23:16.595 --> 00:23:18.434
+<v Speaker 1>You know, it might be slightly different in
+
+00:23:18.434 --> 00:23:18.914
+<v Speaker 1>production.
+
+00:23:19.500 --> 00:23:21.740
+<v Speaker 1>They may decide to use customizer. Maybe they
+
+00:23:21.740 --> 00:23:23.820
+<v Speaker 1>decide to use YTT or maybe they're using
+
+00:23:23.820 --> 00:23:25.980
+<v Speaker 1>Helm charts or whatever it is. Right? And
+
+00:23:25.980 --> 00:23:26.539
+<v Speaker 1>so
+
+00:23:27.420 --> 00:23:28.940
+<v Speaker 1>the way I look at it, actually, I've
+
+00:23:28.940 --> 00:23:30.139
+<v Speaker 1>I've explicitly
+
+00:23:31.660 --> 00:23:33.655
+<v Speaker 1>said that it's
+
+00:23:35.575 --> 00:23:36.695
+<v Speaker 1>it's not,
+
+00:23:37.255 --> 00:23:38.135
+<v Speaker 1>I guess,
+
+00:23:40.615 --> 00:23:42.535
+<v Speaker 1>it's not something that we wanna constrain. Like,
+
+00:23:42.535 --> 00:23:44.934
+<v Speaker 1>this this tool is only for deploying,
+
+00:23:44.935 --> 00:23:47.310
+<v Speaker 1>I don't know, plain YAML or something. It's
+
+00:23:47.310 --> 00:23:50.190
+<v Speaker 1>it's really just tool deploying Kubernetes resources. And
+
+00:23:50.190 --> 00:23:51.070
+<v Speaker 1>if
+
+00:23:51.070 --> 00:23:53.870
+<v Speaker 1>if you happen to generate them from YTT,
+
+00:23:53.870 --> 00:23:55.950
+<v Speaker 1>great. If you happen to generate them through
+
+00:23:55.950 --> 00:23:57.790
+<v Speaker 1>a customized or Helm template or,
+
+00:23:58.425 --> 00:24:00.265
+<v Speaker 1>you know, I don't know, Pew or whatever
+
+00:24:00.265 --> 00:24:02.745
+<v Speaker 1>else. Right? Maybe even some JSON net tooling,
+
+00:24:02.745 --> 00:24:03.225
+<v Speaker 1>whatever.
+
+00:24:04.505 --> 00:24:06.585
+<v Speaker 1>Yeah. We we should be happy with that.
+
+00:24:07.225 --> 00:24:08.825
+<v Speaker 1>But, yeah, I I do see it as,
+
+00:24:08.825 --> 00:24:10.665
+<v Speaker 1>you know, I do see it as a
+
+00:24:10.665 --> 00:24:13.530
+<v Speaker 1>tool that the regular app developer can use
+
+00:24:13.530 --> 00:24:15.850
+<v Speaker 1>when they're deploying their own software that they've
+
+00:24:15.850 --> 00:24:16.409
+<v Speaker 1>written.
+
+00:24:17.290 --> 00:24:17.929
+<v Speaker 1>Or
+
+00:24:18.250 --> 00:24:20.250
+<v Speaker 1>they could be using it to deploy something
+
+00:24:20.250 --> 00:24:22.330
+<v Speaker 1>that the third party have, you know, provided
+
+00:24:22.330 --> 00:24:25.210
+<v Speaker 1>them, or it's something that maybe some of
+
+00:24:25.210 --> 00:24:28.774
+<v Speaker 1>the open source, you know, projects like strip
+
+00:24:28.774 --> 00:24:30.855
+<v Speaker 1>manager or whatever else is going on. Right?
+
+00:24:30.855 --> 00:24:32.695
+<v Speaker 1>So I see it as kind of a
+
+00:24:32.695 --> 00:24:34.054
+<v Speaker 1>scaling with your needs.
+
+00:24:35.414 --> 00:24:38.070
+<v Speaker 0>Okay. So that leads me on to two
+
+00:24:38.070 --> 00:24:40.629
+<v Speaker 0>different things then. I think just because
+
+00:24:41.029 --> 00:24:44.150
+<v Speaker 0>I'm a particularly curious person, what I'm gonna
+
+00:24:44.150 --> 00:24:45.429
+<v Speaker 0>do is
+
+00:24:45.669 --> 00:24:47.830
+<v Speaker 0>run this deploy because I wanna see what
+
+00:24:47.830 --> 00:24:49.669
+<v Speaker 0>happens when I point to add those
+
+00:24:50.315 --> 00:24:51.195
+<v Speaker 0>manifests
+
+00:24:51.195 --> 00:24:52.475
+<v Speaker 0>I generated earlier.
+
+00:24:53.355 --> 00:24:55.034
+<v Speaker 0>I just wanna see that preview
+
+00:24:55.115 --> 00:24:57.514
+<v Speaker 0>with slightly more going going on.
+
+00:24:59.115 --> 00:24:59.754
+<v Speaker 0>Okay.
+
+00:25:00.315 --> 00:25:01.915
+<v Speaker 0>So I can see the the r back,
+
+00:25:01.915 --> 00:25:04.155
+<v Speaker 0>the cluster rules, persistent volumes, and services.
+
+00:25:04.740 --> 00:25:07.700
+<v Speaker 0>Cool. I really do like that feature. That's,
+
+00:25:07.860 --> 00:25:09.700
+<v Speaker 0>you know, that's particularly useful.
+
+00:25:10.980 --> 00:25:12.980
+<v Speaker 1>Yeah. One one interesting thing actually that I
+
+00:25:12.980 --> 00:25:14.740
+<v Speaker 1>look at this diff is, you know, as
+
+00:25:14.740 --> 00:25:16.660
+<v Speaker 1>you can see there, there's a few cluster
+
+00:25:17.085 --> 00:25:17.885
+<v Speaker 1>resources
+
+00:25:17.885 --> 00:25:20.125
+<v Speaker 1>versus there's a few resources that go in
+
+00:25:20.125 --> 00:25:21.085
+<v Speaker 1>the namespace.
+
+00:25:23.005 --> 00:25:23.724
+<v Speaker 1>Their
+
+00:25:25.005 --> 00:25:27.965
+<v Speaker 1>cap cap doesn't really make a difference between
+
+00:25:27.965 --> 00:25:30.684
+<v Speaker 1>a resource that's namespaced versus a cluster level
+
+00:25:30.684 --> 00:25:30.924
+<v Speaker 1>one.
+
+00:25:31.650 --> 00:25:33.010
+<v Speaker 1>You know, it doesn't really care if it's
+
+00:25:33.010 --> 00:25:35.490
+<v Speaker 1>a CRD or not. It'll just be managing
+
+00:25:35.490 --> 00:25:38.130
+<v Speaker 1>it in the same exact way. So there
+
+00:25:38.290 --> 00:25:40.850
+<v Speaker 1>there's that benefit to just having a, you
+
+00:25:40.850 --> 00:25:42.850
+<v Speaker 1>know, same behavior applied to all of these
+
+00:25:42.850 --> 00:25:43.650
+<v Speaker 1>resources.
+
+00:25:44.850 --> 00:25:45.730
+<v Speaker 0>Alright. Cool.
+
+00:25:46.534 --> 00:25:49.254
+<v Speaker 0>So one more thing on CAP then.
+
+00:25:49.495 --> 00:25:51.575
+<v Speaker 0>When we were on the website, there was
+
+00:25:51.575 --> 00:25:52.775
+<v Speaker 0>a controller
+
+00:25:52.775 --> 00:25:53.734
+<v Speaker 0>for CAP.
+
+00:25:53.895 --> 00:25:55.815
+<v Speaker 0>Do you wanna That's right. Put a bit
+
+00:25:55.815 --> 00:25:57.815
+<v Speaker 0>of insight in that? Is that something that
+
+00:25:57.815 --> 00:25:59.335
+<v Speaker 0>runs in the cluster
+
+00:25:59.495 --> 00:26:02.600
+<v Speaker 0>at a GetOps fashion or something else? Yep.
+
+00:26:02.600 --> 00:26:03.240
+<v Speaker 1>Yep.
+
+00:26:04.440 --> 00:26:06.200
+<v Speaker 1>So the idea there is
+
+00:26:08.600 --> 00:26:09.640
+<v Speaker 1>if you
+
+00:26:11.400 --> 00:26:12.840
+<v Speaker 1>There we go. If
+
+00:26:13.640 --> 00:26:14.360
+<v Speaker 1>you
+
+00:26:14.794 --> 00:26:17.115
+<v Speaker 1>think about what most people are doing, right,
+
+00:26:17.115 --> 00:26:18.394
+<v Speaker 1>there's some kind of a
+
+00:26:18.715 --> 00:26:21.835
+<v Speaker 1>fetching of configuration going on. Right? There is
+
+00:26:21.835 --> 00:26:24.395
+<v Speaker 1>some kind of a mangling, like templating or,
+
+00:26:24.395 --> 00:26:26.794
+<v Speaker 1>I don't know, overlaying or whatever going on.
+
+00:26:26.794 --> 00:26:28.955
+<v Speaker 1>And, ultimately, there's, you know, the last step
+
+00:26:28.955 --> 00:26:31.500
+<v Speaker 1>deploy. Right? And so we've we've decided to
+
+00:26:31.500 --> 00:26:33.020
+<v Speaker 1>codify that workflow
+
+00:26:33.260 --> 00:26:34.940
+<v Speaker 1>in a CRD.
+
+00:26:34.940 --> 00:26:37.020
+<v Speaker 1>And so you get to specify a app
+
+00:26:37.020 --> 00:26:37.820
+<v Speaker 1>CR.
+
+00:26:38.140 --> 00:26:39.820
+<v Speaker 1>Actually, if you scroll up here, there's the
+
+00:26:39.820 --> 00:26:42.700
+<v Speaker 1>examples folder over here. Yep. There might be
+
+00:26:42.700 --> 00:26:43.260
+<v Speaker 1>some
+
+00:26:43.565 --> 00:26:45.165
+<v Speaker 1>some of them might be a little like,
+
+00:26:45.165 --> 00:26:48.605
+<v Speaker 1>maybe Concourse Helm or something or NGINX Helm.
+
+00:26:48.605 --> 00:26:50.845
+<v Speaker 1>Yeah. Yeah. NGINX Helm. Let's take a look
+
+00:26:50.845 --> 00:26:51.404
+<v Speaker 0>at that.
+
+00:26:51.885 --> 00:26:52.445
+<v Speaker 1>So,
+
+00:26:53.005 --> 00:26:54.924
+<v Speaker 1>yeah, AppCR effectively
+
+00:26:55.860 --> 00:26:58.260
+<v Speaker 1>split that up into these three sections, fetch
+
+00:26:58.260 --> 00:27:01.300
+<v Speaker 1>template and then deploy. Deploy, obviously, is happening
+
+00:27:01.300 --> 00:27:02.100
+<v Speaker 1>with CAP.
+
+00:27:03.140 --> 00:27:05.379
+<v Speaker 1>Fetching and templating are actually
+
+00:27:06.500 --> 00:27:09.540
+<v Speaker 1>they're decoupled steps, and there's various strategies like,
+
+00:27:09.825 --> 00:27:11.585
+<v Speaker 1>you know, fetch it from Git, fetch it
+
+00:27:11.585 --> 00:27:12.864
+<v Speaker 1>from your Docker
+
+00:27:13.184 --> 00:27:13.985
+<v Speaker 1>registry.
+
+00:27:13.985 --> 00:27:16.625
+<v Speaker 1>So we we also are believers of putting
+
+00:27:16.625 --> 00:27:17.505
+<v Speaker 1>configuration
+
+00:27:17.505 --> 00:27:20.465
+<v Speaker 1>into Docker images. That way, all your assets
+
+00:27:20.465 --> 00:27:21.024
+<v Speaker 1>are together.
+
+00:27:23.179 --> 00:27:25.260
+<v Speaker 1>Or or maybe it's fetch a Helm chart.
+
+00:27:25.260 --> 00:27:27.740
+<v Speaker 1>Right? And then the templating step could be
+
+00:27:27.740 --> 00:27:29.740
+<v Speaker 1>also separate. So for example, in this case,
+
+00:27:29.740 --> 00:27:33.100
+<v Speaker 1>we're we're using Helm template to template the
+
+00:27:33.100 --> 00:27:35.980
+<v Speaker 1>the Bitnami NGINX, but we're also using YTT
+
+00:27:35.980 --> 00:27:37.740
+<v Speaker 1>on top of that to change
+
+00:27:38.355 --> 00:27:39.075
+<v Speaker 1>how
+
+00:27:39.955 --> 00:27:43.075
+<v Speaker 1>the the service is configured for NGINX.
+
+00:27:43.635 --> 00:27:45.795
+<v Speaker 1>And then, ultimately, we do a deploy at
+
+00:27:45.795 --> 00:27:47.715
+<v Speaker 1>the end of that. So it it kind
+
+00:27:47.715 --> 00:27:50.595
+<v Speaker 1>of it's a it's a opinionated way
+
+00:27:50.915 --> 00:27:54.260
+<v Speaker 1>to do, you know, your your deploys to
+
+00:27:54.260 --> 00:27:56.500
+<v Speaker 1>the cluster. And because it's a controller, it
+
+00:27:56.500 --> 00:27:58.980
+<v Speaker 1>keeps on doing them. Right? So you can
+
+00:27:58.980 --> 00:28:01.059
+<v Speaker 1>decide whether you wanna float kind of on
+
+00:28:01.059 --> 00:28:03.140
+<v Speaker 1>the latest reference or where you wanna look
+
+00:28:03.140 --> 00:28:04.500
+<v Speaker 1>it down to a particular thing.
+
+00:28:05.735 --> 00:28:06.935
+<v Speaker 1>So, yeah, that that's a
+
+00:28:07.575 --> 00:28:10.215
+<v Speaker 1>it's a controller that's meant to represent the
+
+00:28:10.375 --> 00:28:11.575
+<v Speaker 1>that 95%
+
+00:28:11.575 --> 00:28:12.295
+<v Speaker 1>case.
+
+00:28:14.455 --> 00:28:15.255
+<v Speaker 0>K. Cool.
+
+00:28:17.350 --> 00:28:19.190
+<v Speaker 0>Let's pop back. Actually, may maybe one thing
+
+00:28:19.190 --> 00:28:20.070
+<v Speaker 1>to note is
+
+00:28:20.549 --> 00:28:21.190
+<v Speaker 1>more
+
+00:28:21.429 --> 00:28:24.389
+<v Speaker 1>after after kind of building up the controller,
+
+00:28:24.389 --> 00:28:25.429
+<v Speaker 1>I figured, well,
+
+00:28:26.629 --> 00:28:27.909
+<v Speaker 1>you know, you can use all these tools
+
+00:28:27.909 --> 00:28:30.804
+<v Speaker 1>locally yourself, right, to kind of replicate
+
+00:28:31.125 --> 00:28:33.044
+<v Speaker 1>that workflow if you wanna debug, for example,
+
+00:28:33.044 --> 00:28:34.964
+<v Speaker 1>if you just wanna iterate on it quickly.
+
+00:28:35.125 --> 00:28:38.164
+<v Speaker 1>But I was also thinking making a CLI
+
+00:28:38.565 --> 00:28:40.644
+<v Speaker 1>that's effectively the same thing that the cap
+
+00:28:40.644 --> 00:28:43.590
+<v Speaker 1>controller does. Right? Maybe literally even the same
+
+00:28:43.590 --> 00:28:46.150
+<v Speaker 1>code. Right? But just happens to run locally
+
+00:28:46.150 --> 00:28:48.470
+<v Speaker 1>where you can have a maybe, like, run
+
+00:28:48.470 --> 00:28:51.030
+<v Speaker 1>it once kind of a thing. So kind
+
+00:28:51.030 --> 00:28:53.510
+<v Speaker 1>of a an interesting idea of making it
+
+00:28:53.510 --> 00:28:54.549
+<v Speaker 1>more,
+
+00:28:54.950 --> 00:28:55.350
+<v Speaker 1>I guess,
+
+00:28:56.775 --> 00:28:58.934
+<v Speaker 1>localized when you're developing stuff?
+
+00:29:00.615 --> 00:29:03.655
+<v Speaker 0>Yes. There is one of my colleagues, Jason.
+
+00:29:03.895 --> 00:29:04.535
+<v Speaker 0>Sorry.
+
+00:29:05.415 --> 00:29:07.415
+<v Speaker 0>He's actually working on a proof of concept
+
+00:29:07.415 --> 00:29:11.330
+<v Speaker 0>right now of a local binary that emulates
+
+00:29:11.650 --> 00:29:12.450
+<v Speaker 0>Kubernetes
+
+00:29:12.450 --> 00:29:15.730
+<v Speaker 0>API server without having any API server. So
+
+00:29:16.050 --> 00:29:17.250
+<v Speaker 0>I'll drop you that link. It may be
+
+00:29:17.250 --> 00:29:19.170
+<v Speaker 0>something interesting for you. Yeah. I think I've
+
+00:29:19.170 --> 00:29:21.170
+<v Speaker 1>seen it actually on Twitter. This this in
+
+00:29:21.170 --> 00:29:22.770
+<v Speaker 1>in our case, I think we actually don't
+
+00:29:22.770 --> 00:29:24.845
+<v Speaker 1>need Kubernetes. We just need that inner loop
+
+00:29:24.845 --> 00:29:26.365
+<v Speaker 1>that does the reconciliation,
+
+00:29:26.365 --> 00:29:28.605
+<v Speaker 1>so it wouldn't have to fetch any resources.
+
+00:29:28.605 --> 00:29:30.365
+<v Speaker 1>But I I I see what you're getting
+
+00:29:30.365 --> 00:29:32.205
+<v Speaker 1>at. I think there's a there's a lot
+
+00:29:32.205 --> 00:29:33.805
+<v Speaker 0>of things that could it
+
+00:29:34.525 --> 00:29:36.605
+<v Speaker 0>well, I mean, we want the Kubernetes API
+
+00:29:36.605 --> 00:29:38.539
+<v Speaker 0>because it it's nice and declarative, but we
+
+00:29:38.539 --> 00:29:40.460
+<v Speaker 0>don't necessarily need to cluster. We just need
+
+00:29:40.460 --> 00:29:42.220
+<v Speaker 0>a daemon that could run locally or be
+
+00:29:42.220 --> 00:29:44.140
+<v Speaker 0>run once. I think there's a a good
+
+00:29:44.140 --> 00:29:45.739
+<v Speaker 0>market for applications there.
+
+00:29:46.700 --> 00:29:49.100
+<v Speaker 0>Alright. Let's let's move on over then to
+
+00:29:49.100 --> 00:29:51.475
+<v Speaker 0>this templating thing. We've got YTT here. So
+
+00:29:51.475 --> 00:29:53.554
+<v Speaker 0>I understand key app now. That makes perfect
+
+00:29:53.554 --> 00:29:55.235
+<v Speaker 0>sense to me. I like the functionality that
+
+00:29:55.235 --> 00:29:56.674
+<v Speaker 0>that brings to the table.
+
+00:29:56.755 --> 00:29:58.674
+<v Speaker 0>The key app controller, think, is really sweet.
+
+00:29:58.674 --> 00:30:00.034
+<v Speaker 0>I'm looking forward to playing with that at
+
+00:30:00.034 --> 00:30:01.715
+<v Speaker 0>some point where I can, you know, have
+
+00:30:01.715 --> 00:30:02.914
+<v Speaker 0>that running inside my cluster.
+
+00:30:03.860 --> 00:30:05.700
+<v Speaker 0>Now I wanna get rid of
+
+00:30:06.180 --> 00:30:08.180
+<v Speaker 0>of Helm or at least the template a
+
+00:30:08.180 --> 00:30:09.700
+<v Speaker 0>bit or the customized a bit. And this
+
+00:30:09.700 --> 00:30:12.340
+<v Speaker 0>is where my ITT slots right in. Yeah.
+
+00:30:12.900 --> 00:30:15.780
+<v Speaker 1>Yep. That's right. Templating and overlaying.
+
+00:30:15.780 --> 00:30:18.020
+<v Speaker 1>That's the that's the goal for this tool.
+
+00:30:18.645 --> 00:30:19.045
+<v Speaker 1>And and
+
+00:30:20.245 --> 00:30:22.565
+<v Speaker 0>templating, we're we're talking about the exact same
+
+00:30:22.565 --> 00:30:24.165
+<v Speaker 0>thing that Helm does. And when we talk
+
+00:30:24.165 --> 00:30:27.285
+<v Speaker 0>about overlays, we're talking about modifying or tweaking
+
+00:30:27.285 --> 00:30:30.085
+<v Speaker 0>those generated templates per environment. Right?
+
+00:30:30.565 --> 00:30:32.165
+<v Speaker 1>Yeah. So it's
+
+00:30:32.850 --> 00:30:35.250
+<v Speaker 1>I've over the years, I guess, I've
+
+00:30:35.890 --> 00:30:37.330
+<v Speaker 1>come to a conclusion.
+
+00:30:37.650 --> 00:30:39.970
+<v Speaker 1>I don't know if people agree with that
+
+00:30:39.970 --> 00:30:42.529
+<v Speaker 1>conclusion or not, but I I think
+
+00:30:43.730 --> 00:30:46.450
+<v Speaker 1>you you have to use templating and overlaying
+
+00:30:46.894 --> 00:30:47.774
+<v Speaker 1>together
+
+00:30:48.095 --> 00:30:50.575
+<v Speaker 1>to to cover the use cases that you
+
+00:30:50.575 --> 00:30:52.414
+<v Speaker 1>have. Right? Because we've seen that if you
+
+00:30:52.414 --> 00:30:53.934
+<v Speaker 1>don't have the overlaying,
+
+00:30:54.095 --> 00:30:56.095
+<v Speaker 1>then a lot of people as Helm chart,
+
+00:30:56.095 --> 00:30:57.695
+<v Speaker 1>let's say, gets more mature. A lot of
+
+00:30:57.695 --> 00:30:59.375
+<v Speaker 1>people keep on asking, like, well, let's add
+
+00:30:59.375 --> 00:31:01.774
+<v Speaker 1>one more configuration now between values. Right? And
+
+00:31:01.774 --> 00:31:03.370
+<v Speaker 1>so you end up with a thousand values
+
+00:31:03.370 --> 00:31:03.850
+<v Speaker 1>there.
+
+00:31:04.170 --> 00:31:06.970
+<v Speaker 1>And, you know, those values are probably used
+
+00:31:06.970 --> 00:31:08.650
+<v Speaker 1>by like, each one is used by one
+
+00:31:08.650 --> 00:31:09.610
+<v Speaker 1>person only.
+
+00:31:10.090 --> 00:31:10.809
+<v Speaker 1>And so,
+
+00:31:11.210 --> 00:31:14.250
+<v Speaker 1>really, I think, you know, 95%
+
+00:31:14.250 --> 00:31:16.890
+<v Speaker 1>cases that are common between people should be
+
+00:31:16.890 --> 00:31:19.304
+<v Speaker 1>something like, you know, values, should be just
+
+00:31:19.304 --> 00:31:20.825
+<v Speaker 1>templated by the author.
+
+00:31:21.225 --> 00:31:24.025
+<v Speaker 1>There's no, you know, crazy direction that they
+
+00:31:24.025 --> 00:31:25.465
+<v Speaker 1>need to deal with. It's just right there
+
+00:31:25.465 --> 00:31:27.304
+<v Speaker 1>inside inside the template.
+
+00:31:27.465 --> 00:31:29.865
+<v Speaker 1>But there's, let's say, a 5% case where
+
+00:31:31.145 --> 00:31:32.425
+<v Speaker 1>an end user
+
+00:31:32.950 --> 00:31:35.350
+<v Speaker 1>wants to actually, you know, modify something. Right?
+
+00:31:35.350 --> 00:31:38.310
+<v Speaker 1>There's no way that they have this data
+
+00:31:38.310 --> 00:31:39.910
+<v Speaker 1>values because it's not a common thing to
+
+00:31:39.910 --> 00:31:42.230
+<v Speaker 1>modify. Maybe it's very specific to their cluster.
+
+00:31:42.230 --> 00:31:44.390
+<v Speaker 1>Maybe it's specific to their environment, whatever it
+
+00:31:44.390 --> 00:31:47.725
+<v Speaker 1>is. And so having a single tool that
+
+00:31:47.725 --> 00:31:49.084
+<v Speaker 1>has the consistent
+
+00:31:49.804 --> 00:31:51.084
+<v Speaker 1>kind of a methodology
+
+00:31:51.085 --> 00:31:52.364
+<v Speaker 1>for both of those
+
+00:31:52.924 --> 00:31:53.724
+<v Speaker 1>approaches,
+
+00:31:54.445 --> 00:31:55.325
+<v Speaker 1>in my mind,
+
+00:31:55.565 --> 00:31:56.924
+<v Speaker 1>I think, is is
+
+00:31:57.164 --> 00:31:58.364
+<v Speaker 1>actually advantageous.
+
+00:31:58.764 --> 00:32:00.604
+<v Speaker 1>So, yeah, YTT tries to do both.
+
+00:32:01.164 --> 00:32:03.410
+<v Speaker 0>Okay. Excellent. I mean, that thing you just
+
+00:32:03.410 --> 00:32:04.769
+<v Speaker 0>mentioned there about
+
+00:32:04.930 --> 00:32:07.410
+<v Speaker 0>adding one new thing to the values dot
+
+00:32:07.410 --> 00:32:09.809
+<v Speaker 0>YAML, and it's probably consumed by one person.
+
+00:32:10.130 --> 00:32:11.810
+<v Speaker 0>It's definitely a problem that I face with
+
+00:32:11.810 --> 00:32:13.890
+<v Speaker 0>with the influx DB in the Telegraph helm
+
+00:32:13.890 --> 00:32:15.410
+<v Speaker 0>charts, particularly Telegraph.
+
+00:32:15.410 --> 00:32:17.875
+<v Speaker 0>Because every time Influx add a new plug
+
+00:32:17.875 --> 00:32:19.715
+<v Speaker 0>in to Telegraph, someone comes along with a
+
+00:32:19.715 --> 00:32:21.635
+<v Speaker 0>pull request, adds a new values format to
+
+00:32:21.635 --> 00:32:23.315
+<v Speaker 0>enable that plug in for their deployment, and
+
+00:32:23.315 --> 00:32:24.835
+<v Speaker 0>there's over 200 plug ins.
+
+00:32:25.155 --> 00:32:27.315
+<v Speaker 0>And you end up in a really unreally
+
+00:32:27.955 --> 00:32:28.755
+<v Speaker 0>hellhole,
+
+00:32:28.755 --> 00:32:29.795
+<v Speaker 0>you know, I'm just gonna call it a
+
+00:32:29.795 --> 00:32:31.235
+<v Speaker 0>hellhole, where you have to try and convert
+
+00:32:31.235 --> 00:32:33.960
+<v Speaker 0>YAML to TOML for the Telegraph configuration.
+
+00:32:34.040 --> 00:32:37.000
+<v Speaker 0>Mhmm. And it's nothing but painful. So let's
+
+00:32:37.000 --> 00:32:38.520
+<v Speaker 0>see what we can do here then.
+
+00:32:39.080 --> 00:32:41.800
+<v Speaker 0>Now what's the best way for us to
+
+00:32:41.800 --> 00:32:44.280
+<v Speaker 0>kinda play with this? Did we just
+
+00:32:44.520 --> 00:32:45.640
+<v Speaker 0>start writing some
+
+00:32:46.115 --> 00:32:48.115
+<v Speaker 1>So there is a there is a playground
+
+00:32:48.115 --> 00:32:48.835
+<v Speaker 1>here
+
+00:32:48.915 --> 00:32:50.195
+<v Speaker 1>that's interactive.
+
+00:32:50.355 --> 00:32:52.435
+<v Speaker 1>It just kinda gives you a feel for
+
+00:32:52.435 --> 00:32:53.794
+<v Speaker 1>what the tool does.
+
+00:32:54.675 --> 00:32:55.475
+<v Speaker 1>Actually,
+
+00:32:56.595 --> 00:32:59.155
+<v Speaker 1>quite a few people have have really liked
+
+00:32:59.155 --> 00:33:00.755
+<v Speaker 1>the playground. So that was a good call
+
+00:33:00.755 --> 00:33:02.230
+<v Speaker 1>on my friend's
+
+00:33:03.910 --> 00:33:06.309
+<v Speaker 1>part on making that a priority.
+
+00:33:07.429 --> 00:33:08.149
+<v Speaker 1>That's.
+
+00:33:08.870 --> 00:33:11.429
+<v Speaker 1>He works now at, I think, AWS.
+
+00:33:12.630 --> 00:33:14.855
+<v Speaker 1>But, yeah, the the playground is a good
+
+00:33:14.855 --> 00:33:16.375
+<v Speaker 1>way to start, kind of learn. There's a
+
+00:33:16.375 --> 00:33:18.534
+<v Speaker 1>few examples there if you
+
+00:33:19.414 --> 00:33:21.334
+<v Speaker 1>if you scroll up just a little bit.
+
+00:33:21.575 --> 00:33:23.815
+<v Speaker 1>Yeah. If you you think that you wanna
+
+00:33:23.815 --> 00:33:26.774
+<v Speaker 1>kind of take maybe some YAML and try
+
+00:33:26.774 --> 00:33:27.414
+<v Speaker 1>to
+
+00:33:27.894 --> 00:33:29.095
+<v Speaker 1>make it maybe
+
+00:33:30.110 --> 00:33:31.950
+<v Speaker 1>template a little bit. That could be a
+
+00:33:31.950 --> 00:33:32.590
+<v Speaker 1>good start.
+
+00:33:33.070 --> 00:33:34.510
+<v Speaker 0>Okay. So let me
+
+00:33:35.310 --> 00:33:36.910
+<v Speaker 0>let me throw a question at you first
+
+00:33:36.910 --> 00:33:38.910
+<v Speaker 0>then. It's like assuming
+
+00:33:38.990 --> 00:33:41.630
+<v Speaker 0>I am an application developer that's already deploying
+
+00:33:41.630 --> 00:33:42.590
+<v Speaker 0>stuff to Kubernetes.
+
+00:33:42.975 --> 00:33:44.174
+<v Speaker 0>So it's just basic
+
+00:33:44.655 --> 00:33:46.575
+<v Speaker 0>YAML manifest right now.
+
+00:33:46.975 --> 00:33:49.054
+<v Speaker 0>Is the approach to adopt to my ITT
+
+00:33:49.054 --> 00:33:50.174
+<v Speaker 0>to incrementally
+
+00:33:50.174 --> 00:33:52.174
+<v Speaker 0>swap bets in and out of that or
+
+00:33:52.174 --> 00:33:54.174
+<v Speaker 0>to just rewrite everything as YTT?
+
+00:33:55.470 --> 00:33:56.909
+<v Speaker 1>It's a great question.
+
+00:33:58.190 --> 00:34:00.190
+<v Speaker 1>Yeah. One one of the one of the
+
+00:34:00.190 --> 00:34:02.669
+<v Speaker 1>interesting side effects of being
+
+00:34:04.030 --> 00:34:06.510
+<v Speaker 1>a templating tool that really deals with structures,
+
+00:34:06.510 --> 00:34:08.350
+<v Speaker 1>right, and more specifically, YAML,
+
+00:34:08.765 --> 00:34:12.365
+<v Speaker 1>is that really a a YAML file
+
+00:34:12.605 --> 00:34:14.925
+<v Speaker 1>is a valid YTT template.
+
+00:34:15.565 --> 00:34:17.645
+<v Speaker 1>It's you know, YTT just reads it in
+
+00:34:17.645 --> 00:34:19.725
+<v Speaker 1>and spits out the same exact thing. Right?
+
+00:34:19.725 --> 00:34:22.285
+<v Speaker 1>There was no, let's say, variable substitutions or
+
+00:34:22.285 --> 00:34:22.844
+<v Speaker 1>anything like that.
+
+00:34:24.170 --> 00:34:26.570
+<v Speaker 1>The the simplest thing, you know, to kind
+
+00:34:26.570 --> 00:34:27.530
+<v Speaker 1>of level
+
+00:34:27.530 --> 00:34:29.370
+<v Speaker 1>up, let's say, there is some kind of
+
+00:34:29.370 --> 00:34:31.530
+<v Speaker 1>value that you wanna insert. Maybe it's different
+
+00:34:31.530 --> 00:34:33.450
+<v Speaker 1>for two different environments. Right?
+
+00:34:33.930 --> 00:34:36.330
+<v Speaker 1>The the simplest thing is just literally throw
+
+00:34:36.330 --> 00:34:36.650
+<v Speaker 1>in,
+
+00:34:37.545 --> 00:34:40.744
+<v Speaker 1>you know, one little usage of YTT within
+
+00:34:40.744 --> 00:34:41.784
+<v Speaker 1>that YAML.
+
+00:34:42.585 --> 00:34:44.344
+<v Speaker 1>And, you know, it might be one line
+
+00:34:44.344 --> 00:34:45.304
+<v Speaker 1>or two lines,
+
+00:34:46.264 --> 00:34:46.824
+<v Speaker 1>and
+
+00:34:47.065 --> 00:34:49.145
+<v Speaker 1>that that's how you really get started. So,
+
+00:34:49.145 --> 00:34:50.905
+<v Speaker 1>yeah, the the intent is definitely not to
+
+00:34:51.200 --> 00:34:53.520
+<v Speaker 1>change any of your YAML configuration. It's more
+
+00:34:53.520 --> 00:34:55.520
+<v Speaker 1>just start out and just add
+
+00:34:55.760 --> 00:34:57.840
+<v Speaker 1>some of these directives
+
+00:34:58.080 --> 00:35:00.960
+<v Speaker 1>over time if if you need to. Yeah.
+
+00:35:01.280 --> 00:35:03.120
+<v Speaker 0>Then what I would suggest is,
+
+00:35:04.385 --> 00:35:06.224
+<v Speaker 0>I mean, right now, I could run y
+
+00:35:06.224 --> 00:35:08.385
+<v Speaker 0>t t against this engine next dot YAML,
+
+00:35:08.385 --> 00:35:09.425
+<v Speaker 0>and you're saying I'll just get the same
+
+00:35:09.425 --> 00:35:12.224
+<v Speaker 0>YAML back. That that Should be. Yep. Yep.
+
+00:35:12.224 --> 00:35:14.625
+<v Speaker 0>So digest the dash f again like this?
+
+00:35:14.625 --> 00:35:15.185
+<v Speaker 1>Yep.
+
+00:35:15.425 --> 00:35:15.665
+<v Speaker 1>That's right.
+
+00:35:16.490 --> 00:35:19.770
+<v Speaker 1>Yep. Okay. So let's then tackle the first
+
+00:35:20.250 --> 00:35:22.970
+<v Speaker 0>one of my many annoyances with Kubernetes channel
+
+00:35:22.970 --> 00:35:25.609
+<v Speaker 0>is the duplication between the selector and the
+
+00:35:25.609 --> 00:35:27.930
+<v Speaker 0>labels. Is that something we can then template
+
+00:35:27.930 --> 00:35:29.930
+<v Speaker 0>out with YTT so we only define it
+
+00:35:29.930 --> 00:35:32.105
+<v Speaker 0>once? Yep. Absolutely.
+
+00:35:32.905 --> 00:35:33.545
+<v Speaker 1>So
+
+00:35:34.585 --> 00:35:35.785
+<v Speaker 1>YTT
+
+00:35:36.825 --> 00:35:39.145
+<v Speaker 1>because it's dealing with structures. Right? And, you
+
+00:35:39.145 --> 00:35:40.984
+<v Speaker 1>know, as we can see on line twelve
+
+00:35:40.984 --> 00:35:43.065
+<v Speaker 1>and eight, right, we we have a
+
+00:35:43.385 --> 00:35:46.070
+<v Speaker 1>single map item. Right? A map. Right? So
+
+00:35:46.070 --> 00:35:47.670
+<v Speaker 1>we can pull that map out into a
+
+00:35:47.670 --> 00:35:49.670
+<v Speaker 1>function and just call the function from two
+
+00:35:49.670 --> 00:35:50.630
+<v Speaker 1>different places.
+
+00:35:51.430 --> 00:35:53.670
+<v Speaker 1>And all that really requires is,
+
+00:35:54.630 --> 00:35:57.110
+<v Speaker 1>you know, cutting out the app NGINX and
+
+00:35:57.110 --> 00:35:58.895
+<v Speaker 1>moving it up to the top level of
+
+00:35:58.895 --> 00:36:00.335
+<v Speaker 1>the document and
+
+00:36:00.575 --> 00:36:03.215
+<v Speaker 1>wrapping it in a in a depth.
+
+00:36:04.494 --> 00:36:05.055
+<v Speaker 1>So
+
+00:36:06.175 --> 00:36:08.895
+<v Speaker 1>you might this this probably referring yeah. Exactly.
+
+00:36:08.895 --> 00:36:10.734
+<v Speaker 1>Referring to an example is a little easier
+
+00:36:10.734 --> 00:36:11.935
+<v Speaker 1>to explain there
+
+00:36:12.430 --> 00:36:13.870
+<v Speaker 1>or to show at least.
+
+00:36:14.510 --> 00:36:17.710
+<v Speaker 1>The the key there is that YTT directives
+
+00:36:17.710 --> 00:36:20.270
+<v Speaker 1>are all YAML comments, so they just leave
+
+00:36:20.270 --> 00:36:22.430
+<v Speaker 1>along the the YAML nodes.
+
+00:36:23.390 --> 00:36:23.950
+<v Speaker 1>And
+
+00:36:24.430 --> 00:36:27.390
+<v Speaker 1>everything that's prefixed with, you know, pound at,
+
+00:36:28.164 --> 00:36:28.964
+<v Speaker 1>it's
+
+00:36:28.964 --> 00:36:31.685
+<v Speaker 1>it's annotation, what we call, is in YTT.
+
+00:36:32.325 --> 00:36:32.885
+<v Speaker 1>And
+
+00:36:33.525 --> 00:36:35.765
+<v Speaker 1>these annotations, in fact, could tell YTT
+
+00:36:35.765 --> 00:36:38.164
+<v Speaker 1>where certain things are kind of a like,
+
+00:36:38.164 --> 00:36:40.244
+<v Speaker 1>this is a definition of a function or
+
+00:36:40.244 --> 00:36:42.164
+<v Speaker 1>this is a four loop, let's say, or
+
+00:36:42.164 --> 00:36:44.380
+<v Speaker 1>this is whatever it is. Right? So we're
+
+00:36:44.380 --> 00:36:46.700
+<v Speaker 1>using a Pythonic language
+
+00:36:47.260 --> 00:36:51.420
+<v Speaker 1>called Starlark from Google. Great language. Great library
+
+00:36:51.420 --> 00:36:52.220
+<v Speaker 1>to use.
+
+00:36:52.940 --> 00:36:54.220
+<v Speaker 1>And it's actually
+
+00:36:54.540 --> 00:36:56.220
+<v Speaker 1>the YAML gets converted,
+
+00:36:56.460 --> 00:36:56.780
+<v Speaker 1>you know,
+
+00:36:57.575 --> 00:37:00.855
+<v Speaker 1>at runtime to to a template that's fully
+
+00:37:00.855 --> 00:37:03.575
+<v Speaker 1>written in Starlark, and then Starlark gets executed,
+
+00:37:03.575 --> 00:37:05.255
+<v Speaker 1>and you get the output back.
+
+00:37:05.654 --> 00:37:08.375
+<v Speaker 1>So, yeah, if you grab, like, line three
+
+00:37:08.934 --> 00:37:11.815
+<v Speaker 1>from from this example over here
+
+00:37:12.350 --> 00:37:14.510
+<v Speaker 1>and just drop it in before. Yep. And
+
+00:37:14.510 --> 00:37:16.750
+<v Speaker 1>then we also will close it. Yep.
+
+00:37:17.950 --> 00:37:19.470
+<v Speaker 1>There you go. So now we have a
+
+00:37:19.470 --> 00:37:21.550
+<v Speaker 1>function. And all it takes now is to
+
+00:37:21.550 --> 00:37:23.710
+<v Speaker 1>call that function from multiple places.
+
+00:37:24.665 --> 00:37:26.905
+<v Speaker 1>And so to call it would be if
+
+00:37:26.905 --> 00:37:29.865
+<v Speaker 1>you go to line 11. Actually, if you
+
+00:37:29.865 --> 00:37:31.545
+<v Speaker 1>so if if you write it out right
+
+00:37:31.545 --> 00:37:32.025
+<v Speaker 1>here
+
+00:37:32.665 --> 00:37:35.545
+<v Speaker 1>yeah. So if you do pound at labels
+
+00:37:36.025 --> 00:37:37.145
+<v Speaker 1>yeah. So
+
+00:37:37.450 --> 00:37:39.610
+<v Speaker 1>what's what's happening here is actually it's not
+
+00:37:39.610 --> 00:37:41.290
+<v Speaker 1>gonna quite work because
+
+00:37:41.610 --> 00:37:43.690
+<v Speaker 1>we don't know if you mean that the
+
+00:37:43.690 --> 00:37:46.810
+<v Speaker 1>value of much labels should be the result
+
+00:37:46.810 --> 00:37:48.650
+<v Speaker 1>of the labels function. It could just be
+
+00:37:48.650 --> 00:37:50.250
+<v Speaker 1>calling a function in the middle of the
+
+00:37:50.250 --> 00:37:52.090
+<v Speaker 1>YAML. And so if you drop it on
+
+00:37:52.090 --> 00:37:52.970
+<v Speaker 1>the same line
+
+00:37:53.295 --> 00:37:54.815
+<v Speaker 1>as much labels,
+
+00:37:54.815 --> 00:37:57.375
+<v Speaker 1>then YTT is going to know that, hey.
+
+00:37:57.375 --> 00:37:58.975
+<v Speaker 1>You're actually calling a function.
+
+00:37:59.615 --> 00:38:02.335
+<v Speaker 1>And, also, you'll have to throw in the
+
+00:38:02.575 --> 00:38:04.494
+<v Speaker 1>two parentheses at the end of that as
+
+00:38:04.494 --> 00:38:06.494
+<v Speaker 1>a kind of a regular function call.
+
+00:38:07.750 --> 00:38:09.830
+<v Speaker 0>Alright. Okay. Gotcha. Yep.
+
+00:38:11.110 --> 00:38:13.030
+<v Speaker 1>Alright. Is there a way to keep my
+
+00:38:13.030 --> 00:38:14.710
+<v Speaker 0>editor happy, or is that always just gonna
+
+00:38:14.710 --> 00:38:15.910
+<v Speaker 0>moo and at me whenever Yeah. I'm not
+
+00:38:15.910 --> 00:38:18.070
+<v Speaker 1>quite sure. Is this Versus Code? Yeah.
+
+00:38:18.630 --> 00:38:20.184
+<v Speaker 1>Yeah. I'm not quite sure what it's complaining
+
+00:38:20.184 --> 00:38:22.105
+<v Speaker 1>about right now. We we do have a
+
+00:38:22.105 --> 00:38:23.464
+<v Speaker 1>Versus Code plugin
+
+00:38:23.464 --> 00:38:25.145
+<v Speaker 1>that we've recently
+
+00:38:25.385 --> 00:38:27.785
+<v Speaker 1>started out and, you know, we'll we'll probably
+
+00:38:27.785 --> 00:38:30.265
+<v Speaker 1>iterate on. Yeah. I'm not sure if
+
+00:38:31.704 --> 00:38:35.130
+<v Speaker 1>what exactly it's not happy about, but oh,
+
+00:38:35.130 --> 00:38:36.730
+<v Speaker 1>yeah. I guess it's value. So, I mean,
+
+00:38:36.730 --> 00:38:39.369
+<v Speaker 0>if I drop this n, will will YTT
+
+00:38:39.369 --> 00:38:40.170
+<v Speaker 0>then
+
+00:38:40.330 --> 00:38:43.050
+<v Speaker 0>replace that value, or is it gonna YTT
+
+00:38:43.050 --> 00:38:45.130
+<v Speaker 1>is actually not gonna be quite happy with
+
+00:38:45.130 --> 00:38:49.450
+<v Speaker 1>providing the static value and the value that's
+
+00:38:48.645 --> 00:38:51.765
+<v Speaker 1>gonna get generated to YTT and mostly
+
+00:38:52.085 --> 00:38:52.805
+<v Speaker 1>because
+
+00:38:53.445 --> 00:38:56.405
+<v Speaker 1>it it might be just confusing to users,
+
+00:38:56.405 --> 00:38:58.405
+<v Speaker 1>like, what what what's happening over here, and
+
+00:38:58.405 --> 00:39:00.165
+<v Speaker 1>so we wanted to prevent that. We may
+
+00:39:00.165 --> 00:39:02.570
+<v Speaker 1>open that up later. Not quite sure. We're
+
+00:39:02.570 --> 00:39:04.170
+<v Speaker 1>we're trying to be as strict as possible
+
+00:39:04.170 --> 00:39:06.090
+<v Speaker 1>today in terms of the rules, and so
+
+00:39:06.090 --> 00:39:07.610
+<v Speaker 1>we can always loosen up.
+
+00:39:08.170 --> 00:39:10.650
+<v Speaker 1>But, yeah, today, YTT is gonna complain at
+
+00:39:10.650 --> 00:39:12.170
+<v Speaker 1>you saying that's not allowed.
+
+00:39:12.570 --> 00:39:15.215
+<v Speaker 0>Okay. So let's let's do that. I I
+
+00:39:15.215 --> 00:39:17.375
+<v Speaker 0>I like to see things work. So
+
+00:39:17.775 --> 00:39:19.935
+<v Speaker 0>I can see those labels being injected.
+
+00:39:20.575 --> 00:39:22.575
+<v Speaker 0>You're saying that's just gonna tell me no.
+
+00:39:22.575 --> 00:39:23.855
+<v Speaker 0>Yeah. Yep.
+
+00:39:24.415 --> 00:39:26.415
+<v Speaker 0>So it's saying it's best to jam on
+
+00:39:26.415 --> 00:39:28.415
+<v Speaker 0>node to either have, like, computed or blah
+
+00:39:28.415 --> 00:39:28.735
+<v Speaker 0>blah blah.
+
+00:39:29.840 --> 00:39:32.480
+<v Speaker 0>Because it's got both. Right? Okay. That's right.
+
+00:39:33.840 --> 00:39:34.560
+<v Speaker 0>Okay.
+
+00:39:35.120 --> 00:39:37.200
+<v Speaker 0>So I will Yeah. And, of course, now
+
+00:39:37.200 --> 00:39:38.640
+<v Speaker 1>that we have this function, right, we can
+
+00:39:38.640 --> 00:39:40.320
+<v Speaker 1>call as many times as you want. So,
+
+00:39:40.320 --> 00:39:42.000
+<v Speaker 1>like, on line 14, you could also call
+
+00:39:42.000 --> 00:39:42.560
+<v Speaker 1>it.
+
+00:39:43.520 --> 00:39:44.480
+<v Speaker 1>Should be all happy.
+
+00:39:47.665 --> 00:39:49.105
+<v Speaker 0>Right. Nice.
+
+00:39:51.665 --> 00:39:53.985
+<v Speaker 0>Okay. That makes sense to me. So
+
+00:39:54.305 --> 00:39:55.265
+<v Speaker 0>we're using
+
+00:39:55.744 --> 00:39:58.065
+<v Speaker 0>Starlack language to define functions.
+
+00:39:58.705 --> 00:40:00.865
+<v Speaker 0>We're going down the comment approach
+
+00:40:01.160 --> 00:40:03.240
+<v Speaker 0>so that the YAML can still be read
+
+00:40:03.240 --> 00:40:05.960
+<v Speaker 0>by other YAML files, I guess, or set
+
+00:40:05.960 --> 00:40:07.240
+<v Speaker 0>back highlight works.
+
+00:40:08.040 --> 00:40:10.920
+<v Speaker 1>The it this is kind of an
+
+00:40:11.160 --> 00:40:13.720
+<v Speaker 1>interesting world. Right? Just because the template is
+
+00:40:13.720 --> 00:40:14.200
+<v Speaker 1>YAML,
+
+00:40:14.694 --> 00:40:16.934
+<v Speaker 1>you do get some benefits from other tools.
+
+00:40:16.934 --> 00:40:18.535
+<v Speaker 1>Right? But for example, lot of tools, they
+
+00:40:18.535 --> 00:40:20.855
+<v Speaker 1>strip out comments, right, because they're just not
+
+00:40:20.855 --> 00:40:22.934
+<v Speaker 1>aware that, hey. I should keep the comments,
+
+00:40:22.934 --> 00:40:23.415
+<v Speaker 1>which
+
+00:40:23.734 --> 00:40:25.494
+<v Speaker 1>over time, I guess, that may get fixed
+
+00:40:25.494 --> 00:40:28.775
+<v Speaker 1>through improvements in YAML libraries, like the
+
+00:40:29.070 --> 00:40:30.510
+<v Speaker 1>Go YAML v three.
+
+00:40:31.630 --> 00:40:33.390
+<v Speaker 1>But, yeah, the
+
+00:40:34.750 --> 00:40:36.510
+<v Speaker 1>main motivation for
+
+00:40:36.910 --> 00:40:39.230
+<v Speaker 1>making the template in YAML itself
+
+00:40:39.790 --> 00:40:41.550
+<v Speaker 1>was specifically for
+
+00:40:44.255 --> 00:40:46.495
+<v Speaker 1>being able to read the YAML structure and
+
+00:40:46.495 --> 00:40:48.975
+<v Speaker 1>then overlay the metadata on top of that.
+
+00:40:52.095 --> 00:40:54.815
+<v Speaker 1>YTT Lint is actually one of the there
+
+00:40:54.815 --> 00:40:56.815
+<v Speaker 1>was a there was a person from SAP.
+
+00:40:57.780 --> 00:40:59.060
+<v Speaker 1>He was experimenting
+
+00:40:59.060 --> 00:41:00.180
+<v Speaker 1>with how to
+
+00:41:00.900 --> 00:41:01.860
+<v Speaker 1>do some
+
+00:41:02.740 --> 00:41:06.100
+<v Speaker 1>type checking inside this kind of a world.
+
+00:41:07.140 --> 00:41:09.140
+<v Speaker 1>Versus CodeYTT is
+
+00:41:09.940 --> 00:41:10.500
+<v Speaker 1>from
+
+00:41:11.275 --> 00:41:12.155
+<v Speaker 1>Eli.
+
+00:41:12.715 --> 00:41:15.035
+<v Speaker 1>He that was his experiment and kind of
+
+00:41:15.035 --> 00:41:15.835
+<v Speaker 1>improving
+
+00:41:15.835 --> 00:41:16.475
+<v Speaker 1>that.
+
+00:41:17.275 --> 00:41:19.035
+<v Speaker 1>But, yeah, we've we've we've got some work
+
+00:41:19.035 --> 00:41:19.835
+<v Speaker 1>to do there.
+
+00:41:20.955 --> 00:41:23.275
+<v Speaker 0>Well, I mean, I've installed that that Lint
+
+00:41:23.275 --> 00:41:25.540
+<v Speaker 0>one, and right away, my little red squiggle
+
+00:41:25.540 --> 00:41:26.980
+<v Speaker 0>of death has gone away. So I'm pretty
+
+00:41:26.980 --> 00:41:27.540
+<v Speaker 0>happy.
+
+00:41:28.819 --> 00:41:29.700
+<v Speaker 1>Fair enough.
+
+00:41:30.500 --> 00:41:32.260
+<v Speaker 0>Alright. Cool. So
+
+00:41:32.740 --> 00:41:34.339
+<v Speaker 0>something that jumped out at me and the
+
+00:41:34.339 --> 00:41:37.299
+<v Speaker 0>the playground example here. What is this load
+
+00:41:37.299 --> 00:41:39.540
+<v Speaker 0>statement at the top? I couldn't really work
+
+00:41:39.540 --> 00:41:40.994
+<v Speaker 0>that out right away.
+
+00:41:41.234 --> 00:41:41.875
+<v Speaker 1>So
+
+00:41:42.994 --> 00:41:45.714
+<v Speaker 1>in Helm, I believe you can just say,
+
+00:41:45.714 --> 00:41:47.155
+<v Speaker 1>like, dot values
+
+00:41:47.155 --> 00:41:49.955
+<v Speaker 1>dot something. Right? It's kinda like the
+
+00:41:50.515 --> 00:41:51.875
+<v Speaker 1>values is globally available.
+
+00:41:52.780 --> 00:41:55.500
+<v Speaker 1>We've tried in YTT templates to be very
+
+00:41:55.500 --> 00:41:58.060
+<v Speaker 1>explicit about where things come from. So for
+
+00:41:58.060 --> 00:41:59.980
+<v Speaker 1>example, if you wanted to move a function
+
+00:41:59.980 --> 00:42:02.620
+<v Speaker 1>into a separate file, right, the the the
+
+00:42:02.620 --> 00:42:04.460
+<v Speaker 1>labels function that's been written,
+
+00:42:05.100 --> 00:42:06.940
+<v Speaker 1>you would have to do an explicit load
+
+00:42:07.674 --> 00:42:10.395
+<v Speaker 1>of that file to grab that function. Right?
+
+00:42:10.395 --> 00:42:11.674
+<v Speaker 1>So explicit export
+
+00:42:12.555 --> 00:42:15.835
+<v Speaker 1>explicit imports of of whatever variables or functions
+
+00:42:15.835 --> 00:42:16.955
+<v Speaker 1>that you care about.
+
+00:42:17.434 --> 00:42:20.714
+<v Speaker 1>Same applies to the built in YTT modules.
+
+00:42:20.714 --> 00:42:23.275
+<v Speaker 1>So YTT comes with various modules like
+
+00:42:23.970 --> 00:42:25.330
+<v Speaker 1>data one is to
+
+00:42:25.890 --> 00:42:26.850
+<v Speaker 1>get the
+
+00:42:27.490 --> 00:42:29.730
+<v Speaker 1>the data values that the user has provided
+
+00:42:29.730 --> 00:42:30.370
+<v Speaker 1>to us.
+
+00:42:31.010 --> 00:42:33.250
+<v Speaker 1>There's, you know, various ones like base 64
+
+00:42:33.250 --> 00:42:35.730
+<v Speaker 1>to encode or decode things. Maybe there's a,
+
+00:42:35.945 --> 00:42:37.785
+<v Speaker 1>for example, overlay
+
+00:42:37.945 --> 00:42:40.665
+<v Speaker 1>functionality in YTT is actually implemented as a
+
+00:42:40.665 --> 00:42:43.065
+<v Speaker 1>module so you can programmatically do some overlaying
+
+00:42:43.065 --> 00:42:43.625
+<v Speaker 1>yourself.
+
+00:42:44.345 --> 00:42:46.505
+<v Speaker 1>So, yeah, there there's various there's various modules
+
+00:42:46.505 --> 00:42:47.465
+<v Speaker 1>that it includes.
+
+00:42:48.345 --> 00:42:51.500
+<v Speaker 1>And so here, we're saying, please import the
+
+00:42:51.500 --> 00:42:54.780
+<v Speaker 1>data module. And under data module, there's data
+
+00:42:54.780 --> 00:42:57.820
+<v Speaker 1>dot values, which allows you to use what
+
+00:42:57.820 --> 00:42:58.620
+<v Speaker 1>the user
+
+00:42:58.940 --> 00:43:00.780
+<v Speaker 1>has provided to us.
+
+00:43:02.300 --> 00:43:02.940
+<v Speaker 0>Okay.
+
+00:43:03.180 --> 00:43:04.380
+<v Speaker 0>That makes sense to me.
+
+00:43:05.355 --> 00:43:07.355
+<v Speaker 0>So the next thing then I think that
+
+00:43:07.355 --> 00:43:09.275
+<v Speaker 0>makes sense for this example
+
+00:43:10.075 --> 00:43:10.795
+<v Speaker 0>would
+
+00:43:11.595 --> 00:43:12.315
+<v Speaker 0>be
+
+00:43:12.955 --> 00:43:14.555
+<v Speaker 0>I'm thinking of the helm.
+
+00:43:14.875 --> 00:43:16.315
+<v Speaker 0>What are we doing now? I so I
+
+00:43:16.315 --> 00:43:17.994
+<v Speaker 0>would be able to define things globally that
+
+00:43:17.994 --> 00:43:20.075
+<v Speaker 0>could be applied in in multiple templates. Is
+
+00:43:20.075 --> 00:43:22.349
+<v Speaker 0>there a way to do that with YCP?
+
+00:43:22.670 --> 00:43:24.990
+<v Speaker 1>Yes. When when you say globally, do you
+
+00:43:24.990 --> 00:43:26.990
+<v Speaker 1>mean like a same function or something like
+
+00:43:26.990 --> 00:43:28.109
+<v Speaker 1>that? Or
+
+00:43:28.910 --> 00:43:30.430
+<v Speaker 0>Oh, yes. So if I,
+
+00:43:30.910 --> 00:43:33.069
+<v Speaker 0>you know, say this was across two files
+
+00:43:33.069 --> 00:43:35.345
+<v Speaker 0>and I've got a service dot YAML I
+
+00:43:35.345 --> 00:43:37.585
+<v Speaker 0>don't necessarily want to define the labels in
+
+00:43:37.585 --> 00:43:40.065
+<v Speaker 0>each. Got it. Yep. Makes sense. Yep. So
+
+00:43:40.145 --> 00:43:41.424
+<v Speaker 1>yeah. So at this point, you would say
+
+00:43:41.585 --> 00:43:43.105
+<v Speaker 1>so you would have a service dot YAML
+
+00:43:43.105 --> 00:43:44.545
+<v Speaker 1>that has that service,
+
+00:43:45.984 --> 00:43:46.545
+<v Speaker 1>and
+
+00:43:46.785 --> 00:43:49.105
+<v Speaker 1>we would create actually a separate file called
+
+00:43:49.105 --> 00:43:50.464
+<v Speaker 1>the maybe, I don't know,
+
+00:43:51.930 --> 00:43:54.330
+<v Speaker 1>deployment dot lib dot yaml.
+
+00:43:54.490 --> 00:43:56.250
+<v Speaker 1>And that's where we'll put our function so
+
+00:43:56.250 --> 00:43:58.410
+<v Speaker 1>that we can import it from both places.
+
+00:43:59.050 --> 00:44:00.730
+<v Speaker 0>Okay. So I can just let's I'll call
+
+00:44:00.730 --> 00:44:03.050
+<v Speaker 0>it a b c dot yaml. That's
+
+00:44:03.050 --> 00:44:05.045
+<v Speaker 1>alright. Yeah. One thing, you do have to
+
+00:44:05.045 --> 00:44:05.685
+<v Speaker 1>call it
+
+00:44:06.005 --> 00:44:08.404
+<v Speaker 1>dot lib dot yaml as the extension. So
+
+00:44:08.404 --> 00:44:10.805
+<v Speaker 1>for now, we'll put that restriction to avoid
+
+00:44:10.805 --> 00:44:12.724
+<v Speaker 1>kind of a people importing
+
+00:44:12.805 --> 00:44:14.964
+<v Speaker 1>templates themselves from other templates.
+
+00:44:16.059 --> 00:44:18.299
+<v Speaker 1>And so everything that's, you know, labeled as
+
+00:44:18.299 --> 00:44:21.180
+<v Speaker 1>in dot YAML is importable by the regular
+
+00:44:21.180 --> 00:44:21.900
+<v Speaker 1>templates.
+
+00:44:22.780 --> 00:44:24.780
+<v Speaker 0>Okay. So I have my dot lab dot
+
+00:44:24.780 --> 00:44:26.859
+<v Speaker 0>YAML, and you're saying I can just Yep.
+
+00:44:26.940 --> 00:44:28.940
+<v Speaker 0>This function over there? That's right.
+
+00:44:31.194 --> 00:44:33.675
+<v Speaker 0>And then I can send that function
+
+00:44:34.234 --> 00:44:36.234
+<v Speaker 0>from here first. Because right now, I've got
+
+00:44:36.234 --> 00:44:38.155
+<v Speaker 0>my my y t t lens. It's kicked
+
+00:44:38.155 --> 00:44:39.994
+<v Speaker 0>in and went, hey. This this doesn't exist.
+
+00:44:39.994 --> 00:44:41.195
+<v Speaker 0>So Yep.
+
+00:44:42.555 --> 00:44:44.395
+<v Speaker 1>So, yeah, you would use a pound at
+
+00:44:44.395 --> 00:44:47.060
+<v Speaker 1>at the top, then space, and then type
+
+00:44:47.060 --> 00:44:47.940
+<v Speaker 1>in load.
+
+00:44:48.340 --> 00:44:50.340
+<v Speaker 1>And then you would open parenthesis.
+
+00:44:50.420 --> 00:44:52.980
+<v Speaker 1>Maybe it's, like, double quotes at y t
+
+00:44:52.980 --> 00:44:53.540
+<v Speaker 1>t.
+
+00:44:53.860 --> 00:44:55.540
+<v Speaker 1>Or actually, no. No. At y t. Yeah.
+
+00:44:55.540 --> 00:44:57.140
+<v Speaker 1>It's a b c dot a b yamo,
+
+00:44:57.140 --> 00:44:57.540
+<v Speaker 1>I bet.
+
+00:44:58.865 --> 00:45:01.345
+<v Speaker 1>Yep. And then the second argument would be
+
+00:45:01.345 --> 00:45:02.545
+<v Speaker 1>the name of the function.
+
+00:45:03.345 --> 00:45:04.785
+<v Speaker 1>So it's gonna be a string as well.
+
+00:45:04.785 --> 00:45:07.505
+<v Speaker 1>Yep. So that should make the labels available.
+
+00:45:09.105 --> 00:45:10.224
+<v Speaker 1>Yeah. I'm not quite sure
+
+00:45:11.160 --> 00:45:12.920
+<v Speaker 1>if YTT Lint has been
+
+00:45:13.960 --> 00:45:16.600
+<v Speaker 1>I I think it's been used
+
+00:45:16.760 --> 00:45:19.240
+<v Speaker 1>for a long or it's been experimented
+
+00:45:19.240 --> 00:45:20.920
+<v Speaker 1>a long time ago, so it may not
+
+00:45:20.920 --> 00:45:22.280
+<v Speaker 1>know certain things.
+
+00:45:23.960 --> 00:45:26.280
+<v Speaker 1>But, yeah, the this this should be okay.
+
+00:45:27.185 --> 00:45:30.145
+<v Speaker 0>Okay. So this based on this syntax here,
+
+00:45:30.145 --> 00:45:31.105
+<v Speaker 0>if I had
+
+00:45:31.345 --> 00:45:34.385
+<v Speaker 0>10 different functions inside of my library, YAML,
+
+00:45:34.385 --> 00:45:36.385
+<v Speaker 0>would they all need to import it individually?
+
+00:45:36.385 --> 00:45:38.065
+<v Speaker 0>Is there a way to just bring in
+
+00:45:38.065 --> 00:45:38.545
+<v Speaker 0>everything?
+
+00:45:40.280 --> 00:45:42.840
+<v Speaker 1>So it's kinda interesting. The Starlark language defines
+
+00:45:42.840 --> 00:45:45.320
+<v Speaker 1>this so load is actually not a not
+
+00:45:45.320 --> 00:45:47.480
+<v Speaker 1>a function, but it's a special, I guess,
+
+00:45:47.480 --> 00:45:48.760
+<v Speaker 1>keyword or directive.
+
+00:45:49.080 --> 00:45:51.720
+<v Speaker 1>And it does require you to specify all
+
+00:45:51.720 --> 00:45:53.720
+<v Speaker 1>of the symbols that it imports.
+
+00:45:54.165 --> 00:45:56.085
+<v Speaker 1>However, the the trick here is that if
+
+00:45:56.085 --> 00:45:58.245
+<v Speaker 1>you're a b c lib yaml has
+
+00:45:58.645 --> 00:45:59.925
+<v Speaker 1>lots of functions,
+
+00:46:00.165 --> 00:46:01.365
+<v Speaker 1>you could actually
+
+00:46:02.645 --> 00:46:05.605
+<v Speaker 1>create a little structure that holds them all.
+
+00:46:05.605 --> 00:46:07.525
+<v Speaker 1>And all you gotta do is import the
+
+00:46:07.525 --> 00:46:08.725
+<v Speaker 1>little structure over here.
+
+00:46:09.420 --> 00:46:11.260
+<v Speaker 1>So it may be, like, structure a little
+
+00:46:11.260 --> 00:46:12.619
+<v Speaker 1>a b c, and then you would say
+
+00:46:12.619 --> 00:46:14.220
+<v Speaker 1>a b c dot labels.
+
+00:46:14.540 --> 00:46:16.700
+<v Speaker 1>So it's actually kind of bundling it up
+
+00:46:16.700 --> 00:46:18.380
+<v Speaker 1>into a little object, and then you just
+
+00:46:18.380 --> 00:46:19.180
+<v Speaker 1>import
+
+00:46:19.180 --> 00:46:21.099
+<v Speaker 1>the the little object altogether.
+
+00:46:22.255 --> 00:46:23.055
+<v Speaker 1>We actually
+
+00:46:23.615 --> 00:46:24.975
+<v Speaker 1>consider adding
+
+00:46:25.535 --> 00:46:26.415
+<v Speaker 1>a different
+
+00:46:27.135 --> 00:46:29.215
+<v Speaker 1>way of doing a load to kind of
+
+00:46:29.215 --> 00:46:30.095
+<v Speaker 1>be more
+
+00:46:30.335 --> 00:46:31.615
+<v Speaker 1>closer to what,
+
+00:46:31.855 --> 00:46:34.734
+<v Speaker 1>I believe, JavaScript folks do when they just
+
+00:46:34.160 --> 00:46:36.560
+<v Speaker 1>assign a return of the load to a
+
+00:46:36.560 --> 00:46:38.320
+<v Speaker 1>variable and just user of that.
+
+00:46:39.120 --> 00:46:41.200
+<v Speaker 1>Might be might be a little bit more
+
+00:46:42.080 --> 00:46:43.200
+<v Speaker 1>friendlier, I guess.
+
+00:46:44.080 --> 00:46:45.840
+<v Speaker 0>So just to kind of elaborate on what
+
+00:46:45.840 --> 00:46:47.200
+<v Speaker 0>you said there. I mean,
+
+00:46:48.185 --> 00:46:50.185
+<v Speaker 0>were you suggesting that I would do something
+
+00:46:50.185 --> 00:46:51.465
+<v Speaker 0>like this?
+
+00:46:52.505 --> 00:46:53.945
+<v Speaker 1>No. No. So you would still keep the
+
+00:46:53.945 --> 00:46:55.785
+<v Speaker 1>you would still keep the labels. So we
+
+00:46:55.785 --> 00:46:57.945
+<v Speaker 1>we are importing a symbol on line one,
+
+00:46:57.945 --> 00:47:00.185
+<v Speaker 1>the label's name. So you wouldn't wanna be
+
+00:47:00.185 --> 00:47:02.790
+<v Speaker 1>changing the YAML itself. So let let's just
+
+00:47:02.790 --> 00:47:04.630
+<v Speaker 1>say that you have a second function over
+
+00:47:04.630 --> 00:47:06.550
+<v Speaker 1>here. Maybe you can copy it and have
+
+00:47:06.550 --> 00:47:07.830
+<v Speaker 1>two of them now here.
+
+00:47:09.350 --> 00:47:11.830
+<v Speaker 1>Yeah. So now we've actually have two symbols,
+
+00:47:11.830 --> 00:47:13.750
+<v Speaker 1>labels and labels too that you have to
+
+00:47:13.750 --> 00:47:15.350
+<v Speaker 1>export. Right? And so instead of
+
+00:47:16.145 --> 00:47:18.464
+<v Speaker 1>instead of the user on the other side
+
+00:47:18.464 --> 00:47:21.585
+<v Speaker 1>importing them manually kinda one by one, you
+
+00:47:21.585 --> 00:47:24.385
+<v Speaker 1>can create this thing called a struct.
+
+00:47:24.785 --> 00:47:26.385
+<v Speaker 1>So it's effectively a
+
+00:47:27.585 --> 00:47:29.660
+<v Speaker 1>better looking map, if you will. So I
+
+00:47:29.660 --> 00:47:31.340
+<v Speaker 1>don't remember if we have an example of
+
+00:47:31.340 --> 00:47:31.900
+<v Speaker 1>that.
+
+00:47:32.700 --> 00:47:35.340
+<v Speaker 1>But, actually, we might have an example
+
+00:47:35.660 --> 00:47:38.300
+<v Speaker 1>in the YTT repo because I believe someone
+
+00:47:38.300 --> 00:47:40.140
+<v Speaker 1>was asking about this. Might be in the
+
+00:47:40.140 --> 00:47:41.100
+<v Speaker 1>docs somewhere.
+
+00:47:41.340 --> 00:47:42.620
+<v Speaker 1>Let me see if I can find it
+
+00:47:42.620 --> 00:47:43.020
+<v Speaker 1>real quick.
+
+00:47:43.605 --> 00:47:44.485
+<v Speaker 1>Load.
+
+00:47:45.765 --> 00:47:46.965
+<v Speaker 1>Oh, yeah. There it is.
+
+00:47:47.525 --> 00:47:49.125
+<v Speaker 1>So I'll send you a link over here
+
+00:47:49.125 --> 00:47:49.605
+<v Speaker 1>real quick.
+
+00:47:59.230 --> 00:48:01.150
+<v Speaker 1>If you scroll down just a little bit,
+
+00:48:01.150 --> 00:48:03.230
+<v Speaker 1>keep on scrolling down. So there you go.
+
+00:48:03.230 --> 00:48:04.990
+<v Speaker 1>So it says right under your cursor, it
+
+00:48:04.990 --> 00:48:06.750
+<v Speaker 1>says to load the cell functions from a
+
+00:48:06.750 --> 00:48:09.325
+<v Speaker 1>single file, you can do effectively that. So
+
+00:48:09.325 --> 00:48:10.685
+<v Speaker 1>what what that allows you to do is
+
+00:48:10.685 --> 00:48:12.765
+<v Speaker 1>just make a little object that has two
+
+00:48:12.765 --> 00:48:15.725
+<v Speaker 1>fields, you know, label and label as one.
+
+00:48:15.725 --> 00:48:17.325
+<v Speaker 1>So right now, it's little verbose, I would
+
+00:48:17.325 --> 00:48:19.805
+<v Speaker 1>say. Definitely wanna improve on that, but that
+
+00:48:19.805 --> 00:48:21.485
+<v Speaker 1>would be one way to go about it.
+
+00:48:21.805 --> 00:48:22.525
+<v Speaker 0>Alright. Okay.
+
+00:48:23.400 --> 00:48:24.440
+<v Speaker 0>So I guess
+
+00:48:25.400 --> 00:48:27.079
+<v Speaker 0>random stuff just keeps popping up in my
+
+00:48:27.079 --> 00:48:28.840
+<v Speaker 0>head now. Do
+
+00:48:29.640 --> 00:48:32.440
+<v Speaker 0>I need to define this as YAML, or
+
+00:48:32.440 --> 00:48:35.720
+<v Speaker 0>can I use dot star to then, you
+
+00:48:35.720 --> 00:48:37.720
+<v Speaker 0>know, get some text highlighted and other things
+
+00:48:37.720 --> 00:48:38.359
+<v Speaker 0>from my function?
+
+00:48:39.025 --> 00:48:39.665
+<v Speaker 1>So
+
+00:48:41.185 --> 00:48:43.265
+<v Speaker 1>it's an interesting kind of a choice to
+
+00:48:43.265 --> 00:48:45.265
+<v Speaker 1>make. Right? So when you're writing templates,
+
+00:48:45.345 --> 00:48:47.345
+<v Speaker 1>you might be dealing with functions that return
+
+00:48:47.345 --> 00:48:49.425
+<v Speaker 1>a bunch of structures. Right? To me, let's
+
+00:48:49.425 --> 00:48:51.345
+<v Speaker 1>say, you're defining a structure, it's way easier
+
+00:48:51.345 --> 00:48:53.190
+<v Speaker 1>to just, you know, maybe write it in
+
+00:48:53.190 --> 00:48:55.190
+<v Speaker 1>YAML or copy paste it from somewhere that's
+
+00:48:55.190 --> 00:48:56.710
+<v Speaker 1>already in YAML. Right?
+
+00:48:57.830 --> 00:48:59.750
+<v Speaker 1>And so a lot of times, I will
+
+00:48:59.750 --> 00:49:01.910
+<v Speaker 1>say, since you're dealing with YAML, I would
+
+00:49:01.910 --> 00:49:03.990
+<v Speaker 1>just stick with Lib YAML. Right? Now if
+
+00:49:03.990 --> 00:49:05.750
+<v Speaker 1>you're writing maybe functions that are more,
+
+00:49:06.365 --> 00:49:07.244
+<v Speaker 1>I don't know,
+
+00:49:07.645 --> 00:49:08.525
+<v Speaker 1>compute
+
+00:49:08.605 --> 00:49:09.405
+<v Speaker 1>related,
+
+00:49:09.405 --> 00:49:11.164
+<v Speaker 1>like, maybe you're, like, I don't know, multiplying
+
+00:49:11.164 --> 00:49:13.085
+<v Speaker 1>things and adding things and maybe, I don't
+
+00:49:13.085 --> 00:49:15.484
+<v Speaker 1>know, appending strings or whatever it is. Right?
+
+00:49:15.484 --> 00:49:17.244
+<v Speaker 1>You might actually not be using a lot
+
+00:49:17.244 --> 00:49:19.164
+<v Speaker 1>of the YAML structures at all. Right? So
+
+00:49:19.164 --> 00:49:20.845
+<v Speaker 1>at that point, I would say it makes
+
+00:49:20.845 --> 00:49:23.030
+<v Speaker 1>sense to, let's say, it in the dot
+
+00:49:23.030 --> 00:49:25.350
+<v Speaker 1>star file, and then, you know, it is
+
+00:49:25.350 --> 00:49:27.270
+<v Speaker 1>the same exact kind of load directive from
+
+00:49:27.270 --> 00:49:29.590
+<v Speaker 1>the other side. In this case, I guess,
+
+00:49:29.750 --> 00:49:31.510
+<v Speaker 1>the example that's have it as is the
+
+00:49:31.510 --> 00:49:33.430
+<v Speaker 1>star file where you just have, you know,
+
+00:49:33.430 --> 00:49:36.230
+<v Speaker 1>returning two integers for whatever reason. But, yeah,
+
+00:49:36.230 --> 00:49:38.305
+<v Speaker 1>it's really up to the to the end
+
+00:49:38.305 --> 00:49:41.185
+<v Speaker 1>user to decide if they're dealing with YAML
+
+00:49:41.185 --> 00:49:43.185
+<v Speaker 1>and stick with LibyaML. If they're not, then
+
+00:49:43.185 --> 00:49:44.465
+<v Speaker 1>star is also fine.
+
+00:49:44.865 --> 00:49:47.745
+<v Speaker 0>And I'm assuming because this is, a I
+
+00:49:47.745 --> 00:49:49.665
+<v Speaker 0>think it's a subset of Python. I would
+
+00:49:49.665 --> 00:49:51.745
+<v Speaker 0>just return a a Python deduction right here,
+
+00:49:51.745 --> 00:49:53.570
+<v Speaker 0>and that would return me something that looks
+
+00:49:53.570 --> 00:49:55.730
+<v Speaker 0>like YAML? You you could you could definitely
+
+00:49:55.730 --> 00:49:58.130
+<v Speaker 1>do that. Yep. So dictionaries will be converted
+
+00:49:58.130 --> 00:50:00.210
+<v Speaker 1>to the regular YAML maps.
+
+00:50:00.370 --> 00:50:03.250
+<v Speaker 1>Actually, since since since we mentioned this, there
+
+00:50:03.250 --> 00:50:06.050
+<v Speaker 1>is another type of templates that YTT can
+
+00:50:06.050 --> 00:50:08.850
+<v Speaker 1>deal with is textual templates since in you
+
+00:50:08.850 --> 00:50:10.875
+<v Speaker 1>know, when you deal with Kubernetes, sometimes you
+
+00:50:10.875 --> 00:50:13.035
+<v Speaker 1>have to actually do some textual templating,
+
+00:50:13.675 --> 00:50:16.555
+<v Speaker 1>which maybe, I don't know, for whatever reasons,
+
+00:50:16.555 --> 00:50:18.155
+<v Speaker 1>is more appropriate for,
+
+00:50:18.715 --> 00:50:20.715
+<v Speaker 1>you know, whatever you're doing. And so you
+
+00:50:20.715 --> 00:50:22.875
+<v Speaker 1>could actually have a lead dot TXT,
+
+00:50:23.115 --> 00:50:24.315
+<v Speaker 1>right, that
+
+00:50:24.600 --> 00:50:27.640
+<v Speaker 1>has a function that's really doing some kind
+
+00:50:27.640 --> 00:50:30.280
+<v Speaker 1>of a nice textual formatting. Right?
+
+00:50:30.920 --> 00:50:32.760
+<v Speaker 1>And so that's kind of another
+
+00:50:32.840 --> 00:50:33.640
+<v Speaker 1>another,
+
+00:50:33.880 --> 00:50:36.200
+<v Speaker 1>I guess, consideration to make when writing those
+
+00:50:36.200 --> 00:50:36.600
+<v Speaker 1>templates.
+
+00:50:38.215 --> 00:50:38.855
+<v Speaker 0>Okay.
+
+00:50:40.295 --> 00:50:42.055
+<v Speaker 0>There's a lot going on here. Like, I
+
+00:50:42.055 --> 00:50:43.815
+<v Speaker 0>think there's a lot of options. But what
+
+00:50:43.815 --> 00:50:46.455
+<v Speaker 0>you're saying there, quite a succinctly, was just
+
+00:50:46.455 --> 00:50:49.575
+<v Speaker 0>stick to the LabiAML approach. Use use that
+
+00:50:49.575 --> 00:50:51.335
+<v Speaker 0>until you need to break out for something
+
+00:50:51.570 --> 00:50:53.490
+<v Speaker 0>that's a bit more complicated or fits a
+
+00:50:53.490 --> 00:50:55.970
+<v Speaker 0>different purpose. That's right. Okay. Cool.
+
+00:50:56.370 --> 00:50:58.530
+<v Speaker 0>I will stick with the YAML.
+
+00:50:59.010 --> 00:51:00.210
+<v Speaker 0>Okay. We're back.
+
+00:51:01.090 --> 00:51:03.410
+<v Speaker 0>So let's we have we have kind of
+
+00:51:03.410 --> 00:51:05.810
+<v Speaker 0>looked at the functions. We've imported the functions.
+
+00:51:05.810 --> 00:51:08.185
+<v Speaker 0>I mean, that all works pretty self explanatory.
+
+00:51:08.505 --> 00:51:10.744
+<v Speaker 0>What about now if I wanna tweak this
+
+00:51:10.744 --> 00:51:13.464
+<v Speaker 0>NGINX deployment for a stage in our production
+
+00:51:13.464 --> 00:51:15.385
+<v Speaker 0>deployment and their number of replicas is gonna
+
+00:51:15.385 --> 00:51:16.744
+<v Speaker 0>change? So let's
+
+00:51:17.065 --> 00:51:18.184
+<v Speaker 0>set replicas
+
+00:51:19.560 --> 00:51:20.680
+<v Speaker 0>to 100
+
+00:51:21.080 --> 00:51:23.000
+<v Speaker 0>Mhmm. Which I don't I only wanna prod.
+
+00:51:23.000 --> 00:51:25.320
+<v Speaker 0>So how do I go about overlaying this
+
+00:51:25.320 --> 00:51:26.760
+<v Speaker 0>to make this tweakable?
+
+00:51:27.560 --> 00:51:29.800
+<v Speaker 1>So if we do wanna use overlay,
+
+00:51:30.440 --> 00:51:32.040
+<v Speaker 1>we would actually have a separate file.
+
+00:51:33.144 --> 00:51:35.144
+<v Speaker 1>It could be, like, overlay dot YAML or
+
+00:51:35.144 --> 00:51:36.665
+<v Speaker 1>replicas dot YAML.
+
+00:51:38.424 --> 00:51:39.145
+<v Speaker 0>Okay.
+
+00:51:39.625 --> 00:51:41.865
+<v Speaker 0>Overlay dot YAML. Mhmm.
+
+00:51:42.265 --> 00:51:42.984
+<v Speaker 1>And
+
+00:51:43.704 --> 00:51:45.944
+<v Speaker 1>the tricky, right, is that
+
+00:51:46.779 --> 00:51:48.859
+<v Speaker 1>the world of overlay, at least in my
+
+00:51:48.859 --> 00:51:50.300
+<v Speaker 1>mind, is split into
+
+00:51:50.539 --> 00:51:52.140
+<v Speaker 1>two kind of steps.
+
+00:51:52.140 --> 00:51:54.619
+<v Speaker 1>Right? One step is to find
+
+00:51:54.619 --> 00:51:57.420
+<v Speaker 1>what you're trying to overlay on top. And
+
+00:51:57.420 --> 00:51:59.660
+<v Speaker 1>second step is what the operation you wanna
+
+00:51:59.660 --> 00:52:01.420
+<v Speaker 1>do once you found it. Right? So for
+
+00:52:01.420 --> 00:52:01.740
+<v Speaker 1>example,
+
+00:52:02.244 --> 00:52:03.605
+<v Speaker 1>we wanna find
+
+00:52:03.925 --> 00:52:05.445
+<v Speaker 1>a particular resource,
+
+00:52:05.605 --> 00:52:07.925
+<v Speaker 1>a deployment in our example. Right?
+
+00:52:08.325 --> 00:52:11.285
+<v Speaker 1>And we also wanna find spec dot replicas,
+
+00:52:11.685 --> 00:52:12.405
+<v Speaker 1>and then
+
+00:52:12.805 --> 00:52:14.885
+<v Speaker 1>then we wanna replace the value of it.
+
+00:52:14.885 --> 00:52:15.045
+<v Speaker 1>Right?
+
+00:52:16.420 --> 00:52:18.820
+<v Speaker 1>So it might be a little easier to
+
+00:52:18.820 --> 00:52:20.820
+<v Speaker 1>copy from one of the examples. Let's see
+
+00:52:20.820 --> 00:52:21.860
+<v Speaker 1>if we got a
+
+00:52:22.100 --> 00:52:24.100
+<v Speaker 1>overlay example. I believe we do.
+
+00:52:25.860 --> 00:52:27.940
+<v Speaker 1>So, actually, let's
+
+00:52:27.940 --> 00:52:28.740
+<v Speaker 1>see if we got it.
+
+00:52:30.305 --> 00:52:31.185
+<v Speaker 1>There's
+
+00:52:31.345 --> 00:52:35.105
+<v Speaker 1>overlay files. Yeah. Okay. Overlay files. Example 16
+
+00:52:35.105 --> 00:52:36.945
+<v Speaker 1>might be what you're looking for.
+
+00:52:38.704 --> 00:52:39.984
+<v Speaker 1>So here,
+
+00:52:40.224 --> 00:52:42.464
+<v Speaker 1>the overlay is, I guess, in there's actually
+
+00:52:42.464 --> 00:52:44.450
+<v Speaker 1>two overlays here. One is an ops one
+
+00:52:44.450 --> 00:52:46.770
+<v Speaker 1>YAML, and one is an ops two YAML.
+
+00:52:46.770 --> 00:52:48.369
+<v Speaker 1>So we can probably grab the entire thing
+
+00:52:48.369 --> 00:52:50.770
+<v Speaker 1>in ops one YAML and just modify
+
+00:52:50.770 --> 00:52:51.890
+<v Speaker 1>it to our need.
+
+00:52:54.130 --> 00:52:55.809
+<v Speaker 1>So on line one, right, we see that
+
+00:52:55.809 --> 00:52:57.650
+<v Speaker 1>we're loading in the overlay library.
+
+00:52:58.335 --> 00:53:00.415
+<v Speaker 1>That's not always necessary, but in this case,
+
+00:53:00.415 --> 00:53:03.775
+<v Speaker 1>because we're using an overlay module functionality on
+
+00:53:03.775 --> 00:53:06.335
+<v Speaker 1>line three, that's that's why it's needed there.
+
+00:53:06.494 --> 00:53:07.855
+<v Speaker 1>And then on line three,
+
+00:53:08.015 --> 00:53:10.015
+<v Speaker 1>we're saying, let's find
+
+00:53:10.175 --> 00:53:13.695
+<v Speaker 1>something that has metadata name example
+
+00:53:13.960 --> 00:53:15.640
+<v Speaker 1>ingress one. Right?
+
+00:53:15.800 --> 00:53:17.320
+<v Speaker 1>So in our case, we probably wanna be
+
+00:53:17.320 --> 00:53:19.240
+<v Speaker 1>doing some other finding. Right? Like, what are
+
+00:53:19.240 --> 00:53:20.440
+<v Speaker 1>we actually looking for?
+
+00:53:21.320 --> 00:53:23.240
+<v Speaker 0>So I guess we could do metadata
+
+00:53:23.640 --> 00:53:24.520
+<v Speaker 0>labels.
+
+00:53:31.454 --> 00:53:33.214
+<v Speaker 1>You might have to wrap it in in
+
+00:53:33.214 --> 00:53:35.214
+<v Speaker 1>another set of hash then for the app.
+
+00:53:35.214 --> 00:53:36.175
+<v Speaker 1>Right? Yeah.
+
+00:53:37.375 --> 00:53:40.015
+<v Speaker 0>So and then this was app engine x.
+
+00:53:40.015 --> 00:53:41.855
+<v Speaker 0>Yeah. Like, there's something like that. Right? That's
+
+00:53:41.855 --> 00:53:43.375
+<v Speaker 1>right. In fact, we could've even used our
+
+00:53:43.375 --> 00:53:45.910
+<v Speaker 1>function over here if we really wanted to,
+
+00:53:46.630 --> 00:53:47.270
+<v Speaker 1>right,
+
+00:53:47.830 --> 00:53:48.710
+<v Speaker 1>for the
+
+00:53:48.950 --> 00:53:49.750
+<v Speaker 1>labels
+
+00:53:49.750 --> 00:53:51.910
+<v Speaker 1>to to get the same label in here.
+
+00:53:51.910 --> 00:53:53.830
+<v Speaker 1>A lot of times I've seen people actually
+
+00:53:53.830 --> 00:53:54.470
+<v Speaker 1>do
+
+00:53:55.430 --> 00:53:58.185
+<v Speaker 1>is use the kind and the name of
+
+00:53:58.185 --> 00:54:00.745
+<v Speaker 1>the object to kind of identify it uniquely
+
+00:54:00.745 --> 00:54:03.065
+<v Speaker 1>enough within their configuration, but this this will
+
+00:54:03.065 --> 00:54:05.385
+<v Speaker 1>also do. So overlay subset just tries to
+
+00:54:05.385 --> 00:54:07.145
+<v Speaker 1>find whatever is kind of a shared.
+
+00:54:09.540 --> 00:54:11.780
+<v Speaker 0>Confirm So and then so yeah. So once
+
+00:54:11.780 --> 00:54:13.860
+<v Speaker 1>we found this object so by default,
+
+00:54:14.340 --> 00:54:16.740
+<v Speaker 1>we are we're going to or by default,
+
+00:54:16.740 --> 00:54:19.300
+<v Speaker 1>YTT overlay functionality expects that it's going to
+
+00:54:19.300 --> 00:54:22.020
+<v Speaker 1>find one object. So in some in forever
+
+00:54:22.785 --> 00:54:25.585
+<v Speaker 1>whatever reason, we don't have that one copy
+
+00:54:25.585 --> 00:54:28.305
+<v Speaker 1>of that object that matches this subset, then
+
+00:54:28.305 --> 00:54:30.224
+<v Speaker 1>it's going to tell us, hey. Hold on.
+
+00:54:30.224 --> 00:54:31.185
+<v Speaker 1>Something is wrong.
+
+00:54:31.825 --> 00:54:33.665
+<v Speaker 1>And then so instead of the whole metadata
+
+00:54:33.665 --> 00:54:34.785
+<v Speaker 1>annotations
+
+00:54:35.105 --> 00:54:35.985
+<v Speaker 1>removal,
+
+00:54:36.065 --> 00:54:38.464
+<v Speaker 1>we'll we'll be just doing spec replicas. Right?
+
+00:54:39.960 --> 00:54:40.600
+<v Speaker 1>Yep.
+
+00:54:41.080 --> 00:54:43.320
+<v Speaker 1>That's right. That's all there is to it.
+
+00:54:43.880 --> 00:54:46.360
+<v Speaker 0>Okay. So there's something I wanna confirm there.
+
+00:54:46.360 --> 00:54:49.000
+<v Speaker 0>What I think you suggested was I could
+
+00:54:49.000 --> 00:54:50.440
+<v Speaker 0>use the labels function here.
+
+00:54:51.115 --> 00:54:53.195
+<v Speaker 1>That's right. Yep. And so I would just
+
+00:54:53.195 --> 00:54:55.355
+<v Speaker 0>have to copy the import
+
+00:54:55.595 --> 00:54:56.235
+<v Speaker 0>Yep.
+
+00:54:57.195 --> 00:54:58.875
+<v Speaker 0>Into my overlay.
+
+00:55:01.115 --> 00:55:01.515
+<v Speaker 0>So
+
+00:55:05.660 --> 00:55:07.099
+<v Speaker 0>did I mess that up?
+
+00:55:07.819 --> 00:55:09.900
+<v Speaker 0>Yeah. I'm There's one more. Yep. There's one
+
+00:55:09.900 --> 00:55:12.140
+<v Speaker 1>more missing there. There you go. K. So
+
+00:55:12.140 --> 00:55:13.820
+<v Speaker 0>from the command line now,
+
+00:55:13.980 --> 00:55:16.460
+<v Speaker 0>how do I piece this together?
+
+00:55:17.019 --> 00:55:19.555
+<v Speaker 1>So there's an interesting property of YTT is
+
+00:55:19.555 --> 00:55:22.355
+<v Speaker 1>that it doesn't allow any kind of so
+
+00:55:22.355 --> 00:55:23.235
+<v Speaker 1>the the
+
+00:55:23.475 --> 00:55:25.955
+<v Speaker 1>the execution environment is very self, you know,
+
+00:55:25.955 --> 00:55:28.035
+<v Speaker 1>contained. Right? There's no way to access time.
+
+00:55:28.035 --> 00:55:30.035
+<v Speaker 1>There's no way to access file system, no
+
+00:55:30.035 --> 00:55:33.410
+<v Speaker 1>network, no nothing. Right? And so because we're
+
+00:55:33.410 --> 00:55:35.090
+<v Speaker 1>doing all these loads, we actually have to
+
+00:55:35.090 --> 00:55:37.090
+<v Speaker 1>give the files to YTT that we're trying
+
+00:55:37.090 --> 00:55:38.450
+<v Speaker 1>to load. So in this case, it would
+
+00:55:38.450 --> 00:55:40.610
+<v Speaker 1>be like YTT dash f nginx dash f
+
+00:55:40.610 --> 00:55:43.410
+<v Speaker 1>overlay dash f a b c lib yavl.
+
+00:55:44.690 --> 00:55:45.010
+<v Speaker 1>Yep.
+
+00:55:47.545 --> 00:55:48.425
+<v Speaker 1>Alright. So
+
+00:55:48.905 --> 00:55:50.425
+<v Speaker 0>That that error you said was gonna happen
+
+00:55:50.425 --> 00:55:51.865
+<v Speaker 0>if we didn't get a match.
+
+00:55:52.745 --> 00:55:54.505
+<v Speaker 1>It says it it's a number of match
+
+00:55:54.505 --> 00:55:57.145
+<v Speaker 1>notes to be one, but was zero. Ah,
+
+00:55:57.145 --> 00:55:57.785
+<v Speaker 1>you know what?
+
+00:55:58.869 --> 00:56:01.190
+<v Speaker 1>That is true. Yeah. The labels that we're
+
+00:56:01.190 --> 00:56:03.030
+<v Speaker 1>actually trying to find is not inside the
+
+00:56:03.030 --> 00:56:04.150
+<v Speaker 1>metadata. Right?
+
+00:56:04.550 --> 00:56:05.670
+<v Speaker 1>It's elsewhere
+
+00:56:06.390 --> 00:56:07.670
+<v Speaker 1>because we didn't
+
+00:56:08.710 --> 00:56:11.030
+<v Speaker 1>we didn't have anything. Yeah. Well, let's just
+
+00:56:11.030 --> 00:56:11.830
+<v Speaker 0>make that work. Right?
+
+00:56:12.875 --> 00:56:13.915
+<v Speaker 1>Yeah. Why not?
+
+00:56:14.474 --> 00:56:16.555
+<v Speaker 1>Don't I I guess it is better. Yeah.
+
+00:56:17.355 --> 00:56:19.035
+<v Speaker 1>This this is actually one of the kind
+
+00:56:19.035 --> 00:56:20.715
+<v Speaker 1>of a one of the
+
+00:56:21.115 --> 00:56:23.275
+<v Speaker 1>goes back to the idea of being as
+
+00:56:23.275 --> 00:56:25.035
+<v Speaker 1>strict as possible. Right? Because you wanna find
+
+00:56:25.035 --> 00:56:27.355
+<v Speaker 1>those error message errors as
+
+00:56:27.520 --> 00:56:29.760
+<v Speaker 1>at your configuration time, not at the time
+
+00:56:29.760 --> 00:56:31.600
+<v Speaker 1>when you're deploying and things are not working.
+
+00:56:31.600 --> 00:56:32.160
+<v Speaker 1>Right?
+
+00:56:32.880 --> 00:56:34.400
+<v Speaker 0>Oh, yeah. Definitely. I think that's a good
+
+00:56:34.400 --> 00:56:36.720
+<v Speaker 0>thing for it to catch. And the alternative
+
+00:56:36.720 --> 00:56:39.680
+<v Speaker 0>to me, hovering that together there,
+
+00:56:39.840 --> 00:56:42.640
+<v Speaker 0>would just be to update the overlay and
+
+00:56:43.455 --> 00:56:44.815
+<v Speaker 0>spec
+
+00:56:45.535 --> 00:56:46.655
+<v Speaker 0>selector
+
+00:56:48.175 --> 00:56:49.215
+<v Speaker 0>and then
+
+00:56:50.975 --> 00:56:52.015
+<v Speaker 0>match labels.
+
+00:56:52.335 --> 00:56:54.175
+<v Speaker 1>That's right. That would be an option. Yep.
+
+00:56:55.455 --> 00:56:56.975
+<v Speaker 1>Think you have to throw in one more.
+
+00:56:56.975 --> 00:56:57.135
+<v Speaker 1>Yep.
+
+00:57:01.320 --> 00:57:03.800
+<v Speaker 0>Spec, selector, match labels
+
+00:57:03.880 --> 00:57:06.280
+<v Speaker 0>rather than just throw in new labels into
+
+00:57:06.280 --> 00:57:07.320
+<v Speaker 0>our metadata.
+
+00:57:07.720 --> 00:57:09.720
+<v Speaker 0>That worked. Nice. And then we have our
+
+00:57:09.720 --> 00:57:10.920
+<v Speaker 0>replicas of one.
+
+00:57:11.715 --> 00:57:14.035
+<v Speaker 0>So from a a, I guess,
+
+00:57:14.755 --> 00:57:16.595
+<v Speaker 0>some sort of deployment pipeline where I was
+
+00:57:16.595 --> 00:57:19.155
+<v Speaker 0>piecing this together, my environment my deployment pipeline
+
+00:57:19.155 --> 00:57:21.395
+<v Speaker 0>would have to be environment aware that it
+
+00:57:21.395 --> 00:57:23.635
+<v Speaker 0>could just fill in the correct overlay, and
+
+00:57:23.635 --> 00:57:25.795
+<v Speaker 0>it's just gonna work. That's right. Yep.
+
+00:57:26.369 --> 00:57:28.050
+<v Speaker 1>And a lot of times, we actually
+
+00:57:28.849 --> 00:57:31.730
+<v Speaker 1>we we see folks which instead of using
+
+00:57:31.730 --> 00:57:34.289
+<v Speaker 1>individual files, they just use directories. Right? So
+
+00:57:34.289 --> 00:57:36.210
+<v Speaker 1>you can have a config directory that contains
+
+00:57:36.210 --> 00:57:38.450
+<v Speaker 1>NGINX, YAML, and a b c lib YAML.
+
+00:57:38.905 --> 00:57:40.825
+<v Speaker 1>And then they may also have, like, a
+
+00:57:40.825 --> 00:57:43.865
+<v Speaker 1>production directory that contains whatever overlays you need
+
+00:57:43.865 --> 00:57:46.265
+<v Speaker 1>to contain. Right? So you're not really concerned
+
+00:57:46.265 --> 00:57:46.825
+<v Speaker 1>about,
+
+00:57:47.785 --> 00:57:50.425
+<v Speaker 1>you know, which files are individually included. Right?
+
+00:57:50.425 --> 00:57:51.545
+<v Speaker 1>You're just relying on,
+
+00:57:52.240 --> 00:57:53.920
+<v Speaker 1>you know, the file system to tell you
+
+00:57:53.920 --> 00:57:54.720
+<v Speaker 1>what's what.
+
+00:57:55.280 --> 00:57:58.000
+<v Speaker 0>K. So you're saying I can move this
+
+00:57:58.000 --> 00:57:59.920
+<v Speaker 0>into a deploy directory.
+
+00:58:01.680 --> 00:58:03.280
+<v Speaker 0>I need my library here.
+
+00:58:03.360 --> 00:58:05.935
+<v Speaker 0>Okay. So my command could then You you
+
+00:58:05.935 --> 00:58:07.695
+<v Speaker 1>you you do wanna move the library into
+
+00:58:07.695 --> 00:58:09.535
+<v Speaker 1>the deploy as well since it's
+
+00:58:10.494 --> 00:58:14.175
+<v Speaker 1>since it's being imported by NGINX YAML directly.
+
+00:58:14.895 --> 00:58:17.295
+<v Speaker 0>It's also being imported by our overlay.
+
+00:58:17.295 --> 00:58:18.734
+<v Speaker 0>Does that mean I have to put the
+
+00:58:18.734 --> 00:58:20.860
+<v Speaker 0>path here like this? So,
+
+00:58:22.460 --> 00:58:24.620
+<v Speaker 1>actually, no. Yeah. The the this should work.
+
+00:58:25.100 --> 00:58:27.260
+<v Speaker 1>You just have to remember yeah. You just
+
+00:58:27.260 --> 00:58:28.940
+<v Speaker 1>have to remember to include it through dash
+
+00:58:28.940 --> 00:58:29.900
+<v Speaker 1>f. Yeah.
+
+00:58:30.460 --> 00:58:31.900
+<v Speaker 0>Right. Okay. So the first thing I would
+
+00:58:31.900 --> 00:58:33.500
+<v Speaker 0>do is to include any libraries that I
+
+00:58:33.500 --> 00:58:36.595
+<v Speaker 0>need. I could then specify my deploy directory
+
+00:58:36.595 --> 00:58:38.995
+<v Speaker 0>followed by my overlay directory.
+
+00:58:39.155 --> 00:58:39.795
+<v Speaker 1>Yep.
+
+00:58:40.195 --> 00:58:42.195
+<v Speaker 0>I guess, and this still works. Okay.
+
+00:58:43.475 --> 00:58:45.075
+<v Speaker 1>Yeah. It's it's the
+
+00:58:46.035 --> 00:58:47.475
+<v Speaker 1>what's interesting is that,
+
+00:58:48.170 --> 00:58:50.650
+<v Speaker 1>you know, I've previously been involved in various
+
+00:58:50.650 --> 00:58:53.450
+<v Speaker 1>tooling that was always very strict. And so
+
+00:58:53.450 --> 00:58:55.530
+<v Speaker 1>this time, I've I've tried to
+
+00:58:55.850 --> 00:58:56.570
+<v Speaker 1>make
+
+00:58:57.370 --> 00:59:00.250
+<v Speaker 1>it just kind of a little less opinionated
+
+00:59:00.250 --> 00:59:02.545
+<v Speaker 1>in terms of how you integrate with your
+
+00:59:02.545 --> 00:59:05.025
+<v Speaker 1>workflows and Unix environment and whatnot. Because a
+
+00:59:05.025 --> 00:59:06.705
+<v Speaker 1>lot of people out there, they're all doing
+
+00:59:06.705 --> 00:59:07.905
+<v Speaker 1>all kinds of DIY
+
+00:59:08.225 --> 00:59:09.185
+<v Speaker 1>installations
+
+00:59:09.185 --> 00:59:11.665
+<v Speaker 1>of of Kubernetes cluster, and they have their
+
+00:59:11.665 --> 00:59:14.940
+<v Speaker 1>own opinionated workflows. Right? So we wanna cater
+
+00:59:14.940 --> 00:59:17.020
+<v Speaker 1>to that. Right? If you really wanna kind
+
+00:59:17.020 --> 00:59:19.420
+<v Speaker 1>of separate them, you know, may maybe you
+
+00:59:19.420 --> 00:59:22.220
+<v Speaker 1>have 10 different ways of how you overlay
+
+00:59:22.220 --> 00:59:24.460
+<v Speaker 1>things. Maybe it's like dev and then, like,
+
+00:59:24.460 --> 00:59:27.180
+<v Speaker 1>dev extra and whatever else. Like, it's kind
+
+00:59:27.180 --> 00:59:28.540
+<v Speaker 1>of up to you how you manage the
+
+00:59:28.540 --> 00:59:28.860
+<v Speaker 1>files.
+
+00:59:29.775 --> 00:59:32.335
+<v Speaker 1>There are benefits and downsides to that approach.
+
+00:59:32.335 --> 00:59:32.895
+<v Speaker 1>Right?
+
+00:59:33.615 --> 00:59:34.735
+<v Speaker 0>Yeah. Definitely.
+
+00:59:35.135 --> 00:59:36.974
+<v Speaker 0>And but I could I I'm really starting
+
+00:59:36.974 --> 00:59:38.494
+<v Speaker 0>to get a good patron of of how
+
+00:59:38.494 --> 00:59:41.135
+<v Speaker 0>these tools come together, how they work together,
+
+00:59:41.135 --> 00:59:42.655
+<v Speaker 0>and the kinda responsibilities
+
+00:59:42.655 --> 00:59:44.780
+<v Speaker 0>for each, It's I think it's starting to
+
+00:59:44.780 --> 00:59:46.460
+<v Speaker 0>make them look very, very interesting.
+
+00:59:47.420 --> 00:59:49.420
+<v Speaker 0>So we're kind of approaching an hour now.
+
+00:59:49.420 --> 00:59:51.100
+<v Speaker 0>So what I would like to say is,
+
+00:59:51.100 --> 00:59:51.580
+<v Speaker 0>like,
+
+00:59:52.540 --> 00:59:54.460
+<v Speaker 0>we can definitely demo anything else that you
+
+00:59:54.460 --> 00:59:56.220
+<v Speaker 0>think is important for people to see, or
+
+00:59:56.220 --> 00:59:58.140
+<v Speaker 0>maybe we could just do a quick
+
+00:59:58.265 --> 01:00:00.185
+<v Speaker 0>few minute recap of the other tools and
+
+01:00:00.185 --> 01:00:03.225
+<v Speaker 0>what their responsibilities are. And then I will
+
+01:00:03.225 --> 01:00:04.905
+<v Speaker 0>thank you and say this has been really
+
+01:00:04.905 --> 01:00:05.465
+<v Speaker 0>cool.
+
+01:00:05.945 --> 01:00:06.585
+<v Speaker 0>So
+
+01:00:07.305 --> 01:00:09.465
+<v Speaker 0>do you wanna show off KeyBuild, or should
+
+01:00:09.465 --> 01:00:11.785
+<v Speaker 0>we just quickly talk about KeyBuild, Image Pack,
+
+01:00:11.785 --> 01:00:12.345
+<v Speaker 0>and vendor?
+
+01:00:13.089 --> 01:00:15.010
+<v Speaker 1>I think we can talk about them. I
+
+01:00:15.010 --> 01:00:17.010
+<v Speaker 1>think if folks are, you know, interested to
+
+01:00:17.010 --> 01:00:19.490
+<v Speaker 1>look in, you know, it's it's there. They
+
+01:00:19.490 --> 01:00:21.490
+<v Speaker 1>can also, you know, jump in our Slack
+
+01:00:21.490 --> 01:00:24.210
+<v Speaker 1>channel, ask any any questions. We're very responsive
+
+01:00:24.210 --> 01:00:24.530
+<v Speaker 1>there.
+
+01:00:26.175 --> 01:00:28.975
+<v Speaker 1>So I guess so k build is
+
+01:00:30.175 --> 01:00:32.335
+<v Speaker 1>is trying to solve well, it started out
+
+01:00:32.335 --> 01:00:35.375
+<v Speaker 1>as solving one particular problem. Right? So we
+
+01:00:35.375 --> 01:00:37.650
+<v Speaker 1>actually have this problem right now. Right? We're
+
+01:00:37.650 --> 01:00:39.970
+<v Speaker 1>just using image NGINX. Right? And so we
+
+01:00:39.970 --> 01:00:42.690
+<v Speaker 1>never know what's gonna deploy. Right? Because NGINX
+
+01:00:42.690 --> 01:00:44.850
+<v Speaker 1>latest will keep on moving. Right?
+
+01:00:45.089 --> 01:00:47.329
+<v Speaker 1>And so what KBill does, maybe we can
+
+01:00:47.329 --> 01:00:49.010
+<v Speaker 1>actually showcase that real quick,
+
+01:00:49.569 --> 01:00:53.155
+<v Speaker 1>is if we pipe the YTT output into
+
+01:00:55.075 --> 01:00:56.755
+<v Speaker 1>into cap. Right?
+
+01:00:57.155 --> 01:00:59.234
+<v Speaker 1>Right now, it just gonna say, let the
+
+01:00:59.234 --> 01:01:02.195
+<v Speaker 1>cluster try to find the latest thing. Right?
+
+01:01:02.515 --> 01:01:05.875
+<v Speaker 1>But cable actually finds the image references within
+
+01:01:05.875 --> 01:01:06.675
+<v Speaker 1>your files
+
+01:01:07.130 --> 01:01:09.130
+<v Speaker 1>and switches them from
+
+01:01:09.690 --> 01:01:10.490
+<v Speaker 1>non
+
+01:01:11.210 --> 01:01:12.010
+<v Speaker 1>digest
+
+01:01:12.170 --> 01:01:14.890
+<v Speaker 1>URLs to the digest reference URLs.
+
+01:01:15.050 --> 01:01:15.930
+<v Speaker 1>And
+
+01:01:16.410 --> 01:01:19.930
+<v Speaker 1>what that ultimately gets you, right, is that
+
+01:01:19.005 --> 01:01:20.125
+<v Speaker 1>that immutability
+
+01:01:20.125 --> 01:01:22.365
+<v Speaker 1>of the config. Right? So let's say if
+
+01:01:22.365 --> 01:01:24.365
+<v Speaker 1>your deployment has been running for a long
+
+01:01:24.365 --> 01:01:26.444
+<v Speaker 1>time in your cluster and for whatever reason,
+
+01:01:26.444 --> 01:01:28.285
+<v Speaker 1>some of the NGINX pods need to restart.
+
+01:01:28.285 --> 01:01:30.365
+<v Speaker 1>Right? There's not gonna be a chance that
+
+01:01:30.365 --> 01:01:32.684
+<v Speaker 1>when the pods do restart, they pick up
+
+01:01:32.684 --> 01:01:35.130
+<v Speaker 1>an entirely different version of NGINX since the
+
+01:01:35.130 --> 01:01:36.890
+<v Speaker 1>time you've deployed it in the first place.
+
+01:01:36.890 --> 01:01:37.369
+<v Speaker 1>Right?
+
+01:01:37.690 --> 01:01:40.890
+<v Speaker 1>So by using this digest URLs everywhere where
+
+01:01:40.890 --> 01:01:42.890
+<v Speaker 1>k build finds the image reference,
+
+01:01:43.049 --> 01:01:44.970
+<v Speaker 1>you're kinda locking everything down.
+
+01:01:45.930 --> 01:01:47.450
+<v Speaker 1>And on top of that, you know, kind
+
+01:01:47.450 --> 01:01:49.575
+<v Speaker 1>of the second step to that was, well,
+
+01:01:49.575 --> 01:01:51.575
+<v Speaker 1>when you're developing locally, you actually may want
+
+01:01:51.575 --> 01:01:52.695
+<v Speaker 1>to get,
+
+01:01:52.855 --> 01:01:55.575
+<v Speaker 1>you know, run your Docker build process, right,
+
+01:01:55.575 --> 01:01:56.775
+<v Speaker 1>in the middle of all that. Right? You
+
+01:01:56.775 --> 01:01:58.855
+<v Speaker 1>have your configuration. You made some changes to
+
+01:01:58.855 --> 01:01:59.735
+<v Speaker 1>your app.
+
+01:01:59.974 --> 01:02:01.415
+<v Speaker 1>So you wanna run the Docker build, and
+
+01:02:01.415 --> 01:02:02.695
+<v Speaker 1>then you wanna do a cap deploy.
+
+01:02:03.230 --> 01:02:04.590
+<v Speaker 1>And so that's, of course,
+
+01:02:04.910 --> 01:02:07.549
+<v Speaker 1>cumbersome for you to do. So k build
+
+01:02:07.549 --> 01:02:09.710
+<v Speaker 1>with a little bit of configuration will actually
+
+01:02:09.710 --> 01:02:11.950
+<v Speaker 1>go ahead and run the Docker build for
+
+01:02:11.950 --> 01:02:13.230
+<v Speaker 1>you and replace
+
+01:02:13.230 --> 01:02:15.470
+<v Speaker 1>the image reference with whatever got built.
+
+01:02:16.075 --> 01:02:18.395
+<v Speaker 1>Right? So k build is really, I guess,
+
+01:02:18.395 --> 01:02:20.795
+<v Speaker 1>focusing on how do you integrate into your
+
+01:02:20.795 --> 01:02:21.595
+<v Speaker 1>deployment,
+
+01:02:21.595 --> 01:02:22.795
+<v Speaker 1>you know, pipeline
+
+01:02:23.195 --> 01:02:24.315
+<v Speaker 1>this image
+
+01:02:24.795 --> 01:02:26.715
+<v Speaker 1>finding and and building.
+
+01:02:26.795 --> 01:02:29.515
+<v Speaker 1>Today, can use, like, Docker build and pack
+
+01:02:29.515 --> 01:02:31.115
+<v Speaker 1>build. So that's the build packs folks.
+
+01:02:32.670 --> 01:02:34.590
+<v Speaker 0>Okay. That makes sense. I I I think
+
+01:02:34.590 --> 01:02:36.510
+<v Speaker 0>what it I think what a lot of
+
+01:02:36.510 --> 01:02:39.390
+<v Speaker 0>people don't realize is that when you deploy
+
+01:02:39.790 --> 01:02:42.270
+<v Speaker 0>something to Kubernetes and you're using an an
+
+01:02:42.270 --> 01:02:44.750
+<v Speaker 0>image tag rather than content addressable shares,
+
+01:02:45.165 --> 01:02:47.565
+<v Speaker 0>is the if that pod or that deployment
+
+01:02:47.565 --> 01:02:50.605
+<v Speaker 0>runs on multiple nodes and that tag changes
+
+01:02:50.765 --> 01:02:52.285
+<v Speaker 0>at some sort of random time, you could
+
+01:02:52.285 --> 01:02:53.645
+<v Speaker 0>actually end up with two different versions of
+
+01:02:53.645 --> 01:02:56.045
+<v Speaker 0>that image across your cluster or more depending
+
+01:02:56.045 --> 01:02:58.605
+<v Speaker 0>on if a pod crashes, it's rescheduled on
+
+01:02:58.605 --> 01:03:00.525
+<v Speaker 0>to another another week later and pulls in
+
+01:03:00.525 --> 01:03:03.040
+<v Speaker 0>that that tag, which has been overwritten.
+
+01:03:03.200 --> 01:03:04.800
+<v Speaker 0>I see it so many times where people
+
+01:03:04.800 --> 01:03:07.760
+<v Speaker 0>end up with this completely weird cluster configuration
+
+01:03:07.760 --> 01:03:09.520
+<v Speaker 0>with different versions of their image.
+
+01:03:09.760 --> 01:03:12.800
+<v Speaker 0>Right. Right. That idea of key build resolving
+
+01:03:12.800 --> 01:03:15.760
+<v Speaker 0>those at deployment time and then pushing that
+
+01:03:15.760 --> 01:03:16.320
+<v Speaker 0>to the cluster.
+
+01:03:16.925 --> 01:03:17.645
+<v Speaker 1>Yep.
+
+01:03:18.445 --> 01:03:18.845
+<v Speaker 1>That's
+
+01:03:19.645 --> 01:03:21.565
+<v Speaker 1>yeah. That's that's that's kind of how I
+
+01:03:21.565 --> 01:03:22.685
+<v Speaker 1>end up with that,
+
+01:03:23.005 --> 01:03:25.244
+<v Speaker 1>you know, separation of the concerns because you
+
+01:03:25.244 --> 01:03:26.845
+<v Speaker 1>you do want it to make it pluggable
+
+01:03:26.845 --> 01:03:28.685
+<v Speaker 1>for all the other folks out there, right,
+
+01:03:28.685 --> 01:03:31.085
+<v Speaker 1>that let's say, use customized or or helm
+
+01:03:31.085 --> 01:03:32.445
+<v Speaker 1>template or whatever it is. Right?
+
+01:03:34.470 --> 01:03:36.230
+<v Speaker 1>And so kind of a cousin of k
+
+01:03:36.230 --> 01:03:39.110
+<v Speaker 1>build is image package. We're actually moving some
+
+01:03:39.110 --> 01:03:41.270
+<v Speaker 1>of the functionality of k build into image
+
+01:03:41.270 --> 01:03:43.830
+<v Speaker 1>package right now. The functionality that I'm talking
+
+01:03:43.830 --> 01:03:44.550
+<v Speaker 1>about is
+
+01:03:45.315 --> 01:03:48.035
+<v Speaker 1>ability to take a set of images and
+
+01:03:48.035 --> 01:03:49.955
+<v Speaker 1>move them to your private registry.
+
+01:03:49.955 --> 01:03:51.715
+<v Speaker 1>A lot of people call it relocation.
+
+01:03:52.035 --> 01:03:53.395
+<v Speaker 1>So image package
+
+01:03:54.355 --> 01:03:56.515
+<v Speaker 1>kind of combines the concept of
+
+01:03:56.880 --> 01:03:59.279
+<v Speaker 1>you wanna keep your configuration in a Docker
+
+01:03:59.279 --> 01:04:00.079
+<v Speaker 1>registry
+
+01:04:00.079 --> 01:04:02.079
+<v Speaker 1>right next to your images. Right? So for
+
+01:04:02.079 --> 01:04:04.160
+<v Speaker 1>example, if you decided to say
+
+01:04:04.480 --> 01:04:05.519
+<v Speaker 1>InfluxDB
+
+01:04:05.519 --> 01:04:07.119
+<v Speaker 1>version 1.1
+
+01:04:07.119 --> 01:04:09.119
+<v Speaker 1>is ready, you just push it up to
+
+01:04:09.119 --> 01:04:11.279
+<v Speaker 1>the registry. And now it's under, I don't
+
+01:04:11.279 --> 01:04:14.855
+<v Speaker 1>know, apps slash influx DB configuration or something
+
+01:04:14.855 --> 01:04:15.495
+<v Speaker 1>like that.
+
+01:04:15.895 --> 01:04:18.615
+<v Speaker 1>But influx DB configuration is also referencing, like,
+
+01:04:18.615 --> 01:04:20.055
+<v Speaker 1>10 other images probably.
+
+01:04:20.615 --> 01:04:21.175
+<v Speaker 1>And
+
+01:04:21.735 --> 01:04:24.535
+<v Speaker 1>when you, let's say, dealing with a environment
+
+01:04:24.535 --> 01:04:26.615
+<v Speaker 1>that needs to be all firewalled away from
+
+01:04:26.615 --> 01:04:28.910
+<v Speaker 1>public Internet, Right? You wanna take all of
+
+01:04:28.910 --> 01:04:31.309
+<v Speaker 1>that configuration and move it into their, you
+
+01:04:31.309 --> 01:04:32.349
+<v Speaker 1>know, registry.
+
+01:04:33.150 --> 01:04:35.309
+<v Speaker 1>And so image package allows you to do
+
+01:04:35.309 --> 01:04:37.390
+<v Speaker 1>that. Well, right now, it's not quite there
+
+01:04:37.390 --> 01:04:39.470
+<v Speaker 1>yet. We're actually like I said, we're moving
+
+01:04:39.470 --> 01:04:41.230
+<v Speaker 1>that functionality from k build.
+
+01:04:42.109 --> 01:04:43.390
+<v Speaker 1>But image package
+
+01:04:43.734 --> 01:04:46.775
+<v Speaker 1>introduces this concept of a bundle where it's
+
+01:04:46.775 --> 01:04:50.454
+<v Speaker 1>a image configure it's a application configuration plus
+
+01:04:50.454 --> 01:04:52.935
+<v Speaker 1>a set of images that it references. We
+
+01:04:52.935 --> 01:04:54.455
+<v Speaker 1>kinda see it as one thing.
+
+01:04:55.895 --> 01:04:56.695
+<v Speaker 1>And so
+
+01:04:57.015 --> 01:04:57.735
+<v Speaker 1>that
+
+01:04:57.815 --> 01:04:58.855
+<v Speaker 1>that kind of
+
+01:04:59.580 --> 01:05:02.380
+<v Speaker 1>allows you to to manage your environment more
+
+01:05:02.380 --> 01:05:05.180
+<v Speaker 1>confidently in terms of where this you know,
+
+01:05:05.180 --> 01:05:06.780
+<v Speaker 1>where the configuration is coming from, where the
+
+01:05:06.780 --> 01:05:08.060
+<v Speaker 1>images are coming from.
+
+01:05:08.300 --> 01:05:08.700
+<v Speaker 0>Excellent.
+
+01:05:10.380 --> 01:05:11.980
+<v Speaker 0>This all sends
+
+01:05:12.315 --> 01:05:14.315
+<v Speaker 0>really cool. It's pretty much a tool to
+
+01:05:14.315 --> 01:05:16.955
+<v Speaker 0>make all of my Kubernetes painful experiences that
+
+01:05:16.955 --> 01:05:18.235
+<v Speaker 0>little bit better. So
+
+01:05:19.115 --> 01:05:20.474
+<v Speaker 0>it's great that these are all being worked
+
+01:05:20.474 --> 01:05:20.955
+<v Speaker 0>on.
+
+01:05:21.595 --> 01:05:22.075
+<v Speaker 0>So
+
+01:05:22.474 --> 01:05:24.880
+<v Speaker 0>I think we've covered an awful lot today,
+
+01:05:25.200 --> 01:05:26.880
+<v Speaker 0>and, you know, there's obviously so much more
+
+01:05:26.880 --> 01:05:28.320
+<v Speaker 0>that people can pick up. So what I
+
+01:05:28.320 --> 01:05:30.640
+<v Speaker 0>would recommend is there was a talk at
+
+01:05:30.640 --> 01:05:32.960
+<v Speaker 0>KubeCon a few weeks ago. Is that correct?
+
+01:05:33.040 --> 01:05:35.760
+<v Speaker 1>That's right. Yep. Check that out. There is
+
+01:05:35.760 --> 01:05:38.000
+<v Speaker 0>the Carvel channel on the Kubernetes Slack,
+
+01:05:38.915 --> 01:05:42.035
+<v Speaker 0>there's obviously the get repositories as well. There's
+
+01:05:42.035 --> 01:05:44.355
+<v Speaker 0>plenty of examples for people to go and
+
+01:05:44.355 --> 01:05:46.435
+<v Speaker 0>start the experiment on their own and understand
+
+01:05:46.435 --> 01:05:48.595
+<v Speaker 0>how the Carvel tools can help them.
+
+01:05:48.994 --> 01:05:50.275
+<v Speaker 0>Is there anything you would like to add
+
+01:05:50.275 --> 01:05:51.875
+<v Speaker 0>to that before we finish up, Dimitri?
+
+01:05:52.890 --> 01:05:54.890
+<v Speaker 1>Thank you for having me. It's been it's
+
+01:05:54.890 --> 01:05:56.970
+<v Speaker 1>been pretty fun. You know, I really like
+
+01:05:56.970 --> 01:05:59.210
+<v Speaker 1>the the format that you have going on.
+
+01:06:00.010 --> 01:06:01.290
+<v Speaker 1>Yeah. No. That's
+
+01:06:01.930 --> 01:06:04.170
+<v Speaker 1>pretty much it. We welcome anybody in our
+
+01:06:04.170 --> 01:06:06.890
+<v Speaker 1>Slack channel to chat about various problems that
+
+01:06:06.890 --> 01:06:07.369
+<v Speaker 1>they may have.
+
+01:06:08.045 --> 01:06:10.285
+<v Speaker 1>And if it happens, then we can help.
+
+01:06:10.365 --> 01:06:13.325
+<v Speaker 1>That's that's even better. Alright. Awesome. Well, thank
+
+01:06:13.325 --> 01:06:14.845
+<v Speaker 0>you very much for joining me and taking
+
+01:06:14.845 --> 01:06:15.965
+<v Speaker 0>the time out of your day to kind
+
+01:06:15.965 --> 01:06:17.565
+<v Speaker 0>of show me the tools and walk me
+
+01:06:17.565 --> 01:06:19.245
+<v Speaker 0>through it step by step. It's really helped
+
+01:06:19.245 --> 01:06:21.245
+<v Speaker 0>me have a better understanding and and hopefully,
+
+01:06:21.245 --> 01:06:22.685
+<v Speaker 0>the people that are watching on YouTube as
+
+01:06:22.685 --> 01:06:25.050
+<v Speaker 0>well. So thank you. Have a great day,
+
+01:06:25.050 --> 01:06:26.890
+<v Speaker 0>and I'll speak to speak to you soon.
+
+01:06:27.050 --> 01:06:28.170
+<v Speaker 1>You too. Bye bye.

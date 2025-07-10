@@ -1,0 +1,881 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 95a3b7dc-dfb2-4537-8003-eb92462e4f2b
+Created: 2025-04-29T14:25:27.697Z
+Duration: 743.31213
+Channels: 1
+
+00:00:00.799 --> 00:00:03.679
+<v Speaker 0>Hello, and welcome back to the complete guide
+
+00:00:03.679 --> 00:00:06.560
+<v Speaker 0>to spin here at Rawkode Academy.
+
+00:00:06.879 --> 00:00:08.639
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:00:08.639 --> 00:00:09.919
+<v Speaker 0>the Go SDK.
+
+00:00:09.920 --> 00:00:12.160
+<v Speaker 0>So if you're a Go developer who wants
+
+00:00:12.160 --> 00:00:13.759
+<v Speaker 0>to write WebAssembly microservices,
+
+00:00:14.305 --> 00:00:17.025
+<v Speaker 0>this is the video for you. Let's crack
+
+00:00:17.025 --> 00:00:17.585
+<v Speaker 0>on.
+
+00:00:18.065 --> 00:00:20.545
+<v Speaker 0>Alright. So let's take a look at writing
+
+00:00:20.545 --> 00:00:22.145
+<v Speaker 0>a Spin microservice
+
+00:00:22.145 --> 00:00:23.025
+<v Speaker 0>with Go.
+
+00:00:26.145 --> 00:00:27.904
+<v Speaker 0>For each of the SDK walkthroughs,
+
+00:00:28.480 --> 00:00:32.000
+<v Speaker 0>we're gonna go through five essential tasks.
+
+00:00:32.479 --> 00:00:33.120
+<v Speaker 0>One,
+
+00:00:33.440 --> 00:00:36.160
+<v Speaker 0>write in your first endpoint. Fortunately, this is
+
+00:00:36.160 --> 00:00:38.480
+<v Speaker 0>already done for you with Spin New, but
+
+00:00:38.480 --> 00:00:40.879
+<v Speaker 0>we'll go through the code and understand how
+
+00:00:40.879 --> 00:00:42.320
+<v Speaker 0>the development workflow
+
+00:00:42.400 --> 00:00:43.040
+<v Speaker 0>operates.
+
+00:00:44.805 --> 00:00:46.325
+<v Speaker 0>We'll then take a look at pulling out
+
+00:00:46.325 --> 00:00:47.364
+<v Speaker 0>request headers,
+
+00:00:47.605 --> 00:00:50.085
+<v Speaker 0>the body, and the query parameters,
+
+00:00:50.325 --> 00:00:53.765
+<v Speaker 0>all very common tasks when working with HTTP.
+
+00:00:54.565 --> 00:00:57.340
+<v Speaker 0>And then, of course, the more microservices you
+
+00:00:57.340 --> 00:00:59.820
+<v Speaker 0>have, eventually, one's gonna wanna talk to the
+
+00:00:59.820 --> 00:01:00.940
+<v Speaker 0>big bad Internet.
+
+00:01:01.500 --> 00:01:04.140
+<v Speaker 0>Whether that be talking to some remote API
+
+00:01:04.140 --> 00:01:07.180
+<v Speaker 0>or communicating with other Spin microservices,
+
+00:01:07.340 --> 00:01:09.740
+<v Speaker 0>you have to know how to make outbound
+
+00:01:09.740 --> 00:01:11.340
+<v Speaker 0>HTTP request for Spin.
+
+00:01:13.034 --> 00:01:15.195
+<v Speaker 0>So let's take a look at our first
+
+00:01:15.195 --> 00:01:16.075
+<v Speaker 0>endpoint.
+
+00:01:19.115 --> 00:01:21.115
+<v Speaker 0>We can open main.go,
+
+00:01:21.354 --> 00:01:23.115
+<v Speaker 0>and we will see that we pull in
+
+00:01:23.115 --> 00:01:24.875
+<v Speaker 0>the Spin HTTP
+
+00:01:24.875 --> 00:01:25.515
+<v Speaker 0>SDK.
+
+00:01:26.960 --> 00:01:29.280
+<v Speaker 0>We have an empty main function, which you
+
+00:01:29.280 --> 00:01:31.200
+<v Speaker 0>don't need to worry about. Everything is gonna
+
+00:01:31.200 --> 00:01:33.840
+<v Speaker 0>be handled by the spin tool chain,
+
+00:01:34.320 --> 00:01:36.080
+<v Speaker 0>which under the hood is used in tiny
+
+00:01:36.080 --> 00:01:38.399
+<v Speaker 0>go to compile your code to a WebAssembly
+
+00:01:38.399 --> 00:01:38.799
+<v Speaker 0>module.
+
+00:01:41.675 --> 00:01:44.075
+<v Speaker 0>Then in our edit function, we set up
+
+00:01:44.075 --> 00:01:45.674
+<v Speaker 0>an HTTP handler.
+
+00:01:45.995 --> 00:01:48.155
+<v Speaker 0>A handler just takes a request
+
+00:01:48.315 --> 00:01:50.155
+<v Speaker 0>and expects a response.
+
+00:01:50.715 --> 00:01:53.035
+<v Speaker 0>To send that response, we have a response
+
+00:01:53.035 --> 00:01:53.595
+<v Speaker 0>writer.
+
+00:01:54.790 --> 00:01:57.510
+<v Speaker 0>All the spend SDKs are as idiomatic as
+
+00:01:57.510 --> 00:02:00.310
+<v Speaker 0>possible to the language and the community that
+
+00:02:00.310 --> 00:02:01.270
+<v Speaker 0>they cater for.
+
+00:02:01.830 --> 00:02:03.830
+<v Speaker 0>So in Go, we have writers.
+
+00:02:05.590 --> 00:02:07.350
+<v Speaker 0>You can see here, we use a writer
+
+00:02:07.350 --> 00:02:09.715
+<v Speaker 0>to set an h two p header, content
+
+00:02:09.715 --> 00:02:10.915
+<v Speaker 0>type text plain
+
+00:02:11.715 --> 00:02:14.515
+<v Speaker 0>before using format f print f to write
+
+00:02:14.515 --> 00:02:16.755
+<v Speaker 0>to our writer, hello, Birmingham.
+
+00:02:19.075 --> 00:02:22.355
+<v Speaker 0>Your local build process is spin build, spin
+
+00:02:22.355 --> 00:02:24.390
+<v Speaker 0>up, and it's usually a good measure to
+
+00:02:24.390 --> 00:02:26.390
+<v Speaker 0>add follow all so that you can get
+
+00:02:26.390 --> 00:02:28.630
+<v Speaker 0>the logs from your module.
+
+00:02:30.550 --> 00:02:31.350
+<v Speaker 0>From here,
+
+00:02:31.750 --> 00:02:33.110
+<v Speaker 0>let's run curl
+
+00:02:33.750 --> 00:02:34.790
+<v Speaker 0>local host
+
+00:02:34.870 --> 00:02:35.590
+<v Speaker 0>3,000,
+
+00:02:37.515 --> 00:02:39.915
+<v Speaker 0>where we get hello, Birmingham.
+
+00:02:41.675 --> 00:02:44.555
+<v Speaker 0>Let's take a look at grabbing those HTTP
+
+00:02:44.555 --> 00:02:45.355
+<v Speaker 0>headers.
+
+00:02:46.555 --> 00:02:47.834
+<v Speaker 0>So let's go back to our main dot
+
+00:02:47.834 --> 00:02:48.075
+<v Speaker 0>go.
+
+00:02:52.200 --> 00:02:54.680
+<v Speaker 0>Before we do any response stuff, we wanna
+
+00:02:54.680 --> 00:02:56.120
+<v Speaker 0>grab a header.
+
+00:02:56.439 --> 00:02:58.760
+<v Speaker 0>We'll do something trivial with the value, and
+
+00:02:58.760 --> 00:03:00.439
+<v Speaker 0>we'll send it back on the response.
+
+00:03:02.745 --> 00:03:04.025
+<v Speaker 0>So let's set
+
+00:03:04.424 --> 00:03:06.345
+<v Speaker 0>name to be equal
+
+00:03:06.985 --> 00:03:08.505
+<v Speaker 0>to r dot
+
+00:03:08.584 --> 00:03:09.465
+<v Speaker 0>header
+
+00:03:09.465 --> 00:03:10.585
+<v Speaker 0>dot get,
+
+00:03:16.185 --> 00:03:18.345
+<v Speaker 0>and we'll request the x name value.
+
+00:03:19.890 --> 00:03:22.050
+<v Speaker 0>Now there's no error if this key doesn't
+
+00:03:22.050 --> 00:03:22.690
+<v Speaker 0>exist.
+
+00:03:23.250 --> 00:03:25.010
+<v Speaker 0>So we're gonna build on our own safety
+
+00:03:25.010 --> 00:03:25.730
+<v Speaker 0>blanket
+
+00:03:25.890 --> 00:03:27.810
+<v Speaker 0>and if the name does not exist,
+
+00:03:28.130 --> 00:03:29.650
+<v Speaker 0>we're gonna set it to world.
+
+00:03:31.265 --> 00:03:34.065
+<v Speaker 0>And then let's swap the f print f,
+
+00:03:34.065 --> 00:03:35.505
+<v Speaker 0>the f print line
+
+00:03:35.745 --> 00:03:36.945
+<v Speaker 0>to be f
+
+00:03:37.265 --> 00:03:38.145
+<v Speaker 0>print f,
+
+00:03:39.185 --> 00:03:41.185
+<v Speaker 0>where we'll put in our own new line,
+
+00:03:41.665 --> 00:03:42.785
+<v Speaker 0>drop in
+
+00:03:44.000 --> 00:03:45.760
+<v Speaker 0>our interpolation syntax,
+
+00:03:46.319 --> 00:03:47.360
+<v Speaker 0>and your name.
+
+00:03:48.800 --> 00:03:49.440
+<v Speaker 0>Next,
+
+00:03:50.000 --> 00:03:51.520
+<v Speaker 0>let's add a new header.
+
+00:03:52.480 --> 00:03:53.600
+<v Speaker 0>And this time,
+
+00:03:54.160 --> 00:03:55.360
+<v Speaker 0>we'll set x name,
+
+00:03:56.705 --> 00:03:58.705
+<v Speaker 0>and let's do something with the name before
+
+00:03:58.705 --> 00:04:01.745
+<v Speaker 0>we return it. Let's pull in strings
+
+00:04:02.385 --> 00:04:03.985
+<v Speaker 0>dot to title case
+
+00:04:05.665 --> 00:04:06.225
+<v Speaker 0>name.
+
+00:04:08.890 --> 00:04:10.730
+<v Speaker 0>We're gonna jump back to the terminal,
+
+00:04:12.330 --> 00:04:14.090
+<v Speaker 0>run spin build
+
+00:04:14.170 --> 00:04:16.010
+<v Speaker 0>up follow all.
+
+00:04:16.490 --> 00:04:18.410
+<v Speaker 0>We'll be seeing that quite a lot.
+
+00:04:19.850 --> 00:04:22.650
+<v Speaker 0>Before running curl http
+
+00:04:22.889 --> 00:04:24.810
+<v Speaker 0>localhost
+
+00:04:24.095 --> 00:04:25.055
+<v Speaker 0>three thousand.
+
+00:04:26.015 --> 00:04:28.575
+<v Speaker 0>Now because we're not providing the x name
+
+00:04:28.575 --> 00:04:32.655
+<v Speaker 0>header just yet, we should see hello world.
+
+00:04:34.335 --> 00:04:34.735
+<v Speaker 0>Perfect.
+
+00:04:36.120 --> 00:04:37.640
+<v Speaker 0>So let's include
+
+00:04:37.800 --> 00:04:38.760
+<v Speaker 0>our header.
+
+00:04:39.000 --> 00:04:41.240
+<v Speaker 0>I'm also going to use dash b so
+
+00:04:41.240 --> 00:04:42.840
+<v Speaker 0>that we can see the headers on the
+
+00:04:42.840 --> 00:04:43.560
+<v Speaker 0>response.
+
+00:04:45.000 --> 00:04:46.840
+<v Speaker 0>We'll provide our x name
+
+00:04:47.800 --> 00:04:49.400
+<v Speaker 0>and a random casing
+
+00:04:49.639 --> 00:04:50.280
+<v Speaker 0>of David.
+
+00:04:52.825 --> 00:04:55.305
+<v Speaker 0>We now get the x name header and
+
+00:04:55.305 --> 00:04:56.265
+<v Speaker 0>a response
+
+00:04:56.665 --> 00:04:59.065
+<v Speaker 0>with David in uppercase,
+
+00:04:59.545 --> 00:05:01.945
+<v Speaker 0>and we have hello, David on the body
+
+00:05:01.945 --> 00:05:02.665
+<v Speaker 0>response.
+
+00:05:05.319 --> 00:05:08.760
+<v Speaker 0>Working with headers with the Spin Go SDK,
+
+00:05:09.319 --> 00:05:11.000
+<v Speaker 0>we just call it get function,
+
+00:05:11.240 --> 00:05:13.000
+<v Speaker 0>pass in a name, we get a value
+
+00:05:13.000 --> 00:05:16.295
+<v Speaker 0>back, the job is done. Nice and simple.
+
+00:05:17.815 --> 00:05:19.655
+<v Speaker 0>So let's just crack right on
+
+00:05:19.895 --> 00:05:22.295
+<v Speaker 0>and grab the h t p body.
+
+00:05:22.935 --> 00:05:25.095
+<v Speaker 0>So let's do body equals
+
+00:05:26.615 --> 00:05:27.415
+<v Speaker 0>r
+
+00:05:27.655 --> 00:05:29.415
+<v Speaker 0>dot get
+
+00:05:28.870 --> 00:05:29.750
+<v Speaker 0>body.
+
+00:05:33.270 --> 00:05:34.389
+<v Speaker 0>This returns
+
+00:05:34.789 --> 00:05:36.470
+<v Speaker 0>an IO read closer
+
+00:05:36.470 --> 00:05:37.669
+<v Speaker 0>and an error.
+
+00:05:38.870 --> 00:05:40.150
+<v Speaker 0>So let's make sure
+
+00:05:40.550 --> 00:05:41.510
+<v Speaker 0>we check
+
+00:05:42.870 --> 00:05:43.910
+<v Speaker 0>for the error condition.
+
+00:05:44.815 --> 00:05:47.135
+<v Speaker 0>Now I don't like Copilot suggestion to throw
+
+00:05:47.135 --> 00:05:50.095
+<v Speaker 0>a panic. So instead, we're gonna call HTTP
+
+00:05:50.175 --> 00:05:50.975
+<v Speaker 0>error,
+
+00:05:51.615 --> 00:05:53.775
+<v Speaker 0>where we could pass in our writer
+
+00:05:56.495 --> 00:05:57.455
+<v Speaker 0>and an error
+
+00:06:00.790 --> 00:06:02.230
+<v Speaker 0>Let's see internal
+
+00:06:02.230 --> 00:06:03.430
+<v Speaker 0>server error.
+
+00:06:03.750 --> 00:06:06.390
+<v Speaker 0>Although, really, I guess, this is a status
+
+00:06:06.870 --> 00:06:08.070
+<v Speaker 0>batch request
+
+00:06:08.710 --> 00:06:09.750
+<v Speaker 0>because there's no body.
+
+00:06:10.775 --> 00:06:12.455
+<v Speaker 0>Let's hover over body and we'll see that
+
+00:06:12.455 --> 00:06:14.135
+<v Speaker 0>we have an IO read closer.
+
+00:06:14.935 --> 00:06:18.295
+<v Speaker 0>So let's do body strength equals IO
+
+00:06:18.695 --> 00:06:19.495
+<v Speaker 0>read all,
+
+00:06:20.055 --> 00:06:21.975
+<v Speaker 0>and we'll pass in our body.
+
+00:06:23.730 --> 00:06:25.650
+<v Speaker 0>Now if we take a look at this,
+
+00:06:28.050 --> 00:06:29.490
+<v Speaker 0>we'll see that it returns
+
+00:06:29.570 --> 00:06:30.610
+<v Speaker 0>bytes
+
+00:06:30.610 --> 00:06:31.730
+<v Speaker 0>with an error.
+
+00:06:33.650 --> 00:06:34.850
+<v Speaker 0>So let's make sure
+
+00:06:35.250 --> 00:06:36.610
+<v Speaker 0>we're good ghost citizens,
+
+00:06:37.694 --> 00:06:40.414
+<v Speaker 0>and we continue to check our error messages.
+
+00:06:40.974 --> 00:06:42.495
+<v Speaker 0>Then we can do body
+
+00:06:43.134 --> 00:06:44.414
+<v Speaker 0>actual string
+
+00:06:45.775 --> 00:06:47.215
+<v Speaker 0>where we cast it
+
+00:06:47.534 --> 00:06:48.094
+<v Speaker 0>like so.
+
+00:06:49.980 --> 00:06:52.860
+<v Speaker 0>And let's just use it in a response
+
+00:06:59.420 --> 00:06:59.980
+<v Speaker 0>like so.
+
+00:07:03.095 --> 00:07:04.295
+<v Speaker 0>And don't forget
+
+00:07:07.414 --> 00:07:09.095
+<v Speaker 0>the interpolation marker.
+
+00:07:09.255 --> 00:07:11.255
+<v Speaker 0>So let's jump back to the command line
+
+00:07:11.735 --> 00:07:13.575
+<v Speaker 0>and run spin, build,
+
+00:07:13.895 --> 00:07:14.935
+<v Speaker 0>up, follow.
+
+00:07:16.460 --> 00:07:18.140
+<v Speaker 0>And we're going to do curl
+
+00:07:18.780 --> 00:07:20.940
+<v Speaker 0>and we're gonna pass in a body and
+
+00:07:20.940 --> 00:07:21.900
+<v Speaker 0>I'll just say,
+
+00:07:22.300 --> 00:07:23.340
+<v Speaker 0>Rawkode
+
+00:07:23.820 --> 00:07:26.540
+<v Speaker 0>and we'll send it to local host on
+
+00:07:26.540 --> 00:07:27.180
+<v Speaker 0>3,000.
+
+00:07:29.085 --> 00:07:31.324
+<v Speaker 0>And we get hello world because we didn't
+
+00:07:31.324 --> 00:07:33.965
+<v Speaker 0>provide the x name header. You said,
+
+00:07:34.205 --> 00:07:35.565
+<v Speaker 0>hi, Rawkode.
+
+00:07:37.485 --> 00:07:39.085
+<v Speaker 0>So that is how you
+
+00:07:39.485 --> 00:07:40.205
+<v Speaker 0>get
+
+00:07:40.444 --> 00:07:42.604
+<v Speaker 0>the body
+
+00:07:42.280 --> 00:07:44.840
+<v Speaker 0>using the spin SDK.
+
+00:07:46.120 --> 00:07:48.600
+<v Speaker 0>So let's clean this up a little bit.
+
+00:07:49.639 --> 00:07:52.520
+<v Speaker 0>Let's just go back to saying hello and
+
+00:07:52.520 --> 00:07:54.039
+<v Speaker 0>we'll get rid of the f for an
+
+00:07:54.039 --> 00:07:54.520
+<v Speaker 0>l n.
+
+00:07:55.905 --> 00:07:58.305
+<v Speaker 0>We'll continue to set text plane, and we'll
+
+00:07:58.305 --> 00:07:59.505
+<v Speaker 0>delete all of this.
+
+00:08:00.625 --> 00:08:03.265
+<v Speaker 0>Okay. So let's do query params.
+
+00:08:04.625 --> 00:08:06.544
+<v Speaker 0>This is gonna be just as easy as
+
+00:08:06.544 --> 00:08:07.825
+<v Speaker 0>grabbing headers.
+
+00:08:08.225 --> 00:08:10.305
+<v Speaker 0>In fact, the code is almost identical.
+
+00:08:11.460 --> 00:08:13.940
+<v Speaker 0>Let's say that our name is equal to
+
+00:08:13.940 --> 00:08:18.500
+<v Speaker 0>r .url.query
+
+00:08:18.980 --> 00:08:20.020
+<v Speaker 0>dot get.
+
+00:08:20.740 --> 00:08:22.820
+<v Speaker 0>And here, we can take the name.
+
+00:08:24.914 --> 00:08:26.995
+<v Speaker 0>And just like we did with the headers,
+
+00:08:28.354 --> 00:08:31.235
+<v Speaker 0>we're just gonna propagate it straight back
+
+00:08:31.875 --> 00:08:33.475
+<v Speaker 0>using the x name
+
+00:08:33.794 --> 00:08:34.355
+<v Speaker 0>header.
+
+00:08:36.049 --> 00:08:39.809
+<v Speaker 0>We run spin build up and follow,
+
+00:08:41.090 --> 00:08:42.450
+<v Speaker 0>and we do a curl.
+
+00:08:43.169 --> 00:08:44.610
+<v Speaker 0>And we want to see
+
+00:08:45.250 --> 00:08:46.690
+<v Speaker 0>the response headers.
+
+00:08:47.810 --> 00:08:49.090
+<v Speaker 0>Local host
+
+00:08:49.250 --> 00:08:50.290
+<v Speaker 0>3,000
+
+00:08:51.115 --> 00:08:53.514
+<v Speaker 0>question mark. And because of that, we do
+
+00:08:53.514 --> 00:08:54.714
+<v Speaker 0>need to quote this,
+
+00:08:55.035 --> 00:08:56.954
+<v Speaker 0>and we want to do name equals
+
+00:08:56.954 --> 00:08:57.915
+<v Speaker 0>Rawkode.
+
+00:08:59.355 --> 00:09:01.755
+<v Speaker 0>So the query helpers with the Go SDK
+
+00:09:01.755 --> 00:09:03.195
+<v Speaker 0>are super convenient
+
+00:09:03.355 --> 00:09:04.714
+<v Speaker 0>just like fetching the headers.
+
+00:09:05.810 --> 00:09:08.610
+<v Speaker 0>We're dropping ours straight back in to HTTP
+
+00:09:08.610 --> 00:09:09.730
+<v Speaker 0>response header.
+
+00:09:10.850 --> 00:09:12.930
+<v Speaker 0>And as you can see, x name
+
+00:09:13.170 --> 00:09:14.210
+<v Speaker 0>is Rawkode.
+
+00:09:15.250 --> 00:09:17.330
+<v Speaker 0>So that just leaves us with one more
+
+00:09:17.330 --> 00:09:17.570
+<v Speaker 0>thing.
+
+00:09:20.985 --> 00:09:23.945
+<v Speaker 0>How do we do outbound HTTP?
+
+00:09:25.545 --> 00:09:26.745
+<v Speaker 0>Let's take a look.
+
+00:09:28.825 --> 00:09:31.545
+<v Speaker 0>Let's tidy up the query parameter stuff
+
+00:09:32.105 --> 00:09:34.345
+<v Speaker 0>and create a new line.
+
+00:09:35.540 --> 00:09:37.220
+<v Speaker 0>Don't know why I said that so slow.
+
+00:09:38.660 --> 00:09:41.939
+<v Speaker 0>Next, we're going to use our spend HTTP
+
+00:09:41.939 --> 00:09:42.899
+<v Speaker 0>SDK,
+
+00:09:43.459 --> 00:09:45.060
+<v Speaker 0>and you can already see it has a
+
+00:09:45.060 --> 00:09:46.019
+<v Speaker 0>get function.
+
+00:09:47.555 --> 00:09:48.515
+<v Speaker 0>From here,
+
+00:09:48.915 --> 00:09:51.875
+<v Speaker 0>you can call any URL.
+
+00:09:53.475 --> 00:09:54.675
+<v Speaker 0>This returns
+
+00:09:56.115 --> 00:09:58.355
+<v Speaker 0>a response or an error.
+
+00:10:02.370 --> 00:10:03.010
+<v Speaker 0>So
+
+00:10:03.570 --> 00:10:05.170
+<v Speaker 0>like a good citizen,
+
+00:10:05.810 --> 00:10:07.490
+<v Speaker 0>we'll do some error check-in.
+
+00:10:08.850 --> 00:10:11.730
+<v Speaker 0>And as much as Copilot really wants me
+
+00:10:11.730 --> 00:10:13.890
+<v Speaker 0>to throw a panic and going to ignore
+
+00:10:13.890 --> 00:10:16.585
+<v Speaker 0>it, And we're going to return a helpful
+
+00:10:16.585 --> 00:10:18.505
+<v Speaker 0>internal server error error.
+
+00:10:21.225 --> 00:10:23.625
+<v Speaker 0>Now we could use IO read all on
+
+00:10:23.625 --> 00:10:25.305
+<v Speaker 0>the response much like we did with the
+
+00:10:25.305 --> 00:10:26.745
+<v Speaker 0>body, but it's not going to show us
+
+00:10:26.745 --> 00:10:27.705
+<v Speaker 0>anything new.
+
+00:10:29.010 --> 00:10:32.450
+<v Speaker 0>We can run spin, build, app, follow all.
+
+00:10:32.450 --> 00:10:34.050
+<v Speaker 0>You got it. Like so.
+
+00:10:35.010 --> 00:10:37.170
+<v Speaker 0>We can then run curl on local host
+
+00:10:37.170 --> 00:10:38.530
+<v Speaker 0>once the compiler is ready.
+
+00:10:42.275 --> 00:10:44.915
+<v Speaker 0>So if you've seen these other SDK videos,
+
+00:10:44.915 --> 00:10:46.675
+<v Speaker 0>you'll have seen that it always fails at
+
+00:10:46.675 --> 00:10:49.315
+<v Speaker 0>this stage, and that's because Spin is secured
+
+00:10:49.315 --> 00:10:50.275
+<v Speaker 0>by default.
+
+00:10:50.435 --> 00:10:52.195
+<v Speaker 0>It will only allow you to make outbound
+
+00:10:52.195 --> 00:10:54.995
+<v Speaker 0>request to domains that you've explicitly allowed.
+
+00:10:56.160 --> 00:10:58.240
+<v Speaker 0>So let's update our Spin.TOML
+
+00:10:58.240 --> 00:10:59.840
+<v Speaker 0>with Google.com.
+
+00:11:03.760 --> 00:11:05.280
+<v Speaker 0>And so to Spin.TOML,
+
+00:11:05.280 --> 00:11:06.960
+<v Speaker 0>we have the component, the trigger, and the
+
+00:11:06.960 --> 00:11:10.295
+<v Speaker 0>build. Each component can individually specify
+
+00:11:10.375 --> 00:11:13.095
+<v Speaker 0>the allowed HTTP host that you're allowed to
+
+00:11:13.095 --> 00:11:13.975
+<v Speaker 0>communicate with.
+
+00:11:14.615 --> 00:11:17.175
+<v Speaker 0>Here, we can do google.com
+
+00:11:17.175 --> 00:11:18.135
+<v Speaker 0>like so.
+
+00:11:19.335 --> 00:11:21.575
+<v Speaker 0>We can run back and run a spin,
+
+00:11:21.575 --> 00:11:23.590
+<v Speaker 0>build, up, follow.
+
+00:11:27.430 --> 00:11:28.950
+<v Speaker 0>And once that's online,
+
+00:11:29.110 --> 00:11:30.710
+<v Speaker 0>we hit it with the curl
+
+00:11:31.670 --> 00:11:34.230
+<v Speaker 0>and the HTTP request is made without an
+
+00:11:34.230 --> 00:11:34.630
+<v Speaker 0>error.
+
+00:11:35.915 --> 00:11:38.315
+<v Speaker 0>Now if you don't want to be quite
+
+00:11:38.315 --> 00:11:39.355
+<v Speaker 0>as secure,
+
+00:11:40.475 --> 00:11:43.035
+<v Speaker 0>you don't need to specify google.com.
+
+00:11:43.515 --> 00:11:45.595
+<v Speaker 0>You can also set insecure
+
+00:11:45.595 --> 00:11:46.555
+<v Speaker 0>allow
+
+00:11:47.115 --> 00:11:47.515
+<v Speaker 0>all.
+
+00:11:48.620 --> 00:11:50.540
+<v Speaker 0>This will allow you to make outbound requests
+
+00:11:50.540 --> 00:11:52.700
+<v Speaker 0>to any domain on the Internet.
+
+00:11:54.140 --> 00:11:57.020
+<v Speaker 0>And that is outbound HTTP requests
+
+00:11:57.180 --> 00:11:59.660
+<v Speaker 0>with the Go SDK for Vermeion Spin.
+
+00:12:00.395 --> 00:12:02.795
+<v Speaker 0>Hopefully, you enjoyed this video. If so, you
+
+00:12:02.795 --> 00:12:04.715
+<v Speaker 0>can let us know in the comments. If
+
+00:12:04.715 --> 00:12:06.555
+<v Speaker 0>you need help, you can also let us
+
+00:12:06.555 --> 00:12:07.755
+<v Speaker 0>know in the comments.
+
+00:12:07.995 --> 00:12:10.555
+<v Speaker 0>We'll be back soon with more Fermion Spin
+
+00:12:10.555 --> 00:12:11.435
+<v Speaker 0>videos
+
+00:12:11.755 --> 00:12:14.715
+<v Speaker 0>helping you build WebAssembly microservices.
+
+00:12:15.035 --> 00:12:17.317
+<v Speaker 0>Until next time. We'll see you later.

@@ -1,0 +1,6566 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 5e47b306-d977-4fd3-aa08-01bcebd44cb3
+Created: 2025-04-29T18:08:48.030Z
+Duration: 6608.905
+Channels: 1
+
+00:01:47.100 --> 00:01:50.540
+<v Speaker 0>Hello, and welcome back to another custard at
+
+00:01:50.540 --> 00:01:51.659
+<v Speaker 0>the Rawkode Academy.
+
+00:01:52.085 --> 00:01:54.244
+<v Speaker 0>I'm your host, Rawkode. Today
+
+00:01:54.645 --> 00:01:56.965
+<v Speaker 0>is Clustered Teams part two.
+
+00:01:57.365 --> 00:01:59.125
+<v Speaker 0>We have two great teams lined up. We
+
+00:01:59.125 --> 00:02:01.845
+<v Speaker 0>have a team from Talos and a team
+
+00:02:01.845 --> 00:02:03.045
+<v Speaker 0>from Red Hat.
+
+00:02:03.365 --> 00:02:05.845
+<v Speaker 0>Before we get started on the Kubernetes debugging
+
+00:02:06.490 --> 00:02:07.130
+<v Speaker 0>weirdness
+
+00:02:07.370 --> 00:02:09.210
+<v Speaker 0>madness, I'm not sure which one to use,
+
+00:02:09.370 --> 00:02:11.370
+<v Speaker 0>there's a little bit of housekeeping. So first
+
+00:02:11.370 --> 00:02:13.370
+<v Speaker 0>and foremost, please subscribe to the YouTube channel
+
+00:02:13.370 --> 00:02:14.890
+<v Speaker 0>and tick the bell. This will get you
+
+00:02:14.890 --> 00:02:17.530
+<v Speaker 0>alerts for all new episodes on Rawkode Live,
+
+00:02:17.690 --> 00:02:19.210
+<v Speaker 0>which means that you can come and learn
+
+00:02:19.210 --> 00:02:20.810
+<v Speaker 0>all of the weird tools and the cloud
+
+00:02:20.810 --> 00:02:23.255
+<v Speaker 0>native landscape together. Also, if you wanna chat
+
+00:02:23.255 --> 00:02:25.495
+<v Speaker 0>about Kubernetes, cloud native, and if and in
+
+00:02:25.495 --> 00:02:27.975
+<v Speaker 0>between, there is also a Discord server
+
+00:02:28.055 --> 00:02:30.455
+<v Speaker 0>that is available at rockode.chat.
+
+00:02:30.935 --> 00:02:33.495
+<v Speaker 0>And also, I wanna thank Teleport. Teleport have
+
+00:02:33.495 --> 00:02:35.415
+<v Speaker 0>been sponsoring Clustard, and it was the easiest
+
+00:02:35.415 --> 00:02:37.610
+<v Speaker 0>decision that I ever had to make because
+
+00:02:37.610 --> 00:02:39.530
+<v Speaker 0>we have been using Teleport since the very
+
+00:02:39.530 --> 00:02:40.570
+<v Speaker 0>first episode.
+
+00:02:41.210 --> 00:02:44.170
+<v Speaker 0>Today, we're using Teleport with some new, easier
+
+00:02:44.170 --> 00:02:45.130
+<v Speaker 0>mechanisms
+
+00:02:45.130 --> 00:02:47.770
+<v Speaker 0>to access our applications via private link, and
+
+00:02:47.770 --> 00:02:49.785
+<v Speaker 0>you'll see that just soon. If you wanna
+
+00:02:49.785 --> 00:02:51.945
+<v Speaker 0>support the show, please go check out Teleport.
+
+00:02:51.945 --> 00:02:54.665
+<v Speaker 0>You can do so at Rawkode.live/Teleport.
+
+00:02:54.665 --> 00:02:56.825
+<v Speaker 0>I would really appreciate it. Also, thank you
+
+00:02:56.825 --> 00:02:58.585
+<v Speaker 0>to Equinix Metal. They provide all of the
+
+00:02:58.585 --> 00:03:00.825
+<v Speaker 0>hardware that we use on Clustard, and you
+
+00:03:00.825 --> 00:03:03.305
+<v Speaker 0>can also use the code Rawkode for $200
+
+00:03:03.490 --> 00:03:05.730
+<v Speaker 0>to spin up your own bare metal stuff.
+
+00:03:05.890 --> 00:03:08.530
+<v Speaker 0>Alright. That is all the housekeeping and I
+
+00:03:08.530 --> 00:03:11.490
+<v Speaker 0>am happy to introduce our first team.
+
+00:03:12.130 --> 00:03:13.890
+<v Speaker 0>Hello, team Talos.
+
+00:03:14.530 --> 00:03:15.250
+<v Speaker 0>Hello.
+
+00:03:15.330 --> 00:03:15.970
+<v Speaker 0>Hello.
+
+00:03:16.450 --> 00:03:17.330
+<v Speaker 0>Thank you
+
+00:03:19.035 --> 00:03:20.715
+<v Speaker 0>Excited or nervous. It's always a bit of
+
+00:03:20.715 --> 00:03:21.355
+<v Speaker 0>both. Right?
+
+00:03:21.915 --> 00:03:24.315
+<v Speaker 1>Yeah. Both. A little bit of both.
+
+00:03:24.795 --> 00:03:26.715
+<v Speaker 0>Alright. Well, could we start,
+
+00:03:26.875 --> 00:03:28.555
+<v Speaker 0>I guess, top right and then down to
+
+00:03:28.555 --> 00:03:31.035
+<v Speaker 0>Sean and along? Just a small introduction. Share
+
+00:03:31.035 --> 00:03:32.715
+<v Speaker 0>whatever you want, and then we'll get into
+
+00:03:32.715 --> 00:03:34.100
+<v Speaker 0>today's first cluster.
+
+00:03:36.260 --> 00:03:36.820
+<v Speaker 2>Sure.
+
+00:03:37.620 --> 00:03:39.219
+<v Speaker 2>You said starting from the top right? Yeah.
+
+00:03:39.219 --> 00:03:40.980
+<v Speaker 0>You, Andrew. Do we see the same oh,
+
+00:03:40.980 --> 00:03:42.500
+<v Speaker 3>okay. That's me. I don't know if we
+
+00:03:42.500 --> 00:03:44.020
+<v Speaker 0>see the same phrase.
+
+00:03:45.540 --> 00:03:46.260
+<v Speaker 2>Yeah. Exactly.
+
+00:03:46.895 --> 00:03:49.215
+<v Speaker 2>I'm Andrew Reinhardt. I'm the CTO of Talos
+
+00:03:49.215 --> 00:03:51.935
+<v Speaker 2>Systems, creator of Talos, longtime
+
+00:03:51.935 --> 00:03:54.655
+<v Speaker 2>container user, Go programmer for fun on the
+
+00:03:54.655 --> 00:03:57.215
+<v Speaker 2>side of doing operations SRE work.
+
+00:03:59.215 --> 00:04:00.815
+<v Speaker 2>I'll make it quick. I wanna get into
+
+00:04:00.815 --> 00:04:01.295
+<v Speaker 2>the action.
+
+00:04:03.610 --> 00:04:07.210
+<v Speaker 3>I'm Andre Smirnoff, developer at Telos Systems. So
+
+00:04:07.210 --> 00:04:10.490
+<v Speaker 3>working on Telos and projects around it, like
+
+00:04:10.490 --> 00:04:13.690
+<v Speaker 3>developing stuff, breaking clusters not because I want
+
+00:04:13.690 --> 00:04:16.074
+<v Speaker 3>to do that because I make bugs and
+
+00:04:16.074 --> 00:04:17.595
+<v Speaker 3>fixing them all the time.
+
+00:04:19.115 --> 00:04:19.834
+<v Speaker 4>Nice.
+
+00:04:20.235 --> 00:04:21.675
+<v Speaker 4>Hey, y'all. I'm Spencer.
+
+00:04:22.235 --> 00:04:24.074
+<v Speaker 4>I'm an engineer at Telus as well. Of
+
+00:04:24.074 --> 00:04:26.635
+<v Speaker 4>course, I mostly work on our cluster API
+
+00:04:26.635 --> 00:04:27.515
+<v Speaker 4>side of things.
+
+00:04:28.155 --> 00:04:30.475
+<v Speaker 4>And I'm also here as Andrew's stunt double
+
+00:04:30.470 --> 00:04:31.510
+<v Speaker 4>if needed. So
+
+00:04:35.030 --> 00:04:37.190
+<v Speaker 1>Hi. I'm Sean McCord. I am an engineer
+
+00:04:37.190 --> 00:04:39.430
+<v Speaker 1>at Red Hat. Oh, no. I'm sorry. At
+
+00:04:39.430 --> 00:04:40.310
+<v Speaker 1>Telos.
+
+00:04:40.870 --> 00:04:43.270
+<v Speaker 1>I've been building and breaking
+
+00:04:43.430 --> 00:04:45.030
+<v Speaker 1>distributed and fault tolerant
+
+00:04:46.235 --> 00:04:47.515
+<v Speaker 1>Linux based
+
+00:04:47.675 --> 00:04:50.395
+<v Speaker 1>distributed systems since the mid nineties.
+
+00:04:51.035 --> 00:04:54.075
+<v Speaker 1>Got in early on Kubernetes with CoreOS
+
+00:04:54.075 --> 00:04:56.075
+<v Speaker 1>and loving it here at Telus.
+
+00:04:57.570 --> 00:04:59.730
+<v Speaker 0>Awesome. Thank you very much all. And I
+
+00:04:59.730 --> 00:05:01.730
+<v Speaker 0>will also let you know that the Red
+
+00:05:01.730 --> 00:05:03.330
+<v Speaker 0>Hat team are in the chat saying that
+
+00:05:03.330 --> 00:05:05.330
+<v Speaker 0>they have been very bad today.
+
+00:05:05.330 --> 00:05:05.650
+<v Speaker 0>So
+
+00:05:06.770 --> 00:05:09.410
+<v Speaker 2>Yeah. I saw that. We we were debating
+
+00:05:09.410 --> 00:05:11.010
+<v Speaker 2>how bad we wanted to be. We ended
+
+00:05:11.010 --> 00:05:14.205
+<v Speaker 2>up being nice. Because, you know Well, you
+
+00:05:14.205 --> 00:05:16.685
+<v Speaker 0>know, there there's, like, very few rules as
+
+00:05:16.685 --> 00:05:18.285
+<v Speaker 0>you're now aware. Right? But one of the
+
+00:05:18.285 --> 00:05:21.485
+<v Speaker 0>rules is do not break Teleport because
+
+00:05:21.565 --> 00:05:23.645
+<v Speaker 0>if we can't access Teleport, we can't pair
+
+00:05:23.645 --> 00:05:26.120
+<v Speaker 0>to fix the cluster. Very boring.
+
+00:05:26.200 --> 00:05:27.880
+<v Speaker 0>Yeah. And what did Red Hat do? They
+
+00:05:27.880 --> 00:05:30.120
+<v Speaker 0>broke Teleport. So Nice.
+
+00:05:30.680 --> 00:05:33.400
+<v Speaker 0>Yes. They were Basically, there's only one rule.
+
+00:05:35.080 --> 00:05:37.800
+<v Speaker 0>Minus 10,000 points for Red Hat anyway.
+
+00:05:38.905 --> 00:05:40.985
+<v Speaker 0>Let's get my screen share up. Now there's
+
+00:05:40.985 --> 00:05:43.545
+<v Speaker 0>a few nice additions to our Teleport setup.
+
+00:05:43.545 --> 00:05:45.225
+<v Speaker 0>I wanna thank Ben at Teleport for helping
+
+00:05:45.225 --> 00:05:46.745
+<v Speaker 0>me with some of this new automation. But
+
+00:05:46.745 --> 00:05:48.105
+<v Speaker 0>you can see we have a nice shiny
+
+00:05:48.105 --> 00:05:48.985
+<v Speaker 0>URL.
+
+00:05:48.985 --> 00:05:50.345
+<v Speaker 0>You no longer have to type. This is
+
+00:05:50.345 --> 00:05:53.139
+<v Speaker 0>insecure into your browser. Nice start. I have
+
+00:05:53.139 --> 00:05:55.460
+<v Speaker 0>also exposed the clustered application. It is available
+
+00:05:55.460 --> 00:05:57.620
+<v Speaker 0>here on applications. So when you want me
+
+00:05:57.620 --> 00:05:58.979
+<v Speaker 0>to try and see if it is working,
+
+00:05:58.979 --> 00:06:00.340
+<v Speaker 0>just let me know, and we will hit
+
+00:06:00.340 --> 00:06:00.980
+<v Speaker 0>the link.
+
+00:06:01.460 --> 00:06:03.539
+<v Speaker 0>I am going to open our first session
+
+00:06:03.539 --> 00:06:04.740
+<v Speaker 0>on the control plane.
+
+00:06:05.395 --> 00:06:06.675
+<v Speaker 0>And if you could all do me a
+
+00:06:06.675 --> 00:06:09.635
+<v Speaker 0>favor, go to act active sessions and join
+
+00:06:09.635 --> 00:06:13.155
+<v Speaker 0>and type echo hello, echo hi, echo whatever
+
+00:06:13.155 --> 00:06:13.955
+<v Speaker 0>you wish.
+
+00:06:14.354 --> 00:06:16.275
+<v Speaker 0>Hopefully, can see everyone in here in the
+
+00:06:16.275 --> 00:06:16.835
+<v Speaker 0>next moment.
+
+00:06:20.569 --> 00:06:22.090
+<v Speaker 0>Alright. Looks like I got a couple of
+
+00:06:22.090 --> 00:06:24.090
+<v Speaker 0>you. I've got three names here. I'm expecting
+
+00:06:24.090 --> 00:06:25.050
+<v Speaker 0>to see
+
+00:06:25.449 --> 00:06:26.250
+<v Speaker 0>five.
+
+00:06:27.289 --> 00:06:28.970
+<v Speaker 0>Who have I got? Let's see.
+
+00:06:29.210 --> 00:06:32.169
+<v Speaker 0>Andrew and Spencer. Sean and Andre, I think
+
+00:06:32.169 --> 00:06:33.370
+<v Speaker 0>you opened your own session,
+
+00:06:34.544 --> 00:06:35.985
+<v Speaker 0>Or you're just not listening to me. I'm
+
+00:06:35.985 --> 00:06:36.545
+<v Speaker 0>not sure.
+
+00:06:38.145 --> 00:06:41.025
+<v Speaker 3>I'm just fighting with the CLI. I'll join
+
+00:06:41.025 --> 00:06:43.264
+<v Speaker 3>on. Alright. Okay. Yeah. Yeah. No worries. He's
+
+00:06:43.264 --> 00:06:43.905
+<v Speaker 0>just nice.
+
+00:06:44.305 --> 00:06:45.824
+<v Speaker 0>Alright. We've got a little bit of setup
+
+00:06:45.824 --> 00:06:48.140
+<v Speaker 0>that we have to do anyway. So well,
+
+00:06:48.140 --> 00:06:50.540
+<v Speaker 0>Spencer, Andrew, do me a favor. Export our
+
+00:06:50.540 --> 00:06:53.660
+<v Speaker 0>cube config, configure any aliases, and let's check
+
+00:06:53.660 --> 00:06:55.500
+<v Speaker 0>if we have a control plan.
+
+00:06:57.260 --> 00:06:59.180
+<v Speaker 2>Oh, where's my auto complete?
+
+00:07:01.135 --> 00:07:04.175
+<v Speaker 0>You can enable completion on kube control
+
+00:07:04.335 --> 00:07:05.375
+<v Speaker 0>if you wish.
+
+00:07:08.015 --> 00:07:09.055
+<v Speaker 0>Is Admin.com.
+
+00:07:09.055 --> 00:07:10.015
+<v Speaker 2>Admin Com.
+
+00:07:14.190 --> 00:07:16.110
+<v Speaker 2>We free to just go or what? Yeah.
+
+00:07:16.110 --> 00:07:17.950
+<v Speaker 4>Let's get some notes, man.
+
+00:07:19.630 --> 00:07:21.870
+<v Speaker 2>Let's see. Permission to know. Oh.
+
+00:07:24.270 --> 00:07:26.590
+<v Speaker 0>Let's check. And you've hit your first snag.
+
+00:07:26.590 --> 00:07:27.150
+<v Speaker 0>There we go.
+
+00:07:28.905 --> 00:07:30.985
+<v Speaker 0>I see we got a fourth. That means
+
+00:07:30.985 --> 00:07:33.065
+<v Speaker 0>we've got we've got one off. There we
+
+00:07:33.065 --> 00:07:35.865
+<v Speaker 0>go. They're all here. Was someone driving there,
+
+00:07:35.865 --> 00:07:36.905
+<v Speaker 2>or is that me?
+
+00:07:38.185 --> 00:07:39.785
+<v Speaker 1>Sorry. That was me. Go ahead.
+
+00:07:42.080 --> 00:07:42.800
+<v Speaker 3>Okay.
+
+00:07:43.040 --> 00:07:44.480
+<v Speaker 3>Make it plus x.
+
+00:07:44.800 --> 00:07:46.000
+<v Speaker 2>Yep.
+
+00:07:46.240 --> 00:07:49.280
+<v Speaker 2>I need my autocomplete stuff. I'm lost.
+
+00:07:50.080 --> 00:07:52.400
+<v Speaker 4>You didn't install fish while you're here too?
+
+00:07:52.639 --> 00:07:54.560
+<v Speaker 3>I can I can type if you want?
+
+00:07:57.025 --> 00:07:59.104
+<v Speaker 0>Oh. Okay. Nice.
+
+00:08:00.865 --> 00:08:01.585
+<v Speaker 0>Okay.
+
+00:08:02.224 --> 00:08:03.905
+<v Speaker 0>That's an interesting start.
+
+00:08:08.960 --> 00:08:10.800
+<v Speaker 2>I think we were a large group.
+
+00:08:13.120 --> 00:08:14.960
+<v Speaker 3>Think it's just a group. Okay.
+
+00:08:15.360 --> 00:08:17.040
+<v Speaker 3>I think they took away
+
+00:08:17.440 --> 00:08:20.320
+<v Speaker 0>Yeah. I'll send on change mode.
+
+00:08:21.200 --> 00:08:22.720
+<v Speaker 0>The chimotes to the chimote.
+
+00:08:23.505 --> 00:08:24.625
+<v Speaker 0>Yeah. Yeah.
+
+00:08:24.785 --> 00:08:26.785
+<v Speaker 0>And do an do an l s dash
+
+00:08:26.785 --> 00:08:28.785
+<v Speaker 1>l a on user bin.
+
+00:08:29.665 --> 00:08:32.385
+<v Speaker 1>Change mod for probably just bin change mod.
+
+00:08:36.959 --> 00:08:40.079
+<v Speaker 1>Oh, bother. You don't even have tab completion?
+
+00:08:40.079 --> 00:08:42.240
+<v Speaker 2>What is this? I don't. Yes. It's telling
+
+00:08:42.240 --> 00:08:45.120
+<v Speaker 2>me. But, hey. We'll make it work. If
+
+00:08:45.120 --> 00:08:47.279
+<v Speaker 0>you don't, I think that's probably because they've
+
+00:08:47.279 --> 00:08:47.920
+<v Speaker 2>changed that.
+
+00:08:49.315 --> 00:08:52.435
+<v Speaker 3>Yeah. Exactly. So just look at the whole
+
+00:08:52.435 --> 00:08:54.675
+<v Speaker 3>slash bin. Is there anything we should execute
+
+00:08:54.675 --> 00:08:55.555
+<v Speaker 3>a bot call?
+
+00:08:56.755 --> 00:08:58.355
+<v Speaker 1>Well, l s is obviously. Well,
+
+00:08:59.795 --> 00:09:01.555
+<v Speaker 3>l s is a built in. So let's
+
+00:09:01.555 --> 00:09:01.715
+<v Speaker 3>see.
+
+00:09:02.540 --> 00:09:05.180
+<v Speaker 1>No. L l there's a bin LS.
+
+00:09:05.339 --> 00:09:07.660
+<v Speaker 1>It's not a built raised, but that one
+
+00:09:07.660 --> 00:09:09.180
+<v Speaker 3>is built in. So, yeah, let's do
+
+00:09:12.300 --> 00:09:13.899
+<v Speaker 5>okay. Other I could scroll back.
+
+00:09:15.334 --> 00:09:17.014
+<v Speaker 3>Can we, like But for anyone who's not
+
+00:09:17.014 --> 00:09:19.255
+<v Speaker 0>familiar, green means executable. Right?
+
+00:09:20.535 --> 00:09:23.095
+<v Speaker 3>Yeah. Can we have to install something? I
+
+00:09:23.095 --> 00:09:24.935
+<v Speaker 3>mean, just to fix things.
+
+00:09:24.935 --> 00:09:26.454
+<v Speaker 3>Easy way. Yeah. You can do whatever you
+
+00:09:26.454 --> 00:09:26.855
+<v Speaker 0>want.
+
+00:09:29.520 --> 00:09:31.280
+<v Speaker 2>Yeah. What is this? Core utils?
+
+00:09:31.760 --> 00:09:34.000
+<v Speaker 1>Just remove or move it out of the
+
+00:09:34.000 --> 00:09:36.160
+<v Speaker 1>way and do an app. Oh, sorry. Go
+
+00:09:36.160 --> 00:09:38.960
+<v Speaker 2>ahead. Whoever was doing that. Go ahead. Oh,
+
+00:09:38.960 --> 00:09:40.800
+<v Speaker 3>I mean, I was just I'm not sure
+
+00:09:40.800 --> 00:09:42.160
+<v Speaker 3>what is Core utils?
+
+00:09:43.165 --> 00:09:44.685
+<v Speaker 2>I think it's core tilt.
+
+00:09:46.204 --> 00:09:48.125
+<v Speaker 2>Might be core dash. I you need a
+
+00:09:48.845 --> 00:09:51.644
+<v Speaker 1>force, but oh, yeah. You can't even do
+
+00:09:51.644 --> 00:09:52.125
+<v Speaker 1>that.
+
+00:09:52.524 --> 00:09:54.045
+<v Speaker 1>Beautiful. Nice. Oh.
+
+00:09:57.490 --> 00:09:59.090
+<v Speaker 0>So there's people in the chat saying this
+
+00:09:59.090 --> 00:10:01.490
+<v Speaker 3>is SE Linux. Using Schmalt. But these are
+
+00:10:01.490 --> 00:10:03.730
+<v Speaker 0>Ubuntu machines. Just FYI.
+
+00:10:05.490 --> 00:10:07.970
+<v Speaker 3>Apps are using Schmalt. That's the worst.
+
+00:10:09.365 --> 00:10:09.925
+<v Speaker 2>Yeah.
+
+00:10:10.805 --> 00:10:11.045
+<v Speaker 3>So
+
+00:10:12.165 --> 00:10:15.045
+<v Speaker 3>okay. Can I curl some Download the yeah?
+
+00:10:15.045 --> 00:10:16.325
+<v Speaker 2>Let's download the
+
+00:10:16.964 --> 00:10:18.645
+<v Speaker 2>Debian file, and maybe you can
+
+00:10:20.085 --> 00:10:21.685
+<v Speaker 2>can we download the Debian file?
+
+00:10:24.589 --> 00:10:26.990
+<v Speaker 2>Oh, look. That's there. Maybe it's already there.
+
+00:10:26.990 --> 00:10:28.589
+<v Speaker 2>We just need to reinstall it.
+
+00:10:29.470 --> 00:10:31.790
+<v Speaker 2>It looks like it's in the the cache.
+
+00:10:33.070 --> 00:10:35.149
+<v Speaker 2>If we can unpack the Debian file, that's
+
+00:10:35.149 --> 00:10:35.950
+<v Speaker 2>what I'm getting at.
+
+00:10:37.715 --> 00:10:39.155
+<v Speaker 0>The app cache.
+
+00:10:39.555 --> 00:10:40.755
+<v Speaker 0>That's a good idea.
+
+00:10:42.675 --> 00:10:45.715
+<v Speaker 3>Oh, interesting. I found a cool hack too.
+
+00:10:45.715 --> 00:10:46.915
+<v Speaker 3>I can try that
+
+00:10:47.875 --> 00:10:49.875
+<v Speaker 3>to execute things
+
+00:10:50.600 --> 00:10:53.240
+<v Speaker 3>We'll make it executable. The we're sorry directory
+
+00:10:53.240 --> 00:10:54.759
+<v Speaker 0>is where they have left hints if you
+
+00:10:54.759 --> 00:10:58.120
+<v Speaker 0>require them. Oh, okay. Oops. Sorry. We don't
+
+00:10:58.120 --> 00:10:59.160
+<v Speaker 3>wanna cheat yet.
+
+00:11:00.120 --> 00:11:01.240
+<v Speaker 2>No. Do we have this?
+
+00:11:03.255 --> 00:11:05.255
+<v Speaker 0>Where is this? Apparently, you can have SE
+
+00:11:05.255 --> 00:11:06.695
+<v Speaker 0>Linux on the bin to these days. I
+
+00:11:06.695 --> 00:11:08.055
+<v Speaker 0>had no idea. Thanks, Walid.
+
+00:11:18.410 --> 00:11:19.690
+<v Speaker 3>Where is looking for?
+
+00:11:20.570 --> 00:11:22.650
+<v Speaker 3>There is, like, a For LD? Yeah. No.
+
+00:11:22.650 --> 00:11:24.490
+<v Speaker 3>LD, like, a cool hack to run an
+
+00:11:24.490 --> 00:11:27.450
+<v Speaker 3>executable without marking it as executable.
+
+00:11:28.410 --> 00:11:32.154
+<v Speaker 3>But I don't know whether LLV Linux is
+
+00:11:32.154 --> 00:11:33.355
+<v Speaker 3>here on this.
+
+00:11:35.355 --> 00:11:36.475
+<v Speaker 3>Yeah.
+
+00:11:36.475 --> 00:11:38.714
+<v Speaker 3>Where is LBP? It should be in Lib
+
+00:11:38.714 --> 00:11:39.435
+<v Speaker 2>somewhere.
+
+00:11:40.555 --> 00:11:42.475
+<v Speaker 3>Yeah. Where it is.
+
+00:11:42.875 --> 00:11:43.995
+<v Speaker 2>Or Lib 64.
+
+00:11:45.570 --> 00:11:46.530
+<v Speaker 3>Okay. We have
+
+00:11:54.370 --> 00:11:56.210
+<v Speaker 3>okay. Here it is, I guess.
+
+00:11:57.815 --> 00:11:58.855
+<v Speaker 3>Can we
+
+00:12:00.135 --> 00:12:01.095
+<v Speaker 3>oops.
+
+00:12:01.255 --> 00:12:02.375
+<v Speaker 3>I did that.
+
+00:12:04.295 --> 00:12:06.375
+<v Speaker 3>As the as I have the inspector now.
+
+00:12:15.090 --> 00:12:16.610
+<v Speaker 3>How to paste here?
+
+00:12:19.730 --> 00:12:22.130
+<v Speaker 3>I have no idea. Can anyone paste that?
+
+00:12:22.690 --> 00:12:23.810
+<v Speaker 3>Copy and paste that.
+
+00:12:25.105 --> 00:12:27.025
+<v Speaker 2>What are we trying to do? Oh, the
+
+00:12:27.025 --> 00:12:29.025
+<v Speaker 2>name of it? Yeah. The name of that.
+
+00:12:29.025 --> 00:12:31.665
+<v Speaker 3>I can't. Okay. Yeah. I can't even select.
+
+00:12:32.705 --> 00:12:34.225
+<v Speaker 2>I got it. I can type I can
+
+00:12:34.225 --> 00:12:36.225
+<v Speaker 3>type the rest. Thank you. Because I can't
+
+00:12:36.225 --> 00:12:37.105
+<v Speaker 3>copy paste
+
+00:12:37.990 --> 00:12:40.230
+<v Speaker 3>in the web browser currently.
+
+00:12:42.390 --> 00:12:42.870
+<v Speaker 3>I
+
+00:12:46.550 --> 00:12:48.390
+<v Speaker 3>think at least we were able to run
+
+00:12:48.390 --> 00:12:49.190
+<v Speaker 3>it. Right?
+
+00:12:49.590 --> 00:12:50.230
+<v Speaker 4>Yeah.
+
+00:12:50.790 --> 00:12:52.390
+<v Speaker 4>Yeah. You are. Yeah. Nice.
+
+00:12:53.055 --> 00:12:55.615
+<v Speaker 0>So we need user bencher mode instead of
+
+00:12:55.615 --> 00:12:56.975
+<v Speaker 0>bencher mode. Yeah.
+
+00:12:56.975 --> 00:12:57.615
+<v Speaker 3>What it means
+
+00:12:58.175 --> 00:13:01.535
+<v Speaker 3>we need attributes. Let's check extended attributes. I
+
+00:13:01.535 --> 00:13:03.535
+<v Speaker 3>don't remember how to do that, but I
+
+00:13:03.535 --> 00:13:04.735
+<v Speaker 3>think that's the only
+
+00:13:05.480 --> 00:13:08.600
+<v Speaker 3>last dash what to see the attributes.
+
+00:13:09.640 --> 00:13:10.600
+<v Speaker 0>Oh.
+
+00:13:11.560 --> 00:13:13.880
+<v Speaker 0>You can use l s t r, but
+
+00:13:13.880 --> 00:13:16.040
+<v Speaker 0>they also remove the x from that if
+
+00:13:16.040 --> 00:13:17.480
+<v Speaker 0>you check. A
+
+00:13:17.640 --> 00:13:17.960
+<v Speaker 4>a
+
+00:13:18.680 --> 00:13:23.885
+<v Speaker 4>yes. What is a l s a t
+
+00:13:23.885 --> 00:13:26.205
+<v Speaker 1>t r. All one word. Yeah. That's command
+
+00:13:26.205 --> 00:13:27.245
+<v Speaker 0>s l s t t Okay.
+
+00:13:29.805 --> 00:13:32.525
+<v Speaker 2>Not like that. That's the command Sorry. Yeah.
+
+00:13:32.525 --> 00:13:34.125
+<v Speaker 1>L s a t t r.
+
+00:13:34.525 --> 00:13:35.485
+<v Speaker 1>No dash. Yes?
+
+00:13:36.339 --> 00:13:37.620
+<v Speaker 4>Yes. There we go. Okay. Oh, it did
+
+00:13:37.620 --> 00:13:39.460
+<v Speaker 0>work. I guess immutable. Right?
+
+00:13:41.060 --> 00:13:42.900
+<v Speaker 3>Yeah. Whatever it is.
+
+00:13:45.300 --> 00:13:47.060
+<v Speaker 2>It's not our my Strange.
+
+00:13:47.860 --> 00:13:49.300
+<v Speaker 2>Lord. So
+
+00:13:49.300 --> 00:13:51.620
+<v Speaker 3>we need to copy paste that LD Linux.
+
+00:13:52.975 --> 00:13:54.894
+<v Speaker 3>We need to copy paste that LD Linux,
+
+00:13:54.894 --> 00:13:57.375
+<v Speaker 3>I guess, once again, to execute There you
+
+00:13:57.375 --> 00:14:00.014
+<v Speaker 2>go. This. Okay. Yeah. Who knows what to
+
+00:14:00.014 --> 00:14:00.654
+<v Speaker 3>do next?
+
+00:14:01.214 --> 00:14:02.975
+<v Speaker 0>Is it Chatter,
+
+00:14:02.975 --> 00:14:03.774
+<v Speaker 0>Chamad.
+
+00:14:04.175 --> 00:14:07.375
+<v Speaker 5>Chatter, I guess. How to remove immutable.
+
+00:14:08.950 --> 00:14:12.470
+<v Speaker 2>Is it oh, I haven't used Minus equals
+
+00:14:12.470 --> 00:14:13.350
+<v Speaker 3>I?
+
+00:14:14.710 --> 00:14:16.390
+<v Speaker 2>That sounds familiar.
+
+00:14:17.990 --> 00:14:18.710
+<v Speaker 3>No.
+
+00:14:19.750 --> 00:14:21.510
+<v Speaker 3>What is it? I haven't wait. I wanna
+
+00:14:21.510 --> 00:14:22.310
+<v Speaker 2>say minus I.
+
+00:14:23.295 --> 00:14:24.175
+<v Speaker 3>Minus I.
+
+00:14:24.655 --> 00:14:26.175
+<v Speaker 4>It looks like minus I.
+
+00:14:26.735 --> 00:14:29.215
+<v Speaker 3>Okay. Let's see. We can that
+
+00:14:29.215 --> 00:14:30.015
+<v Speaker 3>now.
+
+00:14:31.135 --> 00:14:32.175
+<v Speaker 3>Okay.
+
+00:14:32.815 --> 00:14:34.095
+<v Speaker 3>We have. Oh,
+
+00:14:36.175 --> 00:14:36.495
+<v Speaker 3>Okay.
+
+00:14:39.060 --> 00:14:40.740
+<v Speaker 0>Oh, that's fun. User.
+
+00:14:41.699 --> 00:14:44.180
+<v Speaker 2>That's a cool one, though. Mhmm. That was
+
+00:14:44.180 --> 00:14:46.180
+<v Speaker 2>like Using LDD LD.
+
+00:14:47.300 --> 00:14:50.420
+<v Speaker 2>Yeah. Thanks, Nicole. Gonna tell me. Okay. We
+
+00:14:50.420 --> 00:14:52.500
+<v Speaker 1>we are gonna have to install fish or
+
+00:14:52.500 --> 00:14:54.365
+<v Speaker 1>something. This this lack of
+
+00:14:55.165 --> 00:14:56.605
+<v Speaker 1>completion is
+
+00:14:56.845 --> 00:14:57.725
+<v Speaker 1>maddening.
+
+00:14:57.725 --> 00:15:00.365
+<v Speaker 3>Okay. Probably, it's same tree.
+
+00:15:01.165 --> 00:15:03.165
+<v Speaker 4>Same tree as the using the router. Some
+
+00:15:03.165 --> 00:15:04.205
+<v Speaker 3>other maybe?
+
+00:15:05.325 --> 00:15:06.845
+<v Speaker 2>Less adders on that bad boy.
+
+00:15:07.540 --> 00:15:09.780
+<v Speaker 4>Oh, yeah. Okay. Yeah. Let let's fix Chatter
+
+00:15:09.780 --> 00:15:12.740
+<v Speaker 3>probably first. Yeah. It's mutable as well. Yeah.
+
+00:15:13.460 --> 00:15:16.180
+<v Speaker 3>So we need to fix Chatter itself. Right?
+
+00:15:17.940 --> 00:15:18.900
+<v Speaker 2>Yeah. Oh,
+
+00:15:20.265 --> 00:15:22.024
+<v Speaker 2>go ahead. So we need to You need
+
+00:15:22.024 --> 00:15:23.785
+<v Speaker 2>that l d Linux copied again?
+
+00:15:25.464 --> 00:15:27.625
+<v Speaker 3>I don't know. No. It worked Oh. At
+
+00:15:27.625 --> 00:15:30.585
+<v Speaker 3>least. Right? Cool. Nice. It looks like. Right?
+
+00:15:30.585 --> 00:15:31.225
+<v Speaker 3>So
+
+00:15:31.940 --> 00:15:33.220
+<v Speaker 3>dash
+
+00:15:33.220 --> 00:15:34.100
+<v Speaker 3>I.
+
+00:15:36.100 --> 00:15:37.860
+<v Speaker 3>Oh, I'm always pressing.
+
+00:15:38.580 --> 00:15:40.660
+<v Speaker 3>Okay. Do we have Yeah. I know. You
+
+00:15:40.660 --> 00:15:42.020
+<v Speaker 0>can load your batch now. Now it should
+
+00:15:43.220 --> 00:15:44.420
+<v Speaker 3>See if my now can
+
+00:15:44.980 --> 00:15:45.220
+<v Speaker 6>Yeah.
+
+00:15:46.135 --> 00:15:47.334
+<v Speaker 3>Do I have to do this on that
+
+00:15:47.334 --> 00:15:48.055
+<v Speaker 3>right now?
+
+00:15:49.255 --> 00:15:50.214
+<v Speaker 3>Nice.
+
+00:15:50.214 --> 00:15:50.375
+<v Speaker 3>What?
+
+00:15:59.270 --> 00:16:00.950
+<v Speaker 4>Give it the full path? Oh, is
+
+00:16:02.630 --> 00:16:05.670
+<v Speaker 2>well, kubectl is there. What is our path?
+
+00:16:05.670 --> 00:16:06.550
+<v Speaker 3>Was there.
+
+00:16:07.270 --> 00:16:09.350
+<v Speaker 3>Was there just a moment ago.
+
+00:16:09.830 --> 00:16:12.310
+<v Speaker 2>Nice. Is it actually kubectl?
+
+00:16:12.310 --> 00:16:12.630
+<v Speaker 3>Oh,
+
+00:16:13.214 --> 00:16:15.694
+<v Speaker 3>let's see what it what it is. Is
+
+00:16:15.694 --> 00:16:17.535
+<v Speaker 3>it Yeah. Let's see if it's binary or
+
+00:16:17.535 --> 00:16:18.014
+<v Speaker 2>not.
+
+00:16:18.574 --> 00:16:19.855
+<v Speaker 2>Might be a script.
+
+00:16:20.334 --> 00:16:21.375
+<v Speaker 6>Yeah. I
+
+00:16:23.134 --> 00:16:25.375
+<v Speaker 3>think they're promoting some product.
+
+00:16:31.680 --> 00:16:34.640
+<v Speaker 2>No. Okay. Let's different. I mean okay. Yeah.
+
+00:16:34.640 --> 00:16:36.800
+<v Speaker 3>Let's just curl it. I think let's get
+
+00:16:36.880 --> 00:16:38.800
+<v Speaker 1>Yeah. Square. We'll just get it from the
+
+00:16:38.800 --> 00:16:39.520
+<v Speaker 1>source.
+
+00:16:39.760 --> 00:16:42.695
+<v Speaker 3>Okay. Whoever can copy paste because yeah.
+
+00:16:43.495 --> 00:16:44.454
+<v Speaker 2>We really could've
+
+00:16:44.935 --> 00:16:47.415
+<v Speaker 2>you know, that's that's like we really could've
+
+00:16:47.415 --> 00:16:49.095
+<v Speaker 2>just skipped all of this, couldn't we have?
+
+00:16:49.175 --> 00:16:50.214
+<v Speaker 2>And that's cool.
+
+00:16:51.415 --> 00:16:53.495
+<v Speaker 3>Good too, man. Yeah. We did all that
+
+00:16:53.495 --> 00:16:55.415
+<v Speaker 2>just to just to get
+
+00:16:56.500 --> 00:16:57.380
+<v Speaker 1>kubectl
+
+00:16:57.380 --> 00:17:00.660
+<v Speaker 1>and kubectl itself is replaced. Yeah. Yeah.
+
+00:17:03.700 --> 00:17:06.819
+<v Speaker 3>I wonder if that's the only Change mod.
+
+00:17:07.940 --> 00:17:08.740
+<v Speaker 1>Again.
+
+00:17:09.700 --> 00:17:11.540
+<v Speaker 4>See, we would do it anyway. Yeah. Yeah.
+
+00:17:11.744 --> 00:17:12.704
+<v Speaker 3>Yeah. Okay.
+
+00:17:14.305 --> 00:17:16.704
+<v Speaker 4>Here we go. Alright. Get
+
+00:17:16.704 --> 00:17:17.504
+<v Speaker 2>nodes.
+
+00:17:18.065 --> 00:17:20.464
+<v Speaker 2>Okay. Alright. Let's move this back. Alright. Sorry.
+
+00:17:20.464 --> 00:17:21.904
+<v Speaker 4>Yeah. Okay.
+
+00:17:23.265 --> 00:17:25.265
+<v Speaker 1>Time 1646.
+
+00:17:25.265 --> 00:17:26.704
+<v Speaker 1>It's six minutes expired.
+
+00:17:27.390 --> 00:17:29.390
+<v Speaker 0>Oh, you're gonna have to load those completions.
+
+00:17:29.390 --> 00:17:30.909
+<v Speaker 0>That's gonna get really annoying.
+
+00:17:31.550 --> 00:17:33.790
+<v Speaker 2>Yeah. Yeah. How well, I don't know what
+
+00:17:33.790 --> 00:17:34.669
+<v Speaker 2>you're talking about.
+
+00:17:35.070 --> 00:17:36.510
+<v Speaker 0>You want me to type what I think
+
+00:17:36.510 --> 00:17:37.230
+<v Speaker 0>it is? Yes,
+
+00:17:38.750 --> 00:17:41.309
+<v Speaker 2>please. Let me fix this real quick.
+
+00:17:42.270 --> 00:17:44.805
+<v Speaker 2>There you go. Yeah. Which completions are you
+
+00:17:44.645 --> 00:17:46.245
+<v Speaker 0>I think bash
+
+00:17:46.245 --> 00:17:49.365
+<v Speaker 0>completions. Right? Bash dash completion, I think. Is
+
+00:17:49.365 --> 00:17:50.325
+<v Speaker 0>that what it is?
+
+00:17:55.845 --> 00:17:56.485
+<v Speaker 3>Let's see.
+
+00:17:57.330 --> 00:17:59.330
+<v Speaker 1>Fire as an argument. And then normally, you
+
+00:17:59.330 --> 00:18:01.249
+<v Speaker 1>would source it. Dash
+
+00:18:01.490 --> 00:18:02.129
+<v Speaker 1>oh,
+
+00:18:04.130 --> 00:18:05.089
+<v Speaker 0>that don't work.
+
+00:18:07.169 --> 00:18:09.409
+<v Speaker 4>Bash dash completions altogether,
+
+00:18:09.409 --> 00:18:11.970
+<v Speaker 4>all one or completion singular maybe.
+
+00:18:12.515 --> 00:18:14.355
+<v Speaker 0>Oh, that's roughly the command. If one of
+
+00:18:14.355 --> 00:18:15.715
+<v Speaker 0>you knows what it is Something like that.
+
+00:18:15.795 --> 00:18:16.595
+<v Speaker 0>Take over.
+
+00:18:17.395 --> 00:18:20.355
+<v Speaker 2>Something like this, Spencer? Oh, go ahead. Probably
+
+00:18:20.355 --> 00:18:21.635
+<v Speaker 3>need to install it.
+
+00:18:23.395 --> 00:18:24.915
+<v Speaker 3>I think it's just not enough.
+
+00:18:25.875 --> 00:18:26.995
+<v Speaker 4>Hang on. Sorry.
+
+00:18:29.710 --> 00:18:31.790
+<v Speaker 3>But, I mean, we we probably need to
+
+00:18:31.790 --> 00:18:34.750
+<v Speaker 3>fix this cert. Yeah. Just install fish. Yeah.
+
+00:18:34.750 --> 00:18:36.990
+<v Speaker 1>Who cares? Yeah. You can just install fish.
+
+00:18:36.990 --> 00:18:38.510
+<v Speaker 0>Go for it. Why not? Then
+
+00:18:40.750 --> 00:18:42.350
+<v Speaker 4>you're definitely gonna be the one driving, Andrew.
+
+00:18:43.355 --> 00:18:43.994
+<v Speaker 0>Yeah.
+
+00:18:45.115 --> 00:18:47.914
+<v Speaker 1>Did. Did. There. We never fixed echo. We
+
+00:18:47.914 --> 00:18:50.554
+<v Speaker 0>need to just do the chain chatter on
+
+00:18:50.554 --> 00:18:52.475
+<v Speaker 1>all of the files in bin and user
+
+00:18:52.475 --> 00:18:53.114
+<v Speaker 1>bin.
+
+00:18:54.075 --> 00:18:55.274
+<v Speaker 1>Open everything up.
+
+00:18:56.909 --> 00:18:58.990
+<v Speaker 1>I imagine it looks it looks a bit
+
+00:18:58.990 --> 00:19:00.029
+<v Speaker 1>of a wildcard.
+
+00:19:01.309 --> 00:19:03.789
+<v Speaker 0>Just do one star and the comment and
+
+00:19:03.789 --> 00:19:06.029
+<v Speaker 0>the chat from Waleed saying you could probably
+
+00:19:06.029 --> 00:19:09.950
+<v Speaker 0>source /etc/profile.c/completion.
+
+00:19:10.755 --> 00:19:11.635
+<v Speaker 0>Sorry.
+
+00:19:16.915 --> 00:19:17.875
+<v Speaker 2>I missed that.
+
+00:19:21.955 --> 00:19:23.760
+<v Speaker 2>Oh, that chatter. I don't know. You want
+
+00:19:23.760 --> 00:19:25.440
+<v Speaker 2>you want the the Chatter?
+
+00:19:25.760 --> 00:19:26.799
+<v Speaker 2>Yeah.
+
+00:19:27.040 --> 00:19:27.360
+<v Speaker 2>I
+
+00:19:27.920 --> 00:19:29.600
+<v Speaker 2>someone do it because I heard five people
+
+00:19:29.600 --> 00:19:32.160
+<v Speaker 2>talking. So who wants to do it? Who
+
+00:19:32.160 --> 00:19:34.400
+<v Speaker 2>has the idea? Do it. K.
+
+00:19:38.000 --> 00:19:38.560
+<v Speaker 3>Okay.
+
+00:19:45.835 --> 00:19:47.914
+<v Speaker 0>There we go. Yeah. I think it's alright.
+
+00:19:51.755 --> 00:19:52.715
+<v Speaker 0>Hello, fish.
+
+00:19:54.640 --> 00:19:55.520
+<v Speaker 2>There we go.
+
+00:19:56.000 --> 00:19:57.120
+<v Speaker 0>Okay. Cool.
+
+00:19:57.520 --> 00:19:58.480
+<v Speaker 0>Alright.
+
+00:19:59.520 --> 00:20:01.279
+<v Speaker 0>Does it feel more like home there?
+
+00:20:01.840 --> 00:20:03.840
+<v Speaker 0>Yes. A little bit. Yeah. A little bit.
+
+00:20:05.615 --> 00:20:07.855
+<v Speaker 2>Never look at the server. Certificate expired or
+
+00:20:07.855 --> 00:20:10.655
+<v Speaker 2>not valid yet. Yeah. Certificate expired ten minutes
+
+00:20:10.655 --> 00:20:12.895
+<v Speaker 1>ago. So Yeah. I think we need a
+
+00:20:12.975 --> 00:20:14.495
+<v Speaker 0>Is there the time right on this thread?
+
+00:20:15.055 --> 00:20:16.735
+<v Speaker 3>Yeah. It looks like I mean, it it's
+
+00:20:16.735 --> 00:20:19.055
+<v Speaker 1>right enough. Yeah. We could probably just alter
+
+00:20:19.055 --> 00:20:20.335
+<v Speaker 1>the time and cheat.
+
+00:20:22.840 --> 00:20:24.679
+<v Speaker 0>That will break teleport.
+
+00:20:25.480 --> 00:20:27.800
+<v Speaker 0>Oh, well, then let's not do that. Okay.
+
+00:20:27.800 --> 00:20:29.559
+<v Speaker 4>That's what we can do. Alright.
+
+00:20:29.640 --> 00:20:32.440
+<v Speaker 0>I have to generate the cert. These hard
+
+00:20:32.360 --> 00:20:36.440
+<v Speaker 0>Scoopy DM. Two beta d m. So that's
+
+00:20:35.715 --> 00:20:36.514
+<v Speaker 1>Spencer.
+
+00:20:37.075 --> 00:20:38.354
+<v Speaker 4>Oh, yeah. Alright.
+
+00:20:39.635 --> 00:20:41.875
+<v Speaker 3>I don't know. Let's let's
+
+00:20:41.875 --> 00:20:43.075
+<v Speaker 3>rebuild the cluster.
+
+00:20:45.154 --> 00:20:45.794
+<v Speaker 2>Yeah.
+
+00:20:47.715 --> 00:20:50.275
+<v Speaker 2>Oh, so know about it. Well yeah.
+
+00:20:51.300 --> 00:20:53.380
+<v Speaker 0>But kubadian doesn't need a command for this.
+
+00:20:53.380 --> 00:20:56.820
+<v Speaker 4>Kubadian certs, yeah, has a looks like renew.
+
+00:20:58.580 --> 00:20:59.220
+<v Speaker 3>Yeah.
+
+00:20:59.700 --> 00:21:02.740
+<v Speaker 3>Kubadian certs. Only renew just a single one
+
+00:21:02.740 --> 00:21:05.955
+<v Speaker 3>if you if you just Oh, what somebody
+
+00:21:05.955 --> 00:21:09.394
+<v Speaker 1>somebody has been using Yeah. Someone tried it.
+
+00:21:09.394 --> 00:21:10.114
+<v Speaker 2>Yeah.
+
+00:21:12.034 --> 00:21:14.034
+<v Speaker 2>Oh, I need the v I command, the
+
+00:21:14.034 --> 00:21:15.235
+<v Speaker 2>v I bindings.
+
+00:21:15.500 --> 00:21:16.380
+<v Speaker 2>Mode.
+
+00:21:18.700 --> 00:21:20.220
+<v Speaker 4>Oh, yeah. Just change the
+
+00:21:20.460 --> 00:21:22.220
+<v Speaker 4>clock back. Okay. So we could do that.
+
+00:21:23.020 --> 00:21:24.860
+<v Speaker 1>Yeah. That's what he was saying. You know,
+
+00:21:24.860 --> 00:21:26.220
+<v Speaker 1>the break telecode
+
+00:21:26.220 --> 00:21:28.620
+<v Speaker 1>or teleport. I mean, I so,
+
+00:21:29.145 --> 00:21:31.065
+<v Speaker 2>obviously So I don't think we wanna renew
+
+00:21:31.065 --> 00:21:33.545
+<v Speaker 1>the API server. We wanna renew the the
+
+00:21:33.545 --> 00:21:34.345
+<v Speaker 1>admin
+
+00:21:34.505 --> 00:21:37.945
+<v Speaker 1>cert or whatever Kubernetes calls the admin cert
+
+00:21:38.505 --> 00:21:41.545
+<v Speaker 1>or all yeah. Sure. Why not? I don't
+
+00:21:41.545 --> 00:21:42.905
+<v Speaker 6>know. But admin.com
+
+00:21:42.905 --> 00:21:43.705
+<v Speaker 1>looks like.
+
+00:21:45.130 --> 00:21:46.490
+<v Speaker 4>It's gonna be fun if we break it
+
+00:21:46.490 --> 00:21:47.450
+<v Speaker 4>even worse.
+
+00:21:48.250 --> 00:21:50.410
+<v Speaker 1>Yeah. Let's not break it before we know
+
+00:21:50.410 --> 00:21:51.289
+<v Speaker 1>it's broken.
+
+00:21:53.130 --> 00:21:53.769
+<v Speaker 2>Oh.
+
+00:21:54.570 --> 00:21:56.970
+<v Speaker 1>I cannot oh, right. We have the other
+
+00:21:56.970 --> 00:21:57.370
+<v Speaker 1>screen.
+
+00:22:00.465 --> 00:22:02.865
+<v Speaker 2>Pair reading configuration from the cluster.
+
+00:22:05.425 --> 00:22:07.424
+<v Speaker 2>Is that not successful?
+
+00:22:08.145 --> 00:22:11.345
+<v Speaker 3>Yeah. Because it's it relies on something like
+
+00:22:11.345 --> 00:22:12.465
+<v Speaker 3>EK access,
+
+00:22:12.900 --> 00:22:13.700
+<v Speaker 2>Yeah.
+
+00:22:13.780 --> 00:22:14.500
+<v Speaker 2>Right.
+
+00:22:15.300 --> 00:22:17.460
+<v Speaker 0>You're right with the all. If you run
+
+00:22:17.460 --> 00:22:19.460
+<v Speaker 0>the all, you should be able to bypass
+
+00:22:19.460 --> 00:22:20.020
+<v Speaker 1>that. All.
+
+00:22:27.345 --> 00:22:29.024
+<v Speaker 3>Now we need to restart things.
+
+00:22:29.024 --> 00:22:30.304
+<v Speaker 4>Yeah. Yeah.
+
+00:22:30.705 --> 00:22:31.424
+<v Speaker 3>Probably
+
+00:22:32.304 --> 00:22:34.065
+<v Speaker 3>Just kill the pods. Everything should be a
+
+00:22:34.065 --> 00:22:36.705
+<v Speaker 4>static pod except for Kubler. Right? I mean,
+
+00:22:36.705 --> 00:22:38.144
+<v Speaker 3>this is probably c r I c t
+
+00:22:38.144 --> 00:22:39.899
+<v Speaker 3>l and just kill the pods so that
+
+00:22:39.899 --> 00:22:42.940
+<v Speaker 3>they will be restarted by by the Kubelet.
+
+00:22:43.260 --> 00:22:45.179
+<v Speaker 2>I forget what's the socket
+
+00:22:45.740 --> 00:22:47.100
+<v Speaker 2>runtime endpoint. That's right.
+
+00:22:58.265 --> 00:23:00.264
+<v Speaker 2>CRI CTL,
+
+00:23:00.265 --> 00:23:01.945
+<v Speaker 2>and this is going to be
+
+00:23:02.505 --> 00:23:03.304
+<v Speaker 2>var
+
+00:23:03.465 --> 00:23:04.264
+<v Speaker 2>run
+
+00:23:04.665 --> 00:23:06.025
+<v Speaker 2>or is it var container b?
+
+00:23:11.220 --> 00:23:12.980
+<v Speaker 2>Sorry. Say that again, Andre?
+
+00:23:14.740 --> 00:23:17.220
+<v Speaker 3>No. I mean, just pods. Yeah. I mean,
+
+00:23:17.220 --> 00:23:19.140
+<v Speaker 3>just kill all of them and make kubel
+
+00:23:20.375 --> 00:23:21.495
+<v Speaker 3>restart them.
+
+00:23:22.775 --> 00:23:24.615
+<v Speaker 2>Well, they should be static. Right? Can't I
+
+00:23:24.615 --> 00:23:26.535
+<v Speaker 2>just move them out? You can move them
+
+00:23:26.535 --> 00:23:27.815
+<v Speaker 3>out, yeah, as well.
+
+00:23:28.535 --> 00:23:30.375
+<v Speaker 3>But I wonder why they are not ready,
+
+00:23:30.375 --> 00:23:31.575
+<v Speaker 3>though. But
+
+00:23:31.975 --> 00:23:32.295
+<v Speaker 2>Yeah.
+
+00:23:33.000 --> 00:23:36.040
+<v Speaker 2>We'll get x let's get API access first
+
+00:23:36.040 --> 00:23:37.080
+<v Speaker 2>maybe? Or
+
+00:23:38.280 --> 00:23:40.360
+<v Speaker 4>Yeah. So at least, yeah, resolve the
+
+00:23:40.920 --> 00:23:43.720
+<v Speaker 4>cert error. Well, let's be let's see what's
+
+00:23:43.720 --> 00:23:45.000
+<v Speaker 2>in here first so that I know I'm
+
+00:23:45.000 --> 00:23:45.640
+<v Speaker 2>copying.
+
+00:23:45.960 --> 00:23:47.320
+<v Speaker 0>We are halfway through.
+
+00:23:49.055 --> 00:23:50.335
+<v Speaker 2>Okay.
+
+00:23:50.335 --> 00:23:53.455
+<v Speaker 2>We don't even have the control player. Pressure.
+
+00:23:54.255 --> 00:23:55.534
+<v Speaker 2>Yeah. I know. Right?
+
+00:23:58.975 --> 00:24:00.929
+<v Speaker 0>You have been dealt a rough hand, I
+
+00:24:00.929 --> 00:24:01.729
+<v Speaker 0>must say.
+
+00:24:02.450 --> 00:24:03.330
+<v Speaker 2>ETCD,
+
+00:24:03.330 --> 00:24:05.490
+<v Speaker 2>though. Is that Yeah. Yeah. Can a directory
+
+00:24:05.490 --> 00:24:06.609
+<v Speaker 1>for it first.
+
+00:24:12.129 --> 00:24:12.609
+<v Speaker 0>Obviously,
+
+00:24:16.529 --> 00:24:18.825
+<v Speaker 1>you we were saying it would be cheating
+
+00:24:18.825 --> 00:24:21.385
+<v Speaker 1>to check the bash bash history, but, you
+
+00:24:21.385 --> 00:24:24.025
+<v Speaker 1>know, when fish is showing us the stuff
+
+00:24:24.025 --> 00:24:25.145
+<v Speaker 1>in front of you.
+
+00:24:28.505 --> 00:24:30.345
+<v Speaker 0>Well, it's their fault for not clearing it.
+
+00:24:30.345 --> 00:24:33.950
+<v Speaker 0>History dash c is your friend on. Yeah.
+
+00:24:34.910 --> 00:24:36.510
+<v Speaker 2>Well, this is a little strange. This move
+
+00:24:36.510 --> 00:24:38.030
+<v Speaker 2>is hanging. Yeah. It seems bad.
+
+00:24:38.350 --> 00:24:39.150
+<v Speaker 3>Yeah.
+
+00:24:40.190 --> 00:24:42.510
+<v Speaker 2>And I don't have access anymore. It is.
+
+00:24:42.510 --> 00:24:43.710
+<v Speaker 2>Anyone lose
+
+00:24:43.870 --> 00:24:44.190
+<v Speaker 2>access?
+
+00:24:45.955 --> 00:24:49.714
+<v Speaker 1>What? You don't have access? Oh, wait. Uh-oh.
+
+00:24:50.514 --> 00:24:52.274
+<v Speaker 3>Is Teleport running? Did
+
+00:24:56.914 --> 00:24:58.835
+<v Speaker 1>Teleport depend on something here?
+
+00:25:00.210 --> 00:25:01.889
+<v Speaker 2>Oh, wait. Ku VIP.
+
+00:25:02.130 --> 00:25:03.090
+<v Speaker 2>Oh, no.
+
+00:25:03.890 --> 00:25:06.450
+<v Speaker 2>Is that gonna remove the Well, Ku VIP
+
+00:25:06.450 --> 00:25:08.129
+<v Speaker 1>was not ready anyway.
+
+00:25:08.450 --> 00:25:10.210
+<v Speaker 0>We have lost our BGP advertisement. Nice.
+
+00:25:12.315 --> 00:25:13.354
+<v Speaker 1>But
+
+00:25:13.755 --> 00:25:16.714
+<v Speaker 1>the teleport was connecting to local host,
+
+00:25:17.755 --> 00:25:19.754
+<v Speaker 1>so it shouldn't have been using the VIP.
+
+00:25:20.235 --> 00:25:23.034
+<v Speaker 0>The BGP address is for the DNS name.
+
+00:25:24.169 --> 00:25:25.049
+<v Speaker 2>Can
+
+00:25:25.049 --> 00:25:27.289
+<v Speaker 2>we attach it to the packet after the
+
+00:25:27.289 --> 00:25:28.409
+<v Speaker 2>Equinix metal?
+
+00:25:29.049 --> 00:25:31.450
+<v Speaker 4>No. It's we can still SSH in. Somebody
+
+00:25:31.450 --> 00:25:33.929
+<v Speaker 4>can still SSH into that. Yeah. I can.
+
+00:25:33.929 --> 00:25:34.729
+<v Speaker 1>Yeah. Yeah.
+
+00:25:35.130 --> 00:25:38.995
+<v Speaker 1>Just as a point here, KubeVip was running,
+
+00:25:38.995 --> 00:25:41.955
+<v Speaker 1>API server was running, and that CD was
+
+00:25:41.955 --> 00:25:43.955
+<v Speaker 1>running. There were just two copies.
+
+00:25:44.675 --> 00:25:45.315
+<v Speaker 1>But,
+
+00:25:46.595 --> 00:25:49.154
+<v Speaker 1>yes, what we have done is killed our
+
+00:25:49.315 --> 00:25:52.115
+<v Speaker 1>so I'm guessing this is how
+
+00:25:51.620 --> 00:25:53.780
+<v Speaker 1>Red Hat killed the Telnet
+
+00:25:53.780 --> 00:25:55.780
+<v Speaker 1>or Tel Teleport,
+
+00:25:55.780 --> 00:25:58.340
+<v Speaker 1>whatever it is, to begin with, is they
+
+00:25:58.340 --> 00:26:00.660
+<v Speaker 1>killed the VIP if it's dependent on the
+
+00:26:00.660 --> 00:26:01.220
+<v Speaker 1>VIP.
+
+00:26:02.820 --> 00:26:04.980
+<v Speaker 0>Alright. So I am on the control plane.
+
+00:26:05.585 --> 00:26:07.345
+<v Speaker 0>Well, I've now learned a vital lesson. We
+
+00:26:07.345 --> 00:26:09.665
+<v Speaker 1>we can go through go in through the
+
+00:26:09.665 --> 00:26:12.305
+<v Speaker 1>backdoor and SSH and through the through the
+
+00:26:12.305 --> 00:26:14.865
+<v Speaker 1>worker and into the the problem is the
+
+00:26:14.865 --> 00:26:16.785
+<v Speaker 1>audience wouldn't be able to see that. They
+
+00:26:16.785 --> 00:26:18.225
+<v Speaker 0>can see me doing it right now. We're
+
+00:26:18.225 --> 00:26:19.649
+<v Speaker 3>good now. Yeah. We're good now. You wanna
+
+00:26:19.649 --> 00:26:22.370
+<v Speaker 2>go into Etsy Kubernetes PKI. That's where I
+
+00:26:22.370 --> 00:26:23.889
+<v Speaker 2>made a directory called what.
+
+00:26:24.049 --> 00:26:25.889
+<v Speaker 2>And then the kubectl needs to be put
+
+00:26:25.889 --> 00:26:28.450
+<v Speaker 2>into Etsy Kubernetes manifest. Like so?
+
+00:26:29.570 --> 00:26:31.649
+<v Speaker 0>Move one star. Yeah. Let me see. Yeah.
+
+00:26:31.649 --> 00:26:33.169
+<v Speaker 0>That's I don't know where you are, but
+
+00:26:33.330 --> 00:26:33.409
+<v Speaker 0>yes.
+
+00:26:34.425 --> 00:26:35.305
+<v Speaker 4>I think so. But
+
+00:26:35.865 --> 00:26:38.585
+<v Speaker 4>yeah. Okay. The static port manifesto back in
+
+00:26:38.585 --> 00:26:39.705
+<v Speaker 0>the directory.
+
+00:26:40.265 --> 00:26:41.145
+<v Speaker 0>Should
+
+00:26:41.145 --> 00:26:43.465
+<v Speaker 0>hopefully start. We broadcast our IP.
+
+00:26:44.905 --> 00:26:46.905
+<v Speaker 0>And then for all future episodes, I will
+
+00:26:46.905 --> 00:26:49.065
+<v Speaker 0>never use the EIP for teleport.
+
+00:26:50.080 --> 00:26:50.720
+<v Speaker 0>Yes.
+
+00:26:54.320 --> 00:26:55.920
+<v Speaker 0>Well, he just asking why do you need
+
+00:26:55.920 --> 00:26:58.480
+<v Speaker 0>a a VIT and a single API control
+
+00:26:58.480 --> 00:26:59.120
+<v Speaker 0>plan?
+
+00:27:00.080 --> 00:27:01.920
+<v Speaker 0>I don't. Probably
+
+00:27:01.920 --> 00:27:02.640
+<v Speaker 2>a fair question.
+
+00:27:03.435 --> 00:27:05.515
+<v Speaker 1>It's just a cheap and easy way of
+
+00:27:05.515 --> 00:27:07.115
+<v Speaker 1>doing the BGP advertisement.
+
+00:27:07.115 --> 00:27:07.835
+<v Speaker 0>Exactly.
+
+00:27:09.595 --> 00:27:11.195
+<v Speaker 4>Alright. So back.
+
+00:27:11.355 --> 00:27:13.115
+<v Speaker 2>Do I need to, like, leave and come
+
+00:27:13.115 --> 00:27:15.595
+<v Speaker 2>back to the session? My queue has not
+
+00:27:15.595 --> 00:27:16.315
+<v Speaker 0>started yet.
+
+00:27:17.650 --> 00:27:20.930
+<v Speaker 2>Oh, wow. I bet you it won't start
+
+00:27:20.930 --> 00:27:21.649
+<v Speaker 2>because
+
+00:27:21.810 --> 00:27:23.650
+<v Speaker 2>Red Hat broke it. Now we can't start
+
+00:27:23.650 --> 00:27:24.210
+<v Speaker 2>stuff.
+
+00:27:26.370 --> 00:27:27.890
+<v Speaker 0>Well, I mean, that was their goal. Right?
+
+00:27:27.890 --> 00:27:29.090
+<v Speaker 2>They wanted the breakings,
+
+00:27:29.570 --> 00:27:31.410
+<v Speaker 2>maybe the pods just aren't starting because of
+
+00:27:31.410 --> 00:27:32.450
+<v Speaker 2>whatever Red Hat did.
+
+00:27:33.674 --> 00:27:34.554
+<v Speaker 2>And now
+
+00:27:34.955 --> 00:27:38.154
+<v Speaker 0>yeah. Yeah. Okay. Okay. So that means we
+
+00:27:38.154 --> 00:27:40.955
+<v Speaker 1>have to go now. We have remote happens,
+
+00:27:40.955 --> 00:27:41.834
+<v Speaker 1>essentially.
+
+00:27:43.115 --> 00:27:45.355
+<v Speaker 0>Alright. Well, the cubelet looks like it's and
+
+00:27:45.355 --> 00:27:45.995
+<v Speaker 2>ears on the ground.
+
+00:27:46.860 --> 00:27:48.299
+<v Speaker 0>I'm
+
+00:27:48.299 --> 00:27:49.740
+<v Speaker 0>not supposed to be playing, but I will
+
+00:27:49.740 --> 00:27:50.860
+<v Speaker 0>type whatever you want.
+
+00:27:51.820 --> 00:27:53.980
+<v Speaker 0>I don't know what you think. Let's
+
+00:27:53.980 --> 00:27:56.140
+<v Speaker 3>look see right CTL ports. Right? I mean,
+
+00:27:56.140 --> 00:27:57.179
+<v Speaker 3>just to see what's
+
+00:27:58.299 --> 00:27:59.419
+<v Speaker 3>yeah. This one.
+
+00:27:59.980 --> 00:28:00.220
+<v Speaker 3>Yes.
+
+00:28:02.054 --> 00:28:03.894
+<v Speaker 3>Doesn't look it's picking up these
+
+00:28:04.534 --> 00:28:06.375
+<v Speaker 3>at all. Yeah. We need to look at
+
+00:28:06.375 --> 00:28:07.815
+<v Speaker 2>the log now.
+
+00:28:09.815 --> 00:28:12.615
+<v Speaker 1>Yeah. So We should be running static pods.
+
+00:28:12.615 --> 00:28:12.774
+<v Speaker 2>Yep.
+
+00:28:13.669 --> 00:28:15.269
+<v Speaker 3>Should always be doing that.
+
+00:28:15.590 --> 00:28:16.710
+<v Speaker 2>Yeah. Exactly.
+
+00:28:17.110 --> 00:28:20.309
+<v Speaker 1>Unless it has some command line options telling
+
+00:28:20.309 --> 00:28:22.070
+<v Speaker 1>it to look in a different place.
+
+00:28:22.870 --> 00:28:24.950
+<v Speaker 1>We know that was running, though, of course,
+
+00:28:24.950 --> 00:28:26.870
+<v Speaker 1>because when we moved them out Right. Yeah.
+
+00:28:26.789 --> 00:28:27.029
+<v Speaker 3>Was.
+
+00:28:28.315 --> 00:28:31.035
+<v Speaker 1>Yeah. Still, it's worth checking the command line
+
+00:28:31.035 --> 00:28:34.075
+<v Speaker 1>arguments to the kubelet. Kubelet kubelet
+
+00:28:34.075 --> 00:28:34.955
+<v Speaker 4>conf, maybe.
+
+00:28:35.755 --> 00:28:36.155
+<v Speaker 0>Yeah.
+
+00:28:41.000 --> 00:28:42.999
+<v Speaker 2>Oh, it was in that directory.
+
+00:28:43.000 --> 00:28:44.279
+<v Speaker 0>It yeah. Yeah.
+
+00:28:47.799 --> 00:28:48.919
+<v Speaker 0>What'd wanna see?
+
+00:28:49.960 --> 00:28:51.960
+<v Speaker 3>Just look for manifest if it's there.
+
+00:28:53.595 --> 00:28:56.075
+<v Speaker 3>Yeah. Yeah. Static bot bot. Yeah. Did
+
+00:29:00.635 --> 00:29:01.274
+<v Speaker 3>we
+
+00:29:01.755 --> 00:29:03.435
+<v Speaker 3>I don't know. Let's try turning it off
+
+00:29:03.435 --> 00:29:05.115
+<v Speaker 2>and back on again.
+
+00:29:08.650 --> 00:29:09.050
+<v Speaker 0>Yep.
+
+00:29:22.465 --> 00:29:25.585
+<v Speaker 1>Node not found. That's No. This this is
+
+00:29:25.585 --> 00:29:27.664
+<v Speaker 3>normal. Yeah. That's it. Yeah. I think yeah.
+
+00:29:27.664 --> 00:29:29.105
+<v Speaker 1>Right. You're I think you may be back
+
+00:29:29.105 --> 00:29:31.025
+<v Speaker 0>in the game now. It's it's good. Yeah.
+
+00:29:31.025 --> 00:29:33.825
+<v Speaker 0>There you go. Yeah. We're back. Teleport's back.
+
+00:29:34.304 --> 00:29:35.184
+<v Speaker 2>Nice.
+
+00:29:35.585 --> 00:29:37.690
+<v Speaker 2>I got disconnected, but I got it. I'm
+
+00:29:37.690 --> 00:29:39.290
+<v Speaker 0>gonna allocate you a little bit of extra
+
+00:29:39.290 --> 00:29:42.730
+<v Speaker 0>time because of that. I was I
+
+00:29:43.049 --> 00:29:44.970
+<v Speaker 1>I was afraid we were being too mean.
+
+00:29:44.970 --> 00:29:46.409
+<v Speaker 1>We were way
+
+00:29:46.809 --> 00:29:47.530
+<v Speaker 1>too nice.
+
+00:29:51.615 --> 00:29:54.495
+<v Speaker 2>Alright. All the nos are good. Alright. Where
+
+00:29:54.495 --> 00:29:56.255
+<v Speaker 0>were we? Remember
+
+00:29:56.255 --> 00:29:58.174
+<v Speaker 0>to join my session, please.
+
+00:29:58.975 --> 00:30:01.215
+<v Speaker 2>I think I joined it. The the new
+
+00:30:01.215 --> 00:30:01.934
+<v Speaker 3>one. Right?
+
+00:30:02.415 --> 00:30:03.695
+<v Speaker 1>Oh, there's a new session.
+
+00:30:04.180 --> 00:30:06.340
+<v Speaker 2>Oh, there's a new one too. Sorry. Okay.
+
+00:30:06.340 --> 00:30:07.620
+<v Speaker 0>Yeah. I think the old one might be
+
+00:30:07.620 --> 00:30:09.299
+<v Speaker 0>on the end of the Okay.
+
+00:30:10.100 --> 00:30:11.940
+<v Speaker 2>A few seconds ago, first.
+
+00:30:12.740 --> 00:30:14.260
+<v Speaker 0>Oh, yeah. There's two. Alright. I can see
+
+00:30:14.260 --> 00:30:16.340
+<v Speaker 0>who's joining. No. There we go. Yeah. Oh,
+
+00:30:16.340 --> 00:30:17.220
+<v Speaker 0>straight into fish.
+
+00:30:18.485 --> 00:30:19.125
+<v Speaker 3>Yeah. That's
+
+00:30:21.445 --> 00:30:24.325
+<v Speaker 0>Alright. There we are. Cool. Yeah. He's doing
+
+00:30:24.325 --> 00:30:25.525
+<v Speaker 0>all of that. Yeah.
+
+00:30:25.685 --> 00:30:26.885
+<v Speaker 1>Yeah. Okay.
+
+00:30:30.965 --> 00:30:32.085
+<v Speaker 0>Good own thing.
+
+00:30:39.690 --> 00:30:40.570
+<v Speaker 1>Alright.
+
+00:30:41.450 --> 00:30:42.889
+<v Speaker 4>Looks good. Cool.
+
+00:30:43.290 --> 00:30:46.010
+<v Speaker 4>Yeah. There's a there's a Wonderland namespace with
+
+00:30:46.010 --> 00:30:47.610
+<v Speaker 4>a rabbit hole that's not like the look
+
+00:30:47.610 --> 00:30:47.850
+<v Speaker 4>of.
+
+00:30:50.255 --> 00:30:50.894
+<v Speaker 3>Oops.
+
+00:30:54.095 --> 00:30:55.934
+<v Speaker 4>Those are rough. Everything.
+
+00:30:56.015 --> 00:30:56.654
+<v Speaker 4>Cool.
+
+00:30:57.295 --> 00:30:58.575
+<v Speaker 4>What does it look like when we hit
+
+00:30:58.575 --> 00:31:00.255
+<v Speaker 4>the service? Is there anything where
+
+00:31:01.135 --> 00:31:02.575
+<v Speaker 3>Let's check the application.
+
+00:31:02.975 --> 00:31:05.700
+<v Speaker 2>Yeah. Can we check the application? Alright. The
+
+00:31:05.700 --> 00:31:08.980
+<v Speaker 4>application. That's it. Yep. So let's hit applications.
+
+00:31:08.980 --> 00:31:10.420
+<v Speaker 0>We hit clustered and
+
+00:31:16.115 --> 00:31:17.794
+<v Speaker 0>Failed to connect the database.
+
+00:31:18.275 --> 00:31:20.755
+<v Speaker 0>Alright. Alright. So Okay.
+
+00:31:21.235 --> 00:31:22.515
+<v Speaker 2>Have postcard.
+
+00:31:22.595 --> 00:31:25.235
+<v Speaker 1>Going by, so I guess the broke.
+
+00:31:26.115 --> 00:31:27.075
+<v Speaker 3>So
+
+00:31:27.955 --> 00:31:30.675
+<v Speaker 3>Let's check the network policies or whatever else.
+
+00:31:31.540 --> 00:31:32.260
+<v Speaker 3>Yeah.
+
+00:31:33.860 --> 00:31:35.059
+<v Speaker 1>There's endpoints.
+
+00:31:36.180 --> 00:31:39.139
+<v Speaker 1>Yeah. Let's make sure that endpoint
+
+00:31:39.220 --> 00:31:41.940
+<v Speaker 4>actually matches up with the clustered pod, and
+
+00:31:41.940 --> 00:31:44.100
+<v Speaker 4>they're not Yeah. Pointing us to the wrong
+
+00:31:44.100 --> 00:31:45.059
+<v Speaker 4>place somehow.
+
+00:31:45.460 --> 00:31:45.860
+<v Speaker 1>Yep.
+
+00:31:50.575 --> 00:31:52.495
+<v Speaker 2>What is it called? Is it called clustered?
+
+00:31:52.495 --> 00:31:53.215
+<v Speaker 2>Is that it?
+
+00:31:55.215 --> 00:31:55.934
+<v Speaker 0>Just
+
+00:31:56.735 --> 00:31:58.655
+<v Speaker 0>The postcard service is the one that's supposed
+
+00:31:58.655 --> 00:32:01.295
+<v Speaker 0>to communicate right now. Oh, right. Right. Right.
+
+00:32:01.775 --> 00:32:02.175
+<v Speaker 0>Yeah.
+
+00:32:03.110 --> 00:32:05.510
+<v Speaker 0>There's been some keen observations in the chat
+
+00:32:05.510 --> 00:32:07.030
+<v Speaker 0>if any one of you wants to take
+
+00:32:07.030 --> 00:32:07.910
+<v Speaker 0>a quick look.
+
+00:32:12.470 --> 00:32:14.230
+<v Speaker 2>Selector is Postgres.
+
+00:32:16.230 --> 00:32:17.190
+<v Speaker 2>That looks good to me.
+
+00:32:19.645 --> 00:32:20.365
+<v Speaker 0>Yep.
+
+00:32:22.685 --> 00:32:24.685
+<v Speaker 2>Sorry. What was the chat?
+
+00:32:24.685 --> 00:32:26.125
+<v Speaker 3>Are
+
+00:32:26.125 --> 00:32:27.005
+<v Speaker 3>there any
+
+00:32:27.245 --> 00:32:29.245
+<v Speaker 0>So no one in the chat that naughty
+
+00:32:29.405 --> 00:32:32.045
+<v Speaker 0>noticed some weird DNS configuration in the.
+
+00:32:34.330 --> 00:32:35.049
+<v Speaker 2>Okay.
+
+00:32:35.769 --> 00:32:36.969
+<v Speaker 2>Maybe we look at
+
+00:32:40.250 --> 00:32:42.970
+<v Speaker 1>No. Network policies. Okay. That's a with that
+
+00:32:42.970 --> 00:32:43.609
+<v Speaker 4>maybe.
+
+00:32:45.450 --> 00:32:47.529
+<v Speaker 2>Yeah. That's probably good. Mean, these are in
+
+00:32:47.529 --> 00:32:48.490
+<v Speaker 1>the default namespace.
+
+00:32:49.755 --> 00:32:51.195
+<v Speaker 4>But either way, let's go take a look
+
+00:32:51.195 --> 00:32:53.915
+<v Speaker 4>at that Keyblet. That's that was sounds interesting.
+
+00:32:56.555 --> 00:32:58.475
+<v Speaker 4>In the Keyblet config The config. They were
+
+00:32:58.475 --> 00:33:00.875
+<v Speaker 4>saying they found they saw something somebody saw.
+
+00:33:01.195 --> 00:33:02.875
+<v Speaker 2>That was Barliv from it?
+
+00:33:03.750 --> 00:33:05.429
+<v Speaker 5>Yeah. I think so. Yeah.
+
+00:33:13.510 --> 00:33:15.590
+<v Speaker 4>Oh, I didn't realize this. Okay. I see
+
+00:33:15.590 --> 00:33:17.705
+<v Speaker 0>the chat now. I was like, How do
+
+00:33:17.705 --> 00:33:18.585
+<v Speaker 5>I see this?
+
+00:33:19.225 --> 00:33:20.985
+<v Speaker 2>I see DNS.
+
+00:33:21.065 --> 00:33:22.664
+<v Speaker 2>That's the only mention of it.
+
+00:33:23.305 --> 00:33:24.664
+<v Speaker 3>It looks looks nice.
+
+00:33:27.225 --> 00:33:27.865
+<v Speaker 1>Nice.
+
+00:33:29.065 --> 00:33:30.664
+<v Speaker 0>The resolve conf
+
+00:33:30.825 --> 00:33:32.505
+<v Speaker 0>was the one that Noel pointed at.
+
+00:33:33.840 --> 00:33:35.200
+<v Speaker 1>That looks fine.
+
+00:33:36.800 --> 00:33:38.639
+<v Speaker 1>It's a system system needs. So oh,
+
+00:33:39.680 --> 00:33:41.600
+<v Speaker 1>unless that's an extra e on the end
+
+00:33:41.600 --> 00:33:42.399
+<v Speaker 1>of resolve.
+
+00:33:43.360 --> 00:33:46.080
+<v Speaker 1>Doanls-lon@cresolve.com.
+
+00:33:46.080 --> 00:33:47.520
+<v Speaker 1>That should be a link to the run.
+
+00:33:52.245 --> 00:33:53.925
+<v Speaker 1>Oh, it's not a link to the run.
+
+00:33:53.925 --> 00:33:55.205
+<v Speaker 1>Okay.
+
+00:33:55.205 --> 00:33:57.605
+<v Speaker 1>So go to slash run slash system b
+
+00:33:57.605 --> 00:33:58.405
+<v Speaker 1>slash
+
+00:33:58.965 --> 00:33:59.365
+<v Speaker 1>resolve.
+
+00:34:05.370 --> 00:34:06.490
+<v Speaker 1>Cap that.
+
+00:34:08.969 --> 00:34:10.090
+<v Speaker 1>Is that different?
+
+00:34:11.210 --> 00:34:12.410
+<v Speaker 0>I don't think so.
+
+00:34:13.610 --> 00:34:14.969
+<v Speaker 4>Well, maybe it was, actually.
+
+00:34:16.265 --> 00:34:18.505
+<v Speaker 1>No. Looks the same. I'm gonna email. So
+
+00:34:18.585 --> 00:34:20.185
+<v Speaker 1>Yeah. So that's fine
+
+00:34:21.545 --> 00:34:23.945
+<v Speaker 1>or should be fine, assuming we can say
+
+00:34:23.945 --> 00:34:26.585
+<v Speaker 1>ping Google dot com and we are resolving.
+
+00:34:27.225 --> 00:34:29.950
+<v Speaker 3>Well, we have a duration. Oh, but but
+
+00:34:29.950 --> 00:34:32.030
+<v Speaker 1>but we're not resolving to
+
+00:34:32.190 --> 00:34:34.350
+<v Speaker 1>the well, we don't know that.
+
+00:34:35.150 --> 00:34:37.550
+<v Speaker 1>In other words, are they overriding the core
+
+00:34:37.550 --> 00:34:38.270
+<v Speaker 1>DNS?
+
+00:34:40.110 --> 00:34:40.910
+<v Speaker 3>Can
+
+00:34:41.390 --> 00:34:44.705
+<v Speaker 3>we get into the application port and try
+
+00:34:44.705 --> 00:34:46.625
+<v Speaker 3>to But, yeah, let's let's take a look
+
+00:34:46.625 --> 00:34:49.745
+<v Speaker 1>at Like, yeah, ping the endpoint and,
+
+00:34:49.905 --> 00:34:51.345
+<v Speaker 3>like, debug from that.
+
+00:34:51.665 --> 00:34:53.025
+<v Speaker 4>Yeah. We should be able to you should
+
+00:34:53.025 --> 00:34:54.945
+<v Speaker 4>be able to exactly on the bash on
+
+00:34:54.945 --> 00:34:55.824
+<v Speaker 4>that. I'm gonna
+
+00:34:57.320 --> 00:34:58.040
+<v Speaker 2>Okay.
+
+00:35:04.680 --> 00:35:05.320
+<v Speaker 3>How do we
+
+00:35:08.200 --> 00:35:08.840
+<v Speaker 0>k.
+
+00:35:09.080 --> 00:35:10.280
+<v Speaker 0>I didn't know you could do that to
+
+00:35:10.280 --> 00:35:13.115
+<v Speaker 3>a deployment. That's nice. Oh, yeah. Yeah. That's
+
+00:35:13.115 --> 00:35:14.795
+<v Speaker 1>so great. How to use the So nice.
+
+00:35:14.795 --> 00:35:14.955
+<v Speaker 1>So
+
+00:35:16.315 --> 00:35:17.115
+<v Speaker 1>nope.
+
+00:35:17.195 --> 00:35:18.155
+<v Speaker 1>Really nice.
+
+00:35:18.395 --> 00:35:19.195
+<v Speaker 1>Useful.
+
+00:35:23.515 --> 00:35:25.675
+<v Speaker 3>Just try to ping it. Yeah.
+
+00:35:26.075 --> 00:35:28.450
+<v Speaker 3>That's what we tell us more
+
+00:35:28.770 --> 00:35:29.730
+<v Speaker 3>about it.
+
+00:35:31.570 --> 00:35:34.770
+<v Speaker 0>Alright. DNS resolve. Action. Mhmm. Yeah. And I
+
+00:35:34.770 --> 00:35:36.690
+<v Speaker 3>think the IP is But is it to
+
+00:35:36.690 --> 00:35:37.330
+<v Speaker 1>the right? It's correct.
+
+00:35:39.215 --> 00:35:41.775
+<v Speaker 1>Alright. So it's just being locked. Do we
+
+00:35:41.775 --> 00:35:42.655
+<v Speaker 1>have a route
+
+00:35:43.055 --> 00:35:44.175
+<v Speaker 1>IP route?
+
+00:35:49.215 --> 00:35:50.655
+<v Speaker 1>0220.
+
+00:35:51.535 --> 00:35:52.735
+<v Speaker 1>Maybe. Could be right.
+
+00:35:55.840 --> 00:35:57.840
+<v Speaker 3>Well, it's isn't it weird?
+
+00:35:59.200 --> 00:36:00.640
+<v Speaker 2>No network policies. So
+
+00:36:01.760 --> 00:36:03.200
+<v Speaker 1>so ping Kubernetes.
+
+00:36:11.505 --> 00:36:12.225
+<v Speaker 1>Yep.
+
+00:36:12.305 --> 00:36:13.185
+<v Speaker 1>So
+
+00:36:14.465 --> 00:36:17.105
+<v Speaker 1>we can't even get to the API server
+
+00:36:17.105 --> 00:36:18.385
+<v Speaker 1>in that
+
+00:36:18.810 --> 00:36:21.210
+<v Speaker 1>subnet. But, also, interestingly,
+
+00:36:21.290 --> 00:36:22.330
+<v Speaker 1>the Kubernetes
+
+00:36:22.330 --> 00:36:25.050
+<v Speaker 1>service IP is different from
+
+00:36:26.250 --> 00:36:29.050
+<v Speaker 2>the I wonder if they switched the service
+
+00:36:29.050 --> 00:36:29.690
+<v Speaker 2>IPs.
+
+00:36:31.145 --> 00:36:33.145
+<v Speaker 4>Take a look at the silicon configs.
+
+00:36:35.145 --> 00:36:35.945
+<v Speaker 0>Yep.
+
+00:36:39.145 --> 00:36:41.224
+<v Speaker 0>That service IP looks okay to me. Were
+
+00:36:41.224 --> 00:36:42.665
+<v Speaker 0>you expecting to see something different?
+
+00:36:44.030 --> 00:36:45.310
+<v Speaker 1>Well, I don't know. I don't know what
+
+00:36:45.310 --> 00:36:46.910
+<v Speaker 1>the service subnet is.
+
+00:36:52.270 --> 00:36:54.750
+<v Speaker 1>It may be fine depending on the scope.
+
+00:36:54.750 --> 00:36:57.230
+<v Speaker 2>What are we looking for? Slider here? Or
+
+00:36:57.230 --> 00:36:59.070
+<v Speaker 2>yeah. Cluster pool slider
+
+00:36:59.895 --> 00:37:02.135
+<v Speaker 2>is 100008.
+
+00:37:03.575 --> 00:37:05.975
+<v Speaker 2>Oh, what is there? Is it? Yeah. Yeah.
+
+00:37:05.975 --> 00:37:07.015
+<v Speaker 1>So it's fine.
+
+00:37:07.495 --> 00:37:08.215
+<v Speaker 2>Yeah.
+
+00:37:11.095 --> 00:37:13.680
+<v Speaker 2>Let's look at the nodes. Maybe. We'll have
+
+00:37:13.680 --> 00:37:16.080
+<v Speaker 3>a suggestion to check the Cilium network policy
+
+00:37:16.080 --> 00:37:17.280
+<v Speaker 3>whether it's blocked on the
+
+00:37:18.320 --> 00:37:20.240
+<v Speaker 5>We That's a good idea. Oh, yes. Cilium
+
+00:37:20.240 --> 00:37:23.040
+<v Speaker 1>has its own Cilium Yeah. Policies
+
+00:37:23.040 --> 00:37:24.720
+<v Speaker 1>that are not in standard
+
+00:37:24.720 --> 00:37:26.160
+<v Speaker 1>network policies. Yep.
+
+00:37:30.645 --> 00:37:32.645
+<v Speaker 1>Cilium network policies.
+
+00:37:32.805 --> 00:37:35.365
+<v Speaker 1>Yeah. And also Cilium plus UI. I do
+
+00:37:35.365 --> 00:37:36.245
+<v Speaker 1>understand
+
+00:37:36.245 --> 00:37:38.485
+<v Speaker 1>why they did that. Everybody seems to have
+
+00:37:38.485 --> 00:37:40.725
+<v Speaker 1>to their have their own network policies, but
+
+00:37:40.725 --> 00:37:41.970
+<v Speaker 1>it's still to do.
+
+00:37:42.290 --> 00:37:42.930
+<v Speaker 1>Okay.
+
+00:37:44.450 --> 00:37:46.210
+<v Speaker 1>Yeah. This is one hell of a
+
+00:37:48.450 --> 00:37:49.090
+<v Speaker 0>No.
+
+00:37:51.010 --> 00:37:52.770
+<v Speaker 3>It's like CMP,
+
+00:37:52.850 --> 00:37:54.210
+<v Speaker 3>I think, but okay.
+
+00:37:56.444 --> 00:37:57.725
+<v Speaker 4>And, yeah, there's
+
+00:37:58.125 --> 00:38:00.045
+<v Speaker 4>there's just Cilium network policies as well. Just
+
+00:38:00.045 --> 00:38:01.244
+<v Speaker 1>Cilium network policies.
+
+00:38:07.670 --> 00:38:09.270
+<v Speaker 1>Yeah. Postgres. Yeah. Yeah.
+
+00:38:11.029 --> 00:38:13.829
+<v Speaker 3>Can we just delete them? Delete them. Postgres.
+
+00:38:13.829 --> 00:38:15.990
+<v Speaker 1>Yeah. Just delete them. Nothing bad ever came
+
+00:38:15.990 --> 00:38:17.430
+<v Speaker 0>from deleting a policy.
+
+00:38:17.670 --> 00:38:19.030
+<v Speaker 2>Yeah. Actually,
+
+00:38:19.109 --> 00:38:19.589
+<v Speaker 2>once.
+
+00:38:22.365 --> 00:38:24.765
+<v Speaker 3>Just do dash a with delete, and that's
+
+00:38:24.765 --> 00:38:25.325
+<v Speaker 3>it.
+
+00:38:28.125 --> 00:38:30.925
+<v Speaker 3>Even Then the no. Dash dash Yeah. No.
+
+00:38:30.925 --> 00:38:33.645
+<v Speaker 1>Yeah. But okay. That's what You're fine for
+
+00:38:33.645 --> 00:38:33.805
+<v Speaker 1>that.
+
+00:38:35.400 --> 00:38:37.720
+<v Speaker 2>Alright. Can we check the whatchamacallit
+
+00:38:37.720 --> 00:38:38.200
+<v Speaker 2>now?
+
+00:38:39.160 --> 00:38:41.640
+<v Speaker 4>Yep. Is the egress, the Postgres one something
+
+00:38:41.640 --> 00:38:43.240
+<v Speaker 4>we should think about too?
+
+00:38:43.800 --> 00:38:46.520
+<v Speaker 1>I don't know. I mean, probably, but
+
+00:38:46.680 --> 00:38:48.360
+<v Speaker 1>that's in cube system.
+
+00:38:49.640 --> 00:38:50.040
+<v Speaker 1>That's,
+
+00:38:50.975 --> 00:38:53.055
+<v Speaker 1>I don't know. I mean, judging by the
+
+00:38:53.055 --> 00:38:54.095
+<v Speaker 1>name. Who knows?
+
+00:38:54.415 --> 00:38:57.615
+<v Speaker 0>Connection to database. Delete that anyway. Yeah. Delete
+
+00:38:57.615 --> 00:39:00.575
+<v Speaker 3>it. Yeah. We should delete it anyway. They
+
+00:39:00.575 --> 00:39:02.255
+<v Speaker 1>were obviously not at the same.
+
+00:39:05.130 --> 00:39:05.850
+<v Speaker 1>And
+
+00:39:06.730 --> 00:39:07.290
+<v Speaker 1>yeah.
+
+00:39:09.930 --> 00:39:11.369
+<v Speaker 2>I'm
+
+00:39:11.369 --> 00:39:12.810
+<v Speaker 2>just gonna do the way I know. Dash
+
+00:39:12.810 --> 00:39:15.610
+<v Speaker 4>dash Yeah. Just the dash oh.
+
+00:39:16.250 --> 00:39:18.525
+<v Speaker 0>Yeah. I think you're just missing the namespace.
+
+00:39:19.645 --> 00:39:21.325
+<v Speaker 3>That's not shit. It is the
+
+00:39:21.885 --> 00:39:24.045
+<v Speaker 1>scrolling keeps messing up.
+
+00:39:25.485 --> 00:39:27.325
+<v Speaker 2>Yeah. I don't know what's going on.
+
+00:39:27.725 --> 00:39:30.765
+<v Speaker 1>It's probably a mismatch in the resolutions, and
+
+00:39:30.630 --> 00:39:33.430
+<v Speaker 1>Teleport is not It's it's not dash dash.
+
+00:39:33.509 --> 00:39:34.550
+<v Speaker 3>It's dash dash.
+
+00:39:35.109 --> 00:39:37.990
+<v Speaker 3>Yeah. Dash dash. That's right. Yeah. That's the
+
+00:39:37.990 --> 00:39:38.630
+<v Speaker 3>easiest.
+
+00:39:42.869 --> 00:39:43.910
+<v Speaker 3>Dash dash.
+
+00:39:43.990 --> 00:39:44.789
+<v Speaker 0>Dash dash Dash dash.
+
+00:39:49.684 --> 00:39:50.645
+<v Speaker 4>There we go.
+
+00:39:52.565 --> 00:39:53.765
+<v Speaker 2>Can we try it now?
+
+00:39:56.085 --> 00:39:57.285
+<v Speaker 0>Build to connect the database.
+
+00:39:58.710 --> 00:40:00.230
+<v Speaker 2>Alright. Well, we got that out of the
+
+00:40:00.230 --> 00:40:02.070
+<v Speaker 2>way. So default policy.
+
+00:40:02.150 --> 00:40:04.470
+<v Speaker 1>And do we have a default policy in
+
+00:40:04.470 --> 00:40:05.190
+<v Speaker 1>Saleem?
+
+00:40:05.990 --> 00:40:08.390
+<v Speaker 3>Should we check whether ping is working now?
+
+00:40:08.390 --> 00:40:09.030
+<v Speaker 3>What?
+
+00:40:11.109 --> 00:40:11.830
+<v Speaker 2>Yeah. Sure.
+
+00:40:15.464 --> 00:40:17.465
+<v Speaker 2>Kubernetes.
+
+00:40:18.904 --> 00:40:21.865
+<v Speaker 3>No. No. And why this didn't work? Because
+
+00:40:21.865 --> 00:40:23.464
+<v Speaker 3>this I mean, I haven't looked into these
+
+00:40:23.464 --> 00:40:25.224
+<v Speaker 3>policies by judging by the name. It should
+
+00:40:25.224 --> 00:40:27.625
+<v Speaker 3>block access only. Okay. So Yeah. Let's check
+
+00:40:27.625 --> 00:40:30.080
+<v Speaker 1>the check the Cilium config and make sure
+
+00:40:30.080 --> 00:40:32.880
+<v Speaker 1>the default policy is not enabled. Just
+
+00:40:38.160 --> 00:40:40.240
+<v Speaker 2>How can we configure
+
+00:40:40.720 --> 00:40:41.520
+<v Speaker 2>my session?
+
+00:40:45.845 --> 00:40:47.445
+<v Speaker 1>You'll want namespace
+
+00:40:47.445 --> 00:40:48.005
+<v Speaker 1>as
+
+00:40:49.765 --> 00:40:51.765
+<v Speaker 1>You don't have the plug in for config
+
+00:40:51.765 --> 00:40:53.205
+<v Speaker 1>config
+
+00:40:53.205 --> 00:40:53.845
+<v Speaker 1>and yeah.
+
+00:40:59.090 --> 00:41:00.290
+<v Speaker 2>What are looking for?
+
+00:41:01.250 --> 00:41:02.130
+<v Speaker 1>Pipe
+
+00:41:02.130 --> 00:41:02.850
+<v Speaker 1>grip
+
+00:41:03.730 --> 00:41:04.370
+<v Speaker 1>policy.
+
+00:41:04.930 --> 00:41:06.770
+<v Speaker 3>Should we check the hints if we're running
+
+00:41:06.770 --> 00:41:09.010
+<v Speaker 3>out of time? You have ten minutes with
+
+00:41:09.010 --> 00:41:11.330
+<v Speaker 0>the additional time because of the teleport break.
+
+00:41:12.655 --> 00:41:14.415
+<v Speaker 3>I'm not giving up, but just
+
+00:41:14.895 --> 00:41:17.855
+<v Speaker 1>Enable policy by default. So let's turn that
+
+00:41:17.855 --> 00:41:18.415
+<v Speaker 1>off.
+
+00:41:18.815 --> 00:41:20.415
+<v Speaker 1>Set that to never.
+
+00:41:21.455 --> 00:41:23.775
+<v Speaker 2>Okay. I'm not familiar with the enable policy
+
+00:41:23.775 --> 00:41:25.375
+<v Speaker 0>default. Do you wanna does anyone know what
+
+00:41:25.375 --> 00:41:26.015
+<v Speaker 0>that is? Yeah.
+
+00:41:26.950 --> 00:41:29.990
+<v Speaker 1>So we can add, of course, network policies,
+
+00:41:30.790 --> 00:41:33.670
+<v Speaker 1>but you can also assign a default to
+
+00:41:33.670 --> 00:41:35.750
+<v Speaker 1>require the network policy.
+
+00:41:36.310 --> 00:41:39.270
+<v Speaker 1>And so if we are requiring a network
+
+00:41:39.270 --> 00:41:41.670
+<v Speaker 1>policy and there is no network policy, the
+
+00:41:41.670 --> 00:41:43.205
+<v Speaker 1>default is to block.
+
+00:41:43.445 --> 00:41:44.565
+<v Speaker 2>Uh-huh. Never?
+
+00:41:45.365 --> 00:41:46.485
+<v Speaker 0>Yeah. Never.
+
+00:41:47.685 --> 00:41:49.605
+<v Speaker 0>And will that require It's a good catch
+
+00:41:49.605 --> 00:41:52.485
+<v Speaker 1>all for for making sure that you don't
+
+00:41:52.485 --> 00:41:53.285
+<v Speaker 1>accidentally
+
+00:41:53.285 --> 00:41:55.045
+<v Speaker 1>expose anything on the network.
+
+00:41:56.160 --> 00:41:57.359
+<v Speaker 0>I guess we're gonna have to do a
+
+00:41:57.359 --> 00:41:59.200
+<v Speaker 0>rollout or a delete. Yeah.
+
+00:42:01.200 --> 00:42:03.200
+<v Speaker 0>Maybe don't dash dash all that.
+
+00:42:03.839 --> 00:42:04.480
+<v Speaker 2>No.
+
+00:42:05.200 --> 00:42:06.079
+<v Speaker 2>Right.
+
+00:42:06.079 --> 00:42:06.400
+<v Speaker 2>Please.
+
+00:42:09.865 --> 00:42:12.105
+<v Speaker 3>Let's kill teleports once again and get more
+
+00:42:12.185 --> 00:42:12.825
+<v Speaker 3>time.
+
+00:42:16.905 --> 00:42:17.625
+<v Speaker 2>Clock, please. Right?
+
+00:42:30.180 --> 00:42:31.060
+<v Speaker 2>Alright.
+
+00:42:31.140 --> 00:42:33.060
+<v Speaker 2>Check it now. K.
+
+00:42:33.060 --> 00:42:35.860
+<v Speaker 1>Cilium is not yet ready. It worked. Oh.
+
+00:42:35.860 --> 00:42:36.580
+<v Speaker 0>Hey. Hey.
+
+00:42:38.295 --> 00:42:40.214
+<v Speaker 0>So the objective is to right now? So
+
+00:42:40.214 --> 00:42:41.734
+<v Speaker 4>is this v one, I guess? Just so
+
+00:42:41.734 --> 00:42:43.895
+<v Speaker 4>we could go edit our deployment right now.
+
+00:42:43.895 --> 00:42:45.815
+<v Speaker 1>What else are we gonna encounter for v
+
+00:42:45.815 --> 00:42:48.214
+<v Speaker 1>two? Yeah. But Yeah. True. We'll see. Let's
+
+00:42:48.214 --> 00:42:49.655
+<v Speaker 4>try to edit our deployment real fast.
+
+00:42:50.550 --> 00:42:52.310
+<v Speaker 1>Yes. So let's just edit it. Is that
+
+00:42:52.310 --> 00:42:54.150
+<v Speaker 2>all we do? Uh-huh. For everyone that's not
+
+00:42:54.150 --> 00:42:56.550
+<v Speaker 0>familiar, the objective is to upgrade the clustered
+
+00:42:56.550 --> 00:42:58.790
+<v Speaker 0>application from v one to v two and
+
+00:42:58.790 --> 00:43:01.350
+<v Speaker 0>then see v two working. I should be
+
+00:43:01.350 --> 00:43:02.390
+<v Speaker 0>doing my happy dance.
+
+00:43:05.785 --> 00:43:07.065
+<v Speaker 4>Only deployment.
+
+00:43:07.785 --> 00:43:08.905
+<v Speaker 4>Deployment.
+
+00:43:08.905 --> 00:43:09.865
+<v Speaker 4>That Spanish?
+
+00:43:10.345 --> 00:43:12.185
+<v Speaker 2>Yeah. Deployment. Edit.
+
+00:43:14.425 --> 00:43:16.905
+<v Speaker 3>Just push push enter, and it works. You
+
+00:43:16.905 --> 00:43:18.425
+<v Speaker 3>have only one. Yeah. I know. Yeah. It's
+
+00:43:18.425 --> 00:43:20.745
+<v Speaker 0>just a reset. It's medium
+
+00:43:21.099 --> 00:43:22.460
+<v Speaker 2>OCD and pedantic.
+
+00:43:22.859 --> 00:43:24.940
+<v Speaker 0>You can search. Search for image.
+
+00:43:25.900 --> 00:43:26.620
+<v Speaker 2>Yep.
+
+00:43:32.700 --> 00:43:34.300
+<v Speaker 6>Why is there that? So much space. You
+
+00:43:34.300 --> 00:43:36.535
+<v Speaker 0>have seven minutes to exit them. There you
+
+00:43:36.535 --> 00:43:38.055
+<v Speaker 0>go. Go, Alex.
+
+00:43:38.615 --> 00:43:39.735
+<v Speaker 2>Alright.
+
+00:43:43.495 --> 00:43:45.415
+<v Speaker 0>Give me a second. It's running.
+
+00:43:49.255 --> 00:43:51.655
+<v Speaker 0>That's my sad face. Let me refresh again.
+
+00:43:55.990 --> 00:43:57.590
+<v Speaker 0>Are you sure we have v two?
+
+00:43:59.110 --> 00:44:01.110
+<v Speaker 1>Well, it's I mean, the old one is
+
+00:44:01.110 --> 00:44:03.670
+<v Speaker 1>not yet done or according to the last
+
+00:44:03.830 --> 00:44:05.030
+<v Speaker 1>can do another GitPods?
+
+00:44:06.915 --> 00:44:07.715
+<v Speaker 1>Somebody?
+
+00:44:09.555 --> 00:44:10.995
+<v Speaker 1>Yeah. It should be up now.
+
+00:44:11.395 --> 00:44:14.755
+<v Speaker 1>But let's let's check the Yep. There we
+
+00:44:14.755 --> 00:44:15.635
+<v Speaker 1>go. Again.
+
+00:44:15.795 --> 00:44:17.315
+<v Speaker 0>You got the dance. Well,
+
+00:44:17.555 --> 00:44:18.755
+<v Speaker 1>that's alright.
+
+00:44:18.915 --> 00:44:20.755
+<v Speaker 0>With one minute to spare.
+
+00:44:21.460 --> 00:44:23.380
+<v Speaker 0>Well, you you had six minutes to spare
+
+00:44:23.380 --> 00:44:26.660
+<v Speaker 0>because of the extra time. So Oh, okay.
+
+00:44:26.660 --> 00:44:29.220
+<v Speaker 1>Okay. You swear you smashed it. Well done.
+
+00:44:29.220 --> 00:44:30.980
+<v Speaker 0>Lots of claps coming in in the chat
+
+00:44:30.980 --> 00:44:31.460
+<v Speaker 0>there.
+
+00:44:32.020 --> 00:44:33.860
+<v Speaker 0>Damn. They did not make that easy.
+
+00:44:34.100 --> 00:44:36.420
+<v Speaker 0>No. They did not. No. They did not.
+
+00:44:37.515 --> 00:44:40.155
+<v Speaker 3>That was fun. Well Mhmm. It's tedious. That
+
+00:44:40.155 --> 00:44:41.434
+<v Speaker 1>was a lot of fun. See, that's what
+
+00:44:41.434 --> 00:44:43.355
+<v Speaker 1>that's what we wanted to avoid in ours
+
+00:44:43.355 --> 00:44:46.555
+<v Speaker 1>is eliminate the tedious that nobody We could've
+
+00:44:46.795 --> 00:44:48.714
+<v Speaker 0>But we No. We had to go through
+
+00:44:48.714 --> 00:44:49.675
+<v Speaker 1>the tedious.
+
+00:44:50.075 --> 00:44:52.234
+<v Speaker 0>But it was I could take ten minutes
+
+00:44:52.750 --> 00:44:54.830
+<v Speaker 2>by just downloading Kubez ETL.
+
+00:44:56.830 --> 00:44:59.950
+<v Speaker 0>It was entertaining, and you explained the processes
+
+00:44:59.950 --> 00:45:02.350
+<v Speaker 0>and what you were doing very well. I
+
+00:45:02.350 --> 00:45:04.190
+<v Speaker 0>think we got a lot of learnings out
+
+00:45:04.190 --> 00:45:04.990
+<v Speaker 0>of that. So
+
+00:45:05.484 --> 00:45:07.244
+<v Speaker 0>That was very cool. Yeah. That was Yeah.
+
+00:45:07.244 --> 00:45:08.525
+<v Speaker 3>Now I know what to do. A lot
+
+00:45:08.525 --> 00:45:11.565
+<v Speaker 3>when mod is not executable. Yeah. Yeah. Who
+
+00:45:11.565 --> 00:45:12.765
+<v Speaker 0>knew that trick. Right?
+
+00:45:14.605 --> 00:45:17.805
+<v Speaker 0>What? Alright. Well, thank interview question. Yeah. Yeah.
+
+00:45:17.805 --> 00:45:21.050
+<v Speaker 0>Thanks. Thanks, Red Hat folks. Thank you. Alright.
+
+00:45:21.050 --> 00:45:23.130
+<v Speaker 0>Well, thank you very much, Talos. I'm gonna
+
+00:45:23.130 --> 00:45:24.250
+<v Speaker 0>say you may now
+
+00:45:24.730 --> 00:45:26.810
+<v Speaker 0>exit the call. I will invite Red Hat
+
+00:45:26.810 --> 00:45:28.250
+<v Speaker 0>to join us, and we'll see what tricks
+
+00:45:28.250 --> 00:45:29.610
+<v Speaker 0>you have in store for them. So thank
+
+00:45:29.610 --> 00:45:32.090
+<v Speaker 0>you again. It was an absolute pleasure. Alrighty.
+
+00:45:32.410 --> 00:45:33.770
+<v Speaker 3>You. And good luck, Red Hat.
+
+00:45:35.904 --> 00:45:38.385
+<v Speaker 0>Alright. We'll jump over here. And while we
+
+00:45:38.385 --> 00:45:39.505
+<v Speaker 0>are waiting,
+
+00:45:39.505 --> 00:45:41.825
+<v Speaker 0>I will just quickly say thank you to
+
+00:45:41.825 --> 00:45:42.865
+<v Speaker 0>our sponsor,
+
+00:45:42.865 --> 00:45:43.665
+<v Speaker 0>Teleport.
+
+00:45:43.984 --> 00:45:46.065
+<v Speaker 0>It's been a pleasure working with them. I
+
+00:45:46.065 --> 00:45:47.585
+<v Speaker 0>like all the extra things that they've helped
+
+00:45:47.585 --> 00:45:49.664
+<v Speaker 0>me configure for the environment here as well.
+
+00:45:50.440 --> 00:45:52.440
+<v Speaker 0>It's really nice been able to just pop
+
+00:45:52.440 --> 00:45:55.640
+<v Speaker 0>open our secret clustered application through the teleport
+
+00:45:55.640 --> 00:45:57.880
+<v Speaker 0>interface and check if it's working.
+
+00:45:58.360 --> 00:46:00.680
+<v Speaker 0>Red Hat, hopefully you are all joining our
+
+00:46:00.680 --> 00:46:02.200
+<v Speaker 0>session right now.
+
+00:46:02.360 --> 00:46:04.040
+<v Speaker 0>I don't see anyone yet, which means I
+
+00:46:04.040 --> 00:46:04.840
+<v Speaker 0>just have to talk.
+
+00:46:05.675 --> 00:46:07.835
+<v Speaker 0>Although the latency isn't too bad, there was
+
+00:46:07.835 --> 00:46:10.075
+<v Speaker 0>lots of great chat there, great advice. Although
+
+00:46:10.075 --> 00:46:12.475
+<v Speaker 0>Noel, come on Noel. The DNS,
+
+00:46:12.875 --> 00:46:14.715
+<v Speaker 0>you send them on a wild ride.
+
+00:46:15.275 --> 00:46:16.795
+<v Speaker 0>And I oh, we got a comment from
+
+00:46:16.795 --> 00:46:18.635
+<v Speaker 0>Candice from team Red Hat saying that it's
+
+00:46:18.635 --> 00:46:20.555
+<v Speaker 0>actually one of their interview questions. There you
+
+00:46:20.555 --> 00:46:20.715
+<v Speaker 0>go.
+
+00:46:21.890 --> 00:46:24.370
+<v Speaker 0>Oh, team Red Hat are here. Let's pop
+
+00:46:24.370 --> 00:46:27.490
+<v Speaker 0>over. Who do we have? We have Christophe.
+
+00:46:27.490 --> 00:46:28.850
+<v Speaker 0>We've got James.
+
+00:46:29.490 --> 00:46:30.690
+<v Speaker 0>There's Candice.
+
+00:46:31.730 --> 00:46:33.090
+<v Speaker 0>And fashionably late,
+
+00:46:33.585 --> 00:46:34.385
+<v Speaker 0>g f.
+
+00:46:37.185 --> 00:46:38.065
+<v Speaker 0>Alright.
+
+00:46:38.785 --> 00:46:40.305
+<v Speaker 0>Let me get your names on the screen.
+
+00:46:40.305 --> 00:46:41.825
+<v Speaker 5>Meet I gotta meet the stream.
+
+00:46:42.385 --> 00:46:44.545
+<v Speaker 0>Oh, yeah. Don't have the streamer running in
+
+00:46:44.545 --> 00:46:46.145
+<v Speaker 0>the background. Here's our crew.
+
+00:46:49.400 --> 00:46:50.280
+<v Speaker 5>Yeah.
+
+00:46:51.720 --> 00:46:54.200
+<v Speaker 5>You didn't give them access to and
+
+00:46:54.200 --> 00:46:57.160
+<v Speaker 0>removed executable status from KubeControl, which was wasn't
+
+00:46:57.160 --> 00:47:01.015
+<v Speaker 0>even KubeControl anyway. Come on. So
+
+00:47:01.175 --> 00:47:03.815
+<v Speaker 5>we did a lot more than that. Actually,
+
+00:47:03.975 --> 00:47:06.695
+<v Speaker 5>them circumventing the Cilium network policy was amazing.
+
+00:47:06.695 --> 00:47:08.375
+<v Speaker 5>We did not plan That was brilliant.
+
+00:47:10.215 --> 00:47:12.535
+<v Speaker 5>If they would have looked at the image
+
+00:47:12.535 --> 00:47:15.490
+<v Speaker 5>that was running Cilium, it actually was running,
+
+00:47:15.730 --> 00:47:19.250
+<v Speaker 5>our custom operator that would re recreate
+
+00:47:19.410 --> 00:47:19.809
+<v Speaker 5>the,
+
+00:47:20.450 --> 00:47:22.769
+<v Speaker 5>the network policies over and over and over,
+
+00:47:22.769 --> 00:47:24.450
+<v Speaker 5>so they couldn't delete them. And they couldn't
+
+00:47:24.450 --> 00:47:25.490
+<v Speaker 5>update them either.
+
+00:47:26.210 --> 00:47:28.049
+<v Speaker 5>But, I mean, turning off all the Cilium
+
+00:47:28.049 --> 00:47:29.490
+<v Speaker 5>network policies was
+
+00:47:29.865 --> 00:47:30.585
+<v Speaker 5>beautiful.
+
+00:47:30.665 --> 00:47:32.105
+<v Speaker 5>Around that problem.
+
+00:47:32.345 --> 00:47:32.985
+<v Speaker 5>Yep.
+
+00:47:34.025 --> 00:47:36.985
+<v Speaker 0>Well, there you go. The objectives are clear.
+
+00:47:36.985 --> 00:47:38.345
+<v Speaker 0>You just need to be able to upgrade
+
+00:47:38.345 --> 00:47:40.025
+<v Speaker 0>the application and browse to it. So good
+
+00:47:40.025 --> 00:47:41.145
+<v Speaker 0>job, Talos.
+
+00:47:41.385 --> 00:47:42.345
+<v Speaker 0>But now it's your turn.
+
+00:47:43.359 --> 00:47:46.720
+<v Speaker 5>I'm excited. Alright. So I'm gonna pull up
+
+00:47:48.080 --> 00:47:50.320
+<v Speaker 0>Talos.cluster.live.
+
+00:47:50.320 --> 00:47:51.120
+<v Speaker 0>Oh, sorry.
+
+00:47:51.520 --> 00:47:52.560
+<v Speaker 0>Introductions.
+
+00:47:52.560 --> 00:47:54.400
+<v Speaker 0>Can we start with you, Christophe, and just
+
+00:47:54.400 --> 00:47:55.840
+<v Speaker 0>work your way around? Can you please all
+
+00:47:55.840 --> 00:47:57.440
+<v Speaker 0>say hello and tell us a little bit
+
+00:47:57.440 --> 00:47:57.920
+<v Speaker 0>about yourself?
+
+00:47:59.245 --> 00:48:01.565
+<v Speaker 8>Sure thing. Hello, everyone. My name is Christophe
+
+00:48:01.565 --> 00:48:03.005
+<v Speaker 8>Lecker. I
+
+00:48:03.485 --> 00:48:05.565
+<v Speaker 8>am a principal engineer with Red Hat.
+
+00:48:06.365 --> 00:48:09.085
+<v Speaker 8>I also am involved in the Kubernetes upstream
+
+00:48:09.085 --> 00:48:09.965
+<v Speaker 8>project.
+
+00:48:09.965 --> 00:48:11.885
+<v Speaker 8>I'm a member of the steering committee, and
+
+00:48:11.885 --> 00:48:13.869
+<v Speaker 8>I'm a technical lead for,
+
+00:48:14.590 --> 00:48:16.270
+<v Speaker 8>the contributor Experience Sick.
+
+00:48:20.030 --> 00:48:21.950
+<v Speaker 0>Either one of you, Jiffy, James, go for
+
+00:48:21.950 --> 00:48:23.869
+<v Speaker 0>it. Whoever whatever direction you just wanna look
+
+00:48:23.869 --> 00:48:24.430
+<v Speaker 0>around.
+
+00:48:24.750 --> 00:48:25.550
+<v Speaker 3>Oh, nice.
+
+00:48:27.150 --> 00:48:27.390
+<v Speaker 2>Alright.
+
+00:48:30.155 --> 00:48:32.315
+<v Speaker 6>I guess, hello. I'm James Harrington.
+
+00:48:32.475 --> 00:48:34.235
+<v Speaker 6>I'm a principal engineer
+
+00:48:34.235 --> 00:48:37.195
+<v Speaker 6>on the, OpenShift dedicated team here at Red
+
+00:48:37.195 --> 00:48:37.755
+<v Speaker 6>Hat.
+
+00:48:38.155 --> 00:48:40.155
+<v Speaker 6>I'm also a a team lead alongside,
+
+00:48:40.315 --> 00:48:42.315
+<v Speaker 6>Christophe and
+
+00:48:42.800 --> 00:48:44.800
+<v Speaker 6>I'm part of the team with Candice and
+
+00:48:44.800 --> 00:48:45.680
+<v Speaker 6>and Jeff.
+
+00:48:48.320 --> 00:48:51.840
+<v Speaker 7>Hey, everyone. I'm Candice. I am a senior
+
+00:48:51.840 --> 00:48:54.640
+<v Speaker 7>software engineer on the team with Christophe, James,
+
+00:48:54.640 --> 00:48:55.680
+<v Speaker 7>and Jeff here.
+
+00:48:56.160 --> 00:48:58.464
+<v Speaker 7>I'm also one of the region leads for
+
+00:48:58.464 --> 00:49:00.785
+<v Speaker 7>our North American region here at Red Hat.
+
+00:49:03.425 --> 00:49:06.305
+<v Speaker 5>Hello. Hello. My name is Jeffrey Sika. I'm
+
+00:49:06.305 --> 00:49:08.385
+<v Speaker 5>a principal engineer at Red Hat. I am
+
+00:49:08.385 --> 00:49:10.385
+<v Speaker 5>the team lead for the CI team that
+
+00:49:10.385 --> 00:49:12.359
+<v Speaker 5>works on CI for OpenShift dedicated.
+
+00:49:12.760 --> 00:49:14.279
+<v Speaker 5>I'm also kind of all over the place
+
+00:49:14.279 --> 00:49:16.359
+<v Speaker 5>in the Kubernetes community and
+
+00:49:16.440 --> 00:49:19.160
+<v Speaker 5>typically posting like, geese memes and random gifts
+
+00:49:19.160 --> 00:49:20.359
+<v Speaker 5>on Twitter. So
+
+00:49:20.839 --> 00:49:22.040
+<v Speaker 5>just see me around.
+
+00:49:22.520 --> 00:49:25.160
+<v Speaker 0>Alright. Thank you all, and thank you for
+
+00:49:25.160 --> 00:49:25.640
+<v Speaker 0>joining me.
+
+00:49:26.785 --> 00:49:29.745
+<v Speaker 0>I'm going to hand over now your first
+
+00:49:29.745 --> 00:49:32.065
+<v Speaker 0>control plane node. So hopefully you all have
+
+00:49:32.065 --> 00:49:33.745
+<v Speaker 0>access to what we need. I have opened
+
+00:49:33.745 --> 00:49:36.065
+<v Speaker 0>a session on the control plane.
+
+00:49:36.225 --> 00:49:37.985
+<v Speaker 0>If you can all join, we'll keep an
+
+00:49:37.985 --> 00:49:39.425
+<v Speaker 0>eye on who is here and then we'll
+
+00:49:39.425 --> 00:49:40.545
+<v Speaker 0>get this configured
+
+00:49:41.220 --> 00:49:42.740
+<v Speaker 0>for our debugging.
+
+00:49:43.140 --> 00:49:45.540
+<v Speaker 0>Yeah. I can see one already. Oh, five.
+
+00:49:45.540 --> 00:49:47.140
+<v Speaker 0>There we go. Everyone is here.
+
+00:49:54.815 --> 00:49:57.135
+<v Speaker 0>It's always fun seeing what hello message people
+
+00:49:57.135 --> 00:49:58.815
+<v Speaker 0>like to choose to make sure the echo
+
+00:49:58.815 --> 00:49:59.695
+<v Speaker 0>is working.
+
+00:50:00.415 --> 00:50:02.655
+<v Speaker 0>Sup? Good day. Well, hi and hi. There
+
+00:50:02.655 --> 00:50:05.615
+<v Speaker 0>we go. Please configure your cube config and
+
+00:50:05.615 --> 00:50:06.495
+<v Speaker 0>good
+
+00:50:06.495 --> 00:50:06.815
+<v Speaker 0>luck.
+
+00:50:12.109 --> 00:50:13.310
+<v Speaker 6>No
+
+00:50:18.670 --> 00:50:20.349
+<v Speaker 0>control plan. Who'd have thunk it?
+
+00:50:21.684 --> 00:50:23.525
+<v Speaker 5>By the way, did we decide who's driving?
+
+00:50:24.164 --> 00:50:25.525
+<v Speaker 3>We did not. Half
+
+00:50:26.005 --> 00:50:27.525
+<v Speaker 5>the call is gonna be who's driving.
+
+00:50:27.845 --> 00:50:28.885
+<v Speaker 7>James
+
+00:50:28.885 --> 00:50:30.005
+<v Speaker 7>said he would drive.
+
+00:50:30.404 --> 00:50:31.685
+<v Speaker 5>James, you're driving.
+
+00:50:32.325 --> 00:50:34.484
+<v Speaker 6>Lucky me. Alright. Let's go.
+
+00:50:35.525 --> 00:50:37.400
+<v Speaker 6>Let's see. What do we got here? The
+
+00:50:37.400 --> 00:50:39.240
+<v Speaker 6>connection to the server is refused. Did you
+
+00:50:39.240 --> 00:50:42.120
+<v Speaker 6>specify the right port? I would hope so.
+
+00:50:42.520 --> 00:50:44.360
+<v Speaker 6>Let's have a look. Where is this QConfig?
+
+00:50:51.405 --> 00:50:52.205
+<v Speaker 6>So
+
+00:50:52.925 --> 00:50:54.605
+<v Speaker 5>First thing that opt
+
+00:50:55.085 --> 00:50:57.165
+<v Speaker 5>first thing that I would check is look
+
+00:50:57.165 --> 00:51:00.125
+<v Speaker 5>at the IP address for this post and
+
+00:51:00.125 --> 00:51:01.165
+<v Speaker 5>make sure that they line up.
+
+00:51:02.619 --> 00:51:03.900
+<v Speaker 5>Do you want to
+
+00:51:04.220 --> 00:51:06.140
+<v Speaker 5>create that alias, by the way? We can.
+
+00:51:06.140 --> 00:51:06.859
+<v Speaker 5>I know that
+
+00:51:09.180 --> 00:51:10.220
+<v Speaker 6>Which alias?
+
+00:51:11.180 --> 00:51:13.260
+<v Speaker 7>Alias. So you can the Yeah. Or.
+
+00:51:18.234 --> 00:51:19.595
+<v Speaker 6>Does someone wanna do that for me?
+
+00:51:32.060 --> 00:51:34.220
+<v Speaker 5>For everyone laughing in the chat, this is
+
+00:51:34.220 --> 00:51:35.100
+<v Speaker 5>a problem.
+
+00:51:37.740 --> 00:51:39.180
+<v Speaker 6>Did I do that already?
+
+00:51:40.220 --> 00:51:41.340
+<v Speaker 1>So what is OC?
+
+00:51:44.615 --> 00:51:47.175
+<v Speaker 5>OC is the OpenShift flavor,
+
+00:51:47.335 --> 00:51:49.255
+<v Speaker 5>like, the OpenShift client for
+
+00:51:49.815 --> 00:51:52.055
+<v Speaker 5>interacting with a cluster via the CLI. So
+
+00:51:52.535 --> 00:51:53.655
+<v Speaker 0>Got it.
+
+00:51:54.135 --> 00:51:56.615
+<v Speaker 0>There we go. Today, I learned. I
+
+00:51:57.270 --> 00:51:59.910
+<v Speaker 6>cannot reprogram my brain to use anything but
+
+00:51:59.910 --> 00:52:00.710
+<v Speaker 6>OXY.
+
+00:52:06.470 --> 00:52:07.110
+<v Speaker 6>So
+
+00:52:10.470 --> 00:52:11.270
+<v Speaker 6>these are different.
+
+00:52:11.925 --> 00:52:14.805
+<v Speaker 6>Yep. So one of them will be the
+
+00:52:14.805 --> 00:52:16.245
+<v Speaker 0>Elastic IP
+
+00:52:17.125 --> 00:52:18.885
+<v Speaker 0>rather than the machine.
+
+00:52:20.885 --> 00:52:22.805
+<v Speaker 6>Okay. I'll start with this one and
+
+00:52:24.325 --> 00:52:26.085
+<v Speaker 6>use two QTPL.
+
+00:52:27.119 --> 00:52:28.800
+<v Speaker 6>Okay. So if.
+
+00:52:31.680 --> 00:52:33.680
+<v Speaker 6>So this looks like If you look on
+
+00:52:33.680 --> 00:52:35.599
+<v Speaker 0>the look back, you should see the BGP
+
+00:52:35.599 --> 00:52:36.000
+<v Speaker 0>address.
+
+00:52:44.785 --> 00:52:47.025
+<v Speaker 6>Looking for a I see a bunch of
+
+00:52:47.025 --> 00:52:48.465
+<v Speaker 6>I p v six stuff.
+
+00:52:48.625 --> 00:52:50.065
+<v Speaker 6>Is this this one here?
+
+00:52:50.545 --> 00:52:52.385
+<v Speaker 6>The local address? Is that what I'm looking
+
+00:52:52.385 --> 00:52:52.625
+<v Speaker 6>for?
+
+00:52:55.610 --> 00:52:57.610
+<v Speaker 0>If you Do mind if I type?
+
+00:52:58.090 --> 00:52:59.210
+<v Speaker 6>Yeah. Go for it.
+
+00:53:00.410 --> 00:53:01.050
+<v Speaker 6>Oh,
+
+00:53:02.010 --> 00:53:03.210
+<v Speaker 6>old school. Sorry.
+
+00:53:03.450 --> 00:53:06.250
+<v Speaker 0>So, yep, that is the one on low
+
+00:53:06.250 --> 00:53:08.570
+<v Speaker 0>here as our BGP address, which I think
+
+00:53:08.570 --> 00:53:10.945
+<v Speaker 0>was correct on the cube config.
+
+00:53:14.625 --> 00:53:16.305
+<v Speaker 6>So am I putting that one back?
+
+00:53:16.705 --> 00:53:17.905
+<v Speaker 0>Yeah. I wish. Yep.
+
+00:53:19.265 --> 00:53:20.145
+<v Speaker 6>No worries.
+
+00:53:20.464 --> 00:53:20.945
+<v Speaker 6>Okay.
+
+00:53:27.070 --> 00:53:29.150
+<v Speaker 5>So the next thing that I would look
+
+00:53:29.150 --> 00:53:30.110
+<v Speaker 5>at is,
+
+00:53:30.350 --> 00:53:32.910
+<v Speaker 5>did they change the port that the API
+
+00:53:32.910 --> 00:53:35.710
+<v Speaker 5>server is listening to? Also, please don't let
+
+00:53:35.710 --> 00:53:37.070
+<v Speaker 5>me be the only one talking.
+
+00:53:38.270 --> 00:53:40.430
+<v Speaker 6>Alright. Let's have a look. I always feel
+
+00:53:40.430 --> 00:53:40.670
+<v Speaker 5>bad.
+
+00:53:42.835 --> 00:53:45.875
+<v Speaker 6>Man, OC undone. Alias. OC is alias for
+
+00:53:45.875 --> 00:53:46.675
+<v Speaker 7>you, James.
+
+00:53:47.394 --> 00:53:48.115
+<v Speaker 6>Thanks.
+
+00:53:48.194 --> 00:53:49.795
+<v Speaker 6>You're always so nice to me.
+
+00:53:50.355 --> 00:53:51.635
+<v Speaker 7>We try. Okay.
+
+00:53:53.555 --> 00:53:56.060
+<v Speaker 6>Alright. Kube server API
+
+00:53:56.060 --> 00:53:58.460
+<v Speaker 6>IP address to get that. I'm going to
+
+00:53:58.460 --> 00:53:59.260
+<v Speaker 6>look at
+
+00:53:59.580 --> 00:54:00.300
+<v Speaker 6>cryo,
+
+00:54:00.860 --> 00:54:03.100
+<v Speaker 6>maybe. What am I gonna look at here?
+
+00:54:04.300 --> 00:54:07.020
+<v Speaker 5>There's I checked with flags, kubelet's running with
+
+00:54:07.475 --> 00:54:09.235
+<v Speaker 8>Okay. To start with. Like, I just do
+
+00:54:09.235 --> 00:54:11.635
+<v Speaker 8>a p s a u x and grep
+
+00:54:11.635 --> 00:54:12.515
+<v Speaker 8>per cube.
+
+00:54:12.835 --> 00:54:13.235
+<v Speaker 6>Yeah.
+
+00:54:24.120 --> 00:54:25.080
+<v Speaker 0>So don't kill
+
+00:54:27.080 --> 00:54:29.080
+<v Speaker 0>Don't kill CubeVip. Got it.
+
+00:54:32.360 --> 00:54:34.200
+<v Speaker 6>So is it running on that local address?
+
+00:54:34.200 --> 00:54:35.240
+<v Speaker 6>Is that what's going on here?
+
+00:54:40.945 --> 00:54:42.465
+<v Speaker 8>The API server is just not running. It's
+
+00:54:42.465 --> 00:54:44.945
+<v Speaker 6>a node IP. Okay. The the the API
+
+00:54:44.945 --> 00:54:46.625
+<v Speaker 8>server is not running at all. Like, there's
+
+00:54:46.625 --> 00:54:48.625
+<v Speaker 8>Cubelet. There's the controller manager.
+
+00:54:48.945 --> 00:54:50.865
+<v Speaker 8>There's a scheduler. There's etcd.
+
+00:54:51.770 --> 00:54:52.490
+<v Speaker 6>Yeah.
+
+00:54:52.650 --> 00:54:54.089
+<v Speaker 6>But I don't see the API server at
+
+00:54:54.089 --> 00:54:56.330
+<v Speaker 8>all. That's usually a problem. Just in my
+
+00:54:56.330 --> 00:54:58.170
+<v Speaker 0>experience, I thought I'd share that with you.
+
+00:54:58.810 --> 00:55:00.970
+<v Speaker 6>That might be an issue. Thank you. You're
+
+00:55:00.970 --> 00:55:01.450
+<v Speaker 6>right.
+
+00:55:02.089 --> 00:55:03.609
+<v Speaker 6>Alright. So how do we get this thing
+
+00:55:03.609 --> 00:55:03.930
+<v Speaker 6>running?
+
+00:55:04.445 --> 00:55:07.565
+<v Speaker 6>I'm assuming that maybe the manifest is missing.
+
+00:55:12.125 --> 00:55:13.005
+<v Speaker 7>It's there.
+
+00:55:15.885 --> 00:55:16.685
+<v Speaker 6>What's in there?
+
+00:55:23.400 --> 00:55:25.240
+<v Speaker 6>Alright. And we need to look at some
+
+00:55:25.240 --> 00:55:26.440
+<v Speaker 6>logs here, probably.
+
+00:55:28.359 --> 00:55:30.680
+<v Speaker 8>I checked next the Ubuntu
+
+00:55:30.680 --> 00:55:31.480
+<v Speaker 8>service status,
+
+00:55:32.565 --> 00:55:34.005
+<v Speaker 8>Like Yeah. Service
+
+00:55:34.405 --> 00:55:36.885
+<v Speaker 8>space dash dash status dash all.
+
+00:55:40.325 --> 00:55:41.045
+<v Speaker 6>Do you like this?
+
+00:55:43.445 --> 00:55:45.540
+<v Speaker 8>Oh, sorry. Status dash all.
+
+00:55:59.925 --> 00:56:01.925
+<v Speaker 6>I don't know what the recommend is saying.
+
+00:56:01.925 --> 00:56:03.765
+<v Speaker 5>Let me drive for a sec. Go for
+
+00:56:03.765 --> 00:56:03.925
+<v Speaker 3>it.
+
+00:56:18.090 --> 00:56:19.930
+<v Speaker 8>K. Not listed in there.
+
+00:56:20.810 --> 00:56:22.170
+<v Speaker 0>What were you looking for there? Sorry.
+
+00:56:24.105 --> 00:56:26.665
+<v Speaker 8>I'm seeing how the the API servers like
+
+00:56:26.665 --> 00:56:29.625
+<v Speaker 8>this configured to It's a static pod manifest.
+
+00:56:29.705 --> 00:56:31.865
+<v Speaker 0>So it's run by the cubelet, which is
+
+00:56:31.865 --> 00:56:33.225
+<v Speaker 0>healthy and running.
+
+00:56:34.025 --> 00:56:36.105
+<v Speaker 6>Maybe we can look at the cubelet logs,
+
+00:56:36.105 --> 00:56:38.025
+<v Speaker 6>Christophe, and see if they've got any
+
+00:56:39.350 --> 00:56:41.030
+<v Speaker 6>errors in there. Maybe it can't be passed
+
+00:56:41.030 --> 00:56:42.630
+<v Speaker 6>or something because it was in the manifest
+
+00:56:42.630 --> 00:56:43.350
+<v Speaker 6>folder.
+
+00:56:47.110 --> 00:56:48.070
+<v Speaker 0>K. Go for it.
+
+00:56:50.705 --> 00:56:52.465
+<v Speaker 6>I don't know where the cubit logs go.
+
+00:56:52.465 --> 00:56:55.345
+<v Speaker 0>The cubit logs are available over journal control,
+
+00:56:55.345 --> 00:56:57.025
+<v Speaker 0>and the API server logs will be in
+
+00:56:57.025 --> 00:56:58.705
+<v Speaker 0>bar log containers
+
+00:56:58.705 --> 00:56:59.905
+<v Speaker 0>if you wanna look.
+
+00:57:00.625 --> 00:57:02.625
+<v Speaker 6>Here we go. So
+
+00:57:08.150 --> 00:57:09.750
+<v Speaker 6>trying to read this.
+
+00:57:11.590 --> 00:57:14.070
+<v Speaker 5>There are so many errors. Oh my god.
+
+00:57:14.630 --> 00:57:16.470
+<v Speaker 6>There are a lot of errors. Yeah. It
+
+00:57:16.470 --> 00:57:18.790
+<v Speaker 8>fail it definitely failed to start container, cube
+
+00:57:18.790 --> 00:57:19.590
+<v Speaker 8>API server.
+
+00:57:21.494 --> 00:57:23.015
+<v Speaker 5>Network not ready,
+
+00:57:23.575 --> 00:57:25.175
+<v Speaker 5>but that would probably be because the a
+
+00:57:25.175 --> 00:57:28.454
+<v Speaker 5>p yeah. So API server is definitely plug
+
+00:57:28.454 --> 00:57:30.615
+<v Speaker 8>in not not initialized.
+
+00:57:31.095 --> 00:57:33.095
+<v Speaker 5>But it needs the API server for that.
+
+00:57:33.575 --> 00:57:33.974
+<v Speaker 6>Yeah.
+
+00:57:35.410 --> 00:57:38.290
+<v Speaker 6>Where is the API error Crash loop back
+
+00:57:38.290 --> 00:57:39.250
+<v Speaker 8>off?
+
+00:57:39.890 --> 00:57:42.770
+<v Speaker 8>Yeah. Crash loop back off coming from
+
+00:57:43.650 --> 00:57:44.770
+<v Speaker 8>the API server.
+
+00:57:48.654 --> 00:57:50.815
+<v Speaker 5>Error syncing pod skipping.
+
+00:57:56.335 --> 00:57:57.055
+<v Speaker 6>Okay.
+
+00:57:57.214 --> 00:57:57.935
+<v Speaker 6>So
+
+00:58:04.109 --> 00:58:06.670
+<v Speaker 5>Can I drive for a minute?
+
+00:58:07.470 --> 00:58:08.590
+<v Speaker 6>Go for it.
+
+00:58:10.190 --> 00:58:11.310
+<v Speaker 0>Are both of you done looking at the
+
+00:58:11.310 --> 00:58:12.589
+<v Speaker 0>logs? Yeah.
+
+00:58:16.105 --> 00:58:16.985
+<v Speaker 0>Candice?
+
+00:58:17.865 --> 00:58:18.825
+<v Speaker 7>Yeah. So,
+
+00:58:19.785 --> 00:58:23.465
+<v Speaker 7>the CNI issues, know, that's usually in something
+
+00:58:23.465 --> 00:58:24.105
+<v Speaker 7>like,
+
+00:58:24.505 --> 00:58:25.865
+<v Speaker 7>at the CNI,
+
+00:58:26.105 --> 00:58:27.145
+<v Speaker 7>net.d
+
+00:58:27.145 --> 00:58:27.545
+<v Speaker 7>maybe.
+
+00:58:29.660 --> 00:58:30.860
+<v Speaker 7>I don't know if that's where we wanna
+
+00:58:30.860 --> 00:58:31.500
+<v Speaker 7>start.
+
+00:58:33.180 --> 00:58:36.220
+<v Speaker 5>What I want to do I already forgot
+
+00:58:36.220 --> 00:58:37.580
+<v Speaker 5>because I was waiting. It
+
+00:58:40.620 --> 00:58:42.300
+<v Speaker 5>had to do with the manifest.
+
+00:58:49.055 --> 00:58:51.695
+<v Speaker 5>Wanted to like, verify that the image was
+
+00:58:51.695 --> 00:58:52.495
+<v Speaker 5>correct
+
+00:58:52.495 --> 00:58:53.215
+<v Speaker 5>first.
+
+00:58:53.455 --> 00:58:55.135
+<v Speaker 5>And, like, maybe they put in an image
+
+00:58:55.135 --> 00:58:56.815
+<v Speaker 5>that just
+
+00:58:56.370 --> 00:58:57.570
+<v Speaker 5>didn't make sense,
+
+00:58:57.970 --> 00:59:00.050
+<v Speaker 5>and that would cause it to crash.
+
+00:59:00.850 --> 00:59:02.050
+<v Speaker 1>That all looks good.
+
+00:59:12.145 --> 00:59:13.665
+<v Speaker 6>We got a suggestion in the chat to
+
+00:59:13.665 --> 00:59:15.025
+<v Speaker 6>collect the must gather.
+
+00:59:17.905 --> 00:59:19.825
+<v Speaker 7>Thanks. I think you really need to look
+
+00:59:19.825 --> 00:59:21.425
+<v Speaker 0>at the API server logs.
+
+00:59:21.665 --> 00:59:21.985
+<v Speaker 0>Like,
+
+00:59:22.809 --> 00:59:24.730
+<v Speaker 0>because you don't know why it's not running
+
+00:59:24.730 --> 00:59:25.450
+<v Speaker 0>right now.
+
+00:59:25.770 --> 00:59:26.410
+<v Speaker 0>Right?
+
+00:59:27.530 --> 00:59:28.410
+<v Speaker 5>Correct.
+
+00:59:28.890 --> 00:59:30.970
+<v Speaker 5>But API server log?
+
+00:59:31.369 --> 00:59:33.130
+<v Speaker 0>Oh, yes. So the kubelet will have attempted
+
+00:59:33.130 --> 00:59:34.730
+<v Speaker 0>to start it. I assume it's run and
+
+00:59:34.730 --> 00:59:37.290
+<v Speaker 0>we probably have logs and bar logs containers.
+
+00:59:37.715 --> 00:59:39.315
+<v Speaker 0>Mean, I I I would check.
+
+00:59:41.635 --> 00:59:43.475
+<v Speaker 0>You'll probably find there's a cube dash API
+
+00:59:43.475 --> 00:59:44.275
+<v Speaker 0>server. Yep.
+
+00:59:55.400 --> 00:59:57.560
+<v Speaker 0>Okay. So that Okay. So that's now to
+
+01:00:00.119 --> 01:00:03.240
+<v Speaker 5>It can't connect to that's Saturday. Right?
+
+01:00:03.559 --> 01:00:03.960
+<v Speaker 7>Yeah.
+
+01:00:06.995 --> 01:00:08.515
+<v Speaker 5>But NCD was running?
+
+01:00:11.395 --> 01:00:14.115
+<v Speaker 8>It looked like it from when
+
+01:00:14.355 --> 01:00:16.035
+<v Speaker 8>we were running PS.
+
+01:00:18.039 --> 01:00:20.680
+<v Speaker 8>Is the etcd port changed? Like, there's some
+
+01:00:20.680 --> 01:00:22.359
+<v Speaker 8>things there that I wasn't looking at.
+
+01:00:23.160 --> 01:00:24.519
+<v Speaker 5>2380
+
+01:00:25.319 --> 01:00:27.080
+<v Speaker 5>no. 2379.
+
+01:00:28.680 --> 01:00:29.720
+<v Speaker 5>Oh, crap. Sorry.
+
+01:00:35.535 --> 01:00:38.015
+<v Speaker 0>Natalia's team are reminding you there are hints
+
+01:00:38.015 --> 01:00:39.295
+<v Speaker 0>if you want them.
+
+01:00:43.135 --> 01:00:45.135
+<v Speaker 0>Did we see etcd on PS, though? I
+
+01:00:45.135 --> 01:00:46.175
+<v Speaker 0>don't remember seeing it.
+
+01:00:47.380 --> 01:00:49.540
+<v Speaker 7>We only looked for q. Read that.
+
+01:00:54.500 --> 01:00:55.620
+<v Speaker 5>No etcd.
+
+01:00:56.660 --> 01:00:57.140
+<v Speaker 6>Okay.
+
+01:00:59.555 --> 01:01:00.595
+<v Speaker 8>That'll do it.
+
+01:01:01.474 --> 01:01:04.434
+<v Speaker 6>We should check the journal logs for etcd,
+
+01:01:04.434 --> 01:01:05.714
+<v Speaker 6>try and see if there's any errors in
+
+01:01:05.714 --> 01:01:06.515
+<v Speaker 6>there for that.
+
+01:01:07.634 --> 01:01:10.515
+<v Speaker 5>Wasn't the etcd also a static pod?
+
+01:01:10.914 --> 01:01:11.714
+<v Speaker 0>Correct.
+
+01:01:12.355 --> 01:01:12.755
+<v Speaker 0>Yeah.
+
+01:01:19.450 --> 01:01:20.330
+<v Speaker 2>Uh-oh.
+
+01:01:24.650 --> 01:01:25.370
+<v Speaker 7>No leader.
+
+01:01:29.125 --> 01:01:32.085
+<v Speaker 5>Well Is it configured for when
+
+01:01:32.085 --> 01:01:32.885
+<v Speaker 8>it's not
+
+01:01:33.525 --> 01:01:35.445
+<v Speaker 8>we're not in configuration?
+
+01:01:38.565 --> 01:01:39.365
+<v Speaker 6>It's rough.
+
+01:01:41.150 --> 01:01:43.550
+<v Speaker 5>Alright. I'm tagging someone else in because I
+
+01:01:43.550 --> 01:01:45.230
+<v Speaker 5>have no idea how to look that up.
+
+01:01:46.430 --> 01:01:47.390
+<v Speaker 6>What's that?
+
+01:01:52.030 --> 01:01:54.430
+<v Speaker 0>We should probably look at the NCD configuration.
+
+01:01:54.430 --> 01:01:57.305
+<v Speaker 6>What's in the the static pod manifesting?
+
+01:02:01.305 --> 01:02:02.984
+<v Speaker 0>NCD is one of those things I keep
+
+01:02:02.984 --> 01:02:04.825
+<v Speaker 0>saying I'm gonna get better with debugging, but
+
+01:02:04.825 --> 01:02:06.665
+<v Speaker 0>I am terrible
+
+01:02:07.400 --> 01:02:08.680
+<v Speaker 3>at that. So
+
+01:02:09.720 --> 01:02:11.400
+<v Speaker 6>I'll need some help
+
+01:02:11.560 --> 01:02:14.120
+<v Speaker 6>to figure out how to check if this
+
+01:02:15.240 --> 01:02:17.640
+<v Speaker 6>is configured for It's also saying that the
+
+01:02:17.880 --> 01:02:20.440
+<v Speaker 6>obviously, the health endpoint wasn't working in that
+
+01:02:20.440 --> 01:02:20.920
+<v Speaker 6>log. Right?
+
+01:02:23.895 --> 01:02:24.535
+<v Speaker 6>So
+
+01:02:25.895 --> 01:02:27.015
+<v Speaker 6>start up pro
+
+01:02:28.295 --> 01:02:29.495
+<v Speaker 6>local host
+
+01:02:30.615 --> 01:02:33.335
+<v Speaker 6>2 3 8 1 for the health check.
+
+01:02:33.335 --> 01:02:35.175
+<v Speaker 6>Is that right? Should that be zero?
+
+01:02:38.990 --> 01:02:40.990
+<v Speaker 0>I think that port is okay. About with
+
+01:02:40.990 --> 01:02:41.790
+<v Speaker 6>ETCD.
+
+01:02:41.869 --> 01:02:43.630
+<v Speaker 0>I do think that port is okay for
+
+01:02:43.630 --> 01:02:44.510
+<v Speaker 0>the health check.
+
+01:02:44.990 --> 01:02:46.030
+<v Speaker 6>Okay. I think.
+
+01:02:53.365 --> 01:02:55.445
+<v Speaker 6>Just trying to look quickly what we can
+
+01:02:55.445 --> 01:02:57.045
+<v Speaker 6>do with etcd here.
+
+01:03:02.165 --> 01:03:04.245
+<v Speaker 8>So the
+
+01:03:05.700 --> 01:03:07.860
+<v Speaker 8>listen client URLs
+
+01:03:10.420 --> 01:03:12.900
+<v Speaker 8>kill the second one out of there.
+
+01:03:15.780 --> 01:03:18.580
+<v Speaker 6>Listen client URLs. Where are you seeing that?
+
+01:03:18.580 --> 01:03:19.220
+<v Speaker 8>Wait.
+
+01:03:19.460 --> 01:03:20.660
+<v Speaker 8>Actually, one sec.
+
+01:03:21.375 --> 01:03:24.175
+<v Speaker 8>No. Kill the first one. A loopback.
+
+01:03:26.495 --> 01:03:28.095
+<v Speaker 0>Yeah. I think that's a good shot.
+
+01:03:28.895 --> 01:03:31.215
+<v Speaker 8>Yeah. Keep keep the private IP one, but
+
+01:03:31.215 --> 01:03:34.095
+<v Speaker 8>kill the loopback out of listen client URLs.
+
+01:03:34.575 --> 01:03:36.255
+<v Speaker 6>In this
+
+01:03:39.370 --> 01:03:40.410
+<v Speaker 6>where is it?
+
+01:03:40.890 --> 01:03:43.530
+<v Speaker 0>Yeah. Up. It's in it's in the up,
+
+01:03:43.690 --> 01:03:46.570
+<v Speaker 8>up. It's in the, the command line flags.
+
+01:03:46.570 --> 01:03:49.370
+<v Speaker 8>So there's one listen dash client dash URLs.
+
+01:03:49.575 --> 01:03:51.494
+<v Speaker 8>Kill the loop back off of that. Keep
+
+01:03:51.494 --> 01:03:52.775
+<v Speaker 8>the private IP address.
+
+01:03:52.935 --> 01:03:54.535
+<v Speaker 0>I guess what you're thinking there is that
+
+01:03:54.535 --> 01:03:56.775
+<v Speaker 0>the existence of that second IP address is
+
+01:03:56.775 --> 01:03:59.335
+<v Speaker 0>putting it into an HAMode, which doesn't exist.
+
+01:03:59.335 --> 01:03:59.815
+<v Speaker 0>Right?
+
+01:04:00.375 --> 01:04:00.695
+<v Speaker 6>Yeah.
+
+01:04:01.839 --> 01:04:05.200
+<v Speaker 6>This one? That look good? Yep. Yep. Yep.
+
+01:04:05.440 --> 01:04:06.400
+<v Speaker 6>Alright.
+
+01:04:08.160 --> 01:04:08.880
+<v Speaker 6>Now
+
+01:04:11.040 --> 01:04:13.200
+<v Speaker 0>You should have the logs in this directory.
+
+01:04:13.200 --> 01:04:14.480
+<v Speaker 0>I would just do it. Yeah.
+
+01:04:15.440 --> 01:04:16.400
+<v Speaker 6>Let's have a look.
+
+01:04:24.895 --> 01:04:26.415
+<v Speaker 6>Scheduler API.
+
+01:04:28.974 --> 01:04:30.095
+<v Speaker 6>There we go. There it is.
+
+01:04:33.910 --> 01:04:36.710
+<v Speaker 0>Looks healthy. Hey. Yep. Ready.
+
+01:04:36.790 --> 01:04:39.110
+<v Speaker 8>Is the API server running now?
+
+01:04:40.790 --> 01:04:42.230
+<v Speaker 6>Still refused.
+
+01:04:42.790 --> 01:04:44.390
+<v Speaker 0>Will that be still changed? The API server
+
+01:04:44.390 --> 01:04:45.030
+<v Speaker 8>logs next.
+
+01:04:46.285 --> 01:04:46.925
+<v Speaker 8>Yeah.
+
+01:04:48.285 --> 01:04:49.885
+<v Speaker 8>Might be a layered issue.
+
+01:04:50.125 --> 01:04:52.925
+<v Speaker 8>Or actually, there is a yeah. Yeah. Kube
+
+01:04:52.925 --> 01:04:55.085
+<v Speaker 8>API server tiles control point one.
+
+01:04:57.005 --> 01:04:57.725
+<v Speaker 6>Oh,
+
+01:04:57.965 --> 01:04:59.645
+<v Speaker 6>let's see. Loop back address.
+
+01:05:00.440 --> 01:05:02.360
+<v Speaker 6>Still can't connect to SCD.
+
+01:05:03.560 --> 01:05:05.480
+<v Speaker 5>What if we change that to the private
+
+01:05:05.480 --> 01:05:06.840
+<v Speaker 5>IP as well?
+
+01:05:07.240 --> 01:05:07.800
+<v Speaker 5>Yep.
+
+01:05:16.755 --> 01:05:17.795
+<v Speaker 6>Kube
+
+01:05:18.515 --> 01:05:19.715
+<v Speaker 6>API server.
+
+01:05:31.790 --> 01:05:33.150
+<v Speaker 6>137.
+
+01:05:33.310 --> 01:05:35.150
+<v Speaker 6>Alright. Anything else in here?
+
+01:05:38.270 --> 01:05:38.990
+<v Speaker 5>No.
+
+01:05:39.310 --> 01:05:40.430
+<v Speaker 5>No. That looks good.
+
+01:05:46.875 --> 01:05:49.115
+<v Speaker 0>That fail will probably get rotated. You might
+
+01:05:49.115 --> 01:05:49.355
+<v Speaker 0>wanna
+
+01:05:50.075 --> 01:05:50.795
+<v Speaker 6>Yeah.
+
+01:05:52.075 --> 01:05:54.394
+<v Speaker 6>It's a good call. Yeah. Because you all
+
+01:05:54.394 --> 01:05:57.300
+<v Speaker 0>broke teleport, you've only got fifteen seconds left.
+
+01:05:57.300 --> 01:05:58.020
+<v Speaker 0>Good luck.
+
+01:06:04.820 --> 01:06:05.540
+<v Speaker 0>Yes.
+
+01:06:05.700 --> 01:06:06.900
+<v Speaker 0>They're the only one I think.
+
+01:06:13.335 --> 01:06:14.855
+<v Speaker 6>That should be at least a new one.
+
+01:06:14.855 --> 01:06:15.415
+<v Speaker 6>Right?
+
+01:06:15.895 --> 01:06:17.415
+<v Speaker 4>Well, the thing is the logs are still
+
+01:06:17.415 --> 01:06:18.855
+<v Speaker 5>showing local
+
+01:06:18.855 --> 01:06:19.575
+<v Speaker 5>host.
+
+01:06:21.415 --> 01:06:23.655
+<v Speaker 6>Do I need to kill this container? Which
+
+01:06:25.599 --> 01:06:27.440
+<v Speaker 8>it might it might just be the the
+
+01:06:27.440 --> 01:06:29.119
+<v Speaker 8>crash loop back off. Like, it might be
+
+01:06:29.280 --> 01:06:31.280
+<v Speaker 8>it might not have restarted the container yet.
+
+01:06:31.359 --> 01:06:33.280
+<v Speaker 5>No. No. No. Put a new address.
+
+01:06:37.200 --> 01:06:38.320
+<v Speaker 8>Okay. Yep.
+
+01:06:38.800 --> 01:06:39.839
+<v Speaker 6>Still not happy.
+
+01:06:45.315 --> 01:06:46.915
+<v Speaker 0>Happy Erbil. Right?
+
+01:06:52.035 --> 01:06:52.595
+<v Speaker 0>I mean, it
+
+01:06:55.280 --> 01:06:56.560
+<v Speaker 0>No. Maybe not.
+
+01:06:58.160 --> 01:06:59.680
+<v Speaker 0>NC might be available.
+
+01:07:00.960 --> 01:07:02.160
+<v Speaker 6>Netcat.
+
+01:07:02.320 --> 01:07:04.560
+<v Speaker 6>It is. I have no idea how to
+
+01:07:04.560 --> 01:07:06.400
+<v Speaker 6>use Netcat off the top of syntax.
+
+01:07:07.194 --> 01:07:09.355
+<v Speaker 0>I've added dash z to the start.
+
+01:07:10.075 --> 01:07:10.795
+<v Speaker 0>K.
+
+01:07:14.315 --> 01:07:15.275
+<v Speaker 0>A z.
+
+01:07:15.835 --> 01:07:17.994
+<v Speaker 6>Oh, sorry. That's sorry. And
+
+01:07:18.395 --> 01:07:20.155
+<v Speaker 0>it's a space, not a cool one. So
+
+01:07:20.155 --> 01:07:21.115
+<v Speaker 0>same syntaxes.
+
+01:07:24.190 --> 01:07:26.510
+<v Speaker 0>So spaces that are cool. Yeah. And
+
+01:07:27.710 --> 01:07:29.550
+<v Speaker 0>then echo the status, I think that
+
+01:07:30.350 --> 01:07:32.270
+<v Speaker 0>yeah. It's okay. Okay. So that's working.
+
+01:07:33.710 --> 01:07:34.590
+<v Speaker 6>Okay.
+
+01:07:34.590 --> 01:07:36.910
+<v Speaker 6>Let's have a look at running. The port
+
+01:07:36.910 --> 01:07:37.470
+<v Speaker 8>is open.
+
+01:07:39.875 --> 01:07:41.715
+<v Speaker 5>Sending new addresses
+
+01:07:41.715 --> 01:07:42.115
+<v Speaker 5>to
+
+01:07:50.355 --> 01:07:51.955
+<v Speaker 6>Looks like that file got rotated.
+
+01:07:55.910 --> 01:07:57.430
+<v Speaker 6>Same thing. Okay.
+
+01:07:58.470 --> 01:07:59.190
+<v Speaker 6>So
+
+01:07:59.349 --> 01:08:00.390
+<v Speaker 6>it's a decent
+
+01:08:01.109 --> 01:08:02.870
+<v Speaker 6>so, like, a whoops.
+
+01:08:03.589 --> 01:08:05.030
+<v Speaker 6>I just lost my screen. There you go.
+
+01:08:06.835 --> 01:08:09.315
+<v Speaker 0>Was the ETCD still is it happy?
+
+01:08:09.635 --> 01:08:10.355
+<v Speaker 0>I have I have
+
+01:08:12.195 --> 01:08:14.675
+<v Speaker 5>Yeah. Go back to the ETCD
+
+01:08:14.675 --> 01:08:15.155
+<v Speaker 5>logs.
+
+01:08:22.330 --> 01:08:24.329
+<v Speaker 0>Yeah. Okay. I think it is happy.
+
+01:08:25.609 --> 01:08:28.250
+<v Speaker 0>Oh, no. It's still throwing no leader.
+
+01:08:28.969 --> 01:08:29.689
+<v Speaker 6>K.
+
+01:08:30.010 --> 01:08:32.010
+<v Speaker 6>Health error, no leader.
+
+01:08:32.729 --> 01:08:34.809
+<v Speaker 6>You wanna double check the manifest again?
+
+01:08:36.330 --> 01:08:36.810
+<v Speaker 6>Yep.
+
+01:08:47.335 --> 01:08:50.135
+<v Speaker 6>Advertise client URLs. Is that the right port?
+
+01:08:51.409 --> 01:08:52.609
+<v Speaker 6>Client URLs.
+
+01:08:52.609 --> 01:08:54.849
+<v Speaker 5>Yeah. But why would we so
+
+01:08:55.170 --> 01:08:56.449
+<v Speaker 5>should we even be
+
+01:08:58.130 --> 01:08:59.729
+<v Speaker 6>is on local host. Does that need to
+
+01:08:59.729 --> 01:09:00.449
+<v Speaker 6>be changed?
+
+01:09:00.770 --> 01:09:02.130
+<v Speaker 0>No. That should be okay.
+
+01:09:02.689 --> 01:09:04.209
+<v Speaker 5>Should we even be
+
+01:09:04.689 --> 01:09:05.649
+<v Speaker 5>have the
+
+01:09:07.215 --> 01:09:10.334
+<v Speaker 5>okay. My brain. Should we even have peers
+
+01:09:10.654 --> 01:09:12.654
+<v Speaker 5>Yes. Set up? Okay.
+
+01:09:13.375 --> 01:09:14.094
+<v Speaker 0>Is
+
+01:09:19.135 --> 01:09:20.415
+<v Speaker 8>that city control available?
+
+01:09:23.180 --> 01:09:23.899
+<v Speaker 0>I
+
+01:09:24.060 --> 01:09:26.300
+<v Speaker 0>always use a cheat sheet, but I'm gonna
+
+01:09:26.300 --> 01:09:27.180
+<v Speaker 0>grab it
+
+01:09:27.660 --> 01:09:29.020
+<v Speaker 0>because nobody in Kubernetes.
+
+01:09:33.085 --> 01:09:34.524
+<v Speaker 0>But you will have to install it to
+
+01:09:34.524 --> 01:09:36.444
+<v Speaker 0>the client if you wanna throw that into
+
+01:09:36.444 --> 01:09:38.124
+<v Speaker 0>the thing just there.
+
+01:09:39.724 --> 01:09:40.925
+<v Speaker 5>No, we got it.
+
+01:09:41.804 --> 01:09:44.364
+<v Speaker 0>Oh, that means that someone has definitely been
+
+01:09:44.364 --> 01:09:44.925
+<v Speaker 0>playing with it.
+
+01:09:47.660 --> 01:09:49.660
+<v Speaker 0>There you go. SCD is now configured. You
+
+01:09:49.660 --> 01:09:51.340
+<v Speaker 0>should be able to speak at CD, but
+
+01:09:51.340 --> 01:09:53.020
+<v Speaker 0>obviously it's got a bit of a issue
+
+01:09:53.020 --> 01:09:53.819
+<v Speaker 0>at the moment.
+
+01:09:57.100 --> 01:09:57.820
+<v Speaker 5>Do we need?
+
+01:09:59.445 --> 01:10:01.844
+<v Speaker 6>Connection refused. I mean, it's not, like, IP
+
+01:10:01.844 --> 01:10:03.844
+<v Speaker 6>tables or something like that. Right? Well Well,
+
+01:10:03.844 --> 01:10:04.965
+<v Speaker 5>hold on. Should should we have
+
+01:10:05.605 --> 01:10:08.804
+<v Speaker 5>okay. Before in the advertised peers,
+
+01:10:09.525 --> 01:10:11.685
+<v Speaker 5>we deleted the local host. Should we have
+
+01:10:11.685 --> 01:10:13.364
+<v Speaker 5>instead deleted the private IP?
+
+01:10:14.620 --> 01:10:17.020
+<v Speaker 0>It's looking that way. Yeah. We can we
+
+01:10:17.020 --> 01:10:19.500
+<v Speaker 8>can check that and push it back towards
+
+01:10:20.540 --> 01:10:22.380
+<v Speaker 8>using the just the loopback.
+
+01:10:23.900 --> 01:10:24.780
+<v Speaker 6>This
+
+01:10:30.805 --> 01:10:33.125
+<v Speaker 6>Is this not listening on local host?
+
+01:10:33.845 --> 01:10:35.364
+<v Speaker 8>Nope. No. It's not.
+
+01:10:36.245 --> 01:10:37.445
+<v Speaker 6>Is that the issue?
+
+01:10:38.725 --> 01:10:41.285
+<v Speaker 8>It might be. Yeah. Let's let's edit the
+
+01:10:41.285 --> 01:10:43.605
+<v Speaker 8>etcd manifest to swap out back to the
+
+01:10:43.605 --> 01:10:46.180
+<v Speaker 8>local, the loopback as opposed to private IP,
+
+01:10:46.180 --> 01:10:47.300
+<v Speaker 8>and then we also need to do the
+
+01:10:47.300 --> 01:10:49.219
+<v Speaker 8>same for the Kube API server.
+
+01:10:49.300 --> 01:10:50.020
+<v Speaker 8>Yep.
+
+01:10:51.540 --> 01:10:52.340
+<v Speaker 6>So
+
+01:10:52.340 --> 01:10:53.540
+<v Speaker 6>etcd.
+
+01:10:56.340 --> 01:10:57.060
+<v Speaker 0>Listen client.
+
+01:11:06.625 --> 01:11:09.025
+<v Speaker 6>And the listen peer, same thing.
+
+01:11:13.590 --> 01:11:14.790
+<v Speaker 8>No.
+
+01:11:14.790 --> 01:11:15.270
+<v Speaker 8>It it
+
+01:11:16.310 --> 01:11:18.150
+<v Speaker 8>you'd it doesn't have any peers.
+
+01:11:18.230 --> 01:11:20.790
+<v Speaker 8>So I'd say that's fine. You might need
+
+01:11:20.790 --> 01:11:23.590
+<v Speaker 8>to change the advertised client URLs.
+
+01:11:24.070 --> 01:11:24.390
+<v Speaker 6>Yeah.
+
+01:11:25.975 --> 01:11:27.895
+<v Speaker 6>This is mean. I don't know which one
+
+01:11:27.895 --> 01:11:29.095
+<v Speaker 6>of these it should be.
+
+01:11:31.975 --> 01:11:34.775
+<v Speaker 5>We deserve everything that we're getting right now.
+
+01:11:34.775 --> 01:11:36.295
+<v Speaker 6>Oh, we were nice.
+
+01:11:37.095 --> 01:11:38.695
+<v Speaker 8>There's also an annotation.
+
+01:11:41.020 --> 01:11:42.300
+<v Speaker 6>Okay. Yeah. I see. Yep.
+
+01:11:43.020 --> 01:11:44.940
+<v Speaker 0>Alright. You have twenty minutes left.
+
+01:11:46.699 --> 01:11:48.780
+<v Speaker 0>And remember, there are hints if needed.
+
+01:11:49.100 --> 01:11:50.380
+<v Speaker 6>Yep. Under pressure.
+
+01:11:52.699 --> 01:11:53.100
+<v Speaker 6>Alright.
+
+01:11:56.005 --> 01:11:58.244
+<v Speaker 5>So that'll probably take a second while that's
+
+01:11:58.244 --> 01:11:58.724
+<v Speaker 5>booting.
+
+01:11:59.045 --> 01:12:01.044
+<v Speaker 5>We need to update the API server.
+
+01:12:01.605 --> 01:12:02.485
+<v Speaker 5>Yeah. Manifest.
+
+01:12:10.560 --> 01:12:12.320
+<v Speaker 6>At least I got auto complete. That could've
+
+01:12:12.320 --> 01:12:12.480
+<v Speaker 6>been
+
+01:12:14.639 --> 01:12:16.480
+<v Speaker 6>that was that was me. I'm sorry for
+
+01:12:16.480 --> 01:12:18.479
+<v Speaker 6>that one. That was Candice.
+
+01:12:19.280 --> 01:12:20.960
+<v Speaker 0>Yeah. That was before sorry. Harsh.
+
+01:12:23.765 --> 01:12:24.885
+<v Speaker 6>Yep. There you go.
+
+01:12:25.365 --> 01:12:26.085
+<v Speaker 6>Yep.
+
+01:12:31.205 --> 01:12:32.085
+<v Speaker 5>Okay.
+
+01:12:33.685 --> 01:12:34.885
+<v Speaker 5>Now let's
+
+01:12:36.165 --> 01:12:37.205
+<v Speaker 5>give it a hot minute.
+
+01:12:41.600 --> 01:12:42.560
+<v Speaker 6>Until the
+
+01:12:43.920 --> 01:12:45.040
+<v Speaker 0>I mean, you should be able to check
+
+01:12:45.040 --> 01:12:46.560
+<v Speaker 0>if it's a d is healthy just now
+
+01:12:46.560 --> 01:12:48.080
+<v Speaker 0>while you wait on the API server.
+
+01:12:53.494 --> 01:12:55.014
+<v Speaker 0>Now that it's the d c t l
+
+01:12:55.014 --> 01:12:56.375
+<v Speaker 0>is configured. You should be able to just
+
+01:12:56.375 --> 01:12:58.454
+<v Speaker 0>do a it's the control
+
+01:12:59.335 --> 01:13:01.574
+<v Speaker 5>Status. Status. Yeah. I think.
+
+01:13:05.014 --> 01:13:05.974
+<v Speaker 8>I don't
+
+01:13:11.010 --> 01:13:14.370
+<v Speaker 0>I'm maybe It's the control cluster health. Like
+
+01:13:20.690 --> 01:13:21.730
+<v Speaker 6>this one word?
+
+01:13:23.704 --> 01:13:25.385
+<v Speaker 0>Or dash Oh, sorry. Endpoint
+
+01:13:25.465 --> 01:13:27.704
+<v Speaker 8>health. Endpoint health. Endpoint space health.
+
+01:13:41.139 --> 01:13:43.380
+<v Speaker 8>No. Can't connect on local host.
+
+01:13:48.980 --> 01:13:51.635
+<v Speaker 8>Check the etcd logs. Like, did it boot
+
+01:13:51.635 --> 01:13:54.355
+<v Speaker 8>properly? I love that error message. Retrying of
+
+01:13:54.355 --> 01:13:56.435
+<v Speaker 0>unary invoker failed.
+
+01:14:00.915 --> 01:14:02.515
+<v Speaker 0>It's good to have etcd. Nobody?
+
+01:14:04.260 --> 01:14:05.139
+<v Speaker 6>Nobody.
+
+01:14:05.780 --> 01:14:06.500
+<v Speaker 6>Yeah.
+
+01:14:06.820 --> 01:14:08.340
+<v Speaker 6>Let's have a look here.
+
+01:14:09.300 --> 01:14:10.820
+<v Speaker 6>Could not connect to
+
+01:14:13.620 --> 01:14:14.340
+<v Speaker 6>checking
+
+01:14:14.580 --> 01:14:15.220
+<v Speaker 6>for PR,
+
+01:14:16.355 --> 01:14:18.035
+<v Speaker 6>and it's got this
+
+01:14:18.195 --> 01:14:18.835
+<v Speaker 6>IP.
+
+01:14:19.475 --> 01:14:21.955
+<v Speaker 6>Do we miss something somewhere? Delete delete that
+
+01:14:21.955 --> 01:14:22.675
+<v Speaker 8>flag.
+
+01:14:23.475 --> 01:14:25.875
+<v Speaker 8>Like, I'd I'd edit the Etsy config and
+
+01:14:25.875 --> 01:14:27.075
+<v Speaker 8>just delete that flag.
+
+01:14:27.795 --> 01:14:28.195
+<v Speaker 0>K.
+
+01:14:28.820 --> 01:14:31.380
+<v Speaker 0>So can I ask for something out? Like,
+
+01:14:31.380 --> 01:14:32.980
+<v Speaker 0>the way that you spend up Etsy d
+
+01:14:32.980 --> 01:14:35.059
+<v Speaker 0>on these machines is, it doesn't really care
+
+01:14:35.059 --> 01:14:36.820
+<v Speaker 0>if there appears or not upfront.
+
+01:14:36.820 --> 01:14:39.619
+<v Speaker 0>So there's probably something and say it's data
+
+01:14:39.619 --> 01:14:41.619
+<v Speaker 0>directory that tells it where the peers are
+
+01:14:45.365 --> 01:14:48.085
+<v Speaker 0>rather than modifying the flags at all.
+
+01:14:48.565 --> 01:14:50.565
+<v Speaker 6>So Where is the bar libetti.
+
+01:14:51.285 --> 01:14:52.165
+<v Speaker 6>Thank you.
+
+01:15:07.705 --> 01:15:08.585
+<v Speaker 6>Not bad.
+
+01:15:11.705 --> 01:15:15.065
+<v Speaker 6>Alright. I'm officially running out of ideas here.
+
+01:15:16.185 --> 01:15:20.665
+<v Speaker 6>I've
+
+01:15:20.665 --> 01:15:21.625
+<v Speaker 6>got an idea.
+
+01:15:22.345 --> 01:15:22.745
+<v Speaker 6>Yeah.
+
+01:15:26.770 --> 01:15:27.889
+<v Speaker 5>Where's the hint?
+
+01:15:31.970 --> 01:15:33.810
+<v Speaker 0>Talos team, if you're still watching, let us
+
+01:15:33.810 --> 01:15:35.329
+<v Speaker 0>know where the hints are.
+
+01:15:35.650 --> 01:15:37.810
+<v Speaker 0>Can you try NCT control member list?
+
+01:15:45.725 --> 01:15:47.005
+<v Speaker 0>I guess not. Okay.
+
+01:15:50.900 --> 01:15:51.619
+<v Speaker 6>So
+
+01:15:51.860 --> 01:15:54.420
+<v Speaker 6>I was gonna do a a find across
+
+01:15:54.420 --> 01:15:56.500
+<v Speaker 6>the file system for that IP it's trying
+
+01:15:56.500 --> 01:15:57.059
+<v Speaker 6>to
+
+01:15:57.460 --> 01:15:59.380
+<v Speaker 6>to connect to and try and service the
+
+01:15:59.380 --> 01:16:00.499
+<v Speaker 6>file that it's in.
+
+01:16:01.060 --> 01:16:03.540
+<v Speaker 0>Apparently, there is a hint dash one file.
+
+01:16:14.275 --> 01:16:15.395
+<v Speaker 0>In where at?
+
+01:16:15.875 --> 01:16:18.410
+<v Speaker 3>Root. Where, Talos? Come on.
+
+01:16:18.810 --> 01:16:19.850
+<v Speaker 0>Slash route.
+
+01:16:23.530 --> 01:16:25.850
+<v Speaker 0>Oh, yeah. They're saying slash route. I think
+
+01:16:25.850 --> 01:16:26.730
+<v Speaker 0>they've maybe
+
+01:16:27.050 --> 01:16:29.130
+<v Speaker 0>it is not in the control plan. That
+
+01:16:29.130 --> 01:16:30.010
+<v Speaker 0>would be silly, though.
+
+01:16:36.085 --> 01:16:37.525
+<v Speaker 6>I don't know how long this is gonna
+
+01:16:37.525 --> 01:16:38.085
+<v Speaker 6>take.
+
+01:16:42.325 --> 01:16:44.645
+<v Speaker 0>Alright. Let me check the worker notes just
+
+01:16:44.645 --> 01:16:45.125
+<v Speaker 0>in case.
+
+01:17:04.114 --> 01:17:05.635
+<v Speaker 0>Alright. I don't mean to worry you, but
+
+01:17:05.635 --> 01:17:07.395
+<v Speaker 0>SSH is not working on the work or
+
+01:17:07.395 --> 01:17:07.954
+<v Speaker 0>not.
+
+01:17:10.994 --> 01:17:13.074
+<v Speaker 0>Andrew from the team is saying a member
+
+01:17:13.074 --> 01:17:15.635
+<v Speaker 0>list would have worked if we hadn't restarted
+
+01:17:15.635 --> 01:17:16.275
+<v Speaker 0>at CP.
+
+01:17:17.850 --> 01:17:18.729
+<v Speaker 6>Hello?
+
+01:17:21.370 --> 01:17:22.969
+<v Speaker 6>Alright. I don't know what I'm doing here.
+
+01:17:22.969 --> 01:17:24.889
+<v Speaker 0>And they're telling me to check the workers,
+
+01:17:25.929 --> 01:17:27.530
+<v Speaker 0>which I cannot get access to.
+
+01:17:29.215 --> 01:17:31.135
+<v Speaker 5>So what I'm hearing is Red Hat has
+
+01:17:31.135 --> 01:17:32.014
+<v Speaker 5>broken,
+
+01:17:32.255 --> 01:17:33.855
+<v Speaker 5>Teleport twice today.
+
+01:17:37.295 --> 01:17:38.335
+<v Speaker 6>Doing well.
+
+01:17:39.695 --> 01:17:41.614
+<v Speaker 0>And they're breaking up in your control plan.
+
+01:17:41.614 --> 01:17:42.415
+<v Speaker 0>Like, is that proper
+
+01:17:44.250 --> 01:17:45.929
+<v Speaker 0>oh, that's okay. Yeah. It's just the workers
+
+01:17:45.929 --> 01:17:46.889
+<v Speaker 0>aren't working.
+
+01:17:50.969 --> 01:17:53.690
+<v Speaker 0>Alright. I will SSH on to the workers
+
+01:17:53.690 --> 01:17:54.729
+<v Speaker 0>manually,
+
+01:17:55.050 --> 01:17:56.570
+<v Speaker 0>see if I can find you the hint.
+
+01:17:58.035 --> 01:18:00.355
+<v Speaker 6>Oops. I've now broken everything.
+
+01:18:04.995 --> 01:18:05.715
+<v Speaker 6>Okay.
+
+01:18:06.515 --> 01:18:07.155
+<v Speaker 6>So
+
+01:18:08.115 --> 01:18:09.795
+<v Speaker 6>is it worth taking a look back at
+
+01:18:09.795 --> 01:18:10.115
+<v Speaker 6>this?
+
+01:18:10.840 --> 01:18:13.480
+<v Speaker 5>We're sure you'll find the answer just like
+
+01:18:13.480 --> 01:18:14.040
+<v Speaker 5>that.
+
+01:18:14.360 --> 01:18:15.880
+<v Speaker 0>Alright. If you just wanna pay attention to
+
+01:18:15.880 --> 01:18:18.360
+<v Speaker 0>the broadcast here, we do have MOTD and
+
+01:18:18.360 --> 01:18:19.480
+<v Speaker 0>we have HENTS.
+
+01:18:21.080 --> 01:18:23.560
+<v Speaker 0>You just want HENTS one then? HENTS one.
+
+01:18:26.125 --> 01:18:27.005
+<v Speaker 5>Quorum,
+
+01:18:27.005 --> 01:18:27.565
+<v Speaker 5>I don't
+
+01:18:30.045 --> 01:18:33.164
+<v Speaker 5>okay. So Latin? In insufficient quorum.
+
+01:18:33.324 --> 01:18:33.965
+<v Speaker 6>Yeah.
+
+01:18:37.165 --> 01:18:38.844
+<v Speaker 0>Is that a hen or a ton? I'm
+
+01:18:38.844 --> 01:18:39.564
+<v Speaker 0>not sure.
+
+01:18:40.605 --> 01:18:41.804
+<v Speaker 5>That's
+
+01:18:41.790 --> 01:18:43.149
+<v Speaker 5>Probably a little bit of both.
+
+01:18:43.469 --> 01:18:45.949
+<v Speaker 5>So we Can't I can't say we don't
+
+01:18:45.949 --> 01:18:47.469
+<v Speaker 8>deserve it, though.
+
+01:18:48.590 --> 01:18:50.750
+<v Speaker 5>No. I'm fine being stumped. At this point,
+
+01:18:50.750 --> 01:18:52.110
+<v Speaker 5>we know that there's something wrong with the
+
+01:18:52.110 --> 01:18:54.989
+<v Speaker 5>etcetera d, like, how it's configured. It is
+
+01:18:54.989 --> 01:18:55.949
+<v Speaker 5>trying to
+
+01:18:56.670 --> 01:18:58.525
+<v Speaker 8>when we when we reconfigured it to listen
+
+01:18:58.525 --> 01:18:59.885
+<v Speaker 8>to loop back, did we check that it's
+
+01:18:59.885 --> 01:19:01.485
+<v Speaker 8>actually able to listen to loop back and
+
+01:19:01.485 --> 01:19:02.925
+<v Speaker 8>where we can connect on it?
+
+01:19:03.885 --> 01:19:05.325
+<v Speaker 0>Yeah. But I I think the problem is
+
+01:19:05.325 --> 01:19:07.565
+<v Speaker 0>they've added a second member at one point,
+
+01:19:07.565 --> 01:19:09.805
+<v Speaker 0>and now the cluster expects to find quorum
+
+01:19:09.805 --> 01:19:10.605
+<v Speaker 0>and it can.
+
+01:19:11.005 --> 01:19:11.325
+<v Speaker 0>Yeah.
+
+01:19:15.969 --> 01:19:16.690
+<v Speaker 0>So
+
+01:19:17.250 --> 01:19:19.170
+<v Speaker 0>maybe we should be googling how to go
+
+01:19:19.170 --> 01:19:20.290
+<v Speaker 0>from an HATD
+
+01:19:20.290 --> 01:19:21.090
+<v Speaker 0>to a
+
+01:19:21.330 --> 01:19:22.369
+<v Speaker 0>single egg.
+
+01:19:23.489 --> 01:19:25.570
+<v Speaker 5>Already doing it. Or we can fire hands
+
+01:19:25.570 --> 01:19:27.090
+<v Speaker 0>two up. I don't know if that'll help
+
+01:19:27.090 --> 01:19:28.874
+<v Speaker 0>or not, but then,
+
+01:19:29.514 --> 01:19:31.594
+<v Speaker 0>yeah, I'm stumped. That's is.
+
+01:19:33.275 --> 01:19:34.074
+<v Speaker 0>It's harsh.
+
+01:19:42.810 --> 01:19:44.090
+<v Speaker 6>Oh, so
+
+01:19:47.770 --> 01:19:49.850
+<v Speaker 6>removing a failed SCD node, it looks like
+
+01:19:49.850 --> 01:19:52.330
+<v Speaker 6>there's, like, a flag for SCDCTL.
+
+01:19:55.525 --> 01:19:57.525
+<v Speaker 5>I think you and I just found the
+
+01:19:57.525 --> 01:19:58.324
+<v Speaker 4>same thing.
+
+01:19:59.125 --> 01:20:00.644
+<v Speaker 6>Capital c or something?
+
+01:20:03.525 --> 01:20:05.284
+<v Speaker 6>What was that host?
+
+01:20:05.605 --> 01:20:06.885
+<v Speaker 6>Forget the log again.
+
+01:20:11.059 --> 01:20:12.739
+<v Speaker 0>It may have rotated again.
+
+01:20:13.619 --> 01:20:14.499
+<v Speaker 6>Oh, yep.
+
+01:20:16.420 --> 01:20:18.260
+<v Speaker 6>I'm also not in the right directory. That
+
+01:20:18.260 --> 01:20:19.459
+<v Speaker 6>that won't help.
+
+01:20:21.139 --> 01:20:25.300
+<v Speaker 6>So if we go in here, sale the
+
+01:20:24.515 --> 01:20:25.955
+<v Speaker 6>the latest log,
+
+01:20:26.835 --> 01:20:28.835
+<v Speaker 6>which is going to be
+
+01:20:29.635 --> 01:20:30.275
+<v Speaker 6>this one.
+
+01:20:41.140 --> 01:20:42.980
+<v Speaker 0>Yeah. I think you wanna remove that member
+
+01:20:42.980 --> 01:20:46.019
+<v Speaker 0>A5E7C240BB16.
+
+01:20:46.340 --> 01:20:49.060
+<v Speaker 6>Oh, yeah. Probably should use the ID.
+
+01:20:50.344 --> 01:20:51.065
+<v Speaker 6>Yeah.
+
+01:20:51.864 --> 01:20:53.065
+<v Speaker 6>Yep. ID.
+
+01:20:54.745 --> 01:20:55.784
+<v Speaker 5>Alright. So
+
+01:20:56.585 --> 01:20:58.745
+<v Speaker 5>it's at c d c t
+
+01:21:02.105 --> 01:21:02.585
+<v Speaker 4>go ahead.
+
+01:21:04.080 --> 01:21:05.199
+<v Speaker 7>Was just I was gonna say the same
+
+01:21:05.199 --> 01:21:06.400
+<v Speaker 7>thing. You are at c d c t
+
+01:21:06.400 --> 01:21:06.880
+<v Speaker 7>l
+
+01:21:07.280 --> 01:21:09.280
+<v Speaker 7>member space remove.
+
+01:21:12.880 --> 01:21:13.760
+<v Speaker 6>Like so?
+
+01:21:14.480 --> 01:21:14.880
+<v Speaker 7>Yep.
+
+01:21:22.475 --> 01:21:23.915
+<v Speaker 6>Silence Oak.
+
+01:21:26.075 --> 01:21:28.554
+<v Speaker 5>Hold on. Hold on. I think I can
+
+01:21:28.635 --> 01:21:29.915
+<v Speaker 5>help a little bit.
+
+01:21:30.235 --> 01:21:32.635
+<v Speaker 5>Let me make this a more pasteable
+
+01:21:32.820 --> 01:21:33.619
+<v Speaker 5>fashion.
+
+01:21:39.619 --> 01:21:40.179
+<v Speaker 5>Keyboard,
+
+01:21:40.579 --> 01:21:41.619
+<v Speaker 5>hard to type.
+
+01:21:45.945 --> 01:21:47.304
+<v Speaker 0>We have ten minutes.
+
+01:21:47.545 --> 01:21:48.344
+<v Speaker 5>Yep.
+
+01:21:49.465 --> 01:21:51.545
+<v Speaker 5>Where is Chrome? Where is Chrome?
+
+01:21:55.705 --> 01:21:57.465
+<v Speaker 5>So that's how you remove it,
+
+01:21:58.185 --> 01:22:01.440
+<v Speaker 5>a member if it's completely lost quorum.
+
+01:22:04.160 --> 01:22:05.199
+<v Speaker 5>We need
+
+01:22:06.400 --> 01:22:08.640
+<v Speaker 0>So all that serif stuff is already configured.
+
+01:22:08.640 --> 01:22:10.000
+<v Speaker 0>So you can probably just add the dash
+
+01:22:10.000 --> 01:22:11.119
+<v Speaker 0>capital c.
+
+01:22:11.760 --> 01:22:13.200
+<v Speaker 5>Well, the one so the one thing that
+
+01:22:13.200 --> 01:22:14.880
+<v Speaker 5>we need is we need that member ID
+
+01:22:14.880 --> 01:22:15.280
+<v Speaker 5>again.
+
+01:22:16.015 --> 01:22:17.135
+<v Speaker 6>I think I've
+
+01:22:19.215 --> 01:22:22.175
+<v Speaker 8>You need the surviving host IP address. Right?
+
+01:22:22.415 --> 01:22:23.535
+<v Speaker 5>Which is Which is
+
+01:22:27.850 --> 01:22:29.850
+<v Speaker 0>You can use 127001.
+
+01:22:29.850 --> 01:22:30.490
+<v Speaker 0>Right?
+
+01:22:30.730 --> 01:22:32.970
+<v Speaker 8>Yeah. Just on the loop back?
+
+01:22:36.170 --> 01:22:37.130
+<v Speaker 0>Let's try it.
+
+01:22:40.250 --> 01:22:40.650
+<v Speaker 3>Alright.
+
+01:22:45.525 --> 01:22:47.925
+<v Speaker 6>I'm pretty sure I severely messed up the
+
+01:22:47.925 --> 01:22:49.925
+<v Speaker 6>terminal. Sorry about that.
+
+01:22:51.445 --> 01:22:53.365
+<v Speaker 5>Yeah. You kinda did, but, you know, it'll
+
+01:22:53.525 --> 01:22:55.525
+<v Speaker 5>Yeah. That I'll take that one.
+
+01:23:01.900 --> 01:23:02.940
+<v Speaker 0>Who's typing?
+
+01:23:03.900 --> 01:23:06.380
+<v Speaker 5>I am I am typing. I swear.
+
+01:23:07.260 --> 01:23:08.700
+<v Speaker 5>But I need
+
+01:23:09.100 --> 01:23:10.700
+<v Speaker 5>tail
+
+01:23:13.434 --> 01:23:15.594
+<v Speaker 5>to be I just need one of them.
+
+01:23:26.740 --> 01:23:27.460
+<v Speaker 5>Copy.
+
+01:23:31.620 --> 01:23:32.740
+<v Speaker 5>Member remove.
+
+01:23:49.425 --> 01:23:50.065
+<v Speaker 6>There's a
+
+01:23:53.585 --> 01:23:55.185
+<v Speaker 6>do you wanna type reset to fix the
+
+01:23:55.185 --> 01:23:55.505
+<v Speaker 6>terminal?
+
+01:23:58.010 --> 01:23:58.570
+<v Speaker 6>Thanks, Jason.
+
+01:24:10.665 --> 01:24:12.985
+<v Speaker 5>I think we're ready for hit number two,
+
+01:24:12.985 --> 01:24:13.784
+<v Speaker 5>actually.
+
+01:24:16.025 --> 01:24:17.864
+<v Speaker 6>Unknown shorthand flag.
+
+01:24:18.265 --> 01:24:20.744
+<v Speaker 7>Do we just need dash dash endpoints there?
+
+01:24:21.545 --> 01:24:21.945
+<v Speaker 6>Yeah.
+
+01:24:23.329 --> 01:24:25.730
+<v Speaker 6>Oh, did I miss that? I think Candice
+
+01:24:25.730 --> 01:24:27.329
+<v Speaker 6>is right. I don't think that dash c.
+
+01:24:27.329 --> 01:24:29.089
+<v Speaker 6>I think that might be either
+
+01:24:29.409 --> 01:24:31.329
+<v Speaker 6>an older version or newer version.
+
+01:24:32.130 --> 01:24:34.129
+<v Speaker 6>Looks like endpoints is the same thing.
+
+01:24:34.449 --> 01:24:35.809
+<v Speaker 6>Thanks, Candice. It could be an s t
+
+01:24:35.809 --> 01:24:37.409
+<v Speaker 0>d two to three different.
+
+01:24:43.095 --> 01:24:44.295
+<v Speaker 5>It did a thing.
+
+01:24:46.535 --> 01:24:49.175
+<v Speaker 5>An angry thing. Conflicting environment variable is shadowed
+
+01:24:49.175 --> 01:24:49.975
+<v Speaker 5>by corresponding
+
+01:24:51.040 --> 01:24:53.520
+<v Speaker 0>Oh. Yeah. We already have the endpoints configured
+
+01:24:53.520 --> 01:24:55.440
+<v Speaker 0>in the environment from that cheat sheet that
+
+01:24:55.440 --> 01:24:56.639
+<v Speaker 0>we copy and pasted.
+
+01:24:57.040 --> 01:24:59.760
+<v Speaker 0>So that member removed should maybe be working,
+
+01:24:59.920 --> 01:25:00.880
+<v Speaker 0>but it isn't.
+
+01:25:02.320 --> 01:25:03.600
+<v Speaker 0>Is there a force flag?
+
+01:25:07.685 --> 01:25:09.685
+<v Speaker 0>Dash dash kill with fire maybe?
+
+01:25:10.725 --> 01:25:11.605
+<v Speaker 0>If only.
+
+01:25:13.525 --> 01:25:15.445
+<v Speaker 6>So according to the chat, we already figured
+
+01:25:15.445 --> 01:25:17.925
+<v Speaker 6>out hint number two. Yeah. Yeah.
+
+01:25:19.710 --> 01:25:21.310
+<v Speaker 0>Do you mind if I look at the
+
+01:25:21.310 --> 01:25:22.510
+<v Speaker 0>help on this?
+
+01:25:30.990 --> 01:25:32.670
+<v Speaker 0>Alright. We got a you wanna see hint
+
+01:25:32.670 --> 01:25:32.990
+<v Speaker 0>three?
+
+01:25:33.925 --> 01:25:35.925
+<v Speaker 5>I think so. Sure.
+
+01:25:36.324 --> 01:25:39.284
+<v Speaker 0>There's a snapshot saved at var slash at
+
+01:25:39.284 --> 01:25:40.565
+<v Speaker 0>c d dot d g.
+
+01:25:41.205 --> 01:25:44.324
+<v Speaker 0>Oh, that was nice. That's that's mean.
+
+01:25:45.620 --> 01:25:46.659
+<v Speaker 5>Okay.
+
+01:25:47.060 --> 01:25:49.460
+<v Speaker 5>We can we can restore time.
+
+01:25:49.780 --> 01:25:51.460
+<v Speaker 5>Yep. Etcdctl
+
+01:25:51.460 --> 01:25:52.900
+<v Speaker 5>snapshot restore.
+
+01:25:57.460 --> 01:25:58.100
+<v Speaker 7>Where is it?
+
+01:25:59.965 --> 01:26:01.085
+<v Speaker 5>Slash VAR.
+
+01:26:05.405 --> 01:26:06.364
+<v Speaker 0>There you go.
+
+01:26:11.245 --> 01:26:13.085
+<v Speaker 0>Is that the only way to recover from
+
+01:26:13.085 --> 01:26:15.165
+<v Speaker 0>a highly available STD to a single node
+
+01:26:15.150 --> 01:26:16.909
+<v Speaker 0>is a snapshot?
+
+01:26:18.590 --> 01:26:19.870
+<v Speaker 5>I'm not 100%
+
+01:26:19.870 --> 01:26:20.590
+<v Speaker 8>sure.
+
+01:26:21.469 --> 01:26:22.510
+<v Speaker 8>Member list.
+
+01:26:29.105 --> 01:26:30.945
+<v Speaker 0>You may have to restart
+
+01:26:30.945 --> 01:26:31.825
+<v Speaker 0>NCD.
+
+01:26:31.825 --> 01:26:32.705
+<v Speaker 7>Sure.
+
+01:26:35.745 --> 01:26:37.505
+<v Speaker 0>Okay. I'd probably play it safe and remove
+
+01:26:37.505 --> 01:26:39.505
+<v Speaker 0>the static pod manifest to the restore and
+
+01:26:39.505 --> 01:26:40.385
+<v Speaker 0>then bring it back in.
+
+01:26:52.679 --> 01:26:54.360
+<v Speaker 0>Are saying there is a way to do
+
+01:26:54.360 --> 01:26:56.555
+<v Speaker 0>it without the restore. Maybe they can share
+
+01:26:56.555 --> 01:26:57.915
+<v Speaker 0>that with us in the chat, and we'll
+
+01:26:57.915 --> 01:26:59.675
+<v Speaker 0>share it with the share it with the
+
+01:26:59.675 --> 01:27:01.195
+<v Speaker 0>audience. That's a tough one.
+
+01:27:20.160 --> 01:27:21.920
+<v Speaker 0>Alright. It's not running. Looks good.
+
+01:27:28.425 --> 01:27:30.265
+<v Speaker 0>I would run that restore again before you
+
+01:27:30.265 --> 01:27:32.025
+<v Speaker 0>move it back just in case. Oh, glad
+
+01:27:32.025 --> 01:27:32.505
+<v Speaker 7>you.
+
+01:27:37.865 --> 01:27:38.345
+<v Speaker 5>Boom.
+
+01:27:48.500 --> 01:27:48.980
+<v Speaker 6>Is it?
+
+01:27:58.155 --> 01:27:59.835
+<v Speaker 0>Maybe you can just start it. No problem.
+
+01:27:59.835 --> 01:28:02.635
+<v Speaker 0>Maybe maybe the restores is done and happy.
+
+01:28:02.635 --> 01:28:03.115
+<v Speaker 0>I'm not sure.
+
+01:28:04.469 --> 01:28:05.349
+<v Speaker 0>Let's see.
+
+01:28:10.389 --> 01:28:11.589
+<v Speaker 5>Fingers crossed.
+
+01:28:14.949 --> 01:28:17.110
+<v Speaker 0>But I'm assuming if there was one component
+
+01:28:17.110 --> 01:28:18.955
+<v Speaker 0>that Talos were gonna mess with, you were
+
+01:28:18.955 --> 01:28:20.875
+<v Speaker 0>really hoping it wasn't gonna be entity.
+
+01:28:24.155 --> 01:28:25.275
+<v Speaker 5>That CD is hard.
+
+01:28:31.190 --> 01:28:32.230
+<v Speaker 8>As the
+
+01:28:32.470 --> 01:28:35.510
+<v Speaker 8>APIs that we're connecting now, is the at
+
+01:28:35.510 --> 01:28:37.910
+<v Speaker 8>CD log still showing the the issue?
+
+01:28:56.605 --> 01:28:58.045
+<v Speaker 0>Well, you'll you'll wanna make sure you can
+
+01:28:58.045 --> 01:28:59.725
+<v Speaker 0>run a member list on that SAT. We
+
+01:28:59.725 --> 01:29:00.845
+<v Speaker 0>need to know that's
+
+01:29:01.900 --> 01:29:04.460
+<v Speaker 0>somewhat healthy. We need to we need to
+
+01:29:04.460 --> 01:29:06.300
+<v Speaker 5>specify the data directory
+
+01:29:06.380 --> 01:29:08.699
+<v Speaker 5>when we restore it, when it's off.
+
+01:29:12.219 --> 01:29:12.860
+<v Speaker 0>There you go.
+
+01:29:54.165 --> 01:29:57.285
+<v Speaker 0>I think the data there will be
+
+01:29:56.680 --> 01:29:57.880
+<v Speaker 0>a varlib
+
+01:29:57.880 --> 01:30:00.360
+<v Speaker 0>etcd and then the snapshot fail at the
+
+01:30:00.360 --> 01:30:00.600
+<v Speaker 0>end.
+
+01:30:18.775 --> 01:30:20.375
+<v Speaker 0>I'm gonna go out in eleven. So let's
+
+01:30:20.375 --> 01:30:22.054
+<v Speaker 0>delete and
+
+01:30:22.054 --> 01:30:23.255
+<v Speaker 0>then do the restore.
+
+01:30:23.975 --> 01:30:25.014
+<v Speaker 0>Are we feeling brave?
+
+01:30:26.090 --> 01:30:27.689
+<v Speaker 7>I'll do it. Let's do it.
+
+01:30:32.170 --> 01:30:34.329
+<v Speaker 6>Oh, I think did we overwrite the snapshot
+
+01:30:34.329 --> 01:30:35.210
+<v Speaker 6>with the restore?
+
+01:30:38.515 --> 01:30:41.155
+<v Speaker 0>Restore. No? That seems to have worked. Alright.
+
+01:30:49.715 --> 01:30:51.315
+<v Speaker 0>And fingers crossed. Come on,
+
+01:30:53.180 --> 01:30:54.460
+<v Speaker 5>We believe in you.
+
+01:30:58.220 --> 01:31:00.060
+<v Speaker 0>Anyone have a hard spot? Are you okay
+
+01:31:00.060 --> 01:31:02.060
+<v Speaker 0>to go for another five to ten?
+
+01:31:02.940 --> 01:31:05.225
+<v Speaker 8>Okay. We've got a members list. If we
+
+01:31:05.225 --> 01:31:06.505
+<v Speaker 0>have a members list, I'm happy to give
+
+01:31:06.505 --> 01:31:07.945
+<v Speaker 0>you a a little bit more time if
+
+01:31:08.025 --> 01:31:09.545
+<v Speaker 0>as long as no one has to leave.
+
+01:31:10.505 --> 01:31:12.025
+<v Speaker 5>I have to leave in an hour and
+
+01:31:12.025 --> 01:31:13.465
+<v Speaker 5>a half, so I got plenty of Alright.
+
+01:31:13.465 --> 01:31:15.065
+<v Speaker 0>I'll see. I'll sell in. Right. Okay. We
+
+01:31:15.065 --> 01:31:18.239
+<v Speaker 5>need we need to okay. Okay. Now we
+
+01:31:18.239 --> 01:31:19.599
+<v Speaker 5>need to make sure that we are talking
+
+01:31:19.599 --> 01:31:21.679
+<v Speaker 5>to the right SCD service. I don't know
+
+01:31:21.679 --> 01:31:23.920
+<v Speaker 5>if we updated the cube API servers config
+
+01:31:23.920 --> 01:31:25.840
+<v Speaker 5>to talk to local host. I forget. That
+
+01:31:25.840 --> 01:31:27.119
+<v Speaker 5>was years ago.
+
+01:31:28.960 --> 01:31:31.119
+<v Speaker 8>It was years ago. Yeah. That'd be the
+
+01:31:31.119 --> 01:31:31.760
+<v Speaker 8>next thing I'd check.
+
+01:31:41.775 --> 01:31:44.734
+<v Speaker 7>Alright. What are we checking? K. We did.
+
+01:31:45.295 --> 01:31:47.295
+<v Speaker 8>The NCD server's line. Yeah.
+
+01:31:48.410 --> 01:31:49.130
+<v Speaker 0>Okay.
+
+01:31:50.650 --> 01:31:51.290
+<v Speaker 8>Yep.
+
+01:31:53.050 --> 01:31:54.570
+<v Speaker 6>The only other thing is
+
+01:31:55.370 --> 01:31:56.810
+<v Speaker 6>NCD is happy.
+
+01:31:56.970 --> 01:31:59.210
+<v Speaker 6>Is everything in that config file okay?
+
+01:32:06.175 --> 01:32:08.974
+<v Speaker 8>Let's see if the API server's up now.
+
+01:32:09.534 --> 01:32:11.215
+<v Speaker 8>Like, is is there something else in the
+
+01:32:11.215 --> 01:32:12.735
+<v Speaker 8>etch in the API server logs?
+
+01:32:15.670 --> 01:32:18.630
+<v Speaker 5>API server is up. So let's look at
+
+01:32:18.630 --> 01:32:19.909
+<v Speaker 5>the logs now.
+
+01:32:26.070 --> 01:32:27.909
+<v Speaker 7>Logs are in bar log.
+
+01:32:28.070 --> 01:32:29.510
+<v Speaker 5>Containers. Containers.
+
+01:32:29.510 --> 01:32:30.230
+<v Speaker 6>Container. Yep.
+
+01:32:45.520 --> 01:32:46.880
+<v Speaker 8>It's not erroring.
+
+01:32:47.440 --> 01:32:48.560
+<v Speaker 8>It's not error. Notes.
+
+01:32:50.400 --> 01:32:53.600
+<v Speaker 0>So on your HCT static manifest, the advertised
+
+01:32:53.600 --> 01:32:55.760
+<v Speaker 0>address is the I P V 4 address,
+
+01:32:55.760 --> 01:32:56.160
+<v Speaker 0>I believe.
+
+01:32:57.105 --> 01:32:59.185
+<v Speaker 0>Even though it listens on 127, I think
+
+01:32:59.185 --> 01:33:01.105
+<v Speaker 0>it advertises us another one. I don't know
+
+01:33:01.105 --> 01:33:02.305
+<v Speaker 0>if that matters.
+
+01:33:10.940 --> 01:33:11.739
+<v Speaker 0>Alright.
+
+01:33:16.540 --> 01:33:18.380
+<v Speaker 8>Well, this is the external address of the
+
+01:33:18.380 --> 01:33:20.700
+<v Speaker 8>API server as opposed to it connecting to
+
+01:33:20.700 --> 01:33:21.420
+<v Speaker 8>FCD.
+
+01:33:21.660 --> 01:33:23.580
+<v Speaker 8>So that should be fine. Try get notes
+
+01:33:23.580 --> 01:33:24.620
+<v Speaker 8>now that it's up and running.
+
+01:33:30.085 --> 01:33:32.164
+<v Speaker 0>Oh. There we go. K. We're closer.
+
+01:33:33.925 --> 01:33:35.445
+<v Speaker 8>Pods.
+
+01:33:37.125 --> 01:33:39.605
+<v Speaker 5>One node. So Talos worker two is not
+
+01:33:39.605 --> 01:33:39.925
+<v Speaker 5>ready.
+
+01:33:42.469 --> 01:33:45.110
+<v Speaker 5>Cilium is restarting like mad, but that was
+
+01:33:45.110 --> 01:33:46.870
+<v Speaker 5>probably because of the API server.
+
+01:34:02.335 --> 01:34:03.215
+<v Speaker 5>So
+
+01:34:03.775 --> 01:34:06.495
+<v Speaker 5>TELUS worker What TELUS worker two might actually
+
+01:34:06.495 --> 01:34:09.054
+<v Speaker 5>recover on its own because of psyllium recovery.
+
+01:34:10.760 --> 01:34:11.960
+<v Speaker 8>Perhaps.
+
+01:34:12.280 --> 01:34:12.920
+<v Speaker 8>What's the,
+
+01:34:14.120 --> 01:34:16.520
+<v Speaker 8>what's the status of the actual application?
+
+01:34:17.080 --> 01:34:18.920
+<v Speaker 0>Let's check. Are we getting it are we
+
+01:34:18.920 --> 01:34:20.840
+<v Speaker 8>getting an error from the application itself?
+
+01:34:21.400 --> 01:34:22.360
+<v Speaker 8>I'm assuming so.
+
+01:34:24.905 --> 01:34:27.464
+<v Speaker 0>Oh, it's loading. It's working.
+
+01:34:28.744 --> 01:34:31.304
+<v Speaker 0>And now your mission is to upgrade it.
+
+01:34:32.585 --> 01:34:33.385
+<v Speaker 4>Oh, boy.
+
+01:34:35.940 --> 01:34:37.699
+<v Speaker 5>Alright. I'm concerned.
+
+01:34:39.699 --> 01:34:42.019
+<v Speaker 5>As we are. As are we all.
+
+01:34:43.940 --> 01:34:44.660
+<v Speaker 5>Alright, Al.
+
+01:34:48.035 --> 01:34:49.074
+<v Speaker 5>Is it deployment?
+
+01:34:49.715 --> 01:34:52.755
+<v Speaker 8>Yeah. Deployment in the default namespace called clustered.
+
+01:35:09.590 --> 01:35:11.110
+<v Speaker 0>It seemed a bit easy.
+
+01:35:12.790 --> 01:35:14.550
+<v Speaker 1>I'm scared. It's exactly what I'm concerned.
+
+01:35:16.105 --> 01:35:18.505
+<v Speaker 7>I mean, STD problems are not easy.
+
+01:35:18.985 --> 01:35:20.985
+<v Speaker 1>No. True. No. And we did we are
+
+01:35:20.985 --> 01:35:22.585
+<v Speaker 5>we are five minutes over.
+
+01:35:23.145 --> 01:35:24.905
+<v Speaker 0>Yeah. They were they were much kinder than
+
+01:35:24.905 --> 01:35:25.225
+<v Speaker 7>we were.
+
+01:35:28.710 --> 01:35:31.350
+<v Speaker 0>So it's either not pulling or still pulling
+
+01:35:31.350 --> 01:35:31.990
+<v Speaker 0>an image.
+
+01:35:40.485 --> 01:35:42.725
+<v Speaker 6>So did I read the image name right
+
+01:35:42.725 --> 01:35:44.405
+<v Speaker 6>on that deployment? It was, like, g h
+
+01:35:44.405 --> 01:35:45.925
+<v Speaker 6>c r or something like that. Yep. It
+
+01:35:45.925 --> 01:35:46.485
+<v Speaker 0>looked okay.
+
+01:35:55.929 --> 01:35:57.289
+<v Speaker 0>Well, that's not ideal.
+
+01:35:58.809 --> 01:35:59.210
+<v Speaker 0>Nope.
+
+01:36:11.435 --> 01:36:12.955
+<v Speaker 6>So is the I thought you said you
+
+01:36:12.955 --> 01:36:13.995
+<v Speaker 0>were pretty nice.
+
+01:36:17.035 --> 01:36:19.275
+<v Speaker 5>Okay. So whatever is wrong with Talos worker
+
+01:36:19.275 --> 01:36:21.195
+<v Speaker 5>two is actually causing this.
+
+01:36:21.755 --> 01:36:22.075
+<v Speaker 6>Yeah.
+
+01:36:24.060 --> 01:36:24.780
+<v Speaker 8>What are the
+
+01:36:26.300 --> 01:36:27.900
+<v Speaker 8>well, does it need to schedule on TAL
+
+01:36:27.900 --> 01:36:30.060
+<v Speaker 8>Server two? Is it on TAL Server two
+
+01:36:30.060 --> 01:36:30.780
+<v Speaker 8>right now?
+
+01:36:32.380 --> 01:36:34.380
+<v Speaker 6>Is there a node selected on here somewhere?
+
+01:36:35.260 --> 01:36:36.780
+<v Speaker 0>You can just add node name
+
+01:36:37.155 --> 01:36:38.514
+<v Speaker 0>to bypass the scheduler.
+
+01:37:29.130 --> 01:37:29.850
+<v Speaker 0>That look great?
+
+01:37:31.485 --> 01:37:33.405
+<v Speaker 0>Yeah. I think so. That's a hard way.
+
+01:37:33.405 --> 01:37:34.445
+<v Speaker 0>It work.
+
+01:37:43.909 --> 01:37:44.789
+<v Speaker 6>Ending.
+
+01:37:45.270 --> 01:37:47.110
+<v Speaker 0>Well, if worker two is not ready, that's
+
+01:37:47.110 --> 01:37:48.309
+<v Speaker 0>never gonna schedule.
+
+01:37:54.230 --> 01:37:56.255
+<v Speaker 5>Wait. If worker two's. Is there is there
+
+01:37:56.255 --> 01:37:58.335
+<v Speaker 8>a taint or something on node one that's
+
+01:37:58.335 --> 01:37:59.935
+<v Speaker 8>preventing it from scheduling?
+
+01:38:00.495 --> 01:38:02.575
+<v Speaker 0>No. It did schedule on node one, but
+
+01:38:02.575 --> 01:38:05.215
+<v Speaker 0>we got problems setting up a sandbox because
+
+01:38:05.455 --> 01:38:07.935
+<v Speaker 0>it's got networking CNA issues.
+
+01:38:08.890 --> 01:38:10.810
+<v Speaker 0>And I don't think node two is actually
+
+01:38:10.810 --> 01:38:12.410
+<v Speaker 0>ready, which means it won't be able to
+
+01:38:12.410 --> 01:38:14.490
+<v Speaker 0>schedule on it. Schedule there. Yeah.
+
+01:38:34.005 --> 01:38:35.685
+<v Speaker 5>Celine is up and running on Celine is
+
+01:38:35.685 --> 01:38:36.325
+<v Speaker 8>up. False.
+
+01:38:36.900 --> 01:38:39.300
+<v Speaker 5>Is not up and running on this node.
+
+01:38:43.860 --> 01:38:45.699
+<v Speaker 0>Yeah. I'm sure when you ran get nodes,
+
+01:38:45.699 --> 01:38:47.780
+<v Speaker 0>it said worker two was not ready. Right?
+
+01:38:48.100 --> 01:38:48.739
+<v Speaker 3>Yes.
+
+01:38:54.255 --> 01:38:56.014
+<v Speaker 0>Have you described the note? Do we get
+
+01:38:56.014 --> 01:38:56.494
+<v Speaker 0>a message?
+
+01:39:09.420 --> 01:39:10.219
+<v Speaker 6>So
+
+01:39:17.420 --> 01:39:19.740
+<v Speaker 0>I didn't see any errors. I mean, it
+
+01:39:19.740 --> 01:39:20.620
+<v Speaker 0>could just be tinted.
+
+01:39:24.655 --> 01:39:26.815
+<v Speaker 5>Oh my god. Is it really just that?
+
+01:39:27.775 --> 01:39:29.775
+<v Speaker 0>Alright. Or you can look at hint four.
+
+01:39:30.815 --> 01:39:31.454
+<v Speaker 5>Is
+
+01:39:32.735 --> 01:39:34.175
+<v Speaker 5>try this one out.
+
+01:39:38.570 --> 01:39:40.730
+<v Speaker 8>Yeah. It's not it's not cool enough. Mind
+
+01:39:40.730 --> 01:39:42.570
+<v Speaker 8>if I drive for a sec? Go.
+
+01:39:44.810 --> 01:39:46.650
+<v Speaker 6>Is Google not running on that node?
+
+01:39:47.325 --> 01:39:49.405
+<v Speaker 6>Because it says Kubo has stopped posting node
+
+01:39:49.405 --> 01:39:49.805
+<v Speaker 6>status.
+
+01:40:09.110 --> 01:40:10.070
+<v Speaker 6>This space?
+
+01:40:10.950 --> 01:40:14.070
+<v Speaker 5>No. Look. It so in Talos worker one,
+
+01:40:14.070 --> 01:40:16.150
+<v Speaker 5>it did start kubelet after it had everything.
+
+01:40:16.150 --> 01:40:17.825
+<v Speaker 5>And you if you look at ours, it
+
+01:40:17.825 --> 01:40:19.105
+<v Speaker 5>doesn't start kubelet.
+
+01:40:20.865 --> 01:40:22.625
+<v Speaker 6>K. So kubelet's not running.
+
+01:40:23.345 --> 01:40:26.225
+<v Speaker 5>David, can you open a session on worker
+
+01:40:26.225 --> 01:40:26.865
+<v Speaker 5>two?
+
+01:40:27.745 --> 01:40:28.305
+<v Speaker 5>Indeed.
+
+01:40:32.240 --> 01:40:33.920
+<v Speaker 0>I would love to do it through Teleport,
+
+01:40:33.920 --> 01:40:35.520
+<v Speaker 0>but I don't know what Talos have done.
+
+01:40:36.400 --> 01:40:37.760
+<v Speaker 7>I
+
+01:40:38.880 --> 01:40:40.400
+<v Speaker 7>have a session open in the work or
+
+01:40:40.400 --> 01:40:41.360
+<v Speaker 7>two. Do you want me to just start
+
+01:40:41.360 --> 01:40:42.239
+<v Speaker 7>the Kubelet?
+
+01:40:43.920 --> 01:40:45.600
+<v Speaker 0>Oh, did your session work?
+
+01:40:46.000 --> 01:40:46.400
+<v Speaker 7>Yes.
+
+01:40:48.605 --> 01:40:50.925
+<v Speaker 1>Interesting. It does appear that the cubel is
+
+01:40:50.925 --> 01:40:52.605
+<v Speaker 0>working, but let me try and do this
+
+01:40:52.605 --> 01:40:53.804
+<v Speaker 0>in a way that we can share it
+
+01:40:53.804 --> 01:40:55.324
+<v Speaker 0>with people. So let me
+
+01:40:56.605 --> 01:40:58.045
+<v Speaker 0>try this one more time.
+
+01:40:59.485 --> 01:41:01.245
+<v Speaker 0>Oh, yeah. There we go. Alright. You can
+
+01:41:01.245 --> 01:41:03.360
+<v Speaker 0>join that session. Take it away. Let's call
+
+01:41:03.360 --> 01:41:04.880
+<v Speaker 0>it five more minutes, and then we'll we'll
+
+01:41:04.880 --> 01:41:07.440
+<v Speaker 0>wrap up. So use the hands of Nizit.
+
+01:41:10.000 --> 01:41:11.440
+<v Speaker 6>Have a look at the flags past the
+
+01:41:11.440 --> 01:41:13.280
+<v Speaker 6>kubelet. Maybe it's just got the wrong IP
+
+01:41:13.280 --> 01:41:14.479
+<v Speaker 6>or something like that
+
+01:41:15.760 --> 01:41:16.800
+<v Speaker 6>since it was running.
+
+01:41:20.855 --> 01:41:23.175
+<v Speaker 5>Wrong session. Which session is the right session?
+
+01:41:23.415 --> 01:41:24.695
+<v Speaker 5>A few seconds ago.
+
+01:41:26.935 --> 01:41:28.614
+<v Speaker 5>That's the right one. That's the one?
+
+01:41:29.895 --> 01:41:30.295
+<v Speaker 0>Alright.
+
+01:41:52.475 --> 01:41:53.275
+<v Speaker 5>Interesting.
+
+01:41:56.235 --> 01:41:58.395
+<v Speaker 5>Why is it trying to register itself as
+
+01:41:58.395 --> 01:41:59.435
+<v Speaker 5>Talos worker one?
+
+01:42:18.525 --> 01:42:19.724
+<v Speaker 0>You have an idea?
+
+01:42:20.045 --> 01:42:21.565
+<v Speaker 6>How we start? The kubelet.
+
+01:42:23.645 --> 01:42:25.325
+<v Speaker 5>Sorry. What? I heard two things at once.
+
+01:42:25.325 --> 01:42:27.725
+<v Speaker 0>Sean McCart suggested just restarting the kubelet.
+
+01:42:31.670 --> 01:42:34.229
+<v Speaker 0>Who actually takes thought service? Who's that?
+
+01:42:34.790 --> 01:42:36.150
+<v Speaker 0>Me. Alright?
+
+01:42:38.869 --> 01:42:39.909
+<v Speaker 5>Just because.
+
+01:42:42.710 --> 01:42:44.389
+<v Speaker 6>At least you don't grab the whole thing
+
+01:42:44.389 --> 01:42:45.989
+<v Speaker 6>first and then get the name and run
+
+01:42:45.989 --> 01:42:48.235
+<v Speaker 6>it. It looks good. People do that.
+
+01:42:51.515 --> 01:42:52.475
+<v Speaker 5>Alright.
+
+01:42:52.475 --> 01:42:54.395
+<v Speaker 5>I'm gonna switch back to
+
+01:42:55.435 --> 01:42:56.715
+<v Speaker 6>The node is ready now.
+
+01:43:01.560 --> 01:43:04.280
+<v Speaker 0>Alright. We are back on the control plan.
+
+01:43:07.239 --> 01:43:09.080
+<v Speaker 8>What is the pod pending if you describe
+
+01:43:09.080 --> 01:43:09.959
+<v Speaker 8>the pod?
+
+01:43:10.360 --> 01:43:12.280
+<v Speaker 0>That's the one we added the node selector
+
+01:43:12.280 --> 01:43:14.040
+<v Speaker 0>to, which may or may not work. Actually.
+
+01:43:23.764 --> 01:43:25.124
+<v Speaker 5>Are you at
+
+01:43:28.244 --> 01:43:28.725
+<v Speaker 8>Down.
+
+01:43:41.190 --> 01:43:43.665
+<v Speaker 0>Sneaky change there from Thanos. Sean is saying
+
+01:43:43.665 --> 01:43:45.905
+<v Speaker 0>they changed the host name, restarted the Coupa,
+
+01:43:45.905 --> 01:43:47.425
+<v Speaker 0>and then changed the host name back.
+
+01:43:47.744 --> 01:43:49.744
+<v Speaker 5>Oh my god. That's so cool.
+
+01:43:50.545 --> 01:43:51.425
+<v Speaker 6>That is nice.
+
+01:43:58.530 --> 01:44:00.849
+<v Speaker 5>Alright. Now, Ion, why don't you start?
+
+01:44:04.449 --> 01:44:05.810
+<v Speaker 8>Yeah. Describe the pod.
+
+01:44:10.535 --> 01:44:11.335
+<v Speaker 6>Container.
+
+01:44:16.935 --> 01:44:18.695
+<v Speaker 0>So whenever I see sandbox,
+
+01:44:18.695 --> 01:44:20.615
+<v Speaker 0>you wanna check the silly and pods are
+
+01:44:20.615 --> 01:44:21.015
+<v Speaker 0>scheduled.
+
+01:44:36.125 --> 01:44:39.165
+<v Speaker 7>I'm seeing invalid capacity zero on image file
+
+01:44:39.165 --> 01:44:39.965
+<v Speaker 7>system
+
+01:44:42.364 --> 01:44:43.245
+<v Speaker 7>in the events.
+
+01:44:52.929 --> 01:44:55.489
+<v Speaker 5>That's on Telus worker one as well.
+
+01:44:59.969 --> 01:45:02.610
+<v Speaker 5>Oh, and Telus worker one. Look at capacity
+
+01:45:03.489 --> 01:45:05.409
+<v Speaker 6>and items. Is that what's going on here?
+
+01:45:06.155 --> 01:45:07.835
+<v Speaker 5>Have we really gone this far?
+
+01:45:09.755 --> 01:45:11.595
+<v Speaker 0>Alright. We're gonna have to start wrapping things
+
+01:45:11.595 --> 01:45:13.195
+<v Speaker 0>up because I do have to do daddy
+
+01:45:13.195 --> 01:45:15.675
+<v Speaker 0>bedtime, I'm afraid. So why don't we why
+
+01:45:15.675 --> 01:45:16.955
+<v Speaker 0>don't we look at these hints? Like, Sean
+
+01:45:16.955 --> 01:45:19.195
+<v Speaker 0>is saying, let's burn the hints. So let's
+
+01:45:19.195 --> 01:45:20.955
+<v Speaker 0>work let's work our way through. So
+
+01:45:22.110 --> 01:45:23.630
+<v Speaker 0>five, let's turn it off and on again.
+
+01:45:23.630 --> 01:45:25.550
+<v Speaker 0>That must be the criblet. Six, it's not
+
+01:45:25.550 --> 01:45:26.670
+<v Speaker 0>C and I. There's no way it's C
+
+01:45:26.670 --> 01:45:28.910
+<v Speaker 0>and I. It is C and I. Definitely
+
+01:45:28.910 --> 01:45:29.790
+<v Speaker 0>a selam issue.
+
+01:45:33.695 --> 01:45:35.775
+<v Speaker 0>Alright. There's your hint. And ops, c and
+
+01:45:35.775 --> 01:45:37.535
+<v Speaker 0>I bend, there are lots of fails.
+
+01:45:38.095 --> 01:45:41.055
+<v Speaker 0>Running look back gives an output that's wild.
+
+01:45:44.975 --> 01:45:46.255
+<v Speaker 0>Well, let's go take a look at ops,
+
+01:45:46.255 --> 01:45:47.535
+<v Speaker 0>c and I bend on a worker.
+
+01:45:49.380 --> 01:45:51.860
+<v Speaker 5>We will do it on worker two.
+
+01:45:54.420 --> 01:45:55.300
+<v Speaker 5>Opt
+
+01:45:55.540 --> 01:45:57.060
+<v Speaker 5>c and I bin.
+
+01:46:01.220 --> 01:46:03.140
+<v Speaker 5>Am I dumb? I'm probably an LS?
+
+01:46:03.675 --> 01:46:04.394
+<v Speaker 0>Yeah.
+
+01:46:07.434 --> 01:46:08.715
+<v Speaker 6>Oh, there's a loop back
+
+01:46:09.275 --> 01:46:09.835
+<v Speaker 0>dot back.
+
+01:46:17.490 --> 01:46:19.490
+<v Speaker 0>So the original loopback is a bridge plugin
+
+01:46:19.490 --> 01:46:21.650
+<v Speaker 0>and then the loopback is a loopback plugin.
+
+01:46:25.170 --> 01:46:26.530
+<v Speaker 5>Oh, yeah. And also,
+
+01:46:36.205 --> 01:46:37.804
+<v Speaker 0>I mean, that was quite brave, not even
+
+01:46:37.804 --> 01:46:39.644
+<v Speaker 0>running them, just going for it. But
+
+01:46:40.125 --> 01:46:41.965
+<v Speaker 3>sure. I yeah. I I yell at them,
+
+01:46:41.965 --> 01:46:42.284
+<v Speaker 5>definitely.
+
+01:46:43.580 --> 01:46:44.860
+<v Speaker 0>Alright. Let's see if we can get our
+
+01:46:44.860 --> 01:46:46.139
+<v Speaker 0>pod scheduled then.
+
+01:46:51.820 --> 01:46:52.540
+<v Speaker 0>You
+
+01:46:53.500 --> 01:46:55.179
+<v Speaker 0>may have to delete
+
+01:46:55.580 --> 01:46:57.740
+<v Speaker 0>the Cilium pods. Alright.
+
+01:46:59.034 --> 01:47:00.315
+<v Speaker 0>Don't know if you'd have to delete the
+
+01:47:00.315 --> 01:47:02.554
+<v Speaker 0>Cilium pod. I'm not sure to be honest,
+
+01:47:02.554 --> 01:47:04.635
+<v Speaker 0>but you definitely need to delete the clustered
+
+01:47:04.635 --> 01:47:05.274
+<v Speaker 0>one.
+
+01:47:09.034 --> 01:47:10.314
+<v Speaker 0>We can default.
+
+01:47:11.275 --> 01:47:12.474
+<v Speaker 8>Oh, it's running.
+
+01:47:12.875 --> 01:47:13.914
+<v Speaker 8>It already finished.
+
+01:47:14.560 --> 01:47:15.280
+<v Speaker 0>Yep.
+
+01:47:15.920 --> 01:47:16.400
+<v Speaker 0>You
+
+01:47:19.920 --> 01:47:21.199
+<v Speaker 6>Do we get a dance?
+
+01:47:23.280 --> 01:47:23.840
+<v Speaker 0>Let me
+
+01:47:29.304 --> 01:47:32.025
+<v Speaker 0>I don't think we have v two yet.
+
+01:47:33.065 --> 01:47:33.864
+<v Speaker 0>Alright.
+
+01:47:34.905 --> 01:47:36.344
+<v Speaker 0>And there are
+
+01:47:37.864 --> 01:47:39.784
+<v Speaker 0>oh, there are normal hints, so that potentially
+
+01:47:39.784 --> 01:47:40.905
+<v Speaker 0>may be the last
+
+01:47:41.830 --> 01:47:44.390
+<v Speaker 0>one. Oh, it depends where it's scheduled.
+
+01:47:45.430 --> 01:47:45.910
+<v Speaker 4>Okay.
+
+01:47:47.670 --> 01:47:49.830
+<v Speaker 5>Well, let's delete the pod, see it get
+
+01:47:49.830 --> 01:47:50.710
+<v Speaker 5>recreated, and then
+
+01:47:52.870 --> 01:47:53.750
+<v Speaker 0>Yeah. I know.
+
+01:47:57.695 --> 01:47:58.415
+<v Speaker 8>Oh,
+
+01:47:58.735 --> 01:48:01.535
+<v Speaker 8>try refreshing it, David. I I just loaded
+
+01:48:01.535 --> 01:48:03.215
+<v Speaker 8>the app on my side and that it
+
+01:48:03.215 --> 01:48:04.974
+<v Speaker 8>works. There we go.
+
+01:48:07.215 --> 01:48:10.175
+<v Speaker 5>Bravo, Talos. Bravo. Yeah. That was tough. Well
+
+01:48:10.175 --> 01:48:11.375
+<v Speaker 6>done. Well done.
+
+01:48:12.095 --> 01:48:15.910
+<v Speaker 0>Those were two very, very brutal clusters.
+
+01:48:17.510 --> 01:48:18.469
+<v Speaker 0>These are all terrible,
+
+01:48:19.190 --> 01:48:20.870
+<v Speaker 0>terrible people. I gotta say.
+
+01:48:21.910 --> 01:48:23.430
+<v Speaker 5>Aren't you happy? You're not the one fixing
+
+01:48:23.430 --> 01:48:25.590
+<v Speaker 5>them? I am very glad. I am not
+
+01:48:25.590 --> 01:48:26.870
+<v Speaker 0>the one. Like, the minute I seen it
+
+01:48:26.870 --> 01:48:28.550
+<v Speaker 0>was STD, I was like, I'm I'm glad
+
+01:48:28.550 --> 01:48:31.005
+<v Speaker 0>that's not me. Like, I I think that's
+
+01:48:31.005 --> 01:48:33.645
+<v Speaker 0>that's my my crux. I just can't deal
+
+01:48:33.645 --> 01:48:35.325
+<v Speaker 0>with the STD stuff. So
+
+01:48:36.285 --> 01:48:37.405
+<v Speaker 0>good perseverance,
+
+01:48:37.405 --> 01:48:38.605
+<v Speaker 0>good working through it. And I think we
+
+01:48:38.845 --> 01:48:40.685
+<v Speaker 0>I definitely learned a lot. I'm assuming everyone
+
+01:48:40.685 --> 01:48:42.685
+<v Speaker 0>else learned a lot there. But the snapshots
+
+01:48:42.685 --> 01:48:44.285
+<v Speaker 0>and the member lists and stuff like that.
+
+01:48:44.930 --> 01:48:46.370
+<v Speaker 5>Absolutely. Absolute evil.
+
+01:48:46.770 --> 01:48:47.570
+<v Speaker 0>I'm
+
+01:48:47.570 --> 01:48:50.050
+<v Speaker 0>not sure what's worse though. Removing executable on
+
+01:48:50.050 --> 01:48:52.530
+<v Speaker 0>the things and then removing some binaries or
+
+01:48:52.850 --> 01:48:53.810
+<v Speaker 0>etcd.
+
+01:48:53.810 --> 01:48:55.250
+<v Speaker 0>Both particularly harsh.
+
+01:48:55.650 --> 01:48:56.450
+<v Speaker 0>Alright.
+
+01:48:56.450 --> 01:48:59.385
+<v Speaker 0>Thank you, team Red Hat. Was it fun?
+
+01:48:59.385 --> 01:49:00.824
+<v Speaker 0>Did you enjoy it at least?
+
+01:49:01.545 --> 01:49:03.064
+<v Speaker 7>Thanks for having us.
+
+01:49:03.625 --> 01:49:04.744
+<v Speaker 6>Yeah. It was fun.
+
+01:49:05.545 --> 01:49:06.744
+<v Speaker 0>Alright.
+
+01:49:06.744 --> 01:49:08.184
+<v Speaker 0>Okay. Thank you very much.
+
+01:49:08.665 --> 01:49:10.585
+<v Speaker 0>Have a wonderful day. Thank you for joining
+
+01:49:10.585 --> 01:49:11.784
+<v Speaker 0>me, and I will speak to you all
+
+01:49:11.784 --> 01:49:13.304
+<v Speaker 0>soon, I'm sure. Thanks,
+
+01:49:13.784 --> 01:49:14.025
+<v Speaker 7>Dave.
+
+01:49:14.820 --> 01:49:17.780
+<v Speaker 0>To our audience, thank you. That was absolute
+
+01:49:17.780 --> 01:49:20.820
+<v Speaker 0>slog. That was very difficult. Thank you, Talos.
+
+01:49:20.820 --> 01:49:22.900
+<v Speaker 0>Thank you, Red Hat. Thank you to Teleport.
+
+01:49:22.900 --> 01:49:24.260
+<v Speaker 0>Remember, if you want a sponsor of the
+
+01:49:24.260 --> 01:49:26.260
+<v Speaker 0>show if you want to support our sponsor
+
+01:49:26.260 --> 01:49:29.460
+<v Speaker 0>of the show, Teleport, please visit rockwood.live/teleport.
+
+01:49:29.985 --> 01:49:31.665
+<v Speaker 0>Have a wonderful day. We will be back
+
+01:49:31.665 --> 01:49:33.824
+<v Speaker 0>next week with more custard. I will speak
+
+01:49:33.824 --> 01:49:35.425
+<v Speaker 0>to you all soon. Thanks a lot. Bye.

@@ -1,0 +1,5699 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: e56cb27c-50df-4848-8fdc-f1eb01a0c451
+Created: 2025-04-29T19:08:55.401Z
+Duration: 4124.149
+Channels: 1
+
+00:00:59.180 --> 00:01:02.380
+<v Speaker 0>Hello, and welcome to today's episode of Rawkode
+
+00:01:02.380 --> 00:01:03.740
+<v Speaker 0>Live. I'm your host, Rawkode.
+
+00:01:04.375 --> 00:01:05.975
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:01:05.975 --> 00:01:09.814
+<v Speaker 0>Skaffold, a tool to ease development against Kubernetes
+
+00:01:09.814 --> 00:01:11.975
+<v Speaker 0>clusters, something I'm sure we can all agree
+
+00:01:11.975 --> 00:01:13.014
+<v Speaker 0>that we need.
+
+00:01:13.255 --> 00:01:14.935
+<v Speaker 0>Now before we get started, there is just
+
+00:01:14.935 --> 00:01:17.490
+<v Speaker 0>a little bit of housekeeping. First, if you're
+
+00:01:17.490 --> 00:01:18.770
+<v Speaker 0>not already subscribed,
+
+00:01:18.850 --> 00:01:20.609
+<v Speaker 0>please do that now. Click the bell, and
+
+00:01:20.609 --> 00:01:22.530
+<v Speaker 0>you will get notifications for all new episodes
+
+00:01:22.530 --> 00:01:23.729
+<v Speaker 0>of Rawkode Live.
+
+00:01:24.369 --> 00:01:26.530
+<v Speaker 0>Also, if you're not watching live but you
+
+00:01:26.530 --> 00:01:28.770
+<v Speaker 0>have questions or wanna suggest new episodes, please
+
+00:01:28.770 --> 00:01:30.475
+<v Speaker 0>feel free to join in Discord. There's a
+
+00:01:30.475 --> 00:01:31.914
+<v Speaker 0>few hundreds of us in there now always
+
+00:01:31.914 --> 00:01:34.715
+<v Speaker 0>talking Kubernetes, cloud native, and technology in general.
+
+00:01:34.875 --> 00:01:36.075
+<v Speaker 0>Come and get involved.
+
+00:01:37.435 --> 00:01:40.395
+<v Speaker 0>Lastly, I wanna thank my employer, EquinixMetal.
+
+00:01:40.395 --> 00:01:41.994
+<v Speaker 0>They allow that we need the time and
+
+00:01:41.994 --> 00:01:43.914
+<v Speaker 0>resources to invest in the shows and produce
+
+00:01:44.240 --> 00:01:46.080
+<v Speaker 0>native layer materials so that we can all
+
+00:01:46.080 --> 00:01:48.000
+<v Speaker 0>learn together. If you wanna check out Equinix
+
+00:01:48.000 --> 00:01:49.280
+<v Speaker 0>Medal, feel free to give us a code,
+
+00:01:49.280 --> 00:01:50.000
+<v Speaker 0>Rawkode.
+
+00:01:50.160 --> 00:01:52.800
+<v Speaker 0>This will get you $200
+
+00:01:53.120 --> 00:01:55.120
+<v Speaker 0>of credit. You can spend that really, really
+
+00:01:55.120 --> 00:01:57.200
+<v Speaker 0>quickly in about fifty hours with our beefier
+
+00:01:57.200 --> 00:01:59.625
+<v Speaker 0>machines, or you can make it last almost
+
+00:01:59.625 --> 00:02:01.785
+<v Speaker 0>four hundred hours with the smaller machines. So
+
+00:02:01.865 --> 00:02:03.625
+<v Speaker 0>pick your poison, use it wisely.
+
+00:02:04.265 --> 00:02:06.105
+<v Speaker 0>Okay. Now today, we're taking a look at
+
+00:02:06.105 --> 00:02:08.185
+<v Speaker 0>Skaffold. And to do that, I am joined
+
+00:02:08.185 --> 00:02:10.025
+<v Speaker 0>by Vic Anglazes from the Google team and
+
+00:02:10.025 --> 00:02:11.945
+<v Speaker 0>Skaffold team. Hi there, Vic. How are you?
+
+00:02:12.770 --> 00:02:15.010
+<v Speaker 1>I'm doing great. Thanks for having me. My
+
+00:02:15.010 --> 00:02:17.010
+<v Speaker 0>pleasure. I'm very excited to try and make
+
+00:02:17.010 --> 00:02:19.570
+<v Speaker 0>everyone's Kubernetes life a little bit easier today.
+
+00:02:20.210 --> 00:02:21.890
+<v Speaker 1>Likewise. Let's make it happen.
+
+00:02:22.130 --> 00:02:24.130
+<v Speaker 0>Alright. Do you wanna just take a little
+
+00:02:24.130 --> 00:02:25.410
+<v Speaker 0>bit of time and tell us a little
+
+00:02:25.410 --> 00:02:26.850
+<v Speaker 0>bit about you, and then we'll talk about
+
+00:02:26.850 --> 00:02:27.330
+<v Speaker 0>Skaffold?
+
+00:02:28.345 --> 00:02:30.745
+<v Speaker 1>Yeah. So, yeah, my name is Vicky Glacias.
+
+00:02:30.905 --> 00:02:34.025
+<v Speaker 1>I'm currently product manager at Google working on
+
+00:02:34.025 --> 00:02:36.265
+<v Speaker 1>Skaffold and the rest of our container tools.
+
+00:02:36.345 --> 00:02:37.865
+<v Speaker 1>I've been at Google for five years now,
+
+00:02:37.865 --> 00:02:39.865
+<v Speaker 1>very much in the cloud native space. I've
+
+00:02:39.865 --> 00:02:41.959
+<v Speaker 1>worked on Helm and a bunch of other
+
+00:02:41.959 --> 00:02:44.040
+<v Speaker 1>tools in the in the ecosystem, and now
+
+00:02:44.040 --> 00:02:46.200
+<v Speaker 1>really focusing my efforts on making sure we
+
+00:02:46.200 --> 00:02:49.159
+<v Speaker 1>have good, clean developer experiences on top of
+
+00:02:49.159 --> 00:02:51.480
+<v Speaker 1>Kubernetes clusters as well as a way to
+
+00:02:51.480 --> 00:02:54.359
+<v Speaker 1>bridge that experience into the operator tooling that
+
+00:02:54.359 --> 00:02:54.680
+<v Speaker 1>we use.
+
+00:02:55.555 --> 00:02:56.275
+<v Speaker 0>Nice.
+
+00:02:56.674 --> 00:02:58.355
+<v Speaker 0>Well, that sounds awesome, and I'm looking forward
+
+00:02:58.355 --> 00:02:59.954
+<v Speaker 0>to seeing what Skaffold's gonna bring to the
+
+00:02:59.954 --> 00:03:00.835
+<v Speaker 0>table then.
+
+00:03:01.075 --> 00:03:02.275
+<v Speaker 0>I believe you've got a little bit of
+
+00:03:02.275 --> 00:03:04.435
+<v Speaker 0>slides, so I'm gonna, just get the screen
+
+00:03:04.435 --> 00:03:06.355
+<v Speaker 0>started. We'll drive straight into the slides, and
+
+00:03:06.355 --> 00:03:07.314
+<v Speaker 0>then we'll have a little bit of a
+
+00:03:07.314 --> 00:03:08.595
+<v Speaker 0>chat afterwards.
+
+00:03:08.995 --> 00:03:09.474
+<v Speaker 1>Perfect.
+
+00:03:10.010 --> 00:03:12.330
+<v Speaker 0>You are live and good to go.
+
+00:03:12.810 --> 00:03:14.650
+<v Speaker 1>Alright. So just wanted to kinda tee up
+
+00:03:14.650 --> 00:03:16.970
+<v Speaker 1>Skaffold, and then, David, you'll take us through
+
+00:03:16.970 --> 00:03:18.570
+<v Speaker 1>kind of the documentation and showing us a
+
+00:03:18.570 --> 00:03:19.930
+<v Speaker 1>little bit more of the nitty gritty of
+
+00:03:19.930 --> 00:03:21.050
+<v Speaker 1>what it is, but just wanted to make
+
+00:03:21.050 --> 00:03:22.810
+<v Speaker 1>sure we have a overview of what we're
+
+00:03:22.810 --> 00:03:24.970
+<v Speaker 1>talking about here. So Skaffold
+
+00:03:26.705 --> 00:03:28.465
+<v Speaker 1>is is the tool we'll be talking about
+
+00:03:28.465 --> 00:03:30.865
+<v Speaker 1>today. We'll go through a little overview,
+
+00:03:31.185 --> 00:03:33.025
+<v Speaker 1>look at briefly the config, and then some
+
+00:03:33.025 --> 00:03:34.385
+<v Speaker 1>use cases that we can have for this
+
+00:03:34.385 --> 00:03:34.945
+<v Speaker 1>tool.
+
+00:03:35.825 --> 00:03:38.305
+<v Speaker 1>So when you think about developing on top
+
+00:03:38.305 --> 00:03:40.705
+<v Speaker 1>of Kubernetes and being kind of having some
+
+00:03:40.705 --> 00:03:43.400
+<v Speaker 1>sort of parity with your, production clusters that
+
+00:03:43.400 --> 00:03:44.680
+<v Speaker 1>are gonna run Kubernetes,
+
+00:03:44.760 --> 00:03:45.960
+<v Speaker 1>you have to do a lot of tasks
+
+00:03:45.960 --> 00:03:48.440
+<v Speaker 1>in order to emulate that production environment, which
+
+00:03:48.440 --> 00:03:49.640
+<v Speaker 1>has a CICD,
+
+00:03:49.960 --> 00:03:52.280
+<v Speaker 1>process behind it. Right? You have to, on
+
+00:03:52.280 --> 00:03:53.720
+<v Speaker 1>your local machine, build a container,
+
+00:03:54.495 --> 00:03:55.695
+<v Speaker 1>test it somehow,
+
+00:03:55.855 --> 00:03:57.694
+<v Speaker 1>make sure you have the right tags to
+
+00:03:57.694 --> 00:03:59.614
+<v Speaker 1>be able to reference it, push it to
+
+00:03:59.614 --> 00:04:01.535
+<v Speaker 1>a registry if your cluster is remote,
+
+00:04:02.015 --> 00:04:04.334
+<v Speaker 1>put that reference to those images inside of
+
+00:04:04.334 --> 00:04:07.055
+<v Speaker 1>your Kubernetes manifest, deploy those manifests to the
+
+00:04:07.055 --> 00:04:09.959
+<v Speaker 1>cluster, and then port forward your your service
+
+00:04:09.959 --> 00:04:11.400
+<v Speaker 1>to your local host so you can access
+
+00:04:11.400 --> 00:04:13.319
+<v Speaker 1>it, look at your logs, and then you
+
+00:04:13.319 --> 00:04:15.160
+<v Speaker 1>have to do that all over again whenever
+
+00:04:15.160 --> 00:04:16.519
+<v Speaker 1>you make a change. Right? So that's a
+
+00:04:16.519 --> 00:04:18.519
+<v Speaker 1>lot of effort that you're putting in in
+
+00:04:18.519 --> 00:04:19.800
+<v Speaker 1>order to do that. And some of the
+
+00:04:19.800 --> 00:04:21.745
+<v Speaker 1>challenges there are not just that you have
+
+00:04:21.745 --> 00:04:23.185
+<v Speaker 1>a lot of steps, but you have various
+
+00:04:23.185 --> 00:04:24.865
+<v Speaker 1>tools. Right? You're using Docker to do part
+
+00:04:24.865 --> 00:04:26.785
+<v Speaker 1>of it. You're using maybe VIM or Versus
+
+00:04:26.785 --> 00:04:28.865
+<v Speaker 1>Code in order to edit files. You're using
+
+00:04:28.865 --> 00:04:30.785
+<v Speaker 1>cube control in order to apply manifest, and
+
+00:04:30.785 --> 00:04:32.385
+<v Speaker 1>and really just gets tedious
+
+00:04:32.545 --> 00:04:34.945
+<v Speaker 1>to do all these tasks as fast as
+
+00:04:34.945 --> 00:04:37.389
+<v Speaker 1>you want them to be. And so what
+
+00:04:37.389 --> 00:04:39.629
+<v Speaker 1>we really wanted to build was hot coker
+
+00:04:39.629 --> 00:04:40.990
+<v Speaker 1>loading for Kubernetes.
+
+00:04:40.990 --> 00:04:43.229
+<v Speaker 1>You update a file on your file system,
+
+00:04:43.229 --> 00:04:45.470
+<v Speaker 1>and that is automatically realized inside of your
+
+00:04:45.470 --> 00:04:47.550
+<v Speaker 1>Kubernetes cluster with little to no effort on
+
+00:04:47.550 --> 00:04:49.629
+<v Speaker 1>your part. And so that's why we've bar
+
+00:04:49.870 --> 00:04:50.909
+<v Speaker 1>created Skaffold.
+
+00:04:51.824 --> 00:04:54.384
+<v Speaker 1>And Skaffold is open source. You can find
+
+00:04:54.384 --> 00:04:56.384
+<v Speaker 1>it at the Google Container Tools slash Skaffold
+
+00:04:56.384 --> 00:04:57.665
+<v Speaker 1>repo on GitHub.
+
+00:04:57.985 --> 00:04:59.985
+<v Speaker 1>And it takes all of those commands that
+
+00:04:59.985 --> 00:05:01.745
+<v Speaker 1>I showed and all those processes and all
+
+00:05:01.745 --> 00:05:04.065
+<v Speaker 1>those tools and condenses it down to one
+
+00:05:04.065 --> 00:05:06.870
+<v Speaker 1>command, which is Skaffold dev. So Skaffold dev
+
+00:05:06.870 --> 00:05:09.510
+<v Speaker 1>is gonna automate that whole workflow of building,
+
+00:05:09.510 --> 00:05:13.510
+<v Speaker 1>tagging, pushing, rendering, deploying, updating your application inside
+
+00:05:13.510 --> 00:05:16.070
+<v Speaker 1>of your cluster, all with a declarative config
+
+00:05:16.070 --> 00:05:18.550
+<v Speaker 1>and with a very pluggable architecture so that
+
+00:05:18.550 --> 00:05:20.470
+<v Speaker 1>you can choose the tools underneath the hood.
+
+00:05:20.470 --> 00:05:23.225
+<v Speaker 1>For example, when you're managing manifest, you might
+
+00:05:23.225 --> 00:05:25.865
+<v Speaker 1>start out with raw manifest on disk. You
+
+00:05:25.865 --> 00:05:27.305
+<v Speaker 1>might then go to Helm because you see
+
+00:05:27.305 --> 00:05:28.665
+<v Speaker 1>a lot of values that you wanna template
+
+00:05:28.665 --> 00:05:29.945
+<v Speaker 1>up. And then from there, you might go
+
+00:05:29.945 --> 00:05:32.105
+<v Speaker 1>to customize or some other tool in order
+
+00:05:32.105 --> 00:05:34.105
+<v Speaker 1>to manage those manifests. And we wanna make
+
+00:05:34.105 --> 00:05:35.669
+<v Speaker 1>sure we support you along the way. And
+
+00:05:35.669 --> 00:05:37.509
+<v Speaker 1>at at in your workflow, all you have
+
+00:05:37.509 --> 00:05:38.949
+<v Speaker 1>to run is Skaffold dev. You don't have
+
+00:05:38.949 --> 00:05:40.790
+<v Speaker 1>to think about those underlying tools.
+
+00:05:41.910 --> 00:05:43.669
+<v Speaker 1>One thing I did wanna point out is,
+
+00:05:43.830 --> 00:05:46.390
+<v Speaker 1>the awesome team that we have behind Skaffold.
+
+00:05:47.110 --> 00:05:50.310
+<v Speaker 1>These folks are super passionate about container tools,
+
+00:05:50.310 --> 00:05:53.645
+<v Speaker 1>super passionate about making the best possible,
+
+00:05:53.965 --> 00:05:57.005
+<v Speaker 1>experience for our users and for our community.
+
+00:05:57.245 --> 00:06:00.125
+<v Speaker 1>Just wanna call out Nick, who's our TL,
+
+00:06:00.365 --> 00:06:02.845
+<v Speaker 1>Tajol, who you had on last week, who,
+
+00:06:03.005 --> 00:06:05.965
+<v Speaker 1>was talking about Canico. She's our engine manager.
+
+00:06:06.205 --> 00:06:06.925
+<v Speaker 1>We have Brian,
+
+00:06:07.330 --> 00:06:11.490
+<v Speaker 1>who's our Glue TL. He's able to understand
+
+00:06:11.490 --> 00:06:13.570
+<v Speaker 1>the entirety of the tool chains underneath the
+
+00:06:13.570 --> 00:06:16.130
+<v Speaker 1>hood of Skaffold, which includes build packs. She
+
+00:06:16.130 --> 00:06:17.730
+<v Speaker 1>includes the way we debug. All of those
+
+00:06:17.730 --> 00:06:19.570
+<v Speaker 1>pieces need to integrate well, and he's got
+
+00:06:19.570 --> 00:06:21.485
+<v Speaker 1>all of that stuff mapped in. We've got
+
+00:06:21.485 --> 00:06:23.164
+<v Speaker 1>Marlon who's working on a lot of our
+
+00:06:23.164 --> 00:06:25.884
+<v Speaker 1>usability and onboarding tooling, who
+
+00:06:25.884 --> 00:06:27.645
+<v Speaker 1>worked on some of our complex,
+
+00:06:28.205 --> 00:06:30.284
+<v Speaker 1>config management, which we'll show later, and then
+
+00:06:30.284 --> 00:06:32.685
+<v Speaker 1>Aaron who's just joining us, after returning to
+
+00:06:32.685 --> 00:06:33.805
+<v Speaker 1>to the Skaffold project.
+
+00:06:35.240 --> 00:06:37.560
+<v Speaker 1>So now that we've teed up, we've got
+
+00:06:37.560 --> 00:06:39.560
+<v Speaker 1>a a tool that helps us for development.
+
+00:06:39.560 --> 00:06:41.240
+<v Speaker 1>We've got an awesome team behind it. What
+
+00:06:41.240 --> 00:06:42.680
+<v Speaker 1>can you do with it? Right?
+
+00:06:42.920 --> 00:06:44.760
+<v Speaker 1>And there's really three categories that we think
+
+00:06:44.760 --> 00:06:46.440
+<v Speaker 1>about. We think about being able to do
+
+00:06:46.440 --> 00:06:48.760
+<v Speaker 1>can discontinuous development loop, right, being able to
+
+00:06:48.760 --> 00:06:51.235
+<v Speaker 1>quickly and easily get that hot code reloading
+
+00:06:51.235 --> 00:06:53.395
+<v Speaker 1>feel out of your Kubernetes
+
+00:06:53.395 --> 00:06:54.275
+<v Speaker 1>applications.
+
+00:06:54.675 --> 00:06:56.275
+<v Speaker 1>But, also, we wanna help you with your
+
+00:06:56.275 --> 00:06:58.995
+<v Speaker 1>continuous integration and GitOps journeys. Right? We wanna
+
+00:06:58.995 --> 00:07:00.755
+<v Speaker 1>make sure that you can reuse what you've
+
+00:07:00.755 --> 00:07:03.230
+<v Speaker 1>already configured in your dev loop for these
+
+00:07:03.230 --> 00:07:05.470
+<v Speaker 1>CI journeys and to get those manifest ready
+
+00:07:05.470 --> 00:07:07.950
+<v Speaker 1>for committing into your GitOps repo. The last
+
+00:07:07.950 --> 00:07:09.390
+<v Speaker 1>thing we're able to do is is help
+
+00:07:09.390 --> 00:07:10.990
+<v Speaker 1>you with your continuous delivery and make sure
+
+00:07:10.990 --> 00:07:12.590
+<v Speaker 1>that you deploy your manifest in the same
+
+00:07:12.590 --> 00:07:14.350
+<v Speaker 1>way that you did during development.
+
+00:07:15.575 --> 00:07:17.015
+<v Speaker 1>So what do you need to do in
+
+00:07:17.015 --> 00:07:19.655
+<v Speaker 1>order to get comfortable with Skaffold? First and
+
+00:07:19.655 --> 00:07:21.335
+<v Speaker 1>the most important part is probably getting your
+
+00:07:21.335 --> 00:07:23.895
+<v Speaker 1>config file. Right? And so our config file,
+
+00:07:23.895 --> 00:07:25.975
+<v Speaker 1>for those in the cloud native ecosystem,
+
+00:07:26.055 --> 00:07:28.880
+<v Speaker 1>probably looks very familiar. This is a Kubernetes
+
+00:07:29.199 --> 00:07:31.520
+<v Speaker 1>resource model config.
+
+00:07:31.520 --> 00:07:33.439
+<v Speaker 1>We have an API version kind and then
+
+00:07:33.439 --> 00:07:36.240
+<v Speaker 1>some config blocks under that. Right? So the
+
+00:07:36.240 --> 00:07:37.759
+<v Speaker 1>the config blocks look like
+
+00:07:38.319 --> 00:07:38.960
+<v Speaker 1>build,
+
+00:07:39.280 --> 00:07:41.840
+<v Speaker 1>test, deploy, render, things like that.
+
+00:07:42.625 --> 00:07:44.865
+<v Speaker 1>And, really, as you kind of build out
+
+00:07:44.865 --> 00:07:46.945
+<v Speaker 1>these configs, you see that you can swap
+
+00:07:47.105 --> 00:07:48.625
+<v Speaker 1>each of the tools in each of these
+
+00:07:48.625 --> 00:07:51.505
+<v Speaker 1>pieces, which makes it really nice for transitioning
+
+00:07:51.505 --> 00:07:53.585
+<v Speaker 1>between tools and not having to change the
+
+00:07:53.585 --> 00:07:55.745
+<v Speaker 1>way your developers develop. Right? It may be
+
+00:07:55.745 --> 00:07:57.940
+<v Speaker 1>that an operator wants to change out the
+
+00:07:57.940 --> 00:07:59.780
+<v Speaker 1>way they handle manifests. It may be that
+
+00:07:59.780 --> 00:08:00.580
+<v Speaker 1>developers
+
+00:08:00.580 --> 00:08:02.340
+<v Speaker 1>have changed the way they wanna build their
+
+00:08:02.340 --> 00:08:02.980
+<v Speaker 1>images.
+
+00:08:03.380 --> 00:08:06.100
+<v Speaker 1>With this abstraction that Skaffold provides, those teams
+
+00:08:06.100 --> 00:08:07.940
+<v Speaker 1>don't really have to coordinate those changes. They
+
+00:08:07.940 --> 00:08:10.100
+<v Speaker 1>can just coordinate them through the configuration files,
+
+00:08:10.100 --> 00:08:11.140
+<v Speaker 1>which is a really nice way to do
+
+00:08:11.140 --> 00:08:11.300
+<v Speaker 1>it.
+
+00:08:12.955 --> 00:08:14.395
+<v Speaker 1>I talked a little bit about the the
+
+00:08:14.395 --> 00:08:16.395
+<v Speaker 1>structure of the Skaffold YAML. You have your
+
+00:08:16.395 --> 00:08:18.875
+<v Speaker 1>API version kind, and then you talk about
+
+00:08:18.875 --> 00:08:21.275
+<v Speaker 1>your builds, how you're gonna get images, how
+
+00:08:21.275 --> 00:08:22.955
+<v Speaker 1>you're gonna test those images, and then how
+
+00:08:22.955 --> 00:08:25.230
+<v Speaker 1>you're gonna deploy those images. One last thing
+
+00:08:25.230 --> 00:08:27.230
+<v Speaker 1>that you can do is create profiles that
+
+00:08:27.230 --> 00:08:29.070
+<v Speaker 1>allow you to have kind of configurations
+
+00:08:29.230 --> 00:08:31.710
+<v Speaker 1>that are specific to a particular environment or
+
+00:08:31.710 --> 00:08:33.470
+<v Speaker 1>a particular use case.
+
+00:08:34.590 --> 00:08:36.590
+<v Speaker 1>Cool. So now you've got this configuration file.
+
+00:08:36.590 --> 00:08:38.270
+<v Speaker 1>Now you wanna iterate on your app.
+
+00:08:38.590 --> 00:08:41.255
+<v Speaker 1>Well, we take all of this flow that
+
+00:08:41.255 --> 00:08:42.934
+<v Speaker 1>I talked through earlier, and we turn it
+
+00:08:42.934 --> 00:08:45.255
+<v Speaker 1>into one command, and that's Skaffold dev. It's
+
+00:08:45.255 --> 00:08:47.255
+<v Speaker 1>gonna do all of these things, build, test,
+
+00:08:47.255 --> 00:08:49.255
+<v Speaker 1>tag, push, render, deploy,
+
+00:08:49.335 --> 00:08:52.775
+<v Speaker 1>forward, and update as you change files within
+
+00:08:52.775 --> 00:08:55.175
+<v Speaker 1>your IDE or within VAM or Emacs or
+
+00:08:55.175 --> 00:08:56.375
+<v Speaker 1>whatever you're using as your editor.
+
+00:08:58.750 --> 00:09:01.230
+<v Speaker 1>So then once you commit that file into
+
+00:09:01.230 --> 00:09:03.070
+<v Speaker 1>your repo and you wanna have
+
+00:09:04.029 --> 00:09:06.750
+<v Speaker 1>another teammate use that same config or you
+
+00:09:06.750 --> 00:09:07.870
+<v Speaker 1>wanna onboard
+
+00:09:08.110 --> 00:09:10.024
+<v Speaker 1>a new team member, all they have to
+
+00:09:10.024 --> 00:09:12.345
+<v Speaker 1>do is git clone your repo and run
+
+00:09:12.345 --> 00:09:14.505
+<v Speaker 1>Skaffold dev. And they've got your best practices
+
+00:09:14.505 --> 00:09:17.384
+<v Speaker 1>for development already on their machine without having
+
+00:09:17.384 --> 00:09:18.985
+<v Speaker 1>to do anything else. So that's a really
+
+00:09:18.985 --> 00:09:21.065
+<v Speaker 1>powerful tool, and we've seen a lot of
+
+00:09:21.065 --> 00:09:23.065
+<v Speaker 1>customers use this for their onboard.
+
+00:09:24.760 --> 00:09:26.840
+<v Speaker 1>So now you've gotten that iterative dev loop
+
+00:09:26.840 --> 00:09:28.600
+<v Speaker 1>going. What do you wanna do next? Well,
+
+00:09:28.600 --> 00:09:30.920
+<v Speaker 1>you wanna deploy to production or staging. Right?
+
+00:09:31.080 --> 00:09:33.240
+<v Speaker 1>And we can use Skaffold as a bridge
+
+00:09:33.240 --> 00:09:36.360
+<v Speaker 1>between that dev loop and the CICD pipeline.
+
+00:09:36.360 --> 00:09:38.255
+<v Speaker 1>And the way we're gonna do that, you
+
+00:09:38.255 --> 00:09:40.895
+<v Speaker 1>saw those blocks in the config file. Right?
+
+00:09:40.895 --> 00:09:43.215
+<v Speaker 1>You have the build and deploy block. Well,
+
+00:09:43.215 --> 00:09:45.055
+<v Speaker 1>we're gonna take this big pipeline that we
+
+00:09:45.055 --> 00:09:46.655
+<v Speaker 1>had and chunk it up a little bit
+
+00:09:46.655 --> 00:09:48.895
+<v Speaker 1>and run only individual pieces when we need
+
+00:09:48.895 --> 00:09:49.935
+<v Speaker 1>it. For example,
+
+00:09:50.255 --> 00:09:52.460
+<v Speaker 1>you might have just the left side of
+
+00:09:52.460 --> 00:09:54.860
+<v Speaker 1>this pipeline running in CI and the right
+
+00:09:54.860 --> 00:09:56.940
+<v Speaker 1>side running in c. So let's see how
+
+00:09:56.940 --> 00:09:59.420
+<v Speaker 1>that might look. So, for example, in CI,
+
+00:09:59.420 --> 00:10:01.580
+<v Speaker 1>you wanna build your images, tag them, and
+
+00:10:01.580 --> 00:10:03.260
+<v Speaker 1>push them. So you can take that same
+
+00:10:03.260 --> 00:10:05.945
+<v Speaker 1>configuration that's in your repo and run Skaffold
+
+00:10:05.945 --> 00:10:08.345
+<v Speaker 1>build, and it'll only do that chunk.
+
+00:10:08.585 --> 00:10:11.305
+<v Speaker 1>Right? Build, tag, and push your images. Another
+
+00:10:11.305 --> 00:10:12.745
+<v Speaker 1>important thing that it does is it takes
+
+00:10:12.745 --> 00:10:12.985
+<v Speaker 1>that
+
+00:10:13.625 --> 00:10:15.625
+<v Speaker 1>those images that it built and puts them
+
+00:10:15.625 --> 00:10:18.180
+<v Speaker 1>into a file called artifacts dot JSON, And
+
+00:10:18.180 --> 00:10:20.260
+<v Speaker 1>then you can use that in other pieces
+
+00:10:20.260 --> 00:10:21.380
+<v Speaker 1>of your CI system.
+
+00:10:22.020 --> 00:10:24.180
+<v Speaker 1>For example, when you wanna go to deploy,
+
+00:10:24.180 --> 00:10:26.420
+<v Speaker 1>you can pass that artifacts JSON to the
+
+00:10:26.420 --> 00:10:29.060
+<v Speaker 1>Skaffold deploy command, and Skaffold deploy will take
+
+00:10:29.060 --> 00:10:31.540
+<v Speaker 1>care of rendering, deploying, and forwarding your logs
+
+00:10:31.540 --> 00:10:33.355
+<v Speaker 1>for that that service. Right? So now we're
+
+00:10:33.355 --> 00:10:35.515
+<v Speaker 1>able to run individual commands to do just
+
+00:10:35.515 --> 00:10:38.235
+<v Speaker 1>pieces of this pipeline, but we're sharing the
+
+00:10:38.235 --> 00:10:41.195
+<v Speaker 1>same config between our development loop and our
+
+00:10:41.195 --> 00:10:43.355
+<v Speaker 1>CI process and our CE process.
+
+00:10:44.315 --> 00:10:46.154
+<v Speaker 1>You might also wanna do GitOps. Right?
+
+00:10:46.670 --> 00:10:49.150
+<v Speaker 1>So you can take the Skaffold render command,
+
+00:10:49.230 --> 00:10:50.910
+<v Speaker 1>which will not only build, tag, and push
+
+00:10:50.910 --> 00:10:52.510
+<v Speaker 1>your your images,
+
+00:10:52.510 --> 00:10:54.430
+<v Speaker 1>but it'll also take those references to those
+
+00:10:54.430 --> 00:10:56.910
+<v Speaker 1>images and put them into your Kubernetes manifest
+
+00:10:56.910 --> 00:10:59.070
+<v Speaker 1>and give you back raw YAML that then
+
+00:10:59.070 --> 00:11:00.430
+<v Speaker 1>you could apply into a cluster if you
+
+00:11:00.430 --> 00:11:02.505
+<v Speaker 1>wanted, or you could commit that directly into
+
+00:11:02.505 --> 00:11:04.905
+<v Speaker 1>a repo and have a GitOps operator like
+
+00:11:04.905 --> 00:11:06.905
+<v Speaker 1>Flux or something else pick that up and
+
+00:11:06.905 --> 00:11:09.145
+<v Speaker 1>push that up to to production or staging.
+
+00:11:10.665 --> 00:11:11.385
+<v Speaker 1>Finally,
+
+00:11:11.545 --> 00:11:14.105
+<v Speaker 1>the other part that we've added, very recently
+
+00:11:14.505 --> 00:11:17.160
+<v Speaker 1>is to take that manifest that's been put
+
+00:11:17.160 --> 00:11:19.160
+<v Speaker 1>out by Skaffold render and apply it into
+
+00:11:19.160 --> 00:11:21.400
+<v Speaker 1>the cluster while doing health checks for those
+
+00:11:21.400 --> 00:11:23.320
+<v Speaker 1>services and and deployments that have been put
+
+00:11:23.320 --> 00:11:25.000
+<v Speaker 1>out. Again, these are the same health checks
+
+00:11:25.000 --> 00:11:26.600
+<v Speaker 1>that we use during development, so you get
+
+00:11:26.600 --> 00:11:29.400
+<v Speaker 1>that unification between your dev loop and your
+
+00:11:29.400 --> 00:11:30.360
+<v Speaker 1>CICD pipeline.
+
+00:11:32.185 --> 00:11:33.944
+<v Speaker 1>The last thing that I'll mention is a
+
+00:11:33.944 --> 00:11:34.985
+<v Speaker 1>lot of iterating,
+
+00:11:35.225 --> 00:11:38.345
+<v Speaker 1>in the development loop is wanting to debug
+
+00:11:38.345 --> 00:11:40.504
+<v Speaker 1>something that's wrong in your app. And we
+
+00:11:40.504 --> 00:11:42.745
+<v Speaker 1>have Cloud Code, which is our Versus Code
+
+00:11:42.745 --> 00:11:45.384
+<v Speaker 1>and IntelliJ extensions,
+
+00:11:45.710 --> 00:11:48.030
+<v Speaker 1>which lets you have this hot code reloading
+
+00:11:48.030 --> 00:11:50.910
+<v Speaker 1>field through your IDE by just hitting your
+
+00:11:50.910 --> 00:11:53.310
+<v Speaker 1>run on Kubernetes button or f five,
+
+00:11:53.950 --> 00:11:56.590
+<v Speaker 1>or you can also have it connect directly
+
+00:11:56.590 --> 00:11:57.550
+<v Speaker 1>to those applications
+
+00:11:58.154 --> 00:11:59.995
+<v Speaker 1>via the debugging functionality.
+
+00:11:59.995 --> 00:12:01.675
+<v Speaker 1>So this is transparent to you as the
+
+00:12:01.675 --> 00:12:03.995
+<v Speaker 1>as the user. We connect to your app.
+
+00:12:03.995 --> 00:12:05.915
+<v Speaker 1>We put in the right debugging tools into
+
+00:12:05.915 --> 00:12:06.714
+<v Speaker 1>your pods
+
+00:12:06.875 --> 00:12:08.795
+<v Speaker 1>and then connect back the port onto your
+
+00:12:08.795 --> 00:12:10.394
+<v Speaker 1>local host so that you can hit a
+
+00:12:10.394 --> 00:12:13.050
+<v Speaker 1>breakpoint inside of Versus Code, and it'll hit
+
+00:12:13.050 --> 00:12:15.930
+<v Speaker 1>the breakpoint inside of your your Kubernetes application
+
+00:12:15.930 --> 00:12:18.410
+<v Speaker 1>running in your cluster. So super powerful stuff.
+
+00:12:18.410 --> 00:12:20.250
+<v Speaker 1>Definitely check out Cloud Code as kind of
+
+00:12:20.250 --> 00:12:23.050
+<v Speaker 1>an interface around Skaffold that can make it
+
+00:12:23.050 --> 00:12:25.930
+<v Speaker 1>easier, especially to get started and definitely for
+
+00:12:25.930 --> 00:12:26.330
+<v Speaker 1>debugging.
+
+00:12:28.225 --> 00:12:29.905
+<v Speaker 1>And that was it. So that's how I
+
+00:12:29.905 --> 00:12:31.105
+<v Speaker 1>wanted to tee up things, and I think
+
+00:12:31.105 --> 00:12:32.225
+<v Speaker 1>now we can get into some of the
+
+00:12:32.225 --> 00:12:32.385
+<v Speaker 1>new
+
+00:12:37.025 --> 00:12:38.865
+<v Speaker 0>Yes. I think I just lost your audio,
+
+00:12:38.865 --> 00:12:39.025
+<v Speaker 0>though.
+
+00:12:41.270 --> 00:12:42.310
+<v Speaker 0>Is
+
+00:12:50.070 --> 00:12:50.870
+<v Speaker 1>it working?
+
+00:12:51.190 --> 00:12:52.710
+<v Speaker 0>Oh, it works when I bring your screen
+
+00:12:52.710 --> 00:12:53.350
+<v Speaker 0>back.
+
+00:12:53.670 --> 00:12:56.390
+<v Speaker 1>Oh, okay. So There's a fun bug. Alright.
+
+00:12:57.315 --> 00:12:58.835
+<v Speaker 0>Let's try. How
+
+00:13:00.915 --> 00:13:02.115
+<v Speaker 1>about how about now?
+
+00:13:02.915 --> 00:13:04.515
+<v Speaker 0>Yeah. I have to keep bringing it I'm
+
+00:13:04.515 --> 00:13:05.715
+<v Speaker 0>gonna click the x on it and see
+
+00:13:05.715 --> 00:13:06.435
+<v Speaker 0>what happens.
+
+00:13:06.835 --> 00:13:08.275
+<v Speaker 0>And if I can't hear you, you might
+
+00:13:08.275 --> 00:13:09.795
+<v Speaker 0>just have to share it again. Let's let's
+
+00:13:09.795 --> 00:13:11.155
+<v Speaker 0>see let's see what happens.
+
+00:13:12.035 --> 00:13:12.595
+<v Speaker 0>Say hello.
+
+00:13:13.209 --> 00:13:16.810
+<v Speaker 1>Hello there. Alright. Okay. We're we're live.
+
+00:13:17.050 --> 00:13:18.089
+<v Speaker 0>Well,
+
+00:13:18.089 --> 00:13:20.250
+<v Speaker 0>wouldn't be a livestream without the hookup. That's
+
+00:13:20.330 --> 00:13:21.690
+<v Speaker 1>That's amazing. Hello.
+
+00:13:22.890 --> 00:13:24.730
+<v Speaker 0>I mean, I I've gotta say,
+
+00:13:26.825 --> 00:13:28.585
+<v Speaker 0>They said they took it to be true.
+
+00:13:29.625 --> 00:13:31.464
+<v Speaker 1>Well, let's see. Let's see how far we
+
+00:13:31.464 --> 00:13:33.385
+<v Speaker 1>can get with it to to to figure
+
+00:13:33.385 --> 00:13:34.745
+<v Speaker 1>out that story. I think the the big
+
+00:13:34.745 --> 00:13:36.425
+<v Speaker 1>part is getting the config right. And then
+
+00:13:36.425 --> 00:13:39.625
+<v Speaker 1>from there, it really does work like magic.
+
+00:13:39.785 --> 00:13:40.585
+<v Speaker 0>Those are some
+
+00:13:41.060 --> 00:13:43.620
+<v Speaker 0>I mean, the amount of functionality being packed
+
+00:13:43.620 --> 00:13:45.540
+<v Speaker 0>into what Skaffold I mean, to be completely
+
+00:13:45.540 --> 00:13:47.779
+<v Speaker 0>transparent, I haven't looked at Skaffold in probably
+
+00:13:47.779 --> 00:13:49.940
+<v Speaker 0>two years, at least eighteen months, but probably
+
+00:13:49.940 --> 00:13:52.420
+<v Speaker 0>more than two years. And I I it
+
+00:13:52.420 --> 00:13:54.339
+<v Speaker 0>just it's always added a lot of really
+
+00:13:54.339 --> 00:13:56.355
+<v Speaker 0>great features. And I've been able to slice
+
+00:13:56.355 --> 00:13:58.275
+<v Speaker 0>and dice, you know, all those different components
+
+00:13:58.275 --> 00:14:00.355
+<v Speaker 0>and the actions to break down to fit
+
+00:14:00.355 --> 00:14:02.275
+<v Speaker 0>the workflow that, you know, my teams, my
+
+00:14:02.275 --> 00:14:04.115
+<v Speaker 0>orgs, whatever wanna adopt.
+
+00:14:04.515 --> 00:14:06.515
+<v Speaker 0>Just seems great. So I'm really I'm really
+
+00:14:06.515 --> 00:14:09.290
+<v Speaker 0>excited there. Definitely really excited there. But I
+
+00:14:09.290 --> 00:14:11.370
+<v Speaker 0>think we should get my screen shared and
+
+00:14:11.370 --> 00:14:12.089
+<v Speaker 0>we should
+
+00:14:12.410 --> 00:14:13.930
+<v Speaker 0>start kicking the tires on this a little
+
+00:14:13.930 --> 00:14:15.370
+<v Speaker 0>bit. Cool.
+
+00:14:15.690 --> 00:14:17.290
+<v Speaker 0>Alright. So for anyone who wants to follow
+
+00:14:17.290 --> 00:14:18.970
+<v Speaker 0>along at home in their own time, you
+
+00:14:18.970 --> 00:14:20.570
+<v Speaker 0>have Skaffold.dev,
+
+00:14:21.265 --> 00:14:23.265
+<v Speaker 0>which is the documentation and the examples that
+
+00:14:23.265 --> 00:14:24.865
+<v Speaker 0>we we working from today
+
+00:14:25.265 --> 00:14:28.545
+<v Speaker 0>have gone ahead and cloned the Skaffold repository
+
+00:14:28.545 --> 00:14:29.585
+<v Speaker 0>because
+
+00:14:30.225 --> 00:14:32.545
+<v Speaker 0>they have a whole bunch of examples here
+
+00:14:32.545 --> 00:14:34.865
+<v Speaker 0>that we can kick our tires on and
+
+00:14:34.020 --> 00:14:35.460
+<v Speaker 0>play with today. And I don't see this
+
+00:14:35.460 --> 00:14:36.900
+<v Speaker 0>a lot. I cover a lot of open
+
+00:14:36.900 --> 00:14:39.380
+<v Speaker 0>source projects and it's really refreshing to see
+
+00:14:39.380 --> 00:14:40.500
+<v Speaker 0>a directory
+
+00:14:40.580 --> 00:14:43.620
+<v Speaker 0>full of examples tailored to different workloads and
+
+00:14:43.620 --> 00:14:46.020
+<v Speaker 0>different languages and stuff like that. So really
+
+00:14:46.020 --> 00:14:47.140
+<v Speaker 0>excited to see that as well.
+
+00:14:49.194 --> 00:14:51.274
+<v Speaker 0>Now if we just click on the docs,
+
+00:14:51.834 --> 00:14:54.235
+<v Speaker 0>I do have Skaffold installed. I spared you
+
+00:14:54.235 --> 00:14:56.875
+<v Speaker 0>all the the brew command to see how
+
+00:14:56.875 --> 00:14:57.995
+<v Speaker 0>to do that. Alright.
+
+00:14:58.954 --> 00:14:59.675
+<v Speaker 0>So
+
+00:15:00.600 --> 00:15:02.600
+<v Speaker 0>now should we start with quick start? Is
+
+00:15:02.600 --> 00:15:03.960
+<v Speaker 0>there anything here we should just kind of
+
+00:15:03.960 --> 00:15:05.800
+<v Speaker 0>do the really basic one before we start
+
+00:15:05.800 --> 00:15:07.640
+<v Speaker 0>picking a few examples? Yeah. I think this
+
+00:15:07.640 --> 00:15:09.480
+<v Speaker 1>this goes into the example. So you're kind
+
+00:15:09.480 --> 00:15:11.320
+<v Speaker 1>of streamlining that part already. I think if
+
+00:15:11.320 --> 00:15:12.520
+<v Speaker 1>you go into examples
+
+00:15:12.840 --> 00:15:15.765
+<v Speaker 1>and and check out the, yeah, the microservices
+
+00:15:15.765 --> 00:15:18.965
+<v Speaker 1>example is probably a nice representative one.
+
+00:15:19.525 --> 00:15:21.205
+<v Speaker 1>And I think, yeah, just c d into
+
+00:15:21.205 --> 00:15:23.685
+<v Speaker 1>microservices folder there. That's one we can check
+
+00:15:23.685 --> 00:15:24.165
+<v Speaker 1>out.
+
+00:15:27.765 --> 00:15:28.405
+<v Speaker 1>Awesome.
+
+00:15:29.690 --> 00:15:31.370
+<v Speaker 0>Alright. So should I just pop this open
+
+00:15:31.370 --> 00:15:32.650
+<v Speaker 0>in code, or are we just gonna work
+
+00:15:32.650 --> 00:15:34.810
+<v Speaker 0>directly in the command line? You can do
+
+00:15:34.810 --> 00:15:36.250
+<v Speaker 1>either. So I I would just do a
+
+00:15:36.250 --> 00:15:39.050
+<v Speaker 1>Skaffold dev here. And maybe, you know, before
+
+00:15:39.050 --> 00:15:40.410
+<v Speaker 1>we do that, can look at the Skaffold
+
+00:15:40.410 --> 00:15:42.745
+<v Speaker 1>YAML just to see what's in there because
+
+00:15:42.745 --> 00:15:44.825
+<v Speaker 1>I think the configs are nice to look
+
+00:15:44.825 --> 00:15:45.305
+<v Speaker 1>at.
+
+00:15:46.425 --> 00:15:47.145
+<v Speaker 1>Sweet.
+
+00:15:47.785 --> 00:15:49.945
+<v Speaker 1>So we'll just kinda go block by block
+
+00:15:49.945 --> 00:15:51.945
+<v Speaker 1>here. So you have your build section, which
+
+00:15:51.945 --> 00:15:53.545
+<v Speaker 1>is saying, what images do I wanna build?
+
+00:15:53.545 --> 00:15:54.825
+<v Speaker 1>And we call them artifacts.
+
+00:15:55.110 --> 00:15:58.230
+<v Speaker 1>Today, we're very focused around container images. So
+
+00:15:58.230 --> 00:16:00.230
+<v Speaker 1>we have two images that that we're building
+
+00:16:00.230 --> 00:16:02.550
+<v Speaker 1>in this app, but it's actually using a
+
+00:16:02.550 --> 00:16:04.230
+<v Speaker 1>third image as a base. Right? So you
+
+00:16:04.230 --> 00:16:07.110
+<v Speaker 1>have Leroy web and the Leroy app that
+
+00:16:07.110 --> 00:16:09.589
+<v Speaker 1>you supposed to see require the base image.
+
+00:16:09.589 --> 00:16:10.070
+<v Speaker 1>So here,
+
+00:16:10.605 --> 00:16:12.365
+<v Speaker 1>what Skaffold's gonna do is it's gonna first
+
+00:16:12.365 --> 00:16:14.285
+<v Speaker 1>build the base image and then build those
+
+00:16:14.285 --> 00:16:16.685
+<v Speaker 1>two other images after that point. So you
+
+00:16:16.685 --> 00:16:18.925
+<v Speaker 1>can kinda share a a base. Right? You
+
+00:16:18.925 --> 00:16:20.445
+<v Speaker 1>may have a GoLang app that uses the
+
+00:16:20.445 --> 00:16:21.885
+<v Speaker 1>same Go version or that you wanna keep
+
+00:16:21.885 --> 00:16:24.220
+<v Speaker 1>in sync somehow or you have some pattern
+
+00:16:24.300 --> 00:16:26.300
+<v Speaker 1>for, you know, dealing with your,
+
+00:16:26.860 --> 00:16:29.899
+<v Speaker 1>you know, authentication or logging or whatever, you
+
+00:16:29.899 --> 00:16:31.100
+<v Speaker 1>can put that into the base and then
+
+00:16:31.100 --> 00:16:32.380
+<v Speaker 1>use it from your two
+
+00:16:32.779 --> 00:16:34.140
+<v Speaker 1>application containers.
+
+00:16:34.860 --> 00:16:37.375
+<v Speaker 1>Then from that section, after that section, you
+
+00:16:37.375 --> 00:16:39.535
+<v Speaker 1>have the deploy section, which is gonna just
+
+00:16:39.535 --> 00:16:41.615
+<v Speaker 1>use raw Kubernetes manifest. You can see there
+
+00:16:41.615 --> 00:16:43.855
+<v Speaker 1>deploy, kube control manifest.
+
+00:16:43.855 --> 00:16:46.654
+<v Speaker 1>So it's gonna deploy, manifest with kube control,
+
+00:16:46.815 --> 00:16:48.654
+<v Speaker 1>and those are stored in those directories, and
+
+00:16:48.654 --> 00:16:50.255
+<v Speaker 1>we use a blob to describe
+
+00:16:50.574 --> 00:16:51.375
+<v Speaker 1>where those are.
+
+00:16:52.150 --> 00:16:53.670
+<v Speaker 1>And then the last section, I think, is
+
+00:16:53.670 --> 00:16:55.190
+<v Speaker 1>is really cool, and this is something we
+
+00:16:55.190 --> 00:16:57.350
+<v Speaker 1>recently changed. When you put this port forward
+
+00:16:57.350 --> 00:16:59.750
+<v Speaker 1>section in, you can describe what resources you
+
+00:16:59.750 --> 00:17:01.590
+<v Speaker 1>want to be port forwarded and what ports
+
+00:17:01.590 --> 00:17:03.350
+<v Speaker 1>you want them to be on. And then
+
+00:17:03.350 --> 00:17:06.150
+<v Speaker 1>Skaffold will automatically port forward these when you
+
+00:17:06.150 --> 00:17:08.664
+<v Speaker 1>run Skaffold dev. So then after the app
+
+00:17:08.664 --> 00:17:10.184
+<v Speaker 1>comes up, David, you'll be able to see
+
+00:17:10.184 --> 00:17:13.384
+<v Speaker 1>on Port 8080 the web app of this
+
+00:17:13.384 --> 00:17:14.264
+<v Speaker 1>application.
+
+00:17:15.704 --> 00:17:19.144
+<v Speaker 0>Alright. I think that all seems pretty familiar,
+
+00:17:19.429 --> 00:17:21.190
+<v Speaker 0>you know, like, maybe to like other tools,
+
+00:17:21.190 --> 00:17:22.869
+<v Speaker 0>you know, it doesn't look like Docker Compose,
+
+00:17:22.869 --> 00:17:25.349
+<v Speaker 0>I'm defining containers that I wanna run. I'm
+
+00:17:25.349 --> 00:17:26.630
+<v Speaker 0>seeing how to deploy them and I've got
+
+00:17:26.630 --> 00:17:29.669
+<v Speaker 0>my ports. So it's kinda there's this familiarity
+
+00:17:29.669 --> 00:17:31.590
+<v Speaker 0>to it at least. Absolutely. I quite like
+
+00:17:31.590 --> 00:17:31.750
+<v Speaker 0>that.
+
+00:17:32.605 --> 00:17:34.205
+<v Speaker 0>So what you're saying is if I just
+
+00:17:34.205 --> 00:17:36.524
+<v Speaker 0>run this magical Skaffold dev command, it's gonna
+
+00:17:36.524 --> 00:17:39.325
+<v Speaker 0>spin up these images, expose the port locally,
+
+00:17:39.325 --> 00:17:40.124
+<v Speaker 0>and I should
+
+00:17:40.365 --> 00:17:42.284
+<v Speaker 0>be able to browse to what port 9,000
+
+00:17:42.284 --> 00:17:43.565
+<v Speaker 0>and see our web app.
+
+00:17:44.605 --> 00:17:45.245
+<v Speaker 1>That's right.
+
+00:17:46.880 --> 00:17:47.600
+<v Speaker 0>So
+
+00:17:47.840 --> 00:17:50.799
+<v Speaker 0>alias on the I'm gonna assume this may
+
+00:17:50.799 --> 00:17:52.240
+<v Speaker 0>take just a few moments. So while that
+
+00:17:52.240 --> 00:17:55.040
+<v Speaker 0>does that Sure. We've got requires here for
+
+00:17:55.040 --> 00:17:57.679
+<v Speaker 0>the artifact that's requiring a container image. What
+
+00:17:57.760 --> 00:17:59.440
+<v Speaker 0>what's the alias of base? Why are we?
+
+00:18:00.935 --> 00:18:02.455
+<v Speaker 0>Yeah. I I don't think I understand what
+
+00:18:02.455 --> 00:18:03.174
+<v Speaker 0>this means.
+
+00:18:03.415 --> 00:18:05.255
+<v Speaker 1>Yeah. So if you can actually maybe pop
+
+00:18:05.255 --> 00:18:07.654
+<v Speaker 1>open in a in another window the
+
+00:18:08.055 --> 00:18:10.695
+<v Speaker 1>the Docker files, you'll see that we're passing
+
+00:18:10.695 --> 00:18:11.735
+<v Speaker 1>an argument
+
+00:18:11.815 --> 00:18:12.615
+<v Speaker 1>into
+
+00:18:12.935 --> 00:18:14.535
+<v Speaker 1>the the Docker build process.
+
+00:18:16.990 --> 00:18:18.190
+<v Speaker 0>Yep.
+
+00:18:18.430 --> 00:18:20.510
+<v Speaker 0>So you wanna take So then in base
+
+00:18:20.910 --> 00:18:22.990
+<v Speaker 1>yeah. It they base
+
+00:18:24.670 --> 00:18:25.710
+<v Speaker 1>a Dockerfile,
+
+00:18:25.950 --> 00:18:27.630
+<v Speaker 1>and that should be relatively
+
+00:18:27.630 --> 00:18:30.105
+<v Speaker 1>simple. Right? It's coming from distroless.
+
+00:18:30.105 --> 00:18:32.905
+<v Speaker 1>We're setting a environment variable there, and then
+
+00:18:32.905 --> 00:18:34.185
+<v Speaker 1>we're saying what command to run. So that's
+
+00:18:34.185 --> 00:18:35.865
+<v Speaker 1>kind of our basic config. And then if
+
+00:18:35.865 --> 00:18:38.025
+<v Speaker 1>you go into, like, Leroy app or Leroy
+
+00:18:38.025 --> 00:18:41.065
+<v Speaker 1>web, you'll see that we're using that alias
+
+00:18:41.065 --> 00:18:43.385
+<v Speaker 1>that we defined previously. So you see arg
+
+00:18:43.385 --> 00:18:43.785
+<v Speaker 1>base?
+
+00:18:44.580 --> 00:18:47.299
+<v Speaker 1>That's what lines us up there, and then
+
+00:18:47.299 --> 00:18:49.700
+<v Speaker 1>you'll see from base in the bottom. So
+
+00:18:49.700 --> 00:18:51.940
+<v Speaker 1>the arg kind of passes from the Skaffold
+
+00:18:51.940 --> 00:18:52.659
+<v Speaker 1>YAML
+
+00:18:52.740 --> 00:18:55.059
+<v Speaker 1>into the Dockerfile and then becomes a from
+
+00:18:55.059 --> 00:18:57.955
+<v Speaker 1>block in that Dockerfile that that's kind of
+
+00:18:57.955 --> 00:18:58.995
+<v Speaker 1>the leaf node there.
+
+00:18:59.955 --> 00:19:01.875
+<v Speaker 0>Right. Okay. Yeah. That makes sense. I think
+
+00:19:01.875 --> 00:19:03.154
+<v Speaker 0>I understand that now.
+
+00:19:05.635 --> 00:19:07.795
+<v Speaker 0>So it now seems to have built our
+
+00:19:07.795 --> 00:19:08.275
+<v Speaker 0>images.
+
+00:19:10.010 --> 00:19:10.489
+<v Speaker 0>And
+
+00:19:11.049 --> 00:19:13.210
+<v Speaker 0>by waiting for deployments to stabilize, I'm assuming
+
+00:19:13.210 --> 00:19:14.970
+<v Speaker 0>is that just waiting for the pods to
+
+00:19:14.970 --> 00:19:17.370
+<v Speaker 0>spin up, probes to maybe start passing, and
+
+00:19:17.370 --> 00:19:19.129
+<v Speaker 0>I think that. I do that correct.
+
+00:19:20.169 --> 00:19:22.970
+<v Speaker 0>Alright. Moment of truth. Is this working? Alright.
+
+00:19:27.545 --> 00:19:29.545
+<v Speaker 0>Of course, it is. There we go. There
+
+00:19:29.545 --> 00:19:31.305
+<v Speaker 1>it is. I mean, it's easy to get
+
+00:19:31.305 --> 00:19:33.065
+<v Speaker 1>text to render in a browser, but it's
+
+00:19:33.065 --> 00:19:34.985
+<v Speaker 1>hard to deploy that text into the programs
+
+00:19:34.985 --> 00:19:35.785
+<v Speaker 1>cluster sometimes.
+
+00:19:37.450 --> 00:19:39.370
+<v Speaker 0>Cool. That was
+
+00:19:39.770 --> 00:19:40.730
+<v Speaker 0>nice and simple.
+
+00:19:41.770 --> 00:19:43.370
+<v Speaker 1>Yeah. So now you should be able to
+
+00:19:43.370 --> 00:19:44.170
+<v Speaker 1>update
+
+00:19:44.170 --> 00:19:46.010
+<v Speaker 1>the text of that app and have it
+
+00:19:46.010 --> 00:19:47.770
+<v Speaker 1>rerun the loop relatively
+
+00:19:47.770 --> 00:19:49.610
+<v Speaker 1>quickly on your behalf.
+
+00:19:50.010 --> 00:19:52.170
+<v Speaker 0>Alright. So this is a Go application
+
+00:19:54.325 --> 00:19:56.565
+<v Speaker 0>that is just doing a format print. So
+
+00:19:56.565 --> 00:19:58.085
+<v Speaker 0>you're saying I should be able to add
+
+00:19:58.085 --> 00:20:00.484
+<v Speaker 0>Rawkode
+
+00:20:00.645 --> 00:20:01.845
+<v Speaker 0>says hello.
+
+00:20:03.044 --> 00:20:04.404
+<v Speaker 1>Yep. And just save
+
+00:20:04.885 --> 00:20:05.924
+<v Speaker 1>and then go back.
+
+00:20:06.740 --> 00:20:08.580
+<v Speaker 1>Cool. So it's picked up that change,
+
+00:20:08.820 --> 00:20:11.460
+<v Speaker 1>and now it's gonna redeploy or rebuild the
+
+00:20:11.460 --> 00:20:13.780
+<v Speaker 1>the Go app in this case and redeploy
+
+00:20:13.780 --> 00:20:14.340
+<v Speaker 1>it.
+
+00:20:16.260 --> 00:20:17.620
+<v Speaker 0>Okay. And that's just using
+
+00:20:19.294 --> 00:20:21.054
+<v Speaker 0>Docker under the hood right now because we
+
+00:20:21.054 --> 00:20:22.815
+<v Speaker 0>haven't really told us to do anything otherwise.
+
+00:20:22.815 --> 00:20:24.495
+<v Speaker 0>I'm I'm I'm able to take advantage of
+
+00:20:24.495 --> 00:20:26.895
+<v Speaker 0>layer caching and all that other goodness based
+
+00:20:26.895 --> 00:20:28.654
+<v Speaker 0>on how I configure my Docker file.
+
+00:20:29.135 --> 00:20:31.740
+<v Speaker 1>Yeah. And actually running Skaffold dev is how
+
+00:20:31.740 --> 00:20:32.460
+<v Speaker 1>I've
+
+00:20:32.620 --> 00:20:35.420
+<v Speaker 1>optimized my images over time because you start
+
+00:20:35.420 --> 00:20:37.980
+<v Speaker 1>to kinda watch it pretty intently, making sure
+
+00:20:37.980 --> 00:20:39.500
+<v Speaker 1>that your layers are right. And when you
+
+00:20:39.500 --> 00:20:41.340
+<v Speaker 1>change a certain file, and it doesn't do,
+
+00:20:41.340 --> 00:20:42.860
+<v Speaker 1>you know, weird things, so you can kinda
+
+00:20:42.860 --> 00:20:43.740
+<v Speaker 1>segment
+
+00:20:43.980 --> 00:20:46.300
+<v Speaker 1>the the the the files in your repo
+
+00:20:46.300 --> 00:20:48.325
+<v Speaker 1>a bit better. But what we do in
+
+00:20:48.325 --> 00:20:50.725
+<v Speaker 1>Skaffold is actually look at the Docker file
+
+00:20:50.725 --> 00:20:52.885
+<v Speaker 1>to find out which files are important to
+
+00:20:52.885 --> 00:20:53.445
+<v Speaker 1>watch.
+
+00:20:53.765 --> 00:20:55.205
+<v Speaker 1>Right? So if you're doing, for example, a
+
+00:20:55.205 --> 00:20:57.845
+<v Speaker 1>copy dot dot, so copying the entire source
+
+00:20:57.845 --> 00:20:59.525
+<v Speaker 1>tree into your doc file, yeah, the whole
+
+00:20:59.525 --> 00:21:01.590
+<v Speaker 1>source tree is gonna be active. So anytime
+
+00:21:01.590 --> 00:21:04.070
+<v Speaker 1>you change anything there, you're we're gonna rebuild.
+
+00:21:04.230 --> 00:21:06.390
+<v Speaker 1>But if you have very specific things, like
+
+00:21:06.390 --> 00:21:08.390
+<v Speaker 1>maybe only copying the Go files or your
+
+00:21:08.390 --> 00:21:09.669
+<v Speaker 1>Go binary things,
+
+00:21:09.990 --> 00:21:11.830
+<v Speaker 1>it will only update when you change those.
+
+00:21:14.365 --> 00:21:15.085
+<v Speaker 0>Alright.
+
+00:21:15.165 --> 00:21:17.565
+<v Speaker 0>Well, I'm definitely impressed with our first little
+
+00:21:17.565 --> 00:21:19.165
+<v Speaker 0>demo there. It's nice to see that working
+
+00:21:19.165 --> 00:21:20.685
+<v Speaker 0>end to end. I can see how that
+
+00:21:20.685 --> 00:21:22.525
+<v Speaker 0>development workflow is really
+
+00:21:23.005 --> 00:21:25.005
+<v Speaker 0>you know, we're I guess what every developer
+
+00:21:25.005 --> 00:21:27.485
+<v Speaker 0>wants is that really fast feedback loop from
+
+00:21:27.485 --> 00:21:29.460
+<v Speaker 0>when I change my code to when I
+
+00:21:29.460 --> 00:21:30.900
+<v Speaker 0>see the results or what I want. And
+
+00:21:31.060 --> 00:21:33.220
+<v Speaker 0>That's right. Skaffold is automated in that entire
+
+00:21:33.220 --> 00:21:35.460
+<v Speaker 0>step from saving the files to building the
+
+00:21:35.460 --> 00:21:37.060
+<v Speaker 0>image, pushing it to Kubernetes, deploying it to
+
+00:21:37.060 --> 00:21:39.539
+<v Speaker 0>Kubernetes, and then port forwarding it to me.
+
+00:21:40.100 --> 00:21:41.620
+<v Speaker 0>That's right. That's what I wanna see. I
+
+00:21:41.620 --> 00:21:43.424
+<v Speaker 0>like it thick. So
+
+00:21:43.664 --> 00:21:45.345
+<v Speaker 0>should we jump into another example?
+
+00:21:46.145 --> 00:21:48.144
+<v Speaker 1>Yeah. Sure. So we can
+
+00:21:48.544 --> 00:21:51.104
+<v Speaker 1>try maybe a file sync example.
+
+00:21:51.424 --> 00:21:52.784
+<v Speaker 1>So let's take a look.
+
+00:21:53.664 --> 00:21:55.985
+<v Speaker 0>I do have a question there. Just something
+
+00:21:55.985 --> 00:21:58.225
+<v Speaker 0>caught my eye. I control c that, and
+
+00:21:57.710 --> 00:21:59.630
+<v Speaker 0>it's also got a signal handler on it.
+
+00:21:59.630 --> 00:22:01.390
+<v Speaker 0>And it seems to have deleted those deployments
+
+00:22:01.390 --> 00:22:03.549
+<v Speaker 0>as well. That was pretty nice. That's right.
+
+00:22:03.630 --> 00:22:05.710
+<v Speaker 1>Yeah. So it'll clean up by default, and
+
+00:22:05.710 --> 00:22:07.470
+<v Speaker 1>then you can also have a flag dash
+
+00:22:07.470 --> 00:22:09.710
+<v Speaker 1>dash cleanup false if you wanna leave things
+
+00:22:09.710 --> 00:22:11.950
+<v Speaker 1>around. And that's usually for folks that have
+
+00:22:12.215 --> 00:22:14.054
+<v Speaker 1>something that takes a while to boot up,
+
+00:22:14.535 --> 00:22:15.895
+<v Speaker 1>and and they wanna make sure that they
+
+00:22:15.895 --> 00:22:18.135
+<v Speaker 1>have a running version in there to get
+
+00:22:18.135 --> 00:22:19.335
+<v Speaker 1>back to where they were.
+
+00:22:19.815 --> 00:22:20.934
+<v Speaker 0>Yeah. Cool.
+
+00:22:21.335 --> 00:22:23.175
+<v Speaker 0>Yeah. I was I I thought there when
+
+00:22:23.175 --> 00:22:24.295
+<v Speaker 0>I control c that I was like, oh,
+
+00:22:24.295 --> 00:22:25.495
+<v Speaker 0>that's probably not the best way to do
+
+00:22:25.495 --> 00:22:26.535
+<v Speaker 0>that, and I'm gonna have to clean it
+
+00:22:26.535 --> 00:22:27.335
+<v Speaker 0>up, but
+
+00:22:27.630 --> 00:22:30.270
+<v Speaker 0>it surprised me. Yeah. We'll handle those pieces
+
+00:22:30.270 --> 00:22:30.990
+<v Speaker 1>for you.
+
+00:22:32.030 --> 00:22:34.670
+<v Speaker 0>Alright. So that was a compiled Go application.
+
+00:22:34.670 --> 00:22:35.870
+<v Speaker 0>Can we take a look at something that's
+
+00:22:35.870 --> 00:22:37.789
+<v Speaker 0>interpreted in a bit more dynamic,
+
+00:22:38.510 --> 00:22:40.270
+<v Speaker 0>or do you wanna jump into something else
+
+00:22:40.270 --> 00:22:42.270
+<v Speaker 0>first? What what you think? Let's try the
+
+00:22:42.845 --> 00:22:45.005
+<v Speaker 1>you like TypeScript? Should we try a TypeScript
+
+00:22:45.005 --> 00:22:46.765
+<v Speaker 1>example? I actually haven't run this, so we
+
+00:22:46.765 --> 00:22:47.485
+<v Speaker 1>might as well,
+
+00:22:48.125 --> 00:22:50.205
+<v Speaker 1>you know, ask the demo gods to to
+
+00:22:50.205 --> 00:22:52.925
+<v Speaker 1>bless us with the TypeScript payment. Alright. Well,
+
+00:22:52.925 --> 00:22:55.085
+<v Speaker 0>I will repeat the same process, and I'll
+
+00:22:55.085 --> 00:22:56.900
+<v Speaker 0>run Skaffold dev first, jump jump over to
+
+00:22:56.900 --> 00:22:58.260
+<v Speaker 0>the other tab. We can take a look
+
+00:22:58.260 --> 00:23:00.980
+<v Speaker 0>at the Skaffold. Yml. That makes sense? Beautiful,
+
+00:23:00.980 --> 00:23:01.700
+<v Speaker 1>that's good.
+
+00:23:02.179 --> 00:23:04.979
+<v Speaker 0>Alright, so we can jump out of this.
+
+00:23:09.140 --> 00:23:10.340
+<v Speaker 0>Yeah, test script, there we go.
+
+00:23:13.595 --> 00:23:16.155
+<v Speaker 0>But I suspect this is probably gonna be
+
+00:23:16.155 --> 00:23:18.475
+<v Speaker 0>very similar until I say that. And of
+
+00:23:18.475 --> 00:23:19.995
+<v Speaker 0>course, we've got some profiles thing going on
+
+00:23:19.995 --> 00:23:21.515
+<v Speaker 0>here. So I'm gonna shut up and let
+
+00:23:21.515 --> 00:23:24.849
+<v Speaker 0>you just take that away. Let's see. So
+
+00:23:25.250 --> 00:23:27.490
+<v Speaker 1>in here, we have a few things that
+
+00:23:27.490 --> 00:23:29.649
+<v Speaker 1>are gonna be different. Right? The the image
+
+00:23:29.649 --> 00:23:31.649
+<v Speaker 1>part, the the artifacts
+
+00:23:31.649 --> 00:23:34.289
+<v Speaker 1>is very basic. Right? You define what the
+
+00:23:34.289 --> 00:23:36.450
+<v Speaker 1>image name is gonna be and then the
+
+00:23:36.450 --> 00:23:37.169
+<v Speaker 1>context
+
+00:23:37.330 --> 00:23:39.649
+<v Speaker 1>of where that image's Dockerfile is, for example.
+
+00:23:40.865 --> 00:23:42.544
+<v Speaker 1>In the profile section
+
+00:23:42.625 --> 00:23:45.184
+<v Speaker 1>is where we define kind of a different
+
+00:23:45.345 --> 00:23:47.664
+<v Speaker 1>SKU or a different way that we want
+
+00:23:47.664 --> 00:23:48.544
+<v Speaker 1>Skaffold
+
+00:23:48.625 --> 00:23:51.505
+<v Speaker 1>to operate depending on the commands you pass
+
+00:23:51.505 --> 00:23:54.480
+<v Speaker 1>to it. So here, this team, if we
+
+00:23:54.480 --> 00:23:57.440
+<v Speaker 1>wanna imagine it that way, has a development
+
+00:23:57.440 --> 00:24:00.639
+<v Speaker 1>profile. And so when we run Skaffold dev,
+
+00:24:00.720 --> 00:24:01.840
+<v Speaker 1>we're gonna pass
+
+00:24:02.240 --> 00:24:04.880
+<v Speaker 1>dash p for profile dev, which is the
+
+00:24:04.880 --> 00:24:05.679
+<v Speaker 1>name of this. Right?
+
+00:24:06.505 --> 00:24:08.665
+<v Speaker 1>And that allows you to run this particular
+
+00:24:08.665 --> 00:24:09.705
+<v Speaker 1>dev profile.
+
+00:24:10.265 --> 00:24:11.385
+<v Speaker 1>But you can also see that we have
+
+00:24:11.385 --> 00:24:13.785
+<v Speaker 1>an activation there that says anytime we're running
+
+00:24:13.785 --> 00:24:15.465
+<v Speaker 1>to the Skaffold dev command,
+
+00:24:16.184 --> 00:24:18.425
+<v Speaker 1>that it's gonna use this pro profile by
+
+00:24:18.425 --> 00:24:20.184
+<v Speaker 1>default. Right? So this is another way to
+
+00:24:20.184 --> 00:24:21.809
+<v Speaker 1>kind of catalog
+
+00:24:21.809 --> 00:24:23.010
+<v Speaker 1>the procedures
+
+00:24:23.010 --> 00:24:25.330
+<v Speaker 1>or the the the
+
+00:24:25.330 --> 00:24:27.009
+<v Speaker 1>workflow of your team.
+
+00:24:27.650 --> 00:24:29.410
+<v Speaker 1>And then the the real change here that
+
+00:24:29.410 --> 00:24:31.970
+<v Speaker 1>we have is that we're building the artifacts
+
+00:24:32.210 --> 00:24:34.929
+<v Speaker 1>with Docker, but we're also gonna sync
+
+00:24:34.929 --> 00:24:36.290
+<v Speaker 1>files to the container.
+
+00:24:36.745 --> 00:24:39.465
+<v Speaker 1>Right? So in some cases, with interpreted languages,
+
+00:24:39.625 --> 00:24:40.904
+<v Speaker 1>you're gonna wanna make sure that you don't
+
+00:24:40.904 --> 00:24:43.625
+<v Speaker 1>have to rebuild from scratch every time because,
+
+00:24:43.625 --> 00:24:45.145
+<v Speaker 1>really, what you wanna do is just shuttle
+
+00:24:45.145 --> 00:24:47.544
+<v Speaker 1>your files from your local file system out
+
+00:24:47.544 --> 00:24:50.424
+<v Speaker 1>into the running container and, you know, restart
+
+00:24:50.424 --> 00:24:52.350
+<v Speaker 1>your your running process. And so that's what
+
+00:24:52.350 --> 00:24:53.870
+<v Speaker 1>this is gonna do here. Right? And so
+
+00:24:53.870 --> 00:24:55.950
+<v Speaker 1>you can see, you can define the specific
+
+00:24:55.950 --> 00:24:58.030
+<v Speaker 1>files that you wanna be synced over. So
+
+00:24:58.030 --> 00:25:00.110
+<v Speaker 1>here, we have a manual sync, which means
+
+00:25:00.110 --> 00:25:03.070
+<v Speaker 1>don't try to infer what my syncing strategy
+
+00:25:03.070 --> 00:25:03.550
+<v Speaker 1>should be.
+
+00:25:04.255 --> 00:25:07.375
+<v Speaker 1>Sync these files, source the full glob, anything
+
+00:25:07.375 --> 00:25:08.255
+<v Speaker 1>TypeScript
+
+00:25:08.255 --> 00:25:09.695
+<v Speaker 1>into the destination,
+
+00:25:09.855 --> 00:25:11.855
+<v Speaker 1>which is the source folder on that side.
+
+00:25:11.855 --> 00:25:14.015
+<v Speaker 1>And so we should see very fast updates
+
+00:25:14.015 --> 00:25:16.335
+<v Speaker 1>here with no rebuild like we did in
+
+00:25:16.335 --> 00:25:18.495
+<v Speaker 1>in the Golang example and no compile, for
+
+00:25:18.495 --> 00:25:18.815
+<v Speaker 1>example.
+
+00:25:20.830 --> 00:25:21.470
+<v Speaker 0>Cool.
+
+00:25:22.990 --> 00:25:25.470
+<v Speaker 0>So the sync that's happening, I mean,
+
+00:25:26.510 --> 00:25:28.750
+<v Speaker 0>is that just running our sync into the
+
+00:25:28.750 --> 00:25:30.430
+<v Speaker 0>into the pod, or is it the, like
+
+00:25:30.765 --> 00:25:33.085
+<v Speaker 1>Not not quite our sync. Even even more,
+
+00:25:33.085 --> 00:25:35.645
+<v Speaker 1>I think, rudimentary than that. We're just tarring
+
+00:25:35.645 --> 00:25:37.165
+<v Speaker 1>things up and then copying them over to
+
+00:25:37.165 --> 00:25:39.245
+<v Speaker 1>the container and exploding them over there. So
+
+00:25:39.245 --> 00:25:41.485
+<v Speaker 1>we have the keep control copy command is,
+
+00:25:41.485 --> 00:25:42.605
+<v Speaker 1>I think, is being used under the hood
+
+00:25:42.605 --> 00:25:44.685
+<v Speaker 1>or maybe that was how it was done
+
+00:25:44.310 --> 00:25:46.550
+<v Speaker 1>previously and now we've done something fancier, but
+
+00:25:46.550 --> 00:25:49.430
+<v Speaker 1>it's a pretty basic implementation there. Yes. So
+
+00:25:49.430 --> 00:25:51.270
+<v Speaker 0>you're not actually modifying the container image that
+
+00:25:51.270 --> 00:25:52.870
+<v Speaker 0>I use from application in any way. You're
+
+00:25:52.870 --> 00:25:55.110
+<v Speaker 0>doing this purely over the APIs exposed through
+
+00:25:55.110 --> 00:25:57.830
+<v Speaker 0>Docker or Kubernetes, etcetera. That's right. Okay. That's
+
+00:25:57.830 --> 00:25:57.990
+<v Speaker 1>right.
+
+00:25:59.105 --> 00:26:01.264
+<v Speaker 0>Alright. So this is now
+
+00:26:01.745 --> 00:26:02.544
+<v Speaker 0>running.
+
+00:26:03.024 --> 00:26:05.024
+<v Speaker 0>How did we expose that?
+
+00:26:06.945 --> 00:26:09.184
+<v Speaker 0>Well, we don't have any port thing here.
+
+00:26:09.745 --> 00:26:12.865
+<v Speaker 1>So by default, it should expose the port
+
+00:26:13.190 --> 00:26:15.190
+<v Speaker 1>that is running there, but we might have
+
+00:26:15.190 --> 00:26:17.190
+<v Speaker 1>to if you go up, did it any
+
+00:26:17.190 --> 00:26:19.110
+<v Speaker 1>green lines of the port forwarding info show
+
+00:26:19.110 --> 00:26:19.590
+<v Speaker 1>up?
+
+00:26:21.510 --> 00:26:23.269
+<v Speaker 1>Looks like not. So we'll have to do
+
+00:26:23.270 --> 00:26:26.309
+<v Speaker 1>the dash dash port forward flag because no
+
+00:26:26.309 --> 00:26:28.309
+<v Speaker 1>port forwards were defined in the config file.
+
+00:26:28.665 --> 00:26:30.825
+<v Speaker 0>So this is just a way when doing
+
+00:26:30.825 --> 00:26:33.545
+<v Speaker 0>Skaffold dev to expose a port without modifying
+
+00:26:33.545 --> 00:26:34.985
+<v Speaker 0>the Skaffold configuration?
+
+00:26:35.385 --> 00:26:37.705
+<v Speaker 1>That's right. So let's just do, yeah, cleanup
+
+00:26:37.705 --> 00:26:39.625
+<v Speaker 1>and then dash dash port forward.
+
+00:26:40.265 --> 00:26:42.419
+<v Speaker 1>Let's see. It should auto detect. It should
+
+00:26:42.419 --> 00:26:43.940
+<v Speaker 1>just be the port forward flag with no
+
+00:26:43.940 --> 00:26:45.940
+<v Speaker 1>arguments, and it should be auto detected in
+
+00:26:45.940 --> 00:26:46.419
+<v Speaker 1>there.
+
+00:26:47.139 --> 00:26:48.980
+<v Speaker 0>Should is my favorite word on this show.
+
+00:26:48.980 --> 00:26:50.740
+<v Speaker 1>Oh, yeah. I you know, like I said,
+
+00:26:50.740 --> 00:26:52.500
+<v Speaker 1>I haven't done this this one before, so
+
+00:26:52.500 --> 00:26:53.380
+<v Speaker 1>we're gonna figure it out.
+
+00:26:54.645 --> 00:26:56.085
+<v Speaker 0>So we got a question, I guess, we
+
+00:26:56.085 --> 00:26:59.285
+<v Speaker 0>could tackle just now. Is asking, can Skaffold
+
+00:26:59.285 --> 00:27:00.885
+<v Speaker 0>be used for GitOps
+
+00:27:00.885 --> 00:27:01.605
+<v Speaker 0>environments?
+
+00:27:03.125 --> 00:27:05.525
+<v Speaker 1>Yeah. Definitely. So one of the things we
+
+00:27:05.525 --> 00:27:07.605
+<v Speaker 1>try to do is kinda chunk up the
+
+00:27:07.605 --> 00:27:09.539
+<v Speaker 1>pipeline that we have for Skaffold dev and
+
+00:27:09.539 --> 00:27:11.539
+<v Speaker 1>let you do individual pieces. Right?
+
+00:27:11.860 --> 00:27:12.659
+<v Speaker 1>And so
+
+00:27:13.139 --> 00:27:14.980
+<v Speaker 1>what you can do with, for example, the
+
+00:27:14.980 --> 00:27:17.940
+<v Speaker 1>Skaffold render command is all of the steps
+
+00:27:17.940 --> 00:27:20.419
+<v Speaker 1>that we showed except for the deployment piece.
+
+00:27:20.419 --> 00:27:22.019
+<v Speaker 1>And rather than deploying hey,
+
+00:27:22.785 --> 00:27:24.465
+<v Speaker 1>Instead of deploying,
+
+00:27:24.465 --> 00:27:26.705
+<v Speaker 1>you're going to get a YAML file that
+
+00:27:26.705 --> 00:27:28.625
+<v Speaker 1>has all of the things that you needed
+
+00:27:28.785 --> 00:27:30.785
+<v Speaker 1>in that file or all the things from
+
+00:27:30.785 --> 00:27:32.625
+<v Speaker 1>your configuration in that file. And so you
+
+00:27:32.625 --> 00:27:34.545
+<v Speaker 1>can put that into your Git repository, and
+
+00:27:34.545 --> 00:27:36.785
+<v Speaker 1>then that will be synced with whatever git
+
+00:27:36.945 --> 00:27:37.905
+<v Speaker 1>GitOps tool you're using.
+
+00:27:39.110 --> 00:27:41.110
+<v Speaker 0>Okay. Cool. Thank you. I think a few
+
+00:27:41.110 --> 00:27:42.950
+<v Speaker 0>members of the team are also jumping into
+
+00:27:42.950 --> 00:27:45.190
+<v Speaker 0>the comments and answering questions. So, yeah, thank
+
+00:27:45.190 --> 00:27:47.669
+<v Speaker 0>you to Jal and Nick. Okay.
+
+00:27:48.470 --> 00:27:49.029
+<v Speaker 0>So
+
+00:27:49.590 --> 00:27:54.004
+<v Speaker 0>this is exposing port 3,000 locally on 3,001,
+
+00:27:54.004 --> 00:27:55.284
+<v Speaker 0>I think. That's right.
+
+00:27:56.884 --> 00:27:58.325
+<v Speaker 1>We're gonna get a lot of hello world
+
+00:27:58.325 --> 00:28:01.124
+<v Speaker 1>web pages, I think, today. There it is.
+
+00:28:02.325 --> 00:28:03.684
+<v Speaker 0>That's about as far as I take my
+
+00:28:03.684 --> 00:28:05.524
+<v Speaker 0>side projects anyway, so I'm quite familiar with
+
+00:28:05.524 --> 00:28:05.924
+<v Speaker 0>this page.
+
+00:28:06.500 --> 00:28:08.340
+<v Speaker 1>But you gotta buy the domain first, obviously.
+
+00:28:08.340 --> 00:28:10.020
+<v Speaker 0>Oh, we oh, don't give me a start.
+
+00:28:10.020 --> 00:28:10.660
+<v Speaker 0>I
+
+00:28:11.780 --> 00:28:13.300
+<v Speaker 0>don't know why I feel so compelled to
+
+00:28:13.300 --> 00:28:15.620
+<v Speaker 0>buy domains for all every great idea that
+
+00:28:15.620 --> 00:28:17.460
+<v Speaker 0>I have only for them to set zero.
+
+00:28:17.460 --> 00:28:19.060
+<v Speaker 0>And then I renew them four times, and
+
+00:28:19.060 --> 00:28:21.245
+<v Speaker 0>then I go, maybe I'm done. Then maybe
+
+00:28:21.245 --> 00:28:22.045
+<v Speaker 0>I'm late.
+
+00:28:22.605 --> 00:28:24.125
+<v Speaker 1>No. You keep it. You keep it.
+
+00:28:25.085 --> 00:28:25.645
+<v Speaker 0>So
+
+00:28:26.045 --> 00:28:27.645
+<v Speaker 0>that's a hello world,
+
+00:28:28.365 --> 00:28:30.925
+<v Speaker 0>we're gonna make a modification to this application
+
+00:28:30.925 --> 00:28:33.725
+<v Speaker 0>then. So let's see. We got our
+
+00:28:34.350 --> 00:28:35.389
+<v Speaker 0>back end
+
+00:28:35.710 --> 00:28:36.590
+<v Speaker 0>source
+
+00:28:37.150 --> 00:28:38.029
+<v Speaker 0>index.
+
+00:28:38.830 --> 00:28:39.789
+<v Speaker 0>There we go.
+
+00:28:40.510 --> 00:28:41.309
+<v Speaker 1>Cool.
+
+00:28:42.350 --> 00:28:44.669
+<v Speaker 0>I'm just gonna save this.
+
+00:28:46.590 --> 00:28:47.549
+<v Speaker 0>Change is happening.
+
+00:28:48.565 --> 00:28:49.845
+<v Speaker 0>Re exposed.
+
+00:28:52.165 --> 00:28:54.245
+<v Speaker 0>So I guess with like a node JS
+
+00:28:54.245 --> 00:28:56.085
+<v Speaker 0>or a type script project, they have a
+
+00:28:56.085 --> 00:28:58.245
+<v Speaker 0>concept of like hot module reloading themselves. Is
+
+00:28:58.245 --> 00:28:59.365
+<v Speaker 0>that something I'm gonna be able to get
+
+00:28:59.365 --> 00:29:00.485
+<v Speaker 0>to work or would I
+
+00:29:01.240 --> 00:29:03.799
+<v Speaker 0>quit running yet? Yeah. So you should so
+
+00:29:03.799 --> 00:29:06.120
+<v Speaker 1>your app is gonna need to do whatever
+
+00:29:06.120 --> 00:29:07.879
+<v Speaker 1>it needs to do to be able to
+
+00:29:08.440 --> 00:29:10.919
+<v Speaker 1>detect the change. Right? So for example, like,
+
+00:29:10.919 --> 00:29:12.440
+<v Speaker 1>I've I've used Django in the past, and
+
+00:29:12.440 --> 00:29:14.600
+<v Speaker 1>you have to pass a particular flag to
+
+00:29:14.600 --> 00:29:17.304
+<v Speaker 1>it to, know, actually reload itself.
+
+00:29:17.625 --> 00:29:18.985
+<v Speaker 1>And so that would have to be set
+
+00:29:18.985 --> 00:29:20.264
+<v Speaker 1>in your application.
+
+00:29:20.424 --> 00:29:22.505
+<v Speaker 1>What Skaffold is gonna do, its part in
+
+00:29:22.505 --> 00:29:24.664
+<v Speaker 1>this is getting the files over to the
+
+00:29:24.664 --> 00:29:26.744
+<v Speaker 1>new container or the the built container.
+
+00:29:27.304 --> 00:29:29.225
+<v Speaker 0>Yeah. I guess just because this is looking
+
+00:29:29.225 --> 00:29:30.424
+<v Speaker 0>at the code now, this is just a
+
+00:29:30.424 --> 00:29:32.710
+<v Speaker 0>really simple express express application to show how
+
+00:29:32.710 --> 00:29:34.950
+<v Speaker 0>that interpreted thing works with the sync. So
+
+00:29:34.950 --> 00:29:36.630
+<v Speaker 0>this that's probably not gonna have hot module
+
+00:29:36.630 --> 00:29:38.390
+<v Speaker 0>real. But I can imagine if I were
+
+00:29:38.390 --> 00:29:39.669
+<v Speaker 0>to use Next. Js or one of these
+
+00:29:39.669 --> 00:29:41.590
+<v Speaker 0>other fancy frameworks that may
+
+00:29:41.830 --> 00:29:43.270
+<v Speaker 0>just work out of the box. I'm gonna
+
+00:29:43.270 --> 00:29:45.190
+<v Speaker 0>leave that as an experiment for another day,
+
+00:29:45.190 --> 00:29:47.485
+<v Speaker 0>but something I'm curious to try in my
+
+00:29:47.485 --> 00:29:48.284
+<v Speaker 0>own project.
+
+00:29:48.925 --> 00:29:50.445
+<v Speaker 0>So that's pretty cool.
+
+00:29:51.085 --> 00:29:52.765
+<v Speaker 1>Yeah. I wanted to show something
+
+00:29:53.245 --> 00:29:54.684
+<v Speaker 1>from these examples
+
+00:29:54.845 --> 00:29:56.525
+<v Speaker 1>and how the images
+
+00:29:56.605 --> 00:29:58.525
+<v Speaker 1>are placed into the configurations.
+
+00:29:59.110 --> 00:30:00.710
+<v Speaker 1>So if we go back to the Skaffold
+
+00:30:00.710 --> 00:30:02.710
+<v Speaker 1>YAML, and we see that we define the
+
+00:30:02.710 --> 00:30:04.469
+<v Speaker 1>images and their names,
+
+00:30:05.590 --> 00:30:08.470
+<v Speaker 1>we didn't really give a fully qualified name
+
+00:30:08.470 --> 00:30:10.710
+<v Speaker 1>here. So if you look at build artifacts
+
+00:30:10.710 --> 00:30:13.270
+<v Speaker 1>on that first image, it's called node TypeScript
+
+00:30:13.270 --> 00:30:13.669
+<v Speaker 1>example.
+
+00:30:14.715 --> 00:30:15.754
+<v Speaker 1>That name
+
+00:30:16.315 --> 00:30:19.914
+<v Speaker 1>has to match what's in your Kubernetes manifest.
+
+00:30:20.555 --> 00:30:22.715
+<v Speaker 1>Right? So that's how we know the thing
+
+00:30:22.715 --> 00:30:24.715
+<v Speaker 1>that we built is the thing that needs
+
+00:30:24.715 --> 00:30:26.475
+<v Speaker 1>to go into your Kubernetes manifest.
+
+00:30:26.880 --> 00:30:28.400
+<v Speaker 1>So if you go back into that Kate's
+
+00:30:28.400 --> 00:30:30.400
+<v Speaker 1>folder, you should see a deployment that has
+
+00:30:30.400 --> 00:30:33.200
+<v Speaker 1>that specific image name in there. And that's
+
+00:30:33.200 --> 00:30:35.360
+<v Speaker 1>not something that necessarily is, you know, for
+
+00:30:35.360 --> 00:30:37.840
+<v Speaker 1>example, on Docker Hub, which is where, you
+
+00:30:37.840 --> 00:30:38.960
+<v Speaker 1>know, Docker would look first.
+
+00:30:39.514 --> 00:30:41.914
+<v Speaker 1>So we make sure that we replace that
+
+00:30:41.914 --> 00:30:43.514
+<v Speaker 1>with the one that's locally built. And since
+
+00:30:43.514 --> 00:30:46.875
+<v Speaker 1>you're using Docker desktop, which has the Docker
+
+00:30:46.875 --> 00:30:49.674
+<v Speaker 1>daemon shared between Kubernetes and Docker, the image
+
+00:30:49.674 --> 00:30:52.510
+<v Speaker 1>is built locally and then runs straight off
+
+00:30:52.510 --> 00:30:54.270
+<v Speaker 1>of that Docker cache. Right? And that's how
+
+00:30:54.270 --> 00:30:56.029
+<v Speaker 1>we get some speed improvements there.
+
+00:30:56.350 --> 00:30:57.629
+<v Speaker 1>But you could also,
+
+00:30:57.950 --> 00:31:01.309
+<v Speaker 1>for example, use a flag on the Skaffold
+
+00:31:01.470 --> 00:31:04.270
+<v Speaker 1>build command or Skaffold deployer, any of those
+
+00:31:04.270 --> 00:31:07.404
+<v Speaker 1>that says, tack on a prefix to this.
+
+00:31:07.645 --> 00:31:09.804
+<v Speaker 1>Right? Where the prefix might be, you know,
+
+00:31:09.804 --> 00:31:11.724
+<v Speaker 1>gcr. I o slash
+
+00:31:11.725 --> 00:31:12.524
+<v Speaker 1>vix.
+
+00:31:12.605 --> 00:31:14.605
+<v Speaker 1>Right? And then that'll tack on that so
+
+00:31:14.605 --> 00:31:16.524
+<v Speaker 1>that it goes to my private registry when
+
+00:31:16.524 --> 00:31:18.605
+<v Speaker 1>it builds. Right? So we have that flexibility
+
+00:31:18.605 --> 00:31:19.965
+<v Speaker 1>to be able to do things kind of
+
+00:31:20.040 --> 00:31:22.520
+<v Speaker 1>in a streamlined way in in development and
+
+00:31:22.520 --> 00:31:25.000
+<v Speaker 1>then point it at a more production style
+
+00:31:25.160 --> 00:31:25.960
+<v Speaker 1>approach
+
+00:31:25.960 --> 00:31:27.559
+<v Speaker 1>via flags and config.
+
+00:31:28.200 --> 00:31:30.920
+<v Speaker 0>Alright. Cool. Yeah. I was actually curious about
+
+00:31:30.920 --> 00:31:32.725
+<v Speaker 0>the the image stuff, so it's nice to
+
+00:31:32.725 --> 00:31:34.404
+<v Speaker 0>get that kind of clarified. We just understand
+
+00:31:34.404 --> 00:31:36.404
+<v Speaker 0>how that actually works and what's expected from
+
+00:31:36.404 --> 00:31:38.244
+<v Speaker 0>that. We kind of end user there too.
+
+00:31:38.965 --> 00:31:39.604
+<v Speaker 0>Yeah.
+
+00:31:40.164 --> 00:31:42.644
+<v Speaker 0>Alright. So I'm gonna let Skaffold clean that
+
+00:31:42.644 --> 00:31:45.284
+<v Speaker 0>up. We'll jump back into examples.
+
+00:31:45.845 --> 00:31:47.125
+<v Speaker 0>This is the normal LS.
+
+00:31:48.220 --> 00:31:49.980
+<v Speaker 0>So we've taken a look at compiles with
+
+00:31:49.980 --> 00:31:52.539
+<v Speaker 0>Go. We're taking a look at Terpitude with
+
+00:31:52.539 --> 00:31:53.499
+<v Speaker 0>TypeScript.
+
+00:31:54.539 --> 00:31:57.820
+<v Speaker 0>Let's see what catches our eye. Build packs
+
+00:31:57.820 --> 00:31:59.899
+<v Speaker 1>build packs example. I don't know how many
+
+00:31:59.899 --> 00:32:01.820
+<v Speaker 1>folks have used build packs in the past,
+
+00:32:01.820 --> 00:32:03.815
+<v Speaker 1>but build packs is a really easy way
+
+00:32:03.815 --> 00:32:06.135
+<v Speaker 1>to get kinda streamlined image builds without having
+
+00:32:06.135 --> 00:32:07.095
+<v Speaker 1>a Dockerfile.
+
+00:32:07.335 --> 00:32:09.495
+<v Speaker 1>And Skaffold is a really easy way to
+
+00:32:09.495 --> 00:32:11.095
+<v Speaker 1>get going with build packs, and we'll see
+
+00:32:11.095 --> 00:32:12.615
+<v Speaker 1>that in the Skaffold channel for that one.
+
+00:32:12.615 --> 00:32:14.615
+<v Speaker 0>So is this cloud native build packs or
+
+00:32:14.615 --> 00:32:16.295
+<v Speaker 0>the classic kinda Heroku
+
+00:32:16.375 --> 00:32:18.760
+<v Speaker 0>build pack? This this is the cloud native
+
+00:32:18.760 --> 00:32:21.080
+<v Speaker 1>build pack. Specifically, the GCP build packs, I
+
+00:32:21.080 --> 00:32:23.240
+<v Speaker 1>think, are what's configured in this, but we
+
+00:32:23.240 --> 00:32:26.120
+<v Speaker 1>support any of the packers that are available.
+
+00:32:26.120 --> 00:32:27.800
+<v Speaker 1>So if you look at that Skaffold YAML,
+
+00:32:27.800 --> 00:32:28.760
+<v Speaker 1>it should have
+
+00:32:29.160 --> 00:32:29.480
+<v Speaker 1>the,
+
+00:32:31.045 --> 00:32:33.925
+<v Speaker 1>yeah, the builder config in there. So you
+
+00:32:33.925 --> 00:32:34.965
+<v Speaker 1>see our image
+
+00:32:35.525 --> 00:32:37.525
+<v Speaker 1>has another block under it that says build
+
+00:32:37.525 --> 00:32:40.325
+<v Speaker 1>packs. By default, we're gonna look for a
+
+00:32:40.325 --> 00:32:41.284
+<v Speaker 1>Docker file,
+
+00:32:42.165 --> 00:32:43.285
+<v Speaker 1>but you can configure
+
+00:32:44.130 --> 00:32:45.410
+<v Speaker 1>Skaffold to grab
+
+00:32:45.970 --> 00:32:48.050
+<v Speaker 1>create images in various ways. Right? It could
+
+00:32:48.050 --> 00:32:50.370
+<v Speaker 1>be did a session with you on Cameco.
+
+00:32:50.370 --> 00:32:52.610
+<v Speaker 1>Right? You wanna run-in cluster with a Docker
+
+00:32:52.610 --> 00:32:53.169
+<v Speaker 1>list
+
+00:32:53.490 --> 00:32:55.650
+<v Speaker 1>build. You can do that. This is another
+
+00:32:55.650 --> 00:32:58.655
+<v Speaker 1>approach which uses build packs, which actually pack
+
+00:32:58.655 --> 00:33:01.055
+<v Speaker 1>your image from source code directly. So you
+
+00:33:01.055 --> 00:33:02.415
+<v Speaker 1>don't even have to have a Dockerfile to
+
+00:33:02.415 --> 00:33:04.335
+<v Speaker 1>tell it how to build your image. It
+
+00:33:04.335 --> 00:33:07.054
+<v Speaker 1>just detects, hey. You have a Python app.
+
+00:33:07.055 --> 00:33:10.095
+<v Speaker 1>Python apps generally have a requirements dot TXT.
+
+00:33:10.450 --> 00:33:12.370
+<v Speaker 1>I'm gonna get your dependencies in place with
+
+00:33:12.370 --> 00:33:13.650
+<v Speaker 1>that, and then I'm gonna go ahead and
+
+00:33:13.650 --> 00:33:15.010
+<v Speaker 1>build that image for you and push it
+
+00:33:15.010 --> 00:33:15.970
+<v Speaker 1>to the registry.
+
+00:33:16.050 --> 00:33:17.410
+<v Speaker 1>And so the way you define how you
+
+00:33:17.410 --> 00:33:19.170
+<v Speaker 1>want those images to be built or what
+
+00:33:19.170 --> 00:33:20.930
+<v Speaker 1>standard of of building you want is via
+
+00:33:20.930 --> 00:33:22.290
+<v Speaker 1>that builder configuration there.
+
+00:33:22.945 --> 00:33:24.305
+<v Speaker 0>So does this mean when I run a
+
+00:33:24.305 --> 00:33:26.785
+<v Speaker 0>Skaffold dev, we're gonna see something slightly different
+
+00:33:26.785 --> 00:33:29.425
+<v Speaker 0>from what we're seeing in the presentation? Yeah.
+
+00:33:29.425 --> 00:33:30.145
+<v Speaker 1>Specifically
+
+00:33:30.305 --> 00:33:33.585
+<v Speaker 1>in the image build, you'll see a lot
+
+00:33:33.585 --> 00:33:34.465
+<v Speaker 1>more happening
+
+00:33:34.705 --> 00:33:37.025
+<v Speaker 1>than your usual Docker files. Let's take a
+
+00:33:37.025 --> 00:33:37.425
+<v Speaker 1>look at that.
+
+00:33:39.170 --> 00:33:41.010
+<v Speaker 0>Let's see. So
+
+00:33:41.410 --> 00:33:43.809
+<v Speaker 0>it's pulling the builder image.
+
+00:33:46.290 --> 00:33:48.450
+<v Speaker 1>So this builder image contains all of the
+
+00:33:48.450 --> 00:33:51.250
+<v Speaker 1>code that understands how to go from source
+
+00:33:51.250 --> 00:33:53.090
+<v Speaker 1>code to a built image
+
+00:33:53.875 --> 00:33:56.515
+<v Speaker 1>in the OCI context. I'm assuming for multiple
+
+00:33:56.515 --> 00:33:58.595
+<v Speaker 0>languages, giving the number of layers and the
+
+00:33:58.595 --> 00:34:00.595
+<v Speaker 0>size of it is that it's probably like
+
+00:34:00.595 --> 00:34:02.195
+<v Speaker 0>a It is ubiquitous super It's a bit
+
+00:34:02.195 --> 00:34:02.835
+<v Speaker 1>chunky.
+
+00:34:03.235 --> 00:34:05.155
+<v Speaker 1>Yeah. So, yeah, this will have all of
+
+00:34:05.155 --> 00:34:07.169
+<v Speaker 1>the things you need, and it's that builder
+
+00:34:07.169 --> 00:34:07.970
+<v Speaker 1>v one
+
+00:34:08.290 --> 00:34:10.050
+<v Speaker 1>that we have in the the Skaffold YAML,
+
+00:34:10.050 --> 00:34:12.530
+<v Speaker 1>and it'll be for Java, Python, Node, all
+
+00:34:12.530 --> 00:34:14.369
+<v Speaker 1>those languages, all the same. So you only
+
+00:34:14.369 --> 00:34:16.690
+<v Speaker 1>really have to pay this, quote, unquote, tax
+
+00:34:16.690 --> 00:34:18.369
+<v Speaker 1>one time, and then you should be good.
+
+00:34:20.225 --> 00:34:23.105
+<v Speaker 0>Alright. Doesn't seem too bad. Yes. Sorry to
+
+00:34:23.105 --> 00:34:24.145
+<v Speaker 0>go. Quickly.
+
+00:34:24.705 --> 00:34:26.305
+<v Speaker 1>And so this will be kind of the
+
+00:34:26.545 --> 00:34:27.585
+<v Speaker 1>initialization
+
+00:34:27.585 --> 00:34:29.585
+<v Speaker 1>in a lot of cases with, you know,
+
+00:34:29.585 --> 00:34:32.385
+<v Speaker 1>these dev loops and containers is getting the
+
+00:34:32.385 --> 00:34:34.380
+<v Speaker 1>right bits into the right places. And then
+
+00:34:34.380 --> 00:34:36.619
+<v Speaker 1>from there, we do fun tricks with layering
+
+00:34:36.619 --> 00:34:37.980
+<v Speaker 1>and a bunch of other stuff to make
+
+00:34:37.980 --> 00:34:40.619
+<v Speaker 1>things fast from that point. Cool. So we
+
+00:34:40.619 --> 00:34:43.020
+<v Speaker 1>just pulled the builder image, and now it's
+
+00:34:43.020 --> 00:34:45.819
+<v Speaker 1>actually gonna look for the run image. So
+
+00:34:45.819 --> 00:34:48.235
+<v Speaker 1>how do I run this image, which may
+
+00:34:48.235 --> 00:34:49.435
+<v Speaker 1>not be the same way that I build
+
+00:34:49.435 --> 00:34:51.515
+<v Speaker 1>this image. Right? It's just how we do
+
+00:34:51.594 --> 00:34:55.034
+<v Speaker 1>kind of distroless images for security purposes and
+
+00:34:55.034 --> 00:34:57.195
+<v Speaker 1>things like that. It'll actually build a really
+
+00:34:57.195 --> 00:35:00.230
+<v Speaker 1>lean image when it runs, but have some
+
+00:35:00.230 --> 00:35:00.790
+<v Speaker 1>more
+
+00:35:01.030 --> 00:35:03.190
+<v Speaker 1>content in there for for when it builds.
+
+00:35:04.390 --> 00:35:05.829
+<v Speaker 0>Okay. So you saw at the top there
+
+00:35:05.829 --> 00:35:07.270
+<v Speaker 1>it's detecting? Yep.
+
+00:35:08.550 --> 00:35:10.470
+<v Speaker 0>Yeah. I was just gonna say it's
+
+00:35:10.550 --> 00:35:12.575
+<v Speaker 0>to try to detect what kind of code
+
+00:35:12.575 --> 00:35:14.414
+<v Speaker 0>we have inside of here, it has correctly
+
+00:35:14.414 --> 00:35:16.494
+<v Speaker 0>identified that we have Python.
+
+00:35:16.654 --> 00:35:18.494
+<v Speaker 0>It seems to bring in that there's maybe
+
+00:35:18.494 --> 00:35:20.255
+<v Speaker 0>some sort of pep file, not looking at
+
+00:35:20.255 --> 00:35:22.894
+<v Speaker 0>the code, but that would make sense. I'm
+
+00:35:22.894 --> 00:35:24.494
+<v Speaker 0>not sure what the analyzer
+
+00:35:24.494 --> 00:35:27.400
+<v Speaker 0>is doing with this, but then it just
+
+00:35:27.400 --> 00:35:28.440
+<v Speaker 0>starts to build.
+
+00:35:28.760 --> 00:35:30.600
+<v Speaker 0>I guess that's good.
+
+00:35:30.840 --> 00:35:32.280
+<v Speaker 0>So then I don't even need to write
+
+00:35:32.280 --> 00:35:34.600
+<v Speaker 0>a Dockerfile. I can just leverage build packs,
+
+00:35:34.600 --> 00:35:35.400
+<v Speaker 0>and it'll
+
+00:35:35.560 --> 00:35:37.080
+<v Speaker 0>do the right thing, hopefully.
+
+00:35:38.360 --> 00:35:40.280
+<v Speaker 1>That's right. And, like, it's not the hardest
+
+00:35:40.280 --> 00:35:41.925
+<v Speaker 1>thing in the world to get, you know,
+
+00:35:41.925 --> 00:35:43.925
+<v Speaker 1>Docker files written, but to get a good
+
+00:35:43.925 --> 00:35:46.485
+<v Speaker 1>one that's lean, that has the right dependencies,
+
+00:35:46.485 --> 00:35:48.245
+<v Speaker 1>and that works cross language
+
+00:35:48.405 --> 00:35:49.845
+<v Speaker 1>is definitely harder.
+
+00:35:49.925 --> 00:35:51.925
+<v Speaker 1>So this can help you kinda standardize things
+
+00:35:51.925 --> 00:35:53.765
+<v Speaker 1>down and have one less thing to worry
+
+00:35:53.765 --> 00:35:55.365
+<v Speaker 1>about in your ecosystem.
+
+00:35:55.880 --> 00:35:57.160
+<v Speaker 0>Well, yeah. I mean, it's one of those
+
+00:35:57.160 --> 00:35:58.680
+<v Speaker 0>things that, you know, if you can draw
+
+00:35:58.680 --> 00:36:01.000
+<v Speaker 0>an experience of an entire community that are
+
+00:36:01.000 --> 00:36:03.240
+<v Speaker 0>focused on maintaining these build packs to produce
+
+00:36:03.240 --> 00:36:06.760
+<v Speaker 0>production images for runtimes and languages, like Exactly.
+
+00:36:06.760 --> 00:36:08.600
+<v Speaker 0>Who who wouldn't want to take advantage of
+
+00:36:08.600 --> 00:36:09.675
+<v Speaker 0>that, really?
+
+00:36:10.075 --> 00:36:11.355
+<v Speaker 0>And build packs are something that I I
+
+00:36:11.355 --> 00:36:13.435
+<v Speaker 0>think are really cool. I just I've always
+
+00:36:13.435 --> 00:36:14.955
+<v Speaker 0>thought it was maybe just too early from
+
+00:36:14.955 --> 00:36:17.355
+<v Speaker 0>what I've seen, but maybe that's changed. Maybe
+
+00:36:17.355 --> 00:36:19.115
+<v Speaker 0>it's maybe it's getting better.
+
+00:36:19.995 --> 00:36:21.995
+<v Speaker 1>I think one of the challenges is just
+
+00:36:21.590 --> 00:36:23.910
+<v Speaker 1>getting build packs. Right? Like, how do you
+
+00:36:23.910 --> 00:36:25.910
+<v Speaker 1>run them? You have to have a CLI.
+
+00:36:25.990 --> 00:36:28.310
+<v Speaker 1>In this case, Skaffold is running all of
+
+00:36:28.310 --> 00:36:30.230
+<v Speaker 1>those pieces for you. So it's just adding
+
+00:36:30.230 --> 00:36:32.230
+<v Speaker 1>that little config block that you saw, and
+
+00:36:32.230 --> 00:36:34.070
+<v Speaker 1>then Skaffold takes care of the rest for
+
+00:36:34.070 --> 00:36:36.995
+<v Speaker 1>you, which I think is is a ease
+
+00:36:36.995 --> 00:36:39.395
+<v Speaker 1>of use improvement that that build packs
+
+00:36:39.555 --> 00:36:41.395
+<v Speaker 1>needed a nudge towards. But they have their
+
+00:36:41.395 --> 00:36:42.835
+<v Speaker 1>own CLI if you wanna run this, for
+
+00:36:42.835 --> 00:36:44.115
+<v Speaker 1>example, in CI or whatever.
+
+00:36:44.755 --> 00:36:46.275
+<v Speaker 0>Okay. So I have noticed that this one
+
+00:36:46.275 --> 00:36:48.035
+<v Speaker 0>has, you know, taken a little bit longer
+
+00:36:48.035 --> 00:36:50.035
+<v Speaker 0>than the first two examples. Is this something
+
+00:36:50.035 --> 00:36:51.720
+<v Speaker 0>that is gonna be a lot quicker as
+
+00:36:51.720 --> 00:36:53.320
+<v Speaker 0>I make changes to the application? Like, we're
+
+00:36:53.320 --> 00:36:54.760
+<v Speaker 0>not gonna have to watch all of that
+
+00:36:54.760 --> 00:36:55.560
+<v Speaker 0>again. Right?
+
+00:36:56.120 --> 00:36:58.520
+<v Speaker 1>Right. So you you'll have actually in we
+
+00:36:58.520 --> 00:37:01.160
+<v Speaker 1>have an integration with Buildpacks to do syncing
+
+00:37:01.160 --> 00:37:01.880
+<v Speaker 1>as well.
+
+00:37:02.360 --> 00:37:05.000
+<v Speaker 1>And so you'll get some optimizations again through
+
+00:37:05.000 --> 00:37:07.575
+<v Speaker 1>how Skaffold does all these underlying tools
+
+00:37:08.455 --> 00:37:09.175
+<v Speaker 1>to
+
+00:37:09.255 --> 00:37:11.735
+<v Speaker 1>automatically sync the right things over to that
+
+00:37:11.735 --> 00:37:12.535
+<v Speaker 1>container
+
+00:37:12.615 --> 00:37:13.735
+<v Speaker 1>when necessary.
+
+00:37:14.135 --> 00:37:15.815
+<v Speaker 1>And maybe we can get someone to post
+
+00:37:15.815 --> 00:37:17.815
+<v Speaker 1>the the link to those docs. If not,
+
+00:37:17.815 --> 00:37:18.775
+<v Speaker 1>I can find them real quick.
+
+00:37:19.809 --> 00:37:21.650
+<v Speaker 0>Alright. Well, it looks like we have our
+
+00:37:21.650 --> 00:37:23.890
+<v Speaker 0>Python application running, but I don't think I've
+
+00:37:23.890 --> 00:37:26.130
+<v Speaker 0>seen the port forward.
+
+00:37:27.329 --> 00:37:30.290
+<v Speaker 0>Maybe that we need to add that.
+
+00:37:30.530 --> 00:37:32.609
+<v Speaker 1>Yeah. The dash dash port forward command might
+
+00:37:32.609 --> 00:37:35.245
+<v Speaker 1>be necessary on there. Alright. So let's just
+
+00:37:35.325 --> 00:37:36.685
+<v Speaker 0>try that again.
+
+00:37:37.565 --> 00:37:38.765
+<v Speaker 1>And then we'll see
+
+00:37:39.085 --> 00:37:40.925
+<v Speaker 1>what happens with the speed here.
+
+00:37:41.325 --> 00:37:43.325
+<v Speaker 0>Yeah. It's it's just been straight to deploy.
+
+00:37:43.325 --> 00:37:44.925
+<v Speaker 0>But I guess that makes sense. Nothing has
+
+00:37:44.925 --> 00:37:47.085
+<v Speaker 0>actually changed in the the application. Right.
+
+00:37:47.910 --> 00:37:49.990
+<v Speaker 0>So, yeah, eighty eighty one. Cool.
+
+00:37:52.869 --> 00:37:55.030
+<v Speaker 1>What is the hello world message? Oh, lowercase
+
+00:37:55.030 --> 00:37:57.270
+<v Speaker 1>hello world with a comma. I like it.
+
+00:37:57.670 --> 00:37:59.190
+<v Speaker 0>Mixing up. Yeah. Definitely.
+
+00:38:00.195 --> 00:38:02.995
+<v Speaker 0>Alright. Okay. So we got web dot py.
+
+00:38:03.235 --> 00:38:04.435
+<v Speaker 0>Hello, world.
+
+00:38:05.875 --> 00:38:07.715
+<v Speaker 0>Let's just standardize
+
+00:38:07.715 --> 00:38:09.315
+<v Speaker 0>this. Let's save.
+
+00:38:10.675 --> 00:38:12.275
+<v Speaker 0>And that's now going through the build pack
+
+00:38:12.275 --> 00:38:12.915
+<v Speaker 0>stage again.
+
+00:38:16.520 --> 00:38:17.960
+<v Speaker 1>And so it's reusing a bunch of the
+
+00:38:17.960 --> 00:38:19.960
+<v Speaker 1>things that it already did in the past
+
+00:38:19.960 --> 00:38:20.520
+<v Speaker 1>here.
+
+00:38:20.840 --> 00:38:23.400
+<v Speaker 1>Don't think in this case, it's actually syncing.
+
+00:38:23.400 --> 00:38:23.800
+<v Speaker 1>Yeah.
+
+00:38:24.280 --> 00:38:25.560
+<v Speaker 0>I was gonna say, I don't think I
+
+00:38:25.560 --> 00:38:27.080
+<v Speaker 0>see anything here to suggest that it was
+
+00:38:27.080 --> 00:38:28.840
+<v Speaker 0>maybe just syncing the fails into the
+
+00:38:29.244 --> 00:38:30.525
+<v Speaker 0>running container.
+
+00:38:33.885 --> 00:38:35.645
+<v Speaker 1>Yeah. It looks like it's rebuilding in this
+
+00:38:35.645 --> 00:38:37.485
+<v Speaker 1>case, and we may need to actually
+
+00:38:37.645 --> 00:38:39.805
+<v Speaker 1>set something in that example to get it
+
+00:38:39.805 --> 00:38:40.445
+<v Speaker 1>to auto sync.
+
+00:38:41.100 --> 00:38:42.700
+<v Speaker 1>Oh, you know what it is? I think
+
+00:38:42.700 --> 00:38:45.660
+<v Speaker 1>it's only for Go, Java, and Node. Js.
+
+00:38:46.060 --> 00:38:48.060
+<v Speaker 1>So have we picked a different language? Maybe.
+
+00:38:48.060 --> 00:38:48.540
+<v Speaker 1>Yeah.
+
+00:38:49.180 --> 00:38:52.220
+<v Speaker 0>That's it. Right? Blame me. That's fine. Whatever.
+
+00:38:52.220 --> 00:38:53.500
+<v Speaker 1>I think I think I was the one
+
+00:38:53.500 --> 00:38:55.235
+<v Speaker 1>who chose the Python. So Yeah. I think
+
+00:38:55.235 --> 00:38:56.675
+<v Speaker 0>you said build pack, and I was like,
+
+00:38:56.675 --> 00:38:58.835
+<v Speaker 0>oh, let's do Python. But yeah. Okay. We
+
+00:38:58.835 --> 00:39:00.675
+<v Speaker 0>could try another one as well. I guess,
+
+00:39:00.675 --> 00:39:02.515
+<v Speaker 0>if anything can make Java fast, that's definitely
+
+00:39:02.515 --> 00:39:04.435
+<v Speaker 0>a one in many people's books because that's
+
+00:39:04.435 --> 00:39:06.435
+<v Speaker 0>almost a point of a point of frustration
+
+00:39:06.435 --> 00:39:08.995
+<v Speaker 0>for people developing against Kubernetes. At least the
+
+00:39:08.995 --> 00:39:10.380
+<v Speaker 0>people I speak to, it's always a pun
+
+00:39:10.380 --> 00:39:11.100
+<v Speaker 0>of frustration.
+
+00:39:11.420 --> 00:39:12.780
+<v Speaker 0>There we go. Yeah. And we actually have
+
+00:39:12.780 --> 00:39:15.180
+<v Speaker 1>a a Java specific builder as well called
+
+00:39:15.180 --> 00:39:17.020
+<v Speaker 1>Jib. So if you look in those examples,
+
+00:39:17.020 --> 00:39:19.579
+<v Speaker 1>you'll see another very similar approach to to
+
+00:39:19.579 --> 00:39:21.900
+<v Speaker 1>building images that are that are lean and
+
+00:39:21.900 --> 00:39:22.780
+<v Speaker 1>and fast
+
+00:39:22.940 --> 00:39:24.460
+<v Speaker 1>is the the Jib
+
+00:39:24.859 --> 00:39:27.475
+<v Speaker 1>examples in there, but that's specific only to
+
+00:39:27.475 --> 00:39:28.115
+<v Speaker 1>Java.
+
+00:39:28.435 --> 00:39:29.955
+<v Speaker 1>So if you go to, for example,
+
+00:39:30.355 --> 00:39:31.155
+<v Speaker 1>Jib,
+
+00:39:31.555 --> 00:39:33.555
+<v Speaker 1>just the regular Jib example,
+
+00:39:33.555 --> 00:39:34.435
+<v Speaker 1>this should
+
+00:39:34.755 --> 00:39:36.355
+<v Speaker 1>let's see. Oh, you might need to have
+
+00:39:36.355 --> 00:39:37.955
+<v Speaker 1>Maven installed for this one.
+
+00:39:41.339 --> 00:39:43.099
+<v Speaker 0>Why would I need Maven installed?
+
+00:39:43.579 --> 00:39:45.740
+<v Speaker 1>Because Jim actually uses Maven
+
+00:39:45.819 --> 00:39:48.380
+<v Speaker 1>under the hood. Well, it is a part
+
+00:39:48.380 --> 00:39:50.220
+<v Speaker 1>of the Maven build process.
+
+00:39:50.539 --> 00:39:52.940
+<v Speaker 1>So it gets involved with your actual Java
+
+00:39:52.940 --> 00:39:53.580
+<v Speaker 1>project
+
+00:39:54.460 --> 00:39:55.019
+<v Speaker 1>and
+
+00:39:55.375 --> 00:39:57.215
+<v Speaker 1>builds the image in a very
+
+00:39:57.615 --> 00:40:00.815
+<v Speaker 1>efficient way for Java applications and then can
+
+00:40:00.815 --> 00:40:02.895
+<v Speaker 1>update that image in a very efficient way.
+
+00:40:02.895 --> 00:40:04.175
+<v Speaker 1>And so you see, we the way we
+
+00:40:04.175 --> 00:40:06.655
+<v Speaker 1>define that here in the artifact section rather
+
+00:40:06.655 --> 00:40:08.870
+<v Speaker 1>than having build packs under the image like
+
+00:40:08.870 --> 00:40:10.550
+<v Speaker 1>we did last time to tell it we're
+
+00:40:10.550 --> 00:40:12.630
+<v Speaker 1>not using a Docker file. It's actually using
+
+00:40:12.630 --> 00:40:13.990
+<v Speaker 1>JIT there.
+
+00:40:14.230 --> 00:40:17.190
+<v Speaker 0>Okay. Well, I don't believe I have Maven,
+
+00:40:17.190 --> 00:40:18.230
+<v Speaker 0>so maybe we should
+
+00:40:19.110 --> 00:40:20.630
+<v Speaker 1>move on to We can go on to
+
+00:40:20.630 --> 00:40:21.830
+<v Speaker 1>a a different one,
+
+00:40:22.230 --> 00:40:24.185
+<v Speaker 1>and maybe we'll just do
+
+00:40:26.985 --> 00:40:28.905
+<v Speaker 1>maybe multi config
+
+00:40:29.865 --> 00:40:31.145
+<v Speaker 1>microservices.
+
+00:40:32.985 --> 00:40:34.665
+<v Speaker 1>I know Thomas has been waiting for this
+
+00:40:34.665 --> 00:40:36.985
+<v Speaker 1>one to show up. Maybe more as well.
+
+00:40:36.985 --> 00:40:37.705
+<v Speaker 1>Let's see.
+
+00:40:38.105 --> 00:40:38.505
+<v Speaker 1>Cool.
+
+00:40:39.609 --> 00:40:40.810
+<v Speaker 0>Okay.
+
+00:40:40.810 --> 00:40:42.490
+<v Speaker 0>So it looks very similar to the last
+
+00:40:42.490 --> 00:40:43.530
+<v Speaker 0>microservices.
+
+00:40:43.530 --> 00:40:45.050
+<v Speaker 0>So I'm expecting we're gonna be to see
+
+00:40:45.050 --> 00:40:47.130
+<v Speaker 0>something different in the Skaffold.
+
+00:40:47.609 --> 00:40:49.770
+<v Speaker 1>Let's check it out. Oh, look at that.
+
+00:40:50.250 --> 00:40:52.325
+<v Speaker 1>A little bit different. Little bit less context
+
+00:40:52.325 --> 00:40:54.085
+<v Speaker 1>at the root folder here
+
+00:40:54.244 --> 00:40:56.645
+<v Speaker 1>about what's going on in the repo. What
+
+00:40:56.645 --> 00:40:58.645
+<v Speaker 1>we're doing here is using a feature that
+
+00:40:58.645 --> 00:41:00.885
+<v Speaker 1>we call modules or config dependencies.
+
+00:41:01.125 --> 00:41:03.924
+<v Speaker 1>Right? And so this allows you to take
+
+00:41:04.270 --> 00:41:07.070
+<v Speaker 1>a kind of broken up app, which maybe
+
+00:41:07.070 --> 00:41:10.910
+<v Speaker 1>it has Helm charts plus Kubernetes manifest in
+
+00:41:10.910 --> 00:41:12.190
+<v Speaker 1>the back end and the front end or,
+
+00:41:12.190 --> 00:41:13.630
+<v Speaker 1>in this case, the app and the web,
+
+00:41:14.270 --> 00:41:15.950
+<v Speaker 1>and create individual
+
+00:41:16.110 --> 00:41:18.954
+<v Speaker 1>Skaffold YAMLs for each of those and then
+
+00:41:18.954 --> 00:41:21.755
+<v Speaker 1>reference them from a a common
+
+00:41:21.755 --> 00:41:23.035
+<v Speaker 1>Skaffold or
+
+00:41:23.435 --> 00:41:25.035
+<v Speaker 1>root Skaffold.
+
+00:41:25.675 --> 00:41:26.475
+<v Speaker 1>So this way,
+
+00:41:26.954 --> 00:41:29.835
+<v Speaker 1>I can have dependencies on other services that
+
+00:41:29.835 --> 00:41:32.075
+<v Speaker 1>live maybe in my repo or maybe outside
+
+00:41:32.075 --> 00:41:35.440
+<v Speaker 1>of my repo. And this requires block lets
+
+00:41:35.440 --> 00:41:37.680
+<v Speaker 1>me pull those in into my local development
+
+00:41:37.680 --> 00:41:39.920
+<v Speaker 1>environment. So you can imagine you depend on
+
+00:41:39.920 --> 00:41:41.599
+<v Speaker 1>a back end service that, you know, your
+
+00:41:41.599 --> 00:41:43.440
+<v Speaker 1>team doesn't really own. You can point at
+
+00:41:43.440 --> 00:41:44.400
+<v Speaker 1>their repo
+
+00:41:44.720 --> 00:41:46.720
+<v Speaker 1>and pull in their latest, you know, stable
+
+00:41:46.720 --> 00:41:47.440
+<v Speaker 1>build
+
+00:41:47.599 --> 00:41:49.165
+<v Speaker 1>so so that you can develop your app
+
+00:41:49.165 --> 00:41:51.565
+<v Speaker 1>against their app at the same time.
+
+00:41:55.484 --> 00:41:57.405
+<v Speaker 0>Great. Okay. That makes sense. So I could
+
+00:41:57.405 --> 00:41:57.965
+<v Speaker 0>have
+
+00:41:58.845 --> 00:41:59.885
+<v Speaker 0>I I'm trying to say, guys, it's up
+
+00:41:59.885 --> 00:42:01.645
+<v Speaker 0>to work, like, in practice. So if I've
+
+00:42:01.645 --> 00:42:03.140
+<v Speaker 0>got many teams teams all built on their
+
+00:42:03.140 --> 00:42:05.300
+<v Speaker 0>own microservices and their own repositories with their
+
+00:42:05.300 --> 00:42:06.820
+<v Speaker 0>own Skaffold configurations,
+
+00:42:06.820 --> 00:42:08.500
+<v Speaker 0>I could have, like, an app of apps
+
+00:42:08.500 --> 00:42:10.820
+<v Speaker 0>repository that would allow me to spin up
+
+00:42:10.820 --> 00:42:11.780
+<v Speaker 0>everything
+
+00:42:12.020 --> 00:42:13.620
+<v Speaker 0>by reaching out to all of those other
+
+00:42:13.620 --> 00:42:14.100
+<v Speaker 0>repositories.
+
+00:42:14.885 --> 00:42:16.724
+<v Speaker 1>That's right. And so here, we're we're using
+
+00:42:16.724 --> 00:42:17.525
+<v Speaker 1>the path
+
+00:42:18.484 --> 00:42:20.005
+<v Speaker 1>way to configure this, but it could also
+
+00:42:20.005 --> 00:42:22.085
+<v Speaker 1>be pointing to a Git repo, right, and
+
+00:42:22.085 --> 00:42:23.925
+<v Speaker 1>a and a specific branch within that Git
+
+00:42:23.925 --> 00:42:26.005
+<v Speaker 1>repo or a specific folder and branch within
+
+00:42:26.005 --> 00:42:28.165
+<v Speaker 1>that Git repo. And it's not just for
+
+00:42:28.165 --> 00:42:29.445
+<v Speaker 1>the app of apps
+
+00:42:29.684 --> 00:42:31.580
+<v Speaker 1>kind of pattern. It could be just to
+
+00:42:31.580 --> 00:42:33.500
+<v Speaker 1>have your particular slice
+
+00:42:33.580 --> 00:42:36.300
+<v Speaker 1>of dependent services. Right? So you might have,
+
+00:42:36.460 --> 00:42:39.020
+<v Speaker 1>you know, a front end service that requires
+
+00:42:39.020 --> 00:42:40.940
+<v Speaker 1>x, y, and z back end. You don't
+
+00:42:40.940 --> 00:42:42.700
+<v Speaker 1>really want the whole universe to be built.
+
+00:42:42.700 --> 00:42:44.540
+<v Speaker 1>You just need the three other services or
+
+00:42:44.540 --> 00:42:46.724
+<v Speaker 1>the two other services that you require. And
+
+00:42:46.724 --> 00:42:48.325
+<v Speaker 1>so you can kinda just get that little
+
+00:42:48.404 --> 00:42:51.285
+<v Speaker 1>DAG built out in your your
+
+00:42:51.525 --> 00:42:52.645
+<v Speaker 1>local environment.
+
+00:42:54.964 --> 00:42:57.684
+<v Speaker 0>Okay. So I I I've got one more
+
+00:42:57.684 --> 00:42:59.090
+<v Speaker 0>question. I don't know if you just answered
+
+00:42:59.090 --> 00:43:00.610
+<v Speaker 0>it, but I'm gonna just ask it anyway
+
+00:43:00.610 --> 00:43:02.370
+<v Speaker 0>to see if it changes anything that
+
+00:43:02.770 --> 00:43:04.690
+<v Speaker 0>maybe just doesn't click into my head. So
+
+00:43:04.690 --> 00:43:06.130
+<v Speaker 0>if I just want to
+
+00:43:08.050 --> 00:43:08.690
+<v Speaker 0>so
+
+00:43:08.850 --> 00:43:09.810
+<v Speaker 0>I've got a
+
+00:43:10.130 --> 00:43:12.210
+<v Speaker 0>I've got an application that's got three services.
+
+00:43:13.075 --> 00:43:14.995
+<v Speaker 0>I'm working on one service, but I need
+
+00:43:14.995 --> 00:43:15.715
+<v Speaker 0>the other
+
+00:43:15.955 --> 00:43:16.515
+<v Speaker 0>two.
+
+00:43:17.075 --> 00:43:18.435
+<v Speaker 0>And I wanna use the app of apps
+
+00:43:18.435 --> 00:43:20.435
+<v Speaker 0>or best kind of config where I have
+
+00:43:20.435 --> 00:43:22.355
+<v Speaker 0>the required on the three services. Like, can
+
+00:43:22.355 --> 00:43:23.875
+<v Speaker 0>I say that I want to launch all
+
+00:43:23.875 --> 00:43:25.475
+<v Speaker 0>of them in like a
+
+00:43:26.630 --> 00:43:29.110
+<v Speaker 0>not not production, but almost production manner, and
+
+00:43:29.110 --> 00:43:30.310
+<v Speaker 0>then one of them in, like, a dev
+
+00:43:30.310 --> 00:43:32.070
+<v Speaker 0>profile where I can do the iteration on
+
+00:43:32.070 --> 00:43:34.870
+<v Speaker 0>it? Is that all possible? Right. Okay. Yeah.
+
+00:43:34.870 --> 00:43:36.470
+<v Speaker 1>Yeah. So you can start to kind of
+
+00:43:36.470 --> 00:43:38.790
+<v Speaker 1>tick on and off flavors of the various
+
+00:43:38.790 --> 00:43:41.295
+<v Speaker 1>apps and and pieces that you want. But
+
+00:43:41.295 --> 00:43:42.655
+<v Speaker 1>if you look at kind of the the
+
+00:43:42.655 --> 00:43:45.295
+<v Speaker 1>Leroy app and the Leroy app, Skaffold YAMLs,
+
+00:43:45.295 --> 00:43:47.855
+<v Speaker 1>they'll just look like normal Skaffold YAMLs. And
+
+00:43:47.855 --> 00:43:50.655
+<v Speaker 1>what when you require one of these, we
+
+00:43:50.655 --> 00:43:52.494
+<v Speaker 1>pull in the config and kind of mash
+
+00:43:52.494 --> 00:43:54.655
+<v Speaker 1>it together so that you get the right
+
+00:43:55.040 --> 00:43:57.040
+<v Speaker 1>order of events. Right? All the images are
+
+00:43:57.040 --> 00:43:59.440
+<v Speaker 1>built together, then all of the deployments happen
+
+00:43:59.440 --> 00:44:01.680
+<v Speaker 1>together, for example. And so it's a really
+
+00:44:01.680 --> 00:44:03.680
+<v Speaker 1>nice way to kind of break up this
+
+00:44:03.680 --> 00:44:04.880
+<v Speaker 1>microservices
+
+00:44:04.880 --> 00:44:05.920
+<v Speaker 1>dependencies
+
+00:44:05.920 --> 00:44:08.320
+<v Speaker 1>and let you have a unified way to
+
+00:44:08.320 --> 00:44:10.000
+<v Speaker 1>to develop between
+
+00:44:10.000 --> 00:44:10.560
+<v Speaker 1>services.
+
+00:44:11.244 --> 00:44:13.165
+<v Speaker 0>And is it possible to not do the
+
+00:44:13.165 --> 00:44:15.244
+<v Speaker 0>build and only leverage, like, the actual deploy
+
+00:44:15.244 --> 00:44:17.405
+<v Speaker 0>aspect of some of the apps, but then
+
+00:44:17.405 --> 00:44:19.885
+<v Speaker 0>do the build for one specific? Yes. Yeah.
+
+00:44:19.885 --> 00:44:21.245
+<v Speaker 0>Nodding. I'm happy. Yeah.
+
+00:44:21.724 --> 00:44:23.244
+<v Speaker 1>No. That that and I think that's probably
+
+00:44:23.244 --> 00:44:25.405
+<v Speaker 1>the pattern that that we want the most
+
+00:44:25.405 --> 00:44:27.800
+<v Speaker 1>is, you know, if you do have dependent
+
+00:44:27.800 --> 00:44:30.200
+<v Speaker 1>services, you don't really wanna depend on their
+
+00:44:30.200 --> 00:44:31.000
+<v Speaker 1>repo,
+
+00:44:31.000 --> 00:44:34.040
+<v Speaker 1>probably. You wanna depend on some, you know,
+
+00:44:34.040 --> 00:44:36.840
+<v Speaker 1>stamped out version, a stable set of manifests.
+
+00:44:36.840 --> 00:44:38.360
+<v Speaker 1>Yeah. Right? So you could have a module
+
+00:44:38.360 --> 00:44:40.705
+<v Speaker 1>that only has a deployed block in there
+
+00:44:40.785 --> 00:44:43.505
+<v Speaker 1>and just pull in those static manifests because,
+
+00:44:43.505 --> 00:44:45.505
+<v Speaker 1>really, you want a working version.
+
+00:44:45.744 --> 00:44:47.585
+<v Speaker 1>Right? In some cases, though, you might wanna
+
+00:44:47.585 --> 00:44:49.105
+<v Speaker 1>actually develop on both. And so you can
+
+00:44:49.105 --> 00:44:50.545
+<v Speaker 1>do both of those patterns,
+
+00:44:50.945 --> 00:44:52.785
+<v Speaker 1>whether it's, like, static manifest that pull in
+
+00:44:52.785 --> 00:44:55.600
+<v Speaker 1>the stable or the upstream kind of trunk
+
+00:44:55.600 --> 00:44:58.160
+<v Speaker 1>version of their app, including their source code.
+
+00:44:59.840 --> 00:45:02.160
+<v Speaker 0>Okay. I like the scent of all of
+
+00:45:02.160 --> 00:45:04.160
+<v Speaker 0>this. So I am just gonna go and
+
+00:45:04.160 --> 00:45:06.400
+<v Speaker 0>run our Skaffold dev. And I expect this
+
+00:45:06.400 --> 00:45:08.225
+<v Speaker 0>is gonna be super uneventful,
+
+00:45:08.225 --> 00:45:09.985
+<v Speaker 0>same as all the other examples and just
+
+00:45:09.985 --> 00:45:11.585
+<v Speaker 0>work, and I'm not gonna have any good
+
+00:45:11.585 --> 00:45:12.705
+<v Speaker 0>questions for you.
+
+00:45:14.225 --> 00:45:15.985
+<v Speaker 0>But I like it when things just work.
+
+00:45:15.985 --> 00:45:18.225
+<v Speaker 0>It's a it's a nice change from my
+
+00:45:18.225 --> 00:45:19.825
+<v Speaker 0>actual day job where nothing I do works.
+
+00:45:21.470 --> 00:45:23.150
+<v Speaker 1>Don't worry. It's taken a lot of effort
+
+00:45:23.150 --> 00:45:24.589
+<v Speaker 1>from a lot of folks who are are
+
+00:45:24.589 --> 00:45:26.349
+<v Speaker 1>in the chat here to make sure these
+
+00:45:26.349 --> 00:45:28.750
+<v Speaker 1>these samples work, and I think they're they're
+
+00:45:28.750 --> 00:45:30.510
+<v Speaker 1>a great example of kind of the the
+
+00:45:30.510 --> 00:45:32.350
+<v Speaker 1>breadth of functionality we have.
+
+00:45:32.750 --> 00:45:34.190
+<v Speaker 1>One of the things we're definitely gonna be
+
+00:45:34.190 --> 00:45:35.869
+<v Speaker 1>focusing on in the back half of the
+
+00:45:35.869 --> 00:45:37.855
+<v Speaker 1>year is how to put it all together.
+
+00:45:37.855 --> 00:45:39.295
+<v Speaker 1>You'll see, like, a lot of our examples
+
+00:45:39.295 --> 00:45:41.695
+<v Speaker 1>are very pointed towards specific features. So we'll
+
+00:45:41.695 --> 00:45:43.775
+<v Speaker 1>start getting some more complex examples that show
+
+00:45:43.775 --> 00:45:45.135
+<v Speaker 1>a bunch of different pieces
+
+00:45:45.455 --> 00:45:46.575
+<v Speaker 1>being stacked together.
+
+00:45:47.695 --> 00:45:50.270
+<v Speaker 0>Cool. So that looks like it's, well, it's
+
+00:45:50.270 --> 00:45:51.150
+<v Speaker 0>just worked.
+
+00:45:51.390 --> 00:45:55.310
+<v Speaker 0>We got our services exposed on port 18001.
+
+00:45:55.310 --> 00:45:57.550
+<v Speaker 0>I'm gonna hit 9000
+
+00:45:57.790 --> 00:45:59.950
+<v Speaker 0>and assume I'm gonna get a hello world.
+
+00:46:02.285 --> 00:46:05.325
+<v Speaker 0>Oh, the Leroy app. Okay. There we go.
+
+00:46:06.205 --> 00:46:07.085
+<v Speaker 1>Alright.
+
+00:46:07.645 --> 00:46:08.765
+<v Speaker 0>Yeah. I think
+
+00:46:09.485 --> 00:46:11.165
+<v Speaker 0>it's definitely starting to make a lot of
+
+00:46:11.165 --> 00:46:12.685
+<v Speaker 0>sense now of how I would want to
+
+00:46:12.685 --> 00:46:15.460
+<v Speaker 0>structure this. I I just think that require
+
+00:46:15.460 --> 00:46:17.380
+<v Speaker 0>with the path and the repository based way
+
+00:46:17.380 --> 00:46:19.380
+<v Speaker 0>is where I naturally wanna start taking my
+
+00:46:19.380 --> 00:46:20.820
+<v Speaker 0>applications. Because I think it's how
+
+00:46:21.460 --> 00:46:22.900
+<v Speaker 0>you know, I I don't really want, like,
+
+00:46:22.900 --> 00:46:25.300
+<v Speaker 0>a monolithic configuration for everything to run my
+
+00:46:25.300 --> 00:46:27.060
+<v Speaker 0>thing in production. I really want each team
+
+00:46:27.060 --> 00:46:28.994
+<v Speaker 0>to have the autonomy to say how to
+
+00:46:28.994 --> 00:46:30.435
+<v Speaker 0>develop and run their app.
+
+00:46:31.875 --> 00:46:33.875
+<v Speaker 1>One thing we might wanna check out while
+
+00:46:33.875 --> 00:46:36.115
+<v Speaker 1>we're here is the Skaffold, like, the individual
+
+00:46:36.115 --> 00:46:38.035
+<v Speaker 1>commands. Right? So we've seen kind of the
+
+00:46:38.035 --> 00:46:39.795
+<v Speaker 1>the loop, and people have been asking about
+
+00:46:39.795 --> 00:46:41.955
+<v Speaker 1>DevOps or CI or how this fits in.
+
+00:46:42.035 --> 00:46:43.930
+<v Speaker 1>So if you cancel out of here, we
+
+00:46:43.930 --> 00:46:46.010
+<v Speaker 1>can do the Skaffold build, and you'll see
+
+00:46:46.010 --> 00:46:47.290
+<v Speaker 1>what that does,
+
+00:46:47.690 --> 00:46:49.690
+<v Speaker 1>which as you can imagine,
+
+00:46:49.690 --> 00:46:51.770
+<v Speaker 1>all it does is it's gonna build. Right?
+
+00:46:51.770 --> 00:46:53.690
+<v Speaker 1>Just do the build, and we can tell
+
+00:46:53.690 --> 00:46:55.530
+<v Speaker 1>it to output the artifacts. So if we
+
+00:46:55.530 --> 00:46:57.450
+<v Speaker 1>do Skaffold build dash dash
+
+00:46:57.610 --> 00:46:58.570
+<v Speaker 1>file output
+
+00:46:58.734 --> 00:47:01.455
+<v Speaker 1>and then artifacts dot JSON or whatever,
+
+00:47:01.855 --> 00:47:04.175
+<v Speaker 1>it's a file dash output, actually. Yeah. I
+
+00:47:04.175 --> 00:47:05.535
+<v Speaker 0>I thought it was gonna be that, but
+
+00:47:05.535 --> 00:47:08.495
+<v Speaker 0>then changed my mind. Okay. Art of dot
+
+00:47:08.575 --> 00:47:09.295
+<v Speaker 0>JSON?
+
+00:47:09.615 --> 00:47:10.095
+<v Speaker 1>Yep.
+
+00:47:14.670 --> 00:47:15.310
+<v Speaker 1>Cool.
+
+00:47:15.550 --> 00:47:17.230
+<v Speaker 1>We already have the images built, so it's
+
+00:47:17.230 --> 00:47:19.070
+<v Speaker 1>no no extra magic there. We're just using
+
+00:47:19.070 --> 00:47:20.430
+<v Speaker 1>the caching. And then it let's take a
+
+00:47:20.430 --> 00:47:22.030
+<v Speaker 1>look at that file and see what information
+
+00:47:22.030 --> 00:47:23.070
+<v Speaker 1>is in there. You might wanna do it
+
+00:47:23.070 --> 00:47:23.950
+<v Speaker 1>with JQ or Beth.
+
+00:47:25.974 --> 00:47:27.175
+<v Speaker 0>I guess.
+
+00:47:29.175 --> 00:47:30.855
+<v Speaker 0>I think you can just do j q,
+
+00:47:30.855 --> 00:47:32.775
+<v Speaker 0>can't you? Yeah. I think so.
+
+00:47:36.135 --> 00:47:37.974
+<v Speaker 1>Oh, I need a dash f for something.
+
+00:47:38.920 --> 00:47:40.600
+<v Speaker 1>Yeah. Let's do it the way you there
+
+00:47:40.600 --> 00:47:42.040
+<v Speaker 1>we go. Alright.
+
+00:47:42.120 --> 00:47:44.440
+<v Speaker 1>And so not nothing special in here, but
+
+00:47:44.440 --> 00:47:46.200
+<v Speaker 1>just to show that, you know, we have
+
+00:47:46.200 --> 00:47:48.920
+<v Speaker 1>the images named. We have the specific tag
+
+00:47:48.920 --> 00:47:49.960
+<v Speaker 1>that we built,
+
+00:47:50.360 --> 00:47:52.440
+<v Speaker 1>and then we can pass this into other
+
+00:47:52.440 --> 00:47:54.275
+<v Speaker 1>places we might need it. Right? So you
+
+00:47:54.275 --> 00:47:56.355
+<v Speaker 1>can imagine your CI process when you've committed
+
+00:47:56.355 --> 00:47:57.155
+<v Speaker 1>to main,
+
+00:47:58.035 --> 00:48:00.035
+<v Speaker 1>you know, runs this and then creates this
+
+00:48:00.035 --> 00:48:02.835
+<v Speaker 1>artifacts. JSON is saying, here is the latest
+
+00:48:02.835 --> 00:48:03.715
+<v Speaker 1>images
+
+00:48:03.875 --> 00:48:06.830
+<v Speaker 1>from this particular commit. Then you might wanna
+
+00:48:06.830 --> 00:48:09.550
+<v Speaker 1>pass that into your CD process. Right? And
+
+00:48:09.550 --> 00:48:11.630
+<v Speaker 1>so here, we can do Skaffold render
+
+00:48:11.950 --> 00:48:13.870
+<v Speaker 1>and then pass it in that file.
+
+00:48:14.190 --> 00:48:16.590
+<v Speaker 1>We might need to do help because I
+
+00:48:16.590 --> 00:48:17.470
+<v Speaker 1>don't remember the exact
+
+00:48:20.145 --> 00:48:23.345
+<v Speaker 1>I think it is the build artifacts
+
+00:48:23.345 --> 00:48:25.345
+<v Speaker 1>flag or dash a
+
+00:48:25.505 --> 00:48:27.105
+<v Speaker 1>that will pass in the file. So this
+
+00:48:27.105 --> 00:48:28.785
+<v Speaker 1>is saying, hey. I have a bunch of
+
+00:48:28.785 --> 00:48:31.825
+<v Speaker 1>Kubernetes config that I want you to, you
+
+00:48:31.825 --> 00:48:34.065
+<v Speaker 1>know, put these images into. And so we'll
+
+00:48:34.065 --> 00:48:35.025
+<v Speaker 1>pass it that file,
+
+00:48:36.099 --> 00:48:37.380
+<v Speaker 1>and it should spit out a bunch of
+
+00:48:37.380 --> 00:48:37.940
+<v Speaker 1>YAML.
+
+00:48:40.099 --> 00:48:40.820
+<v Speaker 1>Great.
+
+00:48:40.900 --> 00:48:42.740
+<v Speaker 1>So now we can see in the specs
+
+00:48:42.740 --> 00:48:43.940
+<v Speaker 1>for the deployments,
+
+00:48:43.940 --> 00:48:45.780
+<v Speaker 1>it's taken those image names that were kind
+
+00:48:45.780 --> 00:48:47.940
+<v Speaker 1>of the basic name, Leroy web, Leroy app,
+
+00:48:48.315 --> 00:48:50.635
+<v Speaker 1>and put in the fully qualified tag there.
+
+00:48:50.635 --> 00:48:51.994
+<v Speaker 1>So then we can go right back to
+
+00:48:51.994 --> 00:48:54.555
+<v Speaker 1>exactly that image that was built.
+
+00:48:55.435 --> 00:48:57.355
+<v Speaker 1>And so you might wanna, for example, put
+
+00:48:57.355 --> 00:49:00.315
+<v Speaker 1>this into a file and then run Skaffold
+
+00:49:00.315 --> 00:49:02.810
+<v Speaker 1>apply against it, and Skaffold apply will apply
+
+00:49:02.810 --> 00:49:04.010
+<v Speaker 1>it into the cluster.
+
+00:49:06.410 --> 00:49:07.690
+<v Speaker 0>I probably shouldn't do that.
+
+00:49:08.490 --> 00:49:09.690
+<v Speaker 1>Oh, yeah. But
+
+00:49:09.930 --> 00:49:10.970
+<v Speaker 1>there you go.
+
+00:49:14.170 --> 00:49:15.450
+<v Speaker 0>So let's see.
+
+00:49:15.450 --> 00:49:15.930
+<v Speaker 0>Apply.
+
+00:49:17.184 --> 00:49:19.025
+<v Speaker 0>We can do dash f
+
+00:49:19.105 --> 00:49:21.424
+<v Speaker 0>just like It is just
+
+00:49:21.424 --> 00:49:22.145
+<v Speaker 1>the
+
+00:49:22.545 --> 00:49:24.625
+<v Speaker 1>file name as a positional argument.
+
+00:49:25.585 --> 00:49:27.664
+<v Speaker 1>That that'll be the the Skaffold commit. Yeah.
+
+00:49:34.190 --> 00:49:35.630
+<v Speaker 1>So, again,
+
+00:49:35.869 --> 00:49:38.590
+<v Speaker 1>very, you know, simple. Right? But you get
+
+00:49:38.590 --> 00:49:41.310
+<v Speaker 1>to take the same configuration file that you've
+
+00:49:41.310 --> 00:49:43.470
+<v Speaker 1>defined all of these reusable
+
+00:49:43.470 --> 00:49:45.869
+<v Speaker 1>parameters for. Right? These things don't change that
+
+00:49:45.869 --> 00:49:48.575
+<v Speaker 1>much, and then apply them at different stages
+
+00:49:48.575 --> 00:49:50.494
+<v Speaker 1>throughout your process. And so that's a very,
+
+00:49:50.494 --> 00:49:52.335
+<v Speaker 1>you know, powerful thing that you can kind
+
+00:49:52.335 --> 00:49:53.615
+<v Speaker 1>of bidirectionally
+
+00:49:53.615 --> 00:49:54.575
+<v Speaker 1>influence
+
+00:49:54.655 --> 00:49:56.815
+<v Speaker 1>folks. Right? The developers can opt you know,
+
+00:49:56.815 --> 00:49:59.600
+<v Speaker 1>influence how the deploys are gonna work, and
+
+00:49:59.600 --> 00:50:01.680
+<v Speaker 1>the operators can influence how the development might
+
+00:50:01.680 --> 00:50:03.040
+<v Speaker 1>work. Right? And so that's something that we
+
+00:50:03.040 --> 00:50:04.960
+<v Speaker 1>haven't really had in the past
+
+00:50:05.440 --> 00:50:07.200
+<v Speaker 1>to as as kind of a a key
+
+00:50:07.200 --> 00:50:09.040
+<v Speaker 1>feature in these tools. Mhmm.
+
+00:50:09.920 --> 00:50:10.960
+<v Speaker 0>Okay. So
+
+00:50:11.345 --> 00:50:13.904
+<v Speaker 0>you mentioned something earlier during your slides is
+
+00:50:13.904 --> 00:50:15.904
+<v Speaker 0>that, you know, Skaffold gives me the ability
+
+00:50:15.904 --> 00:50:17.345
+<v Speaker 0>to kind of hook into other tools. Like
+
+00:50:17.345 --> 00:50:18.865
+<v Speaker 0>you said, for the build layer, I can
+
+00:50:18.865 --> 00:50:20.704
+<v Speaker 0>use, you know, Canico or I can use
+
+00:50:20.704 --> 00:50:23.025
+<v Speaker 0>Docker or something else. What about for the
+
+00:50:23.025 --> 00:50:24.785
+<v Speaker 0>render layer? Does it have the ability to
+
+00:50:24.785 --> 00:50:26.980
+<v Speaker 0>hook into to customize or helm or other
+
+00:50:26.980 --> 00:50:28.579
+<v Speaker 0>things? Like, I can imagine
+
+00:50:29.140 --> 00:50:30.819
+<v Speaker 0>if I want to develop my application, it
+
+00:50:30.819 --> 00:50:32.579
+<v Speaker 0>may have a requirement maybe on some helm
+
+00:50:32.579 --> 00:50:34.579
+<v Speaker 0>charts or something like that. Yeah.
+
+00:50:34.740 --> 00:50:36.019
+<v Speaker 1>So we do support that. So if you
+
+00:50:36.019 --> 00:50:38.744
+<v Speaker 1>go to the examples, we support both Helm
+
+00:50:38.744 --> 00:50:41.625
+<v Speaker 1>and Customize today. We also have alpha support
+
+00:50:41.625 --> 00:50:43.944
+<v Speaker 1>for kept in there if folks are are
+
+00:50:43.944 --> 00:50:45.865
+<v Speaker 1>looking at that tool. But, essentially, yeah, we're
+
+00:50:45.865 --> 00:50:48.505
+<v Speaker 1>we're looking to kind of abstract the idea
+
+00:50:48.505 --> 00:50:50.984
+<v Speaker 1>of manifest management so that you can run
+
+00:50:50.984 --> 00:50:53.300
+<v Speaker 1>something like Skaffold Render. And, you know, you
+
+00:50:53.300 --> 00:50:55.060
+<v Speaker 1>can imagine as you kinda put this into
+
+00:50:55.060 --> 00:50:56.020
+<v Speaker 1>the CICD
+
+00:50:56.020 --> 00:50:56.740
+<v Speaker 1>pipeline,
+
+00:50:57.060 --> 00:50:59.940
+<v Speaker 1>you can have a very standardized CICD pipeline
+
+00:51:00.500 --> 00:51:02.820
+<v Speaker 1>where the teams themselves are using a bunch
+
+00:51:02.820 --> 00:51:05.140
+<v Speaker 1>of different tools. And as an operator, you
+
+00:51:05.140 --> 00:51:06.740
+<v Speaker 1>might not have to care whether they're using
+
+00:51:06.740 --> 00:51:09.944
+<v Speaker 1>Helm or customize or anything else. You're abstracted
+
+00:51:09.944 --> 00:51:11.145
+<v Speaker 1>away from that. So if we go on,
+
+00:51:11.145 --> 00:51:13.225
+<v Speaker 1>like, for example, the Helm deployment repo,
+
+00:51:13.305 --> 00:51:15.065
+<v Speaker 1>we can see an example of Helm.
+
+00:51:17.224 --> 00:51:19.385
+<v Speaker 0>Okay. So Helm
+
+00:51:19.385 --> 00:51:20.984
+<v Speaker 0>deployment sounds like I might be deploying my
+
+00:51:20.984 --> 00:51:22.610
+<v Speaker 0>application with Helm. I like like the sense
+
+00:51:22.610 --> 00:51:24.210
+<v Speaker 0>of dependencies because it makes me think that
+
+00:51:24.210 --> 00:51:25.650
+<v Speaker 0>I'm using something else for my app and
+
+00:51:25.650 --> 00:51:26.850
+<v Speaker 0>Helm for a dependency.
+
+00:51:27.250 --> 00:51:29.090
+<v Speaker 0>That's it. All right, okay.
+
+00:51:30.770 --> 00:51:33.810
+<v Speaker 0>So I'm gonna take a look at Skaffold.
+
+00:51:35.845 --> 00:51:37.125
+<v Speaker 0>It's a bit bigger.
+
+00:51:38.965 --> 00:51:41.045
+<v Speaker 0>Yeah. We got some sort of helm
+
+00:51:41.205 --> 00:51:42.085
+<v Speaker 0>release.
+
+00:51:47.765 --> 00:51:49.365
+<v Speaker 1>And so here, you can really just kind
+
+00:51:49.365 --> 00:51:51.910
+<v Speaker 1>of define it. Know, essentially, we're extracting just
+
+00:51:51.910 --> 00:51:53.990
+<v Speaker 1>how you run Helm. Right? So you can
+
+00:51:53.990 --> 00:51:55.590
+<v Speaker 1>see a lot of the flags that you
+
+00:51:55.590 --> 00:51:58.070
+<v Speaker 1>would pass to Helm are now inside of
+
+00:51:58.070 --> 00:52:00.390
+<v Speaker 1>our Skaffold YAML, and we're kind of putting
+
+00:52:00.390 --> 00:52:02.150
+<v Speaker 1>those as as code. Right? You have, you
+
+00:52:02.150 --> 00:52:03.910
+<v Speaker 1>know, skip build dependencies. You have
+
+00:52:05.015 --> 00:52:06.295
+<v Speaker 1>artifact overrides.
+
+00:52:06.295 --> 00:52:08.615
+<v Speaker 1>You have set values at the bottom. So
+
+00:52:08.615 --> 00:52:10.295
+<v Speaker 1>it's really a way to kinda catalog the
+
+00:52:10.295 --> 00:52:11.095
+<v Speaker 1>procedure
+
+00:52:11.415 --> 00:52:13.575
+<v Speaker 1>of how you use the tool underneath the
+
+00:52:13.575 --> 00:52:16.055
+<v Speaker 1>hood. We have very similar pattern for customized.
+
+00:52:16.055 --> 00:52:18.935
+<v Speaker 1>You'll see a customized flags and and things
+
+00:52:18.935 --> 00:52:19.255
+<v Speaker 1>like that.
+
+00:52:20.010 --> 00:52:22.170
+<v Speaker 0>Yeah. I think the dependency thing there was
+
+00:52:22.170 --> 00:52:24.090
+<v Speaker 0>a little bit different as expecting, but it
+
+00:52:24.090 --> 00:52:26.090
+<v Speaker 0>was still useful to see what we could
+
+00:52:26.090 --> 00:52:26.730
+<v Speaker 0>on there.
+
+00:52:27.210 --> 00:52:28.810
+<v Speaker 0>And they So you're kinda looking at, like,
+
+00:52:28.810 --> 00:52:30.490
+<v Speaker 1>I have a Redis chart or something like
+
+00:52:30.490 --> 00:52:31.930
+<v Speaker 1>that that I depend on. How would I
+
+00:52:31.930 --> 00:52:33.734
+<v Speaker 1>bring that in? Yeah. You know, I'm working
+
+00:52:33.734 --> 00:52:36.055
+<v Speaker 0>on some sort of roster, Alexa application. It
+
+00:52:36.055 --> 00:52:38.295
+<v Speaker 0>has Redis post grads as backing stores for
+
+00:52:38.295 --> 00:52:40.694
+<v Speaker 0>cache and stateful stuff. Like, I still wanna
+
+00:52:40.694 --> 00:52:42.694
+<v Speaker 0>be able to run those services, but I
+
+00:52:42.694 --> 00:52:44.215
+<v Speaker 0>wouldn't necessarily have,
+
+00:52:44.694 --> 00:52:46.454
+<v Speaker 0>you know, a build step or anything like
+
+00:52:46.454 --> 00:52:47.895
+<v Speaker 0>that to to orchestrate that.
+
+00:52:48.770 --> 00:52:50.530
+<v Speaker 1>Yeah. So in that case, think what what
+
+00:52:50.530 --> 00:52:52.130
+<v Speaker 1>you would want is, like, chart path to
+
+00:52:52.130 --> 00:52:54.369
+<v Speaker 1>actually be a URL. Right? And so then
+
+00:52:54.369 --> 00:52:56.450
+<v Speaker 1>you can point at a chart somewhere else
+
+00:52:56.530 --> 00:52:58.210
+<v Speaker 1>in the tarball for that chart, and we'll
+
+00:52:58.210 --> 00:53:00.130
+<v Speaker 1>put it in. In this case, it's just
+
+00:53:00.130 --> 00:53:01.730
+<v Speaker 1>the path on the local file system, but
+
+00:53:01.730 --> 00:53:03.650
+<v Speaker 1>it should work with remote dependencies as well.
+
+00:53:04.065 --> 00:53:05.744
+<v Speaker 0>Yeah. And I guess to this deploy block,
+
+00:53:05.744 --> 00:53:07.425
+<v Speaker 0>I'm just adding my own application stuff as
+
+00:53:07.425 --> 00:53:09.345
+<v Speaker 0>well as that helm dependency for the charter
+
+00:53:09.345 --> 00:53:11.585
+<v Speaker 0>that need. So Exactly. Exactly.
+
+00:53:11.905 --> 00:53:13.585
+<v Speaker 1>And part of our, you know, effort over
+
+00:53:13.585 --> 00:53:15.025
+<v Speaker 1>the next, you know, couple months is to
+
+00:53:15.025 --> 00:53:17.345
+<v Speaker 1>make that separation a lot cleaner and make
+
+00:53:17.345 --> 00:53:19.760
+<v Speaker 1>sure that you can combine a bunch of
+
+00:53:19.760 --> 00:53:21.520
+<v Speaker 1>different tools. Right? You can imagine on your
+
+00:53:21.520 --> 00:53:24.640
+<v Speaker 1>side, you're building with your config with customized,
+
+00:53:24.640 --> 00:53:26.640
+<v Speaker 1>but you depend on something from Helm. Right?
+
+00:53:26.640 --> 00:53:27.840
+<v Speaker 1>And so we wanna be able to have
+
+00:53:27.840 --> 00:53:30.320
+<v Speaker 1>both of those be living in harmony. Right
+
+00:53:30.320 --> 00:53:31.760
+<v Speaker 1>now, it's a little clunkier than we'd like.
+
+00:53:32.585 --> 00:53:35.385
+<v Speaker 0>Yeah. Even the customized example is nice and
+
+00:53:35.385 --> 00:53:37.385
+<v Speaker 0>simple. I I just they wanna deploy with
+
+00:53:37.385 --> 00:53:39.464
+<v Speaker 0>customize, and then it just uses my straight
+
+00:53:39.464 --> 00:53:42.345
+<v Speaker 0>up customization dot YAML. So That's it. Yeah.
+
+00:53:42.345 --> 00:53:44.424
+<v Speaker 1>Same defaults where we where we can have
+
+00:53:44.424 --> 00:53:45.410
+<v Speaker 1>them. That's sure.
+
+00:53:45.890 --> 00:53:48.130
+<v Speaker 0>Alright. Nice. I I like how all the
+
+00:53:48.130 --> 00:53:49.890
+<v Speaker 0>bits are kinda joining together.
+
+00:53:50.050 --> 00:53:51.970
+<v Speaker 0>And the just so far, the configuration has
+
+00:53:51.970 --> 00:53:53.570
+<v Speaker 0>been pretty simple, which I like.
+
+00:53:53.890 --> 00:53:54.530
+<v Speaker 0>Though
+
+00:53:54.850 --> 00:53:56.530
+<v Speaker 0>as we were kinda talking and looking at
+
+00:53:56.530 --> 00:53:58.475
+<v Speaker 0>this direction, the React reload one caught my
+
+00:53:58.475 --> 00:53:59.755
+<v Speaker 0>eye, and I think that's exactly what I
+
+00:53:59.755 --> 00:54:01.595
+<v Speaker 0>was talking about earlier. So if I mean,
+
+00:54:01.595 --> 00:54:03.355
+<v Speaker 0>if we're feeling brave, I really wanna jump
+
+00:54:03.355 --> 00:54:04.475
+<v Speaker 0>in there and see if that does what
+
+00:54:04.475 --> 00:54:06.635
+<v Speaker 0>it says it does. Let's
+
+00:54:06.635 --> 00:54:08.795
+<v Speaker 1>test our bravery here. What are we gonna
+
+00:54:08.795 --> 00:54:10.795
+<v Speaker 1>jump into? I've never run this example, so
+
+00:54:10.795 --> 00:54:12.549
+<v Speaker 1>it'll be a surprise for me too. Oh,
+
+00:54:12.549 --> 00:54:15.349
+<v Speaker 0>again, that disclaimer end early. Nice. Alright.
+
+00:54:16.309 --> 00:54:18.549
+<v Speaker 0>So, yeah, it's got a sync, which is
+
+00:54:18.549 --> 00:54:20.390
+<v Speaker 0>exactly what I wanted. So really what I
+
+00:54:20.390 --> 00:54:22.069
+<v Speaker 0>wanna see here, and I'm hoping this does
+
+00:54:22.069 --> 00:54:23.510
+<v Speaker 0>what I what I expect, is that when
+
+00:54:23.510 --> 00:54:24.630
+<v Speaker 0>I run Skaffold dev,
+
+00:54:26.165 --> 00:54:28.645
+<v Speaker 0>let that build, we'll have deployable browser application.
+
+00:54:28.645 --> 00:54:30.165
+<v Speaker 0>And I'm gonna just move my terminal over
+
+00:54:30.165 --> 00:54:31.685
+<v Speaker 0>to the browser, but I expect that when
+
+00:54:31.685 --> 00:54:33.605
+<v Speaker 0>I save the file and let's get that
+
+00:54:33.605 --> 00:54:34.244
+<v Speaker 0>ready to
+
+00:54:36.405 --> 00:54:37.525
+<v Speaker 0>so we add real
+
+00:54:38.565 --> 00:54:39.605
+<v Speaker 0>we add reload
+
+00:54:41.740 --> 00:54:44.060
+<v Speaker 0>App index, not source.
+
+00:54:46.780 --> 00:54:48.860
+<v Speaker 0>That's the change of React bit.
+
+00:54:50.620 --> 00:54:51.020
+<v Speaker 0>Man.
+
+00:54:54.255 --> 00:54:55.535
+<v Speaker 0>Nope. Components.
+
+00:54:56.974 --> 00:54:58.175
+<v Speaker 0>Right. There we go.
+
+00:54:58.655 --> 00:55:00.175
+<v Speaker 0>We should be able to change this and
+
+00:55:00.175 --> 00:55:02.175
+<v Speaker 0>I'm curious if we will get that.
+
+00:55:02.734 --> 00:55:04.655
+<v Speaker 0>Like the browser is gonna detect that something
+
+00:55:04.655 --> 00:55:06.095
+<v Speaker 0>changed and do the reload for me. That
+
+00:55:06.095 --> 00:55:07.215
+<v Speaker 0>would be really cool.
+
+00:55:07.775 --> 00:55:08.415
+<v Speaker 1>Let's see.
+
+00:55:09.030 --> 00:55:10.870
+<v Speaker 0>That happens, I'm buying you a beer.
+
+00:55:11.270 --> 00:55:12.070
+<v Speaker 1>I'll
+
+00:55:12.070 --> 00:55:13.910
+<v Speaker 1>take it. Take as many as I can
+
+00:55:13.910 --> 00:55:14.390
+<v Speaker 1>get.
+
+00:55:15.030 --> 00:55:17.190
+<v Speaker 1>We'll we'll do an IOU for that one.
+
+00:55:17.190 --> 00:55:19.750
+<v Speaker 0>Yeah. Yeah. Definitely. Keep going early maybe.
+
+00:55:20.230 --> 00:55:20.870
+<v Speaker 1>Sounds great.
+
+00:55:21.845 --> 00:55:22.565
+<v Speaker 0>So
+
+00:55:22.885 --> 00:55:25.444
+<v Speaker 0>NPM install, I mean, no tool in the
+
+00:55:25.444 --> 00:55:26.805
+<v Speaker 0>world can speed that up. But I I
+
+00:55:26.805 --> 00:55:29.285
+<v Speaker 0>think it's Sorry. Yeah. We we haven't gone
+
+00:55:29.285 --> 00:55:31.365
+<v Speaker 1>to tackle that yet. Maybe maybe if we
+
+00:55:31.365 --> 00:55:33.204
+<v Speaker 1>get enough issues, we'll see what we can
+
+00:55:33.204 --> 00:55:34.244
+<v Speaker 1>do about NPM install.
+
+00:55:35.140 --> 00:55:36.900
+<v Speaker 0>Alright. We're almost there. So
+
+00:55:38.420 --> 00:55:40.580
+<v Speaker 0>let's just pop this over.
+
+00:55:43.700 --> 00:55:44.820
+<v Speaker 0>And we'll port.
+
+00:55:45.780 --> 00:55:47.060
+<v Speaker 0>Oh, it's not there yet. Almost.
+
+00:55:51.545 --> 00:55:53.224
+<v Speaker 1>K. So it's compiled.
+
+00:55:53.385 --> 00:55:55.065
+<v Speaker 1>Did we do the port forward command on
+
+00:55:55.065 --> 00:55:56.025
+<v Speaker 1>this one or no?
+
+00:55:58.505 --> 00:55:59.464
+<v Speaker 1>Or flag.
+
+00:56:02.105 --> 00:56:04.280
+<v Speaker 0>Yeah. From now on, every Skaffold dot YAML
+
+00:56:04.280 --> 00:56:05.800
+<v Speaker 0>I work with is gonna have the the
+
+00:56:05.800 --> 00:56:07.960
+<v Speaker 0>port forward stuff in it. Yes. That is
+
+00:56:07.960 --> 00:56:10.360
+<v Speaker 1>that is one of the things we've now
+
+00:56:10.360 --> 00:56:12.280
+<v Speaker 1>started recommending it as a as a best
+
+00:56:12.280 --> 00:56:13.880
+<v Speaker 1>practice. We should probably go put that into
+
+00:56:13.880 --> 00:56:14.440
+<v Speaker 1>the
+
+00:56:14.760 --> 00:56:17.160
+<v Speaker 1>examples here too. There we go. Eighty eighty
+
+00:56:17.160 --> 00:56:17.560
+<v Speaker 0>one.
+
+00:56:22.255 --> 00:56:23.214
+<v Speaker 1>That's good.
+
+00:56:23.694 --> 00:56:25.694
+<v Speaker 1>That's the most beautiful hello world we've put
+
+00:56:25.694 --> 00:56:27.214
+<v Speaker 1>together today, I will say.
+
+00:56:27.775 --> 00:56:30.015
+<v Speaker 1>It has color for once. Right. So I've
+
+00:56:30.015 --> 00:56:32.174
+<v Speaker 0>changed it, but I've not saved it. So
+
+00:56:33.869 --> 00:56:35.550
+<v Speaker 0>it
+
+00:56:37.549 --> 00:56:38.190
+<v Speaker 0>worked.
+
+00:56:39.150 --> 00:56:41.710
+<v Speaker 0>I did not touch my browser.
+
+00:56:42.029 --> 00:56:43.070
+<v Speaker 0>That was awesome.
+
+00:56:43.869 --> 00:56:45.950
+<v Speaker 1>Very nice. Good choice of example.
+
+00:56:48.925 --> 00:56:49.805
+<v Speaker 0>Let's just
+
+00:56:50.125 --> 00:56:53.005
+<v Speaker 0>for the sake of maybe changing the CSS,
+
+00:56:53.645 --> 00:56:56.525
+<v Speaker 0>I I only know, like, three color codes.
+
+00:56:56.525 --> 00:56:58.045
+<v Speaker 0>So we're just gonna
+
+00:56:58.845 --> 00:56:59.645
+<v Speaker 0>do that
+
+00:57:00.789 --> 00:57:01.750
+<v Speaker 0>and
+
+00:57:01.990 --> 00:57:02.790
+<v Speaker 0>save.
+
+00:57:06.150 --> 00:57:06.630
+<v Speaker 0>What
+
+00:57:07.109 --> 00:57:08.790
+<v Speaker 0>we wanna see. That's really nice.
+
+00:57:09.349 --> 00:57:11.750
+<v Speaker 0>So let's see what actually Skaffold was doing
+
+00:57:11.750 --> 00:57:12.390
+<v Speaker 0>there.
+
+00:57:12.630 --> 00:57:14.710
+<v Speaker 0>Now because it's the sync, I'm assuming it's
+
+00:57:14.710 --> 00:57:16.069
+<v Speaker 0>really just
+
+00:57:18.045 --> 00:57:20.125
+<v Speaker 0>the NPM tool chain. Yeah.
+
+00:57:21.005 --> 00:57:23.005
+<v Speaker 0>And Skaffold, other than checking the files into
+
+00:57:23.005 --> 00:57:24.765
+<v Speaker 0>the container, you're just relying on all those
+
+00:57:24.765 --> 00:57:26.605
+<v Speaker 0>native tools to do their job. Right?
+
+00:57:27.005 --> 00:57:27.885
+<v Speaker 1>That's it.
+
+00:57:28.205 --> 00:57:30.125
+<v Speaker 1>That's it. We we do the the most
+
+00:57:30.125 --> 00:57:32.010
+<v Speaker 1>basic thing we can, and a lot of
+
+00:57:32.010 --> 00:57:33.850
+<v Speaker 1>the tools like like this one have that
+
+00:57:33.850 --> 00:57:35.210
+<v Speaker 1>piece figured out.
+
+00:57:35.690 --> 00:57:36.730
+<v Speaker 0>Alright. Well,
+
+00:57:37.530 --> 00:57:38.650
+<v Speaker 0>Thomas Stromberg
+
+00:57:38.650 --> 00:57:40.970
+<v Speaker 0>had fingers crossed and sadly,
+
+00:57:41.210 --> 00:57:42.730
+<v Speaker 0>Dan is also a witness to the free
+
+00:57:42.730 --> 00:57:44.355
+<v Speaker 0>beer. Yeah. Yeah. Dan, you can have a
+
+00:57:44.355 --> 00:57:46.595
+<v Speaker 0>beer too, whatever. Alright. Thank you.
+
+00:57:47.075 --> 00:57:49.875
+<v Speaker 0>We got one slash comment slash question from
+
+00:57:49.875 --> 00:57:52.995
+<v Speaker 0>Aiger. I thought Skaffold is for building containers.
+
+00:57:53.075 --> 00:57:55.395
+<v Speaker 0>No, that is Canico. We had an episode
+
+00:57:55.395 --> 00:57:56.915
+<v Speaker 0>on that last week. You should check that
+
+00:57:56.915 --> 00:57:58.595
+<v Speaker 0>out. It was also a very very cool
+
+00:57:58.595 --> 00:57:58.835
+<v Speaker 0>tool.
+
+00:57:59.570 --> 00:58:01.170
+<v Speaker 0>And I guess Skaffold, I could just set
+
+00:58:01.170 --> 00:58:02.930
+<v Speaker 0>the builder to Canico and have that do
+
+00:58:02.930 --> 00:58:04.530
+<v Speaker 0>the thing there too, which would be That's
+
+00:58:04.530 --> 00:58:05.810
+<v Speaker 1>right. Pretty nice. Yeah. And we try to
+
+00:58:05.810 --> 00:58:07.250
+<v Speaker 1>do, like you said, you know, try as
+
+00:58:07.250 --> 00:58:09.570
+<v Speaker 1>little config as possible based on how those
+
+00:58:09.570 --> 00:58:11.490
+<v Speaker 1>tools work to to make it work. So,
+
+00:58:11.490 --> 00:58:13.330
+<v Speaker 1>hopefully, it makes it easy to get with
+
+00:58:13.330 --> 00:58:15.795
+<v Speaker 1>Buildpacks, Canico, any other builder that you can
+
+00:58:15.795 --> 00:58:16.435
+<v Speaker 1>think of.
+
+00:58:16.995 --> 00:58:18.675
+<v Speaker 0>Cool. Awesome. Well,
+
+00:58:19.235 --> 00:58:21.075
+<v Speaker 0>we're kind of approaching our now. Is there
+
+00:58:21.075 --> 00:58:21.795
+<v Speaker 0>anything
+
+00:58:21.875 --> 00:58:23.875
+<v Speaker 0>from the examples that you wanna show before
+
+00:58:23.875 --> 00:58:24.995
+<v Speaker 0>we move on to, like, the
+
+00:58:26.595 --> 00:58:28.550
+<v Speaker 1>I I can. We can do the the
+
+00:58:28.550 --> 00:58:30.070
+<v Speaker 1>test one, but I can also show a
+
+00:58:30.070 --> 00:58:32.390
+<v Speaker 1>little bit more complicated example. I think we've
+
+00:58:32.390 --> 00:58:32.950
+<v Speaker 1>shown
+
+00:58:33.190 --> 00:58:34.710
+<v Speaker 1>a lot of the different features, and I
+
+00:58:34.710 --> 00:58:36.790
+<v Speaker 1>have just one kind of mega example that
+
+00:58:36.790 --> 00:58:39.350
+<v Speaker 1>I can walk through with various pieces
+
+00:58:39.510 --> 00:58:40.150
+<v Speaker 1>stitched together.
+
+00:58:40.745 --> 00:58:42.185
+<v Speaker 0>Yes. But you want to show show us
+
+00:58:42.185 --> 00:58:44.345
+<v Speaker 0>the test one then and then switch over?
+
+00:58:44.345 --> 00:58:46.105
+<v Speaker 1>Yeah. That's good. Yeah. Is is that the
+
+00:58:46.105 --> 00:58:48.665
+<v Speaker 0>structure test or something else? Custom test is
+
+00:58:48.665 --> 00:58:50.585
+<v Speaker 1>the the one we recently added.
+
+00:58:50.825 --> 00:58:52.825
+<v Speaker 1>So one of the things we didn't really
+
+00:58:52.825 --> 00:58:55.240
+<v Speaker 1>have in in Skaffold until recently is the
+
+00:58:55.240 --> 00:58:56.839
+<v Speaker 1>ability to, like, run your unit test as
+
+00:58:56.839 --> 00:58:58.759
+<v Speaker 1>part of that loop. And so that's what
+
+00:58:58.759 --> 00:58:59.960
+<v Speaker 1>this functionality
+
+00:58:59.960 --> 00:59:02.119
+<v Speaker 1>does. For each of the images that's built,
+
+00:59:02.119 --> 00:59:03.320
+<v Speaker 1>you can run a command
+
+00:59:03.480 --> 00:59:05.560
+<v Speaker 1>when that image gets done building.
+
+00:59:05.640 --> 00:59:07.240
+<v Speaker 1>In this case, they're gonna, you know, echo
+
+00:59:07.240 --> 00:59:08.440
+<v Speaker 1>hello world again,
+
+00:59:08.680 --> 00:59:10.359
+<v Speaker 1>run a test
+
+00:59:10.135 --> 00:59:12.215
+<v Speaker 1>script, and that's gonna run locally on your
+
+00:59:12.215 --> 00:59:14.295
+<v Speaker 1>machine. Right? So after the image build, you
+
+00:59:14.295 --> 00:59:16.775
+<v Speaker 1>might run a Docker image or you might
+
+00:59:17.175 --> 00:59:18.855
+<v Speaker 1>do Go test or something like that, for
+
+00:59:18.855 --> 00:59:19.735
+<v Speaker 1>example.
+
+00:59:21.415 --> 00:59:22.375
+<v Speaker 0>Right. Okay.
+
+00:59:22.990 --> 00:59:24.670
+<v Speaker 0>So it runs locally on my machine. It
+
+00:59:24.670 --> 00:59:26.990
+<v Speaker 0>doesn't run-in the container or anything like that.
+
+00:59:27.630 --> 00:59:30.110
+<v Speaker 1>Today. Yeah. Today, our the functionality is to
+
+00:59:30.110 --> 00:59:31.870
+<v Speaker 1>just be in kind of the the local
+
+00:59:31.870 --> 00:59:33.470
+<v Speaker 1>machine, but we're looking at what it might
+
+00:59:33.470 --> 00:59:35.390
+<v Speaker 1>be look like for running inside a cluster
+
+00:59:35.390 --> 00:59:37.630
+<v Speaker 1>or running somewhere else. If you have input
+
+00:59:37.630 --> 00:59:38.830
+<v Speaker 1>here, you know, please reach out.
+
+00:59:39.925 --> 00:59:42.085
+<v Speaker 0>Awesome. So you want me just to run
+
+00:59:42.085 --> 00:59:44.565
+<v Speaker 0>Skaffold dev as normal here or Skaffold test.
+
+00:59:44.565 --> 00:59:47.125
+<v Speaker 0>Right? Or Yeah. Skaffold test. So, actually, you
+
+00:59:47.125 --> 00:59:48.964
+<v Speaker 1>should be able to just do Skaffold dev,
+
+00:59:48.964 --> 00:59:50.325
+<v Speaker 1>and that should run the whole thing.
+
+00:59:52.405 --> 00:59:53.925
+<v Speaker 0>Alright. Let's see what happens.
+
+00:59:55.970 --> 00:59:58.850
+<v Speaker 0>The certain or a container image build.
+
+01:00:03.490 --> 01:00:05.329
+<v Speaker 0>What's in that test fail? Should we take
+
+01:00:05.329 --> 01:00:07.170
+<v Speaker 0>a look at that just now? Yeah, let's
+
+01:00:07.170 --> 01:00:07.329
+<v Speaker 1>try.
+
+01:00:13.025 --> 01:00:14.945
+<v Speaker 0>Oh, I thought my computer was up there.
+
+01:00:17.185 --> 01:00:18.625
+<v Speaker 0>It's just that tab.
+
+01:00:19.665 --> 01:00:20.945
+<v Speaker 0>Oh, no. I just
+
+01:00:22.065 --> 01:00:22.944
+<v Speaker 0>computers.
+
+01:00:24.560 --> 01:00:26.240
+<v Speaker 0>Oh, no. It's very unhappy. I think my
+
+01:00:26.240 --> 01:00:28.480
+<v Speaker 0>computer's Our demos have been going way too
+
+01:00:28.480 --> 01:00:30.560
+<v Speaker 1>well. I think something needs to go wrong
+
+01:00:30.560 --> 01:00:31.760
+<v Speaker 1>at this point. Yeah.
+
+01:00:35.359 --> 01:00:37.200
+<v Speaker 0>I struggle a little bit, but I think
+
+01:00:37.200 --> 01:00:39.894
+<v Speaker 0>it it'll cook. It'll be fine. Yes. This
+
+01:00:39.894 --> 01:00:41.494
+<v Speaker 0>is just running go test then.
+
+01:00:44.295 --> 01:00:46.375
+<v Speaker 1>Yeah. So just something basic, but, you know,
+
+01:00:46.375 --> 01:00:47.974
+<v Speaker 1>out of that all whole flow that I
+
+01:00:47.974 --> 01:00:50.135
+<v Speaker 1>was talking about, having to run anything out
+
+01:00:50.135 --> 01:00:52.055
+<v Speaker 1>of band kind of breaks up the model.
+
+01:00:52.055 --> 01:00:53.174
+<v Speaker 1>Right? So you wanna be able to loop
+
+01:00:53.174 --> 01:00:54.720
+<v Speaker 1>in as many of the things that you
+
+01:00:54.720 --> 01:00:57.040
+<v Speaker 1>need. Some other, you know, examples like I'll
+
+01:00:57.040 --> 01:00:59.600
+<v Speaker 1>show is maybe you wanna test your manifest,
+
+01:00:59.600 --> 01:01:00.160
+<v Speaker 1>right,
+
+01:01:00.560 --> 01:01:03.040
+<v Speaker 1>and doing something like conf task, for example.
+
+01:01:04.080 --> 01:01:04.720
+<v Speaker 0>So
+
+01:01:05.915 --> 01:01:07.835
+<v Speaker 0>is this the logs from my application? We
+
+01:01:07.835 --> 01:01:10.474
+<v Speaker 0>haven't seen that yet. Yeah. Yeah. So most
+
+01:01:10.474 --> 01:01:12.795
+<v Speaker 1>of the other things didn't log arbitrarily.
+
+01:01:12.795 --> 01:01:14.635
+<v Speaker 1>This one shows an example of the log
+
+01:01:14.635 --> 01:01:16.395
+<v Speaker 1>streaming back. So when I said, you know,
+
+01:01:16.395 --> 01:01:18.795
+<v Speaker 1>port forwarding and logging, right, you need to
+
+01:01:18.795 --> 01:01:20.470
+<v Speaker 1>both be able to reach your app, but
+
+01:01:20.470 --> 01:01:22.070
+<v Speaker 1>then also see what your app is doing.
+
+01:01:22.070 --> 01:01:24.070
+<v Speaker 1>So those are are both part of the
+
+01:01:24.070 --> 01:01:25.910
+<v Speaker 1>Skaffold dev loop, and you can also get
+
+01:01:25.910 --> 01:01:28.150
+<v Speaker 1>that to run on Skaffold deploy. Yeah. You
+
+01:01:28.150 --> 01:01:29.350
+<v Speaker 0>know what? I'm not sure why that caught
+
+01:01:29.350 --> 01:01:30.790
+<v Speaker 0>me off guard because we were looking at
+
+01:01:30.790 --> 01:01:32.310
+<v Speaker 0>the note logs, and we were looking at
+
+01:01:32.310 --> 01:01:34.150
+<v Speaker 0>the other logs. But for some reason, this
+
+01:01:34.150 --> 01:01:35.454
+<v Speaker 0>one just stuck out in my head. But,
+
+01:01:35.454 --> 01:01:37.135
+<v Speaker 0>yeah, we're getting the logs directly.
+
+01:01:37.775 --> 01:01:39.615
+<v Speaker 1>Yeah. It's hard to differentiate the build from
+
+01:01:39.615 --> 01:01:41.775
+<v Speaker 1>the server starting and not saying anything else.
+
+01:01:41.775 --> 01:01:42.974
+<v Speaker 1>So here, you can kinda see the live
+
+01:01:42.974 --> 01:01:44.335
+<v Speaker 1>streaming part of that.
+
+01:01:44.815 --> 01:01:47.295
+<v Speaker 0>Okay. Nice. Okay. So if built our image
+
+01:01:47.295 --> 01:01:49.535
+<v Speaker 0>is deploying it, it runs a test step
+
+01:01:49.535 --> 01:01:51.480
+<v Speaker 0>here. That worked successfully,
+
+01:01:51.960 --> 01:01:52.840
+<v Speaker 0>so it just
+
+01:01:53.160 --> 01:01:55.640
+<v Speaker 0>deployed it. If the test were to fail,
+
+01:01:55.640 --> 01:01:57.960
+<v Speaker 0>does that change the the workflow here? Does
+
+01:01:57.960 --> 01:02:00.280
+<v Speaker 0>it does it exit? Does it deploy the
+
+01:02:00.280 --> 01:02:01.240
+<v Speaker 0>older image?
+
+01:02:01.560 --> 01:02:02.040
+<v Speaker 0>What happens?
+
+01:02:03.215 --> 01:02:05.695
+<v Speaker 1>So it keeps the old image if it
+
+01:02:05.695 --> 01:02:06.895
+<v Speaker 1>fails. So it would show,
+
+01:02:07.135 --> 01:02:09.695
+<v Speaker 1>basically, a red text for for the failure,
+
+01:02:09.935 --> 01:02:12.415
+<v Speaker 1>and it won't deploy the new version. We're
+
+01:02:12.415 --> 01:02:14.175
+<v Speaker 1>gonna look at how we can make that
+
+01:02:14.175 --> 01:02:16.255
+<v Speaker 1>configurable and make it do different things if
+
+01:02:16.255 --> 01:02:18.160
+<v Speaker 1>things fail. But at the moment, it will
+
+01:02:18.160 --> 01:02:20.160
+<v Speaker 1>just stop. It won't stop the loop. The
+
+01:02:20.160 --> 01:02:21.760
+<v Speaker 1>loop will keep going. So if you fix
+
+01:02:21.760 --> 01:02:23.920
+<v Speaker 1>the test, then you can keep going, but
+
+01:02:23.920 --> 01:02:24.960
+<v Speaker 1>it won't redeploy.
+
+01:02:26.080 --> 01:02:27.200
+<v Speaker 0>Okay. Perfect.
+
+01:02:27.840 --> 01:02:29.840
+<v Speaker 0>Alright. That's all awesome.
+
+01:02:30.000 --> 01:02:32.505
+<v Speaker 0>I'm really excited by what I've seen. I
+
+01:02:32.505 --> 01:02:34.025
+<v Speaker 0>loved the little live reload. I'm I'm really
+
+01:02:34.025 --> 01:02:35.385
+<v Speaker 0>glad I caught that directory and we got
+
+01:02:35.385 --> 01:02:36.984
+<v Speaker 0>to see that work into the test stuff
+
+01:02:36.984 --> 01:02:37.625
+<v Speaker 0>is and
+
+01:02:38.025 --> 01:02:40.825
+<v Speaker 0>just all the different components and the ability
+
+01:02:40.825 --> 01:02:42.505
+<v Speaker 0>to slice and dice the commands to do
+
+01:02:42.505 --> 01:02:44.425
+<v Speaker 0>the each step that I need for my
+
+01:02:45.170 --> 01:02:47.650
+<v Speaker 0>worked really well. So why don't we hop
+
+01:02:47.650 --> 01:02:49.490
+<v Speaker 0>over to your screen now?
+
+01:02:49.730 --> 01:02:50.450
+<v Speaker 1>Cool.
+
+01:02:52.290 --> 01:02:54.130
+<v Speaker 0>You're gonna walk us through
+
+01:02:54.370 --> 01:02:55.650
+<v Speaker 0>something a bit more
+
+01:02:56.050 --> 01:02:58.210
+<v Speaker 0>feature complete complex. I'm not sure what word
+
+01:02:58.210 --> 01:02:59.330
+<v Speaker 0>to use, but I'll let you take it
+
+01:02:59.330 --> 01:02:59.570
+<v Speaker 0>away.
+
+01:03:00.335 --> 01:03:02.894
+<v Speaker 1>I think that both of those should apply.
+
+01:03:02.894 --> 01:03:04.335
+<v Speaker 1>So so, basically, what I'm gonna try to
+
+01:03:04.335 --> 01:03:06.095
+<v Speaker 1>do in in this example is is tie
+
+01:03:06.095 --> 01:03:08.095
+<v Speaker 1>it all together. I'm gonna close all my
+
+01:03:08.095 --> 01:03:10.335
+<v Speaker 1>my tabs so I can get oh, and
+
+01:03:10.335 --> 01:03:11.454
+<v Speaker 1>it's closed. One too many.
+
+01:03:13.190 --> 01:03:15.590
+<v Speaker 0>There's a cool Versus code plugin called macros,
+
+01:03:15.590 --> 01:03:17.830
+<v Speaker 0>and I've got, like, command l map to
+
+01:03:17.830 --> 01:03:20.230
+<v Speaker 0>close all the window tabs. I recommend it.
+
+01:03:20.230 --> 01:03:21.110
+<v Speaker 1>I
+
+01:03:21.110 --> 01:03:23.750
+<v Speaker 1>will do that after this, I guess. Let's
+
+01:03:23.750 --> 01:03:23.990
+<v Speaker 1>see.
+
+01:03:25.685 --> 01:03:28.325
+<v Speaker 1>So reopen here. Apologies for that.
+
+01:03:29.045 --> 01:03:30.085
+<v Speaker 1>So I've got
+
+01:03:31.285 --> 01:03:33.685
+<v Speaker 1>kinda just show the structure here of things.
+
+01:03:34.484 --> 01:03:36.484
+<v Speaker 1>So I've got this sample app. In this
+
+01:03:36.484 --> 01:03:38.565
+<v Speaker 1>case, I don't have tree installed.
+
+01:03:38.940 --> 01:03:40.620
+<v Speaker 1>In this case, it has two components.
+
+01:03:40.780 --> 01:03:42.140
+<v Speaker 1>One is the back end,
+
+01:03:42.460 --> 01:03:45.260
+<v Speaker 1>and that's gonna have its own Kubernetes manifest.
+
+01:03:45.820 --> 01:03:46.380
+<v Speaker 1>And
+
+01:03:47.180 --> 01:03:49.260
+<v Speaker 1>it's a Go app that is built with
+
+01:03:49.260 --> 01:03:50.140
+<v Speaker 1>a Docker file,
+
+01:03:50.460 --> 01:03:51.660
+<v Speaker 1>and then it also has a front end.
+
+01:03:51.660 --> 01:03:53.420
+<v Speaker 1>So very similar to our microservices example.
+
+01:03:54.295 --> 01:03:56.215
+<v Speaker 1>It also uses a base image. So then
+
+01:03:56.215 --> 01:03:58.055
+<v Speaker 1>I have, basically, my
+
+01:03:59.015 --> 01:04:00.375
+<v Speaker 1>user creation
+
+01:04:00.375 --> 01:04:03.095
+<v Speaker 1>in in my base image. I have command
+
+01:04:03.095 --> 01:04:04.615
+<v Speaker 1>to run within the app in my base
+
+01:04:04.615 --> 01:04:06.135
+<v Speaker 1>image, and then I leverage that in the
+
+01:04:06.135 --> 01:04:08.135
+<v Speaker 1>front end and back end. And the way
+
+01:04:08.135 --> 01:04:09.335
+<v Speaker 1>I'm tying that together
+
+01:04:09.920 --> 01:04:12.880
+<v Speaker 1>is with a root level Skaffold YAML, which
+
+01:04:12.880 --> 01:04:15.520
+<v Speaker 1>brings in three different modules. One is the
+
+01:04:15.520 --> 01:04:16.480
+<v Speaker 1>test module,
+
+01:04:16.640 --> 01:04:18.320
+<v Speaker 1>the other is the back end module, and
+
+01:04:18.320 --> 01:04:19.760
+<v Speaker 1>then the front end module. And the front
+
+01:04:19.760 --> 01:04:22.240
+<v Speaker 1>end module, as we'll see in its Skaffold
+
+01:04:22.240 --> 01:04:22.720
+<v Speaker 1>YAML,
+
+01:04:23.835 --> 01:04:26.555
+<v Speaker 1>depends on the back end
+
+01:04:26.795 --> 01:04:28.395
+<v Speaker 1>and the testing module
+
+01:04:29.595 --> 01:04:30.795
+<v Speaker 1>and the base image.
+
+01:04:31.515 --> 01:04:33.915
+<v Speaker 1>So let's go ahead and go into the
+
+01:04:33.915 --> 01:04:35.515
+<v Speaker 1>front end. Let's say I'm a front end
+
+01:04:35.515 --> 01:04:36.235
+<v Speaker 1>developer,
+
+01:04:36.315 --> 01:04:37.675
+<v Speaker 1>and I want to
+
+01:04:38.075 --> 01:04:38.955
+<v Speaker 1>run
+
+01:04:39.670 --> 01:04:41.990
+<v Speaker 1>my dev loop. I have
+
+01:04:42.390 --> 01:04:43.990
+<v Speaker 1>at the bottom here, you'll see my port
+
+01:04:43.990 --> 01:04:45.990
+<v Speaker 1>forward's already defined. So if I just run
+
+01:04:45.990 --> 01:04:47.110
+<v Speaker 1>Skaffold dev,
+
+01:04:47.590 --> 01:04:49.750
+<v Speaker 1>that should work. Let me just real quick.
+
+01:04:50.550 --> 01:04:51.030
+<v Speaker 1>Oops.
+
+01:04:52.015 --> 01:04:54.895
+<v Speaker 1>Let me get my Docker socket back.
+
+01:04:55.935 --> 01:04:58.175
+<v Speaker 1>Alright. So now I have my dev loop
+
+01:04:58.175 --> 01:04:58.735
+<v Speaker 1>right,
+
+01:04:59.055 --> 01:05:01.055
+<v Speaker 1>and you'll see in here that I'm doing
+
+01:05:01.055 --> 01:05:02.335
+<v Speaker 1>the test phase,
+
+01:05:03.055 --> 01:05:05.375
+<v Speaker 1>and that's gonna run a Docker image. Right?
+
+01:05:05.375 --> 01:05:07.055
+<v Speaker 1>So I get the image that was just
+
+01:05:07.055 --> 01:05:09.720
+<v Speaker 1>built, and I run a a script inside
+
+01:05:09.720 --> 01:05:11.160
+<v Speaker 1>of it. And what I'm gonna do with
+
+01:05:11.160 --> 01:05:12.040
+<v Speaker 1>that script
+
+01:05:13.240 --> 01:05:16.360
+<v Speaker 1>is this validate script is gonna build my
+
+01:05:16.360 --> 01:05:17.160
+<v Speaker 1>configuration
+
+01:05:17.560 --> 01:05:20.040
+<v Speaker 1>and then run contest against a set of
+
+01:05:20.040 --> 01:05:20.520
+<v Speaker 1>policies.
+
+01:05:21.365 --> 01:05:23.125
+<v Speaker 1>And those policies can be in your own
+
+01:05:23.125 --> 01:05:25.045
+<v Speaker 1>repo. They can be in a shared repo.
+
+01:05:25.125 --> 01:05:27.365
+<v Speaker 1>But it's things like, you know, the
+
+01:05:28.325 --> 01:05:30.484
+<v Speaker 1>containers not being able to run as root.
+
+01:05:30.484 --> 01:05:32.645
+<v Speaker 1>Right? So if someone were to change, for
+
+01:05:32.645 --> 01:05:35.010
+<v Speaker 1>example, the Docker file or change the app
+
+01:05:35.010 --> 01:05:36.610
+<v Speaker 1>in some way that required it to run
+
+01:05:36.610 --> 01:05:37.250
+<v Speaker 1>through,
+
+01:05:37.490 --> 01:05:39.010
+<v Speaker 1>they you would be able to block that
+
+01:05:39.010 --> 01:05:41.810
+<v Speaker 1>via the contest. So so here, I have
+
+01:05:41.810 --> 01:05:42.770
+<v Speaker 1>my application
+
+01:05:43.170 --> 01:05:43.970
+<v Speaker 1>running.
+
+01:05:44.530 --> 01:05:46.530
+<v Speaker 1>And let's say I wanted to you know,
+
+01:05:46.530 --> 01:05:48.745
+<v Speaker 1>I was slightly a nefarious developer, and I
+
+01:05:48.745 --> 01:05:51.625
+<v Speaker 1>wanted to run my app as as a
+
+01:05:52.105 --> 01:05:54.345
+<v Speaker 1>as root for some reason. I would go
+
+01:05:54.345 --> 01:05:55.785
+<v Speaker 1>and try to change this,
+
+01:05:56.265 --> 01:05:58.265
+<v Speaker 1>you know, run as non root to false.
+
+01:05:59.810 --> 01:06:01.010
+<v Speaker 1>And if I did that,
+
+01:06:01.810 --> 01:06:03.410
+<v Speaker 1>my dev loop would start again because it's
+
+01:06:03.410 --> 01:06:05.090
+<v Speaker 1>part of my application that I want, you
+
+01:06:05.090 --> 01:06:06.690
+<v Speaker 1>know, realized in my cluster,
+
+01:06:07.010 --> 01:06:08.450
+<v Speaker 1>and then it's gonna test. And I can
+
+01:06:08.450 --> 01:06:10.690
+<v Speaker 1>see here that it actually failed. Right? And
+
+01:06:10.690 --> 01:06:13.170
+<v Speaker 1>so I can now have this feedback
+
+01:06:13.615 --> 01:06:14.975
+<v Speaker 1>about my configuration
+
+01:06:14.975 --> 01:06:16.655
+<v Speaker 1>at the time that I'm developing. So then
+
+01:06:16.655 --> 01:06:17.775
+<v Speaker 1>I can change that back
+
+01:06:18.255 --> 01:06:20.655
+<v Speaker 1>and get back within, you know, the organizational
+
+01:06:20.655 --> 01:06:23.455
+<v Speaker 1>policies that constrain me. And now I can
+
+01:06:23.455 --> 01:06:24.495
+<v Speaker 1>develop again,
+
+01:06:24.895 --> 01:06:27.600
+<v Speaker 1>and it's deploying, and everything's back happy. Right?
+
+01:06:27.600 --> 01:06:28.800
+<v Speaker 1>So I just wanted to show kind of
+
+01:06:28.800 --> 01:06:31.760
+<v Speaker 1>the the whole end to end with modules
+
+01:06:31.760 --> 01:06:33.040
+<v Speaker 1>connecting to
+
+01:06:33.840 --> 01:06:36.080
+<v Speaker 1>the each other, right, from the front end
+
+01:06:36.080 --> 01:06:38.560
+<v Speaker 1>and back end, shared base module for an
+
+01:06:38.560 --> 01:06:39.120
+<v Speaker 1>image,
+
+01:06:39.440 --> 01:06:41.200
+<v Speaker 1>as well as the ability to have some
+
+01:06:41.200 --> 01:06:43.705
+<v Speaker 1>shared testing framework, like, for example, for your
+
+01:06:43.705 --> 01:06:46.345
+<v Speaker 1>Kubernetes manifest that you can use across multiple
+
+01:06:46.345 --> 01:06:47.465
+<v Speaker 1>repositories.
+
+01:06:47.785 --> 01:06:50.345
+<v Speaker 1>And that was basically it, unless there's any
+
+01:06:50.345 --> 01:06:52.665
+<v Speaker 1>other questions you have there. Nice. That was
+
+01:06:52.665 --> 01:06:53.465
+<v Speaker 0>awesome.
+
+01:06:53.545 --> 01:06:55.224
+<v Speaker 0>And let me get us back to.
+
+01:06:57.780 --> 01:06:59.380
+<v Speaker 0>There we go. Cool.
+
+01:06:59.780 --> 01:07:02.500
+<v Speaker 0>Well, I think that was quite successful. We
+
+01:07:02.500 --> 01:07:04.500
+<v Speaker 0>actually I thought I got broken this and
+
+01:07:04.500 --> 01:07:06.260
+<v Speaker 0>that's rare. I
+
+01:07:06.980 --> 01:07:09.460
+<v Speaker 1>I am, you know, I am counting my
+
+01:07:09.460 --> 01:07:11.185
+<v Speaker 1>lucky stars. I I think today's a lucky
+
+01:07:11.185 --> 01:07:13.025
+<v Speaker 1>day for me because I've never seen, like,
+
+01:07:13.025 --> 01:07:15.744
+<v Speaker 1>six or seven demos run pretty flawlessly. Maybe
+
+01:07:15.744 --> 01:07:18.145
+<v Speaker 1>it was the operator that really did it.
+
+01:07:18.224 --> 01:07:21.105
+<v Speaker 0>Yeah. Definitely. That's exactly what it was. Just
+
+01:07:22.800 --> 01:07:25.440
+<v Speaker 0>no. I'm really impressed. Like I said, it's
+
+01:07:25.440 --> 01:07:26.080
+<v Speaker 0>been a
+
+01:07:26.320 --> 01:07:28.240
+<v Speaker 0>long time since I've played with Skaffold and
+
+01:07:28.240 --> 01:07:30.000
+<v Speaker 0>it's really nice to just see how it's
+
+01:07:30.000 --> 01:07:31.200
+<v Speaker 0>bringing a really
+
+01:07:31.760 --> 01:07:33.360
+<v Speaker 0>almost like fluid,
+
+01:07:33.520 --> 01:07:35.920
+<v Speaker 0>almost intuitive developer experience to have us just
+
+01:07:35.920 --> 01:07:36.800
+<v Speaker 0>want things to work.
+
+01:07:37.375 --> 01:07:39.455
+<v Speaker 0>So really impressive stuff, and I'm looking forward
+
+01:07:39.455 --> 01:07:41.055
+<v Speaker 0>to seeing what's gonna come next with the
+
+01:07:41.055 --> 01:07:42.095
+<v Speaker 0>Skaffold project.
+
+01:07:42.495 --> 01:07:43.375
+<v Speaker 1>Awesome.
+
+01:07:43.455 --> 01:07:45.375
+<v Speaker 1>Thank you so much. And if folks wanna
+
+01:07:45.375 --> 01:07:47.775
+<v Speaker 1>engage, we have the Skaffold project on GitHub.
+
+01:07:47.775 --> 01:07:49.935
+<v Speaker 1>So please, you know, meet us there with
+
+01:07:49.935 --> 01:07:52.190
+<v Speaker 1>some issues or comments or questions. We're also
+
+01:07:52.190 --> 01:07:53.310
+<v Speaker 1>on Stack Overflow.
+
+01:07:53.790 --> 01:07:54.590
+<v Speaker 0>Alright.
+
+01:07:54.670 --> 01:07:56.430
+<v Speaker 0>Well, you heard it there. Check it out.
+
+01:07:56.430 --> 01:07:58.030
+<v Speaker 0>Play with it. If you have any problems,
+
+01:07:58.030 --> 01:08:00.589
+<v Speaker 0>reach out on GitHub, Stack Overflow, etcetera. People
+
+01:08:00.589 --> 01:08:02.030
+<v Speaker 0>will do their best to help you.
+
+01:08:02.510 --> 01:08:04.910
+<v Speaker 0>Vic, thank you for joining me today. Really
+
+01:08:04.910 --> 01:08:07.425
+<v Speaker 0>cool. Really happy with that. I will speak
+
+01:08:07.425 --> 01:08:08.945
+<v Speaker 0>to you again soon and have a great
+
+01:08:08.945 --> 01:08:09.505
+<v Speaker 0>day.
+
+01:08:09.905 --> 01:08:11.425
+<v Speaker 1>Awesome. Thanks, Dave. Bye.

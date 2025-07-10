@@ -1,0 +1,7349 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: b64edcf9-80cb-4e2a-9dba-4814705d7f9b
+Created: 2025-04-29T19:41:45.174Z
+Duration: 5620.0947
+Channels: 1
+
+00:00:51.750 --> 00:00:54.550
+<v Speaker 0>Hello and welcome to today's episode of Rawkode
+
+00:00:54.550 --> 00:00:56.710
+<v Speaker 0>live. I am your host Rawkode.
+
+00:00:56.950 --> 00:00:58.470
+<v Speaker 0>Today we are gonna be taking a look
+
+00:00:58.470 --> 00:00:59.510
+<v Speaker 0>at Tremor.
+
+00:00:59.910 --> 00:01:00.950
+<v Speaker 0>It metrics,
+
+00:01:01.190 --> 00:01:04.550
+<v Speaker 0>logs, collection, pipeline, transformations, loads of really cool
+
+00:01:04.550 --> 00:01:05.830
+<v Speaker 0>things for it to look at today.
+
+00:01:06.424 --> 00:01:08.104
+<v Speaker 0>And it's written in Rust, which makes the
+
+00:01:08.104 --> 00:01:10.024
+<v Speaker 0>project even killer in my book. I'm always
+
+00:01:10.024 --> 00:01:12.505
+<v Speaker 0>excited to see new Rust projects taken the
+
+00:01:12.505 --> 00:01:14.825
+<v Speaker 0>limelight. So before we do that, I'm gonna
+
+00:01:14.825 --> 00:01:16.744
+<v Speaker 0>remember to do my housekeeping for today and
+
+00:01:16.744 --> 00:01:18.664
+<v Speaker 0>that means I'm gonna ask you all very
+
+00:01:18.664 --> 00:01:21.190
+<v Speaker 0>kindly. Please subscribe to the YouTube channel, click
+
+00:01:21.190 --> 00:01:23.510
+<v Speaker 0>that bell and get updates whenever new episodes
+
+00:01:23.510 --> 00:01:24.230
+<v Speaker 0>are coming.
+
+00:01:24.550 --> 00:01:26.870
+<v Speaker 0>They are regular weekly and loads of cool
+
+00:01:26.870 --> 00:01:28.950
+<v Speaker 0>projects for us to explore.
+
+00:01:29.350 --> 00:01:31.510
+<v Speaker 0>Also, have a discord channel where loads of
+
+00:01:31.510 --> 00:01:33.350
+<v Speaker 0>people come and chat about the technologies that
+
+00:01:33.350 --> 00:01:35.615
+<v Speaker 0>we cover as well as general Kubernetes and
+
+00:01:35.615 --> 00:01:37.134
+<v Speaker 0>cloud native topics.
+
+00:01:37.215 --> 00:01:39.454
+<v Speaker 0>And we have a monitor observability channel, which
+
+00:01:39.454 --> 00:01:41.454
+<v Speaker 0>would be a good fit for today's episode.
+
+00:01:41.454 --> 00:01:43.454
+<v Speaker 0>Also, I need to thank my employer and
+
+00:01:43.454 --> 00:01:45.774
+<v Speaker 0>want to thank them of course. They're awesome
+
+00:01:45.774 --> 00:01:47.580
+<v Speaker 0>and they allow me to spend my time
+
+00:01:47.580 --> 00:01:50.460
+<v Speaker 0>playing with random technologies that I find exciting
+
+00:01:50.700 --> 00:01:52.140
+<v Speaker 0>and show them to the world. So thank
+
+00:01:52.140 --> 00:01:54.060
+<v Speaker 0>you Equinix metal. Feel free to check out
+
+00:01:54.060 --> 00:01:55.900
+<v Speaker 0>the products. We have bare metal clouds. You
+
+00:01:55.900 --> 00:01:58.460
+<v Speaker 0>can get $50 in credit. That is roughly
+
+00:01:58.460 --> 00:02:00.700
+<v Speaker 0>one hundred hours of compute depending on which
+
+00:02:00.700 --> 00:02:03.365
+<v Speaker 0>instance you you choose. So enjoy.
+
+00:02:04.085 --> 00:02:05.685
+<v Speaker 0>Now we have a bit of a treat
+
+00:02:05.685 --> 00:02:07.765
+<v Speaker 0>today. I am not joined by one nor
+
+00:02:07.765 --> 00:02:09.045
+<v Speaker 0>two nor three
+
+00:02:09.205 --> 00:02:11.925
+<v Speaker 0>but four guests from the Tremor team.
+
+00:02:12.325 --> 00:02:13.685
+<v Speaker 0>Hello everyone.
+
+00:02:14.805 --> 00:02:16.005
+<v Speaker 0>Just wave in all directions.
+
+00:02:18.159 --> 00:02:19.600
+<v Speaker 0>So could we
+
+00:02:19.920 --> 00:02:22.720
+<v Speaker 0>start with a quick round of introductions then?
+
+00:02:22.720 --> 00:02:24.239
+<v Speaker 0>I guess we'll start in the top left
+
+00:02:24.239 --> 00:02:26.239
+<v Speaker 0>and work our way around anti clockwise finishing
+
+00:02:26.239 --> 00:02:28.239
+<v Speaker 0>back on me. Please introduce yourself. Tell us
+
+00:02:28.239 --> 00:02:29.599
+<v Speaker 0>who you are and a little bit more
+
+00:02:29.599 --> 00:02:30.159
+<v Speaker 0>if you wish.
+
+00:02:30.855 --> 00:02:33.335
+<v Speaker 1>Well, hello, everyone. I'm Heinz. Like the catch
+
+00:02:33.335 --> 00:02:35.735
+<v Speaker 1>up, no relations there. Just the same name.
+
+00:02:37.735 --> 00:02:40.215
+<v Speaker 1>I've I've I've done open source for, well,
+
+00:02:40.855 --> 00:02:41.895
+<v Speaker 1>two decades nearly.
+
+00:02:42.980 --> 00:02:45.220
+<v Speaker 1>Quite enjoy it. Really happy that we could
+
+00:02:45.220 --> 00:02:46.740
+<v Speaker 1>do this with Tremor too.
+
+00:02:47.540 --> 00:02:49.860
+<v Speaker 1>And yes, I'm working on Tremor. The this
+
+00:02:49.860 --> 00:02:51.939
+<v Speaker 1>thing we are talking about today, you'll hopefully
+
+00:02:51.939 --> 00:02:54.019
+<v Speaker 1>hear a bit more about it unless we
+
+00:02:54.019 --> 00:02:56.739
+<v Speaker 1>get sidetracked and spend time talking about cats.
+
+00:02:56.975 --> 00:02:58.415
+<v Speaker 1>It has happened before.
+
+00:02:59.615 --> 00:03:01.615
+<v Speaker 1>Yeah. I I really am glad that I
+
+00:03:01.615 --> 00:03:04.095
+<v Speaker 1>can have a blurry background today, which is
+
+00:03:04.095 --> 00:03:04.975
+<v Speaker 1>my my
+
+00:03:05.295 --> 00:03:06.575
+<v Speaker 1>achievement of the week.
+
+00:03:08.334 --> 00:03:10.975
+<v Speaker 1>Otherwise, yeah, let's pass it on. Anoop.
+
+00:03:11.980 --> 00:03:15.099
+<v Speaker 2>Okay. Hello, everyone. My name is Anu. I'm
+
+00:03:15.099 --> 00:03:17.180
+<v Speaker 2>a software engineer at Wayfair.com,
+
+00:03:17.340 --> 00:03:19.980
+<v Speaker 2>currently based in Boston. So this was my
+
+00:03:19.980 --> 00:03:21.819
+<v Speaker 2>first real job out of college. I've been
+
+00:03:21.819 --> 00:03:24.300
+<v Speaker 2>working with them for over seven years now,
+
+00:03:24.300 --> 00:03:26.075
+<v Speaker 2>and I've been in, like, various teams within
+
+00:03:26.075 --> 00:03:28.235
+<v Speaker 2>Wayfair. So Tremor is the latest one among
+
+00:03:28.235 --> 00:03:30.955
+<v Speaker 2>them. So, yeah, I I I like working
+
+00:03:30.955 --> 00:03:32.235
+<v Speaker 2>for Tremor with everyone here.
+
+00:03:37.670 --> 00:03:40.150
+<v Speaker 3>I guess it's over to me. I guess
+
+00:03:42.390 --> 00:03:44.230
+<v Speaker 3>I'm the cut harder on Tremor.
+
+00:03:45.190 --> 00:03:47.110
+<v Speaker 3>Heinz and I started about two and a
+
+00:03:47.110 --> 00:03:49.030
+<v Speaker 3>half years ago, and it went to open
+
+00:03:49.030 --> 00:03:50.150
+<v Speaker 3>source about a year ago.
+
+00:03:51.225 --> 00:03:53.625
+<v Speaker 3>But, generally, we just sit down, write code,
+
+00:03:53.625 --> 00:03:55.305
+<v Speaker 3>have fun, and try and break it so
+
+00:03:55.305 --> 00:03:57.545
+<v Speaker 3>that it doesn't break up for anyone else
+
+00:03:57.545 --> 00:04:00.265
+<v Speaker 3>in production. And now over to the youngest
+
+00:04:00.265 --> 00:04:01.865
+<v Speaker 3>and newest and freshest
+
+00:04:02.105 --> 00:04:04.585
+<v Speaker 3>member of the team, perhaps the funniest, Mathias.
+
+00:04:06.080 --> 00:04:08.640
+<v Speaker 4>Yeah. Hi. Welcome. Mathias here. I'm I'm the
+
+00:04:08.640 --> 00:04:10.240
+<v Speaker 4>newest addition. I'm
+
+00:04:10.480 --> 00:04:13.680
+<v Speaker 4>I'm the one who's doing all the silly
+
+00:04:13.680 --> 00:04:16.320
+<v Speaker 4>mistakes and bugs, and I'm trying to introduce
+
+00:04:16.320 --> 00:04:18.800
+<v Speaker 4>them into our code base. But those guys
+
+00:04:18.800 --> 00:04:21.345
+<v Speaker 4>always stop me. It's it's annoying. So yeah.
+
+00:04:21.345 --> 00:04:21.825
+<v Speaker 4>I
+
+00:04:22.225 --> 00:04:25.345
+<v Speaker 4>have I am actually also on the
+
+00:04:26.145 --> 00:04:28.065
+<v Speaker 4>language and the core team of the Pony
+
+00:04:28.065 --> 00:04:28.865
+<v Speaker 4>language,
+
+00:04:28.865 --> 00:04:31.265
+<v Speaker 4>and this is also, like, how I got
+
+00:04:31.265 --> 00:04:31.745
+<v Speaker 4>to know
+
+00:04:32.560 --> 00:04:34.560
+<v Speaker 4>those people and how I got this job
+
+00:04:34.560 --> 00:04:37.280
+<v Speaker 4>actually. And now I'm writing Rust, although I
+
+00:04:37.280 --> 00:04:39.120
+<v Speaker 4>want to write pony all the time. But
+
+00:04:39.120 --> 00:04:41.600
+<v Speaker 4>it's it's great fun. Yes. Thank you. Alright.
+
+00:04:43.600 --> 00:04:44.479
+<v Speaker 0>Thank you everyone.
+
+00:04:45.935 --> 00:04:48.495
+<v Speaker 0>Lots of different accents as well. We we're
+
+00:04:48.495 --> 00:04:50.175
+<v Speaker 0>all in different locations. I guess you're a
+
+00:04:50.175 --> 00:04:52.655
+<v Speaker 0>fully remote distributed super team. Is that the
+
+00:04:52.655 --> 00:04:53.935
+<v Speaker 0>best way to describe you?
+
+00:04:54.255 --> 00:04:55.775
+<v Speaker 3>We're all distributed
+
+00:04:55.855 --> 00:04:58.710
+<v Speaker 3>across Berlin except to Luke who is He's
+
+00:04:58.710 --> 00:05:01.270
+<v Speaker 1>distributed to Boston. For some strange reason.
+
+00:05:01.830 --> 00:05:03.990
+<v Speaker 1>Are not Ah, has an import.
+
+00:05:04.150 --> 00:05:04.710
+<v Speaker 1>Yeah.
+
+00:05:05.910 --> 00:05:07.669
+<v Speaker 1>We stole him from The UK.
+
+00:05:08.870 --> 00:05:10.229
+<v Speaker 3>Ah. He stole me from Ireland.
+
+00:05:11.275 --> 00:05:11.915
+<v Speaker 1>Yes.
+
+00:05:13.595 --> 00:05:15.115
+<v Speaker 0>Okay. So much theft.
+
+00:05:15.755 --> 00:05:16.395
+<v Speaker 0>Yep.
+
+00:05:16.715 --> 00:05:18.875
+<v Speaker 0>Awesome. I I I I I'm gonna have
+
+00:05:18.875 --> 00:05:20.235
+<v Speaker 0>to get a bell or something to keep
+
+00:05:20.235 --> 00:05:22.315
+<v Speaker 0>you all in check, but we'll we'll we'll
+
+00:05:22.315 --> 00:05:24.170
+<v Speaker 0>get through this. Good good luck. Good luck.
+
+00:05:24.170 --> 00:05:26.330
+<v Speaker 0>I know. I'm getting that feeling already.
+
+00:05:26.490 --> 00:05:27.050
+<v Speaker 0>Okay.
+
+00:05:28.330 --> 00:05:30.890
+<v Speaker 0>So we're taking a look at Tremor today.
+
+00:05:30.890 --> 00:05:32.970
+<v Speaker 0>It's it's Rett and Rust even though
+
+00:05:33.530 --> 00:05:35.210
+<v Speaker 0>one or a quarter of your team wants
+
+00:05:35.210 --> 00:05:36.250
+<v Speaker 0>to write Pony all the time.
+
+00:05:37.305 --> 00:05:39.384
+<v Speaker 0>How does Pony and Rust connect? What's what's
+
+00:05:39.384 --> 00:05:40.345
+<v Speaker 0>the connection there?
+
+00:05:41.065 --> 00:05:41.785
+<v Speaker 0>Or is it Yeah.
+
+00:05:43.544 --> 00:05:45.545
+<v Speaker 4>It's like the focus on
+
+00:05:45.945 --> 00:05:46.585
+<v Speaker 4>safe
+
+00:05:47.065 --> 00:05:49.065
+<v Speaker 4>on the safe runtime, like memory safety,
+
+00:05:49.720 --> 00:05:51.080
+<v Speaker 4>database freedom,
+
+00:05:51.240 --> 00:05:53.080
+<v Speaker 4>all this stuff, like but the approaches are
+
+00:05:53.080 --> 00:05:54.680
+<v Speaker 4>totally different. And
+
+00:05:54.920 --> 00:05:58.360
+<v Speaker 4>Rust has a much bigger community and
+
+00:05:59.320 --> 00:05:59.880
+<v Speaker 4>yeah.
+
+00:06:00.360 --> 00:06:01.880
+<v Speaker 0>Yeah. I am a fan of the pony
+
+00:06:01.880 --> 00:06:04.600
+<v Speaker 0>language. I have tried many times to write
+
+00:06:03.905 --> 00:06:05.905
+<v Speaker 0>more of it, but that's maybe a conversation
+
+00:06:05.905 --> 00:06:07.505
+<v Speaker 0>for another day. We definitely should do a
+
+00:06:07.505 --> 00:06:08.785
+<v Speaker 0>stream on pony. I'm gonna end the next
+
+00:06:08.945 --> 00:06:10.385
+<v Speaker 3>That means we have half of the pony
+
+00:06:10.385 --> 00:06:11.745
+<v Speaker 1>user base here, don't we?
+
+00:06:12.945 --> 00:06:15.425
+<v Speaker 0>That's harsh. No. That's not true. That's not
+
+00:06:15.425 --> 00:06:17.505
+<v Speaker 4>fair. We also have half of the Erlang
+
+00:06:17.505 --> 00:06:19.185
+<v Speaker 1>user base here to be fair. Right, brother?
+
+00:06:19.740 --> 00:06:22.060
+<v Speaker 1>That's us too. Okay. That is fair.
+
+00:06:22.300 --> 00:06:23.420
+<v Speaker 0>That is fair.
+
+00:06:24.300 --> 00:06:25.580
+<v Speaker 0>So I think what we've got is a
+
+00:06:25.580 --> 00:06:27.740
+<v Speaker 0>collection of people that like esoteric programming languages
+
+00:06:27.740 --> 00:06:29.500
+<v Speaker 0>and solving Yes. Cool and hard problems. And
+
+00:06:29.500 --> 00:06:31.100
+<v Speaker 0>I think that is a fantastic mix of
+
+00:06:31.100 --> 00:06:32.700
+<v Speaker 0>people to be doing a stream today. Awesome.
+
+00:06:33.625 --> 00:06:35.705
+<v Speaker 1>I only have tears in my eyes.
+
+00:06:36.425 --> 00:06:37.705
+<v Speaker 1>This is going well.
+
+00:06:38.025 --> 00:06:39.145
+<v Speaker 0>Alright. Tremor.
+
+00:06:39.465 --> 00:06:40.985
+<v Speaker 0>Someone tell me what it is, please. I
+
+00:06:40.985 --> 00:06:42.585
+<v Speaker 0>I I said at the start, it's metrics,
+
+00:06:42.585 --> 00:06:44.185
+<v Speaker 0>it's logs, it's transformations,
+
+00:06:44.185 --> 00:06:46.504
+<v Speaker 0>it's event processing. Let let's let's dive into
+
+00:06:46.504 --> 00:06:48.344
+<v Speaker 0>that. Much more and so much less.
+
+00:06:50.590 --> 00:06:52.670
+<v Speaker 0>Yeah. Believe we've some slides. Was that right?
+
+00:06:52.670 --> 00:06:54.750
+<v Speaker 1>Yes. We have some custom slides,
+
+00:06:55.470 --> 00:06:58.510
+<v Speaker 1>which were prepared over the last decade
+
+00:06:58.590 --> 00:07:00.750
+<v Speaker 1>with a lot of care and fifteen minutes
+
+00:07:00.750 --> 00:07:01.310
+<v Speaker 1>over lunch.
+
+00:07:02.794 --> 00:07:03.995
+<v Speaker 1>So Tremor.
+
+00:07:05.115 --> 00:07:07.115
+<v Speaker 1>Let let's go a bit into it. Let's
+
+00:07:07.115 --> 00:07:07.835
+<v Speaker 1>start with,
+
+00:07:08.395 --> 00:07:09.195
+<v Speaker 1>first,
+
+00:07:09.275 --> 00:07:09.915
+<v Speaker 1>the
+
+00:07:10.555 --> 00:07:11.515
+<v Speaker 1>big bang.
+
+00:07:12.235 --> 00:07:16.074
+<v Speaker 1>Tremor today is doing about 10,000,000,000 metrics
+
+00:07:15.250 --> 00:07:18.690
+<v Speaker 1>or events every minute here at Wayfair. That's,
+
+00:07:18.690 --> 00:07:20.450
+<v Speaker 1>by the way, where all of us work.
+
+00:07:21.410 --> 00:07:24.370
+<v Speaker 1>So they they effectively sponsor Tremor,
+
+00:07:24.610 --> 00:07:27.090
+<v Speaker 1>which is a nice number, isn't it? 10,000,000,000?
+
+00:07:27.090 --> 00:07:29.090
+<v Speaker 1>Might be a bit more by now, so
+
+00:07:29.330 --> 00:07:32.325
+<v Speaker 1>who knows? Those numbers keep going up. Quick
+
+00:07:32.325 --> 00:07:34.085
+<v Speaker 1>three things we are going to talk about
+
+00:07:34.085 --> 00:07:36.325
+<v Speaker 1>in the slides. What the heck is Tremor?
+
+00:07:36.325 --> 00:07:38.325
+<v Speaker 1>Why the hell is Tremor? And where are
+
+00:07:38.325 --> 00:07:39.685
+<v Speaker 1>we hiding if you ever want to use
+
+00:07:39.685 --> 00:07:40.325
+<v Speaker 1>Tremor?
+
+00:07:40.885 --> 00:07:42.645
+<v Speaker 1>And I'm pretty sure everyone will want to
+
+00:07:42.645 --> 00:07:43.685
+<v Speaker 1>use Tremor after today.
+
+00:07:44.780 --> 00:07:46.540
+<v Speaker 1>At least everyone that wants to use Tremor
+
+00:07:46.540 --> 00:07:48.620
+<v Speaker 1>will want to use Tremor after this day.
+
+00:07:49.420 --> 00:07:51.340
+<v Speaker 1>So quick, what the heck is Tremor? And
+
+00:07:51.340 --> 00:07:52.700
+<v Speaker 1>Tremor is very simple
+
+00:07:53.100 --> 00:07:54.700
+<v Speaker 1>because Tremor is a lot of things. We
+
+00:07:54.700 --> 00:07:57.740
+<v Speaker 1>talked already about metrics, about logs, about events.
+
+00:07:58.060 --> 00:08:00.845
+<v Speaker 1>But basically, Tremor is two things, three things,
+
+00:08:00.845 --> 00:08:02.845
+<v Speaker 1>two arrows and one cookie monster.
+
+00:08:03.005 --> 00:08:04.205
+<v Speaker 1>Tremor
+
+00:08:04.205 --> 00:08:07.005
+<v Speaker 1>is sources, so something where data comes from.
+
+00:08:07.165 --> 00:08:09.085
+<v Speaker 1>Tremor is a cookie monster, so something that
+
+00:08:09.085 --> 00:08:11.085
+<v Speaker 1>does something with cookies or events.
+
+00:08:11.805 --> 00:08:14.285
+<v Speaker 1>And Tremor is syncs, which is something where
+
+00:08:14.285 --> 00:08:15.165
+<v Speaker 1>data goes to.
+
+00:08:16.530 --> 00:08:18.290
+<v Speaker 1>And that is pretty configurable.
+
+00:08:18.370 --> 00:08:19.570
+<v Speaker 1>Quick
+
+00:08:19.889 --> 00:08:22.129
+<v Speaker 1>idea about when we are saying source, what
+
+00:08:22.129 --> 00:08:25.009
+<v Speaker 1>do we mean? We mean certain connectors, HTTP,
+
+00:08:25.009 --> 00:08:27.969
+<v Speaker 1>Kafka, TCP, UDP, and a host of other
+
+00:08:27.969 --> 00:08:29.969
+<v Speaker 1>ones and some encodings.
+
+00:08:31.165 --> 00:08:33.804
+<v Speaker 1>Some we support right now is JSON, YAML,
+
+00:08:33.804 --> 00:08:37.005
+<v Speaker 1>message pack, just strings, just binary data,
+
+00:08:39.485 --> 00:08:40.845
+<v Speaker 1>open telemetry
+
+00:08:40.845 --> 00:08:42.605
+<v Speaker 1>since, well, since tomorrow.
+
+00:08:43.080 --> 00:08:44.760
+<v Speaker 1>Since tomorrow? Is that a word? Can I
+
+00:08:44.760 --> 00:08:46.040
+<v Speaker 1>say that? I don't know. I'll say it.
+
+00:08:46.040 --> 00:08:48.280
+<v Speaker 3>Yes. You you can say it. Good. Since
+
+00:08:48.280 --> 00:08:49.560
+<v Speaker 3>tomorrow. Worries.
+
+00:08:50.040 --> 00:08:50.920
+<v Speaker 1>Wonderful.
+
+00:08:50.920 --> 00:08:51.480
+<v Speaker 1>So
+
+00:08:51.880 --> 00:08:53.880
+<v Speaker 1>open telemetry since tomorrow.
+
+00:08:54.280 --> 00:08:56.360
+<v Speaker 1>I like since tomorrow. I'll keep using that.
+
+00:08:57.965 --> 00:08:59.245
+<v Speaker 1>Pipelines,
+
+00:08:59.485 --> 00:09:01.245
+<v Speaker 1>which is once the data is in Tremor,
+
+00:09:01.245 --> 00:09:03.005
+<v Speaker 1>what happens to it? We we have a
+
+00:09:03.005 --> 00:09:04.125
+<v Speaker 1>whole programming
+
+00:09:04.125 --> 00:09:05.885
+<v Speaker 1>language called TremorScript,
+
+00:09:06.205 --> 00:09:08.205
+<v Speaker 1>which you all have to suffer through later
+
+00:09:08.205 --> 00:09:10.685
+<v Speaker 1>when poor Rawkode has to write it.
+
+00:09:11.970 --> 00:09:14.130
+<v Speaker 1>And and you can filter the data. You
+
+00:09:14.130 --> 00:09:16.290
+<v Speaker 1>can transform the data. You can sanitize the
+
+00:09:16.290 --> 00:09:19.170
+<v Speaker 1>data to give it a common theme and
+
+00:09:19.170 --> 00:09:21.570
+<v Speaker 1>common look. And you can pretty much build
+
+00:09:21.570 --> 00:09:23.490
+<v Speaker 1>all kind of logic in it that you
+
+00:09:23.490 --> 00:09:25.935
+<v Speaker 1>want, Like, data in, data out, do do
+
+00:09:25.935 --> 00:09:27.775
+<v Speaker 1>stuff with it. Usually
+
+00:09:28.655 --> 00:09:30.975
+<v Speaker 1>shown as a cookie monster in our presentations
+
+00:09:30.975 --> 00:09:32.655
+<v Speaker 1>where we don't get sued for using that
+
+00:09:32.655 --> 00:09:34.015
+<v Speaker 1>picture. I hope we don't get sued. I
+
+00:09:34.015 --> 00:09:35.375
+<v Speaker 1>hope you don't get in trouble for this
+
+00:09:35.375 --> 00:09:38.250
+<v Speaker 1>picture, by the way. If you do, I'm
+
+00:09:38.250 --> 00:09:40.570
+<v Speaker 1>sorry. It's not our fault. It's your stream.
+
+00:09:40.570 --> 00:09:42.170
+<v Speaker 1>It's your responsibility. Goodbye.
+
+00:09:43.690 --> 00:09:45.450
+<v Speaker 1>Syncs is the other part, and this is
+
+00:09:45.450 --> 00:09:46.970
+<v Speaker 1>kind of a mirror of the sources. We
+
+00:09:46.970 --> 00:09:50.090
+<v Speaker 1>have, again, the connectors, HTTP, Kafka, TCP, UDP,
+
+00:09:50.090 --> 00:09:51.690
+<v Speaker 1>and so on. There's a whole host of
+
+00:09:51.690 --> 00:09:53.685
+<v Speaker 1>them, And they are on the website with
+
+00:09:53.685 --> 00:09:55.765
+<v Speaker 1>documentation. I'm pretty sure we will go there
+
+00:09:55.765 --> 00:09:58.645
+<v Speaker 1>at one point in the future today. And
+
+00:09:59.045 --> 00:10:01.205
+<v Speaker 1>same as the codecs going in, we have
+
+00:10:01.205 --> 00:10:03.925
+<v Speaker 1>them going out. So it could be JSON,
+
+00:10:03.925 --> 00:10:06.005
+<v Speaker 1>YAML, message pack strings, binary,
+
+00:10:07.140 --> 00:10:08.980
+<v Speaker 1>or make up your own, really.
+
+00:10:10.100 --> 00:10:10.820
+<v Speaker 1>So
+
+00:10:11.300 --> 00:10:14.180
+<v Speaker 1>why all that stuff? Why all the work?
+
+00:10:15.780 --> 00:10:18.260
+<v Speaker 1>First thing is that Wayfair, there are
+
+00:10:18.580 --> 00:10:21.775
+<v Speaker 1>thousands of engineers doing doing their things. So
+
+00:10:21.855 --> 00:10:23.855
+<v Speaker 1>there are a lot of metrics and stuff.
+
+00:10:23.855 --> 00:10:25.774
+<v Speaker 1>So there are a lot of people, so
+
+00:10:25.774 --> 00:10:27.774
+<v Speaker 1>there needs to be a good way to
+
+00:10:27.774 --> 00:10:29.615
+<v Speaker 1>deal with all the small things.
+
+00:10:30.095 --> 00:10:30.895
+<v Speaker 1>So
+
+00:10:31.135 --> 00:10:32.894
+<v Speaker 1>that leads to a lot of data.
+
+00:10:34.899 --> 00:10:37.380
+<v Speaker 1>We we had last time, we looked at
+
+00:10:37.380 --> 00:10:39.300
+<v Speaker 1>the numbers about 10,000,000,000.
+
+00:10:39.300 --> 00:10:41.540
+<v Speaker 1>I suspect it's a bit more today.
+
+00:10:42.180 --> 00:10:46.115
+<v Speaker 1>Events per millet or 3,000,000,000 a day, 3,000,000,000,000
+
+00:10:46.115 --> 00:10:46.915
+<v Speaker 1>a day,
+
+00:10:48.115 --> 00:10:50.835
+<v Speaker 1>which for everyone counting to trillion a day
+
+00:10:50.835 --> 00:10:51.235
+<v Speaker 1>is
+
+00:10:51.715 --> 00:10:53.155
+<v Speaker 1>significantly much.
+
+00:10:54.275 --> 00:10:56.515
+<v Speaker 1>To to give it other shape than the
+
+00:10:56.515 --> 00:10:59.555
+<v Speaker 1>silly numbers, it's about 10 terabyte or one
+
+00:10:59.555 --> 00:11:00.995
+<v Speaker 1>hard disk if you buy a really big
+
+00:11:00.995 --> 00:11:03.449
+<v Speaker 1>one or 10 small ones. Two
+
+00:11:03.449 --> 00:11:05.370
+<v Speaker 3>years out of date, I think. So They
+
+00:11:05.370 --> 00:11:07.209
+<v Speaker 3>are two years out of double million.
+
+00:11:07.769 --> 00:11:08.410
+<v Speaker 1>Yeah.
+
+00:11:08.889 --> 00:11:09.930
+<v Speaker 1>So,
+
+00:11:09.930 --> 00:11:12.009
+<v Speaker 1>yes, you can you can multiply that with
+
+00:11:12.009 --> 00:11:13.690
+<v Speaker 1>x, and you choose x to get a
+
+00:11:13.690 --> 00:11:16.505
+<v Speaker 1>correct number where x is somewhere between zero
+
+00:11:16.505 --> 00:11:17.465
+<v Speaker 1>and infinity.
+
+00:11:17.865 --> 00:11:20.265
+<v Speaker 1>But it's a ballpark. It's probably not an
+
+00:11:20.265 --> 00:11:21.545
+<v Speaker 0>order of magnitude of.
+
+00:11:22.345 --> 00:11:22.745
+<v Speaker 1>Last
+
+00:11:23.865 --> 00:11:27.305
+<v Speaker 1>but not least, there really wasn't something out
+
+00:11:27.305 --> 00:11:28.825
+<v Speaker 1>there that solved
+
+00:11:28.825 --> 00:11:29.785
+<v Speaker 1>the issue
+
+00:11:30.089 --> 00:11:32.490
+<v Speaker 1>completely without having a lot of trade offs.
+
+00:11:32.889 --> 00:11:35.370
+<v Speaker 1>Because realistically, not everyone is at the scale,
+
+00:11:35.370 --> 00:11:37.769
+<v Speaker 1>and most people are really happy with simple
+
+00:11:38.089 --> 00:11:40.329
+<v Speaker 1>solutions that work for them, which makes perfect
+
+00:11:40.329 --> 00:11:40.889
+<v Speaker 1>sense.
+
+00:11:41.529 --> 00:11:43.610
+<v Speaker 1>And if you're not operating at tens of
+
+00:11:43.610 --> 00:11:46.095
+<v Speaker 1>terabytes a day on data, there is no
+
+00:11:46.095 --> 00:11:48.334
+<v Speaker 1>reason to invest the time, money, or effort
+
+00:11:48.334 --> 00:11:50.415
+<v Speaker 1>into building something that can handle that.
+
+00:11:51.375 --> 00:11:53.055
+<v Speaker 1>So, yeah, that's the why.
+
+00:11:53.615 --> 00:11:56.015
+<v Speaker 1>Last but not least, at as promised, we
+
+00:11:56.015 --> 00:11:57.935
+<v Speaker 1>won't take too much time with slides. Where
+
+00:11:57.935 --> 00:11:59.610
+<v Speaker 1>are we hiding? I hope it's if I
+
+00:11:59.610 --> 00:12:02.970
+<v Speaker 1>pluck our stuff here. There's TremorS, the website.
+
+00:12:02.970 --> 00:12:05.450
+<v Speaker 1>There is GitHub repository, which is also linked
+
+00:12:05.450 --> 00:12:07.850
+<v Speaker 1>on the website. There's a doc site, which
+
+00:12:07.850 --> 00:12:09.450
+<v Speaker 1>is also linked on the website.
+
+00:12:10.170 --> 00:12:12.330
+<v Speaker 1>And we have a Discord server. You're all
+
+00:12:12.330 --> 00:12:14.090
+<v Speaker 1>welcome to come by and say hi.
+
+00:12:15.665 --> 00:12:17.185
+<v Speaker 1>There is a link for it.
+
+00:12:18.705 --> 00:12:22.145
+<v Speaker 3>It's probably also worth going in where Tremor
+
+00:12:22.145 --> 00:12:24.545
+<v Speaker 3>started or why it started in detail. It
+
+00:12:24.545 --> 00:12:25.745
+<v Speaker 3>wasn't really built
+
+00:12:26.145 --> 00:12:27.345
+<v Speaker 3>with the the current
+
+00:12:27.940 --> 00:12:30.579
+<v Speaker 3>scripting or event processing or,
+
+00:12:30.899 --> 00:12:32.660
+<v Speaker 3>ETL in mind. It was built for a
+
+00:12:32.660 --> 00:12:36.019
+<v Speaker 3>very simple problem. When a network operation center,
+
+00:12:36.420 --> 00:12:38.820
+<v Speaker 3>is under capacity for volume when we hit
+
+00:12:38.820 --> 00:12:41.845
+<v Speaker 3>peak load, Bad things happen. Like, our network
+
+00:12:41.845 --> 00:12:44.645
+<v Speaker 3>operating center folk are seeing,
+
+00:12:44.965 --> 00:12:47.445
+<v Speaker 3>data that's delayed a minute or two minutes.
+
+00:12:47.685 --> 00:12:49.365
+<v Speaker 3>And as you know, in a large production
+
+00:12:49.365 --> 00:12:51.525
+<v Speaker 3>environment, if you're two minutes out of date,
+
+00:12:51.685 --> 00:12:53.765
+<v Speaker 3>well, you're you're putting out the wrong fire.
+
+00:12:54.120 --> 00:12:57.400
+<v Speaker 3>So Tremor was basically introduced to solve that
+
+00:12:57.400 --> 00:12:59.000
+<v Speaker 3>problem and introduce,
+
+00:12:59.320 --> 00:13:01.880
+<v Speaker 3>a form of load shedding and capacity planning
+
+00:13:01.880 --> 00:13:04.760
+<v Speaker 3>and management that worked in real time. So
+
+00:13:04.760 --> 00:13:06.440
+<v Speaker 3>that went to production in six weeks, and
+
+00:13:06.440 --> 00:13:09.005
+<v Speaker 3>we spent the past two years avoiding that
+
+00:13:09.005 --> 00:13:10.605
+<v Speaker 3>problem of just having fun.
+
+00:13:12.125 --> 00:13:12.765
+<v Speaker 3>Yes.
+
+00:13:14.605 --> 00:13:15.725
+<v Speaker 3>It worked well.
+
+00:13:16.285 --> 00:13:19.005
+<v Speaker 0>Alright. Awesome. Thank you for the the introduction
+
+00:13:19.005 --> 00:13:20.605
+<v Speaker 0>there. So I guess I've I've got a
+
+00:13:20.605 --> 00:13:22.650
+<v Speaker 0>couple of questions. I I don't know if
+
+00:13:22.650 --> 00:13:24.970
+<v Speaker 0>we covered this during previous conversations, but I
+
+00:13:24.970 --> 00:13:26.970
+<v Speaker 0>know I my previous life, I did a
+
+00:13:26.970 --> 00:13:28.570
+<v Speaker 0>lot of things in the monitoring and observability
+
+00:13:28.570 --> 00:13:30.170
+<v Speaker 0>space. In fact, I worked for Inflox Data,
+
+00:13:30.170 --> 00:13:31.610
+<v Speaker 0>if you're familiar with that company.
+
+00:13:31.930 --> 00:13:34.970
+<v Speaker 0>Yes. This feels a lot like Telegraph. Is
+
+00:13:34.970 --> 00:13:35.850
+<v Speaker 0>that a fair comparison?
+
+00:13:37.175 --> 00:13:38.695
+<v Speaker 1>It it is a subset.
+
+00:13:39.815 --> 00:13:41.735
+<v Speaker 1>So Tremor
+
+00:13:41.735 --> 00:13:44.775
+<v Speaker 1>can pretty much do what Telegraph does to
+
+00:13:44.775 --> 00:13:45.735
+<v Speaker 1>the most part,
+
+00:13:46.135 --> 00:13:47.735
+<v Speaker 1>but it is a generalized solution.
+
+00:13:49.230 --> 00:13:51.630
+<v Speaker 1>You can do it on metrics, like aggregate
+
+00:13:51.630 --> 00:13:54.430
+<v Speaker 1>stuff, sum them together, filter them, rewrite them,
+
+00:13:54.430 --> 00:13:56.110
+<v Speaker 1>but you also can do it on logs.
+
+00:13:56.110 --> 00:13:57.949
+<v Speaker 1>You also can do it on, well, pretty
+
+00:13:57.949 --> 00:14:00.350
+<v Speaker 1>much everything else you want. You have a
+
+00:14:00.350 --> 00:14:03.149
+<v Speaker 1>structured data in, structured data out approach with
+
+00:14:03.149 --> 00:14:04.990
+<v Speaker 1>a language to modify the data in the
+
+00:14:04.990 --> 00:14:05.149
+<v Speaker 1>middle.
+
+00:14:06.774 --> 00:14:09.334
+<v Speaker 3>So, for example, we're we're currently putting a
+
+00:14:09.334 --> 00:14:11.575
+<v Speaker 3>system in production at work that is in
+
+00:14:11.575 --> 00:14:12.775
+<v Speaker 3>the search domain.
+
+00:14:13.654 --> 00:14:15.975
+<v Speaker 3>As Tremor doesn't really care about the underlying
+
+00:14:15.975 --> 00:14:17.975
+<v Speaker 3>symbology or the underlying domain
+
+00:14:18.135 --> 00:14:18.855
+<v Speaker 3>of Endeavor,
+
+00:14:19.220 --> 00:14:21.940
+<v Speaker 3>pretty much anything that's semi structured or self
+
+00:14:21.940 --> 00:14:23.620
+<v Speaker 3>structured, in nature
+
+00:14:23.860 --> 00:14:26.500
+<v Speaker 3>can be processed through the system. And we're
+
+00:14:26.500 --> 00:14:29.140
+<v Speaker 3>now starting to get into binary data processing
+
+00:14:29.140 --> 00:14:30.580
+<v Speaker 3>and workloads as well.
+
+00:14:30.980 --> 00:14:32.260
+<v Speaker 3>So that keeps extending.
+
+00:14:32.925 --> 00:14:35.645
+<v Speaker 3>So although logging and metrics are the observability
+
+00:14:35.645 --> 00:14:38.605
+<v Speaker 3>domain was where we started building the engine,
+
+00:14:39.005 --> 00:14:42.285
+<v Speaker 3>it's always generalizing and becoming kinda more useful.
+
+00:14:42.605 --> 00:14:44.525
+<v Speaker 3>And that tends to
+
+00:14:44.930 --> 00:14:47.009
+<v Speaker 3>of pull us into other domains and directions
+
+00:14:47.009 --> 00:14:49.569
+<v Speaker 3>over time. Like, I think the search solution
+
+00:14:49.569 --> 00:14:53.329
+<v Speaker 3>is is very orchestration. It's workflow oriented. So
+
+00:14:53.329 --> 00:14:55.889
+<v Speaker 3>if you imagine Yeah. You have a messaging
+
+00:14:55.889 --> 00:14:57.649
+<v Speaker 3>system inbound and outbound,
+
+00:14:57.810 --> 00:15:00.529
+<v Speaker 3>you're trying to index and elementize
+
+00:15:00.825 --> 00:15:02.905
+<v Speaker 3>documents style information,
+
+00:15:03.465 --> 00:15:06.025
+<v Speaker 3>pump it into a bunch of downstream systems
+
+00:15:06.025 --> 00:15:07.225
+<v Speaker 3>that are indexing
+
+00:15:07.225 --> 00:15:08.185
+<v Speaker 3>for search,
+
+00:15:08.345 --> 00:15:11.065
+<v Speaker 3>like to power recommendations and engines and things
+
+00:15:11.065 --> 00:15:11.785
+<v Speaker 3>like this.
+
+00:15:12.345 --> 00:15:14.985
+<v Speaker 3>There is no messaging system that gives you
+
+00:15:15.150 --> 00:15:16.670
+<v Speaker 3>fully validated,
+
+00:15:16.750 --> 00:15:17.870
+<v Speaker 3>authenticated,
+
+00:15:18.510 --> 00:15:22.510
+<v Speaker 3>and cleansed data as a transactional messaging feed,
+
+00:15:22.910 --> 00:15:25.470
+<v Speaker 3>because it doesn't do those complex orchestrations of
+
+00:15:25.470 --> 00:15:29.065
+<v Speaker 3>multiple external systems. So Tremor is now being
+
+00:15:29.065 --> 00:15:31.065
+<v Speaker 3>used for that use case, and that will
+
+00:15:31.065 --> 00:15:34.105
+<v Speaker 3>likely move us down into the orchestration direction.
+
+00:15:34.105 --> 00:15:34.585
+<v Speaker 3>So,
+
+00:15:35.545 --> 00:15:38.025
+<v Speaker 3>very much logging and metrics was the start.
+
+00:15:38.265 --> 00:15:40.745
+<v Speaker 3>Who knows where the rabbit hole goes, looking
+
+00:15:40.745 --> 00:15:41.065
+<v Speaker 3>forward?
+
+00:15:42.060 --> 00:15:44.620
+<v Speaker 1>We do support in the influx line protocol
+
+00:15:44.620 --> 00:15:46.620
+<v Speaker 1>as one of our codecs.
+
+00:15:46.620 --> 00:15:48.860
+<v Speaker 1>So you can encode and decode
+
+00:15:48.860 --> 00:15:50.620
+<v Speaker 1>influx data in Tremor.
+
+00:15:50.620 --> 00:15:53.260
+<v Speaker 0>Okay. Cool. Very cool. Alright. Kim,
+
+00:15:54.255 --> 00:15:57.135
+<v Speaker 0>what are the typical deployment architectures for Tremor?
+
+00:15:57.135 --> 00:15:58.735
+<v Speaker 0>Do I run one of them inside of
+
+00:15:58.735 --> 00:16:00.415
+<v Speaker 0>a data center? Do I run them on
+
+00:16:00.415 --> 00:16:02.415
+<v Speaker 0>every node? Do I get a little bit
+
+00:16:02.415 --> 00:16:04.335
+<v Speaker 0>more creative with the paired container?
+
+00:16:04.335 --> 00:16:06.095
+<v Speaker 0>Like, how do you use it yourself?
+
+00:16:06.759 --> 00:16:09.320
+<v Speaker 1>It depends a lot on your use case,
+
+00:16:09.959 --> 00:16:11.639
+<v Speaker 1>as always. Right? That is that is the
+
+00:16:11.639 --> 00:16:13.800
+<v Speaker 1>blanket answer to every question. It depends on
+
+00:16:13.800 --> 00:16:14.680
+<v Speaker 1>your use case.
+
+00:16:15.319 --> 00:16:17.720
+<v Speaker 1>We I'll I'll I'll leave out the clustering
+
+00:16:17.720 --> 00:16:19.160
+<v Speaker 1>part for a moment because Anoop can tell
+
+00:16:19.160 --> 00:16:20.680
+<v Speaker 1>us a bit more about that in a
+
+00:16:20.680 --> 00:16:22.595
+<v Speaker 1>second, I think. He he's working on that
+
+00:16:22.595 --> 00:16:24.195
+<v Speaker 1>at the moment. But,
+
+00:16:24.595 --> 00:16:27.235
+<v Speaker 1>basically, today, Tremor is either run as a
+
+00:16:27.235 --> 00:16:28.675
+<v Speaker 1>sidecar in Kubernetes
+
+00:16:29.155 --> 00:16:29.795
+<v Speaker 1>or
+
+00:16:30.275 --> 00:16:33.075
+<v Speaker 1>as a dedicated server for high load
+
+00:16:33.315 --> 00:16:35.980
+<v Speaker 1>massive pipeline situations where you have a number
+
+00:16:35.980 --> 00:16:38.060
+<v Speaker 1>of servers and load balance over them.
+
+00:16:38.460 --> 00:16:40.460
+<v Speaker 0>Yeah. I'm a big fan of of that
+
+00:16:40.460 --> 00:16:41.820
+<v Speaker 0>approach, and it's something I I try to
+
+00:16:41.820 --> 00:16:43.660
+<v Speaker 0>encourage people to do with with Telegraph and
+
+00:16:43.660 --> 00:16:45.340
+<v Speaker 0>other tools as well is that you really
+
+00:16:45.340 --> 00:16:47.020
+<v Speaker 0>get to dictate their own quality of service
+
+00:16:47.020 --> 00:16:48.140
+<v Speaker 0>when you run the collection
+
+00:16:48.945 --> 00:16:50.785
+<v Speaker 0>right next to your application. And then you
+
+00:16:50.785 --> 00:16:53.665
+<v Speaker 0>can have very specific transformations and aggregations that
+
+00:16:53.665 --> 00:16:55.025
+<v Speaker 0>are happening at that layer. I think that's
+
+00:16:55.025 --> 00:16:57.265
+<v Speaker 0>a really, really cool approach to doing that.
+
+00:16:57.265 --> 00:16:59.185
+<v Speaker 0>So I'm excited for what Tremor can do.
+
+00:16:59.745 --> 00:17:01.505
+<v Speaker 0>Something that we've not mentioned, but I I
+
+00:17:01.505 --> 00:17:03.105
+<v Speaker 0>noticed on the website is that Tremor is
+
+00:17:03.105 --> 00:17:05.679
+<v Speaker 0>also a a cloud data foundation project. You
+
+00:17:05.679 --> 00:17:08.480
+<v Speaker 0>wanna Yes. Is that recent, or is I
+
+00:17:08.480 --> 00:17:11.119
+<v Speaker 0>just did I miss the announcement? September,
+
+00:17:11.119 --> 00:17:11.999
+<v Speaker 1>I think. September.
+
+00:17:12.400 --> 00:17:14.160
+<v Speaker 1>We were invited to join
+
+00:17:15.440 --> 00:17:16.319
+<v Speaker 1>we're enjoined.
+
+00:17:17.875 --> 00:17:19.875
+<v Speaker 3>We're outjoined, I think, is the term. And
+
+00:17:19.875 --> 00:17:23.234
+<v Speaker 1>joint, yes, as a CNCF sandbox project,
+
+00:17:23.395 --> 00:17:25.635
+<v Speaker 1>which is super exciting for us. Yeah. And
+
+00:17:25.635 --> 00:17:28.195
+<v Speaker 0>definitely going against the grain there, not writing
+
+00:17:28.195 --> 00:17:31.210
+<v Speaker 0>your cloud native application in Go. Oof. Yeah.
+
+00:17:31.210 --> 00:17:33.929
+<v Speaker 0>There's only we'll change the CNCF. Go is
+
+00:17:33.929 --> 00:17:36.970
+<v Speaker 1>going out. It's literally going out. Yeah. Go
+
+00:17:36.970 --> 00:17:37.929
+<v Speaker 3>going gone.
+
+00:17:39.529 --> 00:17:40.890
+<v Speaker 0>I think Tremor
+
+00:17:40.890 --> 00:17:43.130
+<v Speaker 0>and maybe Linkerd I did not mean that.
+
+00:17:44.105 --> 00:17:45.945
+<v Speaker 0>I think Tremor and Linkerd are probably the
+
+00:17:45.945 --> 00:17:47.945
+<v Speaker 0>only two that I'm familiar with. They're they're
+
+00:17:47.945 --> 00:17:49.145
+<v Speaker 0>leveraging Rust.
+
+00:17:49.625 --> 00:17:51.545
+<v Speaker 0>Oh, yeah. T I k v as well.
+
+00:17:51.545 --> 00:17:53.465
+<v Speaker 0>That's right. Definitely. That's cool.
+
+00:17:53.945 --> 00:17:55.785
+<v Speaker 0>Okay. One more question then. Let's just get
+
+00:17:55.785 --> 00:17:58.370
+<v Speaker 0>hands on. I I asked this about every
+
+00:17:58.370 --> 00:17:59.970
+<v Speaker 0>project that's written in Rust yet, but have
+
+00:17:59.970 --> 00:18:01.410
+<v Speaker 0>you compiled it for VASM and run it
+
+00:18:01.410 --> 00:18:02.210
+<v Speaker 0>in a browser?
+
+00:18:03.330 --> 00:18:04.370
+<v Speaker 1>The
+
+00:18:04.370 --> 00:18:07.010
+<v Speaker 1>answer is definitely not because we use CMD
+
+00:18:07.010 --> 00:18:08.290
+<v Speaker 1>accelerated JSON passing.
+
+00:18:10.575 --> 00:18:11.455
+<v Speaker 1>Probably, that quite
+
+00:18:12.095 --> 00:18:13.615
+<v Speaker 3>a bit of work when you're doing SIMD
+
+00:18:13.615 --> 00:18:16.415
+<v Speaker 3>accelerated JSON processing. We don't even get it
+
+00:18:16.415 --> 00:18:18.014
+<v Speaker 1>to run on ARM yet.
+
+00:18:19.615 --> 00:18:20.494
+<v Speaker 1>So
+
+00:18:21.535 --> 00:18:23.375
+<v Speaker 0>And is that the cause of UMD? Is
+
+00:18:23.375 --> 00:18:25.390
+<v Speaker 0>that the same issue? Yes. It's the same
+
+00:18:25.470 --> 00:18:26.110
+<v Speaker 1>so
+
+00:18:26.350 --> 00:18:27.149
+<v Speaker 1>Rust
+
+00:18:27.150 --> 00:18:30.110
+<v Speaker 1>on ARM has not yet caught up with
+
+00:18:30.110 --> 00:18:32.910
+<v Speaker 1>Rust on x 68. Most normal stuff you
+
+00:18:32.910 --> 00:18:35.310
+<v Speaker 1>can run perfectly fine. I want to prefix
+
+00:18:35.310 --> 00:18:37.149
+<v Speaker 1>it. It's not like Rust doesn't do ARM.
+
+00:18:37.630 --> 00:18:39.550
+<v Speaker 1>But if you go into really low level
+
+00:18:39.550 --> 00:18:40.270
+<v Speaker 1>SIMD stuff,
+
+00:18:41.205 --> 00:18:44.164
+<v Speaker 1>Rust doesn't yet fully support that. For example,
+
+00:18:44.164 --> 00:18:46.325
+<v Speaker 1>you'd use you need to use Nightly for
+
+00:18:46.325 --> 00:18:47.364
+<v Speaker 1>compiling it,
+
+00:18:47.765 --> 00:18:50.804
+<v Speaker 1>that means that every other week, everything breaks.
+
+00:18:50.885 --> 00:18:53.044
+<v Speaker 1>It's just not worth the effort.
+
+00:18:53.605 --> 00:18:54.840
+<v Speaker 0>Yeah. I don't know if that makes me
+
+00:18:54.840 --> 00:18:56.440
+<v Speaker 0>a good Rust developer or a terrible one,
+
+00:18:56.440 --> 00:18:58.200
+<v Speaker 0>but I've never installed the nightly tool chain.
+
+00:18:58.200 --> 00:18:59.560
+<v Speaker 0>And I just tried to avoid it as
+
+00:18:59.560 --> 00:19:01.080
+<v Speaker 0>much as possible. Both.
+
+00:19:01.720 --> 00:19:03.960
+<v Speaker 1>It makes you a terrible good Rust developer.
+
+00:19:04.120 --> 00:19:05.480
+<v Speaker 0>I'll take it. It makes you a happy
+
+00:19:05.480 --> 00:19:08.245
+<v Speaker 3>Rust developer with a stable environment to work
+
+00:19:08.245 --> 00:19:10.325
+<v Speaker 3>in and take pleasure out of your trouble.
+
+00:19:11.845 --> 00:19:14.405
+<v Speaker 0>Cool. Can we I mean, who feels comfortable
+
+00:19:14.405 --> 00:19:16.645
+<v Speaker 0>describing CMD? I can give my very naive
+
+00:19:16.645 --> 00:19:19.150
+<v Speaker 0>understanding of it. But I believe the idea
+
+00:19:19.150 --> 00:19:20.830
+<v Speaker 0>is that you have a single value and
+
+00:19:20.830 --> 00:19:22.990
+<v Speaker 0>a register and you can perform multiple operations
+
+00:19:22.990 --> 00:19:24.590
+<v Speaker 0>on it at a much
+
+00:19:24.910 --> 00:19:27.789
+<v Speaker 0>efficient or effective process. Is that correct?
+
+00:19:28.030 --> 00:19:30.269
+<v Speaker 1>Matthias just gave a talk on that.
+
+00:19:30.510 --> 00:19:33.230
+<v Speaker 1>Literally. Literally on Bobconf, what, two weeks ago?
+
+00:19:34.665 --> 00:19:35.304
+<v Speaker 4>Yes.
+
+00:19:35.865 --> 00:19:37.625
+<v Speaker 4>Of me. I don't, like, I don't count
+
+00:19:37.625 --> 00:19:39.625
+<v Speaker 4>time anymore. It's Yep.
+
+00:19:40.585 --> 00:19:41.945
+<v Speaker 1>Time is a complicated.
+
+00:19:42.425 --> 00:19:45.145
+<v Speaker 4>Just just a very quick yeah. It's single
+
+00:19:45.145 --> 00:19:47.785
+<v Speaker 4>instruction multiple data. That's what single stands for.
+
+00:19:47.785 --> 00:19:50.450
+<v Speaker 4>So you have basically, you have fat registers
+
+00:19:50.450 --> 00:19:51.489
+<v Speaker 4>in your CPU,
+
+00:19:51.970 --> 00:19:54.209
+<v Speaker 4>and you can put, like, a number of
+
+00:19:54.529 --> 00:19:57.809
+<v Speaker 4>integers, clothes, whatever inside there, or bytes or,
+
+00:19:57.809 --> 00:19:59.490
+<v Speaker 4>like, whatever primitive
+
+00:19:59.490 --> 00:20:00.449
+<v Speaker 4>CPU
+
+00:20:00.610 --> 00:20:01.409
+<v Speaker 4>data type
+
+00:20:01.825 --> 00:20:03.905
+<v Speaker 4>you have. And then you can just run
+
+00:20:03.905 --> 00:20:04.385
+<v Speaker 4>a
+
+00:20:05.105 --> 00:20:07.985
+<v Speaker 4>fat instruction in the same time usually as
+
+00:20:07.985 --> 00:20:09.665
+<v Speaker 4>you do on a single one. And,
+
+00:20:10.065 --> 00:20:12.785
+<v Speaker 4>like, as a curious fact, like, most like,
+
+00:20:12.785 --> 00:20:15.450
+<v Speaker 4>all the Intel CPUs, they want they run
+
+00:20:15.450 --> 00:20:18.010
+<v Speaker 4>their floating point operations on those registers.
+
+00:20:18.010 --> 00:20:20.409
+<v Speaker 4>So you have you're already using them, but
+
+00:20:20.409 --> 00:20:21.850
+<v Speaker 4>you're underusing them.
+
+00:20:22.250 --> 00:20:22.889
+<v Speaker 4>Yeah.
+
+00:20:23.210 --> 00:20:27.530
+<v Speaker 4>So most compilers optimize very heavily and and
+
+00:20:28.385 --> 00:20:30.785
+<v Speaker 4>transform your normal code into,
+
+00:20:31.345 --> 00:20:33.905
+<v Speaker 4>like, unload loops and stuff. And so you
+
+00:20:33.905 --> 00:20:36.305
+<v Speaker 4>get so you you get to use
+
+00:20:37.345 --> 00:20:38.545
+<v Speaker 4>SIMD, but
+
+00:20:39.025 --> 00:20:40.705
+<v Speaker 4>in in the SIMD adjacent project,
+
+00:20:41.750 --> 00:20:43.429
+<v Speaker 4>we explicitly use
+
+00:20:43.830 --> 00:20:46.870
+<v Speaker 4>SIMD instruction. It's it's a it's a, like,
+
+00:20:46.870 --> 00:20:50.230
+<v Speaker 4>a whole new channel of CPU instructions in
+
+00:20:50.230 --> 00:20:52.470
+<v Speaker 4>those systems. It's it's it's fun, but it's,
+
+00:20:52.470 --> 00:20:55.005
+<v Speaker 4>again, a repertoire. Yeah. Okay.
+
+00:20:55.005 --> 00:20:57.005
+<v Speaker 0>I mean, so I go, like, completely backwards
+
+00:20:57.005 --> 00:20:57.565
+<v Speaker 0>then.
+
+00:20:57.805 --> 00:20:59.085
+<v Speaker 0>Basically, my entire yeah.
+
+00:21:01.005 --> 00:21:02.685
+<v Speaker 0>That's cool because, you know, what the best
+
+00:21:02.685 --> 00:21:04.045
+<v Speaker 0>thing I always say about doing this is
+
+00:21:04.045 --> 00:21:06.045
+<v Speaker 0>that I get to have wicked smart people
+
+00:21:06.045 --> 00:21:07.405
+<v Speaker 0>like you all come on and just teach
+
+00:21:07.405 --> 00:21:09.230
+<v Speaker 0>me all this stuff. So that it's Well,
+
+00:21:09.230 --> 00:21:11.390
+<v Speaker 1>that's the same for us. Like, the Cindy
+
+00:21:11.390 --> 00:21:13.470
+<v Speaker 1>stuff credit goes to Le Meyer et al.
+
+00:21:13.550 --> 00:21:16.510
+<v Speaker 1>He invented this. We've just ported it. We
+
+00:21:16.510 --> 00:21:18.510
+<v Speaker 1>just we we basically, we're in the business
+
+00:21:18.510 --> 00:21:20.030
+<v Speaker 1>of stealing great ideas.
+
+00:21:21.870 --> 00:21:23.790
+<v Speaker 1>But we give credit. We try.
+
+00:21:25.205 --> 00:21:27.284
+<v Speaker 3>Yeah. It's criminal but in a good way.
+
+00:21:27.525 --> 00:21:29.525
+<v Speaker 1>Yeah. It's like Robin Hood.
+
+00:21:31.205 --> 00:21:33.205
+<v Speaker 0>Okay. We have a question from the audience
+
+00:21:33.205 --> 00:21:34.645
+<v Speaker 0>and then let's get hands on with this
+
+00:21:34.645 --> 00:21:35.765
+<v Speaker 0>and start playing with So
+
+00:21:37.045 --> 00:21:38.725
+<v Speaker 0>you're gonna ask him, could this be compared
+
+00:21:38.725 --> 00:21:41.510
+<v Speaker 0>to fluent bet with regards to logs and
+
+00:21:41.510 --> 00:21:43.429
+<v Speaker 0>events? And would it be a good match
+
+00:21:43.429 --> 00:21:44.549
+<v Speaker 0>for integration
+
+00:21:46.550 --> 00:21:48.710
+<v Speaker 0>with connecting with Fluent Bit? And then there's
+
+00:21:48.710 --> 00:21:50.470
+<v Speaker 0>a quick follow-up is like, or would it
+
+00:21:50.470 --> 00:21:51.749
+<v Speaker 0>be a competing system?
+
+00:21:51.910 --> 00:21:53.910
+<v Speaker 0>Does anyone wanna touch on the comparisons to
+
+00:21:53.910 --> 00:21:56.095
+<v Speaker 0>to Fluent Bit? That's a great question.
+
+00:21:56.095 --> 00:21:58.174
+<v Speaker 3>Unfortunately, we don't know a lot about fluent
+
+00:21:58.174 --> 00:22:00.895
+<v Speaker 3>bit, but we can probably go into the
+
+00:22:00.895 --> 00:22:03.934
+<v Speaker 3>question if we ignore the fluent bit bit.
+
+00:22:04.975 --> 00:22:07.134
+<v Speaker 3>So is it good for normalization?
+
+00:22:07.294 --> 00:22:09.535
+<v Speaker 3>That's literally exactly what it's used for in
+
+00:22:09.535 --> 00:22:12.410
+<v Speaker 3>production. So the bread and butter use case
+
+00:22:12.410 --> 00:22:14.810
+<v Speaker 3>in our logging and metrics environments, and it's
+
+00:22:14.810 --> 00:22:17.290
+<v Speaker 3>starting to appear in other domains in production
+
+00:22:17.290 --> 00:22:18.090
+<v Speaker 3>at work,
+
+00:22:18.650 --> 00:22:19.450
+<v Speaker 3>is,
+
+00:22:19.850 --> 00:22:21.130
+<v Speaker 3>for the normalization
+
+00:22:21.130 --> 00:22:22.650
+<v Speaker 3>for dimensionalizing
+
+00:22:22.650 --> 00:22:25.375
+<v Speaker 3>real time streaming data. And then based on
+
+00:22:25.375 --> 00:22:28.175
+<v Speaker 3>the classification of that data and the dimensions
+
+00:22:28.175 --> 00:22:30.174
+<v Speaker 3>to within which it was classified,
+
+00:22:30.335 --> 00:22:31.934
+<v Speaker 3>to make decisions on whether,
+
+00:22:32.415 --> 00:22:34.255
+<v Speaker 3>to send that data downstream.
+
+00:22:34.495 --> 00:22:38.335
+<v Speaker 3>So 99.999999999%
+
+00:22:38.335 --> 00:22:40.700
+<v Speaker 3>of the time, Tremor forwards all of the
+
+00:22:40.700 --> 00:22:43.020
+<v Speaker 3>data it receives downstream in production.
+
+00:22:43.420 --> 00:22:45.580
+<v Speaker 3>Every now and again, when our systems go
+
+00:22:45.580 --> 00:22:46.860
+<v Speaker 3>over capacity
+
+00:22:47.020 --> 00:22:48.940
+<v Speaker 3>or there's an issue when one of our
+
+00:22:48.940 --> 00:22:50.540
+<v Speaker 3>data centers are in the cloud,
+
+00:22:51.020 --> 00:22:53.020
+<v Speaker 3>we don't have the capacity that we normally
+
+00:22:53.020 --> 00:22:55.915
+<v Speaker 3>have or the systems are flooded. Whatever reason,
+
+00:22:55.915 --> 00:22:58.475
+<v Speaker 3>Tremor needs to throw away some information.
+
+00:22:58.555 --> 00:23:00.475
+<v Speaker 3>And we try and throw away the least
+
+00:23:00.475 --> 00:23:02.075
+<v Speaker 3>important data to the business
+
+00:23:02.315 --> 00:23:04.475
+<v Speaker 3>at any given point in time. And that's
+
+00:23:04.475 --> 00:23:06.875
+<v Speaker 3>a fairly simple algorithm to build and define
+
+00:23:06.875 --> 00:23:09.520
+<v Speaker 3>inside Tremor. So what it typically does in
+
+00:23:09.520 --> 00:23:11.600
+<v Speaker 3>a in the logging system, which is a,
+
+00:23:12.000 --> 00:23:14.160
+<v Speaker 3>fairly simple three tier architecture,
+
+00:23:14.240 --> 00:23:15.760
+<v Speaker 3>on all of the source systems, so when
+
+00:23:15.760 --> 00:23:17.760
+<v Speaker 3>our data center is that's in the in
+
+00:23:17.840 --> 00:23:19.920
+<v Speaker 3>on the hosts that are running application logic,
+
+00:23:20.284 --> 00:23:22.924
+<v Speaker 3>It might be picking up syslog information. It
+
+00:23:22.924 --> 00:23:25.085
+<v Speaker 3>might be picking up, data from,
+
+00:23:25.404 --> 00:23:27.885
+<v Speaker 3>journal d or or syscontrol or something like
+
+00:23:27.885 --> 00:23:29.004
+<v Speaker 3>that or syslog,
+
+00:23:29.404 --> 00:23:31.965
+<v Speaker 3>as a sidecar in the Kubernetes case, sends
+
+00:23:31.965 --> 00:23:34.730
+<v Speaker 3>it to a transformation system where it normalizes
+
+00:23:34.730 --> 00:23:37.610
+<v Speaker 3>it. For example, try and get 3,500
+
+00:23:37.610 --> 00:23:39.370
+<v Speaker 3>developers to agree on what they call their
+
+00:23:39.370 --> 00:23:40.089
+<v Speaker 3>environment.
+
+00:23:40.250 --> 00:23:42.249
+<v Speaker 3>Is it gonna be env or environment
+
+00:23:42.330 --> 00:23:44.409
+<v Speaker 3>in in their data? Are they go even
+
+00:23:44.409 --> 00:23:46.409
+<v Speaker 3>going to agree on on the data structures?
+
+00:23:46.409 --> 00:23:49.124
+<v Speaker 3>No. So we have a team of 20
+
+00:23:49.284 --> 00:23:52.484
+<v Speaker 3>very dedicated folk in Boston. They just normalize
+
+00:23:52.485 --> 00:23:54.004
+<v Speaker 3>all of these datasets,
+
+00:23:54.325 --> 00:23:55.205
+<v Speaker 3>in production
+
+00:23:55.365 --> 00:23:57.525
+<v Speaker 3>and have a fine grained understanding of our
+
+00:23:57.525 --> 00:23:58.965
+<v Speaker 3>capacity requirements
+
+00:23:59.044 --> 00:24:01.284
+<v Speaker 3>from the operational infrastructure perspective,
+
+00:24:01.620 --> 00:24:04.580
+<v Speaker 3>but also from the production business need perspective.
+
+00:24:04.900 --> 00:24:07.620
+<v Speaker 3>In an ecommerce environment, in a production environment,
+
+00:24:07.860 --> 00:24:10.260
+<v Speaker 3>that changes by hour of the day, day
+
+00:24:10.260 --> 00:24:12.500
+<v Speaker 3>of the week, and the season,
+
+00:24:12.820 --> 00:24:14.100
+<v Speaker 3>that we're in in the year.
+
+00:24:14.900 --> 00:24:17.595
+<v Speaker 3>So it's really, really good at this particular
+
+00:24:17.595 --> 00:24:20.394
+<v Speaker 3>task. It's essentially what it was designed for.
+
+00:24:20.875 --> 00:24:23.195
+<v Speaker 3>And it was also designed in an environment
+
+00:24:23.195 --> 00:24:26.075
+<v Speaker 3>where it was designed to be transparent to
+
+00:24:26.075 --> 00:24:28.715
+<v Speaker 3>the existing system and the surrounding architecture.
+
+00:24:29.500 --> 00:24:31.500
+<v Speaker 3>So Tremor is an interposer.
+
+00:24:31.500 --> 00:24:32.940
+<v Speaker 3>It's like a spy.
+
+00:24:33.740 --> 00:24:35.900
+<v Speaker 3>Most of the developers of Wayfair don't even
+
+00:24:35.900 --> 00:24:36.779
+<v Speaker 3>know it's there.
+
+00:24:37.340 --> 00:24:38.940
+<v Speaker 3>Yet, all of their messages,
+
+00:24:39.020 --> 00:24:40.620
+<v Speaker 3>all of their logs, and all of their
+
+00:24:40.620 --> 00:24:41.980
+<v Speaker 3>metrics pass through it.
+
+00:24:43.184 --> 00:24:44.865
+<v Speaker 3>But they never need to see it. They
+
+00:24:44.865 --> 00:24:46.865
+<v Speaker 3>don't need to touch it. But they go
+
+00:24:46.865 --> 00:24:48.145
+<v Speaker 3>through Elasticsearch.
+
+00:24:48.145 --> 00:24:49.264
+<v Speaker 3>Elasticsearch,
+
+00:24:49.664 --> 00:24:51.505
+<v Speaker 3>as a front end to a developer is
+
+00:24:51.505 --> 00:24:53.664
+<v Speaker 3>being served in the back end through multiple
+
+00:24:53.664 --> 00:24:56.544
+<v Speaker 3>layers of Tremor. Similar to our influx environments,
+
+00:24:56.929 --> 00:24:59.970
+<v Speaker 3>Tremor is actually feeding our Influx environments,
+
+00:25:00.530 --> 00:25:04.130
+<v Speaker 3>inside work rather than Telegraph. So so Tremor
+
+00:25:04.130 --> 00:25:06.529
+<v Speaker 3>takes on that role and effectively
+
+00:25:06.530 --> 00:25:07.890
+<v Speaker 3>becomes Telegraph
+
+00:25:07.890 --> 00:25:11.184
+<v Speaker 3>for the metrics environment or becomes Logstash
+
+00:25:11.184 --> 00:25:13.024
+<v Speaker 3>for the logging environment.
+
+00:25:13.105 --> 00:25:16.144
+<v Speaker 3>So it would probably work similarly to,
+
+00:25:16.545 --> 00:25:19.265
+<v Speaker 3>Fluent Bit, except it's really designed for that
+
+00:25:19.265 --> 00:25:21.425
+<v Speaker 3>large scale high throughput environment.
+
+00:25:22.310 --> 00:25:24.870
+<v Speaker 3>We don't know the specifics of Fluent Bit.
+
+00:25:24.870 --> 00:25:27.030
+<v Speaker 3>There are likely features in Fluent Bit that
+
+00:25:27.030 --> 00:25:28.470
+<v Speaker 3>Tremor does not have.
+
+00:25:28.790 --> 00:25:31.190
+<v Speaker 3>It's likely a good fit for whatever it's
+
+00:25:31.190 --> 00:25:33.110
+<v Speaker 3>currently being used. So if you don't need
+
+00:25:33.110 --> 00:25:34.710
+<v Speaker 3>Tremor, just take a few minutes.
+
+00:25:35.030 --> 00:25:36.655
+<v Speaker 1>Yeah. There there's one thing which is a
+
+00:25:36.655 --> 00:25:39.215
+<v Speaker 1>big difference between Tremor and most systems, including
+
+00:25:39.215 --> 00:25:42.095
+<v Speaker 1>Fluent Bit, is that we design Tremor as
+
+00:25:42.335 --> 00:25:46.015
+<v Speaker 1>less a configurable system than a programmable sys
+
+00:25:46.175 --> 00:25:49.510
+<v Speaker 1>programmable system. We have a deployment language, and
+
+00:25:49.510 --> 00:25:51.590
+<v Speaker 1>we have a scripting language. Well, with systems
+
+00:25:51.590 --> 00:25:53.750
+<v Speaker 1>like Fluentd or Logstash, you usually have a
+
+00:25:53.750 --> 00:25:56.390
+<v Speaker 1>very configuration and plugin driven system where you
+
+00:25:56.390 --> 00:25:58.710
+<v Speaker 1>chain up your plugins. Well, in Tremor, you
+
+00:25:58.710 --> 00:26:01.350
+<v Speaker 1>have a query language which lets you describe
+
+00:26:01.350 --> 00:26:03.835
+<v Speaker 1>a graph and a programming language which lets
+
+00:26:03.835 --> 00:26:06.955
+<v Speaker 1>you describe a logic, and they fold into
+
+00:26:06.955 --> 00:26:07.674
+<v Speaker 1>each other.
+
+00:26:08.235 --> 00:26:11.195
+<v Speaker 1>So you're not hopping between different languages, different
+
+00:26:11.195 --> 00:26:13.835
+<v Speaker 1>systems, different logics. You don't write a plugin
+
+00:26:13.835 --> 00:26:15.915
+<v Speaker 1>in git a git in Go and then
+
+00:26:15.915 --> 00:26:19.210
+<v Speaker 1>write a script in Lua. You have this
+
+00:26:19.210 --> 00:26:21.610
+<v Speaker 1>one system that fits together.
+
+00:26:21.850 --> 00:26:24.490
+<v Speaker 1>And operator friendliness was always a very, very
+
+00:26:24.490 --> 00:26:26.170
+<v Speaker 1>important thing. So you will you will well,
+
+00:26:26.170 --> 00:26:27.850
+<v Speaker 1>hopefully, you won't see it because if you
+
+00:26:27.850 --> 00:26:29.290
+<v Speaker 1>see it, you make a typo, and the
+
+00:26:29.290 --> 00:26:31.235
+<v Speaker 1>system will tell you. But we have hygienic
+
+00:26:31.235 --> 00:26:33.235
+<v Speaker 1>errors and all those kind of things, which
+
+00:26:33.235 --> 00:26:34.195
+<v Speaker 1>we really
+
+00:26:34.514 --> 00:26:35.634
+<v Speaker 1>are proud of.
+
+00:26:36.274 --> 00:26:37.794
+<v Speaker 1>I think that is one of the biggest
+
+00:26:37.794 --> 00:26:41.475
+<v Speaker 1>differences to other systems that do event processing.
+
+00:26:42.660 --> 00:26:45.780
+<v Speaker 0>Alright. Perfect. Okay. We we spoke a lot.
+
+00:26:45.780 --> 00:26:46.820
+<v Speaker 0>I think we need to we need to
+
+00:26:46.820 --> 00:26:48.900
+<v Speaker 0>do a Well, speaking is always fun, isn't
+
+00:26:48.900 --> 00:26:49.380
+<v Speaker 1>it?
+
+00:26:50.660 --> 00:26:52.580
+<v Speaker 0>Yeah. It can be, especially when I'm talking
+
+00:26:52.580 --> 00:26:54.740
+<v Speaker 0>to you for it. That's for sure. So
+
+00:26:55.060 --> 00:26:56.900
+<v Speaker 1>we've worked not to be bored.
+
+00:26:58.424 --> 00:27:00.585
+<v Speaker 0>We got a comment saying a sidecar on
+
+00:27:00.585 --> 00:27:02.505
+<v Speaker 0>every pod we require to retrieve logs from.
+
+00:27:02.505 --> 00:27:04.665
+<v Speaker 0>Yeah. That's my understanding. I think that's a
+
+00:27:04.665 --> 00:27:06.345
+<v Speaker 0>really cool pattern. So I
+
+00:27:06.585 --> 00:27:07.945
+<v Speaker 0>would recommend you check it out. And then
+
+00:27:07.945 --> 00:27:09.065
+<v Speaker 0>I don't know if you know this person
+
+00:27:09.065 --> 00:27:10.905
+<v Speaker 0>but Rawkode has said, hey awesome to see
+
+00:27:10.905 --> 00:27:11.304
+<v Speaker 0>the whole team.
+
+00:27:12.110 --> 00:27:12.830
+<v Speaker 0>Hey.
+
+00:27:14.190 --> 00:27:17.710
+<v Speaker 0>Okay. Let's play with Tremor. Yes. And we
+
+00:27:17.710 --> 00:27:18.510
+<v Speaker 1>have a treat.
+
+00:27:19.070 --> 00:27:19.630
+<v Speaker 1>So
+
+00:27:20.270 --> 00:27:22.430
+<v Speaker 1>we we looked at some of your stuff
+
+00:27:22.430 --> 00:27:24.190
+<v Speaker 1>and they're all really interesting.
+
+00:27:24.430 --> 00:27:25.950
+<v Speaker 1>And but we figured we are doing something
+
+00:27:25.950 --> 00:27:26.830
+<v Speaker 1>completely
+
+00:27:27.245 --> 00:27:30.285
+<v Speaker 1>Everyone is expecting we are doing lots today,
+
+00:27:32.045 --> 00:27:33.565
+<v Speaker 1>but we are not.
+
+00:27:33.885 --> 00:27:36.765
+<v Speaker 1>So so here's the idea. We happen to
+
+00:27:36.845 --> 00:27:37.805
+<v Speaker 3>boss or bot?
+
+00:27:39.600 --> 00:27:41.999
+<v Speaker 1>Did you say bot? Can you read minds?
+
+00:27:42.880 --> 00:27:45.120
+<v Speaker 1>So Tremor is event processing, so it can
+
+00:27:45.120 --> 00:27:47.519
+<v Speaker 1>do very much, including Discord bots.
+
+00:27:48.080 --> 00:27:49.840
+<v Speaker 1>And we happen to have a Discord bot
+
+00:27:49.840 --> 00:27:52.065
+<v Speaker 1>written in Tremor. So the idea is, and
+
+00:27:52.065 --> 00:27:54.225
+<v Speaker 1>you depends on how you're comfortable you are
+
+00:27:54.225 --> 00:27:56.544
+<v Speaker 1>with it. Either you invite the dev of
+
+00:27:56.544 --> 00:27:58.945
+<v Speaker 1>the spot into your server,
+
+00:27:58.945 --> 00:28:00.865
+<v Speaker 1>and you you play around with it there
+
+00:28:00.865 --> 00:28:03.184
+<v Speaker 1>and can add some stuff. Perhaps let some
+
+00:28:03.184 --> 00:28:04.865
+<v Speaker 1>of the users there figure out a feature
+
+00:28:05.820 --> 00:28:08.700
+<v Speaker 1>that is worth adding, or we invite you
+
+00:28:08.700 --> 00:28:11.419
+<v Speaker 1>to our development environment for that bot, you
+
+00:28:11.419 --> 00:28:13.179
+<v Speaker 1>can go bananas there.
+
+00:28:13.580 --> 00:28:15.100
+<v Speaker 1>The bot's not going to run on our
+
+00:28:15.100 --> 00:28:17.019
+<v Speaker 1>systems. It's going to be run on yours.
+
+00:28:17.740 --> 00:28:19.820
+<v Speaker 1>So whatever is more comfortable for you.
+
+00:28:23.455 --> 00:28:25.295
+<v Speaker 0>I like the idea of going bananas. I
+
+00:28:25.295 --> 00:28:26.655
+<v Speaker 0>guess maybe we'll use
+
+00:28:26.895 --> 00:28:28.255
+<v Speaker 0>your one, and I'll run it on my
+
+00:28:28.255 --> 00:28:29.775
+<v Speaker 0>side. Is that the preferred approach?
+
+00:28:30.495 --> 00:28:32.255
+<v Speaker 1>What whatever you like. You you the the
+
+00:28:32.335 --> 00:28:34.260
+<v Speaker 1>we just didn't want it to, like, steal
+
+00:28:34.260 --> 00:28:36.260
+<v Speaker 1>people from your server and be like, hey.
+
+00:28:36.260 --> 00:28:37.460
+<v Speaker 1>If you want to play with a bot,
+
+00:28:37.460 --> 00:28:38.740
+<v Speaker 1>come to the Tremor server.
+
+00:28:40.340 --> 00:28:41.780
+<v Speaker 1>We also don't want to be, hey. Install
+
+00:28:41.780 --> 00:28:43.140
+<v Speaker 1>the spot on your server. So we let
+
+00:28:43.140 --> 00:28:44.820
+<v Speaker 1>you pick which one you want. Well, let's
+
+00:28:44.820 --> 00:28:46.180
+<v Speaker 0>try it on yours. And if I like
+
+00:28:46.180 --> 00:28:47.700
+<v Speaker 0>it, then maybe I'll install on it. Okay.
+
+00:28:47.775 --> 00:28:50.255
+<v Speaker 1>Let's let's let's you're on our server.
+
+00:28:50.815 --> 00:28:52.975
+<v Speaker 1>So I'll I'll invite the Tremor dev bot
+
+00:28:52.975 --> 00:28:54.815
+<v Speaker 1>to our server so people can play around
+
+00:28:54.815 --> 00:28:58.174
+<v Speaker 1>there. And I will give you first
+
+00:28:58.975 --> 00:29:00.815
+<v Speaker 1>the link to the code where you have
+
+00:29:00.815 --> 00:29:01.535
+<v Speaker 1>the starting point.
+
+00:29:02.930 --> 00:29:04.930
+<v Speaker 1>I'll I'll send you to this no. Not
+
+00:29:04.930 --> 00:29:05.889
+<v Speaker 1>to Matthias.
+
+00:29:06.050 --> 00:29:06.850
+<v Speaker 1>Here you go.
+
+00:29:07.250 --> 00:29:08.690
+<v Speaker 1>That is a starting point.
+
+00:29:09.490 --> 00:29:09.970
+<v Speaker 1>I
+
+00:29:11.490 --> 00:29:14.370
+<v Speaker 1>will send you the secret key as well.
+
+00:29:15.355 --> 00:29:17.274
+<v Speaker 1>Please don't share this key on
+
+00:29:18.554 --> 00:29:19.274
+<v Speaker 1>YouTube.
+
+00:29:20.635 --> 00:29:22.554
+<v Speaker 1>That's that's the one part that probably shouldn't
+
+00:29:22.554 --> 00:29:23.754
+<v Speaker 1>be shared.
+
+00:29:24.715 --> 00:29:26.475
+<v Speaker 1>I'm
+
+00:29:26.475 --> 00:29:29.274
+<v Speaker 1>going to invite But please share the URL.
+
+00:29:29.274 --> 00:29:31.980
+<v Speaker 3>We might have multiple commits during the live
+
+00:29:31.420 --> 00:29:31.820
+<v Speaker 3>Yeah.
+
+00:29:33.740 --> 00:29:35.820
+<v Speaker 3>Would be hilarious and awesome.
+
+00:29:37.500 --> 00:29:38.299
+<v Speaker 1>Okay.
+
+00:29:38.380 --> 00:29:40.140
+<v Speaker 1>And let's throw the
+
+00:29:40.380 --> 00:29:42.940
+<v Speaker 1>nice little Tremor bot. So the Tremor bot's
+
+00:29:43.180 --> 00:29:44.940
+<v Speaker 1>the limit on this is going to be
+
+00:29:44.940 --> 00:29:46.940
+<v Speaker 1>it can only read and reply to messages.
+
+00:29:46.755 --> 00:29:48.995
+<v Speaker 1>Messages. We don't give this one admin privileges
+
+00:29:48.995 --> 00:29:50.835
+<v Speaker 1>because it's a playground system.
+
+00:29:53.955 --> 00:29:56.115
+<v Speaker 1>Read, rev. Yeah. Send. There we go.
+
+00:29:56.435 --> 00:29:57.075
+<v Speaker 1>And,
+
+00:29:57.395 --> 00:29:59.315
+<v Speaker 1>yes, I'm a human. Silly thing.
+
+00:30:03.430 --> 00:30:05.190
+<v Speaker 1>Authorized. We have a Tremor bot. We have
+
+00:30:05.190 --> 00:30:06.790
+<v Speaker 1>two Tremor bots now. There's Tremor bot and
+
+00:30:06.790 --> 00:30:07.590
+<v Speaker 1>Tremor dev bot.
+
+00:30:11.845 --> 00:30:13.765
+<v Speaker 1>We we have a few ideas what kind
+
+00:30:13.765 --> 00:30:15.525
+<v Speaker 1>of stuff you could add to that, but
+
+00:30:15.525 --> 00:30:17.605
+<v Speaker 1>we want you also to just come up
+
+00:30:17.605 --> 00:30:19.605
+<v Speaker 1>with your own, what you think would be
+
+00:30:19.605 --> 00:30:21.205
+<v Speaker 1>a cool feature in a bot.
+
+00:30:21.605 --> 00:30:22.965
+<v Speaker 0>Okay. So I just wanna make sure I
+
+00:30:22.965 --> 00:30:24.645
+<v Speaker 0>understand where we are right now because I'm
+
+00:30:24.645 --> 00:30:26.220
+<v Speaker 0>I'm already confused.
+
+00:30:26.300 --> 00:30:28.620
+<v Speaker 0>So you have added a new bot to
+
+00:30:28.620 --> 00:30:29.580
+<v Speaker 0>the Tremor
+
+00:30:29.740 --> 00:30:32.140
+<v Speaker 0>Discord channel. Yes. I have the code for
+
+00:30:32.140 --> 00:30:33.340
+<v Speaker 0>it in front of me now, which I'm
+
+00:30:33.340 --> 00:30:35.660
+<v Speaker 0>now sharing my screen. I believe you're going
+
+00:30:35.660 --> 00:30:37.100
+<v Speaker 0>to send me something secret, but I don't
+
+00:30:37.100 --> 00:30:38.059
+<v Speaker 0>think you've done that I
+
+00:30:39.100 --> 00:30:39.740
+<v Speaker 1>believe I did.
+
+00:30:40.865 --> 00:30:42.384
+<v Speaker 1>The the there's a secret
+
+00:30:43.264 --> 00:30:45.985
+<v Speaker 1>s s h hash y s s h.
+
+00:30:45.985 --> 00:30:48.144
+<v Speaker 0>Right. Right. Got it. Okay. Actually, that's like,
+
+00:30:48.144 --> 00:30:50.144
+<v Speaker 1>if you if you look at the setup
+
+00:30:50.144 --> 00:30:52.544
+<v Speaker 1>part here, there is put your secret key
+
+00:30:52.544 --> 00:30:53.264
+<v Speaker 1>in the file
+
+00:30:54.190 --> 00:30:57.230
+<v Speaker 1>because the bot needs to authenticate with the
+
+00:30:57.230 --> 00:30:58.350
+<v Speaker 1>Discord API.
+
+00:30:58.350 --> 00:31:01.390
+<v Speaker 1>And this is the secret key that authenticates
+
+00:31:01.390 --> 00:31:01.950
+<v Speaker 1>it.
+
+00:31:02.750 --> 00:31:05.470
+<v Speaker 1>For safety reasons, I will recycle this after
+
+00:31:05.470 --> 00:31:06.510
+<v Speaker 1>today, obviously.
+
+00:31:08.505 --> 00:31:09.065
+<v Speaker 1>But
+
+00:31:09.625 --> 00:31:12.105
+<v Speaker 1>for today, you can play with that as
+
+00:31:12.105 --> 00:31:14.105
+<v Speaker 1>much as you want. Okay.
+
+00:31:14.105 --> 00:31:15.945
+<v Speaker 0>Let's get started then. So do I need
+
+00:31:15.945 --> 00:31:17.065
+<v Speaker 0>to clone this repository?
+
+00:31:17.465 --> 00:31:21.090
+<v Speaker 1>Yes. Yes. Okay. That I am confident doing
+
+00:31:21.090 --> 00:31:21.970
+<v Speaker 0>mostly.
+
+00:31:22.130 --> 00:31:22.769
+<v Speaker 0>So,
+
+00:31:23.410 --> 00:31:24.369
+<v Speaker 0>get clone
+
+00:31:25.010 --> 00:31:25.970
+<v Speaker 0>Tremor bot.
+
+00:31:27.410 --> 00:31:28.210
+<v Speaker 0>And
+
+00:31:29.250 --> 00:31:30.929
+<v Speaker 0>we have here now do I need to
+
+00:31:30.929 --> 00:31:32.450
+<v Speaker 0>read the instructions or you're just gonna give
+
+00:31:32.450 --> 00:31:32.690
+<v Speaker 0>me?
+
+00:31:33.585 --> 00:31:35.825
+<v Speaker 1>You can you can read the instructions.
+
+00:31:36.304 --> 00:31:37.024
+<v Speaker 1>Alternatively,
+
+00:31:37.184 --> 00:31:39.024
+<v Speaker 1>I can read the instructions to you or
+
+00:31:39.024 --> 00:31:41.904
+<v Speaker 1>because he has this nice nice Irish accent.
+
+00:31:43.904 --> 00:31:45.985
+<v Speaker 0>I guess you just want me to copy
+
+00:31:46.340 --> 00:31:48.740
+<v Speaker 0>this example to dot YAML and then make
+
+00:31:48.740 --> 00:31:50.420
+<v Speaker 0>a little bit of a Also make in
+
+00:31:50.420 --> 00:31:51.940
+<v Speaker 1>it works by now.
+
+00:31:53.540 --> 00:31:55.779
+<v Speaker 1>Because we are old, we like make files.
+
+00:31:56.260 --> 00:31:57.940
+<v Speaker 0>I mean, I like just files but I
+
+00:31:57.940 --> 00:32:00.315
+<v Speaker 0>guess I'll settle for a make file. So
+
+00:32:01.275 --> 00:32:03.274
+<v Speaker 0>let's see what the source looks like.
+
+00:32:03.595 --> 00:32:05.034
+<v Speaker 0>Yeah. This is where I need to do
+
+00:32:05.034 --> 00:32:07.355
+<v Speaker 0>the secret thing. Right? Yes. It's like big
+
+00:32:07.355 --> 00:32:09.755
+<v Speaker 1>big letters. Please please enter the secret stuff
+
+00:32:09.755 --> 00:32:09.914
+<v Speaker 1>here.
+
+00:32:27.005 --> 00:32:30.044
+<v Speaker 0>No? Alright. I don't know them, but I'm
+
+00:32:30.044 --> 00:32:32.524
+<v Speaker 1>horrible with names. Someone else? They're they're just
+
+00:32:32.524 --> 00:32:34.605
+<v Speaker 0>a a punk rock band, but on one
+
+00:32:34.605 --> 00:32:36.284
+<v Speaker 0>of their earlier albums, they had they actually
+
+00:32:36.284 --> 00:32:38.764
+<v Speaker 0>had an intermission halfway through the album. Was
+
+00:32:38.764 --> 00:32:40.044
+<v Speaker 0>just a little tune. And I keep wanting
+
+00:32:40.044 --> 00:32:41.085
+<v Speaker 0>to use it on the stream, but then
+
+00:32:41.085 --> 00:32:42.729
+<v Speaker 0>I know YouTube were gonna ban me.
+
+00:32:44.169 --> 00:32:46.409
+<v Speaker 0>I actually tend to buy license
+
+00:32:46.409 --> 00:32:47.929
+<v Speaker 0>rates to it. But apparently that's a major
+
+00:32:47.929 --> 00:32:48.969
+<v Speaker 0>pain in the ass.
+
+00:32:51.130 --> 00:32:52.809
+<v Speaker 0>Okay. I have edit this file. So what
+
+00:32:52.809 --> 00:32:54.570
+<v Speaker 0>I'm not gonna do is open it. What
+
+00:32:54.570 --> 00:32:56.250
+<v Speaker 0>I will do is open it here so
+
+00:32:56.250 --> 00:32:58.409
+<v Speaker 0>we can just kinda see what this configuration
+
+00:32:58.155 --> 00:32:59.195
+<v Speaker 0>looks like. So
+
+00:33:00.075 --> 00:33:01.995
+<v Speaker 0>we just need to
+
+00:33:02.955 --> 00:33:04.875
+<v Speaker 0>insert this token which I've done. We've got
+
+00:33:04.875 --> 00:33:07.515
+<v Speaker 0>some intents. This is just permissions against Discord.
+
+00:33:07.515 --> 00:33:09.355
+<v Speaker 0>Yep. And we just have some sort of
+
+00:33:09.355 --> 00:33:11.595
+<v Speaker 0>internal reference to tell which type of configuration
+
+00:33:11.595 --> 00:33:11.995
+<v Speaker 0>this is.
+
+00:33:12.750 --> 00:33:14.590
+<v Speaker 0>Is nice and simple. Nothing magic.
+
+00:33:14.750 --> 00:33:16.270
+<v Speaker 0>We can move on. Is that right? We
+
+00:33:16.270 --> 00:33:18.350
+<v Speaker 1>want to kill this eventually so the YAML
+
+00:33:18.350 --> 00:33:20.190
+<v Speaker 1>will go away. That's the one part that
+
+00:33:20.190 --> 00:33:22.830
+<v Speaker 1>isn't fully that is configuration of language.
+
+00:33:23.470 --> 00:33:24.830
+<v Speaker 1>That's on our to do list, but for
+
+00:33:24.830 --> 00:33:26.110
+<v Speaker 1>now, yes, it's YAML.
+
+00:33:26.190 --> 00:33:27.630
+<v Speaker 0>So is that a Tremor configuration?
+
+00:33:28.365 --> 00:33:30.765
+<v Speaker 0>Yes. Right. Okay. That is part of it.
+
+00:33:30.765 --> 00:33:33.565
+<v Speaker 1>That sets up the you remember this source
+
+00:33:33.565 --> 00:33:35.245
+<v Speaker 1>arrow and the Cookie Monster?
+
+00:33:35.485 --> 00:33:37.165
+<v Speaker 1>This is the source arrow. It tells it
+
+00:33:37.165 --> 00:33:39.245
+<v Speaker 1>where data comes from. It's also the
+
+00:33:39.804 --> 00:33:41.965
+<v Speaker 1>sync arrow because we need to talk back
+
+00:33:41.965 --> 00:33:43.820
+<v Speaker 1>to disco. But that is like, here is
+
+00:33:43.820 --> 00:33:45.900
+<v Speaker 1>where data is happening. This is the connector
+
+00:33:45.900 --> 00:33:47.900
+<v Speaker 3>to the Two years ago, Tremor had a
+
+00:33:47.900 --> 00:33:49.580
+<v Speaker 3>lot of YAML and not a lot of
+
+00:33:49.580 --> 00:33:51.500
+<v Speaker 3>programming language. Now it has a lot of
+
+00:33:51.500 --> 00:33:53.420
+<v Speaker 3>programming languages. There's not not a lot left
+
+00:33:53.420 --> 00:33:54.380
+<v Speaker 3>of the YAML.
+
+00:33:54.780 --> 00:33:56.700
+<v Speaker 3>The YAML will continue to disappear
+
+00:33:57.154 --> 00:33:59.714
+<v Speaker 3>because it it it provides a horrible
+
+00:34:00.434 --> 00:34:01.235
+<v Speaker 3>developer
+
+00:34:01.235 --> 00:34:02.914
+<v Speaker 3>and operational experience.
+
+00:34:03.875 --> 00:34:06.914
+<v Speaker 3>We started to move towards much more structured,
+
+00:34:07.955 --> 00:34:10.355
+<v Speaker 3>programming because you get a better class of
+
+00:34:10.355 --> 00:34:12.869
+<v Speaker 3>error back to the user. For example, who
+
+00:34:12.869 --> 00:34:15.989
+<v Speaker 3>likes an error from, say, a logging system
+
+00:34:15.989 --> 00:34:17.750
+<v Speaker 3>implemented on the JVM
+
+00:34:17.750 --> 00:34:20.150
+<v Speaker 3>that gives you 99 lines of stock trace
+
+00:34:20.150 --> 00:34:22.549
+<v Speaker 3>for one, oh, you you forgot a comma.
+
+00:34:22.549 --> 00:34:24.469
+<v Speaker 3>You've also just, oh, you forgot a comma.
+
+00:34:24.469 --> 00:34:25.589
+<v Speaker 3>Did you mean to add a comma?
+
+00:34:26.184 --> 00:34:28.424
+<v Speaker 3>A comma would be nice here. And we
+
+00:34:28.424 --> 00:34:30.025
+<v Speaker 3>call that hygienic errors.
+
+00:34:30.664 --> 00:34:33.465
+<v Speaker 3>I think that's something about the Rust compiler
+
+00:34:33.625 --> 00:34:36.824
+<v Speaker 3>and and development experience that rubbed off on
+
+00:34:36.824 --> 00:34:39.304
+<v Speaker 3>us. Yep. And we robin hooded into the
+
+00:34:39.304 --> 00:34:41.980
+<v Speaker 3>project, so to speak. I'm pretty sure there
+
+00:34:41.980 --> 00:34:43.819
+<v Speaker 0>are rules when you're a CNCF project that
+
+00:34:43.819 --> 00:34:45.339
+<v Speaker 0>you're not allowed to say bad things about
+
+00:34:45.339 --> 00:34:47.179
+<v Speaker 0>YAML. I'm just I'm just saying you gotta
+
+00:34:47.179 --> 00:34:49.020
+<v Speaker 0>be careful there. Like, you you you Oh,
+
+00:34:49.020 --> 00:34:50.779
+<v Speaker 3>we love YAML and other people's products.
+
+00:34:53.154 --> 00:34:55.154
+<v Speaker 0>Right. Okay. So let's make fail. We have
+
+00:34:55.154 --> 00:34:56.594
+<v Speaker 0>run it, and then we can see kind
+
+00:34:56.594 --> 00:34:57.795
+<v Speaker 0>of what it's doing. Did I just run
+
+00:34:57.795 --> 00:34:59.394
+<v Speaker 0>did I just run make run now? Is
+
+00:34:59.394 --> 00:35:00.755
+<v Speaker 0>that is that all I understand? That will
+
+00:35:00.755 --> 00:35:02.835
+<v Speaker 1>start. Yes. Then you can Is it gonna
+
+00:35:02.835 --> 00:35:04.355
+<v Speaker 0>print anything to my terminal that we don't
+
+00:35:04.355 --> 00:35:06.530
+<v Speaker 0>want to see? Yeah. It will well, nothing
+
+00:35:06.530 --> 00:35:08.370
+<v Speaker 1>important. It will just print a few things
+
+00:35:08.370 --> 00:35:10.530
+<v Speaker 1>and be like, hey. Oh. Oh, yes.
+
+00:35:11.490 --> 00:35:13.890
+<v Speaker 0>I am a local driver. Yeah. Yes. Yeah.
+
+00:35:15.650 --> 00:35:17.570
+<v Speaker 0>Because, you know, this is you're sending me
+
+00:35:17.570 --> 00:35:20.175
+<v Speaker 0>secrets on Discord. I I unzipped a binary
+
+00:35:20.175 --> 00:35:21.935
+<v Speaker 0>from an a random person on the Internet
+
+00:35:21.935 --> 00:35:23.615
+<v Speaker 0>and installed it to machine. This is not
+
+00:35:23.615 --> 00:35:25.375
+<v Speaker 0>a good example of how to computer, by
+
+00:35:25.375 --> 00:35:26.895
+<v Speaker 0>the way. Just saying.
+
+00:35:29.135 --> 00:35:31.215
+<v Speaker 0>That should Well, could have used an environment.
+
+00:35:32.335 --> 00:35:34.680
+<v Speaker 3>It's nice in the world to see such
+
+00:35:34.680 --> 00:35:36.440
+<v Speaker 3>trust in an individual.
+
+00:35:37.240 --> 00:35:40.119
+<v Speaker 0>Okay. I think it's running. Yep. Oh. No.
+
+00:35:40.119 --> 00:35:41.480
+<v Speaker 0>No. No. No.
+
+00:35:41.720 --> 00:35:42.440
+<v Speaker 1>Ah.
+
+00:35:43.000 --> 00:35:44.840
+<v Speaker 3>We need to set the module path.
+
+00:35:45.160 --> 00:35:46.760
+<v Speaker 1>And we need to give you the modules.
+
+00:35:46.865 --> 00:35:48.625
+<v Speaker 1>This is this is the wonderful thing about
+
+00:35:48.625 --> 00:35:50.865
+<v Speaker 1>live demos. We have no idea what we
+
+00:35:50.865 --> 00:35:51.505
+<v Speaker 1>are doing.
+
+00:35:52.704 --> 00:35:53.345
+<v Speaker 1>So,
+
+00:35:53.825 --> 00:35:55.585
+<v Speaker 1>that would or someone wants to explain it
+
+00:35:55.585 --> 00:35:57.105
+<v Speaker 1>while I copy the files.
+
+00:35:57.345 --> 00:36:00.065
+<v Speaker 3>So Tremor has is now building a a
+
+00:36:00.065 --> 00:36:01.905
+<v Speaker 3>growing library of reusable
+
+00:36:03.180 --> 00:36:03.900
+<v Speaker 3>code,
+
+00:36:04.140 --> 00:36:06.140
+<v Speaker 3>and it also has a a set of
+
+00:36:06.140 --> 00:36:09.180
+<v Speaker 3>links into built in functions in the Tremor
+
+00:36:09.180 --> 00:36:10.619
+<v Speaker 3>runtime and Rust,
+
+00:36:10.940 --> 00:36:13.500
+<v Speaker 3>that we provide as intrinsics that so they
+
+00:36:13.500 --> 00:36:14.700
+<v Speaker 3>can be referenced
+
+00:36:15.065 --> 00:36:16.985
+<v Speaker 3>in the interpreted code.
+
+00:36:18.665 --> 00:36:21.865
+<v Speaker 3>Binary that Hunt sent you, we omitted
+
+00:36:21.865 --> 00:36:24.585
+<v Speaker 3>all of that good stuff. I believe he's
+
+00:36:24.585 --> 00:36:26.985
+<v Speaker 3>probably sending you one now. I'm I literally
+
+00:36:26.985 --> 00:36:29.310
+<v Speaker 1>send it right now. So so this is
+
+00:36:29.310 --> 00:36:31.070
+<v Speaker 1>not a problem on Linux where we have
+
+00:36:31.070 --> 00:36:32.750
+<v Speaker 1>packages or on the
+
+00:36:33.630 --> 00:36:35.710
+<v Speaker 1>docker image because that's included.
+
+00:36:36.430 --> 00:36:38.350
+<v Speaker 1>We are not quite there on linen on
+
+00:36:38.350 --> 00:36:39.390
+<v Speaker 1>OSX.
+
+00:36:39.870 --> 00:36:41.870
+<v Speaker 0>K. So I I need to unzip this
+
+00:36:41.870 --> 00:36:43.310
+<v Speaker 0>here. Do I need to unzip it somewhere
+
+00:36:43.310 --> 00:36:43.550
+<v Speaker 0>else?
+
+00:36:44.165 --> 00:36:45.445
+<v Speaker 1>Here. Just here. And
+
+00:36:48.005 --> 00:36:50.325
+<v Speaker 1>it's all Tremor files, so there's the viruses
+
+00:36:50.325 --> 00:36:52.405
+<v Speaker 1>in there are all written in Tremor script.
+
+00:36:53.445 --> 00:36:55.525
+<v Speaker 3>So we want to now set a Tremor
+
+00:36:55.525 --> 00:36:58.085
+<v Speaker 3>pass in the environment. So Tremor on the
+
+00:36:58.085 --> 00:36:59.205
+<v Speaker 3>environment. Makefile takes
+
+00:37:00.060 --> 00:37:02.860
+<v Speaker 1>care of that. But yeah. Generally, yes. Okay.
+
+00:37:03.900 --> 00:37:04.780
+<v Speaker 3>Awesome.
+
+00:37:05.900 --> 00:37:08.780
+<v Speaker 1>There you go. Tremor's running. Invalid authentication.
+
+00:37:08.780 --> 00:37:09.820
+<v Speaker 0>Please check the token.
+
+00:37:12.414 --> 00:37:13.615
+<v Speaker 0>Did I break it?
+
+00:37:14.255 --> 00:37:15.295
+<v Speaker 0>Shouldn't have.
+
+00:37:15.615 --> 00:37:17.134
+<v Speaker 1>I I I would say let's look at
+
+00:37:17.134 --> 00:37:18.974
+<v Speaker 1>the token, but also let's not look at
+
+00:37:18.974 --> 00:37:19.775
+<v Speaker 1>the token.
+
+00:37:22.494 --> 00:37:24.494
+<v Speaker 1>Let me Let's think about the token and
+
+00:37:24.494 --> 00:37:26.335
+<v Speaker 3>guess what state I might be in. Oh,
+
+00:37:26.654 --> 00:37:28.690
+<v Speaker 1>yes. Because I'm the no. This is this
+
+00:37:28.690 --> 00:37:31.250
+<v Speaker 1>is me being an idiot. Okay. I don't
+
+00:37:31.250 --> 00:37:33.970
+<v Speaker 1>discard often enough. I gave you the public
+
+00:37:33.970 --> 00:37:36.290
+<v Speaker 1>key, not the secret key. Well, nobody wants
+
+00:37:36.290 --> 00:37:38.690
+<v Speaker 0>the public key. Yes. Well,
+
+00:37:39.170 --> 00:37:41.125
+<v Speaker 1>it it was easier to copy. There's a
+
+00:37:41.125 --> 00:37:43.045
+<v Speaker 1>big big public key button and I copy
+
+00:37:43.125 --> 00:37:44.725
+<v Speaker 1>It was shorter was the logic at the
+
+00:37:44.725 --> 00:37:47.525
+<v Speaker 3>time. It was actually longer, but I couldn't
+
+00:37:47.525 --> 00:37:49.365
+<v Speaker 1>see the secret one. It was hidden because
+
+00:37:49.365 --> 00:37:51.365
+<v Speaker 1>it's a secret. Oh, it failed again.
+
+00:37:54.180 --> 00:37:55.220
+<v Speaker 1>That shouldn't.
+
+00:37:57.619 --> 00:38:00.580
+<v Speaker 1>What does it say? Invalid authentication.
+
+00:38:00.660 --> 00:38:01.860
+<v Speaker 1>Was it a good one?
+
+00:38:03.300 --> 00:38:04.260
+<v Speaker 0>Let me just
+
+00:38:05.380 --> 00:38:07.300
+<v Speaker 1>Double check. Yes. That's the one.
+
+00:38:11.525 --> 00:38:13.285
+<v Speaker 0>Yeah. I think I copy and pasted that.
+
+00:38:13.285 --> 00:38:14.964
+<v Speaker 0>Okay. My copy and pasting is is not
+
+00:38:14.964 --> 00:38:16.565
+<v Speaker 0>flawless, but it's decent.
+
+00:38:17.285 --> 00:38:19.525
+<v Speaker 1>Yep. That perhaps my copy and pasting is
+
+00:38:19.525 --> 00:38:19.765
+<v Speaker 1>off.
+
+00:38:23.240 --> 00:38:26.119
+<v Speaker 1>Oh, yes. No. It's not. They they do
+
+00:38:26.359 --> 00:38:28.680
+<v Speaker 1>there are three different things. Uh-huh.
+
+00:38:29.720 --> 00:38:31.880
+<v Speaker 1>Is the secret thing, then there's a token,
+
+00:38:31.880 --> 00:38:33.720
+<v Speaker 1>then there is the other secret. Yeah. Let's
+
+00:38:33.720 --> 00:38:35.880
+<v Speaker 0>try the secret secret thing. Let's let's try
+
+00:38:35.880 --> 00:38:37.319
+<v Speaker 1>the next secret thing. There there are a
+
+00:38:37.319 --> 00:38:39.615
+<v Speaker 1>lot of stuffs to copy. I probably should
+
+00:38:39.615 --> 00:38:41.375
+<v Speaker 1>have read the read me we wrote about
+
+00:38:41.375 --> 00:38:44.015
+<v Speaker 1>how to get this data. Sometimes it helps.
+
+00:38:45.135 --> 00:38:46.815
+<v Speaker 0>Can you send me your date of birth,
+
+00:38:46.815 --> 00:38:48.575
+<v Speaker 0>your mother's maiden name, and your first school
+
+00:38:48.575 --> 00:38:49.375
+<v Speaker 0>please as well while we're at Actually,
+
+00:38:50.815 --> 00:38:52.735
+<v Speaker 1>I'll I'll just send you the configuration I
+
+00:38:52.735 --> 00:38:53.375
+<v Speaker 1>tested
+
+00:38:53.600 --> 00:38:55.760
+<v Speaker 0>Okay. It looks like it's working though anyway.
+
+00:38:55.760 --> 00:38:56.880
+<v Speaker 0>Yes. Perfect.
+
+00:38:57.200 --> 00:38:59.920
+<v Speaker 0>We've injected the third secret. We've got what
+
+00:38:59.920 --> 00:39:01.520
+<v Speaker 0>appears to be a working
+
+00:39:01.840 --> 00:39:04.640
+<v Speaker 0>Tremor. Secret. Yes. A working secret.
+
+00:39:04.800 --> 00:39:05.040
+<v Speaker 0>Okay.
+
+00:39:06.035 --> 00:39:08.835
+<v Speaker 1>So on our Discord server, I already created
+
+00:39:08.835 --> 00:39:10.675
+<v Speaker 1>something called bot fun,
+
+00:39:10.835 --> 00:39:12.595
+<v Speaker 1>so we don't spam general.
+
+00:39:14.355 --> 00:39:16.195
+<v Speaker 1>The way the way the Tremor bot works
+
+00:39:16.195 --> 00:39:18.515
+<v Speaker 1>is if you want to look at the
+
+00:39:18.755 --> 00:39:21.470
+<v Speaker 1>there's a file called plugins dot yaml, I
+
+00:39:21.470 --> 00:39:22.030
+<v Speaker 1>believe.
+
+00:39:24.430 --> 00:39:26.910
+<v Speaker 1>No. It's called discord dot yaml because
+
+00:39:27.230 --> 00:39:27.870
+<v Speaker 1>obviously.
+
+00:39:28.030 --> 00:39:30.190
+<v Speaker 1>And in there, have different plugins.
+
+00:39:32.109 --> 00:39:33.950
+<v Speaker 0>Hold on. Because I used the temporary directory,
+
+00:39:33.950 --> 00:39:35.470
+<v Speaker 0>I need to get my split into it.
+
+00:39:35.715 --> 00:39:37.955
+<v Speaker 1>I'm I'm glad I'm glad I'm not the
+
+00:39:37.955 --> 00:39:40.675
+<v Speaker 1>only one making his own life miserable.
+
+00:39:40.835 --> 00:39:41.875
+<v Speaker 1>Yes. Okay.
+
+00:39:42.915 --> 00:39:44.115
+<v Speaker 0>What do we wanna see here?
+
+00:39:44.835 --> 00:39:47.395
+<v Speaker 1>There's a if you look into config, there's
+
+00:39:47.395 --> 00:39:49.155
+<v Speaker 1>a zero one Discord YAML.
+
+00:39:51.560 --> 00:39:54.040
+<v Speaker 0>Presenting? So this is separated from the
+
+00:39:55.320 --> 00:39:58.120
+<v Speaker 1>from the config because there are no secrets
+
+00:39:58.120 --> 00:39:58.840
+<v Speaker 3>in here.
+
+00:40:00.120 --> 00:40:02.200
+<v Speaker 1>And you remember the cookie monster in the
+
+00:40:02.200 --> 00:40:02.520
+<v Speaker 1>image?
+
+00:40:03.174 --> 00:40:04.455
+<v Speaker 1>Yes. The pipeline.
+
+00:40:04.535 --> 00:40:06.615
+<v Speaker 1>There are multiple of those since you are
+
+00:40:06.615 --> 00:40:08.535
+<v Speaker 1>not limited to a single one.
+
+00:40:10.055 --> 00:40:10.695
+<v Speaker 1>And
+
+00:40:10.855 --> 00:40:13.015
+<v Speaker 1>what we have is we have made each
+
+00:40:13.015 --> 00:40:15.335
+<v Speaker 1>plug in a pipeline that are all connected
+
+00:40:15.335 --> 00:40:15.654
+<v Speaker 1>here.
+
+00:40:17.260 --> 00:40:19.740
+<v Speaker 1>So if you look, for example, at line
+
+00:40:19.740 --> 00:40:21.099
+<v Speaker 1>13 and following,
+
+00:40:23.260 --> 00:40:25.339
+<v Speaker 1>which doesn't mean that I say 13 because
+
+00:40:25.339 --> 00:40:27.660
+<v Speaker 1>you have line numbers turned off. But I'm
+
+00:40:27.660 --> 00:40:29.339
+<v Speaker 1>cheating. I have the file open with line
+
+00:40:29.339 --> 00:40:29.740
+<v Speaker 1>numbers.
+
+00:40:30.974 --> 00:40:32.895
+<v Speaker 1>Yeah. You see we have the pipeline no
+
+00:40:32.895 --> 00:40:33.535
+<v Speaker 1>bot
+
+00:40:33.775 --> 00:40:36.494
+<v Speaker 1>in there Mhmm. And and the output of
+
+00:40:36.494 --> 00:40:38.494
+<v Speaker 1>that, and we connect it to the input
+
+00:40:38.494 --> 00:40:40.974
+<v Speaker 1>of the setup pipeline, the roles pipeline,
+
+00:40:41.934 --> 00:40:45.040
+<v Speaker 1>the code of conduct pipeline, the inclusivity pipeline,
+
+00:40:45.040 --> 00:40:47.200
+<v Speaker 1>the welcome pipeline, the jokes pipeline.
+
+00:40:48.640 --> 00:40:50.240
+<v Speaker 0>Yep. Got it.
+
+00:40:50.880 --> 00:40:52.800
+<v Speaker 1>And so those are all the plug ins
+
+00:40:52.800 --> 00:40:53.840
+<v Speaker 1>we have right now.
+
+00:40:54.240 --> 00:40:54.640
+<v Speaker 1>There
+
+00:40:55.839 --> 00:40:56.320
+<v Speaker 1>is
+
+00:40:56.945 --> 00:40:58.785
+<v Speaker 1>the most interesting one to look at is
+
+00:40:58.785 --> 00:41:00.865
+<v Speaker 1>probably the inclusivity one. That is something we
+
+00:41:00.865 --> 00:41:01.665
+<v Speaker 1>Robinhooded
+
+00:41:01.665 --> 00:41:03.905
+<v Speaker 1>from the CNCF discord.
+
+00:41:07.505 --> 00:41:09.810
+<v Speaker 1>Well, we we are we are just stealing
+
+00:41:09.810 --> 00:41:12.130
+<v Speaker 1>stuff from all around. Isn't that the CNCF
+
+00:41:12.130 --> 00:41:12.930
+<v Speaker 3>Slack?
+
+00:41:13.010 --> 00:41:15.650
+<v Speaker 0>Yeah. The Slack. Yes. Yes. The CNCF Slack.
+
+00:41:15.650 --> 00:41:17.410
+<v Speaker 1>So so something we really like is if
+
+00:41:17.410 --> 00:41:20.050
+<v Speaker 1>if someone said, hey, guys, it was like,
+
+00:41:20.050 --> 00:41:21.890
+<v Speaker 1>well, do you mean something else? Perhaps.
+
+00:41:23.195 --> 00:41:25.195
+<v Speaker 1>And we wanted that on the Discord server.
+
+00:41:25.195 --> 00:41:26.715
+<v Speaker 1>So we have a
+
+00:41:27.995 --> 00:41:30.635
+<v Speaker 1>a plugin for that that does
+
+00:41:30.955 --> 00:41:32.235
+<v Speaker 1>exactly that.
+
+00:41:33.835 --> 00:41:35.595
+<v Speaker 0>Okay. So how do we do something with
+
+00:41:35.595 --> 00:41:38.070
+<v Speaker 0>this Discord bot? Right now, I'm assuming this
+
+00:41:38.070 --> 00:41:40.870
+<v Speaker 0>Tremor bot is using Tremor and it is
+
+00:41:40.870 --> 00:41:42.710
+<v Speaker 0>it listening to Discord right now? So if
+
+00:41:42.710 --> 00:41:44.070
+<v Speaker 0>we start to type things, is it gonna
+
+00:41:44.070 --> 00:41:46.070
+<v Speaker 0>come into our pipeline and allow us to
+
+00:41:46.070 --> 00:41:48.550
+<v Speaker 0>to transform? Would you believe there are literally
+
+00:41:48.550 --> 00:41:50.630
+<v Speaker 3>people trying to interact with your bot right
+
+00:41:50.630 --> 00:41:53.590
+<v Speaker 3>now you make changes? The demo guys are
+
+00:41:53.744 --> 00:41:57.345
+<v Speaker 1>horrible too. Why why the hell, I guess
+
+00:41:57.345 --> 00:41:59.585
+<v Speaker 1>that's not swearing in the bad way, is
+
+00:41:59.585 --> 00:42:01.665
+<v Speaker 1>it not working in the bot function?
+
+00:42:04.224 --> 00:42:06.305
+<v Speaker 0>Oh, no. I am. Nobody knows.
+
+00:42:06.385 --> 00:42:08.099
+<v Speaker 2>Is it? I am Oh, maybe we can
+
+00:42:08.099 --> 00:42:09.859
+<v Speaker 3>fix it during the live session.
+
+00:42:10.260 --> 00:42:11.940
+<v Speaker 1>Yes. We can fix it during the live
+
+00:42:11.940 --> 00:42:12.580
+<v Speaker 1>session.
+
+00:42:12.740 --> 00:42:15.380
+<v Speaker 1>Also, can just use general and there, at
+
+00:42:15.380 --> 00:42:17.060
+<v Speaker 1>least Tremor bot replies,
+
+00:42:18.099 --> 00:42:20.339
+<v Speaker 1>which is a good start. Okay. So if
+
+00:42:20.339 --> 00:42:23.299
+<v Speaker 0>we type here guys, Tremor bot is gonna
+
+00:42:22.545 --> 00:42:23.585
+<v Speaker 0>learn how to
+
+00:42:23.905 --> 00:42:24.705
+<v Speaker 0>type.
+
+00:42:25.105 --> 00:42:26.385
+<v Speaker 0>I bet it doesn't work with it. Oh,
+
+00:42:26.385 --> 00:42:29.025
+<v Speaker 3>we we we should teach Tremor bots, dovish,
+
+00:42:29.184 --> 00:42:30.865
+<v Speaker 3>and maybe Derek as well.
+
+00:42:31.265 --> 00:42:32.385
+<v Speaker 3>Just why not?
+
+00:42:33.184 --> 00:42:36.145
+<v Speaker 0>Alright. Alright. Yep. Trips. Okay.
+
+00:42:36.145 --> 00:42:38.065
+<v Speaker 1>Let's let's throw this guy in. There is
+
+00:42:38.065 --> 00:42:40.360
+<v Speaker 1>this. There is the Tremor death bot.
+
+00:42:41.320 --> 00:42:43.560
+<v Speaker 0>Oh, is he in bot fun now? Yeah.
+
+00:42:43.720 --> 00:42:46.440
+<v Speaker 0>Yeah. Okay. There we go. That's you. Yo.
+
+00:42:46.440 --> 00:42:47.720
+<v Speaker 1>This is this is your bot.
+
+00:42:51.915 --> 00:42:54.475
+<v Speaker 0>Okay. Cool. That makes sense. I get it.
+
+00:42:54.475 --> 00:42:57.195
+<v Speaker 0>So this is all powered with Tremor.
+
+00:42:57.515 --> 00:42:58.235
+<v Speaker 1>Yeah.
+
+00:42:59.835 --> 00:43:01.835
+<v Speaker 1>All of that is and you can look
+
+00:43:01.835 --> 00:43:03.115
+<v Speaker 1>at the code for that to get an
+
+00:43:03.115 --> 00:43:05.290
+<v Speaker 1>idea how to do something like that.
+
+00:43:05.930 --> 00:43:07.690
+<v Speaker 0>Is that what's inside of the
+
+00:43:08.650 --> 00:43:09.930
+<v Speaker 0>lib directory?
+
+00:43:11.130 --> 00:43:13.450
+<v Speaker 1>So that is inside the config and the
+
+00:43:13.450 --> 00:43:16.329
+<v Speaker 1>lib directory. There's config plugins, which has the
+
+00:43:16.329 --> 00:43:18.010
+<v Speaker 1>pipelines, and the lib directory
+
+00:43:18.615 --> 00:43:19.975
+<v Speaker 1>is additional
+
+00:43:19.975 --> 00:43:21.655
+<v Speaker 1>helper functions, basically.
+
+00:43:22.055 --> 00:43:24.375
+<v Speaker 0>Okay. So let's look at this. What
+
+00:43:24.695 --> 00:43:26.295
+<v Speaker 0>what is it about trickle?
+
+00:43:26.855 --> 00:43:27.495
+<v Speaker 0>Yeah.
+
+00:43:28.295 --> 00:43:28.855
+<v Speaker 3>Well,
+
+00:43:29.175 --> 00:43:31.735
+<v Speaker 3>our naming sort of has a joke
+
+00:43:32.455 --> 00:43:35.490
+<v Speaker 3>running through us. So because it's Tremor
+
+00:43:36.690 --> 00:43:38.610
+<v Speaker 3>Everything is so good. All the
+
+00:43:38.930 --> 00:43:40.770
+<v Speaker 3>the languages that we have will begin with
+
+00:43:40.770 --> 00:43:41.490
+<v Speaker 3>Steve.
+
+00:43:41.650 --> 00:43:44.610
+<v Speaker 3>So Trickle is called Trickle from the Days
+
+00:43:44.610 --> 00:43:45.730
+<v Speaker 3>of Thunder movie
+
+00:43:46.385 --> 00:43:48.385
+<v Speaker 3>because he feels the need for speed.
+
+00:43:49.185 --> 00:43:51.985
+<v Speaker 3>The query language is all about processing speed.
+
+00:43:52.545 --> 00:43:54.625
+<v Speaker 3>So it's sort of a meta joke beginning
+
+00:43:54.625 --> 00:43:56.224
+<v Speaker 3>with his team. So is the language called
+
+00:43:56.224 --> 00:43:56.945
+<v Speaker 0>Trekle?
+
+00:43:57.585 --> 00:44:00.240
+<v Speaker 3>Yes. Yeah. Right. Got it. Perfect. So this
+
+00:44:00.560 --> 00:44:01.200
+<v Speaker 3>If
+
+00:44:01.440 --> 00:44:03.040
+<v Speaker 3>you think about it, it makes sense. Most
+
+00:44:03.040 --> 00:44:05.520
+<v Speaker 3>query languages in this space for real time
+
+00:44:05.520 --> 00:44:06.720
+<v Speaker 3>are filtering.
+
+00:44:06.720 --> 00:44:08.560
+<v Speaker 3>So they're dropping a lot of data on
+
+00:44:08.560 --> 00:44:10.640
+<v Speaker 3>the floor. So you're taking a fire hose
+
+00:44:10.720 --> 00:44:12.640
+<v Speaker 3>and you're sending a trickle downstream.
+
+00:44:15.035 --> 00:44:17.595
+<v Speaker 0>Okay. Got it. So let's see if we
+
+00:44:17.595 --> 00:44:19.115
+<v Speaker 0>can work this out. Let's see how intuitive
+
+00:44:19.115 --> 00:44:20.234
+<v Speaker 0>this language is.
+
+00:44:21.115 --> 00:44:23.035
+<v Speaker 1>Yep. I'll I'll let you go over this
+
+00:44:23.035 --> 00:44:24.555
+<v Speaker 1>before we explain it.
+
+00:44:25.035 --> 00:44:25.595
+<v Speaker 0>Thanks.
+
+00:44:26.510 --> 00:44:28.349
+<v Speaker 0>Okay. So we've got a select. So right
+
+00:44:28.349 --> 00:44:30.109
+<v Speaker 0>away I'm thinking this is the stream processing
+
+00:44:30.109 --> 00:44:32.430
+<v Speaker 0>function. I'm assuming this is a pattern match
+
+00:44:32.430 --> 00:44:34.270
+<v Speaker 0>on a field called message.
+
+00:44:34.510 --> 00:44:36.030
+<v Speaker 0>We're trying to extract
+
+00:44:36.430 --> 00:44:37.710
+<v Speaker 0>channel ID
+
+00:44:38.435 --> 00:44:40.435
+<v Speaker 0>and then I'm not sure what's going on
+
+00:44:40.435 --> 00:44:42.355
+<v Speaker 0>here. Oh, this is the response. Okay. So
+
+00:44:42.515 --> 00:44:44.435
+<v Speaker 0>Yeah. Yeah. We've got a select on a
+
+00:44:44.435 --> 00:44:46.755
+<v Speaker 0>message with a channel ID and then we
+
+00:44:46.755 --> 00:44:47.395
+<v Speaker 0>send
+
+00:44:48.195 --> 00:44:50.595
+<v Speaker 0>and a response to the original ID, the
+
+00:44:50.595 --> 00:44:52.740
+<v Speaker 0>contents in, hey, and and I've got some
+
+00:44:52.740 --> 00:44:53.940
+<v Speaker 0>sort of interpolation
+
+00:44:53.940 --> 00:44:56.260
+<v Speaker 0>syntax here to inject things in and then
+
+00:44:56.260 --> 00:44:57.380
+<v Speaker 0>we got the from.
+
+00:44:58.340 --> 00:44:59.700
+<v Speaker 0>So the from is,
+
+00:45:00.020 --> 00:45:01.620
+<v Speaker 0>okay, this is where the actual match is
+
+00:45:01.620 --> 00:45:04.180
+<v Speaker 0>happening and we're looking for where the content
+
+00:45:04.180 --> 00:45:06.245
+<v Speaker 0>contains the word guys.
+
+00:45:06.885 --> 00:45:09.365
+<v Speaker 0>Interesting use of stars here, I guess.
+
+00:45:09.845 --> 00:45:11.445
+<v Speaker 3>It's a block. Yeah.
+
+00:45:11.765 --> 00:45:14.085
+<v Speaker 0>And then the default is to nothing.
+
+00:45:16.245 --> 00:45:18.565
+<v Speaker 0>Easy. I think I understood that relatively well.
+
+00:45:18.565 --> 00:45:19.845
+<v Speaker 0>Tell me what I got wrong. Yeah. You
+
+00:45:19.845 --> 00:45:21.990
+<v Speaker 3>you got it. So the it's it's sort
+
+00:45:21.990 --> 00:45:24.070
+<v Speaker 3>of like a SQL language. So Tremor is
+
+00:45:24.070 --> 00:45:26.790
+<v Speaker 3>the inverse of a database. In a database,
+
+00:45:26.790 --> 00:45:29.190
+<v Speaker 3>you store the data and you run ad
+
+00:45:29.190 --> 00:45:31.990
+<v Speaker 3>hoc queries. In an event processing system, you
+
+00:45:31.990 --> 00:45:34.630
+<v Speaker 3>optimize the query and you throw ad hoc
+
+00:45:34.630 --> 00:45:35.350
+<v Speaker 3>data through it.
+
+00:45:36.645 --> 00:45:39.045
+<v Speaker 3>So this is a is SQL like, but
+
+00:45:39.045 --> 00:45:41.685
+<v Speaker 3>it's not ANSI compliant SQL,
+
+00:45:41.925 --> 00:45:44.725
+<v Speaker 3>because, like, who it's it's twenty twenty one.
+
+00:45:44.725 --> 00:45:46.405
+<v Speaker 3>Who uses columnar,
+
+00:45:46.645 --> 00:45:49.525
+<v Speaker 3>data in modern systems? Most people are using
+
+00:45:49.890 --> 00:45:52.930
+<v Speaker 3>structured data like JSON, so we just threw
+
+00:45:52.930 --> 00:45:55.730
+<v Speaker 3>away the columns and tables and we're getting
+
+00:45:55.730 --> 00:45:58.130
+<v Speaker 3>with the the old structured program.
+
+00:45:58.130 --> 00:46:00.289
+<v Speaker 3>So we have nested data structures and it
+
+00:46:00.289 --> 00:46:00.930
+<v Speaker 3>it maps
+
+00:46:01.329 --> 00:46:04.450
+<v Speaker 3>the business domain events much more closely. So
+
+00:46:04.450 --> 00:46:05.569
+<v Speaker 3>it makes it more intuitive.
+
+00:46:07.305 --> 00:46:09.545
+<v Speaker 0>Nice. Okay. Let's take a look at one
+
+00:46:09.545 --> 00:46:10.744
+<v Speaker 0>more of these, and then we'll maybe see
+
+00:46:10.744 --> 00:46:12.425
+<v Speaker 0>if we can modify the behavior in some
+
+00:46:12.425 --> 00:46:14.585
+<v Speaker 0>way. Which one of these is your favorite?
+
+00:46:15.785 --> 00:46:17.225
+<v Speaker 1>Welcome is fairly easy.
+
+00:46:17.385 --> 00:46:19.225
+<v Speaker 1>Jokes is absolutely stupid,
+
+00:46:20.130 --> 00:46:21.810
+<v Speaker 1>and roles is really complex.
+
+00:46:22.690 --> 00:46:24.770
+<v Speaker 0>Okay. So I guess we'll just look at
+
+00:46:24.770 --> 00:46:25.570
+<v Speaker 0>them all then.
+
+00:46:25.970 --> 00:46:28.770
+<v Speaker 0>We've got we've got a select here, same
+
+00:46:28.770 --> 00:46:30.690
+<v Speaker 0>again. We've got a send message.
+
+00:46:31.809 --> 00:46:32.210
+<v Speaker 0>This
+
+00:46:32.815 --> 00:46:33.775
+<v Speaker 0>syntax
+
+00:46:33.775 --> 00:46:34.415
+<v Speaker 0>here,
+
+00:46:34.735 --> 00:46:36.015
+<v Speaker 0>are we trying to
+
+00:46:36.335 --> 00:46:38.095
+<v Speaker 0>alright. Okay. So we're looking for some sort
+
+00:46:38.095 --> 00:46:40.175
+<v Speaker 0>of event type where the member edition is
+
+00:46:40.175 --> 00:46:42.015
+<v Speaker 0>is true. Okay. Got it.
+
+00:46:42.335 --> 00:46:44.015
+<v Speaker 0>Okay. I'm I'm curious.
+
+00:46:44.495 --> 00:46:46.415
+<v Speaker 0>This is just running straight up Tremor. Right?
+
+00:46:46.710 --> 00:46:48.550
+<v Speaker 0>Is there a flag of the I could
+
+00:46:48.550 --> 00:46:50.790
+<v Speaker 0>see the events coming in. Can I print
+
+00:46:50.790 --> 00:46:51.990
+<v Speaker 0>them to standard out so I could see
+
+00:46:51.990 --> 00:46:53.910
+<v Speaker 0>what we're You absolutely can? That is a
+
+00:46:53.910 --> 00:46:54.630
+<v Speaker 1>pipeline.
+
+00:46:55.589 --> 00:46:57.910
+<v Speaker 1>If you look at the config where at
+
+00:46:57.910 --> 00:47:00.310
+<v Speaker 1>the zero one Discord one
+
+00:47:02.805 --> 00:47:04.885
+<v Speaker 0>Yep. Yeah. We'll just modify that, and we'll
+
+00:47:04.885 --> 00:47:06.885
+<v Speaker 3>add a one of the built in pipelines
+
+00:47:06.885 --> 00:47:09.285
+<v Speaker 3>will allow you to redirect the standard output
+
+00:47:09.285 --> 00:47:11.845
+<v Speaker 3>or one of the built in connectors.
+
+00:47:12.165 --> 00:47:14.085
+<v Speaker 3>We'll just configure that, and you'll see the
+
+00:47:14.085 --> 00:47:15.204
+<v Speaker 3>events streaming.
+
+00:47:16.150 --> 00:47:17.750
+<v Speaker 0>Because I imagine if I wanna start adopting
+
+00:47:17.750 --> 00:47:20.470
+<v Speaker 0>Tremor in my infrastructure for, you know think
+
+00:47:20.470 --> 00:47:21.750
+<v Speaker 0>a simple use case up front is gonna
+
+00:47:21.750 --> 00:47:23.590
+<v Speaker 0>be logs and metrics for most people. I
+
+00:47:23.590 --> 00:47:25.110
+<v Speaker 0>probably want to know what the message is
+
+00:47:25.110 --> 00:47:26.710
+<v Speaker 0>coming in from the sources look like before
+
+00:47:26.710 --> 00:47:28.390
+<v Speaker 0>I started to do the transformation.
+
+00:47:28.950 --> 00:47:31.225
+<v Speaker 1>So Yes. We actually have thought about that.
+
+00:47:31.225 --> 00:47:32.105
+<v Speaker 1>Line nine.
+
+00:47:32.585 --> 00:47:34.345
+<v Speaker 1>You see there's this debugging
+
+00:47:34.505 --> 00:47:36.825
+<v Speaker 1>Yep. In the pipeline pass through, which is
+
+00:47:36.825 --> 00:47:38.985
+<v Speaker 1>a standard pipeline that always exists, which just
+
+00:47:38.985 --> 00:47:40.265
+<v Speaker 1>passes through data.
+
+00:47:41.305 --> 00:47:44.020
+<v Speaker 1>And that means everything that comes in, we
+
+00:47:44.020 --> 00:47:47.060
+<v Speaker 1>just pass on there. And in line eleven
+
+00:47:47.060 --> 00:47:49.380
+<v Speaker 1>and twelve, we pass this data to standard
+
+00:47:49.380 --> 00:47:49.940
+<v Speaker 1>out.
+
+00:47:51.860 --> 00:47:54.340
+<v Speaker 3>So while you're on commenting, you've just implemented
+
+00:47:54.340 --> 00:47:55.620
+<v Speaker 3>that. Yeah.
+
+00:47:56.740 --> 00:47:59.460
+<v Speaker 0>Does it gonna do that content re It
+
+00:47:59.815 --> 00:48:02.055
+<v Speaker 1>It doesn't auto reload. No. You got to
+
+00:48:02.055 --> 00:48:02.935
+<v Speaker 1>restart it.
+
+00:48:03.975 --> 00:48:06.295
+<v Speaker 0>Alright. And not a noise feature. Please raise
+
+00:48:06.295 --> 00:48:07.655
+<v Speaker 3>an announcement request.
+
+00:48:07.975 --> 00:48:09.415
+<v Speaker 0>Yeah. If I can send a sec up
+
+00:48:09.415 --> 00:48:11.575
+<v Speaker 0>to I'm quite a happy person. So
+
+00:48:13.200 --> 00:48:16.400
+<v Speaker 0>let's get some blank lines in here. Let's
+
+00:48:16.480 --> 00:48:18.880
+<v Speaker 0>someone's already typing. I'll just wait. Oh, there
+
+00:48:18.880 --> 00:48:19.760
+<v Speaker 0>we go. Cool.
+
+00:48:20.000 --> 00:48:21.840
+<v Speaker 0>So we can see coming in here, we've
+
+00:48:21.840 --> 00:48:23.680
+<v Speaker 0>got the ID, we've got attachments, we've got
+
+00:48:23.680 --> 00:48:24.720
+<v Speaker 0>the offer avatar.
+
+00:48:25.585 --> 00:48:27.505
+<v Speaker 0>There's that channel ID that we were plucking
+
+00:48:27.505 --> 00:48:29.265
+<v Speaker 0>out and the trickle script.
+
+00:48:29.825 --> 00:48:31.265
+<v Speaker 0>We've got the content.
+
+00:48:32.625 --> 00:48:35.025
+<v Speaker 0>Guess that's We're
+
+00:48:35.025 --> 00:48:36.305
+<v Speaker 0>not gonna be able to see a member
+
+00:48:36.305 --> 00:48:37.985
+<v Speaker 0>edition. That's probably gonna be a little bit
+
+00:48:37.985 --> 00:48:40.545
+<v Speaker 0>more difficult to trigger on the livestream. But
+
+00:48:40.785 --> 00:48:42.910
+<v Speaker 1>Yes. Someone will have to join. Well, we
+
+00:48:42.910 --> 00:48:44.270
+<v Speaker 1>just got to need
+
+00:48:44.750 --> 00:48:46.750
+<v Speaker 1>to make people join the Tremor server if
+
+00:48:46.750 --> 00:48:49.070
+<v Speaker 1>they want to see it in here. Okay.
+
+00:48:50.430 --> 00:48:52.030
+<v Speaker 0>I'm getting it. It's it's starting to make
+
+00:48:52.030 --> 00:48:53.150
+<v Speaker 0>sense to me now.
+
+00:48:53.950 --> 00:48:55.805
+<v Speaker 0>It seems like Oh, look. I got not
+
+00:48:55.805 --> 00:48:57.565
+<v Speaker 3>bad. You're onto a
+
+00:48:57.885 --> 00:49:00.445
+<v Speaker 3>live Yes. On the on the stream. Yes.
+
+00:49:03.325 --> 00:49:05.245
+<v Speaker 0>So is it fair to say that this
+
+00:49:05.245 --> 00:49:06.765
+<v Speaker 0>zero one config,
+
+00:49:06.845 --> 00:49:07.885
+<v Speaker 0>is this the
+
+00:49:08.480 --> 00:49:10.240
+<v Speaker 0>is this the most important part of this
+
+00:49:10.240 --> 00:49:12.480
+<v Speaker 0>configuration? This is where I have It's plumbing
+
+00:49:12.480 --> 00:49:13.599
+<v Speaker 1>effectively.
+
+00:49:13.599 --> 00:49:16.880
+<v Speaker 1>It's and this is where we haven't yet
+
+00:49:16.880 --> 00:49:18.720
+<v Speaker 1>gotten rid of the YAML.
+
+00:49:19.680 --> 00:49:21.119
+<v Speaker 1>And this makes it a bit hard to
+
+00:49:21.119 --> 00:49:23.335
+<v Speaker 1>read. There is a RFC on our RFC
+
+00:49:23.335 --> 00:49:24.934
+<v Speaker 1>sites about implementing
+
+00:49:24.934 --> 00:49:25.815
+<v Speaker 1>Troy.
+
+00:49:26.454 --> 00:49:27.335
+<v Speaker 1>Anoop?
+
+00:49:27.494 --> 00:49:29.815
+<v Speaker 1>That was the name, wasn't it? Yes. Yeah.
+
+00:49:29.815 --> 00:49:31.655
+<v Speaker 3>Troy. Yeah. Yes. Troy. Which
+
+00:49:32.055 --> 00:49:33.335
+<v Speaker 1>which hopefully
+
+00:49:33.414 --> 00:49:33.815
+<v Speaker 1>will
+
+00:49:34.520 --> 00:49:36.520
+<v Speaker 1>replace the lovely YAML
+
+00:49:36.680 --> 00:49:39.560
+<v Speaker 1>and with something not as readable and helpful
+
+00:49:39.560 --> 00:49:40.600
+<v Speaker 1>for developers,
+
+00:49:40.760 --> 00:49:42.760
+<v Speaker 1>but closer to the other language.
+
+00:49:44.359 --> 00:49:46.359
+<v Speaker 0>I I I have actually, I'm not familiar
+
+00:49:46.515 --> 00:49:48.194
+<v Speaker 0>with Troy. I have no idea what that
+
+00:49:48.275 --> 00:49:50.355
+<v Speaker 1>Neither option really is doesn't exist yet.
+
+00:49:50.595 --> 00:49:53.714
+<v Speaker 3>Tremor deploy. So it's the Tremor deployment language.
+
+00:49:54.355 --> 00:49:56.675
+<v Speaker 3>One of the limitations with YAML,
+
+00:49:57.154 --> 00:49:58.914
+<v Speaker 3>is that we don't have the kind of
+
+00:49:58.914 --> 00:50:00.515
+<v Speaker 3>tooling we would like to give the kind
+
+00:50:00.515 --> 00:50:03.070
+<v Speaker 3>of hygienic errors that we would like,
+
+00:50:03.710 --> 00:50:05.869
+<v Speaker 3>through it as an interface. It becomes cumbersome
+
+00:50:05.869 --> 00:50:07.470
+<v Speaker 3>to describe.
+
+00:50:08.030 --> 00:50:10.270
+<v Speaker 3>With the language that understands
+
+00:50:10.270 --> 00:50:11.630
+<v Speaker 3>a lot of the primitives
+
+00:50:11.710 --> 00:50:14.349
+<v Speaker 3>in the, scripting language, we could reuse a
+
+00:50:14.349 --> 00:50:16.030
+<v Speaker 3>lot of that logic and make it a
+
+00:50:16.030 --> 00:50:18.315
+<v Speaker 3>lot more flexible. So for someone who already
+
+00:50:18.315 --> 00:50:20.875
+<v Speaker 3>knows the scripting and query language, it would
+
+00:50:20.875 --> 00:50:22.075
+<v Speaker 3>be more intuitive
+
+00:50:22.075 --> 00:50:24.395
+<v Speaker 3>not to have to jump into a,
+
+00:50:24.795 --> 00:50:27.195
+<v Speaker 3>a format like YAML and to just use
+
+00:50:27.195 --> 00:50:28.715
+<v Speaker 3>the tools they have and build on top
+
+00:50:28.715 --> 00:50:29.035
+<v Speaker 3>of them.
+
+00:50:30.510 --> 00:50:31.150
+<v Speaker 0>Okay.
+
+00:50:31.390 --> 00:50:33.390
+<v Speaker 0>Got it. I'm really glad I never lied
+
+00:50:33.390 --> 00:50:34.830
+<v Speaker 0>and just said, yeah. Try and put over
+
+00:50:34.830 --> 00:50:36.270
+<v Speaker 0>that. It's a really cool project. And then
+
+00:50:37.710 --> 00:50:38.430
+<v Speaker 1>That
+
+00:50:39.070 --> 00:50:40.670
+<v Speaker 1>would be cool then then you can help
+
+00:50:40.670 --> 00:50:42.910
+<v Speaker 1>us implement if you know it already. You're
+
+00:50:42.910 --> 00:50:45.345
+<v Speaker 1>still ahead of us. Awesome. Exactly.
+
+00:50:45.905 --> 00:50:47.585
+<v Speaker 0>I'll I'll come and comment on an RSE
+
+00:50:47.585 --> 00:50:49.585
+<v Speaker 0>for sure. Was someone else gonna talk there?
+
+00:50:49.585 --> 00:50:51.585
+<v Speaker 0>Sorry. I I'm sure I heard another voice.
+
+00:50:52.625 --> 00:50:54.625
+<v Speaker 2>Oh, yes. I was just gonna comment on
+
+00:50:54.625 --> 00:50:57.630
+<v Speaker 2>the Tremor CLI actually has a facility to
+
+00:50:57.630 --> 00:50:59.869
+<v Speaker 2>run your little scripts, like, on its own
+
+00:50:59.869 --> 00:51:01.630
+<v Speaker 2>too. So you you don't really have to
+
+00:51:01.630 --> 00:51:03.790
+<v Speaker 2>start the whole thing like how you did
+
+00:51:03.790 --> 00:51:05.950
+<v Speaker 2>for the Discord case. So you can actually
+
+00:51:05.950 --> 00:51:08.430
+<v Speaker 2>test, like, individual logic by itself, and that's
+
+00:51:08.430 --> 00:51:10.670
+<v Speaker 2>actually a really killer feature. So that allows
+
+00:51:10.670 --> 00:51:13.555
+<v Speaker 2>us to, like, test logic in isolation,
+
+00:51:13.555 --> 00:51:15.475
+<v Speaker 2>and you can also actually do, like, kind
+
+00:51:15.475 --> 00:51:17.715
+<v Speaker 2>of, like, unit testing around it or the
+
+00:51:17.715 --> 00:51:19.875
+<v Speaker 2>Tremor CLI has a test feature. You can
+
+00:51:19.875 --> 00:51:22.355
+<v Speaker 2>also write, like, full blown, like, integration test
+
+00:51:22.355 --> 00:51:24.755
+<v Speaker 2>too. So the production logic that you have
+
+00:51:24.835 --> 00:51:27.750
+<v Speaker 2>running in your, like, servers, you can actually,
+
+00:51:27.750 --> 00:51:29.030
+<v Speaker 2>like, validate beforehand,
+
+00:51:29.030 --> 00:51:30.790
+<v Speaker 2>and you can iterate on it really fast.
+
+00:51:30.790 --> 00:51:32.230
+<v Speaker 2>So that's like a that was a huge
+
+00:51:32.230 --> 00:51:34.390
+<v Speaker 2>event. That's a huge advantage compared to
+
+00:51:34.870 --> 00:51:37.110
+<v Speaker 2>the solutions that Tremor was replacing it with
+
+00:51:37.110 --> 00:51:39.670
+<v Speaker 2>things like Logstash really don't allow you to
+
+00:51:39.670 --> 00:51:42.025
+<v Speaker 2>do that that way. So that's why, like,
+
+00:51:42.025 --> 00:51:44.985
+<v Speaker 2>Tremor really soon for us, and it's, invaluable.
+
+00:51:45.145 --> 00:51:47.705
+<v Speaker 2>But yeah. Okay. There's lots of tools in
+
+00:51:47.705 --> 00:51:50.025
+<v Speaker 3>that Tremor command line. You can Yeah.
+
+00:51:50.425 --> 00:51:53.465
+<v Speaker 3>It's got five benchmarking or five testing systems
+
+00:51:53.465 --> 00:51:55.545
+<v Speaker 3>including the benchmark environment we use.
+
+00:51:56.230 --> 00:51:58.550
+<v Speaker 3>So you can literally write a directory,
+
+00:51:58.630 --> 00:52:01.670
+<v Speaker 3>fill it full of integration tests, unit tests,
+
+00:52:02.150 --> 00:52:03.190
+<v Speaker 3>benchmarks,
+
+00:52:03.590 --> 00:52:05.110
+<v Speaker 3>and share them with us, and we can
+
+00:52:05.110 --> 00:52:05.830
+<v Speaker 3>run them.
+
+00:52:06.470 --> 00:52:09.350
+<v Speaker 3>So that makes it easy to communicate failures
+
+00:52:09.405 --> 00:52:11.405
+<v Speaker 3>and communicate odd behaviors.
+
+00:52:12.845 --> 00:52:14.925
+<v Speaker 3>Everything through to if you want to debug
+
+00:52:14.925 --> 00:52:17.725
+<v Speaker 3>what the interpreter inside Tremor sees, there's a
+
+00:52:17.725 --> 00:52:20.125
+<v Speaker 3>whole heap of debugging tools that give you
+
+00:52:20.285 --> 00:52:22.845
+<v Speaker 3>syntax highlighted, lexical forms,
+
+00:52:22.845 --> 00:52:24.510
+<v Speaker 3>the the tree
+
+00:52:24.670 --> 00:52:27.550
+<v Speaker 3>the the syntax tree that Tremor generates, all
+
+00:52:27.550 --> 00:52:28.750
+<v Speaker 3>syntax highlighted,
+
+00:52:28.750 --> 00:52:31.070
+<v Speaker 3>including syntax highlighted source
+
+00:52:31.150 --> 00:52:32.510
+<v Speaker 3>on the command line.
+
+00:52:32.910 --> 00:52:34.430
+<v Speaker 3>So you don't even have to spin up
+
+00:52:34.430 --> 00:52:35.950
+<v Speaker 3>an IDE if you don't want to.
+
+00:52:36.714 --> 00:52:37.994
+<v Speaker 0>Okay. So I just wanna make sure I
+
+00:52:37.994 --> 00:52:39.195
+<v Speaker 0>understood that correctly.
+
+00:52:39.835 --> 00:52:41.675
+<v Speaker 0>What we're seeing with the Tremor CLI is
+
+00:52:41.675 --> 00:52:43.115
+<v Speaker 0>actually I can have
+
+00:52:43.835 --> 00:52:45.835
+<v Speaker 0>maybe, you know, a day, a week, a
+
+00:52:45.835 --> 00:52:48.474
+<v Speaker 0>month, whatever of JSON or CSV data or
+
+00:52:48.474 --> 00:52:51.180
+<v Speaker 0>something that then I can run against the
+
+00:52:51.180 --> 00:52:52.940
+<v Speaker 0>test that my transcripts are doing, what I
+
+00:52:52.940 --> 00:52:54.700
+<v Speaker 0>actually expect them to do. Yeah. Is that
+
+00:52:54.700 --> 00:52:57.500
+<v Speaker 0>something where Tremor provides some sort of assertion
+
+00:52:57.500 --> 00:52:59.180
+<v Speaker 0>framework, or would I bring in something like
+
+00:52:59.180 --> 00:53:00.780
+<v Speaker 0>conf test on top of that to do
+
+00:53:00.780 --> 00:53:02.300
+<v Speaker 0>it? So, yes, if you have a look
+
+00:53:02.300 --> 00:53:05.355
+<v Speaker 3>at the integration tests in the Tremor runtime
+
+00:53:05.355 --> 00:53:06.235
+<v Speaker 3>repo,
+
+00:53:06.635 --> 00:53:09.115
+<v Speaker 3>in Tremor Cloud, you'll see a test folder.
+
+00:53:09.275 --> 00:53:11.195
+<v Speaker 3>In the test folder, you'll see a number
+
+00:53:11.195 --> 00:53:12.955
+<v Speaker 3>of different, frameworks.
+
+00:53:13.115 --> 00:53:14.475
+<v Speaker 3>We do everything from
+
+00:53:14.715 --> 00:53:17.195
+<v Speaker 3>verifying our API works with curl
+
+00:53:18.650 --> 00:53:19.770
+<v Speaker 3>through to
+
+00:53:19.930 --> 00:53:22.970
+<v Speaker 3>running integration tests where Tremor is running Docker,
+
+00:53:23.050 --> 00:53:24.570
+<v Speaker 3>which is running Elastic or
+
+00:53:25.050 --> 00:53:25.930
+<v Speaker 3>Tremor
+
+00:53:25.930 --> 00:53:28.090
+<v Speaker 3>is running Tremor. So you can have multiple
+
+00:53:28.090 --> 00:53:30.665
+<v Speaker 3>Tremor's running in integration tests, and it does
+
+00:53:30.665 --> 00:53:33.305
+<v Speaker 3>expect some expect style assertions
+
+00:53:33.385 --> 00:53:34.505
+<v Speaker 3>on that. So,
+
+00:53:34.905 --> 00:53:37.305
+<v Speaker 3>you're in, tell you wanna go to TremorCly
+
+00:53:37.305 --> 00:53:39.065
+<v Speaker 3>tests rather than the,
+
+00:53:40.105 --> 00:53:42.665
+<v Speaker 3>the built in tests. They're more like unit
+
+00:53:42.665 --> 00:53:44.345
+<v Speaker 3>tests. They are Rust tests.
+
+00:53:44.700 --> 00:53:45.980
+<v Speaker 3>So TremorCry
+
+00:53:46.540 --> 00:53:47.420
+<v Speaker 3>tests.
+
+00:53:48.220 --> 00:53:48.940
+<v Speaker 1>Pick.
+
+00:53:49.820 --> 00:53:51.260
+<v Speaker 3>Pick one doesn't matter.
+
+00:53:51.820 --> 00:53:53.820
+<v Speaker 3>So we have a unit testing framework in
+
+00:53:53.820 --> 00:53:55.420
+<v Speaker 3>the scripting language that,
+
+00:53:55.820 --> 00:53:57.180
+<v Speaker 3>is like JUnit
+
+00:53:57.375 --> 00:53:59.775
+<v Speaker 3>or any of the other unit style testing
+
+00:53:59.775 --> 00:54:02.335
+<v Speaker 3>frameworks. So that works in TremorScript.
+
+00:54:02.575 --> 00:54:04.255
+<v Speaker 3>So with the standard library, you can look
+
+00:54:04.255 --> 00:54:05.855
+<v Speaker 3>at the standard library tests.
+
+00:54:06.175 --> 00:54:08.495
+<v Speaker 3>There's only about 900 of them, so it's
+
+00:54:08.495 --> 00:54:09.055
+<v Speaker 3>a long file.
+
+00:54:10.970 --> 00:54:12.809
+<v Speaker 0>Well, this is quite short. Unless I'm in
+
+00:54:12.809 --> 00:54:14.650
+<v Speaker 0>the wrong file. You've got one with the
+
+00:54:14.650 --> 00:54:15.609
+<v Speaker 3>other file.
+
+00:54:15.770 --> 00:54:17.690
+<v Speaker 1>It's also a good file. Quite long.
+
+00:54:22.250 --> 00:54:24.675
+<v Speaker 3>Where is the long easier. It's easier to
+
+00:54:24.675 --> 00:54:26.035
+<v Speaker 3>use the short file.
+
+00:54:28.435 --> 00:54:29.955
+<v Speaker 0>Okay. So what I can see here is
+
+00:54:29.955 --> 00:54:31.715
+<v Speaker 0>we define some sort of test suite. We
+
+00:54:31.715 --> 00:54:33.875
+<v Speaker 0>give it a name. The suite itself has
+
+00:54:33.875 --> 00:54:36.270
+<v Speaker 0>multiple tests. That makes sense. I like the
+
+00:54:36.270 --> 00:54:37.790
+<v Speaker 0>fact there's tagging here that tells me that
+
+00:54:37.790 --> 00:54:39.790
+<v Speaker 0>I could probably run a subset of my
+
+00:54:39.790 --> 00:54:42.350
+<v Speaker 0>tests across multiple files. Yes. Yes. We can.
+
+00:54:42.750 --> 00:54:44.830
+<v Speaker 0>Which I'm always excited by. It's the simple
+
+00:54:44.830 --> 00:54:46.030
+<v Speaker 0>things that keep me happy.
+
+00:54:46.430 --> 00:54:48.990
+<v Speaker 0>And then this individual test itself, which is
+
+00:54:48.990 --> 00:54:50.430
+<v Speaker 0>also got a name and then we have
+
+00:54:50.430 --> 00:54:52.885
+<v Speaker 0>a test assertion that the host name is
+
+00:54:52.885 --> 00:54:54.565
+<v Speaker 0>my system's host name.
+
+00:54:57.605 --> 00:54:59.605
+<v Speaker 0>Okay. I think that makes sense.
+
+00:55:00.404 --> 00:55:02.885
+<v Speaker 0>Is Tremor doing any sort of enrichment in
+
+00:55:02.885 --> 00:55:04.565
+<v Speaker 0>those messages as they come into my system?
+
+00:55:06.210 --> 00:55:08.210
+<v Speaker 1>The which yes,
+
+00:55:08.369 --> 00:55:09.890
+<v Speaker 1>but only slightly.
+
+00:55:10.290 --> 00:55:12.450
+<v Speaker 1>The I think it does well, adds a
+
+00:55:12.450 --> 00:55:14.290
+<v Speaker 1>few things. It adds a timestamp when the
+
+00:55:14.290 --> 00:55:15.170
+<v Speaker 1>message arrived.
+
+00:55:15.810 --> 00:55:17.010
+<v Speaker 1>We
+
+00:55:17.010 --> 00:55:19.295
+<v Speaker 1>also use the timestamp for sneaky stuff like
+
+00:55:19.295 --> 00:55:22.255
+<v Speaker 1>random number generators to guarantee determinism.
+
+00:55:22.494 --> 00:55:24.255
+<v Speaker 1>So if you would replay the same data
+
+00:55:24.255 --> 00:55:25.615
+<v Speaker 1>with the same timestamps,
+
+00:55:25.615 --> 00:55:27.055
+<v Speaker 1>you get the same randomness,
+
+00:55:27.375 --> 00:55:29.055
+<v Speaker 1>which is really powerful if you want to
+
+00:55:29.055 --> 00:55:30.654
+<v Speaker 1>test your system and figure out why the
+
+00:55:30.654 --> 00:55:33.055
+<v Speaker 1>hell did this message not arrive if I
+
+00:55:32.520 --> 00:55:34.520
+<v Speaker 1>configure 50% drop rate.
+
+00:55:35.400 --> 00:55:37.560
+<v Speaker 1>Because, well, if you comp replay it with
+
+00:55:37.560 --> 00:55:39.720
+<v Speaker 1>the same same time stamps, off you go,
+
+00:55:39.720 --> 00:55:40.920
+<v Speaker 1>you get the same results.
+
+00:55:41.720 --> 00:55:42.440
+<v Speaker 1>Then it
+
+00:55:42.760 --> 00:55:45.640
+<v Speaker 1>adds some metadata depending on where the data
+
+00:55:45.640 --> 00:55:47.480
+<v Speaker 1>comes from. For example, if it's a HTTP
+
+00:55:47.480 --> 00:55:49.915
+<v Speaker 1>request, you get the headers. You get
+
+00:55:50.635 --> 00:55:51.835
+<v Speaker 1>the HTTP,
+
+00:55:51.835 --> 00:55:54.555
+<v Speaker 1>the other side, the client information, all that.
+
+00:55:55.195 --> 00:55:57.515
+<v Speaker 1>So there is some enrichment happening, and that
+
+00:55:57.515 --> 00:55:59.755
+<v Speaker 1>is usually happening in the metadata.
+
+00:55:59.915 --> 00:56:01.355
+<v Speaker 1>So if you look at an event, there's
+
+00:56:01.470 --> 00:56:04.349
+<v Speaker 1>body, the body, the event data, and the
+
+00:56:04.349 --> 00:56:06.670
+<v Speaker 1>metadata, which is then the data that tells
+
+00:56:06.670 --> 00:56:08.270
+<v Speaker 1>you something about the event but isn't the
+
+00:56:08.270 --> 00:56:09.550
+<v Speaker 1>event, if that makes sense.
+
+00:56:11.710 --> 00:56:12.750
+<v Speaker 0>A little bit.
+
+00:56:13.310 --> 00:56:15.390
+<v Speaker 3>So in the in the scripting language, we
+
+00:56:15.390 --> 00:56:16.750
+<v Speaker 3>didn't see it in the
+
+00:56:17.070 --> 00:56:18.855
+<v Speaker 3>scripts that we were using. But if you
+
+00:56:18.855 --> 00:56:20.935
+<v Speaker 3>use the dollar sign in the scripting or
+
+00:56:20.935 --> 00:56:21.895
+<v Speaker 3>query language,
+
+00:56:22.135 --> 00:56:25.175
+<v Speaker 3>that means you're referencing a meta information. Okay.
+
+00:56:25.175 --> 00:56:27.655
+<v Speaker 3>That can be generated by the connectors into
+
+00:56:27.655 --> 00:56:30.615
+<v Speaker 3>the system. So, like, Discord might generate some
+
+00:56:30.615 --> 00:56:31.335
+<v Speaker 3>meta information.
+
+00:56:32.010 --> 00:56:34.330
+<v Speaker 3>And some of the plug ins to the
+
+00:56:34.410 --> 00:56:35.530
+<v Speaker 3>query language,
+
+00:56:36.490 --> 00:56:40.010
+<v Speaker 3>might actually also generate or consume metadata to
+
+00:56:40.010 --> 00:56:42.010
+<v Speaker 3>perform their particular functions.
+
+00:56:43.530 --> 00:56:44.570
+<v Speaker 3>So it's,
+
+00:56:45.265 --> 00:56:47.905
+<v Speaker 3>Tremor also has an other form of metadata
+
+00:56:47.905 --> 00:56:49.265
+<v Speaker 3>that isn't exposed
+
+00:56:49.345 --> 00:56:51.425
+<v Speaker 3>in the languages that it uses for things
+
+00:56:51.425 --> 00:56:52.945
+<v Speaker 3>like acknowledgments,
+
+00:56:52.945 --> 00:56:55.185
+<v Speaker 3>guaranteed delivery, circuit breakers,
+
+00:56:55.345 --> 00:56:58.040
+<v Speaker 3>that are running invisible to the user unless
+
+00:56:58.040 --> 00:57:00.600
+<v Speaker 3>you're using an operator designed for the user
+
+00:57:00.600 --> 00:57:03.000
+<v Speaker 3>to interact with those subsystems.
+
+00:57:05.000 --> 00:57:05.320
+<v Speaker 1>So
+
+00:57:05.880 --> 00:57:08.840
+<v Speaker 0>Okay. So let's assuming I'm running Tremor on
+
+00:57:08.840 --> 00:57:10.815
+<v Speaker 0>a bunch of Linux machines on Equinix Metal.
+
+00:57:10.815 --> 00:57:12.815
+<v Speaker 0>Equinix Metal has a metadata service where I
+
+00:57:12.815 --> 00:57:14.895
+<v Speaker 0>can fetch some information from. Is that something
+
+00:57:14.895 --> 00:57:17.135
+<v Speaker 0>that I would do before I run Tremor
+
+00:57:17.135 --> 00:57:19.295
+<v Speaker 0>and populate a config file with key value
+
+00:57:19.295 --> 00:57:21.295
+<v Speaker 0>pairs or something? Is that something I would
+
+00:57:21.295 --> 00:57:23.695
+<v Speaker 0>write a plugin for Tremor for to scrape
+
+00:57:23.695 --> 00:57:26.120
+<v Speaker 0>or like how how would I interact with
+
+00:57:26.120 --> 00:57:27.880
+<v Speaker 0>this in that? That's a great question. You
+
+00:57:27.880 --> 00:57:29.640
+<v Speaker 3>would write that in Tremor,
+
+00:57:29.640 --> 00:57:32.680
+<v Speaker 3>deploy it with Tremor, and you could do
+
+00:57:32.680 --> 00:57:33.480
+<v Speaker 3>that live.
+
+00:57:34.200 --> 00:57:36.200
+<v Speaker 3>I you could literally have a stream of
+
+00:57:36.200 --> 00:57:39.205
+<v Speaker 3>changes coming through or pull the metadata system
+
+00:57:39.205 --> 00:57:40.165
+<v Speaker 3>periodically
+
+00:57:40.244 --> 00:57:42.885
+<v Speaker 3>using the metronome or we have a a
+
+00:57:42.885 --> 00:57:46.484
+<v Speaker 3>Chrome operator called Chrono. So once per day,
+
+00:57:46.484 --> 00:57:48.725
+<v Speaker 3>you could download new metadata or every ten
+
+00:57:48.725 --> 00:57:51.125
+<v Speaker 3>seconds. I mean, you can you can literally
+
+00:57:51.125 --> 00:57:52.085
+<v Speaker 3>configure this
+
+00:57:52.500 --> 00:57:54.980
+<v Speaker 3>or code this depending on how you view
+
+00:57:54.980 --> 00:57:57.220
+<v Speaker 3>the scripting language as you like.
+
+00:57:57.780 --> 00:58:00.020
+<v Speaker 0>Okay. Can we clarify the difference? Config file
+
+00:58:00.020 --> 00:58:01.940
+<v Speaker 3>and load it. That's that's okay too.
+
+00:58:02.100 --> 00:58:03.700
+<v Speaker 0>So can we clarify the difference? Is there
+
+00:58:03.700 --> 00:58:05.620
+<v Speaker 0>a Tremor language and a Trickle language? Are
+
+00:58:05.620 --> 00:58:06.340
+<v Speaker 0>those different
+
+00:58:06.815 --> 00:58:08.975
+<v Speaker 0>things? Yes and no. So the the Trickle
+
+00:58:08.975 --> 00:58:12.015
+<v Speaker 1>language is is superset of the Tremor language.
+
+00:58:12.255 --> 00:58:12.975
+<v Speaker 1>So you
+
+00:58:13.455 --> 00:58:15.215
+<v Speaker 1>there is a scripting language, and you can
+
+00:58:15.215 --> 00:58:18.575
+<v Speaker 1>embed the scripts inside the query language. So
+
+00:58:18.750 --> 00:58:20.350
+<v Speaker 1>you and then you will have the Troy
+
+00:58:20.350 --> 00:58:23.070
+<v Speaker 1>language which you can embed the query language.
+
+00:58:23.070 --> 00:58:24.990
+<v Speaker 1>It's it's turtles all the way down just
+
+00:58:24.990 --> 00:58:28.590
+<v Speaker 1>with silly t based names. It's yes.
+
+00:58:29.230 --> 00:58:31.150
+<v Speaker 1>Turtles. They start with t. Damn it.
+
+00:58:32.285 --> 00:58:34.445
+<v Speaker 3>We need a higher level language called turtle
+
+00:58:34.445 --> 00:58:37.405
+<v Speaker 3>now. It's It's turtles
+
+00:58:37.405 --> 00:58:39.005
+<v Speaker 1>all the way down. So Now the lowest
+
+00:58:39.005 --> 00:58:40.685
+<v Speaker 1>is an old and turtle.
+
+00:58:40.765 --> 00:58:43.325
+<v Speaker 1>Yeah. The lowest level is TremorScript,
+
+00:58:43.325 --> 00:58:45.350
+<v Speaker 1>the scripting language. That
+
+00:58:45.350 --> 00:58:47.830
+<v Speaker 1>gets wrapped by the query language, which lets
+
+00:58:47.830 --> 00:58:49.270
+<v Speaker 1>you describe graphs.
+
+00:58:50.470 --> 00:58:52.470
+<v Speaker 1>Eventually, this gets wrapped. This makes a lot
+
+00:58:52.470 --> 00:58:54.230
+<v Speaker 3>of sense. There are a lot of programming
+
+00:58:54.230 --> 00:58:57.430
+<v Speaker 3>languages that have attempts attempted to build low
+
+00:58:57.430 --> 00:58:59.670
+<v Speaker 3>code or no code flow based languages.
+
+00:59:00.105 --> 00:59:02.585
+<v Speaker 3>And the problem is when the logic gets
+
+00:59:02.585 --> 00:59:04.025
+<v Speaker 3>very, very complicated,
+
+00:59:05.145 --> 00:59:08.425
+<v Speaker 3>it's very difficult to write imperative or procedural
+
+00:59:08.425 --> 00:59:09.225
+<v Speaker 3>logic
+
+00:59:09.225 --> 00:59:10.665
+<v Speaker 3>in flow languages.
+
+00:59:11.225 --> 00:59:13.545
+<v Speaker 3>Just like it's almost impossible to write
+
+00:59:13.970 --> 00:59:17.970
+<v Speaker 3>flow based logic in imperative languages, like, look
+
+00:59:17.970 --> 00:59:21.490
+<v Speaker 3>at callback hell in anything from Node. Js
+
+00:59:21.490 --> 00:59:22.130
+<v Speaker 3>to,
+
+00:59:22.450 --> 00:59:23.890
+<v Speaker 3>the modern JVM.
+
+00:59:24.049 --> 00:59:26.529
+<v Speaker 3>Callback hell is indicative of this is a
+
+00:59:26.529 --> 00:59:29.545
+<v Speaker 3>flow oriented environment or system. You're trying to
+
+00:59:29.545 --> 00:59:32.985
+<v Speaker 3>describe a stream of connected things in something
+
+00:59:32.985 --> 00:59:34.025
+<v Speaker 3>not designed
+
+00:59:34.185 --> 00:59:37.465
+<v Speaker 3>around those structural concerns that are flow oriented.
+
+00:59:37.465 --> 00:59:39.385
+<v Speaker 3>And you get exactly the same with business
+
+00:59:39.385 --> 00:59:41.990
+<v Speaker 3>logic or mathematical logic. It doesn't want to
+
+00:59:41.990 --> 00:59:44.070
+<v Speaker 3>be represented as a graph. It wants to
+
+00:59:44.070 --> 00:59:46.390
+<v Speaker 3>be represented in something textual
+
+00:59:46.390 --> 00:59:47.990
+<v Speaker 3>and something more familiar.
+
+00:59:48.150 --> 00:59:50.390
+<v Speaker 3>So we've just made the choice of let's
+
+00:59:50.390 --> 00:59:53.109
+<v Speaker 3>use the query language that's flow structured for
+
+00:59:53.109 --> 00:59:56.255
+<v Speaker 3>flow oriented things, and let's plug in something
+
+00:59:56.335 --> 00:59:58.175
+<v Speaker 3>a lot more relevant,
+
+00:59:58.575 --> 01:00:01.215
+<v Speaker 3>to the business logic for what people want
+
+01:00:01.215 --> 01:00:03.375
+<v Speaker 3>to do with that data as it's flowing
+
+01:00:03.375 --> 01:00:07.055
+<v Speaker 3>through. And today, that is a very ETL
+
+01:00:07.055 --> 01:00:07.695
+<v Speaker 3>oriented
+
+01:00:07.990 --> 01:00:08.790
+<v Speaker 3>language,
+
+01:00:09.110 --> 01:00:11.270
+<v Speaker 3>designed around slicing and dicing
+
+01:00:11.430 --> 01:00:13.190
+<v Speaker 3>and processing business
+
+01:00:13.190 --> 01:00:14.630
+<v Speaker 3>like nest data,
+
+01:00:14.790 --> 01:00:16.070
+<v Speaker 3>you know, JSON,
+
+01:00:16.150 --> 01:00:17.270
+<v Speaker 3>which is 99%
+
+01:00:17.270 --> 01:00:18.790
+<v Speaker 1>of JSONS.
+
+01:00:19.430 --> 01:00:21.110
+<v Speaker 0>Okay. I'm gonna throw something
+
+01:00:21.365 --> 01:00:22.325
+<v Speaker 0>out there.
+
+01:00:22.805 --> 01:00:24.484
+<v Speaker 0>I don't know if that deviates too far
+
+01:00:24.484 --> 01:00:26.325
+<v Speaker 0>from your plan of what we were gonna
+
+01:00:26.164 --> 01:00:28.244
+<v Speaker 1>Go ahead throw stuff out.
+
+01:00:28.645 --> 01:00:30.645
+<v Speaker 0>But we're in a position right now where
+
+01:00:30.645 --> 01:00:33.285
+<v Speaker 0>we have an applicator we did until I
+
+01:00:33.285 --> 01:00:36.190
+<v Speaker 0>think. I killed Until you stop. Yeah. So
+
+01:00:36.190 --> 01:00:37.630
+<v Speaker 0>we can run Tremor,
+
+01:00:38.190 --> 01:00:39.869
+<v Speaker 0>but we can add new sources to this,
+
+01:00:39.869 --> 01:00:42.029
+<v Speaker 0>right? Yeah. And those can interact with the
+
+01:00:42.029 --> 01:00:44.269
+<v Speaker 0>other parts of the pipeline that already exist
+
+01:00:44.269 --> 01:00:45.710
+<v Speaker 0>right now, which is the ability to write
+
+01:00:45.710 --> 01:00:47.070
+<v Speaker 0>to your Discord channel.
+
+01:00:47.470 --> 01:00:47.869
+<v Speaker 0>Yeah. I
+
+01:00:48.444 --> 01:00:50.204
+<v Speaker 0>can imagine a world where I wanna be
+
+01:00:50.204 --> 01:00:51.724
+<v Speaker 0>able to be you know, maybe I want
+
+01:00:51.724 --> 01:00:53.885
+<v Speaker 0>to monitor the CPU and memory on my
+
+01:00:53.885 --> 01:00:55.964
+<v Speaker 0>machine, and if it reaches a certain threshold,
+
+01:00:55.964 --> 01:00:57.645
+<v Speaker 0>send a message to a Discord channel. Is
+
+01:00:57.645 --> 01:00:59.805
+<v Speaker 0>that something we can throw together now or
+
+01:00:59.805 --> 01:01:00.365
+<v Speaker 0>is that something that yes.
+
+01:01:01.680 --> 01:01:03.200
+<v Speaker 1>As long as you have.
+
+01:01:04.400 --> 01:01:06.960
+<v Speaker 1>Is Telegraph the collector? I believe, yes. Isn't
+
+01:01:06.960 --> 01:01:09.280
+<v Speaker 1>it? It is the collector. Yeah. And so
+
+01:01:09.280 --> 01:01:11.839
+<v Speaker 1>you can hook up Telegraph to Tremor to
+
+01:01:11.839 --> 01:01:12.560
+<v Speaker 1>Discord.
+
+01:01:12.640 --> 01:01:14.079
+<v Speaker 1>No problems. Well, what about if we keep
+
+01:01:14.079 --> 01:01:16.445
+<v Speaker 0>it really simple? Can we can we monitor
+
+01:01:16.445 --> 01:01:18.445
+<v Speaker 0>a file with Tremor and if I just
+
+01:01:18.445 --> 01:01:20.365
+<v Speaker 0>echo something into the end of that file,
+
+01:01:20.365 --> 01:01:21.485
+<v Speaker 0>can it just relay onto
+
+01:01:21.965 --> 01:01:24.925
+<v Speaker 1>Tremor does not tail files. You could use
+
+01:01:24.925 --> 01:01:27.405
+<v Speaker 1>UDP, WebSockets or TCP for that.
+
+01:01:28.140 --> 01:01:29.420
+<v Speaker 0>Okay. Netcat.
+
+01:01:29.500 --> 01:01:31.500
+<v Speaker 0>So I can run Telegraph tomorrow to that
+
+01:01:31.500 --> 01:01:33.500
+<v Speaker 0>file and write it to UDP socket and
+
+01:01:33.500 --> 01:01:34.300
+<v Speaker 0>then we can Or
+
+01:01:34.859 --> 01:01:37.180
+<v Speaker 1>vector. Well, or you can just use Or
+
+01:01:37.180 --> 01:01:39.020
+<v Speaker 1>vector and Netcat. Yes.
+
+01:01:39.579 --> 01:01:41.339
+<v Speaker 0>Oh, yeah. We could just use Netcat. Let's
+
+01:01:41.339 --> 01:01:42.539
+<v Speaker 0>try and keep it simple. Let's not bring
+
+01:01:42.539 --> 01:01:44.375
+<v Speaker 0>in too many tools. So
+
+01:01:44.695 --> 01:01:46.454
+<v Speaker 0>how okay. What's well, how do we do
+
+01:01:46.454 --> 01:01:47.974
+<v Speaker 0>that? How do we how do we expose
+
+01:01:47.974 --> 01:01:49.815
+<v Speaker 0>Tremor to something on my machine that I
+
+01:01:49.815 --> 01:01:51.975
+<v Speaker 0>can send arbitrary messages to your Discord channel?
+
+01:01:52.454 --> 01:01:54.214
+<v Speaker 1>Well, the first thing would be adding a
+
+01:01:54.214 --> 01:01:56.950
+<v Speaker 1>source. Let's add a source. Okay. Let's add
+
+01:01:56.950 --> 01:01:58.390
+<v Speaker 1>a source. Why do we why do we
+
+01:01:58.550 --> 01:02:00.790
+<v Speaker 3>Hans, why do we add Blaster and just
+
+01:02:00.790 --> 01:02:02.870
+<v Speaker 3>configure it to send slash e t c
+
+01:02:02.870 --> 01:02:04.790
+<v Speaker 3>passwords through to this one?
+
+01:02:05.750 --> 01:02:07.110
+<v Speaker 1>How about not?
+
+01:02:10.095 --> 01:02:12.095
+<v Speaker 0>Okay. So let how do I do this?
+
+01:02:12.095 --> 01:02:12.495
+<v Speaker 1>Well,
+
+01:02:13.775 --> 01:02:15.295
+<v Speaker 1>let's look at the documentation.
+
+01:02:15.295 --> 01:02:16.735
+<v Speaker 1>So we we'll flag our documentation.
+
+01:02:17.375 --> 01:02:19.135
+<v Speaker 0>Docs. Come on. I've got I've got Well,
+
+01:02:19.135 --> 01:02:20.815
+<v Speaker 1>I can't ever remember what I'm doing.
+
+01:02:23.210 --> 01:02:25.130
+<v Speaker 1>Literally, I can't remember what I am doing.
+
+01:02:25.130 --> 01:02:26.970
+<v Speaker 1>I'm always looking at the documentation.
+
+01:02:28.250 --> 01:02:31.210
+<v Speaker 1>And if you go there into artifacts and
+
+01:02:31.210 --> 01:02:33.610
+<v Speaker 1>then on ramps, you can see what data
+
+01:02:33.770 --> 01:02:35.850
+<v Speaker 1>what sources Tremor can
+
+01:02:35.930 --> 01:02:38.425
+<v Speaker 1>get data from. Okay. So we've identified some
+
+01:02:38.425 --> 01:02:41.224
+<v Speaker 0>vocabulary there that I wasn't particularly familiar with.
+
+01:02:41.224 --> 01:02:42.425
+<v Speaker 0>I don't see it in the config, but
+
+01:02:42.425 --> 01:02:43.945
+<v Speaker 0>I just ignored it for now. So on
+
+01:02:43.945 --> 01:02:46.105
+<v Speaker 0>ramps are our sources and off ramps are
+
+01:02:46.105 --> 01:02:47.225
+<v Speaker 0>outputs. Yes.
+
+01:02:47.865 --> 01:02:49.785
+<v Speaker 1>Our syncs, which is our fault that we
+
+01:02:49.785 --> 01:02:51.785
+<v Speaker 1>haven't gone through renaming them all to source
+
+01:02:51.785 --> 01:02:52.425
+<v Speaker 1>and syncs.
+
+01:02:54.569 --> 01:02:57.130
+<v Speaker 1>But basically, yes. On, it goes there. Off,
+
+01:02:57.130 --> 01:02:58.090
+<v Speaker 1>it goes out.
+
+01:02:59.130 --> 01:03:00.890
+<v Speaker 0>Okay. So I see a file on ramp
+
+01:03:00.890 --> 01:03:02.809
+<v Speaker 0>here. Can we not just use that? Well,
+
+01:03:02.809 --> 01:03:04.170
+<v Speaker 1>we'll only read a file once.
+
+01:03:06.744 --> 01:03:09.545
+<v Speaker 0>Got it. Okay. So the the story behind
+
+01:03:09.545 --> 01:03:11.785
+<v Speaker 1>this is tailing a file is actually a
+
+01:03:11.785 --> 01:03:13.305
+<v Speaker 1>really complicated thing.
+
+01:03:13.945 --> 01:03:16.425
+<v Speaker 1>Right? It is it sounds easy,
+
+01:03:16.585 --> 01:03:17.545
+<v Speaker 1>but it isn't.
+
+01:03:18.345 --> 01:03:20.025
+<v Speaker 1>And there are the great folks over at
+
+01:03:20.105 --> 01:03:21.625
+<v Speaker 1>well, now it is where are they now?
+
+01:03:21.940 --> 01:03:23.300
+<v Speaker 3>David. David.
+
+01:03:23.700 --> 01:03:24.740
+<v Speaker 3>Right. Yes.
+
+01:03:24.820 --> 01:03:26.660
+<v Speaker 1>We have project called Vector.
+
+01:03:28.500 --> 01:03:29.860
+<v Speaker 3>It's really good at
+
+01:03:30.660 --> 01:03:33.460
+<v Speaker 3>log tailing, and we don't like spending our
+
+01:03:33.460 --> 01:03:35.700
+<v Speaker 3>time doing log tailing. So we just recommend,
+
+01:03:35.700 --> 01:03:37.140
+<v Speaker 3>hey. Folk use Vector.
+
+01:03:37.755 --> 01:03:39.994
+<v Speaker 3>It's awesome. It connects to Tremor. Okay.
+
+01:03:40.714 --> 01:03:42.714
+<v Speaker 3>So We use it as a sidecar whenever
+
+01:03:42.714 --> 01:03:44.394
+<v Speaker 3>we need to do log tailing. We just
+
+01:03:44.394 --> 01:03:45.755
+<v Speaker 3>use that other project.
+
+01:03:46.954 --> 01:03:48.714
+<v Speaker 3>It's really good at it. So you know?
+
+01:03:49.940 --> 01:03:51.780
+<v Speaker 0>Okay. Well, I mean, I I'm happy just
+
+01:03:51.780 --> 01:03:53.700
+<v Speaker 0>to click control c and run Tremor again
+
+01:03:53.700 --> 01:03:55.540
+<v Speaker 0>after modifying this file because we just want
+
+01:03:55.620 --> 01:03:57.300
+<v Speaker 0>I just want to show a demo of
+
+01:03:57.300 --> 01:03:59.620
+<v Speaker 0>of of this. I was like, actually, adding
+
+01:03:59.620 --> 01:04:01.380
+<v Speaker 0>a new source and then having it work
+
+01:04:01.380 --> 01:04:02.500
+<v Speaker 0>with one of the syncs.
+
+01:04:03.835 --> 01:04:06.235
+<v Speaker 1>I think the easiest way is do you
+
+01:04:06.235 --> 01:04:07.675
+<v Speaker 1>ever use web Socat?
+
+01:04:09.275 --> 01:04:10.875
+<v Speaker 0>I've used Socat before. Yes.
+
+01:04:11.515 --> 01:04:12.715
+<v Speaker 1>Well, the the
+
+01:04:13.275 --> 01:04:13.835
+<v Speaker 1>yeah.
+
+01:04:14.235 --> 01:04:14.875
+<v Speaker 1>UDP.
+
+01:04:15.520 --> 01:04:18.160
+<v Speaker 1>The simple UDP on ramp which just uses
+
+01:04:18.160 --> 01:04:20.000
+<v Speaker 1>this as a message. Okay. So let's click
+
+01:04:20.000 --> 01:04:22.320
+<v Speaker 0>on UDP. I'm gonna just grab this config
+
+01:04:22.320 --> 01:04:23.360
+<v Speaker 0>here. Yep.
+
+01:04:24.880 --> 01:04:27.840
+<v Speaker 0>And we're gonna drop that in to our
+
+01:04:28.160 --> 01:04:30.000
+<v Speaker 0>config o one discord. Is that right?
+
+01:04:30.665 --> 01:04:31.785
+<v Speaker 1>Yes.
+
+01:04:33.625 --> 01:04:36.345
+<v Speaker 0>That was said with some degree of confidence.
+
+01:04:36.425 --> 01:04:38.505
+<v Speaker 1>Because there is the secret there is the
+
+01:04:38.505 --> 01:04:40.185
+<v Speaker 1>secret file and I wanted to make sure
+
+01:04:40.185 --> 01:04:42.345
+<v Speaker 1>you don't open it. So this is gonna
+
+01:04:42.345 --> 01:04:44.570
+<v Speaker 0>run a UDP server on local host port
+
+01:04:44.570 --> 01:04:46.810
+<v Speaker 0>9,000 of which I can send JSON to
+
+01:04:46.810 --> 01:04:49.770
+<v Speaker 0>and it'll do something with it. Nearly. Oh,
+
+01:04:49.850 --> 01:04:52.330
+<v Speaker 3>probably want to use the line's preprocessor.
+
+01:04:53.210 --> 01:04:53.530
+<v Speaker 1>You
+
+01:04:54.730 --> 01:04:58.010
+<v Speaker 1>what you did is put it under binding,
+
+01:04:58.815 --> 01:05:00.415
+<v Speaker 1>but it is an on ramp. And we
+
+01:05:00.415 --> 01:05:02.655
+<v Speaker 1>are sadly in YAML and oh, sorry. In
+
+01:05:02.655 --> 01:05:04.415
+<v Speaker 1>the wonderful world of YAML,
+
+01:05:04.655 --> 01:05:05.295
+<v Speaker 1>where
+
+01:05:05.455 --> 01:05:07.215
+<v Speaker 1>you got to put it under
+
+01:05:07.615 --> 01:05:09.855
+<v Speaker 1>the on ramp top level thing.
+
+01:05:10.895 --> 01:05:12.895
+<v Speaker 4>Just create a section.
+
+01:05:13.055 --> 01:05:15.490
+<v Speaker 1>Yeah. The the section was on ramps. That's
+
+01:05:15.490 --> 01:05:18.530
+<v Speaker 1>why I hesitated. It's in this hidden file,
+
+01:05:18.530 --> 01:05:20.530
+<v Speaker 1>but you can define one here as well.
+
+01:05:20.770 --> 01:05:22.450
+<v Speaker 0>Alright. Okay. So can I just do on
+
+01:05:22.450 --> 01:05:25.890
+<v Speaker 0>ramps? Yep. Yeah. You can. Okay. Singular.
+
+01:05:27.089 --> 01:05:28.289
+<v Speaker 1>It's on them. Got it.
+
+01:05:29.115 --> 01:05:31.115
+<v Speaker 2>Yeah. Okay. So that's You also could have
+
+01:05:31.115 --> 01:05:33.275
+<v Speaker 1>been really lazy and copied it from the
+
+01:05:33.275 --> 01:05:35.835
+<v Speaker 1>example completely because it's already in there.
+
+01:05:37.995 --> 01:05:40.315
+<v Speaker 0>Okay. So I can save this now and
+
+01:05:40.315 --> 01:05:41.915
+<v Speaker 0>I guess as a UDP socket, we can
+
+01:05:41.915 --> 01:05:43.755
+<v Speaker 0>send a message. You haven't looked at hooked
+
+01:05:43.755 --> 01:05:44.875
+<v Speaker 1>it up to anything yet.
+
+01:05:45.560 --> 01:05:47.240
+<v Speaker 0>That's a good point. Okay. So I I
+
+01:05:47.240 --> 01:05:48.680
+<v Speaker 0>guess this is what the bindings are. Do
+
+01:05:48.680 --> 01:05:49.960
+<v Speaker 0>we have to buy something
+
+01:05:49.960 --> 01:05:52.840
+<v Speaker 0>from our on ramps to our from our
+
+01:05:52.840 --> 01:05:53.960
+<v Speaker 0>sources to our sync?
+
+01:05:54.200 --> 01:05:55.160
+<v Speaker 0>Okay. Yeah.
+
+01:05:55.560 --> 01:05:57.080
+<v Speaker 0>So is that just a case of saying
+
+01:05:57.080 --> 01:05:58.840
+<v Speaker 0>ID and I'll just say
+
+01:05:59.000 --> 01:05:59.480
+<v Speaker 0>Rawkode.
+
+01:06:00.215 --> 01:06:02.055
+<v Speaker 0>I'm assuming that's arbitrary.
+
+01:06:02.055 --> 01:06:03.895
+<v Speaker 0>We wanna create a Yep. I'm just gonna
+
+01:06:03.895 --> 01:06:05.415
+<v Speaker 0>keep making this up until someone tells me
+
+01:06:05.415 --> 01:06:06.775
+<v Speaker 0>I need to do something else.
+
+01:06:08.935 --> 01:06:10.775
+<v Speaker 1>Well, you're now connecting the Discord on the
+
+01:06:10.775 --> 01:06:11.975
+<v Speaker 1>RAM, not the UDP one.
+
+01:06:12.840 --> 01:06:14.440
+<v Speaker 0>Okay. So I need to use the ID
+
+01:06:14.440 --> 01:06:16.600
+<v Speaker 0>from above, which I called UDP.
+
+01:06:16.600 --> 01:06:17.080
+<v Speaker 0>Okay.
+
+01:06:17.720 --> 01:06:19.400
+<v Speaker 0>Is that arbitrary as well or is that
+
+01:06:19.400 --> 01:06:20.920
+<v Speaker 0>actually connected to the oh, the type is
+
+01:06:20.920 --> 01:06:22.600
+<v Speaker 0>this one? That's connected to the ID that
+
+01:06:22.600 --> 01:06:23.240
+<v Speaker 3>you're
+
+01:06:23.400 --> 01:06:25.240
+<v Speaker 3>Yeah. You could you could call it snot
+
+01:06:25.240 --> 01:06:26.520
+<v Speaker 1>better if you wanted to.
+
+01:06:27.785 --> 01:06:30.425
+<v Speaker 0>Okay. So now that we've got this out
+
+01:06:30.425 --> 01:06:32.505
+<v Speaker 0>link, we tell it which inputs to forward
+
+01:06:32.505 --> 01:06:33.545
+<v Speaker 0>on. Is that right?
+
+01:06:34.745 --> 01:06:37.065
+<v Speaker 1>Which to which input to forward it. Yes.
+
+01:06:37.065 --> 01:06:39.225
+<v Speaker 1>Which the pass through one is the simplest
+
+01:06:39.225 --> 01:06:39.385
+<v Speaker 1>one.
+
+01:06:40.870 --> 01:06:42.390
+<v Speaker 0>Okay. Let me just copy that so I
+
+01:06:42.390 --> 01:06:44.390
+<v Speaker 0>don't mess that up. Exactly. Be be lazy
+
+01:06:44.390 --> 01:06:46.310
+<v Speaker 1>and just copy the debugging one.
+
+01:06:48.630 --> 01:06:49.590
+<v Speaker 0>Is that it?
+
+01:06:50.070 --> 01:06:51.110
+<v Speaker 0>Nearly.
+
+01:06:51.110 --> 01:06:53.350
+<v Speaker 0>Nearly? What what The last part is the
+
+01:06:53.350 --> 01:06:54.550
+<v Speaker 1>mapping at the very bottom.
+
+01:06:55.385 --> 01:06:58.105
+<v Speaker 1>Since you made a new binding, you have
+
+01:06:58.105 --> 01:06:59.785
+<v Speaker 1>to tell Tremor to load it.
+
+01:07:00.585 --> 01:07:02.185
+<v Speaker 0>Okay. So binding
+
+01:07:02.185 --> 01:07:03.065
+<v Speaker 0>UDP
+
+01:07:04.265 --> 01:07:06.265
+<v Speaker 1>You call it Rawkode. Rawkode.
+
+01:07:07.385 --> 01:07:10.105
+<v Speaker 1>No. Rawkode on the you call the binding
+
+01:07:10.105 --> 01:07:10.585
+<v Speaker 1>Rawkode.
+
+01:07:12.010 --> 01:07:14.330
+<v Speaker 1>When you put ID in the binding,
+
+01:07:14.809 --> 01:07:17.930
+<v Speaker 1>Rawkode slash o one. I wanna see what
+
+01:07:17.930 --> 01:07:19.369
+<v Speaker 0>I did there. Oh, yeah. Okay. So this
+
+01:07:19.369 --> 01:07:20.970
+<v Speaker 0>is this pending here. Yeah.
+
+01:07:21.289 --> 01:07:23.849
+<v Speaker 0>Okay. So binding Rawkode o one, and is
+
+01:07:23.849 --> 01:07:25.369
+<v Speaker 0>that just I I don't know what the
+
+01:07:25.369 --> 01:07:27.645
+<v Speaker 0>first. That is. That works. That'll work.
+
+01:07:28.445 --> 01:07:31.405
+<v Speaker 1>And now you should see UDP messages going
+
+01:07:31.405 --> 01:07:32.925
+<v Speaker 1>there to your standard out.
+
+01:07:33.325 --> 01:07:34.525
+<v Speaker 0>So I can just do a make run
+
+01:07:34.525 --> 01:07:36.765
+<v Speaker 0>and it's not gonna blow up. Right? Well,
+
+01:07:36.765 --> 01:07:37.085
+<v Speaker 1>we'll see.
+
+01:07:38.900 --> 01:07:41.060
+<v Speaker 0>Okay. So now we have I don't trust
+
+01:07:41.060 --> 01:07:43.540
+<v Speaker 1>live coding anymore. After the start today,
+
+01:07:44.180 --> 01:07:45.540
+<v Speaker 1>it didn't. Okay.
+
+01:07:47.460 --> 01:07:48.100
+<v Speaker 0>So
+
+01:07:49.300 --> 01:07:51.540
+<v Speaker 0>I wonder if we could to an off
+
+01:07:51.540 --> 01:07:51.780
+<v Speaker 4>run.
+
+01:07:53.175 --> 01:07:55.175
+<v Speaker 2>Yeah. I think it just went to the
+
+01:07:55.175 --> 01:07:57.655
+<v Speaker 2>pipeline only, right, so far? It it it
+
+01:07:57.655 --> 01:07:59.495
+<v Speaker 3>went to the pipeline.
+
+01:07:59.495 --> 01:08:00.375
+<v Speaker 3>It's
+
+01:08:01.255 --> 01:08:03.335
+<v Speaker 1>let's connect. That's a different binding.
+
+01:08:03.815 --> 01:08:05.815
+<v Speaker 4>It's a different binding, so it will not
+
+01:08:08.440 --> 01:08:10.200
+<v Speaker 1>Oh, wow. This is this now I'm learning
+
+01:08:10.200 --> 01:08:13.320
+<v Speaker 1>something. That works? Bash provides a virtual networking
+
+01:08:13.320 --> 01:08:14.680
+<v Speaker 0>stack, and I can't I
+
+01:08:15.320 --> 01:08:16.439
+<v Speaker 0>don't know if this will is that the
+
+01:08:16.439 --> 01:08:18.600
+<v Speaker 0>right port number? It's 9,000.
+
+01:08:18.760 --> 01:08:22.035
+<v Speaker 2>Yep. It's 9,000. Yeah. I think so. So
+
+01:08:22.035 --> 01:08:24.994
+<v Speaker 0>that's not quite right. Definitely something like this.
+
+01:08:25.635 --> 01:08:27.074
+<v Speaker 0>Oh, I'm not running bash.
+
+01:08:27.715 --> 01:08:29.635
+<v Speaker 1>That could could be a reason.
+
+01:08:30.835 --> 01:08:31.795
+<v Speaker 0>Yeah.
+
+01:08:31.795 --> 01:08:33.330
+<v Speaker 0>I used to use this all the time,
+
+01:08:33.330 --> 01:08:35.090
+<v Speaker 0>but there's like a virtual networking stack and
+
+01:08:35.090 --> 01:08:36.450
+<v Speaker 0>I'm sure I'm gonna get it slightly wrong
+
+01:08:36.450 --> 01:08:37.729
+<v Speaker 0>and need to Google it.
+
+01:08:38.050 --> 01:08:39.489
+<v Speaker 0>But it's something like this.
+
+01:08:41.810 --> 01:08:43.970
+<v Speaker 0>Oh, it didn't work. Alright. You could use
+
+01:08:43.970 --> 01:08:44.450
+<v Speaker 1>Netcat.
+
+01:08:45.024 --> 01:08:46.385
+<v Speaker 0>I know, but now that I now now
+
+01:08:46.385 --> 01:08:47.585
+<v Speaker 0>I feel I need to teach you this
+
+01:08:47.585 --> 01:08:51.104
+<v Speaker 0>thing. Okay. That's fair. That we have learned
+
+01:08:51.104 --> 01:08:51.744
+<v Speaker 1>something?
+
+01:08:54.385 --> 01:08:56.625
+<v Speaker 3>We're gonna have to upgrade the bash from
+
+01:08:56.625 --> 01:08:57.825
+<v Speaker 3>the ZSH.
+
+01:08:57.899 --> 01:09:00.140
+<v Speaker 0>Bash. I'm not going back to bash. I
+
+01:09:00.140 --> 01:09:01.500
+<v Speaker 1>am sorry. I like z s h to
+
+01:09:01.500 --> 01:09:03.899
+<v Speaker 0>bash. But it's an upgrade. It's it's UDP
+
+01:09:03.899 --> 01:09:07.099
+<v Speaker 3>capable with virtual UDP. What's not to like?
+
+01:09:07.580 --> 01:09:08.699
+<v Speaker 0>So I used to use this in my
+
+01:09:08.699 --> 01:09:11.019
+<v Speaker 0>health checks and my Docker containers.
+
+01:09:11.739 --> 01:09:14.645
+<v Speaker 0>Dev TCP, that must be it. Dev TCP
+
+01:09:16.645 --> 01:09:17.525
+<v Speaker 1>I'm
+
+01:09:17.525 --> 01:09:20.965
+<v Speaker 1>I'm 50% of all the Solaris users. I
+
+01:09:20.965 --> 01:09:21.925
+<v Speaker 1>I want
+
+01:09:22.085 --> 01:09:24.325
+<v Speaker 1>no bash. I want all my scripts to
+
+01:09:24.325 --> 01:09:26.725
+<v Speaker 1>be good old shell. There. I was close.
+
+01:09:26.725 --> 01:09:28.405
+<v Speaker 0>It's not net, it's just dev UDP.
+
+01:09:28.800 --> 01:09:30.639
+<v Speaker 0>That should have sent a lot to that
+
+01:09:30.639 --> 01:09:32.960
+<v Speaker 0>UDP channel. Well, yes. But you're told that
+
+01:09:32.960 --> 01:09:33.840
+<v Speaker 1>it's Chase.
+
+01:09:35.679 --> 01:09:38.319
+<v Speaker 3>Oh, string is That's a JSON string.
+
+01:09:39.279 --> 01:09:40.719
+<v Speaker 3>Oh, it's not like.
+
+01:09:42.205 --> 01:09:42.925
+<v Speaker 3>Yeah.
+
+01:09:44.125 --> 01:09:44.765
+<v Speaker 0>Okay.
+
+01:09:46.765 --> 01:09:48.205
+<v Speaker 1>Let's see if that works.
+
+01:09:49.245 --> 01:09:50.045
+<v Speaker 3>Didn't.
+
+01:09:51.085 --> 01:09:53.165
+<v Speaker 0>Okay. So maybe that's just my crappy bastric.
+
+01:09:53.165 --> 01:09:54.285
+<v Speaker 0>So why don't we just try it your
+
+01:09:54.285 --> 01:09:57.060
+<v Speaker 0>way? No. No. Well, then then then it's
+
+01:09:57.060 --> 01:09:59.140
+<v Speaker 1>my fault suddenly. It would be net cat
+
+01:09:59.140 --> 01:10:02.100
+<v Speaker 1>minus u local host 9,000 and then you
+
+01:10:02.100 --> 01:10:03.060
+<v Speaker 1>can write.
+
+01:10:05.460 --> 01:10:07.380
+<v Speaker 0>Pass n c dash u.
+
+01:10:08.180 --> 01:10:08.420
+<v Speaker 0>That.
+
+01:10:09.505 --> 01:10:11.105
+<v Speaker 0>Nope. Maybe space.
+
+01:10:11.185 --> 01:10:11.745
+<v Speaker 0>Okay.
+
+01:10:12.145 --> 01:10:14.145
+<v Speaker 0>And now I just need the JSON payload.
+
+01:10:17.105 --> 01:10:19.905
+<v Speaker 1>Nope. It wasn't wasn't your UDP.
+
+01:10:20.465 --> 01:10:23.100
+<v Speaker 0>Okay. So there's something wrong with connect to
+
+01:10:23.100 --> 01:10:25.260
+<v Speaker 3>because it's sent to the pass through end.
+
+01:10:25.260 --> 01:10:25.739
+<v Speaker 4>Yes.
+
+01:10:26.300 --> 01:10:28.300
+<v Speaker 3>Let's see what pass through end is connected
+
+01:10:28.300 --> 01:10:29.340
+<v Speaker 3>to in the
+
+01:10:29.739 --> 01:10:31.019
+<v Speaker 3>Discord YAML.
+
+01:10:31.900 --> 01:10:33.340
+<v Speaker 0>Okay. So let me just drop out of
+
+01:10:33.340 --> 01:10:35.340
+<v Speaker 0>that pop open a Discord YAML.
+
+01:10:35.980 --> 01:10:38.380
+<v Speaker 0>So okay. So we got the binding, we've
+
+01:10:38.380 --> 01:10:40.994
+<v Speaker 3>got on ramp UDP, out system
+
+01:10:41.395 --> 01:10:43.795
+<v Speaker 3>pass through. And what's pass through in connected
+
+01:10:43.795 --> 01:10:44.914
+<v Speaker 3>to on our links?
+
+01:10:45.395 --> 01:10:48.355
+<v Speaker 1>It's in Discord. It's connected to standard out.
+
+01:10:49.155 --> 01:10:51.475
+<v Speaker 4>No. It's it's a different one because it's
+
+01:10:51.475 --> 01:10:51.954
+<v Speaker 4>a
+
+01:10:52.435 --> 01:10:53.955
+<v Speaker 4>should should should be a different one.
+
+01:10:55.450 --> 01:10:56.890
+<v Speaker 3>No. It should be the same. Gonna be
+
+01:10:56.890 --> 01:10:58.730
+<v Speaker 3>zero one. They're all mapped to zero one
+
+01:10:58.730 --> 01:10:59.770
+<v Speaker 3>for I.
+
+01:11:00.570 --> 01:11:01.370
+<v Speaker 3>Okay.
+
+01:11:01.770 --> 01:11:03.290
+<v Speaker 3>So where is in
+
+01:11:03.930 --> 01:11:04.650
+<v Speaker 3>sorry.
+
+01:11:04.970 --> 01:11:07.370
+<v Speaker 3>Yeah. I've pipeline system pass through, I was
+
+01:11:07.370 --> 01:11:10.445
+<v Speaker 3>just connected to all from standard out in.
+
+01:11:11.085 --> 01:11:12.525
+<v Speaker 3>That's not what we want. We
+
+01:11:15.405 --> 01:11:17.485
+<v Speaker 3>wanted to it's going out of Discord. So
+
+01:11:17.485 --> 01:11:19.645
+<v Speaker 3>we wanna connect it to the Discord off
+
+01:11:19.645 --> 01:11:21.885
+<v Speaker 3>ramp. Well, we wanted to first go out
+
+01:11:21.885 --> 01:11:23.405
+<v Speaker 1>to standard out to just test.
+
+01:11:24.670 --> 01:11:26.349
+<v Speaker 3>Alright. Let's do that then.
+
+01:11:26.990 --> 01:11:28.590
+<v Speaker 3>So that should already
+
+01:11:28.750 --> 01:11:30.429
+<v Speaker 3>print on standard out?
+
+01:11:30.750 --> 01:11:33.230
+<v Speaker 1>It should. Yes. Which is annoying that it
+
+01:11:33.230 --> 01:11:35.070
+<v Speaker 1>doesn't. Think it's when it doesn't.
+
+01:11:36.750 --> 01:11:39.550
+<v Speaker 3>Mine's prepostor maybe and throw in slash n.
+
+01:11:40.175 --> 01:11:40.974
+<v Speaker 3>Doesn't
+
+01:11:41.135 --> 01:11:42.895
+<v Speaker 3>echo put a slash n at the end
+
+01:11:42.895 --> 01:11:44.895
+<v Speaker 3>of it? Could could be.
+
+01:11:45.535 --> 01:11:48.175
+<v Speaker 3>So use the lines preprocessor. It's probably just
+
+01:11:48.175 --> 01:11:50.095
+<v Speaker 3>buffered in UDP going, yeah. Yeah. I don't
+
+01:11:50.095 --> 01:11:51.375
+<v Speaker 3>know how to send it yet. Is it
+
+01:11:51.375 --> 01:11:51.695
+<v Speaker 3>finished?
+
+01:11:53.409 --> 01:11:54.690
+<v Speaker 0>Okay. So what do we want to try?
+
+01:11:54.770 --> 01:11:56.209
+<v Speaker 3>The lines speed processor.
+
+01:11:58.449 --> 01:11:59.649
+<v Speaker 3>I could be wrong.
+
+01:11:59.969 --> 01:12:01.169
+<v Speaker 1>Could be wrong.
+
+01:12:03.329 --> 01:12:05.650
+<v Speaker 1>On ramp UDP is perfectly fine.
+
+01:12:06.335 --> 01:12:09.215
+<v Speaker 1>Links is on ramp UDP. Yeah.
+
+01:12:10.655 --> 01:12:12.895
+<v Speaker 1>But preprocessor, is it it's a good idea.
+
+01:12:14.975 --> 01:12:16.975
+<v Speaker 3>So in your UDP configuration
+
+01:12:17.295 --> 01:12:20.094
+<v Speaker 0>Yep. At the same level as config
+
+01:12:20.095 --> 01:12:23.000
+<v Speaker 3>or just below codecs, preprocessors,
+
+01:12:23.000 --> 01:12:23.640
+<v Speaker 3>colon,
+
+01:12:24.520 --> 01:12:25.480
+<v Speaker 3>return
+
+01:12:25.800 --> 01:12:26.520
+<v Speaker 3>list
+
+01:12:27.000 --> 01:12:28.040
+<v Speaker 3>or dash
+
+01:12:28.360 --> 01:12:31.320
+<v Speaker 3>sorry. Dash as in list item and Yep.
+
+01:12:37.155 --> 01:12:38.755
+<v Speaker 3>So give that a whirl.
+
+01:12:42.275 --> 01:12:45.395
+<v Speaker 0>Okay. I'm gonna try my bastric again then.
+
+01:12:47.795 --> 01:12:49.395
+<v Speaker 0>Nope. Let's try the Netcat one.
+
+01:12:51.170 --> 01:12:53.250
+<v Speaker 3>Well, the bastric wasn't JSON.
+
+01:12:53.570 --> 01:12:55.410
+<v Speaker 0>Oh, yeah. We could we could make a
+
+01:12:55.410 --> 01:12:57.250
+<v Speaker 3>codec as string if that doesn't work.
+
+01:12:57.650 --> 01:12:58.370
+<v Speaker 1>Codec
+
+01:12:58.450 --> 01:12:59.410
+<v Speaker 1>string is
+
+01:12:59.890 --> 01:13:01.730
+<v Speaker 1>a safe one. Yeah. Do do
+
+01:13:02.050 --> 01:13:04.850
+<v Speaker 2>we need to specify, like, the the route,
+
+01:13:04.850 --> 01:13:08.185
+<v Speaker 2>the pipeline to the upfront explicitly in in
+
+01:13:08.185 --> 01:13:10.505
+<v Speaker 2>the binding? Because it's part of different binding.
+
+01:13:10.505 --> 01:13:12.665
+<v Speaker 2>Right? I think so. I think so. Yeah.
+
+01:13:12.665 --> 01:13:14.345
+<v Speaker 2>I think that's why it's not working.
+
+01:13:14.665 --> 01:13:15.625
+<v Speaker 2>If we had made it
+
+01:13:16.745 --> 01:13:18.825
+<v Speaker 2>yeah. If we had reused it on an
+
+01:13:18.825 --> 01:13:19.785
+<v Speaker 2>existing binding,
+
+01:13:20.390 --> 01:13:22.870
+<v Speaker 2>then it should have worked. But since this
+
+01:13:22.870 --> 01:13:24.870
+<v Speaker 2>is a new binding called Rawkode,
+
+01:13:25.430 --> 01:13:27.670
+<v Speaker 2>the the pass through pipeline isn't connected to
+
+01:13:27.670 --> 01:13:30.070
+<v Speaker 2>anything in that binding. So I think we
+
+01:13:30.070 --> 01:13:32.310
+<v Speaker 2>need to, like, explicitly copy the off ramp
+
+01:13:32.310 --> 01:13:34.230
+<v Speaker 2>part from the second phase to the first
+
+01:13:34.230 --> 01:13:34.870
+<v Speaker 2>phase.
+
+01:13:35.030 --> 01:13:38.045
+<v Speaker 2>So maybe that will work worth trying. Yeah.
+
+01:13:38.765 --> 01:13:40.845
+<v Speaker 2>I hope that made sense, Rawkode. But, yeah,
+
+01:13:40.845 --> 01:13:43.085
+<v Speaker 2>I I can write you. And this is
+
+01:13:43.085 --> 01:13:44.685
+<v Speaker 3>why we want to get rid of this
+
+01:13:44.685 --> 01:13:45.325
+<v Speaker 1>YAML.
+
+01:13:45.725 --> 01:13:46.685
+<v Speaker 0>Oh, yes.
+
+01:13:46.845 --> 01:13:48.445
+<v Speaker 0>What do we have to copy into where?
+
+01:13:49.020 --> 01:13:51.099
+<v Speaker 3>So copy the pass through,
+
+01:13:52.300 --> 01:13:55.579
+<v Speaker 3>out The scroll down. To Discord from the
+
+01:13:55.739 --> 01:13:58.859
+<v Speaker 3>Discord binding into the Rawkode binding
+
+01:13:59.260 --> 01:14:00.860
+<v Speaker 3>so that you have a full copy of
+
+01:14:00.860 --> 01:14:03.020
+<v Speaker 3>the flow that you want in Rawkode.
+
+01:14:04.135 --> 01:14:06.534
+<v Speaker 3>Think of Rawkode as a separate application.
+
+01:14:08.375 --> 01:14:10.454
+<v Speaker 3>Not quite a one to one mapping, but
+
+01:14:11.815 --> 01:14:13.574
+<v Speaker 3>for live coding, that'll do.
+
+01:14:14.534 --> 01:14:16.935
+<v Speaker 0>Okay. So so we want to copy the
+
+01:14:16.935 --> 01:14:17.895
+<v Speaker 0>pasture from here.
+
+01:14:18.630 --> 01:14:20.469
+<v Speaker 3>Yeah. So copy the
+
+01:14:20.630 --> 01:14:21.270
+<v Speaker 3>below
+
+01:14:22.550 --> 01:14:25.430
+<v Speaker 3>one, the out. So the output from the
+
+01:14:25.430 --> 01:14:28.310
+<v Speaker 3>pass through pipeline, we want to pass in
+
+01:14:29.670 --> 01:14:31.830
+<v Speaker 3>To yeah. To the old front. Yeah. For
+
+01:14:31.830 --> 01:14:34.165
+<v Speaker 3>standard out. So this line, we wanna copy
+
+01:14:34.165 --> 01:14:35.684
+<v Speaker 3>and add to Rawkode.
+
+01:14:36.165 --> 01:14:38.244
+<v Speaker 0>Okay. So those two lines. Right?
+
+01:14:38.645 --> 01:14:40.405
+<v Speaker 3>Yeah. I think it's one line. Two lines.
+
+01:14:40.405 --> 01:14:42.405
+<v Speaker 3>Or is it one or two? Who knows?
+
+01:14:42.485 --> 01:14:44.405
+<v Speaker 3>Could be one. Should be two lines if
+
+01:14:44.405 --> 01:14:45.685
+<v Speaker 1>there's no wrapping setup.
+
+01:14:47.120 --> 01:14:50.639
+<v Speaker 0>Like that? Yes. Yep. Like that. Yep.
+
+01:14:50.800 --> 01:14:52.320
+<v Speaker 3>Still don't know if it's one or two
+
+01:14:52.320 --> 01:14:53.280
+<v Speaker 3>lines, but that works.
+
+01:14:59.005 --> 01:15:00.685
+<v Speaker 0>I should have changed the codec to string
+
+01:15:00.685 --> 01:15:03.244
+<v Speaker 0>as well, but oh, well. Oh,
+
+01:15:03.645 --> 01:15:04.925
+<v Speaker 1>one thing at a time.
+
+01:15:06.364 --> 01:15:08.844
+<v Speaker 3>That's string, son, not Jason.
+
+01:15:10.925 --> 01:15:12.445
+<v Speaker 0>Yes. I don't think that did that for
+
+01:15:12.445 --> 01:15:14.445
+<v Speaker 0>me there. I think I've broken it.
+
+01:15:18.660 --> 01:15:21.780
+<v Speaker 3>Missing a colon between name and value.
+
+01:15:22.260 --> 01:15:24.180
+<v Speaker 0>You know what? I'm changing this one thing.
+
+01:15:24.180 --> 01:15:25.780
+<v Speaker 0>Right? Okay. So you're telling me I can
+
+01:15:25.780 --> 01:15:27.060
+<v Speaker 0>just string as a codec and it doesn't
+
+01:15:27.060 --> 01:15:28.340
+<v Speaker 0>care what I pass through. Is that right?
+
+01:15:28.340 --> 01:15:31.165
+<v Speaker 1>Yeah. Exactly. Yeah. String will just do
+
+01:15:31.325 --> 01:15:33.645
+<v Speaker 1>everything you want. Let's remove as as much
+
+01:15:33.645 --> 01:15:35.485
+<v Speaker 0>things that can go wrong in my typing
+
+01:15:35.485 --> 01:15:37.244
+<v Speaker 0>as possible. So hello.
+
+01:15:38.845 --> 01:15:39.724
+<v Speaker 0>I'll go.
+
+01:15:40.685 --> 01:15:41.725
+<v Speaker 3>No. That didn't work.
+
+01:15:45.910 --> 01:15:46.790
+<v Speaker 1>That is
+
+01:15:47.110 --> 01:15:47.989
+<v Speaker 1>super So
+
+01:15:48.950 --> 01:15:50.710
+<v Speaker 0>we have a UDP on ramp.
+
+01:15:51.110 --> 01:15:53.270
+<v Speaker 0>And we I mean, although should we set
+
+01:15:53.270 --> 01:15:54.950
+<v Speaker 0>it because if it's UDP, we're not actually
+
+01:15:54.950 --> 01:15:56.390
+<v Speaker 0>gonna know if it fails because there's no
+
+01:15:56.390 --> 01:15:59.350
+<v Speaker 0>response. Should we use TCP instead? Yeah. Give
+
+01:15:59.350 --> 01:15:59.670
+<v Speaker 3>it a shot.
+
+01:16:00.315 --> 01:16:01.915
+<v Speaker 1>Give give it a shot. And you can
+
+01:16:01.915 --> 01:16:04.155
+<v Speaker 1>keep it named UDP. It won't if you
+
+01:16:04.155 --> 01:16:05.755
+<v Speaker 1>change the ID, you don't need to change
+
+01:16:05.755 --> 01:16:06.635
+<v Speaker 1>the IP.
+
+01:16:06.795 --> 01:16:07.435
+<v Speaker 3>Okay.
+
+01:16:07.675 --> 01:16:09.995
+<v Speaker 3>It'll be confusing later when you've forgotten why
+
+01:16:09.995 --> 01:16:10.555
+<v Speaker 3>you did it. Okay.
+
+01:16:15.400 --> 01:16:17.960
+<v Speaker 3>So there's there's some buffering
+
+01:16:17.960 --> 01:16:18.839
+<v Speaker 3>or something.
+
+01:16:19.960 --> 01:16:21.320
+<v Speaker 0>But then I I need to know if
+
+01:16:21.320 --> 01:16:22.519
+<v Speaker 0>this works. So
+
+01:16:24.679 --> 01:16:26.199
+<v Speaker 0>See, there So now we can change it
+
+01:16:26.199 --> 01:16:27.639
+<v Speaker 3>back to Jason if you like,
+
+01:16:28.534 --> 01:16:30.135
+<v Speaker 3>or we can configure it and send it
+
+01:16:30.135 --> 01:16:31.175
+<v Speaker 3>out to Discord.
+
+01:16:32.135 --> 01:16:33.574
+<v Speaker 0>I think it is configured to go to
+
+01:16:33.574 --> 01:16:34.695
+<v Speaker 0>Discord, does it not?
+
+01:16:35.175 --> 01:16:37.655
+<v Speaker 3>It's configured to go to system out.
+
+01:16:37.975 --> 01:16:39.655
+<v Speaker 3>You may need to copy that
+
+01:16:40.455 --> 01:16:42.620
+<v Speaker 3>as well. Okay. So let's add our our
+
+01:16:42.620 --> 01:16:43.980
+<v Speaker 0>final mapping here just to
+
+01:16:45.100 --> 01:16:47.020
+<v Speaker 3>Or we could just move the
+
+01:16:47.980 --> 01:16:51.020
+<v Speaker 3>the The standard out one? Our TCP UDP.
+
+01:16:51.020 --> 01:16:51.500
+<v Speaker 3>The
+
+01:16:53.420 --> 01:16:54.700
+<v Speaker 3>second line of links
+
+01:16:55.335 --> 01:16:57.735
+<v Speaker 3>to our discord and get rid of the
+
+01:16:57.735 --> 01:16:59.574
+<v Speaker 3>binding and the mapping.
+
+01:17:00.935 --> 01:17:02.534
+<v Speaker 3>Move it all into the same
+
+01:17:03.895 --> 01:17:05.255
+<v Speaker 3>discord binding.
+
+01:17:05.495 --> 01:17:06.534
+<v Speaker 3>Keep it simple.
+
+01:17:07.015 --> 01:17:09.190
+<v Speaker 3>Get rid of the other lines. Yeah. Because
+
+01:17:09.190 --> 01:17:10.630
+<v Speaker 3>we just need the UDP,
+
+01:17:11.590 --> 01:17:14.550
+<v Speaker 3>and that will union into the password.
+
+01:17:15.110 --> 01:17:16.950
+<v Speaker 0>But can I just do that and remove
+
+01:17:16.950 --> 01:17:17.510
+<v Speaker 0>this?
+
+01:17:19.750 --> 01:17:22.070
+<v Speaker 3>That removes the rest of the block functionality.
+
+01:17:22.070 --> 01:17:22.790
+<v Speaker 3>You can do that.
+
+01:17:23.495 --> 01:17:25.415
+<v Speaker 0>But that will ring it to Discord. Right?
+
+01:17:25.575 --> 01:17:27.335
+<v Speaker 1>It will Discord will tell you this is
+
+01:17:27.335 --> 01:17:29.575
+<v Speaker 1>not a message I understand unless you give
+
+01:17:29.575 --> 01:17:30.855
+<v Speaker 1>it the correct
+
+01:17:30.855 --> 01:17:33.415
+<v Speaker 1>format. Structural leads. Which is where all the
+
+01:17:33.415 --> 01:17:34.615
+<v Speaker 1>selects are in.
+
+01:17:36.930 --> 01:17:38.530
+<v Speaker 3>But we can just copy one of those
+
+01:17:38.530 --> 01:17:41.090
+<v Speaker 3>and we can make one and just add
+
+01:17:41.090 --> 01:17:42.210
+<v Speaker 3>another pipeline.
+
+01:17:43.090 --> 01:17:45.330
+<v Speaker 0>Okay. I'll let you just gave me. What
+
+01:17:45.330 --> 01:17:46.610
+<v Speaker 0>what what do we do to make this
+
+01:17:46.610 --> 01:17:46.850
+<v Speaker 0>work?
+
+01:17:48.545 --> 01:17:50.225
+<v Speaker 1>Let's create a pipeline
+
+01:17:50.865 --> 01:17:52.785
+<v Speaker 1>and just give it a give it a
+
+01:17:52.785 --> 01:17:54.705
+<v Speaker 1>random name. Just just pick a name you
+
+01:17:54.705 --> 01:17:55.905
+<v Speaker 1>want for your pipeline.
+
+01:17:56.145 --> 01:17:57.665
+<v Speaker 0>Okay. And that's the stuff that's in the
+
+01:17:57.665 --> 01:17:59.425
+<v Speaker 0>lib directory. Is that right? No.
+
+01:17:59.825 --> 01:18:01.345
+<v Speaker 1>That's in the plugins directory.
+
+01:18:02.650 --> 01:18:03.369
+<v Speaker 1>Config.
+
+01:18:04.170 --> 01:18:05.770
+<v Speaker 0>Oh, contact plugin. Yeah. Call it the Rawkode
+
+01:18:05.770 --> 01:18:08.010
+<v Speaker 3>plugin. Okay. So we're gonna go to config
+
+01:18:08.010 --> 01:18:10.490
+<v Speaker 0>plugin. We're gonna copy the simplest one with
+
+01:18:10.490 --> 01:18:11.690
+<v Speaker 0>the welcome, wasn't it?
+
+01:18:12.250 --> 01:18:14.490
+<v Speaker 1>It's the welcome. Yes. Okay. And we'll call
+
+01:18:14.490 --> 01:18:15.690
+<v Speaker 0>this Rawkode dot trickle.
+
+01:18:17.645 --> 01:18:19.885
+<v Speaker 0>Okay. So now we can do a select.
+
+01:18:20.045 --> 01:18:22.925
+<v Speaker 0>Now we're not reading messages from this card,
+
+01:18:22.925 --> 01:18:24.364
+<v Speaker 0>so this is gonna be different. Right?
+
+01:18:24.844 --> 01:18:26.285
+<v Speaker 1>And you know, so this part of the
+
+01:18:26.285 --> 01:18:27.724
+<v Speaker 1>select creates
+
+01:18:28.045 --> 01:18:31.005
+<v Speaker 1>the message that's outgoing. It's like like, okay.
+
+01:18:31.005 --> 01:18:32.765
+<v Speaker 1>Think about select. If you select
+
+01:18:33.500 --> 01:18:35.260
+<v Speaker 1>host name from table,
+
+01:18:35.500 --> 01:18:37.580
+<v Speaker 1>then what is between select and from is
+
+01:18:37.580 --> 01:18:38.780
+<v Speaker 1>the data that goes out.
+
+01:18:39.100 --> 01:18:41.980
+<v Speaker 3>Yeah. So just get rid of the content
+
+01:18:42.460 --> 01:18:43.260
+<v Speaker 3>value
+
+01:18:43.340 --> 01:18:46.060
+<v Speaker 3>and replace it with event, which represents what
+
+01:18:46.060 --> 01:18:47.980
+<v Speaker 3>you've passed in and what is sent through
+
+01:18:47.980 --> 01:18:48.860
+<v Speaker 3>TCP.
+
+01:18:49.020 --> 01:18:50.844
+<v Speaker 3>So hello is what you typed the last
+
+01:18:50.844 --> 01:18:52.525
+<v Speaker 3>time. So that would be the string.
+
+01:18:52.844 --> 01:18:55.324
+<v Speaker 3>Was the text? For event, and it's hash
+
+01:18:55.324 --> 01:18:57.965
+<v Speaker 3>rather than dollar for interpolation.
+
+01:18:58.125 --> 01:18:59.885
+<v Speaker 3>There you go. A smiley.
+
+01:19:05.390 --> 01:19:07.310
+<v Speaker 0>There. I'm happy. So if you put a
+
+01:19:07.310 --> 01:19:09.950
+<v Speaker 3>small e for event, it's case sensitive
+
+01:19:10.110 --> 01:19:12.750
+<v Speaker 3>with the variables. There we go. Perfect. One
+
+01:19:13.310 --> 01:19:15.630
+<v Speaker 1>one last thing, the channel ID, since that
+
+01:19:15.630 --> 01:19:16.830
+<v Speaker 1>isn't the welcome channel,
+
+01:19:17.395 --> 01:19:18.275
+<v Speaker 1>and
+
+01:19:18.675 --> 01:19:20.755
+<v Speaker 1>this is Discord specific, that would be that
+
+01:19:20.755 --> 01:19:21.395
+<v Speaker 1>number.
+
+01:19:23.955 --> 01:19:25.795
+<v Speaker 0>Yes. Did you send it over to
+
+01:19:26.275 --> 01:19:29.075
+<v Speaker 1>Yes. I sent it over Discord. You don't
+
+01:19:29.075 --> 01:19:30.595
+<v Speaker 1>want that all to go to the welcome
+
+01:19:30.595 --> 01:19:33.100
+<v Speaker 1>channel. That's where we have the bot spam
+
+01:19:33.100 --> 01:19:34.540
+<v Speaker 1>channel. Yeah. I just have to move that
+
+01:19:34.540 --> 01:19:35.980
+<v Speaker 0>to the other screen so that we can
+
+01:19:35.980 --> 01:19:37.740
+<v Speaker 1>flash the Goddamn your screens.
+
+01:19:39.740 --> 01:19:41.020
+<v Speaker 1>The secret.
+
+01:19:41.260 --> 01:19:41.580
+<v Speaker 0>Okay.
+
+01:19:45.185 --> 01:19:47.345
+<v Speaker 0>So let's get back. So I copied that
+
+01:19:47.345 --> 01:19:48.145
+<v Speaker 0>ID
+
+01:19:48.545 --> 01:19:50.224
+<v Speaker 0>and then like so.
+
+01:19:50.945 --> 01:19:53.985
+<v Speaker 1>And number, not string. Just just the number.
+
+01:19:53.985 --> 01:19:54.784
+<v Speaker 0>Got it.
+
+01:19:55.825 --> 01:19:58.760
+<v Speaker 1>I believe. I believe to believe. We'll find
+
+01:19:58.760 --> 01:20:00.600
+<v Speaker 0>out. We'll find out in a second. Okay.
+
+01:20:00.600 --> 01:20:02.920
+<v Speaker 0>So now we've got our match here, and
+
+01:20:02.920 --> 01:20:03.960
+<v Speaker 0>I guess the
+
+01:20:04.920 --> 01:20:06.600
+<v Speaker 0>well, what do we have to change care
+
+01:20:06.600 --> 01:20:08.360
+<v Speaker 3>about that. We're just just true.
+
+01:20:08.760 --> 01:20:11.160
+<v Speaker 1>Just yeah. Just remove the whole where. Else.
+
+01:20:11.160 --> 01:20:12.440
+<v Speaker 3>Just remove the whole thing
+
+01:20:13.205 --> 01:20:15.285
+<v Speaker 3>because we don't care. Yep. Bang it on.
+
+01:20:15.285 --> 01:20:17.525
+<v Speaker 3>Send it on. Everything is fine.
+
+01:20:18.485 --> 01:20:20.965
+<v Speaker 1>This will actually not work because event isn't
+
+01:20:20.965 --> 01:20:21.685
+<v Speaker 2>true. Just
+
+01:20:25.045 --> 01:20:27.125
+<v Speaker 1>kill kill the whole line, make it default
+
+01:20:26.970 --> 01:20:27.930
+<v Speaker 1>true. Got it.
+
+01:20:28.490 --> 01:20:30.410
+<v Speaker 1>This is this is the most powerful message
+
+01:20:30.410 --> 01:20:31.370
+<v Speaker 1>statement ever.
+
+01:20:31.690 --> 01:20:32.330
+<v Speaker 3>Yeah.
+
+01:20:33.450 --> 01:20:35.370
+<v Speaker 0>Is that all we need in our trickle?
+
+01:20:36.330 --> 01:20:38.010
+<v Speaker 1>Yeah. That's it. I believe it is. That's
+
+01:20:38.010 --> 01:20:40.245
+<v Speaker 3>an entire program right there. Okay. So now
+
+01:20:40.245 --> 01:20:42.165
+<v Speaker 0>how do we connect this to Rawkode. Trickle
+
+01:20:42.165 --> 01:20:45.205
+<v Speaker 0>from our config? So if you the the
+
+01:20:45.205 --> 01:20:47.525
+<v Speaker 1>way the bot works, it it loads all
+
+01:20:47.525 --> 01:20:48.804
+<v Speaker 1>the plugins.
+
+01:20:50.485 --> 01:20:52.885
+<v Speaker 3>So you now have a plugin on Rawkode
+
+01:20:52.885 --> 01:20:53.685
+<v Speaker 3>effectively.
+
+01:20:53.685 --> 01:20:53.844
+<v Speaker 1>Yeah.
+
+01:20:55.400 --> 01:20:56.680
+<v Speaker 1>You don't need to put it in there.
+
+01:20:56.760 --> 01:20:59.560
+<v Speaker 3>Rawkode will be your plugin. So you just
+
+01:20:59.560 --> 01:21:01.560
+<v Speaker 3>make a new line
+
+01:21:01.560 --> 01:21:03.800
+<v Speaker 3>and you connect the outputs
+
+01:21:04.120 --> 01:21:04.920
+<v Speaker 3>of
+
+01:21:07.525 --> 01:21:11.045
+<v Speaker 1>Basically, instead of systems, standard out. First link.
+
+01:21:11.045 --> 01:21:12.885
+<v Speaker 1>That's alright. Can send it to standard out
+
+01:21:12.885 --> 01:21:13.445
+<v Speaker 3>and
+
+01:21:13.685 --> 01:21:16.325
+<v Speaker 3>add a new list element that sends it
+
+01:21:16.325 --> 01:21:17.685
+<v Speaker 3>to slash pipeline
+
+01:21:17.685 --> 01:21:19.204
+<v Speaker 3>slash Rawkode,
+
+01:21:19.445 --> 01:21:21.765
+<v Speaker 3>squiggly eyes, squiggly slash in,
+
+01:21:22.270 --> 01:21:24.270
+<v Speaker 3>as well as standard apps. So you'll see
+
+01:21:24.270 --> 01:21:25.710
+<v Speaker 3>it on the console,
+
+01:21:27.550 --> 01:21:29.790
+<v Speaker 3>and you'll also get it sent. So online
+
+01:21:29.790 --> 01:21:31.710
+<v Speaker 3>number one up from where you are.
+
+01:21:32.990 --> 01:21:35.310
+<v Speaker 1>It goes into the slides. If you go
+
+01:21:35.310 --> 01:21:36.750
+<v Speaker 3>to the end of this line and make
+
+01:21:36.750 --> 01:21:38.725
+<v Speaker 3>a new list entry
+
+01:21:39.045 --> 01:21:42.325
+<v Speaker 0>Yep. It's called quote slash pipeline
+
+01:21:42.725 --> 01:21:45.045
+<v Speaker 3>because it's a it's a pipeline or flow
+
+01:21:45.045 --> 01:21:46.485
+<v Speaker 3>slash Rawkode
+
+01:21:46.485 --> 01:21:48.805
+<v Speaker 3>because it's Rawkode dot trickle that takes the
+
+01:21:48.805 --> 01:21:51.205
+<v Speaker 3>file name base Yep. And it uses that.
+
+01:21:51.710 --> 01:21:53.070
+<v Speaker 3>And slash,
+
+01:21:53.470 --> 01:21:54.830
+<v Speaker 3>because it's this instance,
+
+01:21:55.310 --> 01:21:57.710
+<v Speaker 3>you're gonna go squiggly eye squiggly.
+
+01:21:59.390 --> 01:22:01.470
+<v Speaker 3>And slash in because it's going to the
+
+01:22:01.470 --> 01:22:04.350
+<v Speaker 3>standard input stream on that file. So we
+
+01:22:04.350 --> 01:22:05.950
+<v Speaker 3>didn't cover a lot of the details. You
+
+01:22:05.950 --> 01:22:08.835
+<v Speaker 3>can configure your own streams and stuff, but
+
+01:22:08.835 --> 01:22:09.715
+<v Speaker 3>this will work.
+
+01:22:10.035 --> 01:22:11.715
+<v Speaker 1>Yeah. So it's all gonna be
+
+01:22:12.275 --> 01:22:14.035
+<v Speaker 1>Well, we also need to put the output
+
+01:22:14.035 --> 01:22:16.995
+<v Speaker 1>somewhere. We need the output. Yeah. It'll almost
+
+01:22:17.075 --> 01:22:19.074
+<v Speaker 3>work. On Now we need to do something
+
+01:22:18.915 --> 01:22:21.000
+<v Speaker 3>know the line. No. This would be the
+
+01:22:21.000 --> 01:22:22.199
+<v Speaker 1>UDP output.
+
+01:22:22.280 --> 01:22:23.159
+<v Speaker 1>So
+
+01:22:24.280 --> 01:22:26.600
+<v Speaker 1>you change the UDP output to go to
+
+01:22:26.600 --> 01:22:28.680
+<v Speaker 1>Discord output. That should go to the system
+
+01:22:28.680 --> 01:22:29.960
+<v Speaker 1>pipeline path throughout.
+
+01:22:32.055 --> 01:22:32.695
+<v Speaker 1>No.
+
+01:22:33.415 --> 01:22:35.895
+<v Speaker 1>Line numbers. Line number plus one.
+
+01:22:36.775 --> 01:22:37.575
+<v Speaker 0>Yes.
+
+01:22:38.855 --> 01:22:41.175
+<v Speaker 0>What's the option? Increment the line numbers. I
+
+01:22:41.175 --> 01:22:41.655
+<v Speaker 3>forgot.
+
+01:22:42.215 --> 01:22:44.215
+<v Speaker 0>Did that turn out? N u. N u.
+
+01:22:44.215 --> 01:22:45.415
+<v Speaker 0>That's what it is. There we go.
+
+01:22:46.375 --> 01:22:46.695
+<v Speaker 1>Yeah.
+
+01:22:47.489 --> 01:22:50.289
+<v Speaker 1>And then after line number 18,
+
+01:22:52.130 --> 01:22:54.449
+<v Speaker 1>and now we have the Rawkode pipeline, and
+
+01:22:54.449 --> 01:22:57.730
+<v Speaker 1>we have slash pipeline Rawkode I out. So
+
+01:22:57.730 --> 01:22:59.650
+<v Speaker 1>we connect the outside of that.
+
+01:23:01.185 --> 01:23:03.344
+<v Speaker 3>So that's the the result of your select
+
+01:23:03.344 --> 01:23:05.104
+<v Speaker 3>statement, which is your
+
+01:23:05.505 --> 01:23:07.664
+<v Speaker 3>message event into Discord.
+
+01:23:09.905 --> 01:23:12.064
+<v Speaker 0>Okay. So slash pipeline slash Rawkode.
+
+01:23:12.385 --> 01:23:14.784
+<v Speaker 3>Slash squiggly eyes squiggly slash out.
+
+01:23:15.710 --> 01:23:17.870
+<v Speaker 3>Squiggly eyes squiggly. That'd be a good pirate
+
+01:23:17.870 --> 01:23:18.430
+<v Speaker 3>name.
+
+01:23:18.910 --> 01:23:22.510
+<v Speaker 1>Oh, yes. Squiggly eyes squiggly. Squiggly eyes squiggly.
+
+01:23:22.910 --> 01:23:24.990
+<v Speaker 1>And we connect that to the
+
+01:23:25.550 --> 01:23:28.505
+<v Speaker 1>and now it gets confusing. In ramp, on
+
+01:23:28.505 --> 01:23:31.144
+<v Speaker 1>ramp, Discord, I squiggly, I out.
+
+01:23:32.025 --> 01:23:34.184
+<v Speaker 1>So we we loop back effectively.
+
+01:23:34.824 --> 01:23:36.824
+<v Speaker 0>Okay. That's actually making much more sense to
+
+01:23:36.824 --> 01:23:38.344
+<v Speaker 0>me now that we've walked through this. So
+
+01:23:38.344 --> 01:23:40.744
+<v Speaker 0>that's good. Just seems to be a list.
+
+01:23:41.600 --> 01:23:43.440
+<v Speaker 3>It's it's easier to type when you're not
+
+01:23:43.440 --> 01:23:44.800
+<v Speaker 3>trying to say it at the same time
+
+01:23:44.800 --> 01:23:46.000
+<v Speaker 3>across the Internet.
+
+01:23:47.520 --> 01:23:48.239
+<v Speaker 1>Yes.
+
+01:23:49.040 --> 01:23:51.520
+<v Speaker 0>Alright. I'm confident. No. I'm not. I'm in
+
+01:23:51.520 --> 01:23:52.320
+<v Speaker 0>the wrong direction.
+
+01:23:53.360 --> 01:23:53.920
+<v Speaker 0>There you go.
+
+01:23:54.585 --> 01:23:57.784
+<v Speaker 0>Okay. Discord send message to LAR.
+
+01:23:58.585 --> 01:24:00.905
+<v Speaker 4>Yeah. Because it it's it's trying to send,
+
+01:24:00.905 --> 01:24:02.664
+<v Speaker 4>I think, this message as
+
+01:24:03.145 --> 01:24:05.465
+<v Speaker 4>because we connected to this standards.
+
+01:24:06.025 --> 01:24:07.945
+<v Speaker 1>Oh, you could the past yes. It will
+
+01:24:08.025 --> 01:24:08.665
+<v Speaker 1>it Did
+
+01:24:09.250 --> 01:24:10.929
+<v Speaker 4>we make an infinite loop?
+
+01:24:11.489 --> 01:24:12.289
+<v Speaker 3>Really?
+
+01:24:12.449 --> 01:24:14.530
+<v Speaker 1>I think if you UDP to it, you
+
+01:24:14.530 --> 01:24:15.489
+<v Speaker 1>should see it.
+
+01:24:16.050 --> 01:24:18.610
+<v Speaker 1>TCP to it. Sorry. That's okay. Into that
+
+01:24:18.610 --> 01:24:20.209
+<v Speaker 3>port. Let's have some fun.
+
+01:24:20.849 --> 01:24:21.170
+<v Speaker 1>Nice.
+
+01:24:22.185 --> 01:24:24.185
+<v Speaker 1>Tada. Well, we are we are getting some
+
+01:24:24.185 --> 01:24:24.745
+<v Speaker 3>stuff.
+
+01:24:26.025 --> 01:24:27.784
+<v Speaker 1>The debug no. But we are getting
+
+01:24:28.665 --> 01:24:30.745
+<v Speaker 1>well, we are getting the output from
+
+01:24:31.625 --> 01:24:34.025
+<v Speaker 1>the debug. You have the debug still just
+
+01:24:34.025 --> 01:24:36.345
+<v Speaker 1>enabled, so it sends all the debug messages
+
+01:24:36.345 --> 01:24:36.825
+<v Speaker 1>to
+
+01:24:37.219 --> 01:24:38.179
+<v Speaker 1>Discord.
+
+01:24:38.179 --> 01:24:40.340
+<v Speaker 1>Since I'm not sure there's something sensitive in
+
+01:24:40.340 --> 01:24:41.940
+<v Speaker 1>there, I will delete this. Yeah. I'm pleased
+
+01:24:41.940 --> 01:24:42.499
+<v Speaker 0>to.
+
+01:24:43.780 --> 01:24:46.019
+<v Speaker 0>So if I just take off the standard
+
+01:24:45.860 --> 01:24:46.340
+<v Speaker 0>oh,
+
+01:24:48.260 --> 01:24:48.980
+<v Speaker 0>this one. Right?
+
+01:24:49.885 --> 01:24:52.125
+<v Speaker 1>If you just go to line plus two
+
+01:24:52.445 --> 01:24:56.045
+<v Speaker 1>plus three, and instead of connecting 17,
+
+01:24:56.045 --> 01:24:58.765
+<v Speaker 1>instead of connecting this to pass through, just
+
+01:24:58.765 --> 01:25:01.245
+<v Speaker 1>connect that to your Rawkode pipeline
+
+01:25:02.605 --> 01:25:04.440
+<v Speaker 1>without the system. System
+
+01:25:04.600 --> 01:25:07.240
+<v Speaker 1>notates a pipeline that is always there. You
+
+01:25:07.240 --> 01:25:09.560
+<v Speaker 1>don't have to define the pass through pipeline
+
+01:25:09.560 --> 01:25:11.080
+<v Speaker 1>because it always exists.
+
+01:25:11.560 --> 01:25:13.800
+<v Speaker 1>Two colon colon slash. Yes. And
+
+01:25:14.520 --> 01:25:15.240
+<v Speaker 1>there you go. Yeah.
+
+01:25:17.824 --> 01:25:19.905
+<v Speaker 3>I didn't even notice when we typed in
+
+01:25:19.905 --> 01:25:22.465
+<v Speaker 3>system colon colon Rawkode. Where did we add
+
+01:25:22.465 --> 01:25:23.905
+<v Speaker 3>that Rawkode
+
+01:25:24.545 --> 01:25:26.465
+<v Speaker 3>sub module to the standard
+
+01:25:26.625 --> 01:25:27.344
+<v Speaker 3>Oh. System.
+
+01:25:29.270 --> 01:25:31.510
+<v Speaker 1>Still some stuff there. You know what? I'm
+
+01:25:31.510 --> 01:25:33.030
+<v Speaker 0>fine if you just delete that. I I
+
+01:25:33.030 --> 01:25:34.550
+<v Speaker 0>got I we did what I wanted to
+
+01:25:34.550 --> 01:25:36.150
+<v Speaker 0>see and I'm very chuffed with that. But
+
+01:25:36.150 --> 01:25:37.110
+<v Speaker 0>I love that.
+
+01:25:37.590 --> 01:25:40.150
+<v Speaker 0>So we have the ability with Tremor to
+
+01:25:40.630 --> 01:25:41.590
+<v Speaker 0>add our sources
+
+01:25:42.625 --> 01:25:45.824
+<v Speaker 0>and basically build all of these workflows or
+
+01:25:45.824 --> 01:25:47.905
+<v Speaker 0>pipelines up that allows us to move those
+
+01:25:47.905 --> 01:25:50.864
+<v Speaker 0>messages about the filtering on them and what's
+
+01:25:50.864 --> 01:25:52.705
+<v Speaker 0>the other stuff. That I think is very
+
+01:25:52.705 --> 01:25:54.945
+<v Speaker 0>very cool. If you if you would look
+
+01:25:54.945 --> 01:25:55.744
+<v Speaker 1>at the
+
+01:25:56.040 --> 01:25:58.840
+<v Speaker 1>script, the Rawkode pipeline you wrote, this could
+
+01:25:58.840 --> 01:26:00.840
+<v Speaker 1>be if it were, like,
+
+01:26:01.320 --> 01:26:04.360
+<v Speaker 1>influx data, you could say if CPU users
+
+01:26:04.360 --> 01:26:06.840
+<v Speaker 1>is over 15%, send the message, oh my
+
+01:26:06.840 --> 01:26:07.480
+<v Speaker 1>god. It's burning.
+
+01:26:09.555 --> 01:26:11.635
+<v Speaker 0>Yeah. So you could use this for alerting
+
+01:26:11.635 --> 01:26:13.875
+<v Speaker 3>into Discord or Slack or whatever.
+
+01:26:14.594 --> 01:26:16.435
+<v Speaker 0>Yeah. And we're just doing that in this
+
+01:26:16.435 --> 01:26:18.835
+<v Speaker 0>this match statement down here. Like, we can
+
+01:26:18.835 --> 01:26:20.835
+<v Speaker 0>have the different cases an alarm if it
+
+01:26:20.835 --> 01:26:23.179
+<v Speaker 3>goes over a certain value. And if you've
+
+01:26:23.179 --> 01:26:26.380
+<v Speaker 3>seen this alarm trigger before, don't alarm continuously.
+
+01:26:26.780 --> 01:26:29.019
+<v Speaker 3>Only alarm once for the given condition.
+
+01:26:29.580 --> 01:26:32.300
+<v Speaker 3>So there is a state mechanism in Tremor,
+
+01:26:32.300 --> 01:26:33.260
+<v Speaker 3>so you could,
+
+01:26:34.140 --> 01:26:36.219
+<v Speaker 3>cash this in the state mechanism. And if
+
+01:26:36.219 --> 01:26:37.100
+<v Speaker 3>the alarm is set,
+
+01:26:37.765 --> 01:26:40.165
+<v Speaker 3>don't retrigger the alarm if it's already going
+
+01:26:40.165 --> 01:26:41.605
+<v Speaker 3>off. It's annoying.
+
+01:26:43.125 --> 01:26:45.045
+<v Speaker 3>And then when it's recovered at some point
+
+01:26:45.045 --> 01:26:47.125
+<v Speaker 3>later, maybe send it again.
+
+01:26:47.765 --> 01:26:50.725
+<v Speaker 3>But you can Tremor is quite flexible
+
+01:26:50.805 --> 01:26:53.139
+<v Speaker 3>in terms of its mechanism. There's a hindsight
+
+01:26:53.139 --> 01:26:54.659
+<v Speaker 3>of the mechanism recently
+
+01:26:54.980 --> 01:26:58.340
+<v Speaker 3>that provides a a key value storage,
+
+01:26:59.139 --> 01:26:59.860
+<v Speaker 3>as,
+
+01:27:00.179 --> 01:27:00.980
+<v Speaker 3>essentially
+
+01:27:00.980 --> 01:27:02.499
+<v Speaker 3>sources and syncs.
+
+01:27:02.739 --> 01:27:05.060
+<v Speaker 3>So you can you can store persistent key
+
+01:27:05.060 --> 01:27:07.804
+<v Speaker 3>value information now and and just make it
+
+01:27:07.804 --> 01:27:09.804
+<v Speaker 3>available like it's a service
+
+01:27:10.284 --> 01:27:11.565
+<v Speaker 3>into that logic.
+
+01:27:12.045 --> 01:27:14.844
+<v Speaker 3>Makes it really easy to build stateful apps
+
+01:27:15.485 --> 01:27:18.045
+<v Speaker 3>just by programming little select statements.
+
+01:27:18.284 --> 01:27:19.885
+<v Speaker 3>Yep. Nice.
+
+01:27:20.284 --> 01:27:20.685
+<v Speaker 0>Awesome.
+
+01:27:22.150 --> 01:27:24.710
+<v Speaker 0>So we're we're pretty much approaching an hour
+
+01:27:24.710 --> 01:27:25.910
+<v Speaker 0>and a half now, which is our our
+
+01:27:25.910 --> 01:27:28.230
+<v Speaker 0>allocated time. Is there anything that we haven't
+
+01:27:28.230 --> 01:27:29.830
+<v Speaker 0>shown that you wanted to show before we
+
+01:27:29.830 --> 01:27:30.870
+<v Speaker 0>finish up today?
+
+01:27:32.230 --> 01:27:34.150
+<v Speaker 1>I think it's actually pretty nice what we
+
+01:27:34.150 --> 01:27:34.790
+<v Speaker 1>actually,
+
+01:27:35.030 --> 01:27:36.790
+<v Speaker 1>other than the stuff that didn't work.
+
+01:27:37.565 --> 01:27:39.324
+<v Speaker 0>Everything worked. This is what you're talking about.
+
+01:27:39.405 --> 01:27:41.804
+<v Speaker 1>Yes. Everything worked. It worked perfectly. I think
+
+01:27:41.804 --> 01:27:43.324
+<v Speaker 1>the messages are all gone.
+
+01:27:44.605 --> 01:27:46.925
+<v Speaker 1>Other than Rawkode says help me,
+
+01:27:48.284 --> 01:27:49.165
+<v Speaker 1>that's still there.
+
+01:27:49.910 --> 01:27:51.430
+<v Speaker 0>Okay. So can we just touch on one
+
+01:27:51.430 --> 01:27:52.550
+<v Speaker 0>thing if you if you've all got a
+
+01:27:52.550 --> 01:27:54.550
+<v Speaker 0>few more minutes before we finish? We mentioned
+
+01:27:54.550 --> 01:27:56.390
+<v Speaker 0>that at the start something that really piqued
+
+01:27:56.390 --> 01:27:58.710
+<v Speaker 0>my my interest, and we talked about clustering.
+
+01:27:58.710 --> 01:28:00.790
+<v Speaker 0>Can we cover what how that works,
+
+01:28:01.110 --> 01:28:02.950
+<v Speaker 0>the status of that is, and what's coming
+
+01:28:02.950 --> 01:28:04.895
+<v Speaker 0>maybe? I think that is another topic. The
+
+01:28:04.895 --> 01:28:05.935
+<v Speaker 3>stage is yours.
+
+01:28:06.255 --> 01:28:06.735
+<v Speaker 2>Yeah.
+
+01:28:08.095 --> 01:28:10.335
+<v Speaker 2>Sure. So so far, like, as you can
+
+01:28:10.335 --> 01:28:12.415
+<v Speaker 2>see, so you can run, like, Tremor on
+
+01:28:12.415 --> 01:28:15.055
+<v Speaker 2>your individual host, and you can imagine, like,
+
+01:28:15.390 --> 01:28:18.270
+<v Speaker 2>having different Tremor notes running on different hosts.
+
+01:28:18.270 --> 01:28:20.510
+<v Speaker 2>Right? And with something like Kafka,
+
+01:28:20.510 --> 01:28:22.030
+<v Speaker 2>you can kind of try to have, like,
+
+01:28:22.030 --> 01:28:25.070
+<v Speaker 2>a clustered kind of scenario. But, yeah, we
+
+01:28:25.070 --> 01:28:27.390
+<v Speaker 2>have noticed that for operational needs at Wake,
+
+01:28:27.390 --> 01:28:29.310
+<v Speaker 2>it would be really nice if we could
+
+01:28:29.310 --> 01:28:30.910
+<v Speaker 2>deploy these kind of pipelines
+
+01:28:31.335 --> 01:28:34.215
+<v Speaker 2>in a true, like, distributed system. So imagine,
+
+01:28:34.215 --> 01:28:36.695
+<v Speaker 2>like, nodes Tremor nodes going down, and then
+
+01:28:36.695 --> 01:28:40.295
+<v Speaker 2>your pipeline, like, recovering automatically, like, the the
+
+01:28:40.295 --> 01:28:42.935
+<v Speaker 2>workload is migrated to some other existing node
+
+01:28:43.175 --> 01:28:45.255
+<v Speaker 2>transparently by the cluster, and the operator doesn't
+
+01:28:45.255 --> 01:28:47.389
+<v Speaker 2>have to intervene. So it's not just the
+
+01:28:47.389 --> 01:28:49.150
+<v Speaker 2>the pipeline redundancy.
+
+01:28:49.310 --> 01:28:51.150
+<v Speaker 2>So there are, like, certain logic that you
+
+01:28:51.150 --> 01:28:54.030
+<v Speaker 2>write as part of your, like, clustered application.
+
+01:28:54.190 --> 01:28:56.110
+<v Speaker 2>So think about, like, when you need to
+
+01:28:56.110 --> 01:28:58.670
+<v Speaker 2>throttle, like, incoming logs or, like, metrics
+
+01:28:59.205 --> 01:29:01.125
+<v Speaker 2>over, like, a set of notes, and then
+
+01:29:01.125 --> 01:29:02.645
+<v Speaker 2>you have to really know, like, how many
+
+01:29:02.645 --> 01:29:05.285
+<v Speaker 2>set of notes are involved to evenly throttle
+
+01:29:05.285 --> 01:29:07.525
+<v Speaker 2>among all the notes. So things like that,
+
+01:29:07.525 --> 01:29:10.645
+<v Speaker 2>we hope to provide by introducing a true
+
+01:29:10.645 --> 01:29:13.220
+<v Speaker 2>clustered system in Tremor. So we are using
+
+01:29:13.220 --> 01:29:15.380
+<v Speaker 2>draft as the consensus mechanism
+
+01:29:15.460 --> 01:29:18.340
+<v Speaker 2>for the backbone of the cluster, and the
+
+01:29:18.340 --> 01:29:19.300
+<v Speaker 2>actual, like,
+
+01:29:19.780 --> 01:29:22.580
+<v Speaker 2>workload for the Tremor nodes, the pipeline stuff
+
+01:29:22.580 --> 01:29:24.740
+<v Speaker 2>that you have been playing around, they'll actually
+
+01:29:24.740 --> 01:29:26.500
+<v Speaker 2>live outside of the draft context.
+
+01:29:26.835 --> 01:29:28.675
+<v Speaker 2>We call them, like, worker nodes,
+
+01:29:28.915 --> 01:29:30.595
+<v Speaker 2>and they will be, like, hosting
+
+01:29:30.675 --> 01:29:33.715
+<v Speaker 2>the the all the processing logic. And whenever
+
+01:29:33.715 --> 01:29:36.035
+<v Speaker 2>a node goes down or off, ultimately, we
+
+01:29:36.035 --> 01:29:37.555
+<v Speaker 2>want to reach to that idle state of
+
+01:29:37.555 --> 01:29:40.595
+<v Speaker 2>the cluster being, like, auto healing. And, ultimately,
+
+01:29:40.755 --> 01:29:42.850
+<v Speaker 2>those kind of things will also help, like,
+
+01:29:42.850 --> 01:29:44.850
+<v Speaker 2>auto scale the cluster nicely. You you add
+
+01:29:44.850 --> 01:29:46.530
+<v Speaker 2>a new node, and then you really don't
+
+01:29:46.530 --> 01:29:48.530
+<v Speaker 2>have to do much. Right now, there's, like,
+
+01:29:48.530 --> 01:29:49.650
+<v Speaker 2>a lot of operational
+
+01:29:49.890 --> 01:29:52.290
+<v Speaker 2>overhead and a lot of config tweaking when
+
+01:29:52.290 --> 01:29:53.810
+<v Speaker 2>you when you add one. So so that's
+
+01:29:53.810 --> 01:29:55.605
+<v Speaker 2>where, like, that's kind of the motivation behind
+
+01:29:55.605 --> 01:29:58.165
+<v Speaker 2>adding clustering. So imagine, like, Tremor being, like,
+
+01:29:58.165 --> 01:29:59.925
+<v Speaker 2>a true distributed system.
+
+01:30:00.485 --> 01:30:02.245
+<v Speaker 2>And you you will still have the current
+
+01:30:02.245 --> 01:30:04.165
+<v Speaker 2>option of running Tremor without
+
+01:30:04.805 --> 01:30:07.925
+<v Speaker 2>without the distributed context because, honestly, like, the
+
+01:30:07.925 --> 01:30:11.300
+<v Speaker 2>district adding distributed mechanics like that includes, like,
+
+01:30:11.300 --> 01:30:13.380
+<v Speaker 2>certain workflows, but it it is, like
+
+01:30:14.100 --> 01:30:16.500
+<v Speaker 2>the dis a distributed system can be, like,
+
+01:30:16.500 --> 01:30:18.500
+<v Speaker 2>a lot more painful to manage,
+
+01:30:18.820 --> 01:30:20.820
+<v Speaker 2>right, compared to, like, a totally, like, a
+
+01:30:20.820 --> 01:30:22.420
+<v Speaker 2>stateless and system
+
+01:30:22.580 --> 01:30:24.775
+<v Speaker 2>that we have right now. So there's, like,
+
+01:30:24.775 --> 01:30:27.094
+<v Speaker 2>a trade after, but we hope, like, the
+
+01:30:27.094 --> 01:30:28.534
+<v Speaker 2>for the workflows,
+
+01:30:28.534 --> 01:30:29.974
+<v Speaker 2>it's going to improve. It will be worth
+
+01:30:29.974 --> 01:30:31.655
+<v Speaker 2>it, and the other option will always be
+
+01:30:31.655 --> 01:30:34.135
+<v Speaker 2>available in Tremor anyways. So, yeah, that's kind
+
+01:30:34.135 --> 01:30:35.334
+<v Speaker 2>of the summary
+
+01:30:35.815 --> 01:30:37.720
+<v Speaker 2>for, like, the team we're trying introduce. So
+
+01:30:37.720 --> 01:30:39.400
+<v Speaker 3>it'll be like you'll be able to write
+
+01:30:39.400 --> 01:30:42.520
+<v Speaker 3>a select statement that contains your JSON like
+
+01:30:42.520 --> 01:30:46.120
+<v Speaker 3>data, but it's distributed now. So you if
+
+01:30:46.120 --> 01:30:47.800
+<v Speaker 3>if you want to start little bits of
+
+01:30:47.800 --> 01:30:50.040
+<v Speaker 3>SQL and little bits of JSON, you can
+
+01:30:50.040 --> 01:30:52.965
+<v Speaker 3>call yourself a distributed systems programmer and get
+
+01:30:52.965 --> 01:30:54.005
+<v Speaker 3>the big bucks,
+
+01:30:54.645 --> 01:30:57.284
+<v Speaker 3>just by running a SQL query. So that's
+
+01:30:57.284 --> 01:30:58.084
+<v Speaker 3>pretty cool.
+
+01:30:58.405 --> 01:31:00.405
+<v Speaker 3>It's cool trickle right there.
+
+01:31:02.965 --> 01:31:04.405
+<v Speaker 2>Yeah. You can you can write, like, the
+
+01:31:04.405 --> 01:31:06.909
+<v Speaker 2>studio applications in Tremor now. So after this
+
+01:31:06.909 --> 01:31:08.590
+<v Speaker 2>is done. Oh, we're gonna have to have
+
+01:31:08.590 --> 01:31:10.829
+<v Speaker 0>another episode. I think that's that's for sure.
+
+01:31:10.829 --> 01:31:11.309
+<v Speaker 1>Until
+
+01:31:12.190 --> 01:31:13.789
+<v Speaker 1>we are there, it will take a while.
+
+01:31:14.110 --> 01:31:17.309
+<v Speaker 1>Yeah. Surprisingly, distributed systems are not implemented overnight.
+
+01:31:18.395 --> 01:31:19.755
+<v Speaker 0>Tell a lot of my So this work
+
+01:31:19.755 --> 01:31:20.715
+<v Speaker 3>is ongoing.
+
+01:31:20.795 --> 01:31:23.115
+<v Speaker 3>It'll likely be the simple
+
+01:31:23.195 --> 01:31:24.315
+<v Speaker 3>the simple
+
+01:31:24.555 --> 01:31:27.275
+<v Speaker 3>the simpler infrastructure for clustering will get out
+
+01:31:27.275 --> 01:31:29.675
+<v Speaker 3>first in a in a release over the
+
+01:31:29.675 --> 01:31:30.315
+<v Speaker 3>next few months.
+
+01:31:31.050 --> 01:31:32.810
+<v Speaker 3>We are gonna go all the way towards
+
+01:31:32.810 --> 01:31:35.050
+<v Speaker 3>fully automated, fully migrating,
+
+01:31:35.690 --> 01:31:38.649
+<v Speaker 3>full distributed applications on Tremor,
+
+01:31:38.969 --> 01:31:41.449
+<v Speaker 3>probably towards the end of this year before
+
+01:31:41.449 --> 01:31:42.969
+<v Speaker 3>a lot of that comes out
+
+01:31:44.145 --> 01:31:46.784
+<v Speaker 3>because we're we're gonna test it to absolute
+
+01:31:46.784 --> 01:31:47.744
+<v Speaker 3>destruction
+
+01:31:48.065 --> 01:31:51.344
+<v Speaker 3>before we put any of those features into
+
+01:31:51.344 --> 01:31:53.985
+<v Speaker 3>anywhere near a release. I'm assuming Because at
+
+01:31:53.985 --> 01:31:55.264
+<v Speaker 3>the end of the day, we're a production
+
+01:31:55.264 --> 01:31:56.304
+<v Speaker 3>project. So
+
+01:31:57.860 --> 01:31:59.939
+<v Speaker 3>we run very close to production.
+
+01:32:00.260 --> 01:32:02.979
+<v Speaker 3>And most pretty much every feature in Tremor,
+
+01:32:03.139 --> 01:32:05.539
+<v Speaker 3>even the Discord bot runs in production.
+
+01:32:06.980 --> 01:32:07.380
+<v Speaker 3>So
+
+01:32:07.940 --> 01:32:10.260
+<v Speaker 3>every feature in there is a production feature.
+
+01:32:10.260 --> 01:32:11.940
+<v Speaker 3>So we're we play it safe when it
+
+01:32:11.940 --> 01:32:13.675
+<v Speaker 3>comes to Yep. The logic.
+
+01:32:13.995 --> 01:32:15.835
+<v Speaker 0>Must have been that's coming in the pony
+
+01:32:15.835 --> 01:32:18.955
+<v Speaker 0>rewrite. Right? Tremor to Retina Pony.
+
+01:32:19.915 --> 01:32:22.315
+<v Speaker 1>That's Tremor then. Rawkode, how are you with
+
+01:32:22.315 --> 01:32:23.515
+<v Speaker 3>the pony rewrite of everything?
+
+01:32:24.489 --> 01:32:27.050
+<v Speaker 4>Yes. It The first ninety percent are done.
+
+01:32:28.010 --> 01:32:30.090
+<v Speaker 1>Does Poly do Cindy Jason yet?
+
+01:32:30.810 --> 01:32:32.409
+<v Speaker 3>Yeah. Well, they say I want to know
+
+01:32:32.409 --> 01:32:35.210
+<v Speaker 3>this. Yeah. It it doesn't need to. Doesn't
+
+01:32:35.210 --> 01:32:36.969
+<v Speaker 1>need to. It's slow enough without it.
+
+01:32:37.775 --> 01:32:39.374
+<v Speaker 0>Alright. I'm
+
+01:32:39.375 --> 01:32:41.054
+<v Speaker 0>gonna let you skip back to your day.
+
+01:32:41.054 --> 01:32:43.295
+<v Speaker 0>That was a really interesting. I think we
+
+01:32:43.295 --> 01:32:44.335
+<v Speaker 0>had a lot of fun there. This is
+
+01:32:44.335 --> 01:32:45.614
+<v Speaker 0>definitely the most fun I've had on our
+
+01:32:45.614 --> 01:32:47.054
+<v Speaker 0>stream. So I'm gonna thank you all for
+
+01:32:47.054 --> 01:32:47.934
+<v Speaker 0>for bringing
+
+01:32:48.415 --> 01:32:49.054
+<v Speaker 0>just
+
+01:32:49.695 --> 01:32:51.295
+<v Speaker 0>such a cool demo to play with Discord
+
+01:32:51.295 --> 01:32:53.935
+<v Speaker 0>and make it really visual and interactive for
+
+01:32:52.950 --> 01:32:54.390
+<v Speaker 0>people that are watching and for bringing the
+
+01:32:54.390 --> 01:32:56.310
+<v Speaker 0>cookie monster. I'll never say no to having
+
+01:32:56.310 --> 01:32:58.710
+<v Speaker 0>more cookie monster in the streams. So again,
+
+01:32:58.710 --> 01:32:59.750
+<v Speaker 0>thank you very much.
+
+01:33:00.550 --> 01:33:02.470
+<v Speaker 0>You very much. Really cool technology. I'm looking
+
+01:33:02.470 --> 01:33:03.910
+<v Speaker 0>forward to playing with it more. Have a
+
+01:33:03.910 --> 01:33:05.430
+<v Speaker 0>great day and I'll speak to you also.
+
+01:33:05.510 --> 01:33:07.395
+<v Speaker 1>Yeah. Thank you very much. Awesome. Thank you
+
+01:33:07.395 --> 01:33:09.554
+<v Speaker 3>for having us. Thank you very much. Bye.

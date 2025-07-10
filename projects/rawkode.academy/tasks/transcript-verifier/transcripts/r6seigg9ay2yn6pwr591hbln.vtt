@@ -1,0 +1,6761 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 8679a190-5862-4a76-ba8a-0b79516e1834
+Created: 2025-04-29T17:57:08.574Z
+Duration: 5278.761
+Channels: 1
+
+00:01:01.684 --> 00:01:02.565
+<v Speaker 0>Hello,
+
+00:01:02.565 --> 00:01:05.045
+<v Speaker 0>and welcome to today's episode of Rawkode Live
+
+00:01:05.045 --> 00:01:06.485
+<v Speaker 0>on the Rawkode Academy.
+
+00:01:06.725 --> 00:01:08.405
+<v Speaker 0>I'm your host, Rawkode.
+
+00:01:08.965 --> 00:01:10.965
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:01:10.965 --> 00:01:14.485
+<v Speaker 0>Litmus, a chaos engineering project for Kubernetes.
+
+00:01:15.060 --> 00:01:17.780
+<v Speaker 0>Litmus has a two point x release coming
+
+00:01:17.780 --> 00:01:19.299
+<v Speaker 0>up, and we're gonna see some of the
+
+00:01:19.299 --> 00:01:22.659
+<v Speaker 0>new features available from Kartik, the maintainer of
+
+00:01:22.659 --> 00:01:23.460
+<v Speaker 0>the project.
+
+00:01:23.780 --> 00:01:25.460
+<v Speaker 0>Before we dive into that, there's just a
+
+00:01:25.460 --> 00:01:26.659
+<v Speaker 0>little bit of housekeeping.
+
+00:01:27.060 --> 00:01:29.765
+<v Speaker 0>First, you've not subscribed to the YouTube channel,
+
+00:01:29.765 --> 00:01:30.965
+<v Speaker 0>now would be the best time to do
+
+00:01:30.965 --> 00:01:32.645
+<v Speaker 0>it. Click that subscribe button,
+
+00:01:32.885 --> 00:01:34.565
+<v Speaker 0>and feel free to tick that bell. That
+
+00:01:34.565 --> 00:01:36.645
+<v Speaker 0>just means that you will get notifications for
+
+00:01:36.645 --> 00:01:38.565
+<v Speaker 0>all new episodes of Rawkode Live,
+
+00:01:39.205 --> 00:01:39.765
+<v Speaker 0>and
+
+00:01:40.085 --> 00:01:41.525
+<v Speaker 0>I will do my best to make sure
+
+00:01:41.525 --> 00:01:43.660
+<v Speaker 0>we cover as many cloud native technologies as
+
+00:01:43.660 --> 00:01:45.820
+<v Speaker 0>possible to guide you and help you on
+
+00:01:45.820 --> 00:01:48.300
+<v Speaker 0>your journey into this vast, vast ecosystem.
+
+00:01:48.860 --> 00:01:50.540
+<v Speaker 0>If you wanna come and chat with other
+
+00:01:50.540 --> 00:01:53.260
+<v Speaker 0>cloud native enthusiasts about Kubernetes, cloud native, and
+
+00:01:53.260 --> 00:01:55.260
+<v Speaker 0>anything in between, we also have a Discord
+
+00:01:55.260 --> 00:01:57.580
+<v Speaker 0>server available at Rawkode.chat.
+
+00:01:58.075 --> 00:01:59.755
+<v Speaker 0>Come in there, say hello, and I look
+
+00:01:59.755 --> 00:02:00.875
+<v Speaker 0>forward to meeting you.
+
+00:02:01.355 --> 00:02:03.035
+<v Speaker 0>I also wanna thank all of the people
+
+00:02:03.035 --> 00:02:04.955
+<v Speaker 0>that have now become members of the Rawkode
+
+00:02:04.955 --> 00:02:06.875
+<v Speaker 0>Academy on YouTube. You can do so for
+
+00:02:06.875 --> 00:02:08.315
+<v Speaker 0>as little as $1.
+
+00:02:08.475 --> 00:02:11.009
+<v Speaker 0>This just supports the channel. There's also other
+
+00:02:11.009 --> 00:02:13.090
+<v Speaker 0>tiers, which will get you interactive courses, which
+
+00:02:13.090 --> 00:02:14.210
+<v Speaker 0>launched this week,
+
+00:02:14.530 --> 00:02:17.090
+<v Speaker 0>and a very special tier just for the
+
+00:02:17.090 --> 00:02:18.849
+<v Speaker 0>corporations out there that also wanna say thank
+
+00:02:18.849 --> 00:02:20.130
+<v Speaker 0>you. So check that out.
+
+00:02:20.610 --> 00:02:23.170
+<v Speaker 0>I very much appreciate it. Now we're gonna
+
+00:02:23.170 --> 00:02:23.569
+<v Speaker 0>move on
+
+00:02:24.385 --> 00:02:26.625
+<v Speaker 0>to introducing Kartik, a maintainer of the Litmus
+
+00:02:26.625 --> 00:02:28.545
+<v Speaker 0>project. Hey there, Kartik. Welcome back.
+
+00:02:31.425 --> 00:02:34.145
+<v Speaker 1>Hi, everyone. It's great to be back
+
+00:02:34.385 --> 00:02:35.585
+<v Speaker 1>on Rawkode.
+
+00:02:36.305 --> 00:02:38.200
+<v Speaker 1>I think was an awesome experience the first
+
+00:02:38.200 --> 00:02:38.680
+<v Speaker 1>time
+
+00:02:39.000 --> 00:02:42.120
+<v Speaker 1>that we talked about SKAOS engineering and
+
+00:02:42.440 --> 00:02:44.840
+<v Speaker 1>the evolution of cloud native SKAOS engineering,
+
+00:02:44.920 --> 00:02:47.720
+<v Speaker 1>and I'm really happy to be back here.
+
+00:02:47.720 --> 00:02:49.480
+<v Speaker 1>Thank you. Thank you for having me.
+
+00:02:49.960 --> 00:02:52.120
+<v Speaker 1>Giving me this opportunity to talk to the
+
+00:02:52.495 --> 00:02:54.015
+<v Speaker 1>upcoming 2.co.
+
+00:02:54.735 --> 00:02:56.735
+<v Speaker 0>Yeah. It's it's my pleasure. I had a
+
+00:02:56.815 --> 00:02:59.055
+<v Speaker 0>an absolute blast learning about Litmus the first
+
+00:02:59.055 --> 00:03:01.055
+<v Speaker 0>time, and I I'm really excited to see
+
+00:03:01.055 --> 00:03:02.815
+<v Speaker 0>what new things you have coming from the
+
+00:03:02.815 --> 00:03:03.455
+<v Speaker 0>project.
+
+00:03:03.775 --> 00:03:05.690
+<v Speaker 0>But just before we dive into for anyone
+
+00:03:05.690 --> 00:03:07.370
+<v Speaker 0>who didn't meet you the first time, Ryan,
+
+00:03:07.370 --> 00:03:08.730
+<v Speaker 0>can you just give us a quick introduction
+
+00:03:08.730 --> 00:03:10.250
+<v Speaker 0>to yourself, who you are, and what you
+
+00:03:10.250 --> 00:03:10.810
+<v Speaker 0>do?
+
+00:03:11.930 --> 00:03:12.650
+<v Speaker 1>Sure.
+
+00:03:13.210 --> 00:03:14.410
+<v Speaker 1>Thank and
+
+00:03:15.850 --> 00:03:16.570
+<v Speaker 1>this is
+
+00:03:17.370 --> 00:03:19.370
+<v Speaker 1>wonderful again to be back here. And, Kartik,
+
+00:03:20.175 --> 00:03:22.575
+<v Speaker 1>one of the maintainers of the Litmus Chaos
+
+00:03:22.575 --> 00:03:24.175
+<v Speaker 1>project. It is a CNCF
+
+00:03:24.175 --> 00:03:25.535
+<v Speaker 1>sandbox project.
+
+00:03:26.175 --> 00:03:27.455
+<v Speaker 1>And Litmus is
+
+00:03:28.095 --> 00:03:30.175
+<v Speaker 1>cloud native chaos engineering
+
+00:03:30.175 --> 00:03:31.055
+<v Speaker 1>platform,
+
+00:03:31.055 --> 00:03:31.695
+<v Speaker 1>I would say.
+
+00:03:32.400 --> 00:03:34.000
+<v Speaker 1>And it helps you to
+
+00:03:34.400 --> 00:03:37.440
+<v Speaker 1>practice chaos engineering on Kubernetes
+
+00:03:37.440 --> 00:03:38.560
+<v Speaker 1>as well as
+
+00:03:38.880 --> 00:03:40.960
+<v Speaker 1>on pre Kubernetes infrastructure
+
+00:03:40.960 --> 00:03:43.280
+<v Speaker 1>that you would have. That's how how we're
+
+00:03:43.280 --> 00:03:45.280
+<v Speaker 1>calling it today. These two instances,
+
+00:03:46.405 --> 00:03:48.325
+<v Speaker 1>basically, Azure VMs or your
+
+00:03:49.205 --> 00:03:51.525
+<v Speaker 1>VMware VMs in your data center.
+
+00:03:51.925 --> 00:03:54.725
+<v Speaker 1>You can go ahead and practice clear engineering.
+
+00:03:54.725 --> 00:03:57.125
+<v Speaker 1>Clear engineering is not just about injecting faults.
+
+00:03:57.525 --> 00:04:00.405
+<v Speaker 1>It's a it's a lot about hypothesis,
+
+00:04:01.060 --> 00:04:02.180
+<v Speaker 1>what you expect
+
+00:04:02.420 --> 00:04:04.740
+<v Speaker 1>in the system when you're engineering a fault,
+
+00:04:05.220 --> 00:04:07.939
+<v Speaker 1>and being able to derive meaning out of
+
+00:04:07.939 --> 00:04:10.580
+<v Speaker 1>an experiment, learn new behavior about your systems,
+
+00:04:11.299 --> 00:04:13.775
+<v Speaker 0>and not recklessly taking it. So we talked
+
+00:04:13.775 --> 00:04:16.415
+<v Speaker 1>in the last episode on Rawkode about what
+
+00:04:16.415 --> 00:04:17.935
+<v Speaker 1>is KS is where it is and what
+
+00:04:17.935 --> 00:04:18.735
+<v Speaker 1>is not.
+
+00:04:19.214 --> 00:04:21.055
+<v Speaker 1>We will develop that a little bit today,
+
+00:04:21.055 --> 00:04:22.895
+<v Speaker 1>and I'm very happy to introduce the newer
+
+00:04:22.895 --> 00:04:24.574
+<v Speaker 1>version of the Litmus platform.
+
+00:04:26.210 --> 00:04:28.850
+<v Speaker 1>We are trying for the launch of the
+
+00:04:28.850 --> 00:04:30.690
+<v Speaker 1>next release 2.0
+
+00:04:31.890 --> 00:04:32.530
+<v Speaker 1>latest
+
+00:04:34.370 --> 00:04:35.490
+<v Speaker 1>in August,
+
+00:04:35.970 --> 00:04:37.010
+<v Speaker 1>and this
+
+00:04:37.890 --> 00:04:40.050
+<v Speaker 1>would be some kind of technical preview of
+
+00:04:40.050 --> 00:04:41.170
+<v Speaker 1>some of the features there.
+
+00:04:41.945 --> 00:04:43.705
+<v Speaker 1>Thank you to a lot of the members
+
+00:04:43.705 --> 00:04:45.705
+<v Speaker 1>in the community who have been actively testing
+
+00:04:45.705 --> 00:04:46.905
+<v Speaker 1>it and providing
+
+00:04:47.225 --> 00:04:49.305
+<v Speaker 1>your feedback on the beta that we have
+
+00:04:49.305 --> 00:04:50.105
+<v Speaker 1>out there.
+
+00:04:50.425 --> 00:04:53.385
+<v Speaker 1>So, yeah, looking forward to interacting with you
+
+00:04:53.385 --> 00:04:53.625
+<v Speaker 1>all.
+
+00:04:55.050 --> 00:04:57.610
+<v Speaker 0>Awesome. What's that? Just to just to clarify
+
+00:04:57.610 --> 00:05:00.090
+<v Speaker 0>there, this is a preview of Litmus to
+
+00:05:00.570 --> 00:05:02.970
+<v Speaker 0>it's not out quite yet, but it's gonna
+
+00:05:02.970 --> 00:05:04.570
+<v Speaker 0>get people a good taster of all the
+
+00:05:04.570 --> 00:05:06.010
+<v Speaker 0>awesome new things that are coming down the
+
+00:05:06.010 --> 00:05:06.250
+<v Speaker 0>pipe.
+
+00:05:06.824 --> 00:05:07.625
+<v Speaker 0>Alright.
+
+00:05:07.625 --> 00:05:08.345
+<v Speaker 0>Awesome.
+
+00:05:09.544 --> 00:05:10.665
+<v Speaker 0>Okay. So
+
+00:05:11.145 --> 00:05:13.145
+<v Speaker 0>do you wanna talk about some of these
+
+00:05:13.145 --> 00:05:15.065
+<v Speaker 0>new features first or would you rather just
+
+00:05:15.065 --> 00:05:16.905
+<v Speaker 0>show us an action? What what would you
+
+00:05:16.905 --> 00:05:17.544
+<v Speaker 0>prefer, Classic?
+
+00:05:18.840 --> 00:05:20.680
+<v Speaker 1>Yeah. I'll probably give you a
+
+00:05:21.000 --> 00:05:21.880
+<v Speaker 1>couple of
+
+00:05:22.520 --> 00:05:23.400
+<v Speaker 1>pointers.
+
+00:05:23.400 --> 00:05:24.120
+<v Speaker 1>Think
+
+00:05:24.200 --> 00:05:27.080
+<v Speaker 1>as we go along doing the demo and
+
+00:05:27.240 --> 00:05:29.080
+<v Speaker 1>talk about the history of how the feature
+
+00:05:29.080 --> 00:05:30.040
+<v Speaker 1>came about,
+
+00:05:30.200 --> 00:05:32.600
+<v Speaker 1>the bot requests in the community actually
+
+00:05:32.920 --> 00:05:35.320
+<v Speaker 1>give rise to that feature and
+
+00:06:40.099 --> 00:06:42.259
+<v Speaker 1>Everything is a resource in Kubernetes, and you
+
+00:06:42.259 --> 00:06:45.139
+<v Speaker 1>have controllers to reconcile those resources.
+
+00:06:45.699 --> 00:06:48.500
+<v Speaker 1>And people are used to that model
+
+00:06:48.500 --> 00:06:50.020
+<v Speaker 1>or that particular
+
+00:06:50.419 --> 00:06:53.300
+<v Speaker 1>paradigm of running their operations on Kubernetes.
+
+00:06:54.134 --> 00:06:54.775
+<v Speaker 1>And
+
+00:06:55.414 --> 00:06:57.255
+<v Speaker 1>all your policies,
+
+00:06:57.815 --> 00:06:59.414
+<v Speaker 1>all your resource
+
+00:06:59.414 --> 00:07:00.215
+<v Speaker 1>details,
+
+00:07:00.215 --> 00:07:03.255
+<v Speaker 1>the applications and and its life cycle management,
+
+00:07:03.735 --> 00:07:05.735
+<v Speaker 1>infrastructure, everything is decorative,
+
+00:07:06.230 --> 00:07:07.590
+<v Speaker 1>managed, and get,
+
+00:07:07.990 --> 00:07:10.390
+<v Speaker 1>etcetera. So when we wanted to do chaos
+
+00:07:10.390 --> 00:07:12.710
+<v Speaker 1>in a similar way, we didn't have the
+
+00:07:12.710 --> 00:07:13.510
+<v Speaker 1>solution
+
+00:07:13.830 --> 00:07:15.590
+<v Speaker 1>right at that point of time, and we're
+
+00:07:15.590 --> 00:07:16.390
+<v Speaker 1>talking about
+
+00:07:16.950 --> 00:07:19.510
+<v Speaker 1>sometime late two thousand seventeen
+
+00:07:19.885 --> 00:07:22.285
+<v Speaker 1>to mid twenty nineteen period.
+
+00:07:22.285 --> 00:07:24.764
+<v Speaker 1>So we came up with Litmus and the
+
+00:07:24.764 --> 00:07:27.245
+<v Speaker 1>intent of Litmus Cortex was
+
+00:07:29.005 --> 00:07:30.045
+<v Speaker 1>to provide
+
+00:07:30.685 --> 00:07:32.044
+<v Speaker 1>chaos experiments
+
+00:07:32.220 --> 00:07:34.060
+<v Speaker 1>or simple fault injections,
+
+00:07:34.380 --> 00:07:36.540
+<v Speaker 1>which you could define in a YARL and
+
+00:07:36.860 --> 00:07:39.500
+<v Speaker 1>which could be carried out by Kubernetes
+
+00:07:39.500 --> 00:07:42.540
+<v Speaker 1>or or a controller in other words.
+
+00:07:43.260 --> 00:07:45.180
+<v Speaker 1>And after we achieved that,
+
+00:07:46.115 --> 00:07:47.795
+<v Speaker 1>we got to know that there's much more
+
+00:07:47.795 --> 00:07:49.075
+<v Speaker 1>to chaos engineering
+
+00:07:49.075 --> 00:07:51.315
+<v Speaker 1>than just being able to define a fault.
+
+00:07:51.955 --> 00:07:54.115
+<v Speaker 1>You must be able to define the
+
+00:07:54.915 --> 00:07:56.355
+<v Speaker 1>blast radius,
+
+00:07:57.315 --> 00:07:58.515
+<v Speaker 1>for your
+
+00:07:59.000 --> 00:07:59.960
+<v Speaker 1>experiment.
+
+00:08:00.199 --> 00:08:02.280
+<v Speaker 1>What is it that you want to impact?
+
+00:08:02.600 --> 00:08:03.800
+<v Speaker 1>What is it that you do not want
+
+00:08:03.800 --> 00:08:07.240
+<v Speaker 1>to touch? How restricted should your experiment be?
+
+00:08:07.800 --> 00:08:08.920
+<v Speaker 1>And then
+
+00:08:09.160 --> 00:08:11.240
+<v Speaker 1>we came about the necessity for
+
+00:08:11.715 --> 00:08:14.355
+<v Speaker 1>automating these experiments in a good way or
+
+00:08:14.355 --> 00:08:15.395
+<v Speaker 1>schedule them.
+
+00:08:15.635 --> 00:08:18.355
+<v Speaker 1>Sometimes you want chaos run-in
+
+00:08:18.355 --> 00:08:19.075
+<v Speaker 1>random
+
+00:08:19.315 --> 00:08:20.115
+<v Speaker 1>fashion.
+
+00:08:20.435 --> 00:08:22.595
+<v Speaker 1>Sometimes you want it to run-in
+
+00:08:22.595 --> 00:08:23.955
+<v Speaker 1>a strictly scheduled
+
+00:08:23.955 --> 00:08:25.395
+<v Speaker 1>or sequential way.
+
+00:08:25.555 --> 00:08:26.435
+<v Speaker 1>So it sort of
+
+00:08:27.315 --> 00:08:28.990
+<v Speaker 1>and one of the things we learned as
+
+00:08:28.990 --> 00:08:30.430
+<v Speaker 1>we went along
+
+00:08:30.670 --> 00:08:31.390
+<v Speaker 1>is
+
+00:08:31.630 --> 00:08:34.910
+<v Speaker 1>why chaos engineering as a discipline has its
+
+00:08:35.070 --> 00:08:38.350
+<v Speaker 1>very solid principles or or as you can
+
+00:08:38.350 --> 00:08:38.590
+<v Speaker 1>say,
+
+00:08:40.975 --> 00:08:41.934
+<v Speaker 1>test principles
+
+00:08:42.255 --> 00:08:44.895
+<v Speaker 1>tested over time by all the sides
+
+00:08:45.135 --> 00:08:47.455
+<v Speaker 1>that you need to be able to run-in
+
+00:08:47.455 --> 00:08:49.695
+<v Speaker 1>production. You need to be able to,
+
+00:08:50.495 --> 00:08:52.095
+<v Speaker 1>you know, run various events,
+
+00:08:52.095 --> 00:08:54.850
+<v Speaker 1>etcetera, etcetera. By now, that is true. We
+
+00:08:54.850 --> 00:08:55.650
+<v Speaker 1>found that
+
+00:08:56.210 --> 00:08:58.530
+<v Speaker 1>people practicing chaos generally often tend to use
+
+00:08:58.530 --> 00:09:00.130
+<v Speaker 1>the tool in mixed ways.
+
+00:09:00.530 --> 00:09:03.250
+<v Speaker 1>They use it as a testing tool for
+
+00:09:03.250 --> 00:09:06.050
+<v Speaker 1>carrying out simple failure testing with very, very,
+
+00:09:06.050 --> 00:09:08.785
+<v Speaker 1>very defined expectations on what happens when you
+
+00:09:08.785 --> 00:09:09.745
+<v Speaker 1>run a product.
+
+00:09:10.145 --> 00:09:12.945
+<v Speaker 1>But they also can use it to run
+
+00:09:12.945 --> 00:09:15.425
+<v Speaker 1>things in a freestyle exploratory way
+
+00:09:15.665 --> 00:09:18.145
+<v Speaker 1>where you're learning about the system. You don't
+
+00:09:18.145 --> 00:09:20.305
+<v Speaker 1>have you you basically don't have a set
+
+00:09:20.305 --> 00:09:22.065
+<v Speaker 1>expectation. You're just trying to see what is
+
+00:09:22.065 --> 00:09:24.430
+<v Speaker 1>happening. Of course, you have some hypothesis, but
+
+00:09:24.430 --> 00:09:26.190
+<v Speaker 1>then you're you're
+
+00:09:26.350 --> 00:09:28.430
+<v Speaker 1>okay to learn about it, and you're doing
+
+00:09:28.430 --> 00:09:30.590
+<v Speaker 1>it in an environment that is very close
+
+00:09:30.590 --> 00:09:33.390
+<v Speaker 1>to production but not production itself. Yeah. All
+
+00:09:33.390 --> 00:09:35.710
+<v Speaker 1>this evolution around shifting
+
+00:09:35.710 --> 00:09:37.710
+<v Speaker 1>right and testing in production
+
+00:09:38.265 --> 00:09:39.305
+<v Speaker 1>is great,
+
+00:09:39.465 --> 00:09:41.785
+<v Speaker 1>but after people started adopting
+
+00:09:42.105 --> 00:09:45.785
+<v Speaker 1>the cloud native paradigm, started rearchitecting their applications,
+
+00:09:45.785 --> 00:09:48.265
+<v Speaker 1>testing our Kubernetes as the deployment environment of
+
+00:09:48.265 --> 00:09:50.425
+<v Speaker 1>choice. There are too many things happening at
+
+00:09:50.425 --> 00:09:51.065
+<v Speaker 1>once,
+
+00:09:51.305 --> 00:09:52.345
+<v Speaker 1>and the people
+
+00:09:53.199 --> 00:09:55.760
+<v Speaker 1>aware of our organizations, we are not confident
+
+00:09:56.000 --> 00:09:58.240
+<v Speaker 1>to, you know, carry out chaos only in
+
+00:09:58.240 --> 00:09:58.880
+<v Speaker 1>production.
+
+00:09:59.199 --> 00:10:01.519
+<v Speaker 1>But they still need chaos to test out
+
+00:10:01.519 --> 00:10:02.000
+<v Speaker 1>the
+
+00:10:02.480 --> 00:10:04.480
+<v Speaker 1>efficacy of what they're trying to build. So
+
+00:10:04.480 --> 00:10:06.560
+<v Speaker 1>they want to do it in pre production
+
+00:10:06.560 --> 00:10:07.440
+<v Speaker 1>in the roundhouse.
+
+00:10:08.195 --> 00:10:08.755
+<v Speaker 1>And
+
+00:10:09.395 --> 00:10:10.995
+<v Speaker 1>and when they are doing that, they wanted
+
+00:10:10.995 --> 00:10:12.035
+<v Speaker 1>some aids,
+
+00:10:12.355 --> 00:10:12.915
+<v Speaker 1>things
+
+00:10:13.155 --> 00:10:15.955
+<v Speaker 1>like probes, for example. You're carrying out
+
+00:10:16.435 --> 00:10:17.635
+<v Speaker 1>an experiment.
+
+00:10:17.635 --> 00:10:20.035
+<v Speaker 1>You're injecting a fault. You also want to
+
+00:10:20.035 --> 00:10:22.890
+<v Speaker 1>see what is happening as the fault is
+
+00:10:22.890 --> 00:10:23.850
+<v Speaker 1>getting injected
+
+00:10:24.090 --> 00:10:26.810
+<v Speaker 1>and what is happening part might not be
+
+00:10:26.810 --> 00:10:29.050
+<v Speaker 1>manual all the time. We have talked about
+
+00:10:29.050 --> 00:10:30.330
+<v Speaker 1>observability here.
+
+00:10:30.570 --> 00:10:32.490
+<v Speaker 1>People might be looking at their peering into
+
+00:10:32.490 --> 00:10:33.050
+<v Speaker 1>their
+
+00:10:33.690 --> 00:10:35.290
+<v Speaker 1>observability dashboards
+
+00:10:35.665 --> 00:10:38.625
+<v Speaker 1>getting information. But sometimes, they're just running it
+
+00:10:38.625 --> 00:10:41.265
+<v Speaker 1>as a background service, injecting faults,
+
+00:10:41.505 --> 00:10:44.545
+<v Speaker 1>random times, scheduling tools on their clusters.
+
+00:10:44.625 --> 00:10:46.465
+<v Speaker 1>They also want to factor in what's happening
+
+00:10:46.465 --> 00:10:48.385
+<v Speaker 1>in their environment even as they do that
+
+00:10:48.385 --> 00:10:51.240
+<v Speaker 1>fault. So that needed to be built in
+
+00:10:51.240 --> 00:10:53.160
+<v Speaker 1>into the experiment itself,
+
+00:10:53.240 --> 00:10:55.560
+<v Speaker 1>the steady state hypothesis validation.
+
+00:10:55.960 --> 00:10:58.360
+<v Speaker 1>So that was another interesting thing. So we've
+
+00:10:58.360 --> 00:11:00.920
+<v Speaker 1>talked about last three years. We've talked about
+
+00:11:01.560 --> 00:11:03.880
+<v Speaker 1>steady state hypothesis coming into the experiments.
+
+00:11:04.524 --> 00:11:05.965
+<v Speaker 1>Then the need for
+
+00:11:06.365 --> 00:11:07.965
+<v Speaker 1>they came up to schedule it
+
+00:11:08.205 --> 00:11:10.445
+<v Speaker 1>and run a background service of sorts. So
+
+00:11:10.445 --> 00:11:12.685
+<v Speaker 1>these are new things we learned on new
+
+00:11:12.685 --> 00:11:15.805
+<v Speaker 1>requirements we got as Litmus was being adopted
+
+00:11:15.805 --> 00:11:16.605
+<v Speaker 1>in the community.
+
+00:11:17.190 --> 00:11:19.830
+<v Speaker 1>Then we had a very interesting requirement that
+
+00:11:19.830 --> 00:11:21.190
+<v Speaker 1>came off to that too.
+
+00:11:21.510 --> 00:11:22.550
+<v Speaker 1>Basically say,
+
+00:11:23.590 --> 00:11:25.430
+<v Speaker 1>okay. I have a font,
+
+00:11:25.830 --> 00:11:27.510
+<v Speaker 1>but the font is very complex
+
+00:11:27.990 --> 00:11:30.310
+<v Speaker 1>or other I wouldn't call it font. Let's
+
+00:11:30.310 --> 00:11:32.425
+<v Speaker 1>say, it is a situation that I've encountered
+
+00:11:32.425 --> 00:11:33.545
+<v Speaker 1>in my environment,
+
+00:11:33.705 --> 00:11:35.625
+<v Speaker 1>and that situation came about as a result
+
+00:11:35.625 --> 00:11:38.105
+<v Speaker 1>of some failures happening over a period of
+
+00:11:38.105 --> 00:11:40.425
+<v Speaker 1>time. It's, like, built up over a period
+
+00:11:40.425 --> 00:11:42.665
+<v Speaker 1>of time. You can call it chain failures.
+
+00:11:43.440 --> 00:11:46.640
+<v Speaker 1>Maybe you you had a node that sort
+
+00:11:46.640 --> 00:11:47.120
+<v Speaker 1>of
+
+00:11:47.680 --> 00:11:49.760
+<v Speaker 1>went into a degraded state because of some
+
+00:11:49.760 --> 00:11:50.960
+<v Speaker 1>maintenance activity.
+
+00:11:51.360 --> 00:11:53.520
+<v Speaker 1>Then you have the other node,
+
+00:11:54.160 --> 00:11:56.160
+<v Speaker 1>which is probably getting more load or your
+
+00:11:56.160 --> 00:11:57.520
+<v Speaker 1>parts got rescheduled there.
+
+00:11:57.935 --> 00:12:00.095
+<v Speaker 1>And then you're hitting a resource insertion problem
+
+00:12:00.095 --> 00:12:01.135
+<v Speaker 1>on that node.
+
+00:12:01.695 --> 00:12:03.855
+<v Speaker 1>And you have fewer nodes to work with.
+
+00:12:03.855 --> 00:12:05.774
+<v Speaker 1>You already have one in degraded state.
+
+00:12:05.935 --> 00:12:08.175
+<v Speaker 1>So your applications will take time to get
+
+00:12:08.175 --> 00:12:09.935
+<v Speaker 1>scheduled. There will be addictions.
+
+00:12:10.430 --> 00:12:12.430
+<v Speaker 1>All these kind of problems
+
+00:12:12.430 --> 00:12:14.829
+<v Speaker 1>sort of get built up over time. So
+
+00:12:14.829 --> 00:12:17.230
+<v Speaker 1>let's say we're assimilating those kind of scenarios,
+
+00:12:17.230 --> 00:12:18.350
+<v Speaker 1>how can I do it?
+
+00:12:19.870 --> 00:12:22.269
+<v Speaker 1>With Litmus, when we started out, we were
+
+00:12:22.269 --> 00:12:24.029
+<v Speaker 1>able to inject faults,
+
+00:12:24.584 --> 00:12:25.464
+<v Speaker 1>standalone
+
+00:12:25.464 --> 00:12:27.625
+<v Speaker 1>faults at a given point of time. But
+
+00:12:27.625 --> 00:12:29.865
+<v Speaker 1>now we needed the ability to string together
+
+00:12:29.865 --> 00:12:30.665
+<v Speaker 1>multiple
+
+00:12:31.064 --> 00:12:33.945
+<v Speaker 1>issues or faults to give a larger scenario
+
+00:12:34.264 --> 00:12:34.904
+<v Speaker 1>that
+
+00:12:35.144 --> 00:12:37.064
+<v Speaker 1>you would experience and then find out how
+
+00:12:37.064 --> 00:12:39.769
+<v Speaker 1>your data has behaved. That gave rise to
+
+00:12:39.769 --> 00:12:41.769
+<v Speaker 1>what we call as the workflows.
+
+00:12:42.410 --> 00:12:44.410
+<v Speaker 1>And in the next case, we did get
+
+00:12:44.410 --> 00:12:45.930
+<v Speaker 1>a glimpse of it in the last
+
+00:12:46.570 --> 00:12:48.810
+<v Speaker 1>proper discussion as well, but, clearly, we will
+
+00:12:48.810 --> 00:12:51.209
+<v Speaker 1>still elaborate a little bit more, actually, the
+
+00:12:51.209 --> 00:12:53.130
+<v Speaker 1>different ways of creating new workflows.
+
+00:12:53.935 --> 00:12:56.255
+<v Speaker 1>Then all this was great.
+
+00:12:56.255 --> 00:12:56.895
+<v Speaker 1>Now
+
+00:12:58.655 --> 00:13:01.135
+<v Speaker 1>I have decided to practice chaos. I understood
+
+00:13:01.135 --> 00:13:03.375
+<v Speaker 1>what it is and all that, but
+
+00:13:04.015 --> 00:13:06.015
+<v Speaker 1>there are a lot of clusters that they
+
+00:13:06.015 --> 00:13:08.975
+<v Speaker 1>had, lot of test or staging in grounds,
+
+00:13:09.180 --> 00:13:11.020
+<v Speaker 1>as you can call it, dev clusters.
+
+00:13:11.740 --> 00:13:14.060
+<v Speaker 1>And I find it tedious
+
+00:13:14.060 --> 00:13:15.900
+<v Speaker 1>to go and install
+
+00:13:16.060 --> 00:13:18.060
+<v Speaker 1>a set of microservices in each of those
+
+00:13:18.060 --> 00:13:20.700
+<v Speaker 1>clusters and then carry out chaos individually, monitor
+
+00:13:20.700 --> 00:13:23.195
+<v Speaker 1>them. I would need something more simpler to
+
+00:13:23.195 --> 00:13:25.355
+<v Speaker 1>do it. That's when I brought in the
+
+00:13:25.355 --> 00:13:26.715
+<v Speaker 1>the chaos center
+
+00:13:26.875 --> 00:13:29.115
+<v Speaker 1>of the request portal as we call it,
+
+00:13:29.435 --> 00:13:31.275
+<v Speaker 1>where you can attach
+
+00:13:31.675 --> 00:13:32.875
+<v Speaker 1>other clusters
+
+00:13:32.955 --> 00:13:34.555
+<v Speaker 1>or register them into the portal,
+
+00:13:35.250 --> 00:13:38.690
+<v Speaker 1>and you have some agents resetting those clusters
+
+00:13:38.690 --> 00:13:40.930
+<v Speaker 1>to carry out the chaos process and give
+
+00:13:40.930 --> 00:13:43.330
+<v Speaker 1>you some visibility on a centralized location.
+
+00:13:43.570 --> 00:13:46.450
+<v Speaker 1>So these are requirements that came in organically,
+
+00:13:47.090 --> 00:13:49.570
+<v Speaker 1>sort of
+
+00:13:48.655 --> 00:13:50.895
+<v Speaker 1>not exactly the sequence that I'm talking about
+
+00:13:50.895 --> 00:13:54.335
+<v Speaker 1>right now, but these were were things that
+
+00:13:54.335 --> 00:13:57.455
+<v Speaker 1>we gathered from the community and we built
+
+00:13:57.455 --> 00:13:59.215
+<v Speaker 1>in. And since there were a lot of
+
+00:13:59.215 --> 00:14:01.775
+<v Speaker 1>changes that went in, we thought it's worth
+
+00:14:01.775 --> 00:14:03.295
+<v Speaker 1>doing a major version upgrade.
+
+00:14:04.399 --> 00:14:05.760
+<v Speaker 1>Litmus was
+
+00:14:05.839 --> 00:14:07.600
+<v Speaker 1>was one dot two, one dot three, and
+
+00:14:07.600 --> 00:14:09.519
+<v Speaker 1>so on, and we hit one dot 13.
+
+00:14:09.920 --> 00:14:12.000
+<v Speaker 1>And then we thought, okay. There
+
+00:14:12.160 --> 00:14:13.759
+<v Speaker 1>are lot of changes coming in, so we
+
+00:14:13.759 --> 00:14:15.440
+<v Speaker 0>should move it to the
+
+00:14:16.000 --> 00:14:17.839
+<v Speaker 1>next version and do a major version upgrade.
+
+00:14:18.504 --> 00:14:20.824
+<v Speaker 1>So the version upgrade is
+
+00:14:21.384 --> 00:14:23.305
+<v Speaker 1>sort of reflects
+
+00:14:23.305 --> 00:14:24.904
+<v Speaker 1>or is a notion of
+
+00:14:26.024 --> 00:14:29.225
+<v Speaker 1>features rather than being completely all new version
+
+00:14:29.225 --> 00:14:31.144
+<v Speaker 1>of it, which doesn't work with what was
+
+00:14:31.144 --> 00:14:32.345
+<v Speaker 1>on there. It's completely
+
+00:14:32.620 --> 00:14:36.060
+<v Speaker 1>backward compatible. People can continue to use Litmus
+
+00:14:36.220 --> 00:14:37.420
+<v Speaker 1>with purely
+
+00:14:37.420 --> 00:14:39.500
+<v Speaker 1>the operator and the case resources as they
+
+00:14:39.500 --> 00:14:40.060
+<v Speaker 1>were.
+
+00:14:40.380 --> 00:14:40.780
+<v Speaker 1>But
+
+00:14:41.980 --> 00:14:43.980
+<v Speaker 1>the portal is probably
+
+00:14:43.980 --> 00:14:46.495
+<v Speaker 1>something that we will invest time on to
+
+00:14:46.495 --> 00:14:49.535
+<v Speaker 1>make it easier for folks to carry a
+
+00:14:49.535 --> 00:14:51.935
+<v Speaker 1>chaos engineering in a simpler way and a
+
+00:14:51.935 --> 00:14:53.135
+<v Speaker 1>scalable way,
+
+00:14:53.455 --> 00:14:56.255
+<v Speaker 1>etcetera. So and all the new features that
+
+00:14:56.255 --> 00:14:57.295
+<v Speaker 1>I talked about,
+
+00:14:57.615 --> 00:14:59.455
+<v Speaker 1>some of them are directly implemented within the
+
+00:14:59.455 --> 00:15:01.630
+<v Speaker 1>portal, and some of them are not really
+
+00:15:01.630 --> 00:15:04.350
+<v Speaker 1>portal related. They just went in into the
+
+00:15:04.350 --> 00:15:05.950
+<v Speaker 1>infrastructure itself,
+
+00:15:06.830 --> 00:15:09.710
+<v Speaker 1>the bank and orchestration infrastructure of
+
+00:15:09.790 --> 00:15:12.270
+<v Speaker 1>Chaos itself. So these are the things that
+
+00:15:12.270 --> 00:15:12.910
+<v Speaker 1>we will
+
+00:15:13.305 --> 00:15:15.465
+<v Speaker 1>try to go through today in in some
+
+00:15:15.465 --> 00:15:16.185
+<v Speaker 1>detail.
+
+00:15:16.585 --> 00:15:19.785
+<v Speaker 1>And I've just pulled up my demo environment,
+
+00:15:21.225 --> 00:15:22.905
+<v Speaker 1>which I created some time back. So there
+
+00:15:22.905 --> 00:15:25.065
+<v Speaker 1>might be some real chaos that we might
+
+00:15:25.065 --> 00:15:27.225
+<v Speaker 1>see naturally happening.
+
+00:15:27.385 --> 00:15:29.920
+<v Speaker 1>So I hope the demo gods
+
+00:15:29.920 --> 00:15:32.640
+<v Speaker 1>are with me today. So with that bit
+
+00:15:32.640 --> 00:15:33.600
+<v Speaker 1>of introduction,
+
+00:15:34.240 --> 00:15:36.160
+<v Speaker 1>let me share my screen.
+
+00:15:36.320 --> 00:15:37.040
+<v Speaker 0>Yeah. Awesome.
+
+00:15:43.525 --> 00:15:44.325
+<v Speaker 1>Alright.
+
+00:15:44.565 --> 00:15:47.205
+<v Speaker 1>So this is the Litmus portal,
+
+00:15:47.765 --> 00:15:50.165
+<v Speaker 1>and I will just log out to start
+
+00:15:50.165 --> 00:15:51.045
+<v Speaker 1>afresh.
+
+00:15:51.445 --> 00:15:53.045
+<v Speaker 1>And if I pull my
+
+00:15:53.845 --> 00:15:55.845
+<v Speaker 1>lens
+
+00:15:54.730 --> 00:15:55.690
+<v Speaker 1>IDE,
+
+00:15:55.690 --> 00:15:57.370
+<v Speaker 1>which I'm using.
+
+00:15:58.090 --> 00:15:59.290
+<v Speaker 1>And I have
+
+00:15:59.610 --> 00:16:02.410
+<v Speaker 1>sort of added these clusters into the lens
+
+00:16:02.410 --> 00:16:03.450
+<v Speaker 1>just to show you
+
+00:16:03.850 --> 00:16:06.170
+<v Speaker 1>what the parts that are running, what are
+
+00:16:06.170 --> 00:16:08.010
+<v Speaker 1>the microservices that we are running as part
+
+00:16:08.010 --> 00:16:08.330
+<v Speaker 1>of
+
+00:16:25.290 --> 00:16:28.010
+<v Speaker 1>you can create different users now.
+
+00:16:28.410 --> 00:16:30.490
+<v Speaker 1>Litmus, what do we call it? The the
+
+00:16:30.490 --> 00:16:32.010
+<v Speaker 1>chaos center.
+
+00:16:32.810 --> 00:16:33.450
+<v Speaker 1>And
+
+00:16:33.770 --> 00:16:37.050
+<v Speaker 1>so this piece this dashboard that you see
+
+00:16:39.375 --> 00:16:40.095
+<v Speaker 1>is
+
+00:16:40.655 --> 00:16:43.215
+<v Speaker 1>the first page that you're going to come
+
+00:16:43.215 --> 00:16:45.615
+<v Speaker 1>with the home page, which tells you some
+
+00:16:45.615 --> 00:16:48.255
+<v Speaker 1>past history, some past workflow runs, what are
+
+00:16:48.255 --> 00:16:50.255
+<v Speaker 1>the agents that have connected here,
+
+00:16:50.850 --> 00:16:52.690
+<v Speaker 1>etcetera. It also gives you an option to
+
+00:16:52.690 --> 00:16:54.130
+<v Speaker 1>schedule new workflows.
+
+00:16:54.209 --> 00:16:54.769
+<v Speaker 1>And
+
+00:16:56.769 --> 00:16:59.089
+<v Speaker 1>I think my lens is up right now.
+
+00:16:59.089 --> 00:17:01.329
+<v Speaker 1>So let me go ahead and show you
+
+00:17:01.329 --> 00:17:03.889
+<v Speaker 1>what are the parts that are running.
+
+00:17:05.335 --> 00:17:08.134
+<v Speaker 1>I have the Litmus namespace here.
+
+00:17:09.014 --> 00:17:11.494
+<v Speaker 1>You can see these parts. Out of these,
+
+00:17:12.214 --> 00:17:14.534
+<v Speaker 1>the Litmus portals are both front end and
+
+00:17:14.534 --> 00:17:15.494
+<v Speaker 1>MongoDB
+
+00:17:16.054 --> 00:17:17.255
+<v Speaker 1>from the control plane.
+
+00:17:17.890 --> 00:17:20.129
+<v Speaker 1>So this is what is powering this
+
+00:17:20.929 --> 00:17:22.929
+<v Speaker 1>portal. This is this one. The components that
+
+00:17:22.929 --> 00:17:25.089
+<v Speaker 1>the UI just call it as portal.
+
+00:17:26.049 --> 00:17:28.049
+<v Speaker 1>The server is a GraphQL server,
+
+00:17:28.770 --> 00:17:30.770
+<v Speaker 1>it also has an all server
+
+00:17:31.045 --> 00:17:33.285
+<v Speaker 1>embedded within it. And there is more to
+
+00:17:33.285 --> 00:17:35.445
+<v Speaker 1>store all your peers'
+
+00:17:35.525 --> 00:17:36.804
+<v Speaker 1>operation details.
+
+00:17:37.845 --> 00:17:40.085
+<v Speaker 1>And what we have here, the other ones,
+
+00:17:40.085 --> 00:17:42.885
+<v Speaker 1>the exporter, the operator, the event tracker,
+
+00:17:43.530 --> 00:17:44.410
+<v Speaker 1>subscriber,
+
+00:17:44.410 --> 00:17:46.010
+<v Speaker 1>or control. These are
+
+00:17:46.330 --> 00:17:47.690
+<v Speaker 1>part of your
+
+00:17:48.490 --> 00:17:50.970
+<v Speaker 1>agent infrastructure or
+
+00:17:51.050 --> 00:17:53.850
+<v Speaker 1>the deployment that will run-in the environment where
+
+00:17:53.850 --> 00:17:55.370
+<v Speaker 1>you want chaos performed.
+
+00:17:55.450 --> 00:17:57.545
+<v Speaker 1>So you could have just these three
+
+00:17:57.785 --> 00:18:00.745
+<v Speaker 1>once these three components with the checkboxes
+
+00:18:00.905 --> 00:18:03.304
+<v Speaker 1>to run the chaos center,
+
+00:18:03.705 --> 00:18:06.025
+<v Speaker 1>and you can go ahead and add agents,
+
+00:18:06.745 --> 00:18:09.785
+<v Speaker 1>which will run the other unchecked
+
+00:18:09.510 --> 00:18:11.669
+<v Speaker 1>the the components with unchecked boxes.
+
+00:18:12.230 --> 00:18:15.190
+<v Speaker 1>So the operator is at the core and
+
+00:18:15.190 --> 00:18:17.750
+<v Speaker 1>reconciles the chaos resources, the chaos engine, the
+
+00:18:17.750 --> 00:18:18.870
+<v Speaker 1>chaos experiment,
+
+00:18:18.870 --> 00:18:19.590
+<v Speaker 1>etcetera.
+
+00:18:20.150 --> 00:18:22.550
+<v Speaker 1>So chaos experiment is a template that describes
+
+00:18:22.550 --> 00:18:25.155
+<v Speaker 1>the fault. The chaos engine is the one
+
+00:18:25.155 --> 00:18:26.755
+<v Speaker 1>that maps
+
+00:18:26.755 --> 00:18:29.554
+<v Speaker 1>an application instance or an intra component with
+
+00:18:29.554 --> 00:18:30.754
+<v Speaker 1>a particular fault
+
+00:18:30.995 --> 00:18:33.554
+<v Speaker 1>and also provides scope for defining the steady
+
+00:18:33.554 --> 00:18:35.554
+<v Speaker 1>state validation and other properties.
+
+00:18:36.500 --> 00:18:38.580
+<v Speaker 1>The subscriber is the one that speaks to
+
+00:18:38.580 --> 00:18:40.020
+<v Speaker 1>the portal server
+
+00:18:40.500 --> 00:18:41.140
+<v Speaker 1>and
+
+00:18:41.940 --> 00:18:44.420
+<v Speaker 1>helps track progress of workflows
+
+00:18:44.660 --> 00:18:45.700
+<v Speaker 1>in the portal.
+
+00:18:46.500 --> 00:18:48.580
+<v Speaker 1>And the workflow controller here is an Rawkode
+
+00:18:48.580 --> 00:18:49.380
+<v Speaker 1>workflow controller,
+
+00:18:49.935 --> 00:18:52.415
+<v Speaker 1>which is the one that is
+
+00:18:52.895 --> 00:18:55.455
+<v Speaker 1>helping us execute the workflows or the steps
+
+00:18:55.455 --> 00:18:56.655
+<v Speaker 1>within a workflow,
+
+00:18:56.815 --> 00:18:58.735
+<v Speaker 1>which is RBO because of its
+
+00:18:59.375 --> 00:19:00.735
+<v Speaker 1>immense capabilities
+
+00:19:00.735 --> 00:19:02.495
+<v Speaker 1>in sequencing or ordering
+
+00:19:05.150 --> 00:19:07.790
+<v Speaker 1>actions within a workflow. So you could do
+
+00:19:07.790 --> 00:19:09.470
+<v Speaker 1>things in parallel, you can do in sequence,
+
+00:19:09.470 --> 00:19:10.830
+<v Speaker 1>and you can define a lot of other
+
+00:19:10.830 --> 00:19:11.710
+<v Speaker 1>characteristics.
+
+00:19:11.710 --> 00:19:12.669
+<v Speaker 1>You can do
+
+00:19:13.070 --> 00:19:14.190
+<v Speaker 1>cleanups, conditional
+
+00:19:15.070 --> 00:19:17.875
+<v Speaker 1>retention of parts, a lot of flexibility. So
+
+00:19:17.875 --> 00:19:20.675
+<v Speaker 1>we did not reinvent the wheel, and we've
+
+00:19:20.675 --> 00:19:23.235
+<v Speaker 1>brought on Rawkode as a workflow engine. Of
+
+00:19:23.235 --> 00:19:25.875
+<v Speaker 1>course, instrumented with some Litmus images, so we
+
+00:19:25.875 --> 00:19:27.315
+<v Speaker 1>understand Litmus API.
+
+00:19:27.955 --> 00:19:30.195
+<v Speaker 1>So this is an add on. There will
+
+00:19:30.195 --> 00:19:32.220
+<v Speaker 1>be other ways of running workflows, which is
+
+00:19:32.220 --> 00:19:33.900
+<v Speaker 1>going to be a native way of learning
+
+00:19:34.380 --> 00:19:36.059
+<v Speaker 1>of doing it as workflows.
+
+00:19:36.140 --> 00:19:37.980
+<v Speaker 1>And there'll be other tools that one might
+
+00:19:37.980 --> 00:19:39.740
+<v Speaker 1>want to integrate with it for period of
+
+00:19:39.740 --> 00:19:40.940
+<v Speaker 1>time that we take on.
+
+00:19:41.260 --> 00:19:42.220
+<v Speaker 1>You know, it also
+
+00:19:43.020 --> 00:19:44.300
+<v Speaker 1>the architecture
+
+00:19:44.300 --> 00:19:45.500
+<v Speaker 1>is being modularized
+
+00:19:45.735 --> 00:19:47.174
+<v Speaker 1>to add workflow
+
+00:19:47.655 --> 00:19:49.975
+<v Speaker 1>controllers of choice. So right now, by default,
+
+00:19:49.975 --> 00:19:51.014
+<v Speaker 1>we have Rawkode
+
+00:19:51.255 --> 00:19:52.934
+<v Speaker 1>that's coming up into Rawkode.
+
+00:19:53.495 --> 00:19:55.895
+<v Speaker 1>And this folder is a Prometheus export for
+
+00:19:55.895 --> 00:19:59.270
+<v Speaker 1>chaos to show chaos metrics. Event tracker helps
+
+00:19:59.270 --> 00:20:01.910
+<v Speaker 1>in event triggered chaos. You could set up
+
+00:20:01.910 --> 00:20:03.830
+<v Speaker 1>some policies on when you want to run
+
+00:20:03.830 --> 00:20:06.550
+<v Speaker 1>chaos experiments, maybe based on some actions on
+
+00:20:06.550 --> 00:20:07.509
+<v Speaker 1>your cluster.
+
+00:20:07.750 --> 00:20:09.350
+<v Speaker 1>Let's say when you upgrade an app, you
+
+00:20:09.350 --> 00:20:10.470
+<v Speaker 1>want some sanity runs,
+
+00:20:10.995 --> 00:20:12.995
+<v Speaker 1>and we would set up an event tracking
+
+00:20:12.995 --> 00:20:13.794
+<v Speaker 1>policy
+
+00:20:13.875 --> 00:20:16.035
+<v Speaker 1>to identify that there has been an app
+
+00:20:16.035 --> 00:20:18.595
+<v Speaker 1>upgrade, so we basically got a large kiosk.
+
+00:20:18.995 --> 00:20:21.155
+<v Speaker 1>What kiosk to do there is something that
+
+00:20:21.155 --> 00:20:23.394
+<v Speaker 1>you can describe via annotations.
+
+00:20:23.715 --> 00:20:25.395
+<v Speaker 1>So that's something that we can take a
+
+00:20:25.395 --> 00:20:25.795
+<v Speaker 1>look later.
+
+00:20:26.770 --> 00:20:29.490
+<v Speaker 1>So the Litmus agents is the concept we
+
+00:20:29.490 --> 00:20:30.610
+<v Speaker 1>were talking about.
+
+00:20:30.770 --> 00:20:33.090
+<v Speaker 1>There's something called self agent here.
+
+00:20:33.570 --> 00:20:34.210
+<v Speaker 1>So
+
+00:20:34.370 --> 00:20:36.289
+<v Speaker 1>the self agent is
+
+00:20:36.450 --> 00:20:37.169
+<v Speaker 1>the
+
+00:20:38.049 --> 00:20:38.770
+<v Speaker 1>represents
+
+00:20:39.375 --> 00:20:42.255
+<v Speaker 1>the agent on the local cluster. That is
+
+00:20:42.255 --> 00:20:43.935
+<v Speaker 1>the cluster where the chaos center has been
+
+00:20:43.935 --> 00:20:44.575
+<v Speaker 1>deployed.
+
+00:20:44.975 --> 00:20:47.934
+<v Speaker 1>So it automatically registers itself as
+
+00:20:48.095 --> 00:20:49.455
+<v Speaker 1>a chaos environment.
+
+00:20:49.535 --> 00:20:52.255
+<v Speaker 1>So you can start doing chaos against microservices
+
+00:20:52.255 --> 00:20:53.615
+<v Speaker 1>living inside
+
+00:20:53.779 --> 00:20:55.859
+<v Speaker 1>of this particular cluster.
+
+00:20:56.100 --> 00:20:58.580
+<v Speaker 1>Yep. And I have another agent that's added
+
+00:20:58.580 --> 00:21:00.340
+<v Speaker 1>here. I'll show you the process of adding
+
+00:21:00.340 --> 00:21:01.779
+<v Speaker 1>an agent Mhmm.
+
+00:21:02.580 --> 00:21:04.980
+<v Speaker 1>Which is another cluster which has only agent
+
+00:21:04.980 --> 00:21:05.460
+<v Speaker 1>components,
+
+00:21:06.135 --> 00:21:08.295
+<v Speaker 1>and there's a Kafka state. So it's running
+
+00:21:08.295 --> 00:21:10.455
+<v Speaker 1>there. That's the demo that I think we
+
+00:21:10.455 --> 00:21:11.575
+<v Speaker 1>covered last
+
+00:21:11.735 --> 00:21:13.655
+<v Speaker 1>Rawkode episode, so we'll probably not do the
+
+00:21:13.655 --> 00:21:16.055
+<v Speaker 1>same demo. But I'll just show you how
+
+00:21:16.055 --> 00:21:16.855
+<v Speaker 1>you can connect an agent.
+
+00:21:18.320 --> 00:21:20.159
+<v Speaker 1>Now let's go ahead and
+
+00:21:21.280 --> 00:21:22.480
+<v Speaker 1>take a look at some of the other
+
+00:21:22.480 --> 00:21:24.639
+<v Speaker 1>sidebar items and what the improvements have been.
+
+00:21:25.120 --> 00:21:27.279
+<v Speaker 1>So there is a chaos hub.
+
+00:21:27.840 --> 00:21:30.080
+<v Speaker 1>So this is the integrated or embedded chaos
+
+00:21:30.080 --> 00:21:31.120
+<v Speaker 1>hub within the portal.
+
+00:21:31.965 --> 00:21:34.124
+<v Speaker 1>You know about the chaos hub. It is
+
+00:21:34.125 --> 00:21:35.804
+<v Speaker 1>some kind of a one marketplace
+
+00:21:36.125 --> 00:21:38.924
+<v Speaker 1>that has the experiments of products listed,
+
+00:21:39.405 --> 00:21:41.725
+<v Speaker 1>and they are categorized by different
+
+00:21:43.325 --> 00:21:44.205
+<v Speaker 1>categories,
+
+00:21:44.205 --> 00:21:44.605
+<v Speaker 1>different
+
+00:21:45.085 --> 00:21:46.044
+<v Speaker 1>kinds of classification.
+
+00:21:46.900 --> 00:21:50.100
+<v Speaker 1>The generic experiments are the standard Kubernetes parts,
+
+00:21:50.100 --> 00:21:52.659
+<v Speaker 1>source network, or other defaults.
+
+00:21:52.900 --> 00:21:54.740
+<v Speaker 0>Mhmm. Then there are AWS
+
+00:21:55.380 --> 00:21:56.260
+<v Speaker 1>categories.
+
+00:21:56.260 --> 00:21:57.220
+<v Speaker 1>There's
+
+00:21:58.100 --> 00:21:59.060
+<v Speaker 1>application specific
+
+00:22:00.205 --> 00:22:01.244
+<v Speaker 1>categories,
+
+00:22:01.804 --> 00:22:05.085
+<v Speaker 1>and we also have VMware experiments that we
+
+00:22:05.085 --> 00:22:09.164
+<v Speaker 1>serve. And I will talk about chaos against
+
+00:22:09.164 --> 00:22:10.845
+<v Speaker 1>non Kubernetes entities
+
+00:22:10.845 --> 00:22:13.830
+<v Speaker 1>from the portal, which is something that is
+
+00:22:13.830 --> 00:22:14.470
+<v Speaker 1>new,
+
+00:22:14.710 --> 00:22:16.950
+<v Speaker 1>something that we improved upon since
+
+00:22:17.030 --> 00:22:17.990
+<v Speaker 1>last time.
+
+00:22:18.470 --> 00:22:19.029
+<v Speaker 1>So
+
+00:22:19.270 --> 00:22:20.629
+<v Speaker 1>that's one feature.
+
+00:22:21.510 --> 00:22:22.710
+<v Speaker 1>Going back
+
+00:22:24.070 --> 00:22:25.750
+<v Speaker 1>to talking about the hub,
+
+00:22:26.150 --> 00:22:27.430
+<v Speaker 1>you can connect
+
+00:22:27.825 --> 00:22:30.625
+<v Speaker 1>either a public kiosk hub or you can
+
+00:22:30.625 --> 00:22:33.105
+<v Speaker 1>connect a private one as well. Let's say
+
+00:22:33.105 --> 00:22:35.505
+<v Speaker 1>you you have some kind of a aircraft
+
+00:22:35.505 --> 00:22:37.424
+<v Speaker 1>and a company you're operating out of,
+
+00:22:37.825 --> 00:22:40.945
+<v Speaker 1>you can connect to local get repositories.
+
+00:22:41.184 --> 00:22:43.904
+<v Speaker 1>It just needs to have experiment
+
+00:22:43.330 --> 00:22:45.650
+<v Speaker 1>entries within the deposit in a particular directory
+
+00:22:45.650 --> 00:22:46.530
+<v Speaker 1>structure
+
+00:22:46.530 --> 00:22:49.410
+<v Speaker 1>as you can see in this repository called
+
+00:22:49.410 --> 00:22:50.770
+<v Speaker 1>as the chaos charts.
+
+00:22:50.930 --> 00:22:52.450
+<v Speaker 1>So the chaos charts
+
+00:22:52.850 --> 00:22:55.970
+<v Speaker 1>here is the canonical back end for the
+
+00:22:55.970 --> 00:22:56.610
+<v Speaker 1>hub,
+
+00:22:56.930 --> 00:22:57.490
+<v Speaker 1>and
+
+00:22:58.345 --> 00:22:59.225
+<v Speaker 1>it has
+
+00:22:59.465 --> 00:23:00.425
+<v Speaker 1>all these
+
+00:23:01.945 --> 00:23:04.825
+<v Speaker 1>experiments listed inside the charts folder.
+
+00:23:04.825 --> 00:23:06.345
+<v Speaker 1>These are not the health charts. We just
+
+00:23:06.345 --> 00:23:07.945
+<v Speaker 1>call them the litmus charts,
+
+00:23:08.425 --> 00:23:10.425
+<v Speaker 1>and each of this is a category.
+
+00:23:10.940 --> 00:23:13.899
+<v Speaker 1>And you could coincide that by individual experiment.
+
+00:23:14.220 --> 00:23:17.419
+<v Speaker 1>Each experiment in each category is defined
+
+00:23:17.900 --> 00:23:18.940
+<v Speaker 1>by some
+
+00:23:19.179 --> 00:23:22.379
+<v Speaker 1>information placed inside of the chart service portion.
+
+00:23:22.620 --> 00:23:23.420
+<v Speaker 1>The other way,
+
+00:23:23.905 --> 00:23:26.225
+<v Speaker 1>which provides the source for all the information
+
+00:23:26.225 --> 00:23:29.505
+<v Speaker 1>printed on the on the hub. Very similar
+
+00:23:29.505 --> 00:23:31.184
+<v Speaker 1>to the way an operator top is built.
+
+00:23:31.184 --> 00:23:33.985
+<v Speaker 1>We took inspiration from that and created something
+
+00:23:33.985 --> 00:23:35.904
+<v Speaker 1>that's very similar with Chaos Charts.
+
+00:23:36.225 --> 00:23:37.265
+<v Speaker 1>You could
+
+00:23:37.470 --> 00:23:40.429
+<v Speaker 1>form this and place your own experiments and
+
+00:23:40.590 --> 00:23:42.990
+<v Speaker 1>connect it as a private kiosk as well.
+
+00:23:42.990 --> 00:23:45.950
+<v Speaker 1>You would use experiments from here to pick
+
+00:23:45.950 --> 00:23:46.830
+<v Speaker 1>and create
+
+00:23:47.230 --> 00:23:48.509
+<v Speaker 1>new workforce.
+
+00:23:48.830 --> 00:23:51.150
+<v Speaker 1>So that is in your development that we
+
+00:23:51.150 --> 00:23:51.549
+<v Speaker 1>did here,
+
+00:23:52.174 --> 00:23:53.614
+<v Speaker 1>And this came about
+
+00:23:55.054 --> 00:23:58.414
+<v Speaker 1>as we were working with enterprises
+
+00:23:58.414 --> 00:24:00.254
+<v Speaker 1>and organizations which
+
+00:24:00.335 --> 00:24:02.975
+<v Speaker 1>prefer their own sources. Of course, they would
+
+00:24:03.775 --> 00:24:06.174
+<v Speaker 1>commit stuff into upstream, give us some and
+
+00:24:06.174 --> 00:24:08.640
+<v Speaker 1>we're comfortable with it, but you would have
+
+00:24:08.640 --> 00:24:10.880
+<v Speaker 1>local sources to experiment stuff.
+
+00:24:12.720 --> 00:24:14.560
+<v Speaker 1>The other capability
+
+00:24:15.040 --> 00:24:18.320
+<v Speaker 1>came in the form of the analytics dashboard.
+
+00:24:19.040 --> 00:24:19.680
+<v Speaker 1>So
+
+00:24:20.075 --> 00:24:21.434
+<v Speaker 1>one of the requirements
+
+00:24:21.434 --> 00:24:23.914
+<v Speaker 1>that we had is to be able to
+
+00:24:24.235 --> 00:24:25.034
+<v Speaker 1>ascertain
+
+00:24:25.755 --> 00:24:28.155
+<v Speaker 1>the progress we are making in our kiosk
+
+00:24:28.155 --> 00:24:28.955
+<v Speaker 1>practice.
+
+00:24:29.195 --> 00:24:31.035
+<v Speaker 1>Let's say you had some experiments
+
+00:24:31.035 --> 00:24:32.555
+<v Speaker 1>against some microservices.
+
+00:24:32.970 --> 00:24:34.330
+<v Speaker 1>You got a result,
+
+00:24:34.730 --> 00:24:35.770
+<v Speaker 1>and we would need to be
+
+00:24:36.570 --> 00:24:39.130
+<v Speaker 1>and we would want to compare our results
+
+00:24:39.130 --> 00:24:41.289
+<v Speaker 1>over a period of time. How would you
+
+00:24:41.289 --> 00:24:43.770
+<v Speaker 1>do that? How would you put a metric
+
+00:24:43.770 --> 00:24:45.850
+<v Speaker 1>or a number against
+
+00:24:46.090 --> 00:24:47.450
+<v Speaker 1>the experimentation
+
+00:24:47.450 --> 00:24:49.735
+<v Speaker 1>process that you did? So we have something
+
+00:24:49.735 --> 00:24:51.575
+<v Speaker 1>called resilience score. I think we've stressed about
+
+00:24:51.575 --> 00:24:52.934
+<v Speaker 1>it in the previous episode. There have been
+
+00:24:52.934 --> 00:24:55.414
+<v Speaker 1>some improvements there, so we'll talk about it
+
+00:24:56.054 --> 00:24:58.294
+<v Speaker 1>when we get to running the workflow. So
+
+00:24:58.294 --> 00:25:01.415
+<v Speaker 1>you can compare workflows here in the workflow
+
+00:25:01.415 --> 00:25:02.294
+<v Speaker 1>dashboard
+
+00:25:02.294 --> 00:25:03.095
+<v Speaker 1>tab
+
+00:25:03.095 --> 00:25:04.215
+<v Speaker 1>of analytics
+
+00:25:04.770 --> 00:25:06.610
+<v Speaker 1>where you're essentially comparing
+
+00:25:07.010 --> 00:25:07.730
+<v Speaker 1>different
+
+00:25:09.010 --> 00:25:10.610
+<v Speaker 1>workflows that you ran over a period of
+
+00:25:10.610 --> 00:25:11.330
+<v Speaker 1>time,
+
+00:25:11.730 --> 00:25:13.650
+<v Speaker 1>right, and what scores
+
+00:25:13.650 --> 00:25:14.690
+<v Speaker 1>they achieved,
+
+00:25:15.570 --> 00:25:17.330
+<v Speaker 1>what resident scores they achieved.
+
+00:25:17.570 --> 00:25:19.410
+<v Speaker 1>And there's also capability
+
+00:25:19.410 --> 00:25:22.024
+<v Speaker 1>to do application monitoring,
+
+00:25:22.105 --> 00:25:25.065
+<v Speaker 1>not so much analyzing results, but looking at
+
+00:25:25.065 --> 00:25:26.105
+<v Speaker 1>how application
+
+00:25:26.745 --> 00:25:29.304
+<v Speaker 1>changes behavior changes as we go along.
+
+00:25:29.865 --> 00:25:31.705
+<v Speaker 1>And this is something very similar to what
+
+00:25:31.705 --> 00:25:33.144
+<v Speaker 1>you would do with, let's say,
+
+00:25:33.385 --> 00:25:36.505
+<v Speaker 1>a Grafana CloudWatch or something like that. So
+
+00:25:36.160 --> 00:25:37.600
+<v Speaker 1>you have a data source.
+
+00:25:37.920 --> 00:25:40.080
+<v Speaker 1>We support the latest phase where you can
+
+00:25:40.400 --> 00:25:41.920
+<v Speaker 1>connect that, and you can create a very
+
+00:25:41.920 --> 00:25:44.159
+<v Speaker 1>simple application dashboard.
+
+00:25:45.440 --> 00:25:46.960
+<v Speaker 1>It uses Blockly,
+
+00:25:47.280 --> 00:25:48.160
+<v Speaker 1>and
+
+00:25:48.355 --> 00:25:49.874
+<v Speaker 1>the JSON structure
+
+00:25:49.875 --> 00:25:52.034
+<v Speaker 1>for the dashboards are very similar to how
+
+00:25:52.034 --> 00:25:54.195
+<v Speaker 1>we would construct Grafana dashboard. We
+
+00:25:54.914 --> 00:25:57.394
+<v Speaker 1>have some features coming in close to our
+
+00:25:57.394 --> 00:25:59.474
+<v Speaker 1>quote that would help with
+
+00:25:59.955 --> 00:26:01.394
+<v Speaker 1>creating new panels
+
+00:26:01.715 --> 00:26:03.715
+<v Speaker 1>or creating new dashboards
+
+00:26:03.750 --> 00:26:06.390
+<v Speaker 1>from the portal, but we need to sort
+
+00:26:06.390 --> 00:26:07.350
+<v Speaker 1>of construct
+
+00:26:07.510 --> 00:26:09.110
+<v Speaker 1>and then upload them.
+
+00:26:09.590 --> 00:26:12.310
+<v Speaker 1>So that is about that's the improvements that
+
+00:26:12.310 --> 00:26:14.710
+<v Speaker 1>we've made in the analytics section.
+
+00:26:15.430 --> 00:26:16.150
+<v Speaker 1>So
+
+00:26:16.495 --> 00:26:19.054
+<v Speaker 1>that's something. And we we got that requirement
+
+00:26:19.054 --> 00:26:19.774
+<v Speaker 1>because
+
+00:26:19.855 --> 00:26:21.614
+<v Speaker 1>there are folks who wanted
+
+00:26:22.095 --> 00:26:23.774
+<v Speaker 1>to sort of view what happens to their
+
+00:26:23.774 --> 00:26:24.575
+<v Speaker 1>application
+
+00:26:25.934 --> 00:26:28.654
+<v Speaker 1>within the portal without having to move to,
+
+00:26:28.654 --> 00:26:29.135
+<v Speaker 1>let's say,
+
+00:26:30.230 --> 00:26:33.510
+<v Speaker 1>a different application or different browser to open
+
+00:26:33.510 --> 00:26:34.710
+<v Speaker 1>up some other app.
+
+00:26:36.230 --> 00:26:38.390
+<v Speaker 1>How much you use this is left to
+
+00:26:38.390 --> 00:26:40.870
+<v Speaker 1>the user because a lot of people already
+
+00:26:40.870 --> 00:26:43.270
+<v Speaker 1>have observability infrastructure in place.
+
+00:26:43.865 --> 00:26:45.065
+<v Speaker 1>They already have
+
+00:26:45.465 --> 00:26:47.145
+<v Speaker 1>application dashboards set up,
+
+00:26:48.025 --> 00:26:49.385
+<v Speaker 1>and they would only need
+
+00:26:49.945 --> 00:26:52.745
+<v Speaker 1>metrics from the kiosk framework to be able
+
+00:26:52.745 --> 00:26:55.465
+<v Speaker 1>to correlate what's happening to application
+
+00:26:55.465 --> 00:26:56.585
+<v Speaker 1>when you start up.
+
+00:26:56.905 --> 00:26:58.265
+<v Speaker 1>Consume metrics
+
+00:26:59.210 --> 00:27:00.809
+<v Speaker 1>from the Litmus side.
+
+00:27:01.050 --> 00:27:03.130
+<v Speaker 1>But for folks who've not really set up
+
+00:27:03.130 --> 00:27:03.850
+<v Speaker 1>something
+
+00:27:05.050 --> 00:27:05.929
+<v Speaker 1>already,
+
+00:27:06.170 --> 00:27:06.890
+<v Speaker 1>maybe
+
+00:27:07.530 --> 00:27:09.450
+<v Speaker 1>they can use of the make make use
+
+00:27:09.450 --> 00:27:10.650
+<v Speaker 1>of the application dashboards.
+
+00:27:11.085 --> 00:27:12.284
+<v Speaker 1>It also has
+
+00:27:12.605 --> 00:27:13.164
+<v Speaker 1>more
+
+00:27:13.645 --> 00:27:14.604
+<v Speaker 1>intuitive
+
+00:27:15.645 --> 00:27:18.044
+<v Speaker 1>data corresponding to the chaos. It tells you
+
+00:27:18.044 --> 00:27:20.205
+<v Speaker 1>when a chaos experiment started, ended, what is
+
+00:27:20.205 --> 00:27:21.724
+<v Speaker 1>the score, etcetera,
+
+00:27:22.445 --> 00:27:23.965
+<v Speaker 1>when you hover on the graphs
+
+00:27:24.524 --> 00:27:25.725
+<v Speaker 1>of the
+
+00:27:26.149 --> 00:27:27.190
+<v Speaker 1>applications.
+
+00:27:27.590 --> 00:27:30.309
+<v Speaker 1>So that's something that we added in recent
+
+00:27:30.309 --> 00:27:32.630
+<v Speaker 1>times and something that's that I just need
+
+00:27:32.630 --> 00:27:33.269
+<v Speaker 1>to report.
+
+00:27:33.990 --> 00:27:35.989
+<v Speaker 1>So as far as the settings goes,
+
+00:27:36.070 --> 00:27:38.229
+<v Speaker 1>this is a standard accounts
+
+00:27:38.630 --> 00:27:40.309
+<v Speaker 1>page where you set
+
+00:27:40.470 --> 00:27:41.110
+<v Speaker 1>your preferences.
+
+00:27:43.245 --> 00:27:45.965
+<v Speaker 1>Next one is for teams.
+
+00:27:46.445 --> 00:27:47.965
+<v Speaker 1>So one of the useful
+
+00:27:47.965 --> 00:27:48.765
+<v Speaker 1>features
+
+00:27:49.165 --> 00:27:50.685
+<v Speaker 1>of the chaos center
+
+00:27:50.845 --> 00:27:51.565
+<v Speaker 1>is
+
+00:27:52.445 --> 00:27:57.005
+<v Speaker 1>about how you can invite other folks
+
+00:27:55.740 --> 00:27:58.059
+<v Speaker 1>in your organization or in your team to
+
+00:27:58.059 --> 00:27:59.980
+<v Speaker 1>collaborate with you on chaos.
+
+00:28:00.300 --> 00:28:02.460
+<v Speaker 1>So you might have people looking at results.
+
+00:28:02.460 --> 00:28:04.540
+<v Speaker 1>You might have people constructing new workflows and
+
+00:28:04.540 --> 00:28:07.260
+<v Speaker 1>running them. You have people just gathering some
+
+00:28:07.260 --> 00:28:07.820
+<v Speaker 1>stats,
+
+00:28:08.195 --> 00:28:08.995
+<v Speaker 1>etcetera?
+
+00:28:09.075 --> 00:28:11.874
+<v Speaker 1>So you can invite you can create users
+
+00:28:12.115 --> 00:28:12.835
+<v Speaker 1>and
+
+00:28:13.554 --> 00:28:15.794
+<v Speaker 1>invite them into the team in different roles
+
+00:28:15.795 --> 00:28:16.595
+<v Speaker 1>as
+
+00:28:17.395 --> 00:28:19.794
+<v Speaker 1>editors, as as users of
+
+00:28:21.235 --> 00:28:22.309
+<v Speaker 1>all all types,
+
+00:28:22.390 --> 00:28:22.950
+<v Speaker 1>and
+
+00:28:23.910 --> 00:28:24.950
+<v Speaker 1>you can collaborate
+
+00:28:25.910 --> 00:28:28.549
+<v Speaker 1>with them Yep. For GA. The
+
+00:28:29.510 --> 00:28:31.990
+<v Speaker 1>the other feature here is
+
+00:28:32.070 --> 00:28:34.470
+<v Speaker 1>for GitOps. This is something that we created
+
+00:28:34.470 --> 00:28:35.270
+<v Speaker 1>in Pixabnance.
+
+00:28:36.405 --> 00:28:39.205
+<v Speaker 1>So, Rawkode, this is very interesting and
+
+00:28:40.245 --> 00:28:42.805
+<v Speaker 1>we sort of wanted to play the best
+
+00:28:42.805 --> 00:28:44.885
+<v Speaker 1>practices of GitOps
+
+00:28:45.285 --> 00:28:47.205
+<v Speaker 1>that's being used for app delivery
+
+00:28:47.445 --> 00:28:49.605
+<v Speaker 1>into the chaos engineering practice.
+
+00:28:49.605 --> 00:28:51.045
+<v Speaker 1>That is one way of looking at it,
+
+00:28:51.820 --> 00:28:54.380
+<v Speaker 1>One requirement that we sort of encountered.
+
+00:28:54.700 --> 00:28:56.059
+<v Speaker 1>The other one was
+
+00:28:56.380 --> 00:28:58.700
+<v Speaker 1>how do we integrate with the standard
+
+00:28:59.100 --> 00:29:01.340
+<v Speaker 1>app delivery GitOps flow.
+
+00:29:01.420 --> 00:29:02.380
+<v Speaker 1>So you have
+
+00:29:02.700 --> 00:29:04.700
+<v Speaker 1>are we saving your plugs or tree in
+
+00:29:04.700 --> 00:29:07.015
+<v Speaker 1>the in configuration management
+
+00:29:07.015 --> 00:29:09.095
+<v Speaker 1>spinnaker that you set up.
+
+00:29:09.575 --> 00:29:12.295
+<v Speaker 1>And there's a change in the source
+
+00:29:12.695 --> 00:29:15.335
+<v Speaker 1>of your application that or maybe there's an
+
+00:29:15.335 --> 00:29:16.855
+<v Speaker 1>image that has been pushed. You've set up
+
+00:29:16.855 --> 00:29:17.815
+<v Speaker 1>some automated
+
+00:29:18.455 --> 00:29:20.535
+<v Speaker 1>monitoring and
+
+00:29:20.070 --> 00:29:20.789
+<v Speaker 1>upgrades.
+
+00:29:20.950 --> 00:29:22.950
+<v Speaker 1>So your tool is basically going to go
+
+00:29:22.950 --> 00:29:23.830
+<v Speaker 1>ahead and
+
+00:29:24.230 --> 00:29:27.190
+<v Speaker 1>sync your source with the cluster. It's going
+
+00:29:27.190 --> 00:29:28.549
+<v Speaker 1>to go and update the
+
+00:29:28.870 --> 00:29:31.349
+<v Speaker 1>cluster with the latest portion of your app.
+
+00:29:32.630 --> 00:29:33.830
+<v Speaker 1>And when you do that,
+
+00:29:34.070 --> 00:29:36.185
+<v Speaker 1>you might want especially when you do this
+
+00:29:36.185 --> 00:29:37.544
+<v Speaker 1>in staging environments,
+
+00:29:38.345 --> 00:29:40.825
+<v Speaker 1>which is probably where you might first apply
+
+00:29:40.825 --> 00:29:42.585
+<v Speaker 1>the the GitOps
+
+00:29:42.665 --> 00:29:43.625
+<v Speaker 1>upgrade,
+
+00:29:43.785 --> 00:29:46.825
+<v Speaker 1>the flow, before you promote it to production.
+
+00:29:47.385 --> 00:29:47.945
+<v Speaker 1>So
+
+00:29:48.505 --> 00:29:49.865
+<v Speaker 1>when you do that, you might wanna run
+
+00:29:49.865 --> 00:29:51.065
+<v Speaker 1>some sanity checks
+
+00:29:52.080 --> 00:29:52.879
+<v Speaker 1>on a
+
+00:29:53.280 --> 00:29:57.279
+<v Speaker 1>very nearly present staging environment, which mimics production.
+
+00:29:57.360 --> 00:29:58.880
+<v Speaker 1>You might want to see how this new
+
+00:29:58.880 --> 00:30:00.480
+<v Speaker 1>change in your application
+
+00:30:00.880 --> 00:30:03.520
+<v Speaker 1>works, how does it hold up against different
+
+00:30:03.520 --> 00:30:05.554
+<v Speaker 1>kinds of various scenarios.
+
+00:30:05.555 --> 00:30:07.315
+<v Speaker 1>So you could run something like a sanity
+
+00:30:07.315 --> 00:30:08.034
+<v Speaker 1>test,
+
+00:30:08.515 --> 00:30:08.995
+<v Speaker 1>and
+
+00:30:09.635 --> 00:30:11.715
+<v Speaker 1>you could create event tracking policies. I think
+
+00:30:11.715 --> 00:30:14.515
+<v Speaker 1>we mentioned it when looking at these deployments
+
+00:30:14.515 --> 00:30:15.635
+<v Speaker 1>during its back.
+
+00:30:16.035 --> 00:30:18.915
+<v Speaker 1>You can set up some policies to ensure
+
+00:30:18.915 --> 00:30:19.475
+<v Speaker 1>that
+
+00:30:20.190 --> 00:30:20.989
+<v Speaker 1>your
+
+00:30:21.789 --> 00:30:23.950
+<v Speaker 1>application undergoes some chaos,
+
+00:30:23.950 --> 00:30:25.629
+<v Speaker 1>predefined chaos workflows
+
+00:30:25.710 --> 00:30:28.429
+<v Speaker 1>that it can subscribe to via annotations,
+
+00:30:28.830 --> 00:30:31.229
+<v Speaker 1>and you will get a result of that
+
+00:30:31.230 --> 00:30:34.264
+<v Speaker 1>and help you take a better call on
+
+00:30:34.264 --> 00:30:36.105
+<v Speaker 1>what to do next, whether you promote this
+
+00:30:36.105 --> 00:30:37.945
+<v Speaker 1>to production or you go fix something,
+
+00:30:38.184 --> 00:30:38.904
+<v Speaker 1>etcetera.
+
+00:30:39.225 --> 00:30:39.864
+<v Speaker 1>So
+
+00:30:40.264 --> 00:30:42.585
+<v Speaker 1>the first part of the GitOps story that
+
+00:30:42.585 --> 00:30:46.184
+<v Speaker 1>we mentioned is about workflows that you create,
+
+00:30:46.184 --> 00:30:48.664
+<v Speaker 1>which gets synced into a Git repository. So
+
+00:30:48.664 --> 00:30:51.200
+<v Speaker 1>if I go ahead and enable GitOps,
+
+00:30:51.760 --> 00:30:52.880
+<v Speaker 1>and I
+
+00:30:53.920 --> 00:30:56.240
+<v Speaker 1>basically say, this is the Git repository where
+
+00:30:56.240 --> 00:30:59.040
+<v Speaker 1>I want my Kiosk artifacts to be sourced
+
+00:30:59.200 --> 00:31:00.880
+<v Speaker 1>I mean, to be placed as a golden
+
+00:31:00.880 --> 00:31:03.200
+<v Speaker 1>copy. So whatever workflows that I create here
+
+00:31:03.200 --> 00:31:04.080
+<v Speaker 1>gets synced to there.
+
+00:31:04.924 --> 00:31:08.605
+<v Speaker 1>And these workflows, which have been synced to
+
+00:31:08.605 --> 00:31:09.965
+<v Speaker 1>get and maintained,
+
+00:31:10.285 --> 00:31:11.644
+<v Speaker 1>can then be subscribed
+
+00:31:12.845 --> 00:31:15.004
+<v Speaker 1>to by some application,
+
+00:31:15.165 --> 00:31:17.485
+<v Speaker 1>resulting in a cluster by means of even
+
+00:31:17.485 --> 00:31:18.205
+<v Speaker 1>tracker policy.
+
+00:31:19.060 --> 00:31:20.980
+<v Speaker 1>Though it's not a new mandate that you
+
+00:31:20.980 --> 00:31:24.580
+<v Speaker 1>need this always stored in Git, the artifacts
+
+00:31:24.580 --> 00:31:26.660
+<v Speaker 1>stored in Git to be able to pull
+
+00:31:26.660 --> 00:31:27.700
+<v Speaker 1>them and run
+
+00:31:27.940 --> 00:31:29.860
+<v Speaker 1>for as part of the event triggered in
+
+00:31:29.860 --> 00:31:32.420
+<v Speaker 1>chaos, it is still good to have it
+
+00:31:33.385 --> 00:31:35.705
+<v Speaker 1>so that, let's say, event changes and get
+
+00:31:35.865 --> 00:31:37.705
+<v Speaker 1>the same gets reflected on the portal.
+
+00:31:37.945 --> 00:31:40.025
+<v Speaker 1>Next time the chaos runs in an automated
+
+00:31:40.025 --> 00:31:42.745
+<v Speaker 1>fashion because of your event track policies that
+
+00:31:42.745 --> 00:31:44.105
+<v Speaker 1>you set up here, like, the latest version
+
+00:31:44.105 --> 00:31:44.425
+<v Speaker 1>of it.
+
+00:31:46.200 --> 00:31:47.080
+<v Speaker 1>So
+
+00:31:48.200 --> 00:31:51.080
+<v Speaker 1>these are the various settings, and there's there's
+
+00:31:51.080 --> 00:31:53.400
+<v Speaker 1>another tab here. It's mostly for a day
+
+00:31:53.400 --> 00:31:56.040
+<v Speaker 1>to purpose. People who are running in their
+
+00:31:56.040 --> 00:31:56.840
+<v Speaker 1>own
+
+00:31:57.415 --> 00:31:59.015
+<v Speaker 1>run their own registries,
+
+00:31:59.175 --> 00:32:01.174
+<v Speaker 1>which is most likely the case today,
+
+00:32:01.575 --> 00:32:04.054
+<v Speaker 1>you might want to replace the
+
+00:32:04.295 --> 00:32:06.294
+<v Speaker 1>images within a workflow with
+
+00:32:06.455 --> 00:32:08.455
+<v Speaker 1>images coming from your registry so you can
+
+00:32:08.455 --> 00:32:09.015
+<v Speaker 1>do
+
+00:32:09.335 --> 00:32:10.135
+<v Speaker 1>changes.
+
+00:32:10.135 --> 00:32:11.495
+<v Speaker 1>You can make
+
+00:32:11.495 --> 00:32:12.135
+<v Speaker 1>some
+
+00:32:12.990 --> 00:32:14.990
+<v Speaker 1>custom changes to the workflow just before you
+
+00:32:14.990 --> 00:32:15.950
+<v Speaker 1>run it.
+
+00:32:16.350 --> 00:32:16.909
+<v Speaker 1>So
+
+00:32:17.150 --> 00:32:19.070
+<v Speaker 1>that that's to ease up,
+
+00:32:19.390 --> 00:32:21.549
+<v Speaker 1>you know, maintaining your workflows.
+
+00:32:22.030 --> 00:32:23.630
+<v Speaker 1>So these are the various
+
+00:32:23.790 --> 00:32:26.350
+<v Speaker 1>features. There's something called usage statistics here. It's
+
+00:32:26.350 --> 00:32:27.150
+<v Speaker 1>more for
+
+00:32:27.595 --> 00:32:28.955
+<v Speaker 1>a high level overview
+
+00:32:28.955 --> 00:32:29.675
+<v Speaker 1>of
+
+00:32:29.915 --> 00:32:32.715
+<v Speaker 1>how your case management practice is going,
+
+00:32:33.035 --> 00:32:35.435
+<v Speaker 1>how many users you have on the platform
+
+00:32:35.915 --> 00:32:38.475
+<v Speaker 1>that are participating in chaos, how many projects
+
+00:32:38.475 --> 00:32:40.715
+<v Speaker 1>are there, how to what requirements or what
+
+00:32:40.715 --> 00:32:42.395
+<v Speaker 1>teams or what services,
+
+00:32:43.070 --> 00:32:45.070
+<v Speaker 1>And then how many agents do you have?
+
+00:32:45.309 --> 00:32:46.910
+<v Speaker 1>How many workflows you've done? How many have
+
+00:32:46.910 --> 00:32:48.830
+<v Speaker 1>succeeded or how many have failed?
+
+00:32:48.990 --> 00:32:50.750
+<v Speaker 1>A lot of that statistics can be viewed
+
+00:32:50.750 --> 00:32:52.510
+<v Speaker 1>and downloaded as reports
+
+00:32:52.510 --> 00:32:54.269
+<v Speaker 1>for you to give you some kind of
+
+00:32:54.429 --> 00:32:55.309
+<v Speaker 1>information
+
+00:32:55.870 --> 00:32:57.390
+<v Speaker 1>on how things are going.
+
+00:32:58.845 --> 00:32:59.485
+<v Speaker 1>And
+
+00:32:59.805 --> 00:33:02.045
+<v Speaker 1>yeah. So we have API
+
+00:33:02.045 --> 00:33:03.565
+<v Speaker 1>documentation,
+
+00:33:05.085 --> 00:33:06.205
+<v Speaker 1>which is basically
+
+00:33:07.485 --> 00:33:09.805
+<v Speaker 1>going to help you to utilize this platform
+
+00:33:09.805 --> 00:33:11.005
+<v Speaker 1>without necessarily
+
+00:33:11.085 --> 00:33:12.045
+<v Speaker 1>using the dashboard.
+
+00:33:13.120 --> 00:33:13.679
+<v Speaker 1>So
+
+00:33:14.159 --> 00:33:15.440
+<v Speaker 1>that's the
+
+00:33:17.279 --> 00:33:19.679
+<v Speaker 1>refurpished
+
+00:33:20.240 --> 00:33:23.279
+<v Speaker 1>portal dashboard for you that's coming up.
+
+00:33:24.320 --> 00:33:25.359
+<v Speaker 1>At this point,
+
+00:33:25.520 --> 00:33:26.880
+<v Speaker 1>I'd like to see if there are any
+
+00:33:26.880 --> 00:33:27.200
+<v Speaker 1>questions
+
+00:33:28.095 --> 00:33:30.095
+<v Speaker 1>before I talk about the latest phase of
+
+00:33:30.095 --> 00:33:31.215
+<v Speaker 1>running workflows.
+
+00:33:31.695 --> 00:33:34.494
+<v Speaker 1>And we we will have some sample applications,
+
+00:33:35.215 --> 00:33:36.975
+<v Speaker 1>some sample types of these apps that we'll
+
+00:33:36.975 --> 00:33:38.414
+<v Speaker 1>use to run these workflows.
+
+00:33:38.575 --> 00:33:39.934
+<v Speaker 1>So are there any questions
+
+00:33:40.335 --> 00:33:40.975
+<v Speaker 1>at this point?
+
+00:33:43.409 --> 00:33:45.490
+<v Speaker 0>Yeah. I've got a a couple of questions,
+
+00:33:45.490 --> 00:33:47.890
+<v Speaker 0>and we've one in the chat that's about
+
+00:33:47.890 --> 00:33:50.129
+<v Speaker 0>getting started with chaos engineering,
+
+00:33:50.130 --> 00:33:52.369
+<v Speaker 0>so we can tackle that as well. But
+
+00:33:52.450 --> 00:33:54.770
+<v Speaker 0>we'll start with the the changes to Litmus
+
+00:33:54.770 --> 00:33:55.570
+<v Speaker 0>first. So
+
+00:33:56.325 --> 00:33:59.445
+<v Speaker 0>the this new ability to control agents and
+
+00:33:59.445 --> 00:34:00.644
+<v Speaker 0>remote clusters,
+
+00:34:01.205 --> 00:34:03.845
+<v Speaker 0>do you see this being the standard way
+
+00:34:03.845 --> 00:34:06.404
+<v Speaker 0>now for people to really adopt chaos engineering
+
+00:34:06.404 --> 00:34:09.445
+<v Speaker 0>by having, like, a centralized chaos center and
+
+00:34:09.445 --> 00:34:11.150
+<v Speaker 0>reaching out to those clusters? Or do you
+
+00:34:11.150 --> 00:34:13.550
+<v Speaker 0>see a world where it's really just personal
+
+00:34:13.550 --> 00:34:14.910
+<v Speaker 0>choice and people,
+
+00:34:16.190 --> 00:34:18.110
+<v Speaker 0>you know, will still prefer to go down
+
+00:34:18.110 --> 00:34:20.590
+<v Speaker 0>and deploy each chaos center into their own
+
+00:34:20.590 --> 00:34:22.750
+<v Speaker 0>clusters? I mean, what's your opinions on that?
+
+00:34:22.750 --> 00:34:24.110
+<v Speaker 0>Is is there a better way there?
+
+00:34:25.715 --> 00:34:26.995
+<v Speaker 1>It's a great question.
+
+00:34:27.715 --> 00:34:30.675
+<v Speaker 1>I think these are for the way for
+
+00:34:30.675 --> 00:34:32.355
+<v Speaker 1>our community interaction,
+
+00:34:32.355 --> 00:34:34.675
+<v Speaker 1>we see that there are different personas
+
+00:34:35.235 --> 00:34:36.275
+<v Speaker 1>using
+
+00:34:36.275 --> 00:34:38.275
+<v Speaker 1>the chaos. Engineering has become
+
+00:34:38.699 --> 00:34:41.260
+<v Speaker 1>sort of popular really popular in the last,
+
+00:34:42.619 --> 00:34:44.540
+<v Speaker 1>let's say, year or so. And not to
+
+00:34:44.540 --> 00:34:46.859
+<v Speaker 1>say that it's not being practiced early in
+
+00:34:46.859 --> 00:34:49.739
+<v Speaker 1>the yesterday's, but somehow there was this perception
+
+00:34:49.900 --> 00:34:51.980
+<v Speaker 1>that this, you know, dedicated
+
+00:34:51.980 --> 00:34:54.695
+<v Speaker 1>group of experts sitting somewhere carrying out a
+
+00:34:54.695 --> 00:34:55.575
+<v Speaker 1>game day.
+
+00:34:56.295 --> 00:34:57.655
+<v Speaker 1>The SREs
+
+00:34:58.375 --> 00:35:00.775
+<v Speaker 1>who really are the ones with engineering that
+
+00:35:00.935 --> 00:35:02.775
+<v Speaker 1>from that perspective,
+
+00:35:03.175 --> 00:35:04.855
+<v Speaker 1>it is sort of changing.
+
+00:35:05.015 --> 00:35:07.415
+<v Speaker 1>There are more people getting involved at various
+
+00:35:07.415 --> 00:35:07.895
+<v Speaker 1>levels
+
+00:35:08.690 --> 00:35:11.410
+<v Speaker 1>of the organization or various levels of app
+
+00:35:11.410 --> 00:35:13.890
+<v Speaker 1>delivery, I would say. There are these SREs
+
+00:35:13.890 --> 00:35:15.250
+<v Speaker 1>who are doing it in a very controlled
+
+00:35:15.250 --> 00:35:17.170
+<v Speaker 1>way. The game tends to be very
+
+00:35:17.570 --> 00:35:19.570
+<v Speaker 1>popular way of playing it. Then there are
+
+00:35:19.570 --> 00:35:20.530
+<v Speaker 1>other folks,
+
+00:35:22.290 --> 00:35:23.730
+<v Speaker 1>let's say, engineers,
+
+00:35:24.255 --> 00:35:27.214
+<v Speaker 1>while looking at it, we're looking at chaos
+
+00:35:28.095 --> 00:35:29.934
+<v Speaker 1>and sort of adopting it as the de
+
+00:35:29.934 --> 00:35:31.375
+<v Speaker 1>facto way to do
+
+00:35:31.775 --> 00:35:33.375
+<v Speaker 1>exploratory failure testing,
+
+00:35:33.535 --> 00:35:34.335
+<v Speaker 1>if you will.
+
+00:35:34.815 --> 00:35:35.375
+<v Speaker 1>So
+
+00:35:36.095 --> 00:35:38.894
+<v Speaker 1>the definition of chaos engineering is becoming
+
+00:35:39.090 --> 00:35:41.170
+<v Speaker 1>a little more broadened, I would say. It's
+
+00:35:41.170 --> 00:35:43.330
+<v Speaker 1>more like the principles of chaos are being
+
+00:35:43.330 --> 00:35:44.050
+<v Speaker 1>applied
+
+00:35:44.130 --> 00:35:45.570
+<v Speaker 1>at different stages.
+
+00:35:45.730 --> 00:35:48.530
+<v Speaker 1>And, therefore, the consumers of the tool that
+
+00:35:48.530 --> 00:35:51.330
+<v Speaker 1>provides you the chaos engineering capabilities
+
+00:35:51.330 --> 00:35:52.770
+<v Speaker 1>are multifold.
+
+00:35:53.090 --> 00:35:54.690
+<v Speaker 1>And some of them like
+
+00:35:54.855 --> 00:35:55.815
+<v Speaker 1>centralized
+
+00:35:55.815 --> 00:35:57.495
+<v Speaker 1>approach to managing chaos.
+
+00:35:58.055 --> 00:35:59.494
+<v Speaker 1>So they have this mandate and they have
+
+00:35:59.494 --> 00:36:00.375
+<v Speaker 1>this unknown,
+
+00:36:00.535 --> 00:36:03.095
+<v Speaker 1>and they say you have these clusters. These
+
+00:36:03.095 --> 00:36:04.535
+<v Speaker 1>are all staging environments.
+
+00:36:04.695 --> 00:36:06.855
+<v Speaker 1>You are a group of folks who ensure
+
+00:36:06.855 --> 00:36:09.690
+<v Speaker 1>that all services getting on to staging
+
+00:36:09.770 --> 00:36:12.410
+<v Speaker 1>need to be good, need to be validated,
+
+00:36:12.890 --> 00:36:14.330
+<v Speaker 1>and we need to be able to derive
+
+00:36:14.330 --> 00:36:15.930
+<v Speaker 1>some meaning out of that validation.
+
+00:36:16.410 --> 00:36:18.730
+<v Speaker 1>And there's a single place where we need
+
+00:36:18.730 --> 00:36:20.490
+<v Speaker 1>to collect all that info. I think for
+
+00:36:20.490 --> 00:36:21.850
+<v Speaker 1>those kind of folks, the
+
+00:36:22.485 --> 00:36:24.485
+<v Speaker 1>secure center is useful.
+
+00:36:24.805 --> 00:36:27.045
+<v Speaker 1>But like you said, there might be
+
+00:36:27.925 --> 00:36:31.285
+<v Speaker 1>practitioners of chaos, more advanced practitioners of chaos
+
+00:36:31.285 --> 00:36:32.565
+<v Speaker 1>who might think, okay.
+
+00:36:33.045 --> 00:36:35.685
+<v Speaker 1>I'm comfortable doing things as hand charts and
+
+00:36:35.685 --> 00:36:36.485
+<v Speaker 1>templates.
+
+00:36:36.485 --> 00:36:39.339
+<v Speaker 1>I manage everything by myself. I choose to
+
+00:36:39.339 --> 00:36:41.660
+<v Speaker 1>do it on specific clusters as a standalone
+
+00:36:42.220 --> 00:36:43.100
+<v Speaker 1>deployment
+
+00:36:43.260 --> 00:36:44.220
+<v Speaker 1>or installation,
+
+00:36:44.619 --> 00:36:47.020
+<v Speaker 1>and I'm able to make observations myself
+
+00:36:47.020 --> 00:36:49.580
+<v Speaker 1>and probably have my own tooling to glean
+
+00:36:49.580 --> 00:36:52.619
+<v Speaker 1>results from whatever key or service or other
+
+00:36:58.085 --> 00:36:53.285
+<v Speaker 1>glean data that you are putting
+
+00:36:53.285 --> 00:36:56.005
+<v Speaker 1>out and need not be packaged a certain
+
+00:36:56.005 --> 00:36:59.605
+<v Speaker 1>way. I don't need any help in inferencing
+
+00:37:00.005 --> 00:37:00.805
+<v Speaker 1>data
+
+00:37:00.805 --> 00:37:03.685
+<v Speaker 1>that also that person also exists.
+
+00:37:05.125 --> 00:37:07.125
+<v Speaker 1>And the way we see
+
+00:37:07.550 --> 00:37:10.270
+<v Speaker 1>the portal of center is, of course, it
+
+00:37:10.270 --> 00:37:12.190
+<v Speaker 1>has a UI component dashboard,
+
+00:37:12.590 --> 00:37:14.590
+<v Speaker 1>but there are APIs. There's an API server
+
+00:37:14.590 --> 00:37:15.230
+<v Speaker 1>which
+
+00:37:15.790 --> 00:37:16.350
+<v Speaker 1>is
+
+00:37:17.550 --> 00:37:20.350
+<v Speaker 1>pretty useful and becoming more powerful in time.
+
+00:37:20.715 --> 00:37:22.235
+<v Speaker 1>So you can do a lot of things
+
+00:37:22.235 --> 00:37:24.395
+<v Speaker 1>using CLI or correcting book.
+
+00:37:25.115 --> 00:37:25.675
+<v Speaker 1>API,
+
+00:37:25.915 --> 00:37:27.675
+<v Speaker 1>can have a GraphQL client in Python or
+
+00:37:27.675 --> 00:37:30.795
+<v Speaker 1>Golang that you are making use of to
+
+00:37:30.795 --> 00:37:32.315
+<v Speaker 1>construct useful faults,
+
+00:37:32.315 --> 00:37:33.195
+<v Speaker 1>run things,
+
+00:37:34.395 --> 00:37:35.115
+<v Speaker 1>maybe
+
+00:37:36.060 --> 00:37:37.820
+<v Speaker 1>consume analytics data,
+
+00:37:38.140 --> 00:37:39.260
+<v Speaker 1>etcetera. So
+
+00:37:41.580 --> 00:37:44.380
+<v Speaker 1>to answer that question, to summarize, I think
+
+00:37:44.380 --> 00:37:45.100
+<v Speaker 1>both
+
+00:37:45.340 --> 00:37:47.260
+<v Speaker 1>will coexist from some time.
+
+00:37:47.820 --> 00:37:50.380
+<v Speaker 1>The the consumers of the care center of
+
+00:37:49.925 --> 00:37:52.885
+<v Speaker 1>one persona and the others who are directly
+
+00:37:52.885 --> 00:37:54.885
+<v Speaker 1>go with them on a per cluster installation
+
+00:37:54.885 --> 00:37:55.525
+<v Speaker 1>and
+
+00:37:56.085 --> 00:37:58.805
+<v Speaker 1>manage things their own way. Things both will
+
+00:37:58.805 --> 00:38:00.645
+<v Speaker 1>continue to exist for some time.
+
+00:38:00.965 --> 00:38:02.885
+<v Speaker 1>We had a lot of people asking for
+
+00:38:02.885 --> 00:38:03.925
+<v Speaker 1>this capability,
+
+00:38:04.325 --> 00:38:06.910
+<v Speaker 1>is by the sort of thought this this
+
+00:38:06.910 --> 00:38:07.630
+<v Speaker 1>could
+
+00:38:07.790 --> 00:38:09.950
+<v Speaker 1>get to a get to a specific audience
+
+00:38:09.950 --> 00:38:10.990
+<v Speaker 1>and help them
+
+00:38:12.110 --> 00:38:14.510
+<v Speaker 1>get started with chaos. Maybe this is
+
+00:38:14.750 --> 00:38:17.390
+<v Speaker 1>an easy way to sort of break that
+
+00:38:17.390 --> 00:38:19.470
+<v Speaker 1>barrier and start doing experiments
+
+00:38:19.470 --> 00:38:22.165
+<v Speaker 1>because it's feels pretty simple to construct. It's
+
+00:38:22.165 --> 00:38:23.925
+<v Speaker 1>about first around them, view what's happening, and
+
+00:38:23.925 --> 00:38:25.925
+<v Speaker 1>things like that. Then once
+
+00:38:26.085 --> 00:38:27.845
+<v Speaker 1>you have that familiarity,
+
+00:38:27.925 --> 00:38:30.645
+<v Speaker 1>you'll probably no longer need this or you'll
+
+00:38:30.645 --> 00:38:33.045
+<v Speaker 1>probably just use the API service. You guys
+
+00:38:33.045 --> 00:38:34.805
+<v Speaker 1>have so directly without having to use the
+
+00:38:34.805 --> 00:38:35.204
+<v Speaker 1>dashboard.
+
+00:38:35.610 --> 00:38:36.650
+<v Speaker 1>So, yeah,
+
+00:38:36.810 --> 00:38:38.250
+<v Speaker 1>I think both exist.
+
+00:38:39.210 --> 00:38:41.370
+<v Speaker 0>Alright. Thank you for that. I I think
+
+00:38:41.370 --> 00:38:43.130
+<v Speaker 0>we're seeing this pattern across
+
+00:38:43.130 --> 00:38:44.970
+<v Speaker 0>the cloud native landscape. I know a lot
+
+00:38:44.970 --> 00:38:46.570
+<v Speaker 0>of get ups tooling now is is starting
+
+00:38:46.570 --> 00:38:49.325
+<v Speaker 0>to do that idea of remote management and
+
+00:38:49.325 --> 00:38:51.885
+<v Speaker 0>centralizing your get operations as well. So I
+
+00:38:51.885 --> 00:38:53.885
+<v Speaker 0>think this ties in really nicely with that
+
+00:38:53.885 --> 00:38:54.605
+<v Speaker 0>approach,
+
+00:38:55.645 --> 00:38:57.724
+<v Speaker 0>as, you know, we're starting to turn the
+
+00:38:57.724 --> 00:39:00.605
+<v Speaker 0>corner on organizations having lots of small clusters
+
+00:39:00.605 --> 00:39:03.370
+<v Speaker 0>instead of massive large clusters. And the the
+
+00:39:03.370 --> 00:39:05.290
+<v Speaker 0>remote management aspect there is is
+
+00:39:05.930 --> 00:39:08.170
+<v Speaker 0>appealing and just really getting a lot of
+
+00:39:08.170 --> 00:39:08.730
+<v Speaker 0>steam.
+
+00:39:09.290 --> 00:39:11.130
+<v Speaker 0>Great answer. Thank you. Okay.
+
+00:39:12.090 --> 00:39:14.170
+<v Speaker 0>I have And on the other question Yeah.
+
+00:39:14.170 --> 00:39:15.690
+<v Speaker 0>Go ahead. No. It's okay. Go for it.
+
+00:39:17.255 --> 00:39:19.175
+<v Speaker 1>The other question on getting
+
+00:39:19.175 --> 00:39:20.055
+<v Speaker 1>started.
+
+00:39:21.895 --> 00:39:23.495
+<v Speaker 1>So the product docs
+
+00:39:23.655 --> 00:39:25.735
+<v Speaker 1>of Litmus or as we call it as
+
+00:39:25.735 --> 00:39:26.535
+<v Speaker 1>we call it,
+
+00:39:27.255 --> 00:39:28.295
+<v Speaker 1>it's
+
+00:39:29.190 --> 00:39:30.150
+<v Speaker 1>there here.
+
+00:39:30.550 --> 00:39:32.630
+<v Speaker 1>This helps you to get started with Litmus
+
+00:39:32.630 --> 00:39:34.230
+<v Speaker 1>one topics purely
+
+00:39:34.230 --> 00:39:35.910
+<v Speaker 1>based on the kiosk operator,
+
+00:39:35.990 --> 00:39:37.910
+<v Speaker 1>with the kiosk, CRs,
+
+00:39:38.230 --> 00:39:41.109
+<v Speaker 1>and executing it in individual clusters,
+
+00:39:41.615 --> 00:39:42.494
+<v Speaker 1>etcetera.
+
+00:39:42.575 --> 00:39:44.255
+<v Speaker 1>If you are happy
+
+00:39:44.255 --> 00:39:45.455
+<v Speaker 1>beta testers
+
+00:39:45.775 --> 00:39:47.615
+<v Speaker 1>for Litmus2.co,
+
+00:39:48.974 --> 00:39:51.215
+<v Speaker 1>you you can take a look at the
+
+00:39:51.775 --> 00:39:54.860
+<v Speaker 1>Litmus docs that we have on Netify.
+
+00:39:55.660 --> 00:39:58.620
+<v Speaker 1>That is the Litmus data Netify app. Then
+
+00:39:58.620 --> 00:39:59.500
+<v Speaker 1>go to the
+
+00:40:00.460 --> 00:40:01.740
+<v Speaker 1>master version.
+
+00:40:01.900 --> 00:40:03.820
+<v Speaker 1>You can see a lot of information that's
+
+00:40:03.820 --> 00:40:04.940
+<v Speaker 1>being put here.
+
+00:40:05.260 --> 00:40:06.540
+<v Speaker 1>And this is one of the things that
+
+00:40:06.540 --> 00:40:07.180
+<v Speaker 1>we are
+
+00:40:07.785 --> 00:40:09.385
+<v Speaker 1>we are at right now,
+
+00:40:10.184 --> 00:40:12.184
+<v Speaker 1>trying to improve the documentation and put more
+
+00:40:12.184 --> 00:40:12.984
+<v Speaker 1>details
+
+00:40:13.224 --> 00:40:14.905
+<v Speaker 1>of how we can use the
+
+00:40:16.424 --> 00:40:17.464
+<v Speaker 1>itdoes2.o.
+
+00:40:17.464 --> 00:40:19.145
+<v Speaker 1>Sorry about that. So
+
+00:40:19.385 --> 00:40:21.225
+<v Speaker 1>this is a good place to start,
+
+00:40:21.464 --> 00:40:22.184
+<v Speaker 1>and
+
+00:40:22.590 --> 00:40:24.110
+<v Speaker 1>I will recommend you to take a look
+
+00:40:24.110 --> 00:40:26.270
+<v Speaker 1>at it if want to get started with.
+
+00:40:26.430 --> 00:40:28.670
+<v Speaker 1>The studio in case you just
+
+00:40:29.550 --> 00:40:30.670
+<v Speaker 1>want to
+
+00:40:30.670 --> 00:40:33.230
+<v Speaker 1>run the bare minimum experimentation
+
+00:40:33.790 --> 00:40:35.630
+<v Speaker 1>with the case operator, the
+
+00:40:35.870 --> 00:40:38.350
+<v Speaker 1>dogs, or the mosquitoes, whatever is the one
+
+00:40:40.335 --> 00:40:42.655
+<v Speaker 0>Awesome. Thank you for that as well. I
+
+00:40:42.655 --> 00:40:44.415
+<v Speaker 0>have one more question, and then I'll let
+
+00:40:44.415 --> 00:40:46.095
+<v Speaker 0>you jump on to the the workflow thing
+
+00:40:46.095 --> 00:40:48.175
+<v Speaker 0>that you said you were going to cover.
+
+00:40:48.895 --> 00:40:51.375
+<v Speaker 0>With regards to the data sources, what kind
+
+00:40:51.375 --> 00:40:53.615
+<v Speaker 0>of remote data sources are supported there?
+
+00:40:55.400 --> 00:40:57.160
+<v Speaker 1>As of today, it is Prometheus
+
+00:40:57.480 --> 00:40:57.960
+<v Speaker 1>Okay.
+
+00:40:58.360 --> 00:40:59.720
+<v Speaker 1>That that we support.
+
+00:41:00.120 --> 00:41:00.920
+<v Speaker 1>There is
+
+00:41:01.240 --> 00:41:04.440
+<v Speaker 1>Prometheus exported from Litmus that is being
+
+00:41:04.440 --> 00:41:06.200
+<v Speaker 1>used well sometime.
+
+00:41:06.600 --> 00:41:07.160
+<v Speaker 1>So
+
+00:41:07.560 --> 00:41:09.080
+<v Speaker 1>you could add Prometheus
+
+00:41:09.080 --> 00:41:12.755
+<v Speaker 1>data source, start managing your start creating panels
+
+00:41:12.755 --> 00:41:15.315
+<v Speaker 1>to view your application behavior, then
+
+00:41:15.555 --> 00:41:17.155
+<v Speaker 1>you could sort
+
+00:41:17.315 --> 00:41:19.234
+<v Speaker 1>of get your best metrics to the same
+
+00:41:19.234 --> 00:41:23.234
+<v Speaker 1>data source and superimpose them against your app
+
+00:41:23.234 --> 00:41:24.194
+<v Speaker 1>metrics
+
+00:41:24.194 --> 00:41:26.529
+<v Speaker 1>to see what's happening to your app during
+
+00:41:26.529 --> 00:41:27.250
+<v Speaker 1>chaos.
+
+00:41:27.809 --> 00:41:29.970
+<v Speaker 0>Yeah. I think it would be really interesting
+
+00:41:29.970 --> 00:41:31.569
+<v Speaker 0>if we here's my future request for you
+
+00:41:31.569 --> 00:41:33.490
+<v Speaker 0>now, Kartik. But, you know, when we do
+
+00:41:33.490 --> 00:41:35.250
+<v Speaker 0>chaos I speak from my own experience. I
+
+00:41:35.250 --> 00:41:37.410
+<v Speaker 0>won't say we. When I do chaos engineering,
+
+00:41:37.410 --> 00:41:39.329
+<v Speaker 0>you know, I'm generally trying to see how
+
+00:41:39.329 --> 00:41:42.235
+<v Speaker 0>my app is for customers during terms of
+
+00:41:42.235 --> 00:41:44.635
+<v Speaker 0>turbulence and chaos. And I wonder like if
+
+00:41:44.635 --> 00:41:46.875
+<v Speaker 0>we could have Google Analytics as a data
+
+00:41:46.875 --> 00:41:48.795
+<v Speaker 0>source and be able to actually see,
+
+00:41:49.195 --> 00:41:52.395
+<v Speaker 0>you know, JavaScript rendering time and, you know,
+
+00:41:52.475 --> 00:41:54.569
+<v Speaker 0>time to the page being available, the data
+
+00:41:54.569 --> 00:41:55.849
+<v Speaker 0>come down and all that. I think that
+
+00:41:55.849 --> 00:41:58.089
+<v Speaker 0>would be a really interesting insight to how
+
+00:41:58.089 --> 00:42:00.410
+<v Speaker 0>the chaos affects my customer's point of view.
+
+00:42:01.849 --> 00:42:05.210
+<v Speaker 1>That's a great feature request. I think it
+
+00:42:05.210 --> 00:42:06.170
+<v Speaker 1>makes a lot of sense.
+
+00:42:07.445 --> 00:42:10.005
+<v Speaker 1>Yes. I think that's something that we would
+
+00:42:10.005 --> 00:42:11.205
+<v Speaker 1>be very happy to
+
+00:42:11.605 --> 00:42:14.005
+<v Speaker 1>take control. Thanks for that feedback.
+
+00:42:15.445 --> 00:42:19.525
+<v Speaker 1>Yes. I think Yeah. I'll
+
+00:42:18.740 --> 00:42:20.339
+<v Speaker 0>make sure I open an issue on the
+
+00:42:20.339 --> 00:42:22.500
+<v Speaker 0>the GitHub for that, so don't worry. Okay.
+
+00:42:22.900 --> 00:42:25.299
+<v Speaker 0>Do you wanna take us away with the
+
+00:42:25.299 --> 00:42:27.780
+<v Speaker 0>workflow change? Oh. Oh, sorry. On you go.
+
+00:42:28.180 --> 00:42:29.380
+<v Speaker 1>On that note,
+
+00:42:30.099 --> 00:42:31.460
+<v Speaker 1>this is where you can create
+
+00:42:31.780 --> 00:42:34.385
+<v Speaker 1>issues on Litmus. So it's like Litmus care
+
+00:42:34.385 --> 00:42:36.785
+<v Speaker 1>slash Litmus is the repository.
+
+00:42:39.185 --> 00:42:41.025
+<v Speaker 1>Please feel free to create issues here, and
+
+00:42:41.025 --> 00:42:42.625
+<v Speaker 1>we will definitely
+
+00:42:43.265 --> 00:42:46.145
+<v Speaker 1>get back on them. Be happy to consider
+
+00:42:46.420 --> 00:42:48.980
+<v Speaker 1>and feel free to put your thoughts there
+
+00:42:48.980 --> 00:42:51.380
+<v Speaker 1>on those issues. Thank you. And, of course,
+
+00:42:52.100 --> 00:42:54.020
+<v Speaker 0>pull request welcome. Right? There.
+
+00:42:54.420 --> 00:42:56.980
+<v Speaker 1>So you could start off a new I
+
+00:42:56.980 --> 00:42:59.300
+<v Speaker 1>mean, you could participate in a discussion, start
+
+00:42:59.300 --> 00:43:00.740
+<v Speaker 1>up a new discussion thread.
+
+00:43:00.900 --> 00:43:02.100
+<v Speaker 1>That that works as well.
+
+00:43:05.965 --> 00:43:06.525
+<v Speaker 0>Nice.
+
+00:43:07.805 --> 00:43:09.405
+<v Speaker 1>Alright. So
+
+00:43:10.125 --> 00:43:12.605
+<v Speaker 1>let's go to the workflow creation part.
+
+00:43:12.685 --> 00:43:12.925
+<v Speaker 1>And
+
+00:43:14.490 --> 00:43:16.570
+<v Speaker 1>before we do that, let me show you
+
+00:43:17.210 --> 00:43:18.170
+<v Speaker 1>what I have.
+
+00:43:18.810 --> 00:43:20.330
+<v Speaker 1>There is an application
+
+00:43:21.130 --> 00:43:22.250
+<v Speaker 1>called as
+
+00:43:22.890 --> 00:43:25.050
+<v Speaker 1>Bank of Anthos, which you might be familiar
+
+00:43:25.050 --> 00:43:27.974
+<v Speaker 1>with, provided by Google Cloud Platform.
+
+00:43:28.775 --> 00:43:31.095
+<v Speaker 1>Very interesting microservices app
+
+00:43:31.174 --> 00:43:33.335
+<v Speaker 1>has different kinds of services,
+
+00:43:34.135 --> 00:43:37.095
+<v Speaker 1>different platforms being used to create these microservices,
+
+00:43:37.095 --> 00:43:38.695
+<v Speaker 1>Python, Paint Java,
+
+00:43:39.015 --> 00:43:40.295
+<v Speaker 1>etcetera. And
+
+00:43:42.110 --> 00:43:43.230
+<v Speaker 1>they have all
+
+00:43:43.390 --> 00:43:46.430
+<v Speaker 1>the services to give you the experience
+
+00:43:46.430 --> 00:43:47.710
+<v Speaker 1>of a banking
+
+00:43:47.790 --> 00:43:48.350
+<v Speaker 1>app.
+
+00:43:48.670 --> 00:43:51.470
+<v Speaker 1>So we have Bank of Anthos with the
+
+00:43:52.510 --> 00:43:55.230
+<v Speaker 1>balance and your net shares and has option
+
+00:43:55.230 --> 00:43:58.125
+<v Speaker 1>for you to deposit funds or make payments,
+
+00:43:58.525 --> 00:43:59.325
+<v Speaker 1>etcetera.
+
+00:43:59.565 --> 00:44:02.525
+<v Speaker 1>So it's it's a cool
+
+00:44:02.525 --> 00:44:03.325
+<v Speaker 1>example
+
+00:44:03.405 --> 00:44:06.045
+<v Speaker 1>to get started with for chaos to see
+
+00:44:06.045 --> 00:44:07.085
+<v Speaker 1>what happens.
+
+00:44:07.485 --> 00:44:09.325
+<v Speaker 1>So what we're going to do is we're
+
+00:44:09.325 --> 00:44:10.605
+<v Speaker 1>going to inhibit
+
+00:44:10.765 --> 00:44:11.965
+<v Speaker 1>network traffic
+
+00:44:12.560 --> 00:44:15.520
+<v Speaker 1>on on the balance reader app.
+
+00:44:17.200 --> 00:44:19.040
+<v Speaker 1>So that's one of the application. One of
+
+00:44:19.040 --> 00:44:19.920
+<v Speaker 1>the sub pieces,
+
+00:44:20.240 --> 00:44:20.960
+<v Speaker 1>following
+
+00:44:21.040 --> 00:44:23.520
+<v Speaker 1>this detail, I'm able to read this balance
+
+00:44:23.520 --> 00:44:25.200
+<v Speaker 1>because of the balance reader.
+
+00:44:25.920 --> 00:44:26.640
+<v Speaker 1>And
+
+00:44:27.204 --> 00:44:28.805
+<v Speaker 1>also, when we make payments,
+
+00:44:29.204 --> 00:44:31.924
+<v Speaker 1>it needs to see how much balance we
+
+00:44:31.924 --> 00:44:33.765
+<v Speaker 1>have in our account before it makes the
+
+00:44:33.765 --> 00:44:34.405
+<v Speaker 1>payment.
+
+00:44:34.565 --> 00:44:36.645
+<v Speaker 1>So it tries to speak to this microservice,
+
+00:44:36.645 --> 00:44:38.724
+<v Speaker 1>the payment service, whatever, tries to speak to
+
+00:44:38.724 --> 00:44:39.525
+<v Speaker 1>the balance service.
+
+00:44:40.800 --> 00:44:44.400
+<v Speaker 1>So what we're do is create a %
+
+00:44:45.040 --> 00:44:47.040
+<v Speaker 1>packet drop. You could call this, like, a
+
+00:44:47.040 --> 00:44:47.920
+<v Speaker 1>black hole.
+
+00:44:48.240 --> 00:44:48.800
+<v Speaker 1>Basically,
+
+00:44:49.280 --> 00:44:51.280
+<v Speaker 1>nothing goes through to that service
+
+00:44:51.600 --> 00:44:54.160
+<v Speaker 1>and see how that impacts our experience,
+
+00:44:54.915 --> 00:44:57.475
+<v Speaker 1>how it causes a degradation in the user
+
+00:44:57.475 --> 00:45:00.115
+<v Speaker 1>experience. Let's say, I'm a customer of Panthers,
+
+00:45:00.435 --> 00:45:01.795
+<v Speaker 1>how it impacts them.
+
+00:45:02.515 --> 00:45:04.675
+<v Speaker 1>But with this, we will also see
+
+00:45:05.315 --> 00:45:07.395
+<v Speaker 1>how you can the intent of this part
+
+00:45:07.395 --> 00:45:09.990
+<v Speaker 1>of the demonstration is to see how you
+
+00:45:09.990 --> 00:45:12.630
+<v Speaker 1>can construct workflow by picking the
+
+00:45:13.110 --> 00:45:14.710
+<v Speaker 1>parts of experiments
+
+00:45:14.710 --> 00:45:15.990
+<v Speaker 1>from the integrated
+
+00:45:15.990 --> 00:45:17.110
+<v Speaker 1>chaos hub
+
+00:45:17.270 --> 00:45:18.870
+<v Speaker 1>and how you can set some
+
+00:45:19.430 --> 00:45:20.870
+<v Speaker 1>how you can tune it for how long
+
+00:45:20.870 --> 00:45:23.215
+<v Speaker 1>you want to run it, etcetera.
+
+00:45:23.375 --> 00:45:25.695
+<v Speaker 1>So let me go ahead and click on
+
+00:45:26.015 --> 00:45:26.975
+<v Speaker 1>schedule
+
+00:45:27.295 --> 00:45:28.175
+<v Speaker 1>workflow.
+
+00:45:28.335 --> 00:45:30.255
+<v Speaker 1>I'm going to select self agent
+
+00:45:30.335 --> 00:45:31.135
+<v Speaker 1>because
+
+00:45:31.535 --> 00:45:34.655
+<v Speaker 1>the back panels resides in the same cluster
+
+00:45:34.370 --> 00:45:37.250
+<v Speaker 1>where my portal is installed on. So happens
+
+00:45:37.250 --> 00:45:38.370
+<v Speaker 1>to be self agent.
+
+00:45:38.530 --> 00:45:41.410
+<v Speaker 1>So let me go ahead and click next.
+
+00:45:41.810 --> 00:45:44.290
+<v Speaker 1>So there are different options here. Some of
+
+00:45:44.290 --> 00:45:46.210
+<v Speaker 1>these might have been you might have taken
+
+00:45:46.210 --> 00:45:48.105
+<v Speaker 1>a look at them before, but they've been
+
+00:45:48.105 --> 00:45:51.545
+<v Speaker 1>improved and made, especially the section here on
+
+00:45:51.785 --> 00:45:54.025
+<v Speaker 1>creating your work program hub. So in this
+
+00:45:54.025 --> 00:45:54.985
+<v Speaker 1>drop down,
+
+00:45:55.545 --> 00:45:56.265
+<v Speaker 1>I have
+
+00:45:56.505 --> 00:45:58.425
+<v Speaker 1>the chaos hub, the single
+
+00:45:58.745 --> 00:46:01.225
+<v Speaker 1>public chaos hublets embedded here.
+
+00:46:02.060 --> 00:46:04.460
+<v Speaker 1>So I basically go ahead and select this,
+
+00:46:04.460 --> 00:46:06.140
+<v Speaker 1>and I give it a name,
+
+00:46:07.740 --> 00:46:09.580
+<v Speaker 1>Rawkode or Anthos
+
+00:46:09.980 --> 00:46:10.780
+<v Speaker 1>black.
+
+00:46:10.780 --> 00:46:11.340
+<v Speaker 1>And
+
+00:46:15.345 --> 00:46:16.705
+<v Speaker 1>I have the option of
+
+00:46:17.105 --> 00:46:18.305
+<v Speaker 1>going and selecting
+
+00:46:18.385 --> 00:46:20.625
+<v Speaker 1>a new experiment. Let me add a new
+
+00:46:20.625 --> 00:46:21.425
+<v Speaker 1>experiment.
+
+00:46:21.825 --> 00:46:24.385
+<v Speaker 1>I'm interested in network loss, so let me
+
+00:46:24.385 --> 00:46:26.225
+<v Speaker 1>select that from this category.
+
+00:46:26.225 --> 00:46:28.145
+<v Speaker 1>I have a printer that you can use.
+
+00:46:28.625 --> 00:46:30.490
+<v Speaker 1>So once I select this,
+
+00:46:31.130 --> 00:46:32.490
+<v Speaker 1>I can go and tune
+
+00:46:32.809 --> 00:46:34.010
+<v Speaker 1>this experiment.
+
+00:46:34.010 --> 00:46:36.090
+<v Speaker 1>So, basically, click here
+
+00:46:36.569 --> 00:46:37.369
+<v Speaker 1>and
+
+00:46:38.410 --> 00:46:40.089
+<v Speaker 1>I can see details
+
+00:46:41.305 --> 00:46:41.945
+<v Speaker 1>that
+
+00:46:42.585 --> 00:46:44.985
+<v Speaker 1>basically show what have I taken
+
+00:46:45.865 --> 00:46:47.385
+<v Speaker 1>the experiment from and what is the name
+
+00:46:47.385 --> 00:46:48.985
+<v Speaker 1>of the experiment and etcetera.
+
+00:46:49.865 --> 00:46:51.065
+<v Speaker 1>When I say next,
+
+00:46:51.305 --> 00:46:52.985
+<v Speaker 1>I have the option of
+
+00:46:53.630 --> 00:46:56.590
+<v Speaker 1>indicating the application against which we will do
+
+00:46:56.590 --> 00:46:57.390
+<v Speaker 1>this part.
+
+00:46:57.710 --> 00:47:00.750
+<v Speaker 1>Now this is something like asset discovery,
+
+00:47:01.150 --> 00:47:03.230
+<v Speaker 1>we can call it. In other in other
+
+00:47:03.230 --> 00:47:06.270
+<v Speaker 1>words, this discovering the microservices
+
+00:47:06.065 --> 00:47:09.265
+<v Speaker 1>on your Kubernetes cluster. The agent performs this
+
+00:47:09.265 --> 00:47:11.745
+<v Speaker 1>task, the subscriber, to be more precise.
+
+00:47:12.065 --> 00:47:14.385
+<v Speaker 1>So I'm looking at application in the volume
+
+00:47:14.385 --> 00:47:15.905
+<v Speaker 1>space, which is where my
+
+00:47:17.585 --> 00:47:18.945
+<v Speaker 1>background resides.
+
+00:47:19.025 --> 00:47:20.750
+<v Speaker 1>There are also the namespaces. This is too
+
+00:47:20.750 --> 00:47:21.630
+<v Speaker 1>much you can see.
+
+00:47:22.030 --> 00:47:24.670
+<v Speaker 1>And the balance rate is of kind deployment,
+
+00:47:25.390 --> 00:47:26.910
+<v Speaker 1>and it has
+
+00:47:28.110 --> 00:47:29.230
+<v Speaker 1>an application
+
+00:47:29.310 --> 00:47:30.270
+<v Speaker 1>label
+
+00:47:30.590 --> 00:47:32.670
+<v Speaker 1>called app equals to balance figure. That's the
+
+00:47:32.670 --> 00:47:33.790
+<v Speaker 1>one that I'm going to target.
+
+00:47:34.325 --> 00:47:37.445
+<v Speaker 1>Annotation check here is a way to further
+
+00:47:37.765 --> 00:47:38.405
+<v Speaker 1>do
+
+00:47:38.885 --> 00:47:41.685
+<v Speaker 1>filtering of applications or to increase
+
+00:47:41.685 --> 00:47:43.205
+<v Speaker 1>blast radius control.
+
+00:47:43.285 --> 00:47:45.125
+<v Speaker 1>If you have multiple applications
+
+00:47:45.125 --> 00:47:46.245
+<v Speaker 1>that share a common
+
+00:47:47.000 --> 00:47:49.240
+<v Speaker 1>label because that's how you deploy it, they
+
+00:47:49.240 --> 00:47:50.920
+<v Speaker 1>will all have a common label.
+
+00:47:51.160 --> 00:47:52.839
+<v Speaker 1>You are going to select just one of
+
+00:47:52.839 --> 00:47:55.880
+<v Speaker 1>them for some reason. You can annotate it
+
+00:47:55.960 --> 00:47:57.720
+<v Speaker 1>with a specific annotation,
+
+00:47:57.720 --> 00:48:00.935
+<v Speaker 1>and then you can force witness to check
+
+00:48:00.935 --> 00:48:03.495
+<v Speaker 1>for that deployment which carries the annotation
+
+00:48:03.575 --> 00:48:05.735
+<v Speaker 1>before it does the but it's not mandatory.
+
+00:48:06.135 --> 00:48:08.615
+<v Speaker 1>Mind you, I just have one instance
+
+00:48:08.775 --> 00:48:11.815
+<v Speaker 1>of balance readers, right, the annotation check to
+
+00:48:11.815 --> 00:48:12.055
+<v Speaker 1>false.
+
+00:48:12.690 --> 00:48:14.530
+<v Speaker 1>There's a cleanup policy here,
+
+00:48:15.569 --> 00:48:17.010
+<v Speaker 1>which tells me that I want to keep
+
+00:48:17.010 --> 00:48:19.570
+<v Speaker 1>my bots or I want to clean them.
+
+00:48:19.650 --> 00:48:20.930
+<v Speaker 1>I want to keep them
+
+00:48:21.329 --> 00:48:24.130
+<v Speaker 1>because that's how I can see logs on
+
+00:48:24.130 --> 00:48:27.545
+<v Speaker 1>the portal. The the workflow visualization graph in
+
+00:48:27.545 --> 00:48:29.385
+<v Speaker 1>the portal gives you the opportunity to pull
+
+00:48:29.385 --> 00:48:31.785
+<v Speaker 1>the logs for the experiment that is
+
+00:48:32.185 --> 00:48:33.385
+<v Speaker 1>just executed,
+
+00:48:33.545 --> 00:48:35.385
+<v Speaker 1>and it will be able to pick logs
+
+00:48:35.385 --> 00:48:37.065
+<v Speaker 1>from a live
+
+00:48:37.145 --> 00:48:39.545
+<v Speaker 1>or an existing part of the cluster.
+
+00:48:40.070 --> 00:48:42.150
+<v Speaker 1>We do not store the logs in the
+
+00:48:42.150 --> 00:48:45.910
+<v Speaker 1>chaos centers. We just retrieve it on demand.
+
+00:48:46.070 --> 00:48:47.910
+<v Speaker 1>So I would like to keep those parts
+
+00:48:47.910 --> 00:48:50.070
+<v Speaker 1>in order to show you those logs. There
+
+00:48:50.070 --> 00:48:52.630
+<v Speaker 1>are also options to set node selectors. For
+
+00:48:52.630 --> 00:48:53.270
+<v Speaker 1>example,
+
+00:48:53.750 --> 00:48:56.505
+<v Speaker 1>like you may all know, when Litmus executes
+
+00:48:56.505 --> 00:48:59.225
+<v Speaker 1>it for, runs it as a Kubernetes job.
+
+00:48:59.545 --> 00:49:01.224
+<v Speaker 1>And you might have references on how you
+
+00:49:01.224 --> 00:49:03.065
+<v Speaker 1>want to run this
+
+00:49:03.305 --> 00:49:05.465
+<v Speaker 1>this job, where you want to run it,
+
+00:49:05.785 --> 00:49:07.545
+<v Speaker 1>etcetera. If you have a specific note, there
+
+00:49:07.545 --> 00:49:09.305
+<v Speaker 1>is this practice that's there.
+
+00:49:10.580 --> 00:49:13.140
+<v Speaker 1>They put on business applications on certain nodes.
+
+00:49:13.140 --> 00:49:15.620
+<v Speaker 1>They have dedicated some nodes to run their
+
+00:49:15.620 --> 00:49:16.260
+<v Speaker 1>main
+
+00:49:16.580 --> 00:49:17.860
+<v Speaker 1>application services
+
+00:49:18.340 --> 00:49:20.980
+<v Speaker 1>either by making use of affinity policies or
+
+00:49:20.980 --> 00:49:23.845
+<v Speaker 1>tolerations and things like that. And they have
+
+00:49:24.085 --> 00:49:25.205
+<v Speaker 1>another node
+
+00:49:25.445 --> 00:49:28.405
+<v Speaker 1>dedicated to running some third party services or
+
+00:49:28.405 --> 00:49:31.285
+<v Speaker 1>tooling, so to say. In case you're just
+
+00:49:31.285 --> 00:49:33.605
+<v Speaker 1>doing like that, you can provide the notes
+
+00:49:33.605 --> 00:49:34.405
+<v Speaker 1>selected
+
+00:49:34.565 --> 00:49:35.685
+<v Speaker 1>for those details.
+
+00:49:36.085 --> 00:49:37.205
+<v Speaker 1>So let me click next.
+
+00:49:37.839 --> 00:49:39.120
+<v Speaker 1>So at this point,
+
+00:49:40.160 --> 00:49:41.600
+<v Speaker 1>I have the option
+
+00:49:41.680 --> 00:49:43.840
+<v Speaker 1>of adding a probe.
+
+00:49:44.240 --> 00:49:45.040
+<v Speaker 1>Probe
+
+00:49:45.040 --> 00:49:45.680
+<v Speaker 1>is
+
+00:49:45.920 --> 00:49:46.880
+<v Speaker 1>a way
+
+00:49:46.960 --> 00:49:48.000
+<v Speaker 1>to validate
+
+00:49:48.000 --> 00:49:50.079
+<v Speaker 1>steady state hypothesis, and there are different kinds
+
+00:49:50.079 --> 00:49:52.079
+<v Speaker 1>of probes. We will come to that in
+
+00:49:52.079 --> 00:49:53.040
+<v Speaker 1>the next
+
+00:49:53.755 --> 00:49:56.474
+<v Speaker 1>workflow that I run, which is against another
+
+00:49:56.474 --> 00:49:57.355
+<v Speaker 1>service.
+
+00:49:58.075 --> 00:49:58.875
+<v Speaker 1>For now,
+
+00:49:59.115 --> 00:50:01.755
+<v Speaker 1>let me not do any validation. Just more
+
+00:50:01.755 --> 00:50:03.515
+<v Speaker 1>interested in just doing the workflow and seeing
+
+00:50:03.515 --> 00:50:04.155
+<v Speaker 1>the fault.
+
+00:50:04.395 --> 00:50:07.330
+<v Speaker 1>So let me click next. And this is
+
+00:50:07.570 --> 00:50:09.410
+<v Speaker 1>before you have to tune the duration of
+
+00:50:09.410 --> 00:50:10.770
+<v Speaker 1>your your chaos
+
+00:50:10.930 --> 00:50:13.890
+<v Speaker 1>and adding other variables. There are different tunables
+
+00:50:13.890 --> 00:50:15.410
+<v Speaker 1>that particular
+
+00:50:15.410 --> 00:50:17.730
+<v Speaker 1>experiment supports that you can see in the
+
+00:50:17.730 --> 00:50:18.930
+<v Speaker 1>experiment documentation.
+
+00:50:19.575 --> 00:50:21.735
+<v Speaker 1>So let's say, for network loss,
+
+00:50:22.055 --> 00:50:24.695
+<v Speaker 1>you can see that there are different
+
+00:50:25.095 --> 00:50:26.375
+<v Speaker 1>tables here
+
+00:50:26.454 --> 00:50:28.375
+<v Speaker 1>that you can provide in case you're interested
+
+00:50:28.375 --> 00:50:30.455
+<v Speaker 1>in doing that. Many of them are optional.
+
+00:50:30.695 --> 00:50:32.215
+<v Speaker 1>So you can provide
+
+00:50:32.695 --> 00:50:34.855
+<v Speaker 1>that by adding a new case.
+
+00:50:36.279 --> 00:50:38.280
+<v Speaker 1>And I'm interested in
+
+00:50:38.599 --> 00:50:40.680
+<v Speaker 1>providing the just the defaults and running with
+
+00:50:40.680 --> 00:50:43.000
+<v Speaker 1>them. So click finish.
+
+00:50:43.960 --> 00:50:46.520
+<v Speaker 1>Revert schedule is to keep the chaos resource
+
+00:50:46.520 --> 00:50:47.320
+<v Speaker 1>and not
+
+00:50:47.640 --> 00:50:48.359
+<v Speaker 1>clean it up.
+
+00:50:49.215 --> 00:50:51.215
+<v Speaker 1>This is what the chaos engine resource,
+
+00:50:51.455 --> 00:50:52.895
+<v Speaker 1>which is set to false.
+
+00:50:53.295 --> 00:50:55.855
+<v Speaker 1>And when I go ahead and say next,
+
+00:50:55.935 --> 00:50:57.295
+<v Speaker 1>so this is the step
+
+00:50:58.095 --> 00:51:00.335
+<v Speaker 1>which you might already be aware of to
+
+00:51:00.335 --> 00:51:02.095
+<v Speaker 1>provide the criticality or weight
+
+00:51:02.680 --> 00:51:05.400
+<v Speaker 1>of a particular experiment within a workflow,
+
+00:51:05.720 --> 00:51:07.240
+<v Speaker 1>and this is going to influence the final
+
+00:51:07.240 --> 00:51:08.600
+<v Speaker 1>resiliency score.
+
+00:51:08.840 --> 00:51:11.880
+<v Speaker 1>The points that we provide here multiplied by
+
+00:51:11.880 --> 00:51:13.880
+<v Speaker 1>the success factor of the experiment.
+
+00:51:13.960 --> 00:51:16.360
+<v Speaker 1>Success factor is retrieved as
+
+00:51:16.360 --> 00:51:17.880
+<v Speaker 1>the execution completes.
+
+00:51:18.255 --> 00:51:19.214
+<v Speaker 1>So you have
+
+00:51:19.934 --> 00:51:22.414
+<v Speaker 1>a percentage success for that part depending on
+
+00:51:22.414 --> 00:51:25.214
+<v Speaker 1>how many probes were successful or how many
+
+00:51:25.214 --> 00:51:26.415
+<v Speaker 1>negative checks
+
+00:51:26.494 --> 00:51:29.135
+<v Speaker 1>within the experiment were successful. When say negative
+
+00:51:29.135 --> 00:51:30.175
+<v Speaker 1>check, it's about
+
+00:51:30.575 --> 00:51:32.174
+<v Speaker 1>let's say you have a pre chaos check.
+
+00:51:32.950 --> 00:51:34.630
+<v Speaker 1>I want my services to be in so
+
+00:51:34.630 --> 00:51:36.550
+<v Speaker 1>and so state before carry
+
+00:51:36.550 --> 00:51:37.670
+<v Speaker 1>out the chaos
+
+00:51:37.910 --> 00:51:39.910
+<v Speaker 1>because I don't want to do chaos against
+
+00:51:39.910 --> 00:51:41.830
+<v Speaker 1>an already degraded system.
+
+00:51:42.230 --> 00:51:43.670
+<v Speaker 1>And then after you
+
+00:51:44.790 --> 00:51:47.735
+<v Speaker 1>run far, maybe there is some particular state
+
+00:51:47.735 --> 00:51:48.855
+<v Speaker 1>you're looking for,
+
+00:51:49.255 --> 00:51:51.175
+<v Speaker 1>and let's check that you can do. These
+
+00:51:51.175 --> 00:51:53.335
+<v Speaker 1>are pre and post class checks. It's also
+
+00:51:53.335 --> 00:51:56.535
+<v Speaker 1>part of the steady state hypothesis validation.
+
+00:51:57.575 --> 00:52:00.069
+<v Speaker 1>So depending upon how these checks went and
+
+00:52:00.069 --> 00:52:02.710
+<v Speaker 1>how the probes went even as your fault
+
+00:52:02.710 --> 00:52:04.710
+<v Speaker 1>happens, something there's something called as a continuous
+
+00:52:04.710 --> 00:52:05.590
+<v Speaker 1>mode
+
+00:52:05.670 --> 00:52:06.790
+<v Speaker 1>in the probe,
+
+00:52:07.109 --> 00:52:09.510
+<v Speaker 1>which happens in parallel as you do the
+
+00:52:09.510 --> 00:52:11.750
+<v Speaker 1>fault. So it checks real time how your
+
+00:52:11.750 --> 00:52:14.175
+<v Speaker 1>app behaves, not just the recovery
+
+00:52:14.175 --> 00:52:16.815
+<v Speaker 1>as in the native post year sticks.
+
+00:52:16.975 --> 00:52:19.695
+<v Speaker 1>So all those checks contribute
+
+00:52:19.695 --> 00:52:21.775
+<v Speaker 1>to you getting a success factor.
+
+00:52:22.015 --> 00:52:24.015
+<v Speaker 1>We call it as a post success percentage.
+
+00:52:24.175 --> 00:52:26.175
+<v Speaker 1>It's anywhere between zero to 100%.
+
+00:52:26.580 --> 00:52:27.620
+<v Speaker 1>And that
+
+00:52:28.260 --> 00:52:29.380
+<v Speaker 1>multiplied
+
+00:52:29.620 --> 00:52:31.380
+<v Speaker 1>by the points that you gave for a
+
+00:52:31.380 --> 00:52:32.420
+<v Speaker 1>given experiment.
+
+00:52:32.580 --> 00:52:34.980
+<v Speaker 1>And the summation of this for all the
+
+00:52:34.980 --> 00:52:37.540
+<v Speaker 1>experiments you have within a workflow divided by
+
+00:52:37.540 --> 00:52:38.660
+<v Speaker 1>the total points
+
+00:52:38.915 --> 00:52:42.435
+<v Speaker 1>gives you the resilience score. It's a metric
+
+00:52:42.435 --> 00:52:45.715
+<v Speaker 1>that helps you to understand where you stand
+
+00:52:45.955 --> 00:52:48.515
+<v Speaker 1>with respect to resilience
+
+00:52:48.595 --> 00:52:51.635
+<v Speaker 1>for a particular scenario or workflow
+
+00:52:51.795 --> 00:52:53.714
+<v Speaker 1>for a given app. So this is the
+
+00:52:53.714 --> 00:52:56.650
+<v Speaker 1>one that connects an application or an infrastructure
+
+00:52:56.650 --> 00:52:57.530
+<v Speaker 1>component
+
+00:52:57.690 --> 00:53:00.410
+<v Speaker 1>with a scenario and then tries to try
+
+00:53:00.410 --> 00:53:02.010
+<v Speaker 1>to figure out the scope that you have
+
+00:53:02.010 --> 00:53:04.010
+<v Speaker 1>for it. And then that is something you
+
+00:53:04.010 --> 00:53:06.170
+<v Speaker 1>can use because it is quantified.
+
+00:53:06.250 --> 00:53:07.610
+<v Speaker 1>You will be able to compare it over
+
+00:53:07.610 --> 00:53:10.075
+<v Speaker 1>time to see how it has improved or
+
+00:53:10.075 --> 00:53:11.115
+<v Speaker 1>maybe debated
+
+00:53:11.275 --> 00:53:13.115
+<v Speaker 1>or even what you want to see, how
+
+00:53:13.115 --> 00:53:15.515
+<v Speaker 1>it changes across infrastructure.
+
+00:53:16.315 --> 00:53:18.875
+<v Speaker 1>So when you run the same form against
+
+00:53:18.875 --> 00:53:21.355
+<v Speaker 1>an app deployed, let's say, it's JFK application
+
+00:53:21.355 --> 00:53:23.275
+<v Speaker 1>deployed with a particular storage class
+
+00:53:23.610 --> 00:53:25.370
+<v Speaker 1>on that particular c nine
+
+00:53:26.010 --> 00:53:28.490
+<v Speaker 1>or a particular type of node versus when
+
+00:53:28.490 --> 00:53:30.970
+<v Speaker 1>you repeat the same thing with some other
+
+00:53:30.970 --> 00:53:32.490
+<v Speaker 1>environment completely
+
+00:53:32.730 --> 00:53:33.530
+<v Speaker 1>different,
+
+00:53:33.610 --> 00:53:35.130
+<v Speaker 1>you will be able to see some differences
+
+00:53:35.130 --> 00:53:35.930
+<v Speaker 1>sometimes,
+
+00:53:35.930 --> 00:53:37.850
+<v Speaker 1>which are very instructive. So you're learning more
+
+00:53:37.850 --> 00:53:39.945
+<v Speaker 1>about the system that way. So
+
+00:53:40.265 --> 00:53:42.425
+<v Speaker 1>this is going to help in that process.
+
+00:53:42.745 --> 00:53:45.145
+<v Speaker 1>So I'm going to give all the points
+
+00:53:45.305 --> 00:53:46.585
+<v Speaker 1>because there's
+
+00:53:46.665 --> 00:53:49.385
+<v Speaker 1>no real other points in this workflow, this
+
+00:53:49.385 --> 00:53:51.465
+<v Speaker 1>one. So I just give it all points.
+
+00:53:51.625 --> 00:53:52.425
+<v Speaker 1>I click next.
+
+00:53:53.960 --> 00:53:55.000
+<v Speaker 1>At this point,
+
+00:53:55.400 --> 00:53:57.240
+<v Speaker 1>I can schedule it once or I can
+
+00:53:57.240 --> 00:53:58.920
+<v Speaker 1>schedule it repeatedly.
+
+00:53:59.799 --> 00:54:01.400
+<v Speaker 1>This is standard crop
+
+00:54:01.400 --> 00:54:03.079
+<v Speaker 1>where you go ahead and keep running those
+
+00:54:03.079 --> 00:54:04.280
+<v Speaker 1>workflows anyway.
+
+00:54:04.359 --> 00:54:06.040
+<v Speaker 1>I'm going to just try it once.
+
+00:54:06.200 --> 00:54:08.055
+<v Speaker 1>So at this point, I can
+
+00:54:08.375 --> 00:54:09.895
+<v Speaker 1>view the YAML
+
+00:54:10.055 --> 00:54:11.895
+<v Speaker 1>to see some summary of
+
+00:54:12.215 --> 00:54:13.175
+<v Speaker 1>what is there.
+
+00:54:13.415 --> 00:54:15.415
+<v Speaker 1>The YAML is maybe of
+
+00:54:15.975 --> 00:54:18.775
+<v Speaker 1>it may be familiar to you. It might
+
+00:54:18.960 --> 00:54:21.359
+<v Speaker 1>look very much like the Rawkode is, just
+
+00:54:21.359 --> 00:54:22.640
+<v Speaker 1>the kind of workflow.
+
+00:54:22.960 --> 00:54:25.119
+<v Speaker 1>And we have two steps. The first step
+
+00:54:25.119 --> 00:54:26.880
+<v Speaker 1>to install the template
+
+00:54:26.960 --> 00:54:28.000
+<v Speaker 1>for a font.
+
+00:54:28.160 --> 00:54:30.160
+<v Speaker 1>This describes the font itself,
+
+00:54:30.320 --> 00:54:33.440
+<v Speaker 1>and it is pulled from the hub
+
+00:54:32.945 --> 00:54:35.585
+<v Speaker 1>that is integrated into the portal.
+
+00:54:36.065 --> 00:54:38.225
+<v Speaker 1>And the next step is to launch the
+
+00:54:38.225 --> 00:54:41.265
+<v Speaker 1>engine, which connects your font with your application.
+
+00:54:41.745 --> 00:54:42.945
+<v Speaker 1>So you have
+
+00:54:44.625 --> 00:54:46.625
+<v Speaker 1>something here of interest. We can see there
+
+00:54:46.625 --> 00:54:48.400
+<v Speaker 1>is balance reader
+
+00:54:48.720 --> 00:54:50.880
+<v Speaker 1>in default namespace, and we have the duration
+
+00:54:50.880 --> 00:54:51.520
+<v Speaker 1>here.
+
+00:54:51.760 --> 00:54:55.040
+<v Speaker 1>So we have the little drop packet loss
+
+00:54:55.040 --> 00:54:56.000
+<v Speaker 1>percentage.
+
+00:54:56.400 --> 00:54:58.880
+<v Speaker 1>By default, we use
+
+00:54:58.960 --> 00:55:01.704
+<v Speaker 1>or we assume that the cluster is docker
+
+00:55:01.704 --> 00:55:03.865
+<v Speaker 1>and this is the socket part, but that
+
+00:55:03.865 --> 00:55:05.385
+<v Speaker 1>will be different. You can change it to
+
+00:55:05.385 --> 00:55:07.705
+<v Speaker 1>container d and give a different socket part,
+
+00:55:07.865 --> 00:55:08.665
+<v Speaker 1>etcetera.
+
+00:55:08.665 --> 00:55:10.905
+<v Speaker 1>It makes use of the runtime APIs to
+
+00:55:10.905 --> 00:55:13.385
+<v Speaker 1>inject the network for this case. Let me
+
+00:55:13.385 --> 00:55:15.625
+<v Speaker 1>finish the flow of the result
+
+00:55:15.865 --> 00:55:16.585
+<v Speaker 1>and
+
+00:55:17.570 --> 00:55:19.810
+<v Speaker 1>go to a workflow. So this is going
+
+00:55:19.810 --> 00:55:21.170
+<v Speaker 1>to run.
+
+00:55:21.730 --> 00:55:23.890
+<v Speaker 1>And there will be some parts,
+
+00:55:24.290 --> 00:55:26.290
+<v Speaker 1>transient parts created
+
+00:55:26.290 --> 00:55:28.130
+<v Speaker 1>in your witness namespace,
+
+00:55:28.370 --> 00:55:31.075
+<v Speaker 1>which are now doing these tasks of putting
+
+00:55:31.075 --> 00:55:33.635
+<v Speaker 1>the experiment template, the hop and installing it,
+
+00:55:33.635 --> 00:55:36.355
+<v Speaker 1>and then launching the kiosk inject to trigger
+
+00:55:36.355 --> 00:55:37.955
+<v Speaker 1>the actual fault injection.
+
+00:55:38.115 --> 00:55:39.875
+<v Speaker 1>So that can be visualized
+
+00:55:40.115 --> 00:55:41.955
+<v Speaker 1>in this particular visualization.
+
+00:55:41.955 --> 00:55:43.955
+<v Speaker 1>There's also a table view that
+
+00:55:44.275 --> 00:55:45.155
+<v Speaker 1>you can use.
+
+00:55:46.430 --> 00:55:47.070
+<v Speaker 1>And
+
+00:55:47.309 --> 00:55:48.670
+<v Speaker 1>as the experiment
+
+00:55:49.309 --> 00:55:50.750
+<v Speaker 1>gets underway,
+
+00:55:51.150 --> 00:55:53.390
+<v Speaker 1>you will be able to see the impact
+
+00:55:53.630 --> 00:55:56.109
+<v Speaker 1>caused on Bank of Anthos.
+
+00:55:56.430 --> 00:55:57.550
+<v Speaker 1>So right now,
+
+00:55:57.710 --> 00:55:58.990
+<v Speaker 1>we're just getting
+
+00:55:59.309 --> 00:56:00.430
+<v Speaker 1>initialized
+
+00:56:00.895 --> 00:56:03.135
+<v Speaker 1>with the actual font.
+
+00:56:03.455 --> 00:56:05.695
+<v Speaker 1>So add back to that. This looks good.
+
+00:56:05.855 --> 00:56:07.535
+<v Speaker 1>You can see balances.
+
+00:56:07.695 --> 00:56:09.775
+<v Speaker 1>Alright. We're able to create it. We're able
+
+00:56:09.775 --> 00:56:11.055
+<v Speaker 1>to deposit funds
+
+00:56:11.055 --> 00:56:12.335
+<v Speaker 1>and do all these
+
+00:56:12.575 --> 00:56:13.215
+<v Speaker 1>activities.
+
+00:56:15.470 --> 00:56:16.350
+<v Speaker 1>Very soon,
+
+00:56:17.309 --> 00:56:19.470
+<v Speaker 1>I will not be able to read this
+
+00:56:19.470 --> 00:56:20.270
+<v Speaker 1>balance
+
+00:56:20.750 --> 00:56:22.109
+<v Speaker 1>as the yeah.
+
+00:56:22.510 --> 00:56:23.950
+<v Speaker 1>You can see I made a deposit right
+
+00:56:23.950 --> 00:56:24.430
+<v Speaker 1>now.
+
+00:56:24.910 --> 00:56:26.430
+<v Speaker 1>They cannot see how much
+
+00:56:27.085 --> 00:56:28.445
+<v Speaker 1>it increased. So that's
+
+00:56:30.685 --> 00:56:32.925
+<v Speaker 1>it's not good. You would not like to
+
+00:56:32.925 --> 00:56:34.525
+<v Speaker 1>see these kind of things happen in real
+
+00:56:34.525 --> 00:56:36.445
+<v Speaker 1>time, especially with banks.
+
+00:56:37.405 --> 00:56:39.245
+<v Speaker 1>So the next step, let's say, you make
+
+00:56:39.245 --> 00:56:39.645
+<v Speaker 1>payment.
+
+00:56:41.070 --> 00:56:43.550
+<v Speaker 1>You won't be able to make it because
+
+00:56:43.790 --> 00:56:45.630
+<v Speaker 1>you're not able to pay the balance.
+
+00:56:46.670 --> 00:56:49.390
+<v Speaker 1>So this has been deliberately set up, and
+
+00:56:49.390 --> 00:56:50.110
+<v Speaker 1>then we
+
+00:56:50.670 --> 00:56:52.430
+<v Speaker 1>do not have any
+
+00:56:53.115 --> 00:56:54.795
+<v Speaker 1>yeah. You can see the payment failed. It
+
+00:56:54.795 --> 00:56:56.235
+<v Speaker 1>was not able to proceed.
+
+00:56:56.235 --> 00:56:58.635
+<v Speaker 1>In fact, there's a a bigger exception that
+
+00:56:58.635 --> 00:57:00.155
+<v Speaker 1>you can see in the logs,
+
+00:57:00.555 --> 00:57:01.515
+<v Speaker 1>and this
+
+00:57:01.915 --> 00:57:04.235
+<v Speaker 1>is something that you would we really want
+
+00:57:04.235 --> 00:57:05.995
+<v Speaker 1>to avoid for your applications.
+
+00:57:06.075 --> 00:57:08.395
+<v Speaker 1>So we've deliberately set it up without
+
+00:57:09.490 --> 00:57:10.290
+<v Speaker 1>the
+
+00:57:10.770 --> 00:57:11.650
+<v Speaker 1>mitigation.
+
+00:57:11.970 --> 00:57:13.810
+<v Speaker 1>So you will see the error. It just
+
+00:57:13.810 --> 00:57:14.610
+<v Speaker 1>illustrate
+
+00:57:14.610 --> 00:57:16.530
+<v Speaker 1>the font in progress.
+
+00:57:17.730 --> 00:57:19.810
+<v Speaker 1>So we are going to do this. We
+
+00:57:19.810 --> 00:57:21.330
+<v Speaker 1>are going to keep at it for some
+
+00:57:21.330 --> 00:57:21.570
+<v Speaker 1>time.
+
+00:57:22.335 --> 00:57:24.895
+<v Speaker 1>Sixty seconds as you saw in the
+
+00:57:25.535 --> 00:57:26.335
+<v Speaker 1>engine
+
+00:57:26.734 --> 00:57:27.615
+<v Speaker 1>manifest.
+
+00:57:28.095 --> 00:57:30.015
+<v Speaker 1>And once that is over,
+
+00:57:30.815 --> 00:57:33.055
+<v Speaker 1>the balance will be available again. We will
+
+00:57:33.055 --> 00:57:35.055
+<v Speaker 1>stop the key hazard, revert it,
+
+00:57:35.859 --> 00:57:36.500
+<v Speaker 1>And
+
+00:57:36.660 --> 00:57:38.339
+<v Speaker 1>you will be able to see that things
+
+00:57:38.339 --> 00:57:40.660
+<v Speaker 1>are restored. And the experiment makes a check
+
+00:57:40.660 --> 00:57:42.579
+<v Speaker 1>to see if it is restored, if it
+
+00:57:42.579 --> 00:57:43.540
+<v Speaker 1>is healthy
+
+00:57:43.780 --> 00:57:45.620
+<v Speaker 1>before it actually concludes.
+
+00:57:45.940 --> 00:57:48.740
+<v Speaker 1>If it finds out that post the injection
+
+00:57:48.740 --> 00:57:50.975
+<v Speaker 1>was not able to recover or let's say
+
+00:57:50.975 --> 00:57:53.215
+<v Speaker 1>the self healing in your infrastructure is not
+
+00:57:53.215 --> 00:57:53.855
+<v Speaker 1>working,
+
+00:57:54.255 --> 00:57:56.895
+<v Speaker 1>then that's a alarm bell,
+
+00:57:57.215 --> 00:58:00.335
+<v Speaker 1>and you will have the notifications to go
+
+00:58:00.335 --> 00:58:02.815
+<v Speaker 1>ahead and check. You can send notifications based
+
+00:58:02.815 --> 00:58:04.015
+<v Speaker 1>on from these metrics,
+
+00:58:05.280 --> 00:58:08.000
+<v Speaker 1>but you can have other means of verifying
+
+00:58:08.000 --> 00:58:10.080
+<v Speaker 1>this, but have your own server team. We
+
+00:58:10.640 --> 00:58:13.360
+<v Speaker 1>have some alerts coming in into the Kubernetes
+
+00:58:13.360 --> 00:58:15.280
+<v Speaker 1>portal, but that's going to be post
+
+00:58:15.360 --> 00:58:16.240
+<v Speaker 1>to Rawkode.
+
+00:58:16.800 --> 00:58:18.800
+<v Speaker 1>So this is about
+
+00:58:19.725 --> 00:58:21.885
+<v Speaker 1>how your application
+
+00:58:23.005 --> 00:58:25.485
+<v Speaker 1>came up. So let me go ahead and
+
+00:58:26.045 --> 00:58:27.485
+<v Speaker 1>reload the
+
+00:58:27.965 --> 00:58:30.685
+<v Speaker 1>app once again, and I think I should
+
+00:58:30.685 --> 00:58:31.725
+<v Speaker 1>be able to read
+
+00:58:32.445 --> 00:58:34.125
+<v Speaker 1>my balance because the
+
+00:58:34.569 --> 00:58:37.130
+<v Speaker 1>duration has elapsed. Yeah. This looks great.
+
+00:58:37.690 --> 00:58:38.330
+<v Speaker 1>And
+
+00:58:38.890 --> 00:58:41.369
+<v Speaker 1>this is just going to finish its post
+
+00:58:41.369 --> 00:58:42.490
+<v Speaker 1>chaos checks
+
+00:58:42.650 --> 00:58:45.289
+<v Speaker 1>and complete the experiment. You will see there
+
+00:58:45.530 --> 00:58:47.530
+<v Speaker 1>you will see a pause here in this
+
+00:58:47.530 --> 00:58:48.089
+<v Speaker 1>experiment
+
+00:58:48.705 --> 00:58:49.425
+<v Speaker 1>because
+
+00:58:50.625 --> 00:58:51.665
+<v Speaker 1>it actually
+
+00:58:52.065 --> 00:58:53.025
+<v Speaker 1>ran
+
+00:58:53.505 --> 00:58:56.145
+<v Speaker 1>successfully. The for ran successfully in the
+
+00:58:56.625 --> 00:58:59.265
+<v Speaker 1>pre and post year six were good, but
+
+00:58:59.265 --> 00:59:01.505
+<v Speaker 1>we did not really validate the behavior of
+
+00:59:01.505 --> 00:59:02.305
+<v Speaker 1>microfantas
+
+00:59:02.305 --> 00:59:03.985
+<v Speaker 1>as the part was happening, which I think
+
+00:59:03.985 --> 00:59:06.970
+<v Speaker 1>is pretty important. So in the next workflow
+
+00:59:06.970 --> 00:59:10.010
+<v Speaker 1>that we run using a different technique, we
+
+00:59:10.010 --> 00:59:12.170
+<v Speaker 1>will upload the AR file instead of constructing
+
+00:59:12.170 --> 00:59:13.130
+<v Speaker 1>the workflow
+
+00:59:13.690 --> 00:59:15.210
+<v Speaker 1>through the Maya,
+
+00:59:15.530 --> 00:59:17.530
+<v Speaker 1>the port of the integrated tier store.
+
+00:59:20.285 --> 00:59:23.085
+<v Speaker 1>Integration intent also added. You can see the
+
+00:59:23.085 --> 00:59:24.205
+<v Speaker 1>logs here.
+
+00:59:24.525 --> 00:59:26.285
+<v Speaker 1>We retain those parts to be able to
+
+00:59:26.285 --> 00:59:27.244
+<v Speaker 1>see the logs.
+
+00:59:27.484 --> 00:59:29.805
+<v Speaker 1>So you will find those details here.
+
+00:59:30.045 --> 00:59:32.204
+<v Speaker 1>The kiosk result is the resource that carries
+
+00:59:32.204 --> 00:59:35.420
+<v Speaker 1>details of the kiosk. It says process percentage
+
+00:59:35.420 --> 00:59:36.220
+<v Speaker 1>is hundred.
+
+00:59:37.020 --> 00:59:39.339
+<v Speaker 1>Therefore and since we have given 10 points,
+
+00:59:39.339 --> 00:59:41.579
+<v Speaker 1>this was the only quality that has score
+
+00:59:41.579 --> 00:59:42.780
+<v Speaker 1>of as well.
+
+00:59:43.500 --> 00:59:46.059
+<v Speaker 1>But this doesn't have a validation in bonding,
+
+00:59:46.525 --> 00:59:48.285
+<v Speaker 1>But you can see some details. There's a
+
+00:59:48.285 --> 00:59:50.045
+<v Speaker 1>history of cost of pay terms. We can
+
+00:59:50.045 --> 00:59:52.765
+<v Speaker 1>repeat this. It will be some historical
+
+00:59:53.244 --> 00:59:53.885
+<v Speaker 1>information.
+
+00:59:54.365 --> 00:59:55.005
+<v Speaker 1>And
+
+00:59:56.605 --> 00:59:58.445
+<v Speaker 1>we will also have details
+
+00:59:59.725 --> 01:00:00.125
+<v Speaker 1>of
+
+01:00:00.830 --> 01:00:02.750
+<v Speaker 1>let me just show you that
+
+01:00:04.110 --> 01:00:05.870
+<v Speaker 1>on my console
+
+01:00:08.190 --> 01:00:12.270
+<v Speaker 1>of the successful injection report status
+
+01:00:12.510 --> 01:00:13.950
+<v Speaker 1>of the
+
+01:00:16.135 --> 01:00:17.495
+<v Speaker 1>of of your
+
+01:00:17.735 --> 01:00:20.455
+<v Speaker 1>chaos. Let's see. This is Chaos result.
+
+01:00:23.975 --> 01:00:25.975
+<v Speaker 1>Looking at the Litmus namespace.
+
+01:00:30.140 --> 01:00:32.060
+<v Speaker 1>Let's see there's some information here.
+
+01:00:33.660 --> 01:00:35.740
+<v Speaker 1>This was the application against which we did
+
+01:00:35.740 --> 01:00:36.619
+<v Speaker 1>the chaos,
+
+01:00:36.940 --> 01:00:39.420
+<v Speaker 1>and the status of chaos says reverted
+
+01:00:39.420 --> 01:00:40.779
+<v Speaker 1>and the kind of
+
+01:00:41.605 --> 01:00:43.925
+<v Speaker 1>application that we actually get the 42 is
+
+01:00:43.925 --> 01:00:45.685
+<v Speaker 1>is a part happens to be a part,
+
+01:00:46.405 --> 01:00:48.405
+<v Speaker 1>which most likely it is. There will be
+
+01:00:48.405 --> 01:00:49.045
+<v Speaker 1>a
+
+01:00:49.205 --> 01:00:51.045
+<v Speaker 1>it could be a disk or an instance,
+
+01:00:51.205 --> 01:00:53.525
+<v Speaker 1>user instance, whatever. You'll be able to see
+
+01:00:53.525 --> 01:00:54.405
+<v Speaker 1>the current status,
+
+01:00:54.810 --> 01:00:56.890
+<v Speaker 1>which is, like, generally useful.
+
+01:00:56.970 --> 01:00:58.890
+<v Speaker 1>And there are some events, as we can
+
+01:00:58.890 --> 01:00:59.690
+<v Speaker 1>see here,
+
+01:00:59.930 --> 01:01:03.130
+<v Speaker 1>and also events on the the kiosk engine
+
+01:01:03.530 --> 01:01:05.050
+<v Speaker 1>resource too.
+
+01:01:05.290 --> 01:01:06.490
+<v Speaker 1>So we have some
+
+01:01:07.130 --> 01:01:09.130
+<v Speaker 1>kind of observability
+
+01:01:09.465 --> 01:01:12.665
+<v Speaker 1>around Kubernetes events to be able to track
+
+01:01:12.745 --> 01:01:14.985
+<v Speaker 1>the progress of the experiments that way as
+
+01:01:14.985 --> 01:01:15.545
+<v Speaker 1>well.
+
+01:01:15.865 --> 01:01:17.225
+<v Speaker 1>So that is something
+
+01:01:18.345 --> 01:01:21.465
+<v Speaker 1>you could do, one way of creating workflows.
+
+01:01:22.450 --> 01:01:23.730
+<v Speaker 1>The other way
+
+01:01:23.970 --> 01:01:26.850
+<v Speaker 1>is to create a template. So I I
+
+01:01:26.850 --> 01:01:27.650
+<v Speaker 1>I could
+
+01:01:28.530 --> 01:01:29.410
+<v Speaker 1>go ahead
+
+01:01:29.650 --> 01:01:31.650
+<v Speaker 1>and schedule workflow,
+
+01:01:31.970 --> 01:01:33.890
+<v Speaker 1>select the agent to reach which you wanted
+
+01:01:33.890 --> 01:01:34.770
+<v Speaker 1>to chaos,
+
+01:01:34.930 --> 01:01:36.290
+<v Speaker 1>then you could
+
+01:01:36.610 --> 01:01:38.130
+<v Speaker 1>basically select
+
+01:01:41.085 --> 01:01:43.165
+<v Speaker 1>create a new workflow by cloning an existing
+
+01:01:43.165 --> 01:01:46.525
+<v Speaker 1>template. You could go to the individual workflows,
+
+01:01:46.525 --> 01:01:47.645
+<v Speaker 1>the schedules
+
+01:01:47.885 --> 01:01:48.685
+<v Speaker 1>tab,
+
+01:01:49.005 --> 01:01:50.685
+<v Speaker 1>and take a look at all that you
+
+01:01:50.685 --> 01:01:51.005
+<v Speaker 1>ran.
+
+01:01:51.500 --> 01:01:53.180
+<v Speaker 1>And then you go ahead and create this
+
+01:01:53.180 --> 01:01:56.299
+<v Speaker 1>template out of it and provide some name
+
+01:01:56.299 --> 01:01:57.180
+<v Speaker 1>and description.
+
+01:01:57.819 --> 01:02:00.220
+<v Speaker 1>Next time you want to run this full
+
+01:02:00.220 --> 01:02:01.660
+<v Speaker 1>previous template,
+
+01:02:01.980 --> 01:02:04.885
+<v Speaker 1>edit it for your builds and proceed with
+
+01:02:04.885 --> 01:02:05.605
+<v Speaker 1>chaos.
+
+01:02:05.765 --> 01:02:07.925
+<v Speaker 1>That is one simple way of running it.
+
+01:02:08.325 --> 01:02:11.045
+<v Speaker 1>But let's say you want to store it
+
+01:02:11.045 --> 01:02:12.645
+<v Speaker 1>in your git repository,
+
+01:02:13.045 --> 01:02:15.605
+<v Speaker 1>you could do that. So let me say
+
+01:02:16.329 --> 01:02:17.930
+<v Speaker 1>I set up
+
+01:02:18.250 --> 01:02:20.809
+<v Speaker 1>a Git repository to Chrome, and here, I'm
+
+01:02:20.809 --> 01:02:22.090
+<v Speaker 1>just gonna provide
+
+01:02:24.970 --> 01:02:25.930
+<v Speaker 1>a simple
+
+01:02:27.210 --> 01:02:28.490
+<v Speaker 1>repository on
+
+01:02:29.690 --> 01:02:30.329
+<v Speaker 1>my side.
+
+01:02:44.810 --> 01:02:45.450
+<v Speaker 1>And
+
+01:02:50.730 --> 01:02:51.930
+<v Speaker 1>now I have this
+
+01:02:52.730 --> 01:02:56.170
+<v Speaker 1>connect that I will do to this repository.
+
+01:02:57.174 --> 01:02:59.494
+<v Speaker 1>I can provide access token or I can
+
+01:02:59.494 --> 01:03:01.895
+<v Speaker 1>set up SSH key.
+
+01:03:03.095 --> 01:03:04.935
+<v Speaker 1>Again, I can provide this
+
+01:03:05.575 --> 01:03:06.535
+<v Speaker 1>to my
+
+01:03:07.414 --> 01:03:09.815
+<v Speaker 1>repository. You can just go ahead and
+
+01:03:10.135 --> 01:03:11.734
+<v Speaker 1>provide my SSH keys,
+
+01:03:13.390 --> 01:03:16.430
+<v Speaker 1>and you will be able to go ahead
+
+01:03:16.430 --> 01:03:17.070
+<v Speaker 1>and
+
+01:03:17.870 --> 01:03:20.110
+<v Speaker 1>create a sync workflows here
+
+01:03:20.350 --> 01:03:23.470
+<v Speaker 1>whenever you construct it from your request port.
+
+01:03:23.870 --> 01:03:25.950
+<v Speaker 1>So that is one quick
+
+01:03:26.195 --> 01:03:28.755
+<v Speaker 1>way of ensuring that there's a golden copy
+
+01:03:28.994 --> 01:03:30.995
+<v Speaker 1>of your workflows
+
+01:03:31.875 --> 01:03:33.235
+<v Speaker 1>in your repository.
+
+01:03:33.715 --> 01:03:35.795
+<v Speaker 1>So you can go ahead and maintain it
+
+01:03:35.795 --> 01:03:36.435
+<v Speaker 1>there.
+
+01:03:36.595 --> 01:03:38.515
+<v Speaker 1>You can change it and get synced in
+
+01:03:38.515 --> 01:03:41.400
+<v Speaker 1>the portal. So in the interest of time,
+
+01:03:41.400 --> 01:03:43.240
+<v Speaker 1>let me move up go ahead to the
+
+01:03:43.240 --> 01:03:43.880
+<v Speaker 1>next
+
+01:03:45.080 --> 01:03:46.120
+<v Speaker 1>workflow
+
+01:03:46.440 --> 01:03:49.240
+<v Speaker 1>creation type. So here, I'm just going to
+
+01:03:49.240 --> 01:03:51.720
+<v Speaker 1>select the agent, and you can import the
+
+01:03:51.720 --> 01:03:52.440
+<v Speaker 1>workflow
+
+01:03:52.545 --> 01:03:53.905
+<v Speaker 1>from the
+
+01:03:54.065 --> 01:03:56.145
+<v Speaker 1>YAML that you might have in your workspace
+
+01:03:56.545 --> 01:03:58.545
+<v Speaker 1>on your laptop or
+
+01:03:58.704 --> 01:04:00.145
+<v Speaker 1>at some such location.
+
+01:04:00.385 --> 01:04:02.625
+<v Speaker 1>You can just or you have these machines.
+
+01:04:02.625 --> 01:04:04.785
+<v Speaker 1>You can just pull that and
+
+01:04:05.345 --> 01:04:08.740
+<v Speaker 1>import your YAML. In this case, I'm going
+
+01:04:08.740 --> 01:04:09.619
+<v Speaker 1>to select
+
+01:04:12.019 --> 01:04:14.339
+<v Speaker 1>a kiosk workflow that I'm going to use
+
+01:04:14.339 --> 01:04:16.580
+<v Speaker 1>to create an engine for
+
+01:04:17.940 --> 01:04:19.059
+<v Speaker 1>an easy to instance.
+
+01:04:19.575 --> 01:04:21.175
+<v Speaker 1>So this is one of the things
+
+01:04:21.494 --> 01:04:23.575
+<v Speaker 1>that I wanted to sort of highlight in
+
+01:04:23.575 --> 01:04:25.335
+<v Speaker 1>our chaos journey.
+
+01:04:27.415 --> 01:04:29.495
+<v Speaker 1>So a lot of organizations have
+
+01:04:30.295 --> 01:04:31.494
+<v Speaker 1>hybrid economics.
+
+01:04:31.860 --> 01:04:33.700
+<v Speaker 1>Either they are in the process of adopting
+
+01:04:33.700 --> 01:04:34.580
+<v Speaker 1>Kubernetes,
+
+01:04:34.580 --> 01:04:36.180
+<v Speaker 1>migrating to Kubernetes,
+
+01:04:37.540 --> 01:04:40.340
+<v Speaker 1>or they have already adopted it for some
+
+01:04:40.340 --> 01:04:42.820
+<v Speaker 1>services while they continue to operate some other
+
+01:04:42.820 --> 01:04:43.300
+<v Speaker 1>services
+
+01:04:58.059 --> 01:04:58.700
+<v Speaker 1>And
+
+01:04:59.819 --> 01:05:02.380
+<v Speaker 1>they would have they'll try to do chaos
+
+01:05:02.380 --> 01:05:03.260
+<v Speaker 1>against
+
+01:05:03.339 --> 01:05:05.580
+<v Speaker 1>those components as well, not just
+
+01:05:05.900 --> 01:05:09.020
+<v Speaker 1>targeting pods, doing pod level and node level
+
+01:05:09.020 --> 01:05:12.085
+<v Speaker 1>figures for Kubernetes nodes and pods, but also
+
+01:05:12.085 --> 01:05:13.365
+<v Speaker 1>act against
+
+01:05:14.485 --> 01:05:16.645
+<v Speaker 1>what you could many lines of instances,
+
+01:05:16.965 --> 01:05:18.485
+<v Speaker 1>if you may. So
+
+01:05:18.725 --> 01:05:20.325
+<v Speaker 1>there are different parts you can do on
+
+01:05:20.325 --> 01:05:21.445
+<v Speaker 1>that. You can
+
+01:05:21.765 --> 01:05:24.005
+<v Speaker 1>do things like taking down the instance or
+
+01:05:24.005 --> 01:05:24.805
+<v Speaker 1>disconnecting
+
+01:05:25.440 --> 01:05:28.320
+<v Speaker 1>disks attached to it. Or you can cause
+
+01:05:28.320 --> 01:05:30.960
+<v Speaker 1>some CPU burn or memory burn inside the
+
+01:05:30.960 --> 01:05:31.680
+<v Speaker 1>VM.
+
+01:05:31.760 --> 01:05:33.040
+<v Speaker 1>Can kill processes.
+
+01:05:33.200 --> 01:05:36.240
+<v Speaker 1>You can inject latencies against data,
+
+01:05:36.320 --> 01:05:37.119
+<v Speaker 1>networks there.
+
+01:05:38.005 --> 01:05:39.605
+<v Speaker 1>All sorts of you can do service for
+
+01:05:39.605 --> 01:05:41.685
+<v Speaker 1>the kiosk for services running inside.
+
+01:05:42.005 --> 01:05:43.925
+<v Speaker 1>We use a lot of things that you
+
+01:05:43.925 --> 01:05:46.085
+<v Speaker 1>would want to do there as well, and
+
+01:05:46.085 --> 01:05:48.485
+<v Speaker 1>they would want to have the same
+
+01:05:50.484 --> 01:05:52.405
+<v Speaker 1>tooling
+
+01:05:51.720 --> 01:05:54.200
+<v Speaker 1>location from where you run all that, have
+
+01:05:54.200 --> 01:05:56.520
+<v Speaker 1>the same experience in running chaos against non
+
+01:05:56.520 --> 01:05:57.880
+<v Speaker 1>Kubernetes entities
+
+01:05:58.359 --> 01:05:59.880
+<v Speaker 1>while you
+
+01:06:00.200 --> 01:06:02.920
+<v Speaker 1>still run the application business logic in Kubernetes.
+
+01:06:02.920 --> 01:06:04.680
+<v Speaker 1>So it was as big as a Kubernetes
+
+01:06:04.680 --> 01:06:05.560
+<v Speaker 1>microservices
+
+01:06:05.560 --> 01:06:06.040
+<v Speaker 1>app.
+
+01:06:06.474 --> 01:06:09.275
+<v Speaker 1>So if you take a look
+
+01:06:10.155 --> 01:06:11.035
+<v Speaker 1>at
+
+01:06:13.194 --> 01:06:14.875
+<v Speaker 1>if I have so
+
+01:06:15.675 --> 01:06:16.635
+<v Speaker 1>here it is.
+
+01:06:17.835 --> 01:06:19.994
+<v Speaker 1>Let me go ahead and try to
+
+01:06:20.849 --> 01:06:22.369
+<v Speaker 1>show you some slides. Yes.
+
+01:06:23.089 --> 01:06:24.529
+<v Speaker 1>Here it is. You can take a look
+
+01:06:24.529 --> 01:06:26.289
+<v Speaker 1>at this. It means it's going to run
+
+01:06:26.289 --> 01:06:28.049
+<v Speaker 1>on Kubernetes, but it is going to make
+
+01:06:28.049 --> 01:06:29.490
+<v Speaker 1>use of the provider
+
+01:06:29.650 --> 01:06:30.609
+<v Speaker 1>API
+
+01:06:30.930 --> 01:06:32.130
+<v Speaker 1>to do
+
+01:06:32.785 --> 01:06:35.665
+<v Speaker 1>fault against some cloud infrastructure.
+
+01:06:35.985 --> 01:06:37.585
+<v Speaker 1>As long as it is accessible,
+
+01:06:37.665 --> 01:06:39.585
+<v Speaker 1>you have set up the access for it
+
+01:06:39.585 --> 01:06:40.625
+<v Speaker 1>using secrets.
+
+01:06:40.785 --> 01:06:43.585
+<v Speaker 1>You will be able to leverage the API
+
+01:06:43.905 --> 01:06:45.265
+<v Speaker 1>provided by these
+
+01:06:46.705 --> 01:06:47.265
+<v Speaker 1>cloud
+
+01:06:48.570 --> 01:06:49.610
+<v Speaker 1>platforms.
+
+01:06:49.770 --> 01:06:52.250
+<v Speaker 1>Many of them have very defined SPK, which
+
+01:06:52.250 --> 01:06:53.610
+<v Speaker 1>you can make use of to
+
+01:06:53.850 --> 01:06:55.770
+<v Speaker 1>launch the kiosk. You can either construct a
+
+01:06:55.770 --> 01:06:57.450
+<v Speaker 1>new experiment that way or you can make
+
+01:06:57.450 --> 01:06:58.250
+<v Speaker 1>use of existing
+
+01:06:58.730 --> 01:07:01.530
+<v Speaker 1>experiments to do that. This is one such.
+
+01:07:02.235 --> 01:07:05.435
+<v Speaker 1>So we're going to do chaos against one
+
+01:07:06.395 --> 01:07:08.795
+<v Speaker 1>of these instances. So I have some easy
+
+01:07:08.795 --> 01:07:09.755
+<v Speaker 1>two instances
+
+01:07:09.915 --> 01:07:11.035
+<v Speaker 1>running some
+
+01:07:11.435 --> 01:07:12.395
+<v Speaker 1>application.
+
+01:07:14.235 --> 01:07:16.315
+<v Speaker 1>A beams a beams scopes.
+
+01:07:16.800 --> 01:07:19.040
+<v Speaker 1>I'm sorry. Beave Beaveworks
+
+01:07:19.040 --> 01:07:19.920
+<v Speaker 1>SOCKSHOP
+
+01:07:20.080 --> 01:07:21.600
+<v Speaker 1>microservices application.
+
+01:07:22.160 --> 01:07:23.360
+<v Speaker 1>And that
+
+01:07:23.360 --> 01:07:25.520
+<v Speaker 1>is basically hosted
+
+01:07:25.520 --> 01:07:26.240
+<v Speaker 1>on
+
+01:07:26.480 --> 01:07:27.600
+<v Speaker 1>one of these
+
+01:07:28.240 --> 01:07:29.040
+<v Speaker 1>worker nodes.
+
+01:07:29.915 --> 01:07:32.635
+<v Speaker 1>And we're going to bring that down and
+
+01:07:32.635 --> 01:07:35.435
+<v Speaker 1>see what happens to the performance
+
+01:07:35.515 --> 01:07:37.595
+<v Speaker 1>of my workshop.
+
+01:07:37.755 --> 01:07:40.555
+<v Speaker 1>So this is some chaos happening on my
+
+01:07:40.795 --> 01:07:41.755
+<v Speaker 1>dashboard.
+
+01:07:41.994 --> 01:07:43.595
+<v Speaker 0>Yeah. It's a funny Grafana theme.
+
+01:07:44.750 --> 01:07:45.630
+<v Speaker 1>So
+
+01:07:47.950 --> 01:07:49.470
+<v Speaker 1>let me go ahead and
+
+01:07:50.910 --> 01:07:52.750
+<v Speaker 1>should last five minutes.
+
+01:07:54.109 --> 01:07:54.750
+<v Speaker 1>So
+
+01:07:55.309 --> 01:07:56.750
+<v Speaker 1>and you mentioned about
+
+01:07:57.069 --> 01:07:58.349
+<v Speaker 1>statistic hypothesis
+
+01:07:58.349 --> 01:07:59.950
+<v Speaker 1>validation that you'd like to do.
+
+01:08:01.505 --> 01:08:04.385
+<v Speaker 1>So I have the front end service,
+
+01:08:04.945 --> 01:08:07.025
+<v Speaker 1>which is showing me some
+
+01:08:07.905 --> 01:08:09.905
+<v Speaker 1>queries per second, some transactions,
+
+01:08:10.145 --> 01:08:11.745
+<v Speaker 1>two hundred hours per second.
+
+01:08:12.785 --> 01:08:15.185
+<v Speaker 1>Maybe this is going to go down
+
+01:08:15.650 --> 01:08:17.010
+<v Speaker 1>when I do the chaos,
+
+01:08:17.330 --> 01:08:19.330
+<v Speaker 1>but I expect you to come back up
+
+01:08:19.330 --> 01:08:23.010
+<v Speaker 1>within specific period of time. Sometimes you sort
+
+01:08:23.010 --> 01:08:23.569
+<v Speaker 1>of
+
+01:08:24.689 --> 01:08:27.170
+<v Speaker 1>consign yourself to the fact that, okay, there
+
+01:08:27.170 --> 01:08:28.609
+<v Speaker 1>is going to be a different performance when
+
+01:08:28.609 --> 01:08:29.170
+<v Speaker 1>we do this,
+
+01:08:30.175 --> 01:08:31.934
+<v Speaker 1>but I'm going to test the
+
+01:08:32.335 --> 01:08:33.774
+<v Speaker 1>main plan for recovery.
+
+01:08:33.854 --> 01:08:35.534
+<v Speaker 1>I'm going to test how quickly my system
+
+01:08:35.534 --> 01:08:38.654
+<v Speaker 1>recovers, how quickly it comes back to good
+
+01:08:38.654 --> 01:08:41.774
+<v Speaker 1>operational state and the metrics become optimal once
+
+01:08:41.774 --> 01:08:43.779
+<v Speaker 1>again. So we have that kind of a
+
+01:08:43.779 --> 01:08:46.819
+<v Speaker 1>validation report to do along with an availability
+
+01:08:46.899 --> 01:08:49.300
+<v Speaker 1>check to see if the service under question
+
+01:08:49.300 --> 01:08:50.499
+<v Speaker 1>is always available.
+
+01:08:50.580 --> 01:08:52.500
+<v Speaker 1>So those things we want to be in
+
+01:08:52.739 --> 01:08:54.099
+<v Speaker 1>into the experiment.
+
+01:08:54.500 --> 01:08:54.739
+<v Speaker 1>And
+
+01:08:55.904 --> 01:08:58.465
+<v Speaker 1>for that, let me just take you to
+
+01:08:58.465 --> 01:09:01.744
+<v Speaker 1>this flow rate workflow. So this was another
+
+01:09:01.744 --> 01:09:05.104
+<v Speaker 1>means of running the workflow or rather constructing
+
+01:09:05.104 --> 01:09:07.024
+<v Speaker 1>it. I have it already, so I've just
+
+01:09:07.024 --> 01:09:08.545
+<v Speaker 1>imported it from my workspace.
+
+01:09:09.760 --> 01:09:11.520
+<v Speaker 1>And then you can go ahead and tune
+
+01:09:11.520 --> 01:09:13.840
+<v Speaker 1>it same way that you tuned.
+
+01:09:14.000 --> 01:09:15.840
+<v Speaker 1>And if at all you did tune
+
+01:09:17.760 --> 01:09:19.040
+<v Speaker 1>something here,
+
+01:09:19.439 --> 01:09:21.680
+<v Speaker 1>either you you can do it here. You
+
+01:09:21.680 --> 01:09:23.760
+<v Speaker 1>can do it by editing the YAML.
+
+01:09:24.305 --> 01:09:26.705
+<v Speaker 1>And in case you change something,
+
+01:09:27.265 --> 01:09:28.785
+<v Speaker 1>let's say, you want to
+
+01:09:29.265 --> 01:09:32.145
+<v Speaker 1>keep the duration of this not just for
+
+01:09:32.705 --> 01:09:35.024
+<v Speaker 1>thirty seconds but slightly
+
+01:09:35.024 --> 01:09:35.745
+<v Speaker 1>longer,
+
+01:09:36.064 --> 01:09:37.425
+<v Speaker 1>I I can choose to do it as
+
+01:09:37.425 --> 01:09:38.545
+<v Speaker 1>I go to thirty five.
+
+01:09:39.120 --> 01:09:40.319
+<v Speaker 1>And I want to see what is the
+
+01:09:40.319 --> 01:09:41.039
+<v Speaker 1>latest
+
+01:09:41.679 --> 01:09:45.119
+<v Speaker 1>URL of the Wave source app.
+
+01:09:45.199 --> 01:09:47.359
+<v Speaker 1>And for that, let me try and see
+
+01:09:47.359 --> 01:09:48.880
+<v Speaker 1>what my IP is
+
+01:09:48.960 --> 01:09:51.039
+<v Speaker 1>from the EC two instances.
+
+01:09:51.199 --> 01:09:53.935
+<v Speaker 1>And so so if I look at the
+
+01:09:53.935 --> 01:09:54.975
+<v Speaker 1>detail here,
+
+01:09:56.015 --> 01:09:58.895
+<v Speaker 1>this is my public address.
+
+01:09:59.455 --> 01:10:01.615
+<v Speaker 1>So I'm just going to copy it. I'm
+
+01:10:01.615 --> 01:10:05.055
+<v Speaker 1>going to put it in my
+
+01:10:37.770 --> 01:10:40.250
+<v Speaker 1>probes that we have. There's an HTTP probe,
+
+01:10:40.650 --> 01:10:42.330
+<v Speaker 1>which is going to continuously
+
+01:10:42.330 --> 01:10:43.770
+<v Speaker 1>verify every
+
+01:10:43.770 --> 01:10:44.730
+<v Speaker 1>two seconds
+
+01:10:44.890 --> 01:10:46.490
+<v Speaker 1>to see if I can see the 200
+
+01:10:46.490 --> 01:10:47.210
+<v Speaker 1>okay
+
+01:10:47.370 --> 01:10:48.250
+<v Speaker 1>on this
+
+01:10:49.530 --> 01:10:50.090
+<v Speaker 1>endpoint.
+
+01:10:50.755 --> 01:10:53.875
+<v Speaker 1>And I'm also doing a performance recovery check
+
+01:10:53.875 --> 01:10:54.435
+<v Speaker 1>within
+
+01:10:56.435 --> 01:10:58.115
+<v Speaker 1>a period of
+
+01:10:58.595 --> 01:11:00.915
+<v Speaker 1>let's say, there are two retries with one
+
+01:11:00.915 --> 01:11:03.395
+<v Speaker 1>second tool. So let's say, within
+
+01:11:04.670 --> 01:11:06.030
+<v Speaker 1>a two second period,
+
+01:11:06.350 --> 01:11:08.990
+<v Speaker 1>I'm interested on this also time out here.
+
+01:11:08.990 --> 01:11:11.070
+<v Speaker 1>So each try is going to wait for
+
+01:11:11.070 --> 01:11:14.030
+<v Speaker 1>some time if the response is not found.
+
+01:11:14.110 --> 01:11:14.750
+<v Speaker 1>So
+
+01:11:15.070 --> 01:11:15.870
+<v Speaker 1>within
+
+01:11:16.030 --> 01:11:18.510
+<v Speaker 1>the recovery period, you want to specify recovery
+
+01:11:18.510 --> 01:11:20.155
+<v Speaker 1>period. You want
+
+01:11:20.395 --> 01:11:22.874
+<v Speaker 1>the performance to come back to some number.
+
+01:11:23.195 --> 01:11:25.835
+<v Speaker 1>Right? It it may may not be right.
+
+01:11:25.835 --> 01:11:27.515
+<v Speaker 1>You can see there's a probably this end
+
+01:11:27.515 --> 01:11:29.435
+<v Speaker 1>point. There's a query that we gave, and
+
+01:11:29.435 --> 01:11:30.394
+<v Speaker 1>then there is a
+
+01:11:31.034 --> 01:11:33.750
+<v Speaker 1>comparative that we've defined. So this, you can
+
+01:11:33.750 --> 01:11:36.469
+<v Speaker 1>think of as some kind of service that
+
+01:11:36.469 --> 01:11:37.909
+<v Speaker 1>are indicated as a line,
+
+01:11:38.150 --> 01:11:40.389
+<v Speaker 1>and the cutoff against that can be your
+
+01:11:40.389 --> 01:11:43.349
+<v Speaker 1>service level objective. Sometimes service level objectives might
+
+01:11:43.349 --> 01:11:46.790
+<v Speaker 1>not be as simple as a one microservice
+
+01:11:48.485 --> 01:11:49.764
+<v Speaker 1>metric. It might be
+
+01:11:50.165 --> 01:11:51.124
+<v Speaker 1>a larger
+
+01:11:52.085 --> 01:11:54.085
+<v Speaker 1>data point that you're looking for from your
+
+01:11:54.085 --> 01:11:56.405
+<v Speaker 1>platform. But you would be able to
+
+01:11:56.965 --> 01:11:58.804
+<v Speaker 1>sort of represent that intention,
+
+01:11:59.820 --> 01:12:00.780
+<v Speaker 1>that check
+
+01:12:01.020 --> 01:12:03.820
+<v Speaker 1>around as well as also using the box.
+
+01:12:04.300 --> 01:12:06.219
+<v Speaker 1>So now that now now that we have
+
+01:12:06.219 --> 01:12:08.060
+<v Speaker 1>all this information, let me go ahead and
+
+01:12:08.060 --> 01:12:08.699
+<v Speaker 1>save
+
+01:12:08.940 --> 01:12:10.139
+<v Speaker 1>whatever changes
+
+01:12:10.460 --> 01:12:11.179
+<v Speaker 1>I made here.
+
+01:12:11.995 --> 01:12:13.115
+<v Speaker 1>And then
+
+01:12:13.275 --> 01:12:16.155
+<v Speaker 1>we provide the criticality and just go ahead
+
+01:12:16.155 --> 01:12:19.755
+<v Speaker 1>and execute it. So when we do this,
+
+01:12:19.835 --> 01:12:22.155
+<v Speaker 1>you will see the same couple of steps
+
+01:12:22.635 --> 01:12:23.435
+<v Speaker 1>being performed.
+
+01:12:24.520 --> 01:12:27.000
+<v Speaker 1>You will see the installation of the experiment,
+
+01:12:27.000 --> 01:12:29.239
+<v Speaker 1>and then the case engine will be launched
+
+01:12:29.239 --> 01:12:29.880
+<v Speaker 1>to
+
+01:12:30.040 --> 01:12:31.560
+<v Speaker 1>trigger the instance
+
+01:12:31.560 --> 01:12:32.360
+<v Speaker 1>stopping.
+
+01:12:33.239 --> 01:12:34.920
+<v Speaker 1>So here,
+
+01:12:34.920 --> 01:12:36.280
+<v Speaker 1>you will be able to see
+
+01:12:38.135 --> 01:12:39.495
+<v Speaker 1>the worker one
+
+01:12:39.735 --> 01:12:40.615
+<v Speaker 1>stopping
+
+01:12:41.015 --> 01:12:43.495
+<v Speaker 1>and eventually going to stop state and stay
+
+01:12:43.495 --> 01:12:45.895
+<v Speaker 1>there for thirty five seconds or whatever. He
+
+01:12:45.895 --> 01:12:46.775
+<v Speaker 1>did repeat it.
+
+01:12:47.175 --> 01:12:49.735
+<v Speaker 1>And you'll also see in the process,
+
+01:12:50.135 --> 01:12:51.815
+<v Speaker 1>the application is going to go down,
+
+01:12:52.500 --> 01:12:55.379
+<v Speaker 1>and the metrics are going to drop.
+
+01:12:55.780 --> 01:12:57.699
+<v Speaker 1>And we will be able to
+
+01:12:58.099 --> 01:13:00.980
+<v Speaker 1>make these checks from within the experiment from
+
+01:13:00.980 --> 01:13:03.059
+<v Speaker 1>and give you a word of it and
+
+01:13:03.059 --> 01:13:04.500
+<v Speaker 1>give you a post success percentage
+
+01:13:16.770 --> 01:13:18.210
+<v Speaker 1>Let me go ahead and yeah. You can
+
+01:13:18.210 --> 01:13:19.489
+<v Speaker 1>see that this is stopping,
+
+01:13:19.810 --> 01:13:21.650
+<v Speaker 1>and it's eventually going to go to stop
+
+01:13:21.650 --> 01:13:22.929
+<v Speaker 1>state. So
+
+01:13:24.530 --> 01:13:27.570
+<v Speaker 1>this is one way of acting upon
+
+01:13:28.530 --> 01:13:29.970
+<v Speaker 1>you can call an out of band way
+
+01:13:29.970 --> 01:13:31.890
+<v Speaker 1>of acting upon cloud resources.
+
+01:13:32.455 --> 01:13:35.255
+<v Speaker 1>But you might also want to do experiments
+
+01:13:35.255 --> 01:13:35.894
+<v Speaker 1>to
+
+01:13:36.135 --> 01:13:37.974
+<v Speaker 1>eat up resources across
+
+01:13:38.455 --> 01:13:39.574
+<v Speaker 1>network forwards,
+
+01:13:39.735 --> 01:13:41.735
+<v Speaker 1>services running within VMs.
+
+01:13:41.975 --> 01:13:43.895
+<v Speaker 1>And that's something that will be added on.
+
+01:13:44.310 --> 01:13:47.430
+<v Speaker 1>That's also an improvement from last time. We
+
+01:13:47.430 --> 01:13:50.150
+<v Speaker 1>have new experiment categories which make use of
+
+01:13:50.150 --> 01:13:51.989
+<v Speaker 1>agents running within this VM
+
+01:13:52.470 --> 01:13:54.389
+<v Speaker 1>to carry your forms there
+
+01:13:54.390 --> 01:13:56.470
+<v Speaker 1>and give you that, in fact, yes, capabilities
+
+01:13:57.425 --> 01:14:00.145
+<v Speaker 1>in addition to what we already had with,
+
+01:14:01.345 --> 01:14:03.985
+<v Speaker 1>let's say, instance failures or disk failures and
+
+01:14:03.985 --> 01:14:05.265
+<v Speaker 1>things like that. So,
+
+01:14:06.545 --> 01:14:08.705
+<v Speaker 1>yeah, you can see that it has stopped.
+
+01:14:08.945 --> 01:14:10.705
+<v Speaker 1>I will not be able to load WaveSox
+
+01:14:10.705 --> 01:14:11.265
+<v Speaker 1>anymore.
+
+01:14:12.260 --> 01:14:14.420
+<v Speaker 1>And you can do this not just against
+
+01:14:15.780 --> 01:14:19.060
+<v Speaker 1>is it for instance, is contributing to Kubernetes
+
+01:14:19.060 --> 01:14:21.300
+<v Speaker 1>cluster? You can do this on any
+
+01:14:21.540 --> 01:14:23.059
+<v Speaker 1>not least for instance.
+
+01:14:23.460 --> 01:14:24.980
+<v Speaker 1>You can do things by tag.
+
+01:14:25.875 --> 01:14:27.715
+<v Speaker 1>And if you're doing it by tag and
+
+01:14:27.715 --> 01:14:29.315
+<v Speaker 1>you have multiple instances
+
+01:14:30.435 --> 01:14:32.835
+<v Speaker 1>that are identified by the tag,
+
+01:14:32.995 --> 01:14:35.715
+<v Speaker 1>you can provide a percentage of instances that
+
+01:14:35.715 --> 01:14:38.275
+<v Speaker 1>you want to bring down by instance, affected
+
+01:14:38.275 --> 01:14:38.835
+<v Speaker 1>percentage.
+
+01:14:39.510 --> 01:14:41.430
+<v Speaker 1>And you can also, I
+
+01:14:42.230 --> 01:14:42.869
+<v Speaker 1>basically,
+
+01:14:43.430 --> 01:14:45.590
+<v Speaker 1>provide a flag for whether the
+
+01:14:46.310 --> 01:14:49.190
+<v Speaker 1>instances that you are killing are part of
+
+01:14:49.190 --> 01:14:51.830
+<v Speaker 1>managed node group or more. If it is,
+
+01:14:51.830 --> 01:14:53.910
+<v Speaker 1>then the recovery or the
+
+01:14:54.165 --> 01:14:56.485
+<v Speaker 1>health post case health checks that we perform
+
+01:14:56.485 --> 01:14:58.005
+<v Speaker 1>will be slightly different.
+
+01:14:58.805 --> 01:15:00.485
+<v Speaker 1>You can see that this is done,
+
+01:15:00.805 --> 01:15:01.525
+<v Speaker 1>and
+
+01:15:02.725 --> 01:15:05.365
+<v Speaker 1>the application is gone down. So this red
+
+01:15:05.365 --> 01:15:06.965
+<v Speaker 1>area that you're seeing here
+
+01:15:07.540 --> 01:15:10.100
+<v Speaker 1>is coming because of the Litmus
+
+01:15:10.180 --> 01:15:13.220
+<v Speaker 1>annotation that we have, the Litmus metric and
+
+01:15:13.220 --> 01:15:15.060
+<v Speaker 1>it has a Griffin annotation to tell you
+
+01:15:15.060 --> 01:15:16.820
+<v Speaker 1>this is when it gets actually happening.
+
+01:15:17.060 --> 01:15:19.220
+<v Speaker 1>So this is the front end ops
+
+01:15:19.220 --> 01:15:21.460
+<v Speaker 1>going down and
+
+01:15:21.615 --> 01:15:23.215
+<v Speaker 1>coming up, etcetera.
+
+01:15:23.615 --> 01:15:24.175
+<v Speaker 1>And
+
+01:15:24.575 --> 01:15:26.175
+<v Speaker 1>you will end up
+
+01:15:26.175 --> 01:15:29.535
+<v Speaker 1>seeing the results of this validation. Sometimes,
+
+01:15:29.935 --> 01:15:32.015
+<v Speaker 1>your application recovery might be fast.
+
+01:15:32.175 --> 01:15:33.455
+<v Speaker 1>Sometimes, it might be slow.
+
+01:15:34.230 --> 01:15:36.310
+<v Speaker 1>It really depends on that. And finally,
+
+01:15:36.550 --> 01:15:38.630
+<v Speaker 1>you will have the details presented inside the
+
+01:15:38.630 --> 01:15:41.110
+<v Speaker 1>kiosk reset, what happened to the individual
+
+01:15:41.270 --> 01:15:43.670
+<v Speaker 1>probes, whether they succeeded or failed,
+
+01:15:43.990 --> 01:15:45.830
+<v Speaker 1>and you will be able to get a
+
+01:15:46.165 --> 01:15:47.204
+<v Speaker 1>metric.
+
+01:15:47.284 --> 01:15:50.405
+<v Speaker 1>So there are different kinds of Litmus metrics.
+
+01:15:50.725 --> 01:15:53.364
+<v Speaker 1>The weighted experiment is a useful one to
+
+01:15:53.364 --> 01:15:55.124
+<v Speaker 1>show you the period when the chaos
+
+01:15:55.364 --> 01:15:57.364
+<v Speaker 1>ran, and it has injection
+
+01:15:57.685 --> 01:15:59.284
+<v Speaker 1>time and for the details.
+
+01:16:00.520 --> 01:16:02.440
+<v Speaker 1>Lot of labels, you can see there's something
+
+01:16:02.440 --> 01:16:03.639
+<v Speaker 1>called context.
+
+01:16:04.679 --> 01:16:05.880
+<v Speaker 1>This is basically
+
+01:16:06.600 --> 01:16:09.639
+<v Speaker 1>details or some metadata of why you're running
+
+01:16:09.639 --> 01:16:11.320
+<v Speaker 1>this particular experiment.
+
+01:16:11.480 --> 01:16:14.600
+<v Speaker 1>You can basically add new labels
+
+01:16:42.685 --> 01:16:44.525
+<v Speaker 1>just to give you an overall idea.
+
+01:16:45.485 --> 01:16:48.124
+<v Speaker 1>So this is how you go ahead and,
+
+01:16:48.605 --> 01:16:50.925
+<v Speaker 1>yeah, you can see that this experiment failed.
+
+01:16:51.165 --> 01:16:51.804
+<v Speaker 1>As
+
+01:16:52.685 --> 01:16:53.644
+<v Speaker 1>anticipated,
+
+01:16:53.725 --> 01:16:56.685
+<v Speaker 1>the availability check failed, so did the performance
+
+01:16:56.685 --> 01:16:57.085
+<v Speaker 1>checks.
+
+01:16:57.699 --> 01:16:59.459
+<v Speaker 1>So that's something that
+
+01:17:00.260 --> 01:17:01.300
+<v Speaker 1>was expected.
+
+01:17:01.619 --> 01:17:02.260
+<v Speaker 1>So
+
+01:17:03.540 --> 01:17:06.340
+<v Speaker 1>this is a new capability doing chaos against
+
+01:17:06.340 --> 01:17:07.699
+<v Speaker 1>non Kubernetes
+
+01:17:08.179 --> 01:17:10.340
+<v Speaker 1>entities and also being able to do that
+
+01:17:11.185 --> 01:17:12.625
+<v Speaker 1>for both kinds. There are
+
+01:17:14.145 --> 01:17:15.905
+<v Speaker 1>for example, there is a workflow that you
+
+01:17:15.905 --> 01:17:17.344
+<v Speaker 1>could use to
+
+01:17:18.545 --> 01:17:20.785
+<v Speaker 1>do CPU or memory hop
+
+01:17:22.750 --> 01:17:23.869
+<v Speaker 1>from your
+
+01:17:24.110 --> 01:17:25.630
+<v Speaker 1>be on your VMs,
+
+01:17:25.790 --> 01:17:27.309
+<v Speaker 1>not so much on pods
+
+01:17:27.550 --> 01:17:30.110
+<v Speaker 1>or Kubernetes modes. So this is something that
+
+01:17:30.110 --> 01:17:30.590
+<v Speaker 1>will
+
+01:17:31.469 --> 01:17:32.989
+<v Speaker 1>that that can be done as well. You
+
+01:17:32.989 --> 01:17:34.590
+<v Speaker 1>can see there's a reward kiosk step in
+
+01:17:34.590 --> 01:17:36.590
+<v Speaker 1>addition to what we had in other experiments
+
+01:17:36.590 --> 01:17:37.469
+<v Speaker 1>to clean up.
+
+01:17:52.370 --> 01:17:53.969
+<v Speaker 1>Then exchanges
+
+01:17:54.850 --> 01:17:55.650
+<v Speaker 1>and then
+
+01:17:56.050 --> 01:17:57.730
+<v Speaker 1>go ahead and run this. So all that
+
+01:17:57.730 --> 01:17:59.650
+<v Speaker 1>I'm showing you through the dashboard,
+
+01:17:59.970 --> 01:18:01.409
+<v Speaker 1>all these experiments
+
+01:18:01.650 --> 01:18:04.050
+<v Speaker 1>can be done by directly invoking the kiosk
+
+01:18:04.050 --> 01:18:06.965
+<v Speaker 1>engine the one dot x model of running
+
+01:18:06.965 --> 01:18:08.725
+<v Speaker 1>it with your kiosk operator.
+
+01:18:08.965 --> 01:18:10.805
+<v Speaker 1>Or if you choose to run with the
+
+01:18:10.805 --> 01:18:12.965
+<v Speaker 1>kiosk center, which is what is recommended,
+
+01:18:13.285 --> 01:18:15.285
+<v Speaker 1>you can make use of the APIs
+
+01:18:15.525 --> 01:18:17.925
+<v Speaker 1>to perform these operations. There'll be some there
+
+01:18:18.005 --> 01:18:19.045
+<v Speaker 1>we are working on
+
+01:18:34.005 --> 01:18:35.205
+<v Speaker 1>called worker three.
+
+01:18:35.445 --> 01:18:37.125
+<v Speaker 1>They have a node exporter
+
+01:18:37.285 --> 01:18:38.005
+<v Speaker 1>setup,
+
+01:18:38.165 --> 01:18:40.485
+<v Speaker 1>and you will see some utilization
+
+01:18:40.565 --> 01:18:41.445
+<v Speaker 1>spike
+
+01:18:42.245 --> 01:18:44.245
+<v Speaker 1>on on the workers here
+
+01:18:45.045 --> 01:18:46.245
+<v Speaker 1>for one of these
+
+01:18:46.645 --> 01:18:47.045
+<v Speaker 1>nodes.
+
+01:19:08.244 --> 01:19:10.164
+<v Speaker 0>That's a pretty cool new feature.
+
+01:19:11.204 --> 01:19:12.645
+<v Speaker 0>I really like that. So
+
+01:19:13.990 --> 01:19:16.949
+<v Speaker 0>it's nice that you can target those AWS
+
+01:19:17.350 --> 01:19:19.750
+<v Speaker 0>different, you know, kind of vectors rather than
+
+01:19:19.750 --> 01:19:21.990
+<v Speaker 0>sticking purely within the Kubernetes thing. I assume
+
+01:19:21.990 --> 01:19:24.310
+<v Speaker 0>this is something that will be expanded over
+
+01:19:24.310 --> 01:19:27.030
+<v Speaker 0>time to more providers, more clouds, more external
+
+01:19:27.030 --> 01:19:29.935
+<v Speaker 0>resources. Like, really, there's there's no limit to
+
+01:19:29.935 --> 01:19:31.855
+<v Speaker 0>to what you can add here. Right?
+
+01:19:32.655 --> 01:19:34.895
+<v Speaker 1>That's true. You you can actually
+
+01:19:35.855 --> 01:19:37.935
+<v Speaker 1>take a look at some of the experiments
+
+01:19:37.935 --> 01:19:40.255
+<v Speaker 1>which are tech review
+
+01:19:40.655 --> 01:19:41.535
+<v Speaker 1>mode.
+
+01:19:41.535 --> 01:19:42.655
+<v Speaker 1>So you'll find them
+
+01:19:43.530 --> 01:19:45.130
+<v Speaker 1>inside your slip.
+
+01:19:45.290 --> 01:19:47.130
+<v Speaker 1>And you can see there are in the
+
+01:19:47.130 --> 01:19:49.210
+<v Speaker 1>similar experiments of GCP
+
+01:19:49.770 --> 01:19:50.489
+<v Speaker 1>and
+
+01:19:51.050 --> 01:19:52.650
+<v Speaker 1>Azure as well
+
+01:19:53.050 --> 01:19:54.810
+<v Speaker 1>and for VMware.
+
+01:19:55.210 --> 01:19:57.690
+<v Speaker 1>And like I said, it's not just
+
+01:19:58.595 --> 01:20:00.195
+<v Speaker 1>the instance of the other
+
+01:20:00.515 --> 01:20:02.275
+<v Speaker 1>services that you can target.
+
+01:20:02.515 --> 01:20:04.355
+<v Speaker 1>So, yes, like I said,
+
+01:20:05.075 --> 01:20:06.915
+<v Speaker 1>there's a lot of things that we could
+
+01:20:06.915 --> 01:20:08.595
+<v Speaker 1>add here to make it easy.
+
+01:20:08.675 --> 01:20:10.195
+<v Speaker 1>One of the reasons we
+
+01:20:10.760 --> 01:20:12.600
+<v Speaker 1>or one of the advantages of
+
+01:20:13.560 --> 01:20:15.320
+<v Speaker 1>it being purely
+
+01:20:15.320 --> 01:20:17.800
+<v Speaker 1>community collaborated and open sources,
+
+01:20:18.040 --> 01:20:20.360
+<v Speaker 1>chaos means different things to different people.
+
+01:20:21.560 --> 01:20:24.120
+<v Speaker 1>So they come with their viewpoints,
+
+01:20:24.520 --> 01:20:25.080
+<v Speaker 1>contribute,
+
+01:20:25.735 --> 01:20:26.375
+<v Speaker 1>and
+
+01:20:27.815 --> 01:20:29.255
+<v Speaker 1>sort of really enrich
+
+01:20:29.575 --> 01:20:32.295
+<v Speaker 1>the library of in terms of what all
+
+01:20:32.295 --> 01:20:34.695
+<v Speaker 1>materials scenarios can be done and what are
+
+01:20:34.695 --> 01:20:37.495
+<v Speaker 1>the strategic validations can be done. The the
+
+01:20:37.495 --> 01:20:40.820
+<v Speaker 1>hypothesis is something that, again, is very
+
+01:20:41.060 --> 01:20:42.580
+<v Speaker 1>diverse. It is
+
+01:20:43.700 --> 01:20:46.260
+<v Speaker 1>yep. You can see some spike happening here.
+
+01:21:08.000 --> 01:21:09.039
+<v Speaker 1>The the
+
+01:21:09.760 --> 01:21:12.239
+<v Speaker 1>value in a particular field inside of a
+
+01:21:12.239 --> 01:21:14.800
+<v Speaker 1>customer source, maybe you're in a posters operator,
+
+01:21:15.280 --> 01:21:17.679
+<v Speaker 1>and you're want monitoring the health of that
+
+01:21:17.679 --> 01:21:18.639
+<v Speaker 1>deployment,
+
+01:21:18.719 --> 01:21:20.400
+<v Speaker 1>and that is reflected in some
+
+01:21:20.835 --> 01:21:22.755
+<v Speaker 1>status field on your CRM.
+
+01:21:23.075 --> 01:21:25.795
+<v Speaker 1>And you're interested to get that before you
+
+01:21:25.795 --> 01:21:27.235
+<v Speaker 1>do some other things as part of the
+
+01:21:27.235 --> 01:21:27.954
+<v Speaker 1>experiment.
+
+01:21:28.355 --> 01:21:30.275
+<v Speaker 1>That's that's part of the hypothesis.
+
+01:21:30.835 --> 01:21:33.155
+<v Speaker 1>So there are different ways of
+
+01:21:33.875 --> 01:21:36.420
+<v Speaker 1>doing checks, and we're also trying to work
+
+01:21:36.420 --> 01:21:39.620
+<v Speaker 1>with different on adding these probes, different kinds
+
+01:21:39.620 --> 01:21:41.300
+<v Speaker 1>of probes that you might want to do.
+
+01:21:41.540 --> 01:21:43.540
+<v Speaker 1>Some of them will be prompt over purely
+
+01:21:43.540 --> 01:21:44.980
+<v Speaker 1>about consuming
+
+01:21:44.980 --> 01:21:45.780
+<v Speaker 1>metrics
+
+01:21:45.940 --> 01:21:48.260
+<v Speaker 1>from Providius. There will be other other
+
+01:21:48.420 --> 01:21:50.660
+<v Speaker 1>providers that we would like to integrate with
+
+01:21:50.965 --> 01:21:52.405
+<v Speaker 1>to show the interleaving
+
+01:21:52.405 --> 01:21:54.485
+<v Speaker 1>as well as to do
+
+01:21:54.965 --> 01:21:55.685
+<v Speaker 1>validation.
+
+01:21:56.405 --> 01:21:57.925
+<v Speaker 1>But there are other probes that we can
+
+01:21:57.925 --> 01:21:58.805
+<v Speaker 1>build. So
+
+01:21:59.285 --> 01:22:00.085
+<v Speaker 1>all these
+
+01:22:00.565 --> 01:22:02.085
+<v Speaker 1>different modes of doing them,
+
+01:22:03.700 --> 01:22:06.660
+<v Speaker 1>when you do them, etcetera. So you can
+
+01:22:06.660 --> 01:22:07.860
+<v Speaker 1>actually create
+
+01:22:09.140 --> 01:22:11.620
+<v Speaker 1>if you look at the principles of chaos
+
+01:22:13.140 --> 01:22:13.940
+<v Speaker 1>here,
+
+01:22:14.500 --> 01:22:16.420
+<v Speaker 1>there are lot of things which
+
+01:22:17.315 --> 01:22:18.275
+<v Speaker 1>are true
+
+01:22:18.675 --> 01:22:22.034
+<v Speaker 1>irrespective of the the model or the usage
+
+01:22:21.875 --> 01:22:24.275
+<v Speaker 1>general, mean, it's cloud native, not cloud native.
+
+01:22:24.835 --> 01:22:27.475
+<v Speaker 1>It's great to be able to do validations
+
+01:22:27.475 --> 01:22:28.435
+<v Speaker 1>as we stay.
+
+01:22:28.920 --> 01:22:30.600
+<v Speaker 1>Either you do it manually or you build
+
+01:22:30.600 --> 01:22:31.800
+<v Speaker 1>it into the
+
+01:22:32.679 --> 01:22:34.199
+<v Speaker 1>automation, into the experiment.
+
+01:22:34.760 --> 01:22:36.600
+<v Speaker 1>Very real world events to different kind of
+
+01:22:36.600 --> 01:22:38.920
+<v Speaker 1>forms. There's so many kinds of forms possible
+
+01:22:38.920 --> 01:22:40.920
+<v Speaker 1>today to try and bring them in.
+
+01:22:41.575 --> 01:22:43.655
+<v Speaker 1>Running production when you're confident,
+
+01:22:44.295 --> 01:22:46.695
+<v Speaker 1>and you know the incorrect procedures well. You
+
+01:22:46.695 --> 01:22:48.855
+<v Speaker 1>have a sort of sign off from all
+
+01:22:48.855 --> 01:22:49.815
+<v Speaker 1>the stakeholders.
+
+01:22:50.695 --> 01:22:54.455
+<v Speaker 1>And running continuously because especially this force so
+
+01:22:54.455 --> 01:22:55.175
+<v Speaker 1>much through
+
+01:22:55.570 --> 01:22:57.970
+<v Speaker 1>the cloud native one because there's a constant
+
+01:22:57.970 --> 01:22:58.850
+<v Speaker 1>churn to
+
+01:22:59.330 --> 01:23:01.410
+<v Speaker 1>provide that end user experience.
+
+01:23:02.130 --> 01:23:04.290
+<v Speaker 1>You have your services that we that you
+
+01:23:04.290 --> 01:23:06.530
+<v Speaker 1>roll up as a as a as an
+
+01:23:06.530 --> 01:23:07.810
+<v Speaker 1>application service provider.
+
+01:23:08.745 --> 01:23:10.105
+<v Speaker 1>And then there are so many things you're
+
+01:23:10.105 --> 01:23:12.985
+<v Speaker 1>borrowing from the CNC landscape, from observability, from
+
+01:23:12.985 --> 01:23:13.785
+<v Speaker 1>storage,
+
+01:23:14.265 --> 01:23:16.745
+<v Speaker 1>service measures, all sorts of things which are
+
+01:23:16.745 --> 01:23:18.505
+<v Speaker 1>giving you that end experience
+
+01:23:18.905 --> 01:23:20.745
+<v Speaker 1>to the user or it helps your SLA
+
+01:23:20.745 --> 01:23:23.145
+<v Speaker 1>team to maintain that end user experience
+
+01:23:23.450 --> 01:23:26.810
+<v Speaker 1>in maintaining the the health of your deployments.
+
+01:23:27.050 --> 01:23:28.250
+<v Speaker 1>All those things
+
+01:23:28.810 --> 01:23:30.490
+<v Speaker 1>keep changing continuously,
+
+01:23:30.490 --> 01:23:32.969
+<v Speaker 1>so you keep upgrading them. Kubernetes itself,
+
+01:23:33.130 --> 01:23:34.250
+<v Speaker 1>you keep upgrading.
+
+01:23:34.810 --> 01:23:36.650
+<v Speaker 1>So you would like to know how things
+
+01:23:36.650 --> 01:23:39.175
+<v Speaker 1>change. So it's important to run these experiments
+
+01:23:39.175 --> 01:23:42.295
+<v Speaker 1>continuously and have a framework to automate them,
+
+01:23:42.295 --> 01:23:44.054
+<v Speaker 1>set up scheduled chaos maybe.
+
+01:23:44.375 --> 01:23:45.335
+<v Speaker 1>And two,
+
+01:23:45.735 --> 01:23:47.975
+<v Speaker 1>minimization of last year is select the right
+
+01:23:47.975 --> 01:23:48.855
+<v Speaker 1>summaries,
+
+01:23:48.855 --> 01:23:49.495
+<v Speaker 1>like, component
+
+01:23:50.140 --> 01:23:51.500
+<v Speaker 1>for the right duration,
+
+01:23:51.820 --> 01:23:53.100
+<v Speaker 1>in the right namespace,
+
+01:23:53.100 --> 01:23:53.900
+<v Speaker 1>etcetera.
+
+01:23:53.900 --> 01:23:56.060
+<v Speaker 1>I have the ability to specify all that.
+
+01:23:56.060 --> 01:23:57.340
+<v Speaker 1>So we're looking at
+
+01:23:57.820 --> 01:23:59.500
+<v Speaker 1>taking these principles and
+
+01:23:59.740 --> 01:24:01.420
+<v Speaker 1>bringing them on to Rikmus
+
+01:24:01.740 --> 01:24:03.980
+<v Speaker 1>along with a few other games,
+
+01:24:04.965 --> 01:24:06.724
+<v Speaker 1>like GitOps and
+
+01:24:07.445 --> 01:24:10.165
+<v Speaker 1>workflows to stitch together scenarios and few other
+
+01:24:10.165 --> 01:24:13.204
+<v Speaker 1>settings to give you an end to end
+
+01:24:14.085 --> 01:24:16.324
+<v Speaker 1>platform for case engineering. But there's
+
+01:24:16.724 --> 01:24:18.405
+<v Speaker 1>a lot of improvement
+
+01:24:19.710 --> 01:24:21.230
+<v Speaker 1>that can be made yet
+
+01:24:21.710 --> 01:24:23.789
+<v Speaker 1>in terms of features and
+
+01:24:24.270 --> 01:24:26.190
+<v Speaker 1>in terms of capabilities because
+
+01:24:26.670 --> 01:24:29.389
+<v Speaker 1>chaos is getting, as we speak, is evolving.
+
+01:24:30.830 --> 01:24:33.390
+<v Speaker 1>For example, people are eventually into security chaos
+
+01:24:33.390 --> 01:24:35.784
+<v Speaker 1>today to to find out vulnerabilities.
+
+01:24:37.145 --> 01:24:39.545
+<v Speaker 1>So in fact, being able to run some
+
+01:24:40.265 --> 01:24:41.945
+<v Speaker 1>services successfully
+
+01:24:41.945 --> 01:24:42.745
+<v Speaker 1>without
+
+01:24:42.745 --> 01:24:44.905
+<v Speaker 1>the right restrictions being placed on running them
+
+01:24:44.905 --> 01:24:47.145
+<v Speaker 1>is also a chaos test. So there are
+
+01:24:47.145 --> 01:24:49.065
+<v Speaker 1>different ways of looking at it. So
+
+01:24:50.670 --> 01:24:53.150
+<v Speaker 1>the the the scope really, like you mentioned,
+
+01:24:53.390 --> 01:24:56.270
+<v Speaker 1>is is endless. The the lot of capabilities
+
+01:24:56.270 --> 01:24:58.350
+<v Speaker 1>that we brought in, we're we're looking forward
+
+01:24:58.350 --> 01:25:00.110
+<v Speaker 1>to the feedback
+
+01:25:00.190 --> 01:25:03.630
+<v Speaker 1>and contributions pouring in from the community
+
+01:25:03.455 --> 01:25:05.935
+<v Speaker 1>and being the scenes in project helps.
+
+01:25:07.055 --> 01:25:08.975
+<v Speaker 1>There's a lot of good
+
+01:25:08.975 --> 01:25:10.015
+<v Speaker 1>feedback
+
+01:25:10.015 --> 01:25:11.695
+<v Speaker 1>that we received over time,
+
+01:25:12.655 --> 01:25:13.855
+<v Speaker 1>which has helped us
+
+01:25:14.095 --> 01:25:15.215
+<v Speaker 1>to make these improvements.
+
+01:25:16.610 --> 01:25:18.530
+<v Speaker 1>And a lot of good contributions coming in
+
+01:25:18.530 --> 01:25:20.769
+<v Speaker 1>from community. A lot of the probes work
+
+01:25:20.929 --> 01:25:23.810
+<v Speaker 1>was contributed before from Red Hat, so which
+
+01:25:23.810 --> 01:25:25.409
+<v Speaker 1>is awesome.
+
+01:25:26.610 --> 01:25:29.914
+<v Speaker 1>And really looking forward to continuing this
+
+01:25:30.155 --> 01:25:31.034
+<v Speaker 1>journey
+
+01:25:31.114 --> 01:25:32.794
+<v Speaker 1>on improving the
+
+01:25:33.514 --> 01:25:34.394
+<v Speaker 1>experiments
+
+01:25:34.394 --> 01:25:35.914
+<v Speaker 1>and the capabilities
+
+01:25:36.235 --> 01:25:36.874
+<v Speaker 1>and
+
+01:25:37.434 --> 01:25:39.594
+<v Speaker 1>hope to be on another
+
+01:25:43.020 --> 01:25:45.179
+<v Speaker 1>discussion on on Rawkode with
+
+01:25:45.660 --> 01:25:47.500
+<v Speaker 1>more improvements as we go.
+
+01:25:49.660 --> 01:25:52.139
+<v Speaker 0>Awesome. I think that that's something
+
+01:25:53.100 --> 01:25:55.100
+<v Speaker 1>that takes it to close on what they
+
+01:25:55.100 --> 01:25:57.180
+<v Speaker 1>had in mind to discuss today.
+
+01:25:57.925 --> 01:25:59.605
+<v Speaker 0>That was perfect. There there are a lot
+
+01:25:59.605 --> 01:26:01.845
+<v Speaker 0>of really cool updates to love there with
+
+01:26:01.845 --> 01:26:04.325
+<v Speaker 0>Litmus. I'm really looking forward to the the
+
+01:26:04.325 --> 01:26:06.005
+<v Speaker 0>new version and playing with some of those
+
+01:26:06.005 --> 01:26:06.645
+<v Speaker 0>features.
+
+01:26:07.205 --> 01:26:08.885
+<v Speaker 0>And I love that you can have almost
+
+01:26:08.885 --> 01:26:10.405
+<v Speaker 0>tied it all together at the end there
+
+01:26:10.405 --> 01:26:12.900
+<v Speaker 0>with the mention of the CNCF and contributions,
+
+01:26:12.900 --> 01:26:14.740
+<v Speaker 0>but we will be doing a
+
+01:26:14.980 --> 01:26:17.940
+<v Speaker 0>contributing to Litmus on Cloud Native TV
+
+01:26:18.820 --> 01:26:20.740
+<v Speaker 0>a week on Friday with one of your
+
+01:26:20.740 --> 01:26:23.060
+<v Speaker 0>colleagues, I believe. So people should check that
+
+01:26:23.060 --> 01:26:24.660
+<v Speaker 0>out if they want want to know how
+
+01:26:24.660 --> 01:26:26.580
+<v Speaker 0>to contribute to the Litmus project as well.
+
+01:26:27.935 --> 01:26:30.415
+<v Speaker 0>Alright, Kartik. We we are at time. I
+
+01:26:30.415 --> 01:26:31.935
+<v Speaker 0>just wanna say thank you. That was a
+
+01:26:31.935 --> 01:26:33.614
+<v Speaker 0>really nice look into some of those new
+
+01:26:33.614 --> 01:26:35.375
+<v Speaker 0>features. I think the remote agents are really
+
+01:26:35.375 --> 01:26:37.055
+<v Speaker 0>cool. The workflow improvements,
+
+01:26:37.055 --> 01:26:39.534
+<v Speaker 0>all of that. It's just super cool. And
+
+01:26:39.535 --> 01:26:42.900
+<v Speaker 0>adding on new chaos experiments that go beyond
+
+01:26:42.900 --> 01:26:44.980
+<v Speaker 0>where we already were just opens up so
+
+01:26:44.980 --> 01:26:48.500
+<v Speaker 0>many different potential avenues for breaking or breaking
+
+01:26:48.500 --> 01:26:50.900
+<v Speaker 0>Kubernetes, which to me is very exciting. I'm
+
+01:26:50.900 --> 01:26:52.260
+<v Speaker 0>I'm now trying to work out if I
+
+01:26:52.260 --> 01:26:53.140
+<v Speaker 0>can use Litmus
+
+01:26:53.505 --> 01:26:55.745
+<v Speaker 0>for some custard fun. So lots
+
+01:26:55.825 --> 01:26:57.825
+<v Speaker 0>lots for stuff for me to experiment with
+
+01:26:57.825 --> 01:26:59.825
+<v Speaker 0>there. Any last words before I let you
+
+01:26:59.825 --> 01:27:00.625
+<v Speaker 0>go for today?
+
+01:27:02.465 --> 01:27:05.345
+<v Speaker 1>Thank you for this opportunity once again. Really
+
+01:27:05.345 --> 01:27:08.145
+<v Speaker 1>enjoy being on this show and
+
+01:27:08.730 --> 01:27:09.610
+<v Speaker 1>talking
+
+01:27:09.930 --> 01:27:10.810
+<v Speaker 1>about the.
+
+01:27:11.690 --> 01:27:12.650
+<v Speaker 1>Looking
+
+01:27:12.650 --> 01:27:15.449
+<v Speaker 1>forward to breaking stuff on Kubernetes.
+
+01:27:15.450 --> 01:27:15.929
+<v Speaker 1>Awesome.
+
+01:27:18.090 --> 01:27:20.570
+<v Speaker 0>Alright. Well, check out principles of chaos. Check
+
+01:27:20.570 --> 01:27:23.175
+<v Speaker 0>out Litmus. Look forward to two point o.
+
+01:27:23.175 --> 01:27:25.655
+<v Speaker 0>Kartik, thank you again. Have a wonderful day,
+
+01:27:25.655 --> 01:27:27.014
+<v Speaker 0>and I'll see you all soon. Thanks.

@@ -1,0 +1,2645 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 303d2a0c-0960-4437-b4fe-3b95f26f71b2
+Created: 2025-04-29T20:25:39.400Z
+Duration: 2014.4885
+Channels: 1
+
+00:00:03.360 --> 00:00:04.160
+<v Speaker 0>Hi there.
+
+00:00:04.560 --> 00:00:07.759
+<v Speaker 0>Today, I'm gonna talk about network monitoring with
+
+00:00:07.759 --> 00:00:09.360
+<v Speaker 0>one of my favorite tools,
+
+00:00:09.679 --> 00:00:10.320
+<v Speaker 0>Telegraf.
+
+00:00:12.765 --> 00:00:15.325
+<v Speaker 0>My name is David Mackay. I'm from Glasgow
+
+00:00:15.325 --> 00:00:16.204
+<v Speaker 0>in Scotland.
+
+00:00:16.845 --> 00:00:19.085
+<v Speaker 0>And I'm a developer advocate for a company
+
+00:00:19.085 --> 00:00:22.045
+<v Speaker 0>called Equinix Metal. You may be familiar with
+
+00:00:22.045 --> 00:00:24.205
+<v Speaker 0>their former name of Packet, the bare metal
+
+00:00:24.205 --> 00:00:24.525
+<v Speaker 0>cloud.
+
+00:00:25.609 --> 00:00:27.929
+<v Speaker 0>I'm a cloud native streamer, which just means
+
+00:00:27.929 --> 00:00:29.369
+<v Speaker 0>that I get to spend a large chunk
+
+00:00:29.369 --> 00:00:31.769
+<v Speaker 0>of my time on YouTube playing with cloud
+
+00:00:31.769 --> 00:00:34.890
+<v Speaker 0>native technologies and hopefully provide an educational materials
+
+00:00:34.890 --> 00:00:36.250
+<v Speaker 0>for us all to learn together.
+
+00:00:36.730 --> 00:00:38.730
+<v Speaker 0>And I'm a bit of a monitoring enthusiast.
+
+00:00:38.775 --> 00:00:40.615
+<v Speaker 0>I spend a lot of my time monitoring
+
+00:00:40.615 --> 00:00:42.615
+<v Speaker 0>systems and even things that aren't systems that
+
+00:00:42.615 --> 00:00:44.455
+<v Speaker 0>probably shouldn't be monitored. But,
+
+00:00:45.175 --> 00:00:47.095
+<v Speaker 0>you know, I've always been a number certain
+
+00:00:47.095 --> 00:00:48.935
+<v Speaker 0>person, and I love to get data out
+
+00:00:48.935 --> 00:00:50.455
+<v Speaker 0>of anything I can to make sure that
+
+00:00:50.455 --> 00:00:52.800
+<v Speaker 0>I'm on the right path. It's also worth
+
+00:00:52.800 --> 00:00:55.360
+<v Speaker 0>mentioning as a disclaimer that I was formerly
+
+00:00:55.360 --> 00:00:58.239
+<v Speaker 0>a developer advocate for a company called InfluxData.
+
+00:00:58.239 --> 00:01:00.000
+<v Speaker 0>You may be familiar with them as they
+
+00:01:00.000 --> 00:01:03.360
+<v Speaker 0>are the people behind InfluxDB and Telegraf itself.
+
+00:01:04.225 --> 00:01:05.825
+<v Speaker 0>And I think this is a good thing
+
+00:01:05.825 --> 00:01:08.625
+<v Speaker 0>that I'm still here talking about Telegraf after
+
+00:01:08.625 --> 00:01:10.225
+<v Speaker 0>my time at InfluxData.
+
+00:01:10.225 --> 00:01:12.465
+<v Speaker 0>I genuinely believe is a great product that
+
+00:01:12.465 --> 00:01:14.305
+<v Speaker 0>solves many many problems and we should all
+
+00:01:14.305 --> 00:01:15.745
+<v Speaker 0>be using it for something.
+
+00:01:17.105 --> 00:01:18.625
+<v Speaker 0>Now what about Telegraf? Well,
+
+00:01:19.260 --> 00:01:21.660
+<v Speaker 0>it is a plug in driven
+
+00:01:22.860 --> 00:01:24.300
+<v Speaker 0>collection agent
+
+00:01:24.380 --> 00:01:27.180
+<v Speaker 0>written and go. So it's a single binary,
+
+00:01:27.180 --> 00:01:29.260
+<v Speaker 0>very easy to deploy in a container or
+
+00:01:29.260 --> 00:01:32.140
+<v Speaker 0>as a static binary and do things with
+
+00:01:32.140 --> 00:01:32.300
+<v Speaker 0>it.
+
+00:01:33.204 --> 00:01:35.204
+<v Speaker 0>What I really love about Telegraf is that
+
+00:01:35.204 --> 00:01:36.805
+<v Speaker 0>it's database agnostic.
+
+00:01:37.125 --> 00:01:39.765
+<v Speaker 0>Even though it's by the team or the
+
+00:01:39.765 --> 00:01:41.604
+<v Speaker 0>company that produce InfluxDB,
+
+00:01:41.604 --> 00:01:44.484
+<v Speaker 0>Telegraf supports over 40 output plugins.
+
+00:01:44.725 --> 00:01:46.005
+<v Speaker 0>It can write to Kafka.
+
+00:01:46.470 --> 00:01:48.470
+<v Speaker 0>It can write to postgres.
+
+00:01:48.470 --> 00:01:49.670
+<v Speaker 0>It can write
+
+00:01:50.790 --> 00:01:51.590
+<v Speaker 0>Prometheus.
+
+00:01:51.590 --> 00:01:53.910
+<v Speaker 0>It can write to Cassandra. Like it doesn't
+
+00:01:53.910 --> 00:01:56.070
+<v Speaker 0>matter where you want to store your time
+
+00:01:56.070 --> 00:01:58.950
+<v Speaker 0>series metrics. Telegraf is still the right tool
+
+00:01:58.950 --> 00:02:00.310
+<v Speaker 0>for you or at least a tool for
+
+00:02:00.310 --> 00:02:01.670
+<v Speaker 0>you that could be the right tool for
+
+00:02:01.670 --> 00:02:05.085
+<v Speaker 0>you. And it supports some pretty cool architectures
+
+00:02:05.085 --> 00:02:06.685
+<v Speaker 0>based on some of the plugins it has
+
+00:02:06.685 --> 00:02:07.405
+<v Speaker 0>available.
+
+00:02:07.965 --> 00:02:09.565
+<v Speaker 0>We'll talk a little bit about that but
+
+00:02:09.565 --> 00:02:11.085
+<v Speaker 0>not too much as I'm gonna refer to
+
+00:02:11.085 --> 00:02:12.685
+<v Speaker 0>another talk that I've given before.
+
+00:02:13.805 --> 00:02:15.800
+<v Speaker 0>But some of the highlights of Telegraf that
+
+00:02:15.800 --> 00:02:18.520
+<v Speaker 0>I think are worth mentioning now, so they
+
+00:02:18.599 --> 00:02:20.360
+<v Speaker 0>so that it cannot you get a better
+
+00:02:20.360 --> 00:02:23.159
+<v Speaker 0>understanding of why I'm kind of evangelizing it
+
+00:02:23.159 --> 00:02:24.520
+<v Speaker 0>so much as that one,
+
+00:02:25.239 --> 00:02:27.560
+<v Speaker 0>it can write to multiple databases at the
+
+00:02:27.560 --> 00:02:27.879
+<v Speaker 0>same time.
+
+00:02:28.725 --> 00:02:31.285
+<v Speaker 0>So as you write your Telegraf configurations to
+
+00:02:31.285 --> 00:02:32.965
+<v Speaker 0>go and collect your metrics, you can write
+
+00:02:32.965 --> 00:02:34.005
+<v Speaker 0>them to InfluxDB,
+
+00:02:34.005 --> 00:02:36.485
+<v Speaker 0>Prometheus, Cassandra, Kafka, all of these places.
+
+00:02:36.565 --> 00:02:38.485
+<v Speaker 0>It gives you a level of resiliency and
+
+00:02:38.485 --> 00:02:41.045
+<v Speaker 0>redundancy that we don't normally have with the
+
+00:02:41.045 --> 00:02:42.725
+<v Speaker 0>monitoring and observability pipelines.
+
+00:02:43.770 --> 00:02:45.770
+<v Speaker 0>Another great feature of Telegraf is that it
+
+00:02:45.770 --> 00:02:47.450
+<v Speaker 0>supports remote configuration,
+
+00:02:47.849 --> 00:02:50.570
+<v Speaker 0>you can just rip your Telegraf configurations
+
+00:02:51.050 --> 00:02:53.610
+<v Speaker 0>over HTTP using you know, get hub raw
+
+00:02:53.610 --> 00:02:56.650
+<v Speaker 0>links using Amazon s three buckets and if
+
+00:02:56.650 --> 00:02:58.810
+<v Speaker 0>in the exposes that fail over HTTP
+
+00:02:59.345 --> 00:03:01.265
+<v Speaker 0>and Telegraf can consume them. It means you
+
+00:03:01.265 --> 00:03:04.225
+<v Speaker 0>can push your your configuration centrally and distribute
+
+00:03:04.225 --> 00:03:06.225
+<v Speaker 0>them to multiple edge locations and you can
+
+00:03:06.225 --> 00:03:07.745
+<v Speaker 0>really find that set up that works for
+
+00:03:07.745 --> 00:03:08.225
+<v Speaker 0>you.
+
+00:03:09.985 --> 00:03:12.945
+<v Speaker 0>What's also great is that by using Telegraf,
+
+00:03:12.900 --> 00:03:15.700
+<v Speaker 0>we got access to its ability to batch
+
+00:03:15.700 --> 00:03:18.579
+<v Speaker 0>and buffer the metrics. If any of your
+
+00:03:18.579 --> 00:03:20.900
+<v Speaker 0>output databases are down when it tries to
+
+00:03:20.900 --> 00:03:22.579
+<v Speaker 0>do a flush to that database, it can
+
+00:03:22.579 --> 00:03:25.620
+<v Speaker 0>store those metrics and memory to configure size
+
+00:03:25.620 --> 00:03:26.579
+<v Speaker 0>set by you
+
+00:03:27.114 --> 00:03:28.394
+<v Speaker 0>that understands
+
+00:03:28.394 --> 00:03:30.795
+<v Speaker 0>how much redundancy or resiliency you need for
+
+00:03:30.795 --> 00:03:31.835
+<v Speaker 0>those metrics.
+
+00:03:32.875 --> 00:03:36.235
+<v Speaker 0>Another really great thing is live health checks.
+
+00:03:36.394 --> 00:03:38.635
+<v Speaker 0>Telegraf has all of these metrics and its
+
+00:03:38.635 --> 00:03:39.275
+<v Speaker 0>memory.
+
+00:03:39.595 --> 00:03:41.275
+<v Speaker 0>What if we could do aggregations
+
+00:03:41.275 --> 00:03:42.235
+<v Speaker 0>on them
+
+00:03:43.050 --> 00:03:45.210
+<v Speaker 0>to understand if our application is healthy?
+
+00:03:45.530 --> 00:03:47.290
+<v Speaker 0>You know, we don't need to add a
+
+00:03:47.290 --> 00:03:48.410
+<v Speaker 0>slash health
+
+00:03:48.490 --> 00:03:50.250
+<v Speaker 0>endpoint to our applications
+
+00:03:50.410 --> 00:03:53.290
+<v Speaker 0>that have you know, have the code path
+
+00:03:53.290 --> 00:03:55.130
+<v Speaker 0>gets to and it returns to 200 we
+
+00:03:55.130 --> 00:03:57.050
+<v Speaker 0>assume our application is healthy. That's not always
+
+00:03:57.050 --> 00:03:58.905
+<v Speaker 0>the case. Our our health checks should be
+
+00:03:58.905 --> 00:04:00.665
+<v Speaker 0>more sophisticated.
+
+00:04:01.625 --> 00:04:03.465
+<v Speaker 0>Well, you can have Telegraf web these metrics
+
+00:04:03.465 --> 00:04:05.305
+<v Speaker 0>and memory performance aggregations,
+
+00:04:05.305 --> 00:04:07.385
+<v Speaker 0>look at the values and determine are my
+
+00:04:07.385 --> 00:04:08.905
+<v Speaker 0>applications returning
+
+00:04:09.065 --> 00:04:12.120
+<v Speaker 0>200 responses to the 99 percentile of our
+
+00:04:12.120 --> 00:04:14.680
+<v Speaker 0>customers within an accepted SLO?
+
+00:04:15.240 --> 00:04:17.400
+<v Speaker 0>If it's yes, return healthy.
+
+00:04:17.640 --> 00:04:20.440
+<v Speaker 0>If not, it can return not healthy and
+
+00:04:20.440 --> 00:04:22.040
+<v Speaker 0>that allows us to do things much more
+
+00:04:22.040 --> 00:04:23.320
+<v Speaker 0>dynamically and sophisticated.
+
+00:04:25.275 --> 00:04:27.595
+<v Speaker 0>Also Telegraf can be run as a serverless.
+
+00:04:27.595 --> 00:04:29.435
+<v Speaker 0>It has a flag called run once which
+
+00:04:29.435 --> 00:04:31.275
+<v Speaker 0>will boot up, collect the metrics, wait till
+
+00:04:31.275 --> 00:04:33.275
+<v Speaker 0>it's flushed them out and then exit. Really
+
+00:04:33.275 --> 00:04:34.795
+<v Speaker 0>really great if you wanna schedule it in
+
+00:04:34.795 --> 00:04:35.515
+<v Speaker 0>that fashion.
+
+00:04:35.915 --> 00:04:37.995
+<v Speaker 0>And finally Telegraf is composable.
+
+00:04:38.699 --> 00:04:41.259
+<v Speaker 0>It has plugins that allow us to work
+
+00:04:41.259 --> 00:04:43.259
+<v Speaker 0>over Unix domain sockets,
+
+00:04:43.259 --> 00:04:44.700
+<v Speaker 0>work over HTTP
+
+00:04:44.860 --> 00:04:46.860
+<v Speaker 0>and be able to take information out, spread
+
+00:04:46.860 --> 00:04:48.300
+<v Speaker 0>it back out to something else whether it
+
+00:04:48.300 --> 00:04:50.139
+<v Speaker 0>be HTTP or something else. Like all these
+
+00:04:50.139 --> 00:04:52.785
+<v Speaker 0>different flexibility and things that allow us to
+
+00:04:52.785 --> 00:04:54.625
+<v Speaker 0>just say, hey, I want to chain these
+
+00:04:54.625 --> 00:04:56.945
+<v Speaker 0>Telegrafs together to this other component and then
+
+00:04:56.945 --> 00:04:58.705
+<v Speaker 0>change Telegraf and other side of it. I
+
+00:04:58.705 --> 00:05:01.345
+<v Speaker 0>know that sounds very abstract, doesn't make a
+
+00:05:01.345 --> 00:05:02.385
+<v Speaker 0>lot of sense but
+
+00:05:03.025 --> 00:05:04.785
+<v Speaker 0>I will refer you to another talk that
+
+00:05:04.785 --> 00:05:06.145
+<v Speaker 0>I gave previously.
+
+00:05:06.465 --> 00:05:08.720
+<v Speaker 0>The Telegraf tool belt is available on YouTube
+
+00:05:08.720 --> 00:05:10.720
+<v Speaker 0>and it really breaks down how to use
+
+00:05:10.720 --> 00:05:14.320
+<v Speaker 0>Telegraf for these cloud native and distributed architectures.
+
+00:05:14.320 --> 00:05:16.320
+<v Speaker 0>I definitely recommend you check that out.
+
+00:05:18.000 --> 00:05:20.080
+<v Speaker 0>Alright. What are we gonna talk about today?
+
+00:05:20.080 --> 00:05:23.275
+<v Speaker 0>Well, I wanna talk about network monitoring
+
+00:05:24.155 --> 00:05:27.275
+<v Speaker 0>and Telegraf ships with plugins that allow us
+
+00:05:27.275 --> 00:05:27.835
+<v Speaker 0>to
+
+00:05:28.635 --> 00:05:30.955
+<v Speaker 0>really determine how much network monitoring we want
+
+00:05:30.955 --> 00:05:32.475
+<v Speaker 0>depending on our use case.
+
+00:05:32.875 --> 00:05:35.035
+<v Speaker 0>The first two are the most basic ones
+
+00:05:35.035 --> 00:05:37.570
+<v Speaker 0>that are net and netstat. Telegraph allows us
+
+00:05:37.570 --> 00:05:39.490
+<v Speaker 0>to collect those metrics and write them somewhere.
+
+00:05:39.570 --> 00:05:41.410
+<v Speaker 0>We'll take a quick look at that before
+
+00:05:41.410 --> 00:05:43.330
+<v Speaker 0>moving on to look in the SNMP and
+
+00:05:43.330 --> 00:05:45.810
+<v Speaker 0>SNMP traps and how we configure Telegraf to
+
+00:05:45.810 --> 00:05:47.890
+<v Speaker 0>work with those agents.
+
+00:05:48.930 --> 00:05:50.850
+<v Speaker 0>Then we'll very quickly take a look at
+
+00:05:50.850 --> 00:05:52.770
+<v Speaker 0>S flow and how that
+
+00:05:52.925 --> 00:05:54.925
+<v Speaker 0>can be collected by Telegraf.
+
+00:05:55.164 --> 00:05:56.685
+<v Speaker 0>And then I'm gonna finish with something a
+
+00:05:56.685 --> 00:05:58.525
+<v Speaker 0>little bit special and we'll get to that
+
+00:05:58.525 --> 00:05:59.325
+<v Speaker 0>at the end.
+
+00:06:01.324 --> 00:06:01.965
+<v Speaker 0>So
+
+00:06:02.205 --> 00:06:04.444
+<v Speaker 0>I don't know if this is a warning,
+
+00:06:04.444 --> 00:06:07.600
+<v Speaker 0>but I'm gonna try to move relatively quickly
+
+00:06:07.600 --> 00:06:09.520
+<v Speaker 0>through the configuration so that we can get
+
+00:06:09.520 --> 00:06:11.040
+<v Speaker 0>to the demo and see an action. So
+
+00:06:11.040 --> 00:06:11.920
+<v Speaker 0>don't worry
+
+00:06:12.160 --> 00:06:14.080
+<v Speaker 0>if after a few plug ins you're like,
+
+00:06:14.080 --> 00:06:14.480
+<v Speaker 0>I
+
+00:06:15.360 --> 00:06:17.440
+<v Speaker 0>can't fully grok it, I'm not seeing how
+
+00:06:17.440 --> 00:06:19.520
+<v Speaker 0>this works. Well there will be a demo
+
+00:06:19.520 --> 00:06:21.625
+<v Speaker 0>and the configs, So just
+
+00:06:22.105 --> 00:06:23.065
+<v Speaker 0>bear with me.
+
+00:06:24.745 --> 00:06:25.785
+<v Speaker 0>Plug in one
+
+00:06:26.425 --> 00:06:27.145
+<v Speaker 0>net.
+
+00:06:28.825 --> 00:06:30.985
+<v Speaker 0>This is of course very
+
+00:06:30.985 --> 00:06:34.585
+<v Speaker 0>easy to configure and enable has no configuration
+
+00:06:34.585 --> 00:06:35.305
+<v Speaker 0>at all.
+
+00:06:36.289 --> 00:06:39.090
+<v Speaker 0>We use TOML to configure Telegraf so we're
+
+00:06:39.090 --> 00:06:41.090
+<v Speaker 0>just using two square brackets to say hey
+
+00:06:41.090 --> 00:06:43.169
+<v Speaker 0>if we want to enable the net and
+
+00:06:43.169 --> 00:06:44.130
+<v Speaker 0>put plugin.
+
+00:06:44.770 --> 00:06:46.610
+<v Speaker 0>That's it. Job done.
+
+00:06:48.289 --> 00:06:49.970
+<v Speaker 0>Now the way this plugin works
+
+00:06:50.130 --> 00:06:53.235
+<v Speaker 0>is it has primarily support for Linux and
+
+00:06:53.235 --> 00:06:54.915
+<v Speaker 0>Unix based operating systems.
+
+00:06:55.075 --> 00:06:56.995
+<v Speaker 0>It does support Mac's
+
+00:06:56.995 --> 00:06:59.715
+<v Speaker 0>window support or limited support, but you will
+
+00:06:59.715 --> 00:07:00.835
+<v Speaker 0>get a few things.
+
+00:07:01.635 --> 00:07:03.875
+<v Speaker 0>It will monitor all of the up interfaces
+
+00:07:03.875 --> 00:07:05.235
+<v Speaker 0>on the host
+
+00:07:05.310 --> 00:07:07.550
+<v Speaker 0>except for loopback although you can't enable that
+
+00:07:07.550 --> 00:07:08.430
+<v Speaker 0>if you want
+
+00:07:09.070 --> 00:07:12.110
+<v Speaker 0>and it's gonna pull out basic networking statistics.
+
+00:07:12.430 --> 00:07:14.510
+<v Speaker 0>It's gonna understand how many bytes and packets
+
+00:07:14.510 --> 00:07:16.590
+<v Speaker 0>were sent and received on those interfaces.
+
+00:07:16.830 --> 00:07:18.190
+<v Speaker 0>It'll also be able to tell us how
+
+00:07:18.190 --> 00:07:19.630
+<v Speaker 0>many drops we had and how many of
+
+00:07:19.630 --> 00:07:21.935
+<v Speaker 0>the how many of packets had an error
+
+00:07:21.935 --> 00:07:22.495
+<v Speaker 0>state.
+
+00:07:23.375 --> 00:07:26.255
+<v Speaker 0>It does have one configuration option if you
+
+00:07:26.255 --> 00:07:28.975
+<v Speaker 0>want to use it to enable some SNMP
+
+00:07:29.935 --> 00:07:32.095
+<v Speaker 0>metrics from the proc fail system.
+
+00:07:32.815 --> 00:07:34.650
+<v Speaker 0>So you can start there
+
+00:07:34.889 --> 00:07:37.210
+<v Speaker 0>with or without that one option and you
+
+00:07:37.210 --> 00:07:39.450
+<v Speaker 0>will get an understanding
+
+00:07:39.850 --> 00:07:41.770
+<v Speaker 0>of the traffic leaving and coming into your
+
+00:07:41.770 --> 00:07:42.410
+<v Speaker 0>host.
+
+00:07:44.330 --> 00:07:46.169
+<v Speaker 0>We can then lay it on or add
+
+00:07:46.169 --> 00:07:47.895
+<v Speaker 0>or netstat plugin,
+
+00:07:48.055 --> 00:07:51.175
+<v Speaker 0>no surprises it doesn't take any configuration. Telegraf
+
+00:07:51.175 --> 00:07:52.855
+<v Speaker 0>is great this way, it doesn't want you
+
+00:07:52.855 --> 00:07:55.335
+<v Speaker 0>to write configuration unless you really need to,
+
+00:07:55.335 --> 00:07:57.175
+<v Speaker 0>so you'll notice a lot that you don't
+
+00:07:57.175 --> 00:07:58.935
+<v Speaker 0>really need to provide anything.
+
+00:08:00.630 --> 00:08:02.790
+<v Speaker 0>The next step plug in also reads from
+
+00:08:02.790 --> 00:08:03.750
+<v Speaker 0>flash proc
+
+00:08:04.070 --> 00:08:06.950
+<v Speaker 0>and it's gonna look using LSOF
+
+00:08:06.950 --> 00:08:09.110
+<v Speaker 0>to understand which files are open because everything
+
+00:08:09.110 --> 00:08:10.390
+<v Speaker 0>on Linux is a fail,
+
+00:08:10.790 --> 00:08:13.270
+<v Speaker 0>so it'll understand how many TCP connections we
+
+00:08:13.270 --> 00:08:15.365
+<v Speaker 0>have opened, the state they're in, whether they're
+
+00:08:15.365 --> 00:08:18.405
+<v Speaker 0>established, whether they're listening, whether they're closing and
+
+00:08:18.405 --> 00:08:20.565
+<v Speaker 0>we have some counts for UDPs because obviously
+
+00:08:20.565 --> 00:08:22.565
+<v Speaker 0>it's a state stateless
+
+00:08:22.645 --> 00:08:23.525
+<v Speaker 0>protocol.
+
+00:08:25.925 --> 00:08:27.764
+<v Speaker 0>Now you can get really far with this,
+
+00:08:28.410 --> 00:08:29.290
+<v Speaker 0>You
+
+00:08:29.290 --> 00:08:29.850
+<v Speaker 0>can
+
+00:08:30.410 --> 00:08:31.850
+<v Speaker 0>just understand
+
+00:08:31.930 --> 00:08:35.290
+<v Speaker 0>via standard deviations whether the machine has more
+
+00:08:35.290 --> 00:08:37.370
+<v Speaker 0>traffic than normal, less traffic than normal, more
+
+00:08:37.370 --> 00:08:39.690
+<v Speaker 0>errors than normal etcetera. You're gonna get a
+
+00:08:39.690 --> 00:08:41.705
+<v Speaker 0>really good understanding of the host and and
+
+00:08:41.705 --> 00:08:43.785
+<v Speaker 0>what's happening at a network level,
+
+00:08:44.265 --> 00:08:45.865
+<v Speaker 0>but we can do better.
+
+00:08:47.465 --> 00:08:50.585
+<v Speaker 0>So let's talk a little bit about SNMP.
+
+00:08:51.865 --> 00:08:52.585
+<v Speaker 0>Now
+
+00:08:52.745 --> 00:08:55.065
+<v Speaker 0>SNMP for those that are not familiar stands
+
+00:08:55.065 --> 00:08:56.904
+<v Speaker 0>for simple
+
+00:08:56.030 --> 00:08:58.030
+<v Speaker 0>network management protocol
+
+00:08:58.750 --> 00:09:02.190
+<v Speaker 0>and that always makes me laugh because at
+
+00:09:02.190 --> 00:09:04.430
+<v Speaker 0>first glance or even second glance or maybe
+
+00:09:04.430 --> 00:09:05.470
+<v Speaker 0>many glances.
+
+00:09:05.710 --> 00:09:08.110
+<v Speaker 0>It isn't actually that simple.
+
+00:09:09.254 --> 00:09:11.254
+<v Speaker 0>There's a lot going on and a lot
+
+00:09:11.254 --> 00:09:12.694
+<v Speaker 0>that you need to be able to translate
+
+00:09:12.694 --> 00:09:14.935
+<v Speaker 0>and understand to know what is happening when
+
+00:09:14.935 --> 00:09:16.935
+<v Speaker 0>you're using and consuming SNMP.
+
+00:09:18.454 --> 00:09:19.815
+<v Speaker 0>There are a few reasons
+
+00:09:20.760 --> 00:09:22.520
+<v Speaker 0>for the way that it was designed and
+
+00:09:22.520 --> 00:09:25.400
+<v Speaker 0>I think it's important to really just have
+
+00:09:25.400 --> 00:09:27.880
+<v Speaker 0>that as something that we understand when we're
+
+00:09:27.880 --> 00:09:29.240
+<v Speaker 0>talking about SNMP
+
+00:09:29.240 --> 00:09:31.560
+<v Speaker 0>is first this protocol was invented in the
+
+00:09:31.560 --> 00:09:32.360
+<v Speaker 0>eighties.
+
+00:09:32.760 --> 00:09:33.080
+<v Speaker 0>Right?
+
+00:09:34.355 --> 00:09:37.235
+<v Speaker 0>If we look at the hardware and in
+
+00:09:37.235 --> 00:09:38.995
+<v Speaker 0>the early eighties and late eighties,
+
+00:09:39.875 --> 00:09:42.755
+<v Speaker 0>We were shifting from eight bit word size
+
+00:09:42.755 --> 00:09:43.875
+<v Speaker 0>to 32.
+
+00:09:44.115 --> 00:09:46.195
+<v Speaker 0>It wasn't quite the standard yet.
+
+00:09:46.700 --> 00:09:49.100
+<v Speaker 0>The clock speeds on our CPUs ranged anywhere
+
+00:09:49.100 --> 00:09:51.340
+<v Speaker 0>from one to 25 with the average being
+
+00:09:51.340 --> 00:09:53.100
+<v Speaker 0>roughly 10 megahertz
+
+00:09:53.580 --> 00:09:55.500
+<v Speaker 0>and you could expect a machine back then
+
+00:09:55.500 --> 00:09:57.740
+<v Speaker 0>to probably have around 64
+
+00:09:57.740 --> 00:09:58.700
+<v Speaker 0>ks of RAM.
+
+00:10:00.255 --> 00:10:03.295
+<v Speaker 0>Now from a networking point of view, right,
+
+00:10:03.454 --> 00:10:05.135
+<v Speaker 0>the National Science Foundation,
+
+00:10:05.375 --> 00:10:07.615
+<v Speaker 0>the initial proposals of SNMP
+
+00:10:07.695 --> 00:10:10.415
+<v Speaker 0>had a backbone circuit of 50 kilobits.
+
+00:10:11.649 --> 00:10:13.810
+<v Speaker 0>Roughly the end user was getting 300 bits
+
+00:10:13.810 --> 00:10:15.730
+<v Speaker 0>per second based on the stats I could
+
+00:10:15.730 --> 00:10:17.810
+<v Speaker 0>find through Wikipedia and some other sources.
+
+00:10:18.930 --> 00:10:20.290
+<v Speaker 0>So when SNMP
+
+00:10:20.450 --> 00:10:22.610
+<v Speaker 0>was created had
+
+00:10:22.610 --> 00:10:25.875
+<v Speaker 0>these release really tight constraints with regards to
+
+00:10:25.875 --> 00:10:26.755
+<v Speaker 0>CPU
+
+00:10:26.835 --> 00:10:29.075
+<v Speaker 0>memory and network bandwidth
+
+00:10:29.795 --> 00:10:32.195
+<v Speaker 0>which means that you know we have a
+
+00:10:32.195 --> 00:10:34.515
+<v Speaker 0>lot of liberties today where we can transfer
+
+00:10:34.595 --> 00:10:36.835
+<v Speaker 0>vast amounts of data over HTTP
+
+00:10:36.835 --> 00:10:38.915
+<v Speaker 0>and text that is human readable
+
+00:10:39.750 --> 00:10:42.070
+<v Speaker 0>and get away with it. It wasn't really
+
+00:10:42.070 --> 00:10:45.430
+<v Speaker 0>the case in the eighties and this SNMP
+
+00:10:45.430 --> 00:10:46.950
+<v Speaker 0>was created in the early eighties, the first
+
+00:10:46.950 --> 00:10:48.790
+<v Speaker 0>public RFC was 88.
+
+00:10:49.510 --> 00:10:52.390
+<v Speaker 0>So things have changed but the protocol itself
+
+00:10:52.390 --> 00:10:54.605
+<v Speaker 0>hasn't changed too much although there is versions
+
+00:10:54.605 --> 00:10:55.805
+<v Speaker 0>one two and three.
+
+00:10:58.365 --> 00:11:00.285
+<v Speaker 0>So because of those constraints
+
+00:11:00.605 --> 00:11:03.005
+<v Speaker 0>we need to understand that SNMP as a
+
+00:11:03.005 --> 00:11:03.725
+<v Speaker 0>protocol
+
+00:11:03.965 --> 00:11:07.485
+<v Speaker 0>tries to really only transfer OIDs or numbers.
+
+00:11:08.000 --> 00:11:09.839
+<v Speaker 0>You can't read it and know what the
+
+00:11:09.839 --> 00:11:11.279
+<v Speaker 0>field is, you need to be able to
+
+00:11:11.279 --> 00:11:14.560
+<v Speaker 0>translate it. So as a prerequisite for the
+
+00:11:14.560 --> 00:11:16.639
+<v Speaker 0>Telegraf plugin you will need to your standard
+
+00:11:16.639 --> 00:11:19.519
+<v Speaker 0>SNMP tools available on the host that includes
+
+00:11:19.519 --> 00:11:23.135
+<v Speaker 0>SNMP walk and SNMP translate. It actually shell
+
+00:11:23.135 --> 00:11:25.695
+<v Speaker 0>execs out to SNMP translate to translate the
+
+00:11:25.695 --> 00:11:29.055
+<v Speaker 0>OIDs to something more understandable.
+
+00:11:30.334 --> 00:11:32.014
+<v Speaker 0>In order for that translation to work you
+
+00:11:32.014 --> 00:11:33.935
+<v Speaker 0>will need host that have the MIPS installed,
+
+00:11:33.935 --> 00:11:36.520
+<v Speaker 0>those can be fetched by most operating systems
+
+00:11:36.520 --> 00:11:38.920
+<v Speaker 0>with a simple command probably download dash MIPS
+
+00:11:38.920 --> 00:11:39.400
+<v Speaker 0>and
+
+00:11:39.960 --> 00:11:41.320
+<v Speaker 0>of course you're gonna need a lot of
+
+00:11:41.320 --> 00:11:43.320
+<v Speaker 0>persistence and I mean an awful lot of
+
+00:11:43.320 --> 00:11:47.320
+<v Speaker 0>persistence when you write SNMP configurations mapping
+
+00:11:47.400 --> 00:11:49.160
+<v Speaker 0>the fields that you need to enter your
+
+00:11:49.160 --> 00:11:50.120
+<v Speaker 0>TSDB,
+
+00:11:50.200 --> 00:11:52.175
+<v Speaker 0>you have to, you just have to be
+
+00:11:52.175 --> 00:11:54.735
+<v Speaker 0>patient and you have to really understand what
+
+00:11:54.735 --> 00:11:56.575
+<v Speaker 0>is going on. So you should be comfortable
+
+00:11:56.575 --> 00:11:58.895
+<v Speaker 0>using SNMP book and I'll show an example
+
+00:11:58.895 --> 00:12:00.415
+<v Speaker 0>of that on the demo.
+
+00:12:02.975 --> 00:12:03.695
+<v Speaker 0>Now
+
+00:12:03.855 --> 00:12:04.895
+<v Speaker 0>you can
+
+00:12:05.855 --> 00:12:08.175
+<v Speaker 0>configure this plugin
+
+00:12:07.509 --> 00:12:08.470
+<v Speaker 0>with nothing.
+
+00:12:09.910 --> 00:12:11.670
+<v Speaker 0>Not gonna get you very far but you
+
+00:12:11.670 --> 00:12:14.149
+<v Speaker 0>can and what happens when you configure it
+
+00:12:14.149 --> 00:12:16.069
+<v Speaker 0>with nothing is that Telegraf is going to
+
+00:12:16.069 --> 00:12:17.750
+<v Speaker 0>inject the whole inject the whole bunch of
+
+00:12:17.750 --> 00:12:18.470
+<v Speaker 0>defaults.
+
+00:12:18.790 --> 00:12:21.595
+<v Speaker 0>Those defaults are this agent is available in
+
+00:12:21.595 --> 00:12:23.675
+<v Speaker 0>local host. We assume you're gonna speak to
+
+00:12:23.675 --> 00:12:24.635
+<v Speaker 0>the agent there.
+
+00:12:25.435 --> 00:12:27.275
+<v Speaker 0>It will use version one by default, you
+
+00:12:27.275 --> 00:12:29.515
+<v Speaker 0>can go on to provide authentication by using
+
+00:12:29.515 --> 00:12:31.835
+<v Speaker 0>version three if you wish. It will assume
+
+00:12:31.835 --> 00:12:33.195
+<v Speaker 0>the community is public
+
+00:12:33.510 --> 00:12:35.830
+<v Speaker 0>and there are some intervals timers and retries
+
+00:12:35.830 --> 00:12:38.550
+<v Speaker 0>that can be configured, although you're probably gonna
+
+00:12:38.550 --> 00:12:40.390
+<v Speaker 0>get away at least in your experimental stage
+
+00:12:40.390 --> 00:12:41.830
+<v Speaker 0>using the default values.
+
+00:12:43.190 --> 00:12:45.670
+<v Speaker 0>And nothing's gonna happen. You're gonna run Telegraf
+
+00:12:45.670 --> 00:12:47.830
+<v Speaker 0>with this configuration and you're not gonna see
+
+00:12:47.385 --> 00:12:49.625
+<v Speaker 0>any metrics and that's because SNMP
+
+00:12:49.625 --> 00:12:52.105
+<v Speaker 0>has this whole table that we can walk
+
+00:12:52.105 --> 00:12:54.185
+<v Speaker 0>to fill metrics out and Telegraf is not
+
+00:12:54.185 --> 00:12:56.345
+<v Speaker 0>going to consume them all by default because
+
+00:12:56.345 --> 00:12:58.825
+<v Speaker 0>one thing databases don't like is large amounts
+
+00:12:58.825 --> 00:12:59.705
+<v Speaker 0>of arbitrary data
+
+00:13:00.300 --> 00:13:02.460
+<v Speaker 0>So we need to provide the configuration to
+
+00:13:02.460 --> 00:13:04.700
+<v Speaker 0>tell it what fields we care about from
+
+00:13:04.700 --> 00:13:06.060
+<v Speaker 0>the SNMP table.
+
+00:13:07.980 --> 00:13:08.620
+<v Speaker 0>So
+
+00:13:09.180 --> 00:13:11.740
+<v Speaker 0>pick the fields, get them into Telegraf configuration,
+
+00:13:13.015 --> 00:13:16.855
+<v Speaker 0>be comfortable debugging SNMP using SNMP walk, it
+
+00:13:16.855 --> 00:13:19.095
+<v Speaker 0>is an invaluable tool for putting these configurations
+
+00:13:19.095 --> 00:13:19.815
+<v Speaker 0>together
+
+00:13:20.135 --> 00:13:21.975
+<v Speaker 0>and whenever possible
+
+00:13:22.615 --> 00:13:24.215
+<v Speaker 0>steal prior art.
+
+00:13:24.855 --> 00:13:26.214
+<v Speaker 0>If you're going to get help you will
+
+00:13:26.214 --> 00:13:27.815
+<v Speaker 0>find many configurations many,
+
+00:13:29.550 --> 00:13:31.870
+<v Speaker 0>many people that are already monitoring the devices
+
+00:13:31.870 --> 00:13:34.270
+<v Speaker 0>that you want to monitor with SMMP and
+
+00:13:34.750 --> 00:13:37.150
+<v Speaker 0>that's not gonna change very often so you
+
+00:13:37.150 --> 00:13:39.390
+<v Speaker 0>can really get really far with this.
+
+00:13:40.110 --> 00:13:41.310
+<v Speaker 0>I also want to give a shout out
+
+00:13:41.310 --> 00:13:42.990
+<v Speaker 0>to a former colleague of mine Rob Cowart,
+
+00:13:43.235 --> 00:13:45.235
+<v Speaker 0>we worked together at Influx a couple of
+
+00:13:45.235 --> 00:13:45.955
+<v Speaker 0>years ago,
+
+00:13:46.275 --> 00:13:48.035
+<v Speaker 0>he was very
+
+00:13:48.355 --> 00:13:51.395
+<v Speaker 0>into network monitoring and has kept this repository
+
+00:13:51.395 --> 00:13:53.875
+<v Speaker 0>online all this time where SNMP,
+
+00:13:53.875 --> 00:13:55.315
+<v Speaker 0>InfluxSNMP
+
+00:13:55.315 --> 00:13:56.195
+<v Speaker 0>on his username.
+
+00:13:56.720 --> 00:13:59.200
+<v Speaker 0>It has configurations for all of the major
+
+00:13:59.200 --> 00:14:01.600
+<v Speaker 0>routers that you can hopefully
+
+00:14:01.600 --> 00:14:04.240
+<v Speaker 0>you're using within your network and your infrastructure
+
+00:14:04.400 --> 00:14:07.040
+<v Speaker 0>from you know Juniper to Ubiquiti etcetera so
+
+00:14:07.040 --> 00:14:07.760
+<v Speaker 0>these
+
+00:14:08.240 --> 00:14:12.085
+<v Speaker 0>directories actually contain telegraph configurations that map all
+
+00:14:12.085 --> 00:14:12.965
+<v Speaker 0>of the
+
+00:14:13.445 --> 00:14:15.925
+<v Speaker 0>OIDs to field names to store and set
+
+00:14:15.925 --> 00:14:18.165
+<v Speaker 0>up influx. It's an invaluable resource if this
+
+00:14:18.165 --> 00:14:19.445
+<v Speaker 0>is what you're trying to do.
+
+00:14:22.245 --> 00:14:24.165
+<v Speaker 0>Now we'll come back to SNMP in the
+
+00:14:24.165 --> 00:14:24.805
+<v Speaker 0>demo
+
+00:14:24.965 --> 00:14:26.805
+<v Speaker 0>but we may also want to have support
+
+00:14:26.805 --> 00:14:29.019
+<v Speaker 0>for SNMP traps. Now this is relatively new
+
+00:14:29.019 --> 00:14:31.259
+<v Speaker 0>in Telegraf, it was added within just the
+
+00:14:31.259 --> 00:14:33.980
+<v Speaker 0>last year but Telegraf can run
+
+00:14:34.300 --> 00:14:37.100
+<v Speaker 0>as a listener for those traps coming from
+
+00:14:37.100 --> 00:14:38.379
+<v Speaker 0>your SNMP agents.
+
+00:14:40.855 --> 00:14:43.335
+<v Speaker 0>What I would suggest is, well sorry, this
+
+00:14:43.335 --> 00:14:46.215
+<v Speaker 0>is the Wikipedia definition. The SNMP traps to
+
+00:14:46.215 --> 00:14:48.615
+<v Speaker 0>kind of and there the control a little
+
+00:14:48.615 --> 00:14:50.695
+<v Speaker 0>bit instead of you as the polar reaching
+
+00:14:50.695 --> 00:14:52.855
+<v Speaker 0>out to your SNMP agent and pulling your
+
+00:14:52.855 --> 00:14:55.015
+<v Speaker 0>metrics that you want on your regular interval.
+
+00:14:55.015 --> 00:14:57.390
+<v Speaker 0>You can actually have that SNMP agent send
+
+00:14:57.390 --> 00:14:58.190
+<v Speaker 0>messages
+
+00:14:58.270 --> 00:14:59.950
+<v Speaker 0>back down to you and you can listen
+
+00:14:59.950 --> 00:15:01.310
+<v Speaker 0>for them and consume them.
+
+00:15:02.029 --> 00:15:03.630
+<v Speaker 0>There are a couple of use cases for
+
+00:15:03.630 --> 00:15:05.310
+<v Speaker 0>that, we'll touch on that a little bit
+
+00:15:05.310 --> 00:15:07.390
+<v Speaker 0>but just know that Telegraf can receive those
+
+00:15:07.390 --> 00:15:08.665
+<v Speaker 0>and you can
+
+00:15:09.225 --> 00:15:10.904
+<v Speaker 0>can work with them relatively easily.
+
+00:15:11.865 --> 00:15:13.865
+<v Speaker 0>SM meter apps are configured by just enabling
+
+00:15:13.865 --> 00:15:16.745
+<v Speaker 0>the plug in and providing the port number
+
+00:15:16.745 --> 00:15:18.824
+<v Speaker 0>that we wish to listen on and then
+
+00:15:18.824 --> 00:15:19.545
+<v Speaker 0>the SMP
+
+00:15:20.230 --> 00:15:23.190
+<v Speaker 0>agent can send those traps to the listener.
+
+00:15:23.190 --> 00:15:24.230
+<v Speaker 0>Nice and simple
+
+00:15:25.430 --> 00:15:27.910
+<v Speaker 0>and of course we've also got the S
+
+00:15:27.910 --> 00:15:29.990
+<v Speaker 0>flow plugin for Telegraf
+
+00:15:30.550 --> 00:15:32.630
+<v Speaker 0>if you're not sure about S flow there's
+
+00:15:32.630 --> 00:15:35.030
+<v Speaker 0>this wonderful animation from the sflow.org website.
+
+00:15:36.565 --> 00:15:39.445
+<v Speaker 0>Basically what it is doing is it configures
+
+00:15:39.685 --> 00:15:41.205
+<v Speaker 0>via IP tables
+
+00:15:41.365 --> 00:15:42.005
+<v Speaker 0>a
+
+00:15:42.245 --> 00:15:45.045
+<v Speaker 0>sampling rate of all of your traffic which
+
+00:15:45.045 --> 00:15:47.525
+<v Speaker 0>will be written to the s flow agent.
+
+00:15:47.845 --> 00:15:49.445
+<v Speaker 0>That s flow agent can then pass it
+
+00:15:49.445 --> 00:15:51.285
+<v Speaker 0>on to one or more collectors in our
+
+00:15:51.285 --> 00:15:53.650
+<v Speaker 0>case we're gonna configure Telegraf to be that
+
+00:15:53.650 --> 00:15:54.530
+<v Speaker 0>collector.
+
+00:15:57.650 --> 00:16:00.290
+<v Speaker 0>And in order to be the collector we
+
+00:16:00.290 --> 00:16:02.770
+<v Speaker 0>enable the Sflow plugin and provide a port
+
+00:16:02.770 --> 00:16:03.410
+<v Speaker 0>number.
+
+00:16:03.730 --> 00:16:06.370
+<v Speaker 0>Again, Telegraf tries to keep this as simple
+
+00:16:06.370 --> 00:16:08.845
+<v Speaker 0>as possible. Thank you Telegraf.
+
+00:16:11.005 --> 00:16:12.765
+<v Speaker 0>Now there's one other thing that I wanna
+
+00:16:12.765 --> 00:16:15.245
+<v Speaker 0>talk about outside of Telegraf and that is
+
+00:16:15.245 --> 00:16:19.245
+<v Speaker 0>InfluxDB two and that it provides a very
+
+00:16:19.245 --> 00:16:21.245
+<v Speaker 0>convenient manifest sales
+
+00:16:21.820 --> 00:16:24.940
+<v Speaker 0>system for applying configurations and allowing us to
+
+00:16:24.940 --> 00:16:27.740
+<v Speaker 0>consume and reuse other people's configurations
+
+00:16:28.060 --> 00:16:30.540
+<v Speaker 0>and for today's demo I have used two
+
+00:16:30.540 --> 00:16:31.820
+<v Speaker 0>of these configurations,
+
+00:16:32.380 --> 00:16:34.300
+<v Speaker 0>very very easy. Now
+
+00:16:34.620 --> 00:16:37.195
+<v Speaker 0>anything that exists in InfluxDB two can be
+
+00:16:37.195 --> 00:16:40.235
+<v Speaker 0>configured through this manifest format that includes buckets,
+
+00:16:40.395 --> 00:16:43.035
+<v Speaker 0>Telegraf configurations for the remote configuration that we've
+
+00:16:43.035 --> 00:16:44.395
+<v Speaker 0>talked about earlier,
+
+00:16:44.875 --> 00:16:47.515
+<v Speaker 0>we can also provide dashboard users and organisations
+
+00:16:48.250 --> 00:16:51.130
+<v Speaker 0>and this can all very familiar if you're,
+
+00:16:51.130 --> 00:16:52.810
+<v Speaker 0>it will all feel very familiar if you
+
+00:16:52.810 --> 00:16:54.970
+<v Speaker 0>have used cube control in the past, right?
+
+00:16:54.970 --> 00:16:57.690
+<v Speaker 0>We cube control apply dash F and Flux
+
+00:16:57.690 --> 00:16:59.930
+<v Speaker 0>is influx apply dash F.
+
+00:17:02.595 --> 00:17:04.675
+<v Speaker 0>So let's go straight into the demo now.
+
+00:17:04.675 --> 00:17:07.075
+<v Speaker 0>Let's see if we can see how all
+
+00:17:07.075 --> 00:17:09.155
+<v Speaker 0>of these pieces of the puzzle connect together
+
+00:17:09.155 --> 00:17:10.915
+<v Speaker 0>to give us an understanding of what is
+
+00:17:10.915 --> 00:17:12.515
+<v Speaker 0>happening within
+
+00:17:12.450 --> 00:17:13.009
+<v Speaker 0>infrastructure.
+
+00:17:20.529 --> 00:17:21.249
+<v Speaker 0>Alright.
+
+00:17:22.450 --> 00:17:24.450
+<v Speaker 0>So what I have here is a Linux
+
+00:17:24.450 --> 00:17:27.075
+<v Speaker 0>machine running on Equinix metal and I have
+
+00:17:27.075 --> 00:17:30.114
+<v Speaker 0>Telegraf running in the background collecting
+
+00:17:30.995 --> 00:17:32.995
+<v Speaker 0>my network data through all of the plugins
+
+00:17:32.995 --> 00:17:34.114
+<v Speaker 0>that we just discussed.
+
+00:17:34.674 --> 00:17:36.755
+<v Speaker 0>The first thing I want to do was
+
+00:17:36.755 --> 00:17:38.915
+<v Speaker 0>pop into our Telegraf directory
+
+00:17:41.140 --> 00:17:42.580
+<v Speaker 0>and we'll list the files.
+
+00:17:44.340 --> 00:17:46.980
+<v Speaker 0>So what we have is SLO configured as
+
+00:17:46.980 --> 00:17:48.740
+<v Speaker 0>an input. SNMP,
+
+00:17:48.740 --> 00:17:51.860
+<v Speaker 0>SNMP traps. We're writing to InfluxDB
+
+00:17:51.860 --> 00:17:54.260
+<v Speaker 0>and to standard out and that just means
+
+00:17:54.260 --> 00:17:55.540
+<v Speaker 0>that it's
+
+00:17:55.384 --> 00:17:57.465
+<v Speaker 0>if I wanted to I could debug that
+
+00:17:57.465 --> 00:17:59.784
+<v Speaker 0>output from a standard file on a disc
+
+00:17:59.784 --> 00:18:01.304
+<v Speaker 0>or through journal D.
+
+00:18:02.664 --> 00:18:05.544
+<v Speaker 0>These configurations are very much exactly like I
+
+00:18:05.544 --> 00:18:06.184
+<v Speaker 0>showed
+
+00:18:06.825 --> 00:18:07.945
+<v Speaker 0>on the slides.
+
+00:18:08.504 --> 00:18:11.010
+<v Speaker 0>Our S flow plug in is configured only
+
+00:18:11.010 --> 00:18:12.370
+<v Speaker 0>with a service address.
+
+00:18:12.850 --> 00:18:14.450
+<v Speaker 0>Our s and m p trap.
+
+00:18:15.330 --> 00:18:16.770
+<v Speaker 0>Delete, delete, delete.
+
+00:18:19.570 --> 00:18:20.690
+<v Speaker 0>It's configured
+
+00:18:20.770 --> 00:18:22.210
+<v Speaker 0>with just a service address.
+
+00:18:23.745 --> 00:18:26.065
+<v Speaker 0>We have our inputs system
+
+00:18:27.905 --> 00:18:30.545
+<v Speaker 0>which has our network plugin listed here and
+
+00:18:30.545 --> 00:18:32.465
+<v Speaker 0>I've also got all the other basic system
+
+00:18:32.465 --> 00:18:35.025
+<v Speaker 0>monitoring stuff that I would want. CPU, disk,
+
+00:18:35.025 --> 00:18:38.500
+<v Speaker 0>disk IO, MEM, processes swap and another generic
+
+00:18:38.500 --> 00:18:39.700
+<v Speaker 0>system plugin.
+
+00:18:42.419 --> 00:18:45.780
+<v Speaker 0>And then the big skinny one, the SNMP
+
+00:18:45.780 --> 00:18:47.620
+<v Speaker 0>conf. Now well enabling
+
+00:18:47.620 --> 00:18:49.780
+<v Speaker 0>it is simple, we do have the field
+
+00:18:49.780 --> 00:18:50.580
+<v Speaker 0>mapping here.
+
+00:18:51.385 --> 00:18:53.465
+<v Speaker 0>So let's just have a quick look at
+
+00:18:53.465 --> 00:18:54.905
+<v Speaker 0>this and then I'll show you how we
+
+00:18:54.905 --> 00:18:56.744
+<v Speaker 0>get some of this information. So
+
+00:18:57.065 --> 00:18:59.225
+<v Speaker 0>if we scroll up, I have SNMPD
+
+00:18:59.225 --> 00:19:02.424
+<v Speaker 0>configured on this machine to expose system metrics.
+
+00:19:03.545 --> 00:19:06.509
+<v Speaker 0>And you can see this is exact configuration
+
+00:19:06.509 --> 00:19:08.509
+<v Speaker 0>from my slides. So I'm just pointing the
+
+00:19:08.509 --> 00:19:10.350
+<v Speaker 0>agent to local host with a community public
+
+00:19:10.350 --> 00:19:12.029
+<v Speaker 0>version one, so I'm not dealing with any
+
+00:19:12.029 --> 00:19:14.749
+<v Speaker 0>authentication and keeping this all relatively simple.
+
+00:19:15.389 --> 00:19:16.590
+<v Speaker 0>And then you can see we have a
+
+00:19:16.590 --> 00:19:18.269
+<v Speaker 0>lot of field definitions.
+
+00:19:18.585 --> 00:19:21.065
+<v Speaker 0>So we're just using the SNMP dot field
+
+00:19:21.065 --> 00:19:22.904
+<v Speaker 0>and put syntax, we give it a name
+
+00:19:22.904 --> 00:19:24.825
+<v Speaker 0>that we want to store inside of the
+
+00:19:24.825 --> 00:19:25.544
+<v Speaker 0>database
+
+00:19:26.024 --> 00:19:28.024
+<v Speaker 0>and then we represent or tell it which
+
+00:19:28.024 --> 00:19:29.864
+<v Speaker 0>OID maps to that field
+
+00:19:30.105 --> 00:19:32.105
+<v Speaker 0>and if we need to do any conversions
+
+00:19:32.105 --> 00:19:34.000
+<v Speaker 0>on data types, we can provide that as
+
+00:19:34.000 --> 00:19:34.479
+<v Speaker 0>well.
+
+00:19:35.600 --> 00:19:36.320
+<v Speaker 0>Now
+
+00:19:36.880 --> 00:19:40.640
+<v Speaker 0>this Telegraf configuration I got from a Telegraf
+
+00:19:40.640 --> 00:19:41.919
+<v Speaker 0>community template.
+
+00:19:43.279 --> 00:19:45.200
+<v Speaker 0>If I drop out of here and pop
+
+00:19:45.200 --> 00:19:48.240
+<v Speaker 0>open a new tab and type community templates,
+
+00:19:49.745 --> 00:19:51.345
+<v Speaker 0>or to spell templates.
+
+00:19:54.465 --> 00:19:56.785
+<v Speaker 0>Then we'll see there is this big massive
+
+00:19:56.785 --> 00:19:59.184
+<v Speaker 0>YAML file here and our Telegraf configuration is
+
+00:19:59.184 --> 00:20:00.945
+<v Speaker 0>in there towards the bottom.
+
+00:20:02.510 --> 00:20:04.110
+<v Speaker 0>If we go back to the community templates
+
+00:20:04.110 --> 00:20:04.989
+<v Speaker 0>repository,
+
+00:20:05.150 --> 00:20:06.830
+<v Speaker 0>you'll see there's a whole bunch here. Right?
+
+00:20:06.830 --> 00:20:08.990
+<v Speaker 0>There's not just the SNMP template, there's you
+
+00:20:08.990 --> 00:20:10.909
+<v Speaker 0>know, up, there's Linux system, there's many IO
+
+00:20:10.909 --> 00:20:11.789
+<v Speaker 0>MongoDB.
+
+00:20:11.789 --> 00:20:13.710
+<v Speaker 0>Hopefully that the software that you're using has
+
+00:20:13.710 --> 00:20:15.150
+<v Speaker 0>a template that you can apply.
+
+00:20:17.555 --> 00:20:18.355
+<v Speaker 0>However,
+
+00:20:18.435 --> 00:20:20.675
+<v Speaker 0>I also recommended that you get comfortable using
+
+00:20:20.675 --> 00:20:23.235
+<v Speaker 0>your debugging tools as an MP walk.
+
+00:20:24.115 --> 00:20:25.715
+<v Speaker 0>This tool is invaluable.
+
+00:20:26.675 --> 00:20:29.395
+<v Speaker 0>We specify the version, our community
+
+00:20:29.555 --> 00:20:30.355
+<v Speaker 0>and our agent.
+
+00:20:32.060 --> 00:20:34.380
+<v Speaker 0>And that will walk all the data that
+
+00:20:34.380 --> 00:20:36.060
+<v Speaker 0>we have now because I have the MIPs
+
+00:20:36.060 --> 00:20:37.900
+<v Speaker 0>installed on the system, we're not gonna see
+
+00:20:37.900 --> 00:20:39.100
+<v Speaker 0>the OIDs
+
+00:20:39.100 --> 00:20:40.780
+<v Speaker 0>on the left, we're gonna see something that
+
+00:20:40.780 --> 00:20:42.299
+<v Speaker 0>is more human readable.
+
+00:20:42.460 --> 00:20:43.420
+<v Speaker 0>If we scroll up,
+
+00:20:44.245 --> 00:20:47.205
+<v Speaker 0>you can just see fields that maybe I'm
+
+00:20:47.205 --> 00:20:48.884
+<v Speaker 0>interested in and monitoring.
+
+00:20:49.365 --> 00:20:50.725
+<v Speaker 0>Really really good tool
+
+00:20:50.885 --> 00:20:53.365
+<v Speaker 0>helps to be comfortable with it and these
+
+00:20:53.365 --> 00:20:55.125
+<v Speaker 0>same IDs on the left can be used
+
+00:20:55.125 --> 00:20:56.325
+<v Speaker 0>instead of the
+
+00:20:57.450 --> 00:20:58.009
+<v Speaker 0>configuration.
+
+00:21:00.409 --> 00:21:02.409
+<v Speaker 0>Now what does that look like?
+
+00:21:03.130 --> 00:21:03.769
+<v Speaker 0>Inside
+
+00:21:04.250 --> 00:21:04.889
+<v Speaker 0>of
+
+00:21:05.529 --> 00:21:06.649
+<v Speaker 0>InfluxDB.
+
+00:21:08.010 --> 00:21:10.809
+<v Speaker 0>Well, let's just refresh this. Make sure we've
+
+00:21:10.809 --> 00:21:12.090
+<v Speaker 0>got all our up to date information.
+
+00:21:12.715 --> 00:21:14.475
+<v Speaker 0>We can filter on the measurement that we're
+
+00:21:14.475 --> 00:21:16.554
+<v Speaker 0>interested in. So firstly, let's take a look
+
+00:21:16.554 --> 00:21:17.514
+<v Speaker 0>at SNMP.
+
+00:21:18.154 --> 00:21:20.315
+<v Speaker 0>You can see the load averages because we're
+
+00:21:20.315 --> 00:21:22.955
+<v Speaker 0>using SNMP for Linux system metrics. I doesn't
+
+00:21:22.955 --> 00:21:24.875
+<v Speaker 0>have access to any routers to be able
+
+00:21:24.875 --> 00:21:27.150
+<v Speaker 0>to get anything bit more interesting except my
+
+00:21:27.150 --> 00:21:28.909
+<v Speaker 0>printer and I didn't think you'd wanna see
+
+00:21:28.909 --> 00:21:30.750
+<v Speaker 0>me track the number of printed pages over
+
+00:21:30.750 --> 00:21:33.309
+<v Speaker 0>time because it doesn't fluctuate much.
+
+00:21:34.190 --> 00:21:35.710
+<v Speaker 0>But you can see here my load average
+
+00:21:35.710 --> 00:21:37.230
+<v Speaker 0>has come up and down over the last
+
+00:21:38.525 --> 00:21:40.924
+<v Speaker 0>one hour and I've actually left this running
+
+00:21:40.924 --> 00:21:42.845
+<v Speaker 0>I think for the last day. So you
+
+00:21:42.845 --> 00:21:44.045
+<v Speaker 0>can see something
+
+00:21:44.045 --> 00:21:45.325
+<v Speaker 0>weird happening here.
+
+00:21:46.045 --> 00:21:46.924
+<v Speaker 0>But
+
+00:21:48.205 --> 00:21:51.085
+<v Speaker 0>really great way to fetch metrics
+
+00:21:50.800 --> 00:21:52.559
+<v Speaker 0>and understand it.
+
+00:21:53.440 --> 00:21:55.360
+<v Speaker 0>We can also take a look at our
+
+00:21:55.360 --> 00:21:56.240
+<v Speaker 0>traps.
+
+00:21:56.320 --> 00:21:58.000
+<v Speaker 0>We click on this. Oh, I just have
+
+00:21:58.000 --> 00:21:59.200
+<v Speaker 0>to deselect them
+
+00:21:59.600 --> 00:22:01.039
+<v Speaker 0>and I hit go.
+
+00:22:01.520 --> 00:22:02.640
+<v Speaker 0>Just
+
+00:22:02.640 --> 00:22:04.160
+<v Speaker 0>refresh that. I'm not sure what happened there.
+
+00:22:04.155 --> 00:22:06.395
+<v Speaker 0>Let's try again. S and NP
+
+00:22:08.795 --> 00:22:11.355
+<v Speaker 0>trap. Oh and I need to look at
+
+00:22:11.355 --> 00:22:12.955
+<v Speaker 0>the last twelve hours. There we go.
+
+00:22:13.355 --> 00:22:15.035
+<v Speaker 0>We'll see that we have a trap that
+
+00:22:15.035 --> 00:22:16.715
+<v Speaker 0>has got some sort of field that is
+
+00:22:16.715 --> 00:22:20.350
+<v Speaker 0>modifying the sys uptime instance. Now traps
+
+00:22:20.510 --> 00:22:21.629
+<v Speaker 0>are events.
+
+00:22:22.190 --> 00:22:24.110
+<v Speaker 0>You cannot graph events,
+
+00:22:24.110 --> 00:22:26.429
+<v Speaker 0>right? They need to be aggregated.
+
+00:22:26.750 --> 00:22:28.990
+<v Speaker 0>However, InfluxDB allows us to escape that for
+
+00:22:28.990 --> 00:22:30.190
+<v Speaker 0>a moment and we can just use the
+
+00:22:30.190 --> 00:22:31.150
+<v Speaker 0>raw event data
+
+00:22:31.575 --> 00:22:34.375
+<v Speaker 0>And what we'll see here is that at
+
+00:22:34.375 --> 00:22:35.575
+<v Speaker 0>12:50,
+
+00:22:35.654 --> 00:22:37.335
+<v Speaker 0>a little over an hour and ten minutes
+
+00:22:37.335 --> 00:22:39.734
+<v Speaker 0>ago, I restarted SNMP.
+
+00:22:40.294 --> 00:22:42.135
+<v Speaker 0>And in fact if I do that again,
+
+00:22:42.135 --> 00:22:44.695
+<v Speaker 0>we should see that the SNMP agent sends
+
+00:22:44.695 --> 00:22:46.980
+<v Speaker 0>more traps to our listener.
+
+00:22:49.620 --> 00:22:52.580
+<v Speaker 0>No telegraph as configured with a batch and
+
+00:22:52.580 --> 00:22:54.580
+<v Speaker 0>a buffer and a flush interval.
+
+00:22:54.580 --> 00:22:56.180
+<v Speaker 0>I'm really hoping I have it set to
+
+00:22:56.180 --> 00:22:58.580
+<v Speaker 0>ten seconds but I cannot be entirely sure
+
+00:22:58.660 --> 00:23:00.500
+<v Speaker 0>but let's just hit go again
+
+00:23:00.735 --> 00:23:01.855
+<v Speaker 0>and there we go.
+
+00:23:02.255 --> 00:23:03.695
+<v Speaker 0>Now you can see here,
+
+00:23:04.415 --> 00:23:05.695
+<v Speaker 0>where's the time?
+
+00:23:06.415 --> 00:23:08.174
+<v Speaker 0>There we go. Fourteen o one and fourteen
+
+00:23:08.174 --> 00:23:09.934
+<v Speaker 0>o one, slightly different order but you can
+
+00:23:09.934 --> 00:23:12.015
+<v Speaker 0>see we have a notify shutdown and a
+
+00:23:12.015 --> 00:23:15.215
+<v Speaker 0>cold start. So those traps are being consumed
+
+00:23:15.640 --> 00:23:16.360
+<v Speaker 0>by
+
+00:23:16.840 --> 00:23:19.720
+<v Speaker 0>InfluxDB and the configuration for that is very
+
+00:23:19.720 --> 00:23:20.840
+<v Speaker 0>simple as well.
+
+00:23:23.720 --> 00:23:25.400
+<v Speaker 0>There we go. SNMPD.
+
+00:23:29.295 --> 00:23:33.134
+<v Speaker 0>Oh, wait. Because it's SNMPD.com.
+
+00:23:35.054 --> 00:23:35.695
+<v Speaker 0>And
+
+00:23:36.415 --> 00:23:37.774
+<v Speaker 0>we just add
+
+00:23:38.735 --> 00:23:41.430
+<v Speaker 0>a trap sync to local host for the
+
+00:23:41.430 --> 00:23:44.230
+<v Speaker 0>public community and Telegraf is listening on the
+
+00:23:44.230 --> 00:23:47.190
+<v Speaker 0>standard port number. So that just works nice
+
+00:23:47.190 --> 00:23:48.070
+<v Speaker 0>and simple.
+
+00:23:48.950 --> 00:23:49.590
+<v Speaker 0>Okay.
+
+00:23:50.150 --> 00:23:51.990
+<v Speaker 0>Let's keep going. Let's take a look at
+
+00:23:51.990 --> 00:23:52.550
+<v Speaker 0>S flow.
+
+00:23:54.415 --> 00:23:56.575
+<v Speaker 0>You'll see we have lots of things going
+
+00:23:56.575 --> 00:23:58.175
+<v Speaker 0>on here. Let's just quickly pull out a
+
+00:23:58.175 --> 00:23:59.615
+<v Speaker 0>couple, we'll hit go
+
+00:24:01.135 --> 00:24:01.695
+<v Speaker 0>and
+
+00:24:02.015 --> 00:24:04.255
+<v Speaker 0>the S flow stuff as also event based
+
+00:24:04.255 --> 00:24:04.894
+<v Speaker 0>data,
+
+00:24:05.055 --> 00:24:07.135
+<v Speaker 0>not ideal for viewing on a graph. However,
+
+00:24:07.855 --> 00:24:09.295
+<v Speaker 0>using InfluxDB templates,
+
+00:24:09.769 --> 00:24:11.769
+<v Speaker 0>we can apply those to our cluster get
+
+00:24:11.769 --> 00:24:14.970
+<v Speaker 0>dashboards but other people have built the aggregations
+
+00:24:14.970 --> 00:24:16.490
+<v Speaker 0>to visualize that but you can see here
+
+00:24:16.490 --> 00:24:18.809
+<v Speaker 0>we have all of these events of traffic
+
+00:24:18.809 --> 00:24:21.450
+<v Speaker 0>that has been sampled by IP tables. I've
+
+00:24:21.450 --> 00:24:22.169
+<v Speaker 0>done some
+
+00:24:22.490 --> 00:24:24.815
+<v Speaker 0>DNS stress testing on this machines. You're gonna
+
+00:24:24.815 --> 00:24:27.215
+<v Speaker 0>see a lot of lookups to eleven eleven,
+
+00:24:27.215 --> 00:24:28.975
+<v Speaker 0>the cloud flare DNS and
+
+00:24:29.135 --> 00:24:31.855
+<v Speaker 0>in fact we can just quickly trigger
+
+00:24:33.375 --> 00:24:35.375
+<v Speaker 0>some more. So we're gonna go into get
+
+00:24:35.375 --> 00:24:35.695
+<v Speaker 0>hub.
+
+00:24:37.790 --> 00:24:39.470
+<v Speaker 0>Let's do DNS stress
+
+00:24:40.430 --> 00:24:42.430
+<v Speaker 0>and this time I'm gonna use eight eight
+
+00:24:42.430 --> 00:24:43.390
+<v Speaker 0>eight eight.
+
+00:24:46.430 --> 00:24:48.190
+<v Speaker 0>And we'll just let that run for about
+
+00:24:48.190 --> 00:24:50.190
+<v Speaker 0>ten seconds to get some new s load
+
+00:24:50.190 --> 00:24:51.975
+<v Speaker 0>data into that. Now the reason I'm using
+
+00:24:51.975 --> 00:24:53.575
+<v Speaker 0>the DNS stress testing tool is just that
+
+00:24:53.575 --> 00:24:56.775
+<v Speaker 0>I need enough packets heading the network to
+
+00:24:56.775 --> 00:24:59.015
+<v Speaker 0>be sampled and show up in a database
+
+00:24:59.015 --> 00:25:01.575
+<v Speaker 0>running your traditional ping or DNS lookup may
+
+00:25:01.575 --> 00:25:03.175
+<v Speaker 0>not be enough for the sampling to kick
+
+00:25:03.150 --> 00:25:03.549
+<v Speaker 0>in.
+
+00:25:04.350 --> 00:25:05.950
+<v Speaker 0>Okay. So we're gonna leave that like that.
+
+00:25:05.950 --> 00:25:09.070
+<v Speaker 0>The next I wanna apply the InfluxDB templates.
+
+00:25:09.630 --> 00:25:11.230
+<v Speaker 0>So I have this direction. Now I could
+
+00:25:11.230 --> 00:25:13.390
+<v Speaker 0>use the HTTP URLs.
+
+00:25:13.390 --> 00:25:15.150
+<v Speaker 0>However, I did make a couple of modification
+
+00:25:15.150 --> 00:25:17.304
+<v Speaker 0>to these templates and just to show you
+
+00:25:17.304 --> 00:25:19.544
+<v Speaker 0>I'm going to open one up, know, are
+
+00:25:19.544 --> 00:25:21.304
+<v Speaker 0>very Kubernetes like you can see I've got
+
+00:25:21.304 --> 00:25:23.705
+<v Speaker 0>labels being applied here. I've got a variable
+
+00:25:23.705 --> 00:25:26.745
+<v Speaker 0>here. I've got some Telegraf configurations here which
+
+00:25:26.745 --> 00:25:29.399
+<v Speaker 0>I'm not actually using and there's dashboards further
+
+00:25:29.399 --> 00:25:30.840
+<v Speaker 0>up that I wouldn't bore you with right
+
+00:25:30.840 --> 00:25:32.119
+<v Speaker 0>now. However,
+
+00:25:32.440 --> 00:25:34.279
+<v Speaker 0>I can do an influx supply
+
+00:25:34.360 --> 00:25:35.399
+<v Speaker 0>dash F
+
+00:25:35.559 --> 00:25:36.599
+<v Speaker 0>S flow
+
+00:25:37.320 --> 00:25:38.840
+<v Speaker 0>and there's no auto complete I need to
+
+00:25:38.840 --> 00:25:40.600
+<v Speaker 0>get, I need to ask somebody to fix
+
+00:25:40.600 --> 00:25:42.885
+<v Speaker 0>that but first dashboards
+
+00:25:42.885 --> 00:25:43.924
+<v Speaker 0>there's nothing.
+
+00:25:44.644 --> 00:25:46.404
+<v Speaker 0>We apply this template, we get this nice
+
+00:25:46.404 --> 00:25:48.485
+<v Speaker 0>big list that tells us everything that's gonna
+
+00:25:48.485 --> 00:25:50.885
+<v Speaker 0>create within our InfluxDB server and we hit
+
+00:25:50.885 --> 00:25:51.445
+<v Speaker 0>go.
+
+00:25:51.924 --> 00:25:54.085
+<v Speaker 0>And I'm gonna do the same for SNMP.
+
+00:25:54.485 --> 00:25:54.965
+<v Speaker 0>YAML.
+
+00:25:59.730 --> 00:26:00.290
+<v Speaker 0>Oh,
+
+00:26:00.770 --> 00:26:02.610
+<v Speaker 0>that's great. I've got one YML and one
+
+00:26:02.610 --> 00:26:03.570
+<v Speaker 0>YAML.
+
+00:26:03.570 --> 00:26:05.250
+<v Speaker 0>And we set go. Now when I come
+
+00:26:05.250 --> 00:26:06.210
+<v Speaker 0>back over here,
+
+00:26:06.850 --> 00:26:08.210
+<v Speaker 0>we have dashboards
+
+00:26:08.235 --> 00:26:10.715
+<v Speaker 0>that I didn't write normal how to write
+
+00:26:10.795 --> 00:26:11.514
+<v Speaker 0>available
+
+00:26:11.674 --> 00:26:13.434
+<v Speaker 0>to me and I think that's fantastic.
+
+00:26:14.715 --> 00:26:17.195
+<v Speaker 0>So let's pop open our SLO source and
+
+00:26:17.195 --> 00:26:17.994
+<v Speaker 0>destination,
+
+00:26:17.995 --> 00:26:20.475
+<v Speaker 0>we can see traffic blurps here, this one
+
+00:26:20.475 --> 00:26:22.690
+<v Speaker 0>here was obviously me testing with the cloud
+
+00:26:22.690 --> 00:26:24.770
+<v Speaker 0>layer DNS and I think if we just
+
+00:26:24.770 --> 00:26:27.490
+<v Speaker 0>drop this down to five minutes. Yep. We're
+
+00:26:27.490 --> 00:26:29.170
+<v Speaker 0>gonna see those eight eight eight eight. Now
+
+00:26:29.170 --> 00:26:30.850
+<v Speaker 0>I know that's painful to read
+
+00:26:31.570 --> 00:26:33.490
+<v Speaker 0>but you can see the destination IP is
+
+00:26:33.490 --> 00:26:33.730
+<v Speaker 0>eight.
+
+00:26:34.815 --> 00:26:36.815
+<v Speaker 0>So we can see that network flow coming
+
+00:26:36.815 --> 00:26:37.374
+<v Speaker 0>through
+
+00:26:39.294 --> 00:26:41.855
+<v Speaker 0>and if we go to our SNMP system
+
+00:26:41.855 --> 00:26:44.735
+<v Speaker 0>monitoring again this dashboard knows that I have
+
+00:26:44.735 --> 00:26:47.340
+<v Speaker 0>SNMP running on the Linux host and it
+
+00:26:47.340 --> 00:26:49.179
+<v Speaker 0>knows it can read the system margin coming
+
+00:26:49.179 --> 00:26:50.540
+<v Speaker 0>from that. So I can see my system
+
+00:26:50.540 --> 00:26:52.779
+<v Speaker 0>uptime which is zero days.
+
+00:26:53.020 --> 00:26:55.260
+<v Speaker 0>I can see CPU utilization,
+
+00:26:55.260 --> 00:26:57.900
+<v Speaker 0>I'm barely touching this box memory allocation again
+
+00:26:57.900 --> 00:26:59.580
+<v Speaker 0>not really touching must.
+
+00:26:59.980 --> 00:27:01.740
+<v Speaker 0>We've got some CPU load, this will be
+
+00:27:01.740 --> 00:27:04.195
+<v Speaker 0>that DNS stress I just ran and we
+
+00:27:04.195 --> 00:27:05.715
+<v Speaker 0>can see the memory being freed when it
+
+00:27:05.715 --> 00:27:06.354
+<v Speaker 0>finished.
+
+00:27:06.674 --> 00:27:08.995
+<v Speaker 0>We've got some used memory claiming, know all
+
+00:27:08.995 --> 00:27:10.755
+<v Speaker 0>the basic stuff here and a little bit
+
+00:27:10.755 --> 00:27:11.794
+<v Speaker 0>of IO work.
+
+00:27:12.115 --> 00:27:15.154
+<v Speaker 0>So NVACDB templates are fantastic way to really
+
+00:27:15.154 --> 00:27:18.289
+<v Speaker 0>visualize that data especially from networking standpoint.
+
+00:27:18.690 --> 00:27:20.850
+<v Speaker 0>So that we don't need to understand those
+
+00:27:20.850 --> 00:27:22.850
+<v Speaker 0>queries and write them ourselves because sometimes they
+
+00:27:22.850 --> 00:27:25.009
+<v Speaker 0>can actually be quite challenging.
+
+00:27:27.730 --> 00:27:29.890
+<v Speaker 0>Alright. We should
+
+00:27:32.465 --> 00:27:35.264
+<v Speaker 0>showed SNMP as an MP trap and
+
+00:27:35.265 --> 00:27:37.664
+<v Speaker 0>S flow. Let's jump back to the slides.
+
+00:27:40.865 --> 00:27:43.184
+<v Speaker 0>So Telegraf and InfluxDB
+
+00:27:43.280 --> 00:27:44.960
+<v Speaker 0>really do provide a great way to monitor
+
+00:27:44.960 --> 00:27:46.320
+<v Speaker 0>network and traffic.
+
+00:27:47.679 --> 00:27:49.039
+<v Speaker 0>But I want to do a quick bonus
+
+00:27:49.039 --> 00:27:50.720
+<v Speaker 0>round before we finish.
+
+00:27:52.799 --> 00:27:54.720
+<v Speaker 0>Plug the problem with plugins
+
+00:27:55.155 --> 00:27:58.035
+<v Speaker 0>is they are opinionated by the person that
+
+00:27:58.035 --> 00:27:59.635
+<v Speaker 0>originally wrote the plugin.
+
+00:27:59.875 --> 00:28:02.035
+<v Speaker 0>To try and be as little configuration as
+
+00:28:02.035 --> 00:28:03.875
+<v Speaker 0>possible while giving you as much value but
+
+00:28:03.875 --> 00:28:05.635
+<v Speaker 0>in the eyes of that single person
+
+00:28:06.115 --> 00:28:08.115
+<v Speaker 0>and your use case may not be the
+
+00:28:08.115 --> 00:28:10.230
+<v Speaker 0>same as other people. You may want to
+
+00:28:10.230 --> 00:28:12.470
+<v Speaker 0>expand on that or provide new
+
+00:28:12.550 --> 00:28:15.029
+<v Speaker 0>metrics that aren't actually monitored.
+
+00:28:15.990 --> 00:28:17.750
+<v Speaker 0>And this is a networking track. So I
+
+00:28:17.750 --> 00:28:19.750
+<v Speaker 0>also want to talk about BPF because I
+
+00:28:19.750 --> 00:28:22.150
+<v Speaker 0>think we all like working with BPF to
+
+00:28:22.150 --> 00:28:23.030
+<v Speaker 0>one extent or another.
+
+00:28:23.735 --> 00:28:25.095
+<v Speaker 0>So how can
+
+00:28:25.095 --> 00:28:28.135
+<v Speaker 0>we use BPF web Telegraf to get metrics
+
+00:28:28.135 --> 00:28:31.095
+<v Speaker 0>into InfluxDB or any other time series database?
+
+00:28:32.935 --> 00:28:35.815
+<v Speaker 0>Well, there's this plugin relatively new in Telegraf
+
+00:28:35.815 --> 00:28:37.495
+<v Speaker 0>land that came out last year called Exec
+
+00:28:37.495 --> 00:28:41.350
+<v Speaker 0>D. Exec will allow Telegraf to manage the
+
+00:28:41.350 --> 00:28:43.270
+<v Speaker 0>run the running
+
+00:28:43.270 --> 00:28:46.390
+<v Speaker 0>of any arbitrary application on the machine and
+
+00:28:46.390 --> 00:28:49.430
+<v Speaker 0>handle fetching the metrics from its output and
+
+00:28:49.430 --> 00:28:52.070
+<v Speaker 0>storing them and its normal metric collection pipeline.
+
+00:28:52.555 --> 00:28:55.675
+<v Speaker 0>That means any language, any tool, bash, ruby,
+
+00:28:55.675 --> 00:28:57.995
+<v Speaker 0>rust, go you want to write as long
+
+00:28:57.995 --> 00:29:00.795
+<v Speaker 0>as you can spit out CSV or JSON,
+
+00:29:00.795 --> 00:29:03.515
+<v Speaker 0>lame protocol or any other supported format,
+
+00:29:03.835 --> 00:29:06.419
+<v Speaker 0>you can write your own plugins that Telegraf
+
+00:29:06.419 --> 00:29:08.739
+<v Speaker 0>will manage for you. And it is really,
+
+00:29:08.740 --> 00:29:09.779
+<v Speaker 0>really easy.
+
+00:29:14.020 --> 00:29:15.619
+<v Speaker 0>What I have here
+
+00:29:17.299 --> 00:29:20.644
+<v Speaker 0>is the IO visor BCC repository cloned on
+
+00:29:20.644 --> 00:29:21.445
+<v Speaker 0>this machine.
+
+00:29:21.684 --> 00:29:23.445
+<v Speaker 0>I call this repository because it has a
+
+00:29:23.445 --> 00:29:26.164
+<v Speaker 0>really great examples directory and in fact if
+
+00:29:26.164 --> 00:29:29.205
+<v Speaker 0>you go into the networking directory underneath examples,
+
+00:29:30.005 --> 00:29:31.445
+<v Speaker 0>you'll see a whole bunch of things as
+
+00:29:31.445 --> 00:29:33.760
+<v Speaker 0>I already has BPF scripts available.
+
+00:29:34.400 --> 00:29:35.760
+<v Speaker 0>I thought it would be cool using the
+
+00:29:35.760 --> 00:29:37.919
+<v Speaker 0>DNS matching script here.
+
+00:29:38.880 --> 00:29:40.480
+<v Speaker 0>If we could count
+
+00:29:40.480 --> 00:29:42.960
+<v Speaker 0>how many times domains are looked up using
+
+00:29:42.960 --> 00:29:44.639
+<v Speaker 0>this kernel trace.
+
+00:29:44.960 --> 00:29:47.200
+<v Speaker 0>So if I can't my Telegraf configuration,
+
+00:29:48.075 --> 00:29:49.674
+<v Speaker 0>you'll see I've just got the flush interval
+
+00:29:49.674 --> 00:29:51.195
+<v Speaker 0>set to five seconds so we can see
+
+00:29:51.195 --> 00:29:54.154
+<v Speaker 0>some data hopefully and close to real time.
+
+00:29:54.395 --> 00:29:55.755
+<v Speaker 0>I provide the command that I want to
+
+00:29:55.755 --> 00:29:57.035
+<v Speaker 0>run which in this case is just a
+
+00:29:57.035 --> 00:29:59.355
+<v Speaker 0>Python script with this DNS matching code and
+
+00:29:59.355 --> 00:30:01.580
+<v Speaker 0>I'm telling it I want to count all
+
+00:30:01.580 --> 00:30:03.419
+<v Speaker 0>the lookups for google.com.
+
+00:30:04.700 --> 00:30:07.020
+<v Speaker 0>I then can specify a signal that I
+
+00:30:07.020 --> 00:30:08.460
+<v Speaker 0>want to be able to handle so if
+
+00:30:08.460 --> 00:30:09.660
+<v Speaker 0>we want to be able to reload or
+
+00:30:09.660 --> 00:30:12.140
+<v Speaker 0>restart that process we can you know provide
+
+00:30:12.140 --> 00:30:13.100
+<v Speaker 0>the means to do that.
+
+00:30:13.965 --> 00:30:17.005
+<v Speaker 0>I've used JSON as most languages can already
+
+00:30:17.005 --> 00:30:19.725
+<v Speaker 0>output JSON, so you know Python is very
+
+00:30:19.725 --> 00:30:21.965
+<v Speaker 0>easy. I just tell Telegraf hey this application
+
+00:30:21.965 --> 00:30:24.525
+<v Speaker 0>will print out two standard out JSON documents
+
+00:30:24.525 --> 00:30:26.044
+<v Speaker 0>that we want to be able to parse.
+
+00:30:26.365 --> 00:30:28.445
+<v Speaker 0>We tell how to parse those documents so
+
+00:30:28.445 --> 00:30:30.740
+<v Speaker 0>that we'll have a time key that is
+
+00:30:30.740 --> 00:30:32.899
+<v Speaker 0>a Unix timestamp value and that there are
+
+00:30:32.899 --> 00:30:34.980
+<v Speaker 0>two other keys on that JSON document that
+
+00:30:34.980 --> 00:30:36.419
+<v Speaker 0>we want to store as tags so that
+
+00:30:36.419 --> 00:30:37.619
+<v Speaker 0>they are indexed.
+
+00:30:37.620 --> 00:30:38.899
+<v Speaker 0>That is the name of the domain that
+
+00:30:38.899 --> 00:30:40.659
+<v Speaker 0>we're trying to resolve and the type of
+
+00:30:40.659 --> 00:30:43.375
+<v Speaker 0>DNS lookup that we're doing. I then use
+
+00:30:43.375 --> 00:30:46.495
+<v Speaker 0>an aggregator plugin which allows us to and
+
+00:30:46.575 --> 00:30:48.174
+<v Speaker 0>real time and memory
+
+00:30:48.255 --> 00:30:50.815
+<v Speaker 0>take event based data like a DNS lookup,
+
+00:30:50.815 --> 00:30:52.895
+<v Speaker 0>something that cannot be graphed and build an
+
+00:30:52.895 --> 00:30:54.575
+<v Speaker 0>aggregation on it. So in this case it
+
+00:30:54.575 --> 00:30:56.255
+<v Speaker 0>is going to every two seconds count how
+
+00:30:56.255 --> 00:30:57.855
+<v Speaker 0>many requests were made to that domain and
+
+00:30:57.855 --> 00:30:59.590
+<v Speaker 0>then give me an aggregated account for that
+
+00:30:59.590 --> 00:31:00.229
+<v Speaker 0>window.
+
+00:31:00.710 --> 00:31:02.789
+<v Speaker 0>And instead of writing to InfluxDB, I'm only
+
+00:31:02.789 --> 00:31:04.710
+<v Speaker 0>gonna write this out to standard out.
+
+00:31:05.190 --> 00:31:07.429
+<v Speaker 0>Just means I can run Telegraf like so.
+
+00:31:10.390 --> 00:31:12.870
+<v Speaker 0>And in a few seconds, hopefully, we will
+
+00:31:12.870 --> 00:31:14.715
+<v Speaker 0>start to see some data come to the
+
+00:31:14.715 --> 00:31:15.434
+<v Speaker 0>terminal
+
+00:31:16.315 --> 00:31:17.434
+<v Speaker 0>right on queue.
+
+00:31:17.835 --> 00:31:19.674
+<v Speaker 0>Now the reason we're seeing data and I'm
+
+00:31:19.674 --> 00:31:21.115
+<v Speaker 0>not doing anything on this machine is I
+
+00:31:21.115 --> 00:31:23.754
+<v Speaker 0>also have DNS stress running in the background.
+
+00:31:25.115 --> 00:31:27.879
+<v Speaker 0>Looking up google.com and microsoft.com.
+
+00:31:28.280 --> 00:31:30.440
+<v Speaker 0>And we can see here we get
+
+00:31:30.679 --> 00:31:32.919
+<v Speaker 0>a lookups on google.com
+
+00:31:32.920 --> 00:31:34.760
+<v Speaker 0>quite a lot of times every two seconds.
+
+00:31:34.760 --> 00:31:37.240
+<v Speaker 0>I think that's 15,000 up to 30,000 down
+
+00:31:37.240 --> 00:31:40.600
+<v Speaker 0>here and we're not seeing that monitor microsoft.com
+
+00:31:40.600 --> 00:31:42.679
+<v Speaker 0>at all because it was not part of
+
+00:31:42.679 --> 00:31:44.224
+<v Speaker 0>our allow list.
+
+00:31:44.865 --> 00:31:45.664
+<v Speaker 0>However,
+
+00:31:45.745 --> 00:31:48.144
+<v Speaker 0>we can modify our Telegrafconf
+
+00:31:48.144 --> 00:31:50.384
+<v Speaker 0>and say, hey, you know what? We do
+
+00:31:50.384 --> 00:31:51.904
+<v Speaker 0>want to see microsoft.com
+
+00:31:51.904 --> 00:31:52.624
+<v Speaker 0>counts.
+
+00:31:55.264 --> 00:31:56.144
+<v Speaker 0>Like so.
+
+00:31:57.024 --> 00:31:59.720
+<v Speaker 0>And we rerun Telegraf And again, and hopefully
+
+00:31:59.720 --> 00:32:01.080
+<v Speaker 0>just a few seconds.
+
+00:32:01.240 --> 00:32:02.360
+<v Speaker 0>Oh
+
+00:32:10.440 --> 00:32:10.840
+<v Speaker 0>no.
+
+00:32:14.655 --> 00:32:15.294
+<v Speaker 0>Easy.
+
+00:32:15.535 --> 00:32:17.215
+<v Speaker 0>And then very simple demo.
+
+00:32:17.455 --> 00:32:18.414
+<v Speaker 0>We have
+
+00:32:19.135 --> 00:32:21.294
+<v Speaker 0>written a BPF trace,
+
+00:32:21.615 --> 00:32:24.255
+<v Speaker 0>had Telegraf manage the process
+
+00:32:24.600 --> 00:32:27.480
+<v Speaker 0>and parse the JSON output from our executive
+
+00:32:27.480 --> 00:32:29.240
+<v Speaker 0>plugin and store it
+
+00:32:29.640 --> 00:32:31.320
+<v Speaker 0>and FluxDB or in this case print to
+
+00:32:31.320 --> 00:32:32.039
+<v Speaker 0>the terminal.
+
+00:32:32.679 --> 00:32:34.280
+<v Speaker 0>Now you may be wondering what changes had
+
+00:32:34.280 --> 00:32:35.799
+<v Speaker 0>to be made to this repository for that
+
+00:32:35.799 --> 00:32:37.640
+<v Speaker 0>to work. Well, the only thing I really
+
+00:32:37.640 --> 00:32:39.480
+<v Speaker 0>had to do was add the type module,
+
+00:32:39.745 --> 00:32:42.225
+<v Speaker 0>remove any arbitrary print statements that aren't spitting
+
+00:32:42.225 --> 00:32:43.424
+<v Speaker 0>out the JSON that we wanna be able
+
+00:32:43.424 --> 00:32:44.224
+<v Speaker 0>to parse,
+
+00:32:44.544 --> 00:32:46.784
+<v Speaker 0>and then this application would just print all
+
+00:32:46.784 --> 00:32:48.864
+<v Speaker 0>the questions and answers to the terminal.
+
+00:32:49.265 --> 00:32:50.945
+<v Speaker 0>I modified it to do a loop and
+
+00:32:50.945 --> 00:32:53.345
+<v Speaker 0>then print out using an f formatted string,
+
+00:32:53.345 --> 00:32:55.345
+<v Speaker 0>a JSON document with accounts that I want.
+
+00:32:55.720 --> 00:32:57.240
+<v Speaker 0>The aggregator plugin
+
+00:32:57.480 --> 00:32:59.560
+<v Speaker 0>tallies them up every two seconds and we
+
+00:32:59.560 --> 00:33:01.000
+<v Speaker 0>get our metrics.
+
+00:33:01.560 --> 00:33:02.760
+<v Speaker 0>Couldn't be easier.
+
+00:33:05.240 --> 00:33:06.760
+<v Speaker 0>That's all I have for you today. I
+
+00:33:06.760 --> 00:33:08.760
+<v Speaker 0>hope based on what you've seen, you now
+
+00:33:08.760 --> 00:33:12.105
+<v Speaker 0>know that Telegraf is a really interesting, powerful
+
+00:33:12.105 --> 00:33:15.225
+<v Speaker 0>and fantastic application to be part of everyone's
+
+00:33:15.225 --> 00:33:18.505
+<v Speaker 0>monitoring and metric collection pipeline. It has support
+
+00:33:18.505 --> 00:33:20.825
+<v Speaker 0>for over 200 plugins, some really great networking
+
+00:33:20.825 --> 00:33:22.265
+<v Speaker 0>support for SNMP
+
+00:33:22.345 --> 00:33:25.465
+<v Speaker 0>traps, SLO and even BPF if you're willing
+
+00:33:25.465 --> 00:33:27.363
+<v Speaker 0>to write a little bit of code. I'm
+
+00:33:27.363 --> 00:33:28.963
+<v Speaker 0>happy to take any questions now. Thank you
+
+00:33:28.963 --> 00:33:30.403
+<v Speaker 0>for joining me and have a great day.

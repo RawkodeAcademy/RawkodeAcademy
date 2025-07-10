@@ -1,0 +1,4829 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 9977e631-c818-40b1-91b0-9b0af72b5bd3
+Created: 2025-04-29T11:52:15.296Z
+Duration: 3370.5454
+Channels: 1
+
+00:00:00.000 --> 00:00:02.080
+<v Speaker 0>Welcome to Cloud Native Compass,
+
+00:00:02.240 --> 00:00:04.799
+<v Speaker 0>a podcast to help you navigate the vast
+
+00:00:04.799 --> 00:00:07.040
+<v Speaker 0>landscape of the cloud native ecosystem.
+
+00:00:07.040 --> 00:00:09.840
+<v Speaker 0>We're your hosts. I'm David Flanagan, a technology
+
+00:00:09.840 --> 00:00:12.400
+<v Speaker 0>magpie that can't stop playing with new shiny
+
+00:00:12.400 --> 00:00:15.434
+<v Speaker 0>things. I'm Laura Santa Maria, a forever learner
+
+00:00:15.434 --> 00:00:18.795
+<v Speaker 0>who is constantly breaking production. So, apparently,
+
+00:00:18.875 --> 00:00:21.195
+<v Speaker 0>Cloud Run is better than BigQuery.
+
+00:00:21.515 --> 00:00:24.154
+<v Speaker 0>That is according to principal engineer at ChainGuard,
+
+00:00:24.154 --> 00:00:24.875
+<v Speaker 0>Jason Hall.
+
+00:00:26.019 --> 00:00:27.859
+<v Speaker 1>In this episode, we get to chat with
+
+00:00:27.859 --> 00:00:30.900
+<v Speaker 1>Jason about ChainGuard's migration from Kubernetes
+
+00:00:30.900 --> 00:00:32.020
+<v Speaker 1>and Knative
+
+00:00:32.020 --> 00:00:34.340
+<v Speaker 1>to Cloud Run for a pillar of their
+
+00:00:34.340 --> 00:00:35.140
+<v Speaker 1>infrastructure.
+
+00:00:35.780 --> 00:00:38.100
+<v Speaker 0>And in this episode, we didn't even mention
+
+00:00:38.100 --> 00:00:38.579
+<v Speaker 0>Rust
+
+00:00:38.985 --> 00:00:42.025
+<v Speaker 0>until we did because Laura brought it up.
+
+00:00:42.425 --> 00:00:44.185
+<v Speaker 1>Well, you know, I had to do it.
+
+00:00:44.265 --> 00:00:44.825
+<v Speaker 1>Enjoy
+
+00:00:45.145 --> 00:00:47.945
+<v Speaker 1>this episode, and try to spot the deepfake,
+
+00:00:47.945 --> 00:00:48.505
+<v Speaker 1>Jason.
+
+00:00:49.385 --> 00:00:51.225
+<v Speaker 1>Welcome to the episode.
+
+00:00:51.305 --> 00:00:53.385
+<v Speaker 1>We have a wonderful guest with us. Jason,
+
+00:00:53.385 --> 00:00:54.745
+<v Speaker 1>would you like to introduce yourself?
+
+00:00:55.920 --> 00:00:58.559
+<v Speaker 2>Yeah. Hi. I'm, I'm Jason Hall. I work
+
+00:00:58.559 --> 00:01:00.800
+<v Speaker 2>at ChainGuard. I'm a I'm an engineer. I
+
+00:01:00.800 --> 00:01:02.399
+<v Speaker 2>do all kinds of stuff,
+
+00:01:03.120 --> 00:01:04.640
+<v Speaker 2>generally back end related.
+
+00:01:06.159 --> 00:01:08.615
+<v Speaker 2>Also, a lot of image building stuff. That's
+
+00:01:08.615 --> 00:01:09.895
+<v Speaker 2>kind of what we do there.
+
+00:01:11.175 --> 00:01:11.735
+<v Speaker 2>Yeah.
+
+00:01:12.455 --> 00:01:14.375
+<v Speaker 2>I mean the place. I've known you for
+
+00:01:14.375 --> 00:01:16.855
+<v Speaker 1>all of five minutes, and, clearly, you're an
+
+00:01:16.855 --> 00:01:19.175
+<v Speaker 1>awesome person. So we're very excited to have
+
+00:01:19.175 --> 00:01:19.335
+<v Speaker 1>you.
+
+00:01:20.530 --> 00:01:22.850
+<v Speaker 1>Yeah. Five minutes. I can I can learn
+
+00:01:22.850 --> 00:01:24.290
+<v Speaker 1>about some of you in five minutes?
+
+00:01:24.690 --> 00:01:26.370
+<v Speaker 2>Yeah. I've known him for longer, so I
+
+00:01:26.370 --> 00:01:27.570
+<v Speaker 0>know better. Right?
+
+00:01:27.890 --> 00:01:28.930
+<v Speaker 2>Yeah. Yeah.
+
+00:01:30.610 --> 00:01:32.369
+<v Speaker 0>Seven minutes. No. I'm about yeah.
+
+00:01:33.575 --> 00:01:34.534
+<v Speaker 0>No. I have
+
+00:01:35.655 --> 00:01:37.335
+<v Speaker 0>we followed each other at socials for a
+
+00:01:37.335 --> 00:01:39.335
+<v Speaker 0>long time, and I've always always loved the
+
+00:01:39.335 --> 00:01:40.854
+<v Speaker 0>work that you put out. And what prompted
+
+00:01:40.854 --> 00:01:43.095
+<v Speaker 0>this conversation today is an article that you
+
+00:01:43.095 --> 00:01:45.414
+<v Speaker 0>published to the ChainGuard blog about
+
+00:01:45.869 --> 00:01:46.990
+<v Speaker 0>a migration,
+
+00:01:46.990 --> 00:01:49.549
+<v Speaker 0>some cloud adoption, containers, and Cloud Run. And
+
+00:01:49.549 --> 00:01:50.990
+<v Speaker 0>we're gonna touch on all of these different
+
+00:01:50.990 --> 00:01:51.630
+<v Speaker 0>aspects.
+
+00:01:52.030 --> 00:01:53.950
+<v Speaker 0>But I I I I love your your
+
+00:01:53.950 --> 00:01:56.590
+<v Speaker 0>simple introduction. I'm an engineer that does stuff,
+
+00:01:56.590 --> 00:01:59.255
+<v Speaker 0>back end stuff stuff. I mean Generally. They
+
+00:01:59.255 --> 00:02:00.695
+<v Speaker 2>don't let me touch the front end.
+
+00:02:01.095 --> 00:02:03.814
+<v Speaker 1>Oh, okay. I know that feeling. Usually, I
+
+00:02:03.814 --> 00:02:06.695
+<v Speaker 1>touch prod, everything breaks on purpose. Yeah. It's
+
+00:02:06.695 --> 00:02:07.735
+<v Speaker 1>what I tell everybody.
+
+00:02:08.055 --> 00:02:10.134
+<v Speaker 1>You know? I've done some tailwinds last week.
+
+00:02:10.134 --> 00:02:11.575
+<v Speaker 0>Like, does that make me feel stagnant?
+
+00:02:12.380 --> 00:02:14.060
+<v Speaker 0>Yes. Yes. Yes. Does. Alright.
+
+00:02:17.580 --> 00:02:20.140
+<v Speaker 0>Awesome. So I think just to provide a
+
+00:02:20.140 --> 00:02:21.980
+<v Speaker 0>little bit of context before we dive in
+
+00:02:21.980 --> 00:02:23.900
+<v Speaker 0>to like the Kubernetes, the containers and the
+
+00:02:23.900 --> 00:02:26.220
+<v Speaker 0>cloud run is like you have a career
+
+00:02:26.220 --> 00:02:28.535
+<v Speaker 0>behind you that required or I don't know
+
+00:02:28.535 --> 00:02:30.295
+<v Speaker 0>if it required you had some time at
+
+00:02:30.295 --> 00:02:32.935
+<v Speaker 0>Google along with other chain guard engineers. Right?
+
+00:02:32.935 --> 00:02:34.855
+<v Speaker 0>So the context here is is that you've
+
+00:02:34.855 --> 00:02:36.695
+<v Speaker 0>been working with containers in Kubernetes
+
+00:02:36.775 --> 00:02:38.215
+<v Speaker 0>for a while. Is that is that a
+
+00:02:38.215 --> 00:02:38.694
+<v Speaker 0>safe assumption?
+
+00:02:39.780 --> 00:02:41.940
+<v Speaker 2>Yeah. Yeah. Yeah. I
+
+00:02:42.260 --> 00:02:43.780
+<v Speaker 2>while I was at Google, I worked on
+
+00:02:43.780 --> 00:02:46.580
+<v Speaker 2>the Google Cloud Build product.
+
+00:02:46.739 --> 00:02:48.659
+<v Speaker 2>I started that team with a couple other
+
+00:02:48.659 --> 00:02:50.819
+<v Speaker 2>folks. So that was sort of my introduction
+
+00:02:50.819 --> 00:02:52.980
+<v Speaker 2>to containers in the first place was how
+
+00:02:52.980 --> 00:02:55.225
+<v Speaker 2>to build them as a service.
+
+00:02:56.265 --> 00:02:57.705
+<v Speaker 2>I learned a lot. I made a lot
+
+00:02:57.705 --> 00:02:59.545
+<v Speaker 2>of mistakes as everyone does,
+
+00:03:00.105 --> 00:03:02.425
+<v Speaker 2>and they hired me at ChainGuard anyway.
+
+00:03:02.584 --> 00:03:03.065
+<v Speaker 2>So,
+
+00:03:03.465 --> 00:03:04.745
+<v Speaker 2>a lot of a lot of folks from
+
+00:03:04.745 --> 00:03:05.385
+<v Speaker 2>Google,
+
+00:03:05.625 --> 00:03:08.025
+<v Speaker 2>came over to ChainGuard, and and
+
+00:03:08.220 --> 00:03:11.019
+<v Speaker 2>our focus there is also building containers, you
+
+00:03:11.019 --> 00:03:12.780
+<v Speaker 2>know, as well as possible, as quickly as
+
+00:03:12.780 --> 00:03:14.540
+<v Speaker 2>possible, serving them as well as possible. A
+
+00:03:14.540 --> 00:03:16.220
+<v Speaker 2>bunch of folks were from the Google,
+
+00:03:16.540 --> 00:03:18.540
+<v Speaker 2>container registry team also. So,
+
+00:03:20.220 --> 00:03:23.275
+<v Speaker 2>yeah, a bunch of folks there dealing with
+
+00:03:23.275 --> 00:03:25.755
+<v Speaker 2>both build building containers and running containers to
+
+00:03:25.755 --> 00:03:26.555
+<v Speaker 2>serve them.
+
+00:03:27.035 --> 00:03:28.795
+<v Speaker 0>Yeah. I mean, the the reason I bring
+
+00:03:28.795 --> 00:03:30.475
+<v Speaker 0>this up, right, and I don't wanna condense
+
+00:03:30.475 --> 00:03:32.155
+<v Speaker 0>your articles out into one sentence, but I'm
+
+00:03:32.155 --> 00:03:34.315
+<v Speaker 0>gonna do it anyway, is that ChainGuard couldn't
+
+00:03:34.315 --> 00:03:36.155
+<v Speaker 0>be arsed with Kubernetes anymore. I mean, that's
+
+00:03:36.155 --> 00:03:37.595
+<v Speaker 0>what it boils down to. Right?
+
+00:03:39.650 --> 00:03:42.290
+<v Speaker 2>I I I might I might temper that
+
+00:03:42.290 --> 00:03:44.370
+<v Speaker 2>a little bit, but but sure. Right? Like,
+
+00:03:45.490 --> 00:03:48.370
+<v Speaker 2>we found that we were not taking full
+
+00:03:48.370 --> 00:03:49.170
+<v Speaker 2>advantage
+
+00:03:49.570 --> 00:03:53.330
+<v Speaker 2>of all of the features that Kubernetes provides
+
+00:03:53.915 --> 00:03:55.835
+<v Speaker 2>such that it was worth the
+
+00:03:56.715 --> 00:04:00.715
+<v Speaker 2>maintenance and and upkeep and, you know, general
+
+00:04:00.715 --> 00:04:01.915
+<v Speaker 2>stuff. You know, like, if it if it
+
+00:04:01.915 --> 00:04:03.275
+<v Speaker 2>gave us if we were using every feature
+
+00:04:03.275 --> 00:04:04.875
+<v Speaker 2>of Kubernetes, it would have been worth it
+
+00:04:04.875 --> 00:04:07.515
+<v Speaker 2>to stay there. We ended up mostly running
+
+00:04:08.390 --> 00:04:11.030
+<v Speaker 2>a bunch of stateless services talking to, you
+
+00:04:11.030 --> 00:04:12.709
+<v Speaker 2>know, Cloud SQL and,
+
+00:04:12.950 --> 00:04:14.950
+<v Speaker 2>r two for Blob storage and a bunch
+
+00:04:14.950 --> 00:04:17.910
+<v Speaker 2>of, like, off cluster services. So we were
+
+00:04:17.910 --> 00:04:20.149
+<v Speaker 2>basically just running a bunch of stateless services
+
+00:04:20.149 --> 00:04:23.295
+<v Speaker 2>inside of Kubernetes, which can be nice, but
+
+00:04:23.295 --> 00:04:23.935
+<v Speaker 2>we
+
+00:04:24.335 --> 00:04:26.735
+<v Speaker 2>weren't, you know, we weren't finding it to
+
+00:04:26.735 --> 00:04:29.695
+<v Speaker 2>be useful for all that Kubernetes brought to
+
+00:04:29.695 --> 00:04:30.655
+<v Speaker 2>us. So
+
+00:04:31.295 --> 00:04:32.175
+<v Speaker 2>Yeah. Yeah.
+
+00:04:32.335 --> 00:04:33.935
+<v Speaker 0>I mean and you were also saying that
+
+00:04:33.935 --> 00:04:35.940
+<v Speaker 1>you had a lot of spiking traffic, and
+
+00:04:35.940 --> 00:04:37.380
+<v Speaker 1>you were running Knative,
+
+00:04:37.380 --> 00:04:38.180
+<v Speaker 1>really. Right?
+
+00:04:38.660 --> 00:04:40.900
+<v Speaker 1>So Yeah. Yeah. Yeah. So the the lineage
+
+00:04:40.900 --> 00:04:42.340
+<v Speaker 2>of the of the engineering team is also
+
+00:04:42.340 --> 00:04:44.580
+<v Speaker 2>a lot of you know, Matt and some
+
+00:04:44.580 --> 00:04:46.660
+<v Speaker 2>other folks at started
+
+00:04:46.819 --> 00:04:48.900
+<v Speaker 2>Knative with many other folks, not just not
+
+00:04:48.900 --> 00:04:49.300
+<v Speaker 2>just them.
+
+00:04:50.215 --> 00:04:51.095
+<v Speaker 2>And so
+
+00:04:51.495 --> 00:04:53.895
+<v Speaker 2>they were deeply, you know, involved in it
+
+00:04:53.895 --> 00:04:55.735
+<v Speaker 2>and knew how it worked and knew how
+
+00:04:55.735 --> 00:04:57.175
+<v Speaker 2>it worked well and where it where it
+
+00:04:57.175 --> 00:04:58.615
+<v Speaker 2>didn't work well.
+
+00:05:00.695 --> 00:05:03.690
+<v Speaker 2>And Knative wasn't really the problem. I think
+
+00:05:03.690 --> 00:05:05.370
+<v Speaker 2>that, you know, generally, it was it was
+
+00:05:05.370 --> 00:05:06.090
+<v Speaker 2>that
+
+00:05:07.530 --> 00:05:09.130
+<v Speaker 2>I I I think that Knative is sort
+
+00:05:09.130 --> 00:05:11.610
+<v Speaker 2>of, like, the nice deployment API. It's just
+
+00:05:11.610 --> 00:05:13.530
+<v Speaker 2>it's just a good deployment API. I mean,
+
+00:05:13.530 --> 00:05:14.170
+<v Speaker 2>not just, but
+
+00:05:16.025 --> 00:05:19.145
+<v Speaker 2>so Knative was never the problem. And Knative
+
+00:05:19.145 --> 00:05:21.305
+<v Speaker 2>actually made it easier for us to move
+
+00:05:21.305 --> 00:05:23.145
+<v Speaker 2>to Cloud Run because they had the sort
+
+00:05:23.145 --> 00:05:26.905
+<v Speaker 2>of same API and container contract and and
+
+00:05:28.639 --> 00:05:30.000
+<v Speaker 2>all of that. So,
+
+00:05:30.320 --> 00:05:32.480
+<v Speaker 2>yeah, Knative was never really the problem, and
+
+00:05:32.480 --> 00:05:34.560
+<v Speaker 2>Kubernetes wasn't really the problem. The GKE wasn't
+
+00:05:34.560 --> 00:05:36.240
+<v Speaker 2>really the problem. It was that we were
+
+00:05:37.040 --> 00:05:39.360
+<v Speaker 2>not using all the stuff that,
+
+00:05:40.240 --> 00:05:43.165
+<v Speaker 2>Kubernetes would let us do. Mhmm. Just we
+
+00:05:43.165 --> 00:05:45.005
+<v Speaker 2>were just running a bunch of stateless services.
+
+00:05:45.165 --> 00:05:45.725
+<v Speaker 2>Yeah.
+
+00:05:46.285 --> 00:05:47.805
+<v Speaker 2>And there's a there's an easier way to
+
+00:05:47.805 --> 00:05:49.965
+<v Speaker 2>do that, it turns out. Right. And I
+
+00:05:49.965 --> 00:05:52.045
+<v Speaker 1>also saw in in the article,
+
+00:05:52.285 --> 00:05:55.645
+<v Speaker 1>as David eventually hopefully will return and rejoin
+
+00:05:55.645 --> 00:05:55.885
+<v Speaker 1>us.
+
+00:05:56.540 --> 00:05:58.540
+<v Speaker 1>I also saw in the article, though, that
+
+00:05:58.540 --> 00:06:00.300
+<v Speaker 1>you all were basically
+
+00:06:01.020 --> 00:06:03.260
+<v Speaker 1>instead of having spot instances, you were having
+
+00:06:03.260 --> 00:06:06.700
+<v Speaker 1>to maintain servers running and maintain nodes running
+
+00:06:06.700 --> 00:06:08.860
+<v Speaker 1>and things like that because you had a
+
+00:06:08.860 --> 00:06:09.900
+<v Speaker 1>lot of spiking traffic,
+
+00:06:10.995 --> 00:06:12.995
+<v Speaker 1>but you couldn't Yeah. Yeah. Yeah. So you
+
+00:06:12.995 --> 00:06:15.075
+<v Speaker 1>kinda were stuck with it with all this
+
+00:06:15.635 --> 00:06:17.715
+<v Speaker 1>all this infrastructure that you weren't really using
+
+00:06:17.715 --> 00:06:20.115
+<v Speaker 1>unless you had a major spike in something,
+
+00:06:20.515 --> 00:06:22.755
+<v Speaker 1>and that really doesn't make much sense if
+
+00:06:22.755 --> 00:06:24.595
+<v Speaker 1>you're doing a lot of stateless systems.
+
+00:06:25.510 --> 00:06:28.150
+<v Speaker 1>So Yeah. So our our traffic is
+
+00:06:28.550 --> 00:06:30.070
+<v Speaker 2>is very spiky.
+
+00:06:30.150 --> 00:06:31.590
+<v Speaker 2>And and like I mentioned in the in
+
+00:06:31.590 --> 00:06:32.630
+<v Speaker 2>the article,
+
+00:06:33.190 --> 00:06:35.030
+<v Speaker 2>a lot of that traffic just comes from
+
+00:06:35.030 --> 00:06:37.110
+<v Speaker 2>us. Like, we we tried our our main
+
+00:06:37.110 --> 00:06:38.630
+<v Speaker 2>thing is we're just trying to build images
+
+00:06:38.630 --> 00:06:40.470
+<v Speaker 2>as quickly and as fast as possible. Right?
+
+00:06:41.215 --> 00:06:42.975
+<v Speaker 2>But in doing that, we also have to
+
+00:06:42.975 --> 00:06:44.895
+<v Speaker 2>push them to the registry and then pull
+
+00:06:44.895 --> 00:06:46.415
+<v Speaker 2>them again to scan them and pull them
+
+00:06:46.415 --> 00:06:48.735
+<v Speaker 2>again to test them. And so when a
+
+00:06:48.735 --> 00:06:50.895
+<v Speaker 2>new image is built, there's, like, a little
+
+00:06:50.895 --> 00:06:53.580
+<v Speaker 2>mini flurry of activity around it on the
+
+00:06:53.580 --> 00:06:55.259
+<v Speaker 2>on the back end on the infrastructure.
+
+00:06:56.219 --> 00:06:58.780
+<v Speaker 2>Multiply that by an ever increasing number of
+
+00:06:58.780 --> 00:06:59.419
+<v Speaker 2>images,
+
+00:06:59.979 --> 00:07:02.379
+<v Speaker 2>and, basically, we'd had, like you know, over
+
+00:07:02.379 --> 00:07:03.979
+<v Speaker 2>time, these spikes got bigger.
+
+00:07:04.379 --> 00:07:05.100
+<v Speaker 2>In
+
+00:07:05.419 --> 00:07:07.500
+<v Speaker 2>order to absorb those spikes, we
+
+00:07:07.865 --> 00:07:09.705
+<v Speaker 2>kept it you know, did the the normal
+
+00:07:09.705 --> 00:07:10.905
+<v Speaker 2>thing you do, which is to keep a
+
+00:07:10.905 --> 00:07:13.385
+<v Speaker 2>warm pool of nodes and instances ready Right.
+
+00:07:13.385 --> 00:07:14.345
+<v Speaker 2>To absorb them,
+
+00:07:15.145 --> 00:07:15.705
+<v Speaker 2>which,
+
+00:07:16.505 --> 00:07:19.465
+<v Speaker 2>you know, you can turn the dial between,
+
+00:07:19.465 --> 00:07:21.639
+<v Speaker 2>like, cost and reliability.
+
+00:07:21.639 --> 00:07:23.319
+<v Speaker 2>We we turned it we turned it towards
+
+00:07:23.319 --> 00:07:26.120
+<v Speaker 2>cost and reliability. Or sorry. Raising cost and
+
+00:07:26.120 --> 00:07:27.240
+<v Speaker 2>raising reliability.
+
+00:07:27.879 --> 00:07:29.000
+<v Speaker 2>But we knew that if,
+
+00:07:29.960 --> 00:07:31.560
+<v Speaker 2>if sort of that trend was gonna keep
+
+00:07:31.560 --> 00:07:32.120
+<v Speaker 2>going,
+
+00:07:32.440 --> 00:07:33.240
+<v Speaker 2>we would need to
+
+00:07:34.225 --> 00:07:35.825
+<v Speaker 2>figure out a cheaper way to do that
+
+00:07:35.825 --> 00:07:38.465
+<v Speaker 2>sort of thing. Yeah. And,
+
+00:07:39.265 --> 00:07:40.465
+<v Speaker 2>again, we had we had a lot of
+
+00:07:40.465 --> 00:07:42.545
+<v Speaker 2>folks that already, you know, knew Cloud Run,
+
+00:07:42.545 --> 00:07:44.545
+<v Speaker 2>worked on Cloud Run, worked in near Cloud
+
+00:07:44.545 --> 00:07:45.905
+<v Speaker 2>Run. And so we we,
+
+00:07:46.770 --> 00:07:48.290
+<v Speaker 2>from the start, it sort of thought that
+
+00:07:48.290 --> 00:07:49.330
+<v Speaker 2>was a good idea
+
+00:07:49.810 --> 00:07:51.090
+<v Speaker 2>to migrate toward.
+
+00:07:53.810 --> 00:07:55.330
+<v Speaker 0>I don't know if you noticed, but I
+
+00:07:55.330 --> 00:07:56.450
+<v Speaker 0>had to rejoin.
+
+00:07:56.930 --> 00:07:58.050
+<v Speaker 0>My
+
+00:07:58.050 --> 00:08:00.450
+<v Speaker 0>limits crashed as it always fucking does.
+
+00:08:01.474 --> 00:08:03.555
+<v Speaker 0>So if my question now seems to take
+
+00:08:03.555 --> 00:08:05.395
+<v Speaker 0>us on a weird tangent, it's not intentional.
+
+00:08:05.395 --> 00:08:07.395
+<v Speaker 0>It's just because I missed about forty forty
+
+00:08:07.395 --> 00:08:07.555
+<v Speaker 0>five No.
+
+00:08:08.595 --> 00:08:10.115
+<v Speaker 0>No. I I was I was gonna put
+
+00:08:10.115 --> 00:08:11.794
+<v Speaker 0>my serious face on for a moment. Right?
+
+00:08:11.794 --> 00:08:14.115
+<v Speaker 0>Because I I was very dismissive of of
+
+00:08:14.115 --> 00:08:15.715
+<v Speaker 0>Kubernetes at the start. Saying that you you
+
+00:08:15.715 --> 00:08:17.730
+<v Speaker 0>could be ours, but but, you know, you
+
+00:08:17.730 --> 00:08:18.530
+<v Speaker 0>know, something
+
+00:08:19.090 --> 00:08:21.010
+<v Speaker 0>I mean, something I feel very guilty of
+
+00:08:21.010 --> 00:08:22.690
+<v Speaker 0>is I go to conferences and meet people
+
+00:08:22.690 --> 00:08:24.210
+<v Speaker 0>and say, you know, Kubernetes gives you all
+
+00:08:24.210 --> 00:08:25.890
+<v Speaker 0>this stuff for free, but there is a
+
+00:08:25.890 --> 00:08:28.370
+<v Speaker 0>very real tax to running and operating a
+
+00:08:28.370 --> 00:08:29.570
+<v Speaker 0>Kubernetes cluster.
+
+00:08:29.890 --> 00:08:32.585
+<v Speaker 0>And I feel like that is meaning yeah.
+
+00:08:32.585 --> 00:08:34.105
+<v Speaker 0>If you're not using the whole thing, like
+
+00:08:34.105 --> 00:08:35.945
+<v Speaker 0>you were saying, you know, sometimes that tax
+
+00:08:35.945 --> 00:08:37.945
+<v Speaker 0>isn't worth the burden. And I think that's
+
+00:08:37.945 --> 00:08:39.625
+<v Speaker 0>an important lesson for people to walk away
+
+00:08:39.625 --> 00:08:41.225
+<v Speaker 0>with is, like, you know, know what you're
+
+00:08:41.225 --> 00:08:43.625
+<v Speaker 0>getting into. Even the people that have all
+
+00:08:43.625 --> 00:08:46.105
+<v Speaker 0>of this experience in containers and Kubernetes sometimes
+
+00:08:46.105 --> 00:08:48.000
+<v Speaker 0>just don't want to pay that tax for
+
+00:08:48.000 --> 00:08:48.880
+<v Speaker 0>what they need.
+
+00:08:49.360 --> 00:08:50.320
+<v Speaker 0>I don't
+
+00:08:50.560 --> 00:08:52.480
+<v Speaker 0>know if it was mentioned, but Cloudron is,
+
+00:08:52.480 --> 00:08:54.240
+<v Speaker 0>you know, is a fantastic product. I run
+
+00:08:54.240 --> 00:08:55.920
+<v Speaker 0>a bunch of things on it myself, and
+
+00:08:55.920 --> 00:08:57.440
+<v Speaker 0>then, you know, we can dive into that
+
+00:08:57.440 --> 00:09:00.000
+<v Speaker 0>in more detail. But I think similarly, like,
+
+00:09:00.000 --> 00:09:02.080
+<v Speaker 2>it it also Kubernetes also gives you a
+
+00:09:02.080 --> 00:09:05.025
+<v Speaker 2>lot of knobs to tune and optimize things,
+
+00:09:05.025 --> 00:09:06.945
+<v Speaker 2>which is great, which is great when you
+
+00:09:06.945 --> 00:09:08.865
+<v Speaker 2>are at, you know, a level of scale
+
+00:09:08.865 --> 00:09:10.545
+<v Speaker 2>that you need to tune and optimize those
+
+00:09:10.545 --> 00:09:12.145
+<v Speaker 2>things and have the expertise and the sort
+
+00:09:12.145 --> 00:09:14.385
+<v Speaker 2>of, you know, interest and and time to
+
+00:09:14.385 --> 00:09:15.105
+<v Speaker 2>prioritize that.
+
+00:09:16.139 --> 00:09:18.139
+<v Speaker 2>We didn't take advantage of most of those
+
+00:09:18.139 --> 00:09:19.740
+<v Speaker 2>knobs, and in fact, most of those knobs
+
+00:09:19.740 --> 00:09:20.300
+<v Speaker 2>were,
+
+00:09:20.699 --> 00:09:21.260
+<v Speaker 2>like,
+
+00:09:21.660 --> 00:09:24.540
+<v Speaker 2>hard hard for us to, like, know how
+
+00:09:24.540 --> 00:09:26.060
+<v Speaker 2>to use correctly, I think, or at least
+
+00:09:26.060 --> 00:09:27.740
+<v Speaker 2>me. So
+
+00:09:29.385 --> 00:09:31.065
+<v Speaker 2>we didn't really use a lot of them.
+
+00:09:31.065 --> 00:09:32.345
+<v Speaker 2>We wanted a simpler
+
+00:09:32.985 --> 00:09:34.985
+<v Speaker 2>just run the stateless service, scale it up
+
+00:09:34.985 --> 00:09:36.904
+<v Speaker 2>as you see fit type of thing, and
+
+00:09:36.904 --> 00:09:38.425
+<v Speaker 2>that was that was exactly what Cloud Run
+
+00:09:38.425 --> 00:09:39.305
+<v Speaker 2>was for us.
+
+00:09:39.785 --> 00:09:42.740
+<v Speaker 0>Yeah. So I am curious. Right? Obviously, we're
+
+00:09:42.820 --> 00:09:44.500
+<v Speaker 0>while we're talking about the migration from your
+
+00:09:44.500 --> 00:09:45.860
+<v Speaker 0>blog and we'll put the link to this
+
+00:09:45.860 --> 00:09:47.540
+<v Speaker 0>in the show notes for anyone who's listening
+
+00:09:47.540 --> 00:09:49.620
+<v Speaker 0>in the description for anyone watching on YouTube.
+
+00:09:49.620 --> 00:09:50.180
+<v Speaker 0>But
+
+00:09:50.740 --> 00:09:54.100
+<v Speaker 0>this is for your chain guard public registry.
+
+00:09:54.100 --> 00:09:56.660
+<v Speaker 0>Right? This is serving infrastructure that delivers images
+
+00:09:56.660 --> 00:09:57.139
+<v Speaker 0>to people.
+
+00:09:57.795 --> 00:10:00.595
+<v Speaker 0>Do you have other infrastructure that is still
+
+00:10:00.595 --> 00:10:02.115
+<v Speaker 0>running Kubernetes,
+
+00:10:02.115 --> 00:10:03.715
+<v Speaker 0>or is you know, is this, like, your
+
+00:10:03.715 --> 00:10:05.075
+<v Speaker 0>main operational
+
+00:10:05.475 --> 00:10:06.115
+<v Speaker 0>project?
+
+00:10:06.675 --> 00:10:09.875
+<v Speaker 2>Yeah. I'd say there there are, roughly speaking,
+
+00:10:09.955 --> 00:10:11.970
+<v Speaker 2>as of right now, three
+
+00:10:12.530 --> 00:10:14.770
+<v Speaker 2>infrastructure y type things we run.
+
+00:10:15.410 --> 00:10:16.210
+<v Speaker 2>One is,
+
+00:10:16.770 --> 00:10:20.130
+<v Speaker 2>serving serving images and and everything that it
+
+00:10:20.130 --> 00:10:22.370
+<v Speaker 2>takes to serve images, auth,
+
+00:10:22.370 --> 00:10:23.010
+<v Speaker 2>data store,
+
+00:10:24.394 --> 00:10:26.714
+<v Speaker 2>a lot of, like, eventing and pubsub,
+
+00:10:26.954 --> 00:10:28.074
+<v Speaker 2>internal stuff,
+
+00:10:28.315 --> 00:10:30.875
+<v Speaker 2>to to do stuff when stuff happens.
+
+00:10:31.675 --> 00:10:34.555
+<v Speaker 2>That's that's the, the first pillar is, like,
+
+00:10:34.555 --> 00:10:36.555
+<v Speaker 2>sort of, I'll call it serving, and that's
+
+00:10:36.555 --> 00:10:37.995
+<v Speaker 2>what this this blog post was about and
+
+00:10:37.995 --> 00:10:39.274
+<v Speaker 2>our migration to Cloud Run was about.
+
+00:10:40.130 --> 00:10:42.610
+<v Speaker 2>We also have a a bundle of infrastructure
+
+00:10:42.610 --> 00:10:45.650
+<v Speaker 2>for building packages. At ChainGuard, we build every
+
+00:10:45.650 --> 00:10:47.010
+<v Speaker 2>package from source
+
+00:10:47.410 --> 00:10:48.290
+<v Speaker 2>ourselves.
+
+00:10:48.850 --> 00:10:51.170
+<v Speaker 2>And so when a new, you know, Python
+
+00:10:51.170 --> 00:10:51.890
+<v Speaker 2>release drops,
+
+00:10:52.695 --> 00:10:55.415
+<v Speaker 2>we build that Python release and and build
+
+00:10:55.415 --> 00:10:57.415
+<v Speaker 2>an APK that ends up in an image.
+
+00:10:58.215 --> 00:11:00.935
+<v Speaker 2>That infrastructure does still run on Kubernetes, and
+
+00:11:00.935 --> 00:11:02.535
+<v Speaker 2>I think we get a lot of benefit
+
+00:11:02.535 --> 00:11:04.375
+<v Speaker 2>from Kubernetes. We use all those knobs. We
+
+00:11:04.375 --> 00:11:05.495
+<v Speaker 2>use all the you know, we use all
+
+00:11:05.495 --> 00:11:07.655
+<v Speaker 2>of the features that that, are in there.
+
+00:11:08.230 --> 00:11:10.790
+<v Speaker 2>So that second one package builds is still
+
+00:11:10.790 --> 00:11:11.750
+<v Speaker 2>in Kubernetes.
+
+00:11:11.910 --> 00:11:14.870
+<v Speaker 2>The third one is image builds. So when
+
+00:11:14.870 --> 00:11:16.790
+<v Speaker 2>we build an image from these packages,
+
+00:11:17.110 --> 00:11:20.230
+<v Speaker 2>we take you know, the Python image contains
+
+00:11:20.230 --> 00:11:21.830
+<v Speaker 2>both the Python package and,
+
+00:11:22.445 --> 00:11:25.005
+<v Speaker 2>you know, CA certs and
+
+00:11:25.965 --> 00:11:28.285
+<v Speaker 2>lib crypto and things like that. We take
+
+00:11:28.285 --> 00:11:30.125
+<v Speaker 2>these distinct packages and put them into an
+
+00:11:30.125 --> 00:11:31.725
+<v Speaker 2>image and push them. That
+
+00:11:32.685 --> 00:11:34.045
+<v Speaker 2>infrastructure is mostly,
+
+00:11:35.000 --> 00:11:37.160
+<v Speaker 2>at some part, just HTTP
+
+00:11:37.160 --> 00:11:39.960
+<v Speaker 2>and TAR. Like, we just fetch APKs,
+
+00:11:39.960 --> 00:11:42.120
+<v Speaker 2>stitch them together into images, and then push
+
+00:11:42.120 --> 00:11:42.600
+<v Speaker 2>them,
+
+00:11:43.480 --> 00:11:45.080
+<v Speaker 2>and then test them and then scan them
+
+00:11:45.080 --> 00:11:47.240
+<v Speaker 2>and do a bunch of stuff downstream. So
+
+00:11:47.240 --> 00:11:49.195
+<v Speaker 2>the three of them sort of. And then
+
+00:11:49.195 --> 00:11:50.795
+<v Speaker 2>when it pushes it, it pushes it to
+
+00:11:50.795 --> 00:11:52.795
+<v Speaker 2>the serving infrastructure. So all three are sort
+
+00:11:52.795 --> 00:11:53.755
+<v Speaker 2>of living together
+
+00:11:54.475 --> 00:11:56.555
+<v Speaker 2>next to each other, dependent on each other.
+
+00:11:57.835 --> 00:11:58.475
+<v Speaker 2>But,
+
+00:11:58.875 --> 00:12:01.435
+<v Speaker 2>yeah, the package build infrastructure still uses Kubernetes.
+
+00:12:01.435 --> 00:12:03.115
+<v Speaker 2>It's very it's very reliant on it. It
+
+00:12:03.115 --> 00:12:04.930
+<v Speaker 2>takes, you know, I think, full advantage of
+
+00:12:04.930 --> 00:12:06.530
+<v Speaker 2>all of the stuff that Kubernetes gives us,
+
+00:12:06.530 --> 00:12:07.890
+<v Speaker 2>but the serving infrastructure
+
+00:12:08.450 --> 00:12:11.170
+<v Speaker 2>wasn't really. And so, we moved that one
+
+00:12:11.170 --> 00:12:12.050
+<v Speaker 2>to Cloud Run.
+
+00:12:13.410 --> 00:12:14.450
+<v Speaker 1>Makes sense. Thanks.
+
+00:12:15.330 --> 00:12:18.524
+<v Speaker 0>You did something with Cloud Run, I believe
+
+00:12:18.524 --> 00:12:19.964
+<v Speaker 0>it now does that out of the box,
+
+00:12:19.964 --> 00:12:22.285
+<v Speaker 0>but I'm assuming your efforts predate that, which
+
+00:12:22.285 --> 00:12:25.565
+<v Speaker 0>is the ability to do multi region deployment.
+
+00:12:25.565 --> 00:12:26.925
+<v Speaker 0>So maybe you could go into that and
+
+00:12:26.925 --> 00:12:28.845
+<v Speaker 0>and tell us you know, because you're using
+
+00:12:28.845 --> 00:12:31.084
+<v Speaker 0>r two as, like, the the blob storage
+
+00:12:31.084 --> 00:12:32.845
+<v Speaker 0>that powers the serving infrastructure.
+
+00:12:32.845 --> 00:12:33.245
+<v Speaker 0>That is
+
+00:12:34.720 --> 00:12:37.839
+<v Speaker 0>powered by Cloudflare, distributed around the world, lowered
+
+00:12:37.839 --> 00:12:39.519
+<v Speaker 0>and latency to first pay for all your
+
+00:12:39.519 --> 00:12:42.480
+<v Speaker 0>customers. So having multi region deployments makes a
+
+00:12:42.480 --> 00:12:44.240
+<v Speaker 0>lot of sense. So how about you kinda
+
+00:12:44.240 --> 00:12:46.639
+<v Speaker 0>dive into how you did the architecture that
+
+00:12:46.639 --> 00:12:49.295
+<v Speaker 0>deployed it? Yeah. Yeah. So
+
+00:12:50.014 --> 00:12:52.415
+<v Speaker 2>the the multi region cloud run service
+
+00:12:52.654 --> 00:12:54.255
+<v Speaker 2>module that we have
+
+00:12:55.615 --> 00:12:58.095
+<v Speaker 2>is basically a wrapper around run this cloud
+
+00:12:58.095 --> 00:13:01.295
+<v Speaker 2>run service in three regions, right, or in
+
+00:13:01.295 --> 00:13:02.334
+<v Speaker 2>n regions.
+
+00:13:03.520 --> 00:13:04.880
+<v Speaker 2>As far as I know and and that
+
+00:13:04.880 --> 00:13:06.080
+<v Speaker 2>does predate the
+
+00:13:06.480 --> 00:13:09.040
+<v Speaker 2>Cloud Run providing this feature by itself.
+
+00:13:10.400 --> 00:13:12.560
+<v Speaker 2>As far as I know and if someone
+
+00:13:12.560 --> 00:13:14.560
+<v Speaker 2>from the Cloud Run team is is screaming
+
+00:13:14.560 --> 00:13:16.880
+<v Speaker 2>at this, telling me that I'm wrong, I
+
+00:13:16.880 --> 00:13:17.440
+<v Speaker 2>think
+
+00:13:18.154 --> 00:13:19.915
+<v Speaker 2>that the the Cloud Run feature of a
+
+00:13:19.915 --> 00:13:21.834
+<v Speaker 2>global service is basically,
+
+00:13:21.995 --> 00:13:22.475
+<v Speaker 2>like,
+
+00:13:22.875 --> 00:13:25.195
+<v Speaker 2>syntactic sugar around run three
+
+00:13:25.435 --> 00:13:28.875
+<v Speaker 2>regional you know, ran regional versions of this,
+
+00:13:29.035 --> 00:13:29.915
+<v Speaker 2>and
+
+00:13:30.200 --> 00:13:32.279
+<v Speaker 2>you can stitch them together with GCLB or
+
+00:13:32.279 --> 00:13:34.600
+<v Speaker 2>load balance across them. So
+
+00:13:35.000 --> 00:13:35.800
+<v Speaker 2>our
+
+00:13:35.880 --> 00:13:37.560
+<v Speaker 2>Terraform module for this
+
+00:13:37.880 --> 00:13:40.360
+<v Speaker 2>and Cloud Run's feature, I think, are more
+
+00:13:40.360 --> 00:13:42.200
+<v Speaker 2>or less the same architecture of, like, I
+
+00:13:42.200 --> 00:13:43.880
+<v Speaker 2>wanna run this. I wanna run this in
+
+00:13:43.880 --> 00:13:46.765
+<v Speaker 2>three places, and I want GCLB to figure
+
+00:13:46.765 --> 00:13:48.685
+<v Speaker 2>out which one is closest to the user.
+
+00:13:50.445 --> 00:13:51.084
+<v Speaker 2>We
+
+00:13:51.325 --> 00:13:52.685
+<v Speaker 2>a lot of our services
+
+00:13:53.485 --> 00:13:55.964
+<v Speaker 2>so the registry, for instance, when you when
+
+00:13:55.964 --> 00:13:57.165
+<v Speaker 2>you ask to pull an image,
+
+00:13:58.030 --> 00:13:58.750
+<v Speaker 2>we
+
+00:13:59.150 --> 00:14:01.950
+<v Speaker 2>route that to the closest region to you.
+
+00:14:02.110 --> 00:14:03.390
+<v Speaker 2>So if you're on the West Coast, it
+
+00:14:03.390 --> 00:14:04.990
+<v Speaker 2>will West Coast of The US, it will
+
+00:14:04.990 --> 00:14:06.590
+<v Speaker 2>hit the West Coast replica.
+
+00:14:06.670 --> 00:14:07.950
+<v Speaker 2>It will do some sort of off check
+
+00:14:07.950 --> 00:14:09.550
+<v Speaker 2>and say, oh, you're David. I know you.
+
+00:14:09.550 --> 00:14:11.275
+<v Speaker 2>You're allowed to pull this image. And then
+
+00:14:11.275 --> 00:14:13.515
+<v Speaker 2>it will, as quickly as possible, redirect you
+
+00:14:13.515 --> 00:14:15.195
+<v Speaker 2>to r two to get that blob.
+
+00:14:15.675 --> 00:14:17.755
+<v Speaker 2>We want you off of our lawn as
+
+00:14:17.755 --> 00:14:19.435
+<v Speaker 2>quickly as possible. We want you to be,
+
+00:14:19.435 --> 00:14:21.035
+<v Speaker 2>you know, talking to r two, pulling that
+
+00:14:21.035 --> 00:14:21.675
+<v Speaker 2>blob
+
+00:14:21.915 --> 00:14:23.995
+<v Speaker 2>without us doing anything. So
+
+00:14:24.980 --> 00:14:26.899
+<v Speaker 2>as much as is possible, we'd like to
+
+00:14:26.899 --> 00:14:28.579
+<v Speaker 2>handle that request as close to you as
+
+00:14:28.579 --> 00:14:30.980
+<v Speaker 2>possible, do as little work as possible in
+
+00:14:30.980 --> 00:14:32.899
+<v Speaker 2>as little time as possible, and then say,
+
+00:14:33.300 --> 00:14:34.740
+<v Speaker 2>your blob's in R 2. Go get it
+
+00:14:34.740 --> 00:14:35.940
+<v Speaker 2>from them. Right.
+
+00:14:36.785 --> 00:14:38.305
+<v Speaker 2>Yeah. But as far as I know that
+
+00:14:38.305 --> 00:14:41.105
+<v Speaker 2>the the Cloud Run global service feature is,
+
+00:14:41.105 --> 00:14:43.265
+<v Speaker 2>you know, infrastructure
+
+00:14:43.265 --> 00:14:45.025
+<v Speaker 2>and niceness around
+
+00:14:45.345 --> 00:14:47.265
+<v Speaker 2>run the same thing in three places.
+
+00:14:47.505 --> 00:14:50.225
+<v Speaker 0>Mhmm. Yeah. I I actually deployed my first
+
+00:14:51.000 --> 00:14:51.960
+<v Speaker 0>native
+
+00:14:52.360 --> 00:14:54.520
+<v Speaker 0>multi region cloud run a couple of weeks
+
+00:14:54.520 --> 00:14:57.720
+<v Speaker 0>ago. And I was disappointed to see that
+
+00:14:57.720 --> 00:14:59.880
+<v Speaker 0>I got three different URLs back for each
+
+00:14:59.880 --> 00:15:01.640
+<v Speaker 0>deployment, and then had to manually go and
+
+00:15:01.640 --> 00:15:04.280
+<v Speaker 0>configure my own load balancing for it. So
+
+00:15:04.280 --> 00:15:05.875
+<v Speaker 0>I think it's still very early. I mean,
+
+00:15:05.875 --> 00:15:07.635
+<v Speaker 0>it's still it's either alpha or beta. I
+
+00:15:07.635 --> 00:15:09.235
+<v Speaker 0>got it's very early for what they're doing,
+
+00:15:09.235 --> 00:15:10.915
+<v Speaker 0>and I don't think all of the the
+
+00:15:10.915 --> 00:15:13.075
+<v Speaker 0>niceties are quite there yet. But I you're
+
+00:15:13.075 --> 00:15:14.915
+<v Speaker 0>I think you're right. It's the same model
+
+00:15:14.915 --> 00:15:17.290
+<v Speaker 0>that you've done with your Terraform module, Only
+
+00:15:17.290 --> 00:15:18.810
+<v Speaker 0>probably a little bit better because you have
+
+00:15:18.810 --> 00:15:20.650
+<v Speaker 0>a open source Terraform module that other people
+
+00:15:20.650 --> 00:15:22.490
+<v Speaker 0>can can go steal into this themselves as
+
+00:15:22.490 --> 00:15:22.970
+<v Speaker 0>well.
+
+00:15:23.850 --> 00:15:25.530
+<v Speaker 2>And if if the, you know, if the
+
+00:15:25.530 --> 00:15:26.330
+<v Speaker 2>Cloud Run
+
+00:15:26.730 --> 00:15:28.330
+<v Speaker 2>as the Cloud Run product improves,
+
+00:15:29.575 --> 00:15:31.654
+<v Speaker 2>there's nothing in about our Terraform modules that
+
+00:15:31.654 --> 00:15:33.175
+<v Speaker 2>requires them to be done this way. If
+
+00:15:33.175 --> 00:15:35.175
+<v Speaker 2>there is a, you know, global Cloud Run
+
+00:15:35.175 --> 00:15:37.815
+<v Speaker 2>service resource, we would just use that. You
+
+00:15:37.815 --> 00:15:39.335
+<v Speaker 2>know? And and I think
+
+00:15:39.654 --> 00:15:41.654
+<v Speaker 2>for the most part, depending on a lot
+
+00:15:41.654 --> 00:15:43.160
+<v Speaker 2>of details, like,
+
+00:15:43.399 --> 00:15:44.839
+<v Speaker 2>things would just work. I think the the
+
+00:15:44.839 --> 00:15:46.519
+<v Speaker 2>next time you Terraform apply, it would just
+
+00:15:46.519 --> 00:15:47.000
+<v Speaker 2>become
+
+00:15:47.720 --> 00:15:50.120
+<v Speaker 2>a global service or whatever. But
+
+00:15:50.920 --> 00:15:52.360
+<v Speaker 2>yeah. Right.
+
+00:15:53.800 --> 00:15:56.120
+<v Speaker 0>Well, I'm assuming the way that this works
+
+00:15:55.635 --> 00:15:57.155
+<v Speaker 0>is, like, you get sort of the networking
+
+00:15:57.155 --> 00:15:59.235
+<v Speaker 0>layer. It's probably like an Anycast IP or
+
+00:15:59.235 --> 00:16:00.915
+<v Speaker 0>maybe it does DNS for the the written
+
+00:16:00.915 --> 00:16:03.795
+<v Speaker 0>to the lowest latency. Right? I think it
+
+00:16:03.795 --> 00:16:06.515
+<v Speaker 0>is just like the serving Cloud Run function
+
+00:16:06.515 --> 00:16:08.035
+<v Speaker 0>is just a piece of Go code that
+
+00:16:08.035 --> 00:16:09.715
+<v Speaker 0>signs an r two URL and then you're
+
+00:16:09.715 --> 00:16:10.995
+<v Speaker 0>handing off. Right? That's what you said. You
+
+00:16:10.995 --> 00:16:13.220
+<v Speaker 0>wanna out of that as soon as possible
+
+00:16:13.220 --> 00:16:16.740
+<v Speaker 0>with the with the caller. So Yeah. Yeah.
+
+00:16:16.740 --> 00:16:19.140
+<v Speaker 2>We do we do, you know, off checks
+
+00:16:19.140 --> 00:16:21.060
+<v Speaker 2>and and as whatever we need to do
+
+00:16:21.060 --> 00:16:22.340
+<v Speaker 2>to make sure that you're allowed to get
+
+00:16:22.340 --> 00:16:24.340
+<v Speaker 2>this r two URL, and then we generate
+
+00:16:24.340 --> 00:16:25.780
+<v Speaker 2>a signed URL for you and redirect.
+
+00:16:26.324 --> 00:16:28.324
+<v Speaker 2>That's also be cut not just for latency,
+
+00:16:28.324 --> 00:16:29.524
+<v Speaker 2>not just to get you to the to
+
+00:16:29.524 --> 00:16:31.045
+<v Speaker 2>r two as fast as possible.
+
+00:16:32.084 --> 00:16:34.404
+<v Speaker 2>But if we serve from r two, then
+
+00:16:34.404 --> 00:16:37.685
+<v Speaker 2>it's zero egress. Like, egress is free.
+
+00:16:38.004 --> 00:16:40.245
+<v Speaker 2>So we don't want to, like, proxy that
+
+00:16:41.029 --> 00:16:43.829
+<v Speaker 2>that, blob through our service because then we
+
+00:16:43.829 --> 00:16:45.589
+<v Speaker 2>would pay, you know, egress for that. So
+
+00:16:45.589 --> 00:16:46.390
+<v Speaker 2>we just say,
+
+00:16:46.709 --> 00:16:49.110
+<v Speaker 2>you're good. We know you. Go go talk
+
+00:16:49.110 --> 00:16:51.110
+<v Speaker 2>to R two and get your get your
+
+00:16:51.110 --> 00:16:51.670
+<v Speaker 2>blob from them.
+
+00:16:53.335 --> 00:16:56.215
+<v Speaker 0>Yeah. The zero egress fees is so appealing
+
+00:16:56.215 --> 00:16:57.815
+<v Speaker 0>with r two. I feel like they're doing
+
+00:16:57.815 --> 00:16:59.415
+<v Speaker 0>a rug pull that at any minute, and
+
+00:16:59.415 --> 00:17:00.935
+<v Speaker 0>I hope not any minute soon because I
+
+00:17:00.935 --> 00:17:02.775
+<v Speaker 0>just uploaded a terabyte video to it that
+
+00:17:02.775 --> 00:17:04.455
+<v Speaker 0>I wanna start, you know, pitching on my
+
+00:17:04.455 --> 00:17:04.775
+<v Speaker 0>website.
+
+00:17:06.099 --> 00:17:08.899
+<v Speaker 0>But I I I just especially in today's
+
+00:17:08.899 --> 00:17:10.819
+<v Speaker 0>day and age, right, where every major cloud
+
+00:17:10.819 --> 00:17:12.579
+<v Speaker 0>provider is charging us through the nose for
+
+00:17:12.579 --> 00:17:14.259
+<v Speaker 0>egress, and cloud's there just sitting there. I'm
+
+00:17:14.259 --> 00:17:16.019
+<v Speaker 0>like, yeah. We don't care. You know, as
+
+00:17:16.019 --> 00:17:17.379
+<v Speaker 0>long as it goes direct through R two
+
+00:17:17.379 --> 00:17:19.379
+<v Speaker 0>or their CDN, they they they they don't
+
+00:17:19.379 --> 00:17:19.539
+<v Speaker 0>care.
+
+00:17:20.325 --> 00:17:22.004
+<v Speaker 2>That's why I I definitely,
+
+00:17:23.365 --> 00:17:25.605
+<v Speaker 2>agree that it feels too good to be
+
+00:17:25.605 --> 00:17:27.524
+<v Speaker 2>true, and maybe it will turn out to
+
+00:17:27.524 --> 00:17:28.725
+<v Speaker 2>be too good to be true. But for
+
+00:17:28.725 --> 00:17:31.764
+<v Speaker 2>now, I'm I'm very happy that it exists.
+
+00:17:31.764 --> 00:17:34.520
+<v Speaker 2>And Yeah. I'm happy to I'm happy to
+
+00:17:34.520 --> 00:17:35.880
+<v Speaker 2>sit on this rug for now. Let's see
+
+00:17:35.880 --> 00:17:37.960
+<v Speaker 2>how it goes. Yeah. It it kinda makes
+
+00:17:37.960 --> 00:17:40.039
+<v Speaker 1>you wonder what exactly is going on underneath
+
+00:17:40.039 --> 00:17:42.200
+<v Speaker 1>the covers or underneath the rug, I guess,
+
+00:17:42.200 --> 00:17:44.440
+<v Speaker 1>you could say, that's making this a good
+
+00:17:44.440 --> 00:17:45.639
+<v Speaker 1>business decision
+
+00:17:45.799 --> 00:17:47.479
+<v Speaker 1>somewhere down the line because
+
+00:17:47.799 --> 00:17:50.934
+<v Speaker 1>you know? Is it just because someone really,
+
+00:17:50.934 --> 00:17:53.175
+<v Speaker 1>really, really, really, really wants to twist the
+
+00:17:53.175 --> 00:17:53.735
+<v Speaker 1>knife
+
+00:17:54.295 --> 00:17:57.335
+<v Speaker 1>on, like, AWS or somebody just saying like,
+
+00:17:57.335 --> 00:17:58.375
+<v Speaker 1>See,
+
+00:17:58.375 --> 00:17:59.575
+<v Speaker 1>this is what we can do that you
+
+00:17:59.575 --> 00:18:01.815
+<v Speaker 1>can't do it. Or is it, like, honestly,
+
+00:18:01.815 --> 00:18:03.950
+<v Speaker 1>they're going to use it to push some
+
+00:18:03.950 --> 00:18:06.430
+<v Speaker 1>other product out there? I don't know. It's
+
+00:18:06.430 --> 00:18:08.030
+<v Speaker 1>just kind of an interesting question
+
+00:18:08.350 --> 00:18:10.430
+<v Speaker 1>how they're doing it and why they're doing
+
+00:18:10.430 --> 00:18:12.190
+<v Speaker 1>it. Because, yeah, doesn't I think when you're
+
+00:18:12.190 --> 00:18:14.750
+<v Speaker 0>a Cloudflare, right, and you've got probably every
+
+00:18:14.750 --> 00:18:16.750
+<v Speaker 0>enterprise company in the world paying the big
+
+00:18:16.750 --> 00:18:18.725
+<v Speaker 0>money for the top end that I mean,
+
+00:18:18.725 --> 00:18:20.725
+<v Speaker 0>the Egress transfer on this and the storage
+
+00:18:20.725 --> 00:18:22.405
+<v Speaker 0>means nothing. I I'm assuming. Right? I don't
+
+00:18:22.405 --> 00:18:24.805
+<v Speaker 0>know anything about Cloudflare internally, but I'm assuming
+
+00:18:24.805 --> 00:18:26.725
+<v Speaker 0>they're just like, yeah. You know? I mean,
+
+00:18:26.725 --> 00:18:28.325
+<v Speaker 0>Google and AWS are probably paying them a
+
+00:18:28.325 --> 00:18:29.925
+<v Speaker 0>ton of money for other stuff. So, like
+
+00:18:30.165 --> 00:18:31.685
+<v Speaker 1>Yeah. So if there's a Cloudflare
+
+00:18:33.340 --> 00:18:34.139
+<v Speaker 1>Go ahead.
+
+00:18:34.700 --> 00:18:36.940
+<v Speaker 2>Oh, sorry. My my understanding of how, like,
+
+00:18:36.940 --> 00:18:37.740
+<v Speaker 2>network
+
+00:18:37.740 --> 00:18:40.299
+<v Speaker 2>egress billing works anyway is that, like, Google
+
+00:18:40.299 --> 00:18:41.979
+<v Speaker 2>and Amazon don't pay that much
+
+00:18:42.379 --> 00:18:44.539
+<v Speaker 2>to be able to shift boot bits around.
+
+00:18:44.539 --> 00:18:47.340
+<v Speaker 2>Right. Right? They just feel like charging you
+
+00:18:47.340 --> 00:18:49.625
+<v Speaker 2>a bunch for it. Right. And Cloudflare also
+
+00:18:49.625 --> 00:18:51.544
+<v Speaker 2>doesn't get charged that much to move the
+
+00:18:51.544 --> 00:18:53.945
+<v Speaker 2>bits around. They just don't feel like charging
+
+00:18:53.945 --> 00:18:55.865
+<v Speaker 2>you for it, which, you know, it's not
+
+00:18:55.865 --> 00:18:57.625
+<v Speaker 2>like they're losing money on it, I think.
+
+00:18:57.625 --> 00:18:59.865
+<v Speaker 2>I hope. Right. There are a lot of
+
+00:19:00.025 --> 00:19:02.060
+<v Speaker 0>there are competition in our on as well.
+
+00:19:02.060 --> 00:19:03.180
+<v Speaker 0>You know? Bunny.net
+
+00:19:03.180 --> 00:19:05.580
+<v Speaker 0>is a CDN with zero egress fees or
+
+00:19:05.580 --> 00:19:08.780
+<v Speaker 0>very, very competitive egress fees. Civo Cloud started
+
+00:19:08.780 --> 00:19:11.020
+<v Speaker 0>doing zero egress fees. So maybe it will
+
+00:19:11.020 --> 00:19:12.380
+<v Speaker 0>have a knock on effect, but I I
+
+00:19:12.380 --> 00:19:14.655
+<v Speaker 0>don't want us to start going down that
+
+00:19:14.655 --> 00:19:16.655
+<v Speaker 0>rabbit hole and talking about something else. Just
+
+00:19:16.895 --> 00:19:18.255
+<v Speaker 0>I will just stay I want a picture
+
+00:19:18.255 --> 00:19:20.655
+<v Speaker 0>started. If if there is a Cloudflare person
+
+00:19:20.655 --> 00:19:22.415
+<v Speaker 1>who works on this who's listening and feels
+
+00:19:22.415 --> 00:19:23.855
+<v Speaker 1>like coming onto a podcast,
+
+00:19:24.175 --> 00:19:26.175
+<v Speaker 1>maybe reach out. We're kinda curious.
+
+00:19:26.335 --> 00:19:26.975
+<v Speaker 1>Anyway,
+
+00:19:27.775 --> 00:19:28.175
+<v Speaker 1>but
+
+00:19:28.630 --> 00:19:30.309
+<v Speaker 1>kinda wanna switch a little bit because I
+
+00:19:30.309 --> 00:19:31.909
+<v Speaker 1>noticed that you had been talking a lot
+
+00:19:31.909 --> 00:19:32.470
+<v Speaker 1>about,
+
+00:19:33.030 --> 00:19:34.549
+<v Speaker 1>basically, about leased access
+
+00:19:34.950 --> 00:19:37.190
+<v Speaker 1>as you were building out these close no.
+
+00:19:37.190 --> 00:19:38.549
+<v Speaker 1>Well, they're not clusters.
+
+00:19:38.630 --> 00:19:39.350
+<v Speaker 1>Services,
+
+00:19:40.230 --> 00:19:41.669
+<v Speaker 1>I guess, for lack of a better term.
+
+00:19:41.669 --> 00:19:43.750
+<v Speaker 1>So your service account is very, very minimal,
+
+00:19:44.245 --> 00:19:47.765
+<v Speaker 1>and then everything is working. And I'm kind
+
+00:19:47.765 --> 00:19:49.605
+<v Speaker 1>of reading the article as we're talking. I
+
+00:19:50.565 --> 00:19:52.965
+<v Speaker 1>you're doing explicit authorization and doing all of
+
+00:19:52.965 --> 00:19:54.404
+<v Speaker 1>the really, really good things that are good
+
+00:19:54.404 --> 00:19:55.764
+<v Speaker 1>security practices.
+
+00:19:56.085 --> 00:19:58.539
+<v Speaker 1>Was this was this a problem to kind
+
+00:19:58.539 --> 00:20:01.259
+<v Speaker 1>of figure out with as you move off
+
+00:20:01.259 --> 00:20:03.580
+<v Speaker 1>of Kubernetes systems that are a little more
+
+00:20:03.580 --> 00:20:05.019
+<v Speaker 1>designed to work together,
+
+00:20:05.340 --> 00:20:07.820
+<v Speaker 1>figuring out the architecture to make that
+
+00:20:08.379 --> 00:20:09.579
+<v Speaker 1>that service
+
+00:20:09.580 --> 00:20:10.299
+<v Speaker 1>system work?
+
+00:20:11.295 --> 00:20:14.015
+<v Speaker 1>I'm curious. Mostly as someone who hasn't really
+
+00:20:14.015 --> 00:20:15.375
+<v Speaker 1>done a whole lot of going back and
+
+00:20:15.375 --> 00:20:18.575
+<v Speaker 1>forth between Kubernetes cluster and serverless functions. Usually,
+
+00:20:18.575 --> 00:20:20.895
+<v Speaker 1>I'm just running serverless stuff. I'm not doing
+
+00:20:20.895 --> 00:20:22.335
+<v Speaker 1>both at the same time, so I'm curious
+
+00:20:22.335 --> 00:20:22.895
+<v Speaker 1>how that works.
+
+00:20:24.220 --> 00:20:25.419
+<v Speaker 2>Yeah. The
+
+00:20:26.940 --> 00:20:28.940
+<v Speaker 2>the first thing you mentioned that the having,
+
+00:20:28.940 --> 00:20:30.460
+<v Speaker 2>like, in our service
+
+00:20:31.100 --> 00:20:33.659
+<v Speaker 2>module, the service account has no permissions by
+
+00:20:33.659 --> 00:20:35.419
+<v Speaker 2>default. You have to explicitly grant it Right.
+
+00:20:35.419 --> 00:20:37.099
+<v Speaker 2>You know, every every permission.
+
+00:20:38.460 --> 00:20:39.179
+<v Speaker 2>That
+
+00:20:39.365 --> 00:20:41.925
+<v Speaker 2>I totally understand why Cloud Run by the
+
+00:20:42.085 --> 00:20:44.565
+<v Speaker 2>like, the regular Cloud Run service comes with
+
+00:20:44.565 --> 00:20:47.045
+<v Speaker 2>a regular service account that has, I think,
+
+00:20:47.045 --> 00:20:50.325
+<v Speaker 2>fairly broad permissions. Like, for people onboarding to
+
+00:20:50.325 --> 00:20:52.245
+<v Speaker 2>your service, you don't want to say, like,
+
+00:20:52.725 --> 00:20:54.405
+<v Speaker 2>in the five minutes I have your attention,
+
+00:20:54.980 --> 00:20:57.460
+<v Speaker 2>first, figure out IAM and what exact, you
+
+00:20:57.460 --> 00:20:59.460
+<v Speaker 2>know, permissions this thing needs.
+
+00:20:59.860 --> 00:21:01.140
+<v Speaker 2>Oh, where are you going? Where are you
+
+00:21:01.140 --> 00:21:02.260
+<v Speaker 2>leaving? You know?
+
+00:21:03.700 --> 00:21:05.860
+<v Speaker 2>So they they, by default, give you a
+
+00:21:05.860 --> 00:21:08.180
+<v Speaker 2>a, I think, a very powerful service account
+
+00:21:08.180 --> 00:21:09.140
+<v Speaker 2>to run with by default,
+
+00:21:09.664 --> 00:21:11.664
+<v Speaker 2>which totally makes sense for onboarding and and
+
+00:21:11.664 --> 00:21:12.465
+<v Speaker 2>new users.
+
+00:21:13.024 --> 00:21:15.664
+<v Speaker 2>But then that's terrible when you generally, the
+
+00:21:15.664 --> 00:21:17.745
+<v Speaker 2>route that goes is you onboard one service
+
+00:21:17.745 --> 00:21:19.585
+<v Speaker 2>with a bunch of permissions. You onboard five
+
+00:21:19.585 --> 00:21:21.264
+<v Speaker 2>more. You onboard 30 more.
+
+00:21:21.664 --> 00:21:23.505
+<v Speaker 2>And then you realize, oh my god. Everything
+
+00:21:23.505 --> 00:21:25.265
+<v Speaker 2>has permission to do everything, and this is,
+
+00:21:25.265 --> 00:21:27.640
+<v Speaker 2>you know, somebody in security notices and makes
+
+00:21:27.640 --> 00:21:30.440
+<v Speaker 2>you, fix that after the fact. Right.
+
+00:21:31.640 --> 00:21:33.560
+<v Speaker 2>Ask me how I know about this,
+
+00:21:34.520 --> 00:21:37.080
+<v Speaker 2>this this route of how things go. So
+
+00:21:38.865 --> 00:21:41.105
+<v Speaker 2>we very early on decided, like, if we're
+
+00:21:41.105 --> 00:21:42.305
+<v Speaker 2>gonna migrate to this thing, we wanna do
+
+00:21:42.305 --> 00:21:43.825
+<v Speaker 2>it right from the start. We wanna, like
+
+00:21:43.985 --> 00:21:44.544
+<v Speaker 2>you know,
+
+00:21:45.505 --> 00:21:47.345
+<v Speaker 2>there is no way to get this super
+
+00:21:47.345 --> 00:21:50.305
+<v Speaker 2>powerful service account on this service without explicitly
+
+00:21:50.305 --> 00:21:52.705
+<v Speaker 2>saying, like, yeah, this should be able to
+
+00:21:52.705 --> 00:21:53.265
+<v Speaker 2>do everything,
+
+00:21:55.080 --> 00:21:57.080
+<v Speaker 2>which none of them ever do. Nothing ever
+
+00:21:57.080 --> 00:22:00.120
+<v Speaker 2>needs all those things. So Sure. We in
+
+00:22:00.120 --> 00:22:01.720
+<v Speaker 2>the in the list of in the modules
+
+00:22:01.720 --> 00:22:03.559
+<v Speaker 2>in that repo, there is a
+
+00:22:04.760 --> 00:22:07.000
+<v Speaker 2>couple of things. One is, authorize a service
+
+00:22:07.000 --> 00:22:09.720
+<v Speaker 2>to call another service. So given two services,
+
+00:22:09.720 --> 00:22:11.745
+<v Speaker 2>you can say, like, this service here is
+
+00:22:11.745 --> 00:22:13.345
+<v Speaker 2>allowed to talk to this service here.
+
+00:22:13.745 --> 00:22:14.225
+<v Speaker 2>And
+
+00:22:14.705 --> 00:22:16.625
+<v Speaker 2>one really clever thing, which which I think,
+
+00:22:16.785 --> 00:22:19.185
+<v Speaker 2>Matt did was the only way to get
+
+00:22:19.185 --> 00:22:21.585
+<v Speaker 2>an address to the destination service
+
+00:22:21.825 --> 00:22:24.865
+<v Speaker 2>is to call the authorize this service module.
+
+00:22:25.320 --> 00:22:27.479
+<v Speaker 2>So if a needs to call b,
+
+00:22:27.880 --> 00:22:29.240
+<v Speaker 2>there is a way around you can, like
+
+00:22:29.399 --> 00:22:31.880
+<v Speaker 2>you know, the easiest way to get the
+
+00:22:31.880 --> 00:22:34.600
+<v Speaker 2>the address for b is to call the
+
+00:22:34.600 --> 00:22:36.200
+<v Speaker 2>authorized service module.
+
+00:22:36.760 --> 00:22:38.279
+<v Speaker 2>And as a result, the output of that
+
+00:22:38.279 --> 00:22:39.985
+<v Speaker 2>is the address for b. So if you're
+
+00:22:39.985 --> 00:22:41.264
+<v Speaker 2>trying to call b
+
+00:22:42.145 --> 00:22:44.225
+<v Speaker 2>and you're like, how do I find b?
+
+00:22:44.544 --> 00:22:46.544
+<v Speaker 2>You find it by authorizing the and and
+
+00:22:46.544 --> 00:22:48.145
+<v Speaker 2>so therefore, like, you know, as a as
+
+00:22:48.145 --> 00:22:49.905
+<v Speaker 2>a fun as a fun, like, side effect,
+
+00:22:49.905 --> 00:22:52.065
+<v Speaker 2>you have also explicitly authorized a to call
+
+00:22:52.065 --> 00:22:52.705
+<v Speaker 2>b,
+
+00:22:54.304 --> 00:22:54.784
+<v Speaker 2>which is
+
+00:22:55.399 --> 00:22:56.519
+<v Speaker 2>very nice and,
+
+00:22:57.000 --> 00:22:58.759
+<v Speaker 2>something we take advantage of a lot.
+
+00:23:00.440 --> 00:23:02.359
+<v Speaker 2>The other thing is, like so so,
+
+00:23:02.759 --> 00:23:04.600
+<v Speaker 2>that's, like, service to service,
+
+00:23:04.840 --> 00:23:05.719
+<v Speaker 2>communication
+
+00:23:05.960 --> 00:23:07.399
+<v Speaker 2>and and authorization.
+
+00:23:07.399 --> 00:23:10.395
+<v Speaker 2>If there's a service that needs to talk
+
+00:23:10.395 --> 00:23:11.835
+<v Speaker 2>to KMS
+
+00:23:11.835 --> 00:23:14.155
+<v Speaker 2>or to get a cloud secret or to,
+
+00:23:14.155 --> 00:23:16.155
+<v Speaker 2>you know, make a request to a cluster
+
+00:23:16.155 --> 00:23:17.514
+<v Speaker 2>or anything like that.
+
+00:23:19.675 --> 00:23:21.675
+<v Speaker 2>Because when you create the service, you also
+
+00:23:21.675 --> 00:23:23.970
+<v Speaker 2>have to create the service account that runs
+
+00:23:23.970 --> 00:23:26.050
+<v Speaker 2>in there. You have the handle to say,
+
+00:23:26.050 --> 00:23:28.130
+<v Speaker 2>like, okay. This thing that's running the service
+
+00:23:28.130 --> 00:23:30.290
+<v Speaker 2>is going to also need permission to read
+
+00:23:30.290 --> 00:23:32.850
+<v Speaker 2>a secret, permission to, you know, sign with
+
+00:23:32.850 --> 00:23:33.649
+<v Speaker 2>KMS,
+
+00:23:34.530 --> 00:23:36.770
+<v Speaker 2>as opposed to create a service and then
+
+00:23:36.770 --> 00:23:38.865
+<v Speaker 2>try to figure out what service account it
+
+00:23:38.865 --> 00:23:41.345
+<v Speaker 2>had or, you know, like, find the auto
+
+00:23:41.345 --> 00:23:42.945
+<v Speaker 2>created one and
+
+00:23:43.905 --> 00:23:45.905
+<v Speaker 2>and and twiddle its permissions.
+
+00:23:46.705 --> 00:23:47.985
+<v Speaker 2>I think that's just sort of a nice
+
+00:23:48.145 --> 00:23:48.865
+<v Speaker 2>it,
+
+00:23:49.505 --> 00:23:51.185
+<v Speaker 2>a lot of things in there were were
+
+00:23:51.060 --> 00:23:52.020
+<v Speaker 2>done
+
+00:23:52.020 --> 00:23:54.260
+<v Speaker 2>thoughtfully to make the default
+
+00:23:54.580 --> 00:23:56.500
+<v Speaker 2>thing you do secure.
+
+00:23:56.500 --> 00:23:58.500
+<v Speaker 2>Like, not just for secure defaults, but so
+
+00:23:58.500 --> 00:24:01.060
+<v Speaker 2>that also that, like, the easiest path
+
+00:24:01.460 --> 00:24:03.620
+<v Speaker 2>to get your job done is also happens
+
+00:24:03.620 --> 00:24:05.780
+<v Speaker 2>to be the secure way to do it
+
+00:24:05.865 --> 00:24:07.705
+<v Speaker 1>Right. Which I think was was really nice.
+
+00:24:07.705 --> 00:24:09.705
+<v Speaker 2>And we've definitely, like, taken advantage of that
+
+00:24:09.705 --> 00:24:10.745
+<v Speaker 2>all over the place.
+
+00:24:11.145 --> 00:24:13.385
+<v Speaker 1>Yeah. Yeah. When you make the easy path,
+
+00:24:13.385 --> 00:24:15.785
+<v Speaker 1>the secure path, that's always a good design
+
+00:24:15.785 --> 00:24:16.424
+<v Speaker 1>decision.
+
+00:24:16.665 --> 00:24:18.985
+<v Speaker 1>So Well, in in a code review, right,
+
+00:24:18.985 --> 00:24:20.665
+<v Speaker 2>like, you can you can see that somebody's,
+
+00:24:20.670 --> 00:24:22.670
+<v Speaker 2>you know, jumping through eight hoops to get
+
+00:24:22.670 --> 00:24:24.110
+<v Speaker 2>the address to be instead
+
+00:24:24.910 --> 00:24:27.390
+<v Speaker 2>of just authorizing it. And you can see
+
+00:24:27.550 --> 00:24:28.670
+<v Speaker 2>you can sort of tell, like, this is
+
+00:24:28.670 --> 00:24:29.950
+<v Speaker 2>an awkward way to do this. Why didn't
+
+00:24:29.950 --> 00:24:31.790
+<v Speaker 2>you just call the easy way? Why did
+
+00:24:31.790 --> 00:24:34.110
+<v Speaker 2>you walk around the building to get there?
+
+00:24:34.110 --> 00:24:34.590
+<v Speaker 2>You know? So
+
+00:24:35.455 --> 00:24:36.095
+<v Speaker 1>Yeah.
+
+00:24:36.495 --> 00:24:38.175
+<v Speaker 1>Makes sense. Makes sense.
+
+00:24:39.935 --> 00:24:42.575
+<v Speaker 0>So let's dig into the
+
+00:24:42.975 --> 00:24:44.095
+<v Speaker 0>the authorization
+
+00:24:44.095 --> 00:24:45.775
+<v Speaker 0>stuff a little bit more. Now I don't
+
+00:24:45.775 --> 00:24:46.495
+<v Speaker 0>understand
+
+00:24:47.890 --> 00:24:50.370
+<v Speaker 0>I I I don't know the commercial side
+
+00:24:50.370 --> 00:24:52.130
+<v Speaker 0>of the the chain guard business here. Right?
+
+00:24:52.130 --> 00:24:52.690
+<v Speaker 0>Does anyone
+
+00:24:53.169 --> 00:24:55.169
+<v Speaker 0>with a login can pull any image as
+
+00:24:55.169 --> 00:24:57.090
+<v Speaker 0>many times as they want, or does the
+
+00:24:57.090 --> 00:24:59.009
+<v Speaker 0>authorization and authentication
+
+00:24:59.330 --> 00:25:01.025
+<v Speaker 0>go a bit deeper than that where certain
+
+00:25:01.025 --> 00:25:03.025
+<v Speaker 0>organizations can put certain images with certain number
+
+00:25:03.025 --> 00:25:05.905
+<v Speaker 0>of times? Like, are you using SpiceDB based
+
+00:25:05.905 --> 00:25:07.505
+<v Speaker 0>on the Zanzibar paper, or is it, like,
+
+00:25:07.505 --> 00:25:08.945
+<v Speaker 0>a flat of authorization
+
+00:25:08.945 --> 00:25:09.985
+<v Speaker 0>across the board?
+
+00:25:11.105 --> 00:25:12.705
+<v Speaker 2>Great question. We
+
+00:25:13.210 --> 00:25:15.530
+<v Speaker 2>don't have rate limits for
+
+00:25:15.770 --> 00:25:16.570
+<v Speaker 2>anything.
+
+00:25:17.130 --> 00:25:19.690
+<v Speaker 2>For for our public free tier developer tier
+
+00:25:19.690 --> 00:25:20.490
+<v Speaker 2>images
+
+00:25:20.570 --> 00:25:21.290
+<v Speaker 2>or
+
+00:25:21.610 --> 00:25:24.010
+<v Speaker 2>paying customers, we have we have no rate
+
+00:25:24.010 --> 00:25:24.650
+<v Speaker 2>limits.
+
+00:25:24.890 --> 00:25:26.650
+<v Speaker 2>All of that comes with the the caveat
+
+00:25:26.650 --> 00:25:29.455
+<v Speaker 2>that every service has a rate limit imposed
+
+00:25:29.455 --> 00:25:30.574
+<v Speaker 2>by physics.
+
+00:25:30.975 --> 00:25:31.375
+<v Speaker 2>So,
+
+00:25:31.934 --> 00:25:33.934
+<v Speaker 2>you can't possibly you know, you can't send
+
+00:25:33.934 --> 00:25:36.335
+<v Speaker 2>us 10,000,000,000,000 requests a second. Something will blow
+
+00:25:36.335 --> 00:25:38.815
+<v Speaker 2>up. But, we try not to impose artificial
+
+00:25:38.815 --> 00:25:40.094
+<v Speaker 2>rate limits on anything.
+
+00:25:41.294 --> 00:25:42.500
+<v Speaker 2>And a lot of that comes from, like
+
+00:25:42.500 --> 00:25:44.179
+<v Speaker 2>we were talking before, using r two. It's
+
+00:25:44.179 --> 00:25:46.580
+<v Speaker 2>not like you pulling our image, you know,
+
+00:25:46.580 --> 00:25:48.740
+<v Speaker 2>a thousand times is gonna cost us a
+
+00:25:48.740 --> 00:25:51.619
+<v Speaker 2>thousand times more than the first time. So
+
+00:25:51.780 --> 00:25:53.140
+<v Speaker 2>by all means, pull away.
+
+00:25:55.195 --> 00:25:55.835
+<v Speaker 2>We,
+
+00:25:57.115 --> 00:25:58.715
+<v Speaker 2>we don't use SpiceDB.
+
+00:25:58.715 --> 00:25:59.835
+<v Speaker 2>We have our own,
+
+00:26:00.955 --> 00:26:02.395
+<v Speaker 2>our own IAM
+
+00:26:02.395 --> 00:26:03.515
+<v Speaker 2>model that we
+
+00:26:04.075 --> 00:26:06.635
+<v Speaker 2>base heavily on Kubernetes'
+
+00:26:06.635 --> 00:26:07.595
+<v Speaker 2>and GCP's
+
+00:26:07.595 --> 00:26:10.690
+<v Speaker 2>IAM model. It's a lot, I think, simpler
+
+00:26:10.690 --> 00:26:13.010
+<v Speaker 2>or at least simpler for now. We don't
+
+00:26:13.010 --> 00:26:15.410
+<v Speaker 2>have hundreds of roles or hundreds of permissions.
+
+00:26:15.410 --> 00:26:16.850
+<v Speaker 2>We have, I think, maybe
+
+00:26:17.090 --> 00:26:18.690
+<v Speaker 2>two dozen, a dozen.
+
+00:26:19.810 --> 00:26:22.210
+<v Speaker 2>But, you know, ask again in three years
+
+00:26:22.210 --> 00:26:25.095
+<v Speaker 2>and see if we're up to the 350,000
+
+00:26:25.095 --> 00:26:27.495
+<v Speaker 2>roles that I am or I am roles
+
+00:26:27.495 --> 00:26:29.735
+<v Speaker 2>that GCP or AWS has.
+
+00:26:31.335 --> 00:26:32.054
+<v Speaker 0>Okay.
+
+00:26:32.215 --> 00:26:32.774
+<v Speaker 0>Cool.
+
+00:26:34.615 --> 00:26:36.054
+<v Speaker 1>Interesting. Alright. So
+
+00:26:36.535 --> 00:26:37.655
+<v Speaker 0>now you were
+
+00:26:38.215 --> 00:26:40.295
+<v Speaker 0>I don't know if you were being polite
+
+00:26:40.660 --> 00:26:42.500
+<v Speaker 0>or naive. Right? I I think that's the
+
+00:26:42.500 --> 00:26:43.700
+<v Speaker 0>two choices we have.
+
+00:26:44.020 --> 00:26:46.500
+<v Speaker 0>But you talked about Google's default service account
+
+00:26:46.500 --> 00:26:48.900
+<v Speaker 0>for, like, Cloud Run functions being permissive and
+
+00:26:48.900 --> 00:26:50.340
+<v Speaker 0>it's you know, you don't wanna scare people
+
+00:26:50.340 --> 00:26:51.700
+<v Speaker 0>away in the first five minutes.
+
+00:26:52.020 --> 00:26:53.140
+<v Speaker 0>I always thought
+
+00:26:53.905 --> 00:26:57.025
+<v Speaker 0>was a bit more sinister. That's just terrible
+
+00:26:57.025 --> 00:26:58.945
+<v Speaker 0>word. It's like they want you to be
+
+00:26:58.945 --> 00:27:00.065
+<v Speaker 0>able to go and use all the other
+
+00:27:00.065 --> 00:27:01.585
+<v Speaker 0>cloud products. Right? They want you to hook
+
+00:27:01.585 --> 00:27:02.625
+<v Speaker 0>them to go to their scale. They want
+
+00:27:02.625 --> 00:27:03.985
+<v Speaker 0>you to use BigQuery. They want you to
+
+00:27:04.145 --> 00:27:05.825
+<v Speaker 0>it's just like, yeah. Sure. Yeah. See, use
+
+00:27:05.825 --> 00:27:07.265
+<v Speaker 0>whatever you want. The bell just keeps going
+
+00:27:07.265 --> 00:27:08.545
+<v Speaker 0>up and up and up. Like, woo. Go
+
+00:27:08.545 --> 00:27:10.150
+<v Speaker 0>nuts. You
+
+00:27:10.150 --> 00:27:11.910
+<v Speaker 0>and the chain guard as a whole, like,
+
+00:27:11.910 --> 00:27:14.309
+<v Speaker 0>like, the, you know, the big you.
+
+00:27:14.790 --> 00:27:17.670
+<v Speaker 0>You do hook into more of GCP's
+
+00:27:17.670 --> 00:27:19.910
+<v Speaker 0>services. I've seen BigQuery on the article, and
+
+00:27:19.910 --> 00:27:21.750
+<v Speaker 0>you mentioned Cloud SQL as well. So, like,
+
+00:27:23.015 --> 00:27:25.975
+<v Speaker 0>is that, again, an operational concern where you
+
+00:27:25.975 --> 00:27:27.735
+<v Speaker 0>don't want to take on the burden of
+
+00:27:27.735 --> 00:27:30.375
+<v Speaker 0>running your own post credits, etcetera? Or
+
+00:27:31.015 --> 00:27:32.535
+<v Speaker 0>do were were you always just gonna use
+
+00:27:32.535 --> 00:27:34.935
+<v Speaker 0>cloud products first? Like, I'm curious about that
+
+00:27:34.935 --> 00:27:35.655
+<v Speaker 0>decision process.
+
+00:27:36.559 --> 00:27:37.679
+<v Speaker 2>Yeah. I think,
+
+00:27:39.040 --> 00:27:41.360
+<v Speaker 2>in general, I think it makes sense to
+
+00:27:41.360 --> 00:27:41.999
+<v Speaker 2>think
+
+00:27:42.480 --> 00:27:43.840
+<v Speaker 2>about whether,
+
+00:27:44.799 --> 00:27:48.159
+<v Speaker 2>like, whether your expertise is database maintenance,
+
+00:27:48.400 --> 00:27:50.865
+<v Speaker 2>whether the company's whether the company, you know,
+
+00:27:50.865 --> 00:27:51.505
+<v Speaker 2>differentiates
+
+00:27:51.665 --> 00:27:54.225
+<v Speaker 2>the business differentiates on how well it can
+
+00:27:54.225 --> 00:27:54.865
+<v Speaker 2>manage
+
+00:27:55.105 --> 00:27:58.065
+<v Speaker 2>a SQL database. And if that is your
+
+00:27:58.785 --> 00:28:00.945
+<v Speaker 2>if that is your competitive advantage, and there
+
+00:28:00.945 --> 00:28:02.225
+<v Speaker 2>are there are definitely
+
+00:28:03.070 --> 00:28:05.390
+<v Speaker 2>businesses and companies that that is their competitive
+
+00:28:05.390 --> 00:28:06.030
+<v Speaker 2>advantage,
+
+00:28:06.190 --> 00:28:08.510
+<v Speaker 2>then by all means, run it yourself. Right?
+
+00:28:10.510 --> 00:28:11.310
+<v Speaker 2>Vanguard's
+
+00:28:11.310 --> 00:28:12.190
+<v Speaker 2>not
+
+00:28:12.190 --> 00:28:14.190
+<v Speaker 2>differentiating on how well it can run a
+
+00:28:14.190 --> 00:28:16.655
+<v Speaker 2>a database. So we just want one that
+
+00:28:16.655 --> 00:28:20.095
+<v Speaker 2>works and is reliable and, you know, relatively
+
+00:28:20.895 --> 00:28:23.135
+<v Speaker 2>low touch to get the job done. I'm
+
+00:28:23.135 --> 00:28:25.135
+<v Speaker 2>sure it's not optimized to the to the
+
+00:28:25.135 --> 00:28:26.575
+<v Speaker 2>ends of the earth. I'm sure there's stuff
+
+00:28:26.575 --> 00:28:28.015
+<v Speaker 2>we could do that if we if we,
+
+00:28:28.335 --> 00:28:30.015
+<v Speaker 2>wanted to make it, a little better.
+
+00:28:30.800 --> 00:28:33.360
+<v Speaker 2>But, you know, ultimately, that's that's not where
+
+00:28:33.360 --> 00:28:36.320
+<v Speaker 2>we where we differentiate from anybody else. On
+
+00:28:36.320 --> 00:28:39.120
+<v Speaker 2>the other side, like, building the best images
+
+00:28:39.120 --> 00:28:41.280
+<v Speaker 2>possible is where we differentiate, and so we
+
+00:28:41.280 --> 00:28:43.440
+<v Speaker 2>have invested a lot in on that side.
+
+00:28:43.440 --> 00:28:44.240
+<v Speaker 2>Right? And if
+
+00:28:45.205 --> 00:28:47.924
+<v Speaker 2>if we had spent a bunch of time
+
+00:28:47.924 --> 00:28:50.244
+<v Speaker 2>building our own database, building our own
+
+00:28:52.085 --> 00:28:55.044
+<v Speaker 2>AMS, building our own secret store, built all
+
+00:28:55.044 --> 00:28:56.404
+<v Speaker 2>of this stuff, which, you know, as an
+
+00:28:56.404 --> 00:28:58.404
+<v Speaker 2>infra nerd, I would love to. Right? Like,
+
+00:28:58.404 --> 00:29:00.040
+<v Speaker 2>know, please let me go do this. But
+
+00:29:00.040 --> 00:29:01.400
+<v Speaker 2>instead, they tell me I have to, like,
+
+00:29:01.400 --> 00:29:02.680
+<v Speaker 2>build images or something.
+
+00:29:03.400 --> 00:29:03.880
+<v Speaker 2>Yeah.
+
+00:29:06.440 --> 00:29:08.520
+<v Speaker 2>You know, it's it's it's about, like, really
+
+00:29:08.520 --> 00:29:09.960
+<v Speaker 2>trying to think about what
+
+00:29:10.200 --> 00:29:12.040
+<v Speaker 2>where your time is most useful,
+
+00:29:12.600 --> 00:29:13.320
+<v Speaker 2>and
+
+00:29:13.665 --> 00:29:16.305
+<v Speaker 2>managing our own Postgres was not that. So
+
+00:29:16.305 --> 00:29:19.505
+<v Speaker 2>we Right. We luckily had Cloud SQL right
+
+00:29:19.505 --> 00:29:20.785
+<v Speaker 2>there. We pulled it off the shelf. We
+
+00:29:20.785 --> 00:29:21.505
+<v Speaker 2>use it.
+
+00:29:22.385 --> 00:29:24.145
+<v Speaker 2>You know? If if at some point our
+
+00:29:24.145 --> 00:29:25.345
+<v Speaker 2>database becomes
+
+00:29:26.010 --> 00:29:28.010
+<v Speaker 2>our our bottleneck, if that's if that and
+
+00:29:28.010 --> 00:29:30.730
+<v Speaker 2>and sometimes it is. But if if it
+
+00:29:30.730 --> 00:29:32.970
+<v Speaker 2>becomes our biggest fire, like, we will invest
+
+00:29:32.970 --> 00:29:33.450
+<v Speaker 2>in
+
+00:29:34.330 --> 00:29:36.090
+<v Speaker 2>making that better and tuning it better. And
+
+00:29:36.090 --> 00:29:37.530
+<v Speaker 2>if that means we run it ourselves, then
+
+00:29:37.530 --> 00:29:39.370
+<v Speaker 2>that means we run it ourselves. But I
+
+00:29:39.370 --> 00:29:41.414
+<v Speaker 2>don't think that would be our first choice.
+
+00:29:41.414 --> 00:29:42.934
+<v Speaker 0>You did mention Not mine anyway.
+
+00:29:43.335 --> 00:29:44.695
+<v Speaker 0>Not to put you on the spot. Right?
+
+00:29:44.695 --> 00:29:46.615
+<v Speaker 0>But you did mention at the start that
+
+00:29:46.615 --> 00:29:50.455
+<v Speaker 0>some of this migration was also cost driven.
+
+00:29:50.534 --> 00:29:52.774
+<v Speaker 0>And, like, maybe it's just a Scottish person
+
+00:29:52.774 --> 00:29:54.135
+<v Speaker 0>in me. Right? But I we you know,
+
+00:29:54.135 --> 00:29:56.110
+<v Speaker 0>we're known globally as as quite tight fisted
+
+00:29:56.110 --> 00:29:57.309
+<v Speaker 0>people. We're cheap.
+
+00:29:58.190 --> 00:30:00.030
+<v Speaker 0>I keep looking at the price of VCPUs
+
+00:30:00.030 --> 00:30:02.590
+<v Speaker 0>and manage postgrads, and I'm like, nah. Nuh-uh.
+
+00:30:02.590 --> 00:30:04.510
+<v Speaker 0>I'm gonna I'm I'm gonna make this at
+
+00:30:04.510 --> 00:30:06.510
+<v Speaker 0>home. And I I often will run my
+
+00:30:06.510 --> 00:30:07.470
+<v Speaker 0>databases on
+
+00:30:07.955 --> 00:30:09.715
+<v Speaker 0>bare metal or a virtual machine even though
+
+00:30:09.715 --> 00:30:11.875
+<v Speaker 0>the operational costs are astronomical because I have
+
+00:30:11.875 --> 00:30:13.715
+<v Speaker 0>to do my own backups and stuff. But
+
+00:30:13.795 --> 00:30:15.955
+<v Speaker 2>Yeah. I mean But you have the knowledge
+
+00:30:15.955 --> 00:30:16.995
+<v Speaker 0>for it. Products.
+
+00:30:18.115 --> 00:30:19.715
+<v Speaker 1>But, like, David, you have the knowledge for
+
+00:30:19.715 --> 00:30:21.715
+<v Speaker 1>it. Like, it's it's a business decision. Right?
+
+00:30:22.000 --> 00:30:23.600
+<v Speaker 1>Like, in the end, this is a business
+
+00:30:23.600 --> 00:30:25.919
+<v Speaker 1>decision. You're evaluating the cost
+
+00:30:26.400 --> 00:30:29.279
+<v Speaker 1>of buying versus the cost of managing a
+
+00:30:29.279 --> 00:30:30.479
+<v Speaker 1>team, like having
+
+00:30:30.799 --> 00:30:33.520
+<v Speaker 1>dedicated people who may be busy or not
+
+00:30:33.520 --> 00:30:35.039
+<v Speaker 1>busy. They may just kind of be sitting
+
+00:30:35.039 --> 00:30:36.745
+<v Speaker 1>there. I don't know. Like, this is how
+
+00:30:36.745 --> 00:30:38.265
+<v Speaker 1>I always looked at it. You you can
+
+00:30:38.265 --> 00:30:39.784
+<v Speaker 1>look at it the same way as,
+
+00:30:40.345 --> 00:30:42.505
+<v Speaker 1>let's say, if you have a lawn, if
+
+00:30:42.505 --> 00:30:43.705
+<v Speaker 1>you have grass.
+
+00:30:43.865 --> 00:30:45.625
+<v Speaker 1>Maybe you do, maybe you don't. Depends on
+
+00:30:45.625 --> 00:30:47.945
+<v Speaker 1>where you live. Do you mow it yourself?
+
+00:30:48.760 --> 00:30:51.160
+<v Speaker 1>How much is your time worth versus do
+
+00:30:51.160 --> 00:30:52.759
+<v Speaker 1>you pay for lawn care service?
+
+00:30:53.080 --> 00:30:55.399
+<v Speaker 1>Everybody has a different risk question there.
+
+00:30:55.640 --> 00:30:56.200
+<v Speaker 1>But
+
+00:30:56.679 --> 00:30:58.999
+<v Speaker 1>how much is your hourly pay, David?
+
+00:30:59.640 --> 00:31:01.799
+<v Speaker 1>Think about it that way. And, like, how
+
+00:31:01.799 --> 00:31:04.345
+<v Speaker 1>much is that hourly pay and maintaining all
+
+00:31:04.345 --> 00:31:06.585
+<v Speaker 1>of the tooling and maintaining all of those
+
+00:31:06.585 --> 00:31:07.705
+<v Speaker 1>things versus
+
+00:31:08.345 --> 00:31:10.745
+<v Speaker 1>calling somebody who's a specialist who has the
+
+00:31:10.745 --> 00:31:12.024
+<v Speaker 1>really big tools. So
+
+00:31:12.345 --> 00:31:13.785
+<v Speaker 1>I look out at the lawn that we
+
+00:31:13.785 --> 00:31:15.065
+<v Speaker 1>have in the backyard of the house that
+
+00:31:15.065 --> 00:31:15.784
+<v Speaker 1>we rent.
+
+00:31:16.025 --> 00:31:16.184
+<v Speaker 1>And
+
+00:31:17.070 --> 00:31:18.750
+<v Speaker 1>sure, we could get, like, a little push
+
+00:31:18.750 --> 00:31:20.510
+<v Speaker 1>lawn mower and one of us could spend
+
+00:31:20.510 --> 00:31:23.149
+<v Speaker 1>time mowing that lawn. Or we could pay
+
+00:31:23.149 --> 00:31:24.990
+<v Speaker 1>a service that has one of those massive
+
+00:31:24.990 --> 00:31:26.590
+<v Speaker 1>ride on lawn mowers, which I think are
+
+00:31:26.590 --> 00:31:27.870
+<v Speaker 1>really cool and I keep wanting to get
+
+00:31:27.870 --> 00:31:29.710
+<v Speaker 1>on when they're not looking, but they
+
+00:31:30.190 --> 00:31:30.830
+<v Speaker 1>don't notice me.
+
+00:31:32.425 --> 00:31:33.865
+<v Speaker 1>And they come and they do it in,
+
+00:31:33.865 --> 00:31:35.785
+<v Speaker 1>like, ten minutes, what would take me at
+
+00:31:35.785 --> 00:31:37.065
+<v Speaker 1>least an hour, and then I have to
+
+00:31:37.065 --> 00:31:38.425
+<v Speaker 1>also get rid of all the stuff that's
+
+00:31:38.425 --> 00:31:41.305
+<v Speaker 1>there. It's the same idea of do I
+
+00:31:41.305 --> 00:31:43.385
+<v Speaker 1>run my own Postgres server and my own
+
+00:31:43.385 --> 00:31:44.345
+<v Speaker 1>Postgres database
+
+00:31:44.590 --> 00:31:46.670
+<v Speaker 1>knowing that maybe I don't have the best
+
+00:31:46.670 --> 00:31:48.670
+<v Speaker 1>understanding of how it works, so therefore, who
+
+00:31:48.670 --> 00:31:51.230
+<v Speaker 1>knows how secure I really am because I'm
+
+00:31:51.230 --> 00:31:52.270
+<v Speaker 1>doing it myself?
+
+00:31:52.990 --> 00:31:53.550
+<v Speaker 1>Or
+
+00:31:54.110 --> 00:31:56.270
+<v Speaker 1>do I buy it until I can get
+
+00:31:56.270 --> 00:31:57.390
+<v Speaker 1>to the point where I can hire the
+
+00:31:57.390 --> 00:31:59.150
+<v Speaker 1>people and have a team that can maintain
+
+00:31:59.150 --> 00:32:01.384
+<v Speaker 1>it? That's really the business question.
+
+00:32:01.865 --> 00:32:03.785
+<v Speaker 1>Maybe I'm wrong, David. You can correct me.
+
+00:32:03.785 --> 00:32:05.065
+<v Speaker 1>But this is, like, how I've always looked
+
+00:32:05.065 --> 00:32:07.785
+<v Speaker 1>at this. So No. I I agree. And
+
+00:32:07.785 --> 00:32:09.385
+<v Speaker 2>you mentioned at the end, like, hiring folks
+
+00:32:09.385 --> 00:32:11.545
+<v Speaker 2>to do that. There's also a recruiting and
+
+00:32:11.545 --> 00:32:14.860
+<v Speaker 2>expertise sort of question. Right? Like, we we,
+
+00:32:15.100 --> 00:32:16.540
+<v Speaker 2>and this is related to our,
+
+00:32:17.340 --> 00:32:18.059
+<v Speaker 2>to
+
+00:32:18.540 --> 00:32:19.660
+<v Speaker 2>what our our
+
+00:32:19.900 --> 00:32:20.540
+<v Speaker 2>differentiated
+
+00:32:20.780 --> 00:32:22.700
+<v Speaker 2>you know, our our value proposition is. But,
+
+00:32:22.700 --> 00:32:24.140
+<v Speaker 2>like, we haven't really hired
+
+00:32:24.825 --> 00:32:25.784
+<v Speaker 2>database
+
+00:32:25.784 --> 00:32:27.865
+<v Speaker 2>tuning experts. We haven't really hired, you know,
+
+00:32:27.865 --> 00:32:29.144
+<v Speaker 2>Postgres operators
+
+00:32:29.465 --> 00:32:30.344
+<v Speaker 2>experts.
+
+00:32:31.544 --> 00:32:32.904
+<v Speaker 2>We could do it. I'm sure we could
+
+00:32:32.904 --> 00:32:34.505
+<v Speaker 2>we could muddle through and, you know, if
+
+00:32:34.505 --> 00:32:36.505
+<v Speaker 2>David can do it, then anybody can. But
+
+00:32:37.840 --> 00:32:38.240
+<v Speaker 2>then
+
+00:32:39.440 --> 00:32:40.559
+<v Speaker 0>Oh, alright. Sorry.
+
+00:32:41.519 --> 00:32:43.360
+<v Speaker 2>But, you know, we would we would rather
+
+00:32:43.360 --> 00:32:45.679
+<v Speaker 2>spend that that limited resource of time and
+
+00:32:45.679 --> 00:32:47.039
+<v Speaker 2>and energy on,
+
+00:32:47.360 --> 00:32:50.000
+<v Speaker 2>you know, the product and on on improving
+
+00:32:50.000 --> 00:32:52.240
+<v Speaker 2>the build pipeline and improving the, you know,
+
+00:32:52.365 --> 00:32:55.725
+<v Speaker 2>serving infrastructure that that is differentiated from from
+
+00:32:55.725 --> 00:32:57.565
+<v Speaker 2>other folks. And there's a hidden cost that
+
+00:32:57.645 --> 00:32:59.165
+<v Speaker 2>Let's back up a minute. Hold on. Hold
+
+00:32:59.165 --> 00:33:00.765
+<v Speaker 0>on. Sorry. I'm cutting you off. I didn't
+
+00:33:00.765 --> 00:33:02.044
+<v Speaker 0>mean it. I didn't mean it.
+
+00:33:03.165 --> 00:33:04.845
+<v Speaker 1>David's like, I have to get my revenge
+
+00:33:04.845 --> 00:33:06.925
+<v Speaker 1>here. Hold on a minute. Sorry. No. No.
+
+00:33:06.925 --> 00:33:09.640
+<v Speaker 0>No. No. No. But the the what the
+
+00:33:09.640 --> 00:33:11.720
+<v Speaker 0>CNCF wants us all to believe is that
+
+00:33:11.720 --> 00:33:13.880
+<v Speaker 0>we just run a Kubernetes cluster. We stick
+
+00:33:13.880 --> 00:33:15.960
+<v Speaker 0>the cloud data PG operator on it or
+
+00:33:15.960 --> 00:33:17.880
+<v Speaker 0>any operator for any software, and this is
+
+00:33:17.880 --> 00:33:20.600
+<v Speaker 0>all done for us. No expense here. Like,
+
+00:33:20.600 --> 00:33:21.960
+<v Speaker 0>open source is wonderful.
+
+00:33:22.280 --> 00:33:22.440
+<v Speaker 0>Like
+
+00:33:23.225 --> 00:33:23.785
+<v Speaker 1>Okay.
+
+00:33:24.105 --> 00:33:25.945
+<v Speaker 1>Okay. There is such a thing as a,
+
+00:33:25.945 --> 00:33:28.185
+<v Speaker 1>you know, free as in beer or free
+
+00:33:28.185 --> 00:33:29.225
+<v Speaker 1>as in puppies.
+
+00:33:30.265 --> 00:33:32.185
+<v Speaker 2>Like Yeah. Yep. Where where can I get
+
+00:33:32.185 --> 00:33:33.065
+<v Speaker 0>a free puppy?
+
+00:33:33.865 --> 00:33:35.865
+<v Speaker 1>Hey. I have plenty of places to send
+
+00:33:35.865 --> 00:33:37.385
+<v Speaker 1>you one. But, you
+
+00:33:37.705 --> 00:33:41.539
+<v Speaker 1>know, free Puppy doesn't mean forever free.
+
+00:33:41.860 --> 00:33:43.380
+<v Speaker 1>It's an illusion. I I think there's also
+
+00:33:43.380 --> 00:33:44.340
+<v Speaker 2>a a
+
+00:33:45.059 --> 00:33:46.499
+<v Speaker 2>when it works well,
+
+00:33:46.740 --> 00:33:49.700
+<v Speaker 2>it's free. When it's you know, I I
+
+00:33:49.700 --> 00:33:53.044
+<v Speaker 2>can, in the five minute tutorial timeline,
+
+00:33:53.045 --> 00:33:55.205
+<v Speaker 2>like, spin up Cloud Native PG and have
+
+00:33:55.205 --> 00:33:56.645
+<v Speaker 2>it running and do a hello world and
+
+00:33:56.645 --> 00:33:58.965
+<v Speaker 2>insert, you know, a thousand rows and feel
+
+00:33:58.965 --> 00:33:59.525
+<v Speaker 2>good.
+
+00:34:01.205 --> 00:34:01.445
+<v Speaker 2>The
+
+00:34:02.085 --> 00:34:04.565
+<v Speaker 2>day two is another thing, and then day,
+
+00:34:04.565 --> 00:34:06.429
+<v Speaker 2>you know, 390
+
+00:34:06.429 --> 00:34:08.589
+<v Speaker 2>is another one that, like, oh, no. It
+
+00:34:08.589 --> 00:34:10.349
+<v Speaker 2>was really easy to insert a thousand rows.
+
+00:34:10.349 --> 00:34:11.790
+<v Speaker 2>It's also easy to insert
+
+00:34:12.670 --> 00:34:13.469
+<v Speaker 2>20,000,000
+
+00:34:13.469 --> 00:34:15.150
+<v Speaker 2>rows. And now what? And and
+
+00:34:16.349 --> 00:34:17.949
+<v Speaker 2>so not that we wouldn't have this problem
+
+00:34:17.949 --> 00:34:20.030
+<v Speaker 2>on a managed database either. Right? We we
+
+00:34:20.030 --> 00:34:21.545
+<v Speaker 2>still do, But at least we don't have
+
+00:34:21.545 --> 00:34:21.784
+<v Speaker 2>to
+
+00:34:22.344 --> 00:34:24.424
+<v Speaker 2>there's a lot of operating stuff that we
+
+00:34:24.424 --> 00:34:26.264
+<v Speaker 2>don't have to care about.
+
+00:34:27.224 --> 00:34:29.704
+<v Speaker 0>See, the worst thing is I know David
+
+00:34:29.704 --> 00:34:30.984
+<v Speaker 1>is explicitly
+
+00:34:30.984 --> 00:34:33.239
+<v Speaker 1>nerd sniping a little bit. He's doing it
+
+00:34:33.239 --> 00:34:36.199
+<v Speaker 1>on purpose, and I'm falling into it just
+
+00:34:36.199 --> 00:34:37.880
+<v Speaker 1>as much as anybody else.
+
+00:34:40.600 --> 00:34:43.320
+<v Speaker 0>Hey. I'm just enjoying those talking. That that
+
+00:34:43.320 --> 00:34:45.480
+<v Speaker 0>that is no sniping. But but I will
+
+00:34:45.480 --> 00:34:49.175
+<v Speaker 0>say, right, you mentioned something like, obviously, you
+
+00:34:49.175 --> 00:34:51.255
+<v Speaker 0>know, people listening, they're making these decisions every
+
+00:34:51.255 --> 00:34:52.295
+<v Speaker 0>day. Do I go and pay for the
+
+00:34:52.295 --> 00:34:54.614
+<v Speaker 0>managed service? Do I get an operator? Do
+
+00:34:54.614 --> 00:34:56.855
+<v Speaker 0>we run it ourselves? Right? Jason's already gave
+
+00:34:56.855 --> 00:34:57.815
+<v Speaker 0>us great advice.
+
+00:34:58.135 --> 00:35:00.055
+<v Speaker 0>Focus on what your company needs to excel
+
+00:35:00.055 --> 00:35:01.815
+<v Speaker 0>at. Right? I think that's that's ubiquitous to
+
+00:35:01.815 --> 00:35:04.210
+<v Speaker 0>everyone should take that away. But we are
+
+00:35:04.210 --> 00:35:05.890
+<v Speaker 0>missing something here. Right? It's easy for me
+
+00:35:05.890 --> 00:35:07.330
+<v Speaker 0>to say I'm gonna run my own Postgres
+
+00:35:07.330 --> 00:35:09.250
+<v Speaker 0>when it gets, like, 10 queries a week
+
+00:35:09.250 --> 00:35:11.250
+<v Speaker 0>or 10 queries an hour or whatever that
+
+00:35:11.250 --> 00:35:12.930
+<v Speaker 0>number is. So maybe,
+
+00:35:13.250 --> 00:35:14.530
+<v Speaker 0>you know, you don't mention us in the
+
+00:35:14.530 --> 00:35:15.730
+<v Speaker 0>article, and I don't know if I wanna
+
+00:35:15.730 --> 00:35:16.850
+<v Speaker 0>put you on the spot and say give
+
+00:35:16.850 --> 00:35:19.255
+<v Speaker 0>us numbers. Right? I'm assuming your scale as
+
+00:35:19.255 --> 00:35:20.695
+<v Speaker 0>in in the hundreds
+
+00:35:20.695 --> 00:35:22.935
+<v Speaker 0>of requests per day, probably not even in
+
+00:35:22.935 --> 00:35:23.415
+<v Speaker 0>the
+
+00:35:23.735 --> 00:35:25.815
+<v Speaker 0>thousands of requests. I'm assuming we're going higher.
+
+00:35:25.815 --> 00:35:26.775
+<v Speaker 0>I don't know how much you're willing to
+
+00:35:26.775 --> 00:35:29.095
+<v Speaker 0>share there, you know, any context you wanna
+
+00:35:29.095 --> 00:35:29.495
+<v Speaker 0>provide?
+
+00:35:30.230 --> 00:35:33.030
+<v Speaker 2>Vanguard gets more traffic than my personal blog,
+
+00:35:33.030 --> 00:35:34.950
+<v Speaker 2>if that is the question you are you
+
+00:35:34.950 --> 00:35:36.230
+<v Speaker 2>are asking. Nice.
+
+00:35:37.030 --> 00:35:37.670
+<v Speaker 2>Yeah.
+
+00:35:39.510 --> 00:35:41.589
+<v Speaker 2>Yeah. I think I think the the answer
+
+00:35:41.589 --> 00:35:43.525
+<v Speaker 2>to everything is it depends. Right? Like, I'm
+
+00:35:43.525 --> 00:35:45.285
+<v Speaker 2>gonna put on my my senior engineer hat
+
+00:35:45.285 --> 00:35:46.565
+<v Speaker 2>and say it depends. I knew that was
+
+00:35:46.565 --> 00:35:47.285
+<v Speaker 1>coming. If this is
+
+00:35:48.405 --> 00:35:49.205
+<v Speaker 2>if
+
+00:35:52.245 --> 00:35:53.125
+<v Speaker 2>you
+
+00:35:53.125 --> 00:35:56.085
+<v Speaker 2>are receiving more traffic than you can handle,
+
+00:35:57.220 --> 00:35:59.220
+<v Speaker 2>you figure out why, you figure out what
+
+00:35:59.220 --> 00:36:01.380
+<v Speaker 2>the solution is. If you are not,
+
+00:36:02.660 --> 00:36:04.820
+<v Speaker 2>not currently experiencing that problem,
+
+00:36:05.780 --> 00:36:08.660
+<v Speaker 2>go fix the problem you are currently experiencing.
+
+00:36:08.660 --> 00:36:11.140
+<v Speaker 2>Right? It's never set in stone. It's never
+
+00:36:11.380 --> 00:36:13.855
+<v Speaker 2>you know, we're never even this you know,
+
+00:36:14.174 --> 00:36:16.095
+<v Speaker 2>even while I was writing the the article
+
+00:36:16.095 --> 00:36:17.855
+<v Speaker 2>about our migration to Cloud Run, we were
+
+00:36:17.855 --> 00:36:19.855
+<v Speaker 2>making new changes to that stuff. We were,
+
+00:36:19.855 --> 00:36:22.174
+<v Speaker 2>like, adding new stuff and tweaking stuff and
+
+00:36:22.174 --> 00:36:24.760
+<v Speaker 2>and moving stuff around. So it's never even
+
+00:36:24.760 --> 00:36:26.120
+<v Speaker 2>now, it's not done. It was just sort
+
+00:36:26.120 --> 00:36:28.360
+<v Speaker 2>of a birthday, like, one year since we
+
+00:36:28.360 --> 00:36:29.240
+<v Speaker 2>started this.
+
+00:36:31.080 --> 00:36:32.760
+<v Speaker 2>You may look at this. If you're reading
+
+00:36:32.760 --> 00:36:34.760
+<v Speaker 2>this in the year 2026
+
+00:36:34.760 --> 00:36:35.400
+<v Speaker 2>listener,
+
+00:36:35.640 --> 00:36:37.080
+<v Speaker 2>you may go back and look at this
+
+00:36:37.080 --> 00:36:38.920
+<v Speaker 2>blog post and say, oh, it's all different
+
+00:36:38.920 --> 00:36:40.825
+<v Speaker 2>now. Right? Like, it's all you know, they
+
+00:36:40.825 --> 00:36:42.505
+<v Speaker 2>said that they did everything this way, and
+
+00:36:42.505 --> 00:36:44.105
+<v Speaker 2>now they're using magical
+
+00:36:44.185 --> 00:36:48.105
+<v Speaker 2>global Cloud Run services. And GCLB is deprecated
+
+00:36:48.105 --> 00:36:49.465
+<v Speaker 2>and, you know, whatever.
+
+00:36:50.025 --> 00:36:50.505
+<v Speaker 2>So,
+
+00:36:51.465 --> 00:36:53.580
+<v Speaker 2>yeah, it's never done. Yeah.
+
+00:36:53.740 --> 00:36:55.500
+<v Speaker 0>Alright. Let's
+
+00:36:55.980 --> 00:36:57.340
+<v Speaker 1>I I know I know we're getting to
+
+00:36:57.340 --> 00:36:59.580
+<v Speaker 1>the end. I just I wanna just highlight
+
+00:36:59.580 --> 00:37:00.300
+<v Speaker 1>one thing.
+
+00:37:00.940 --> 00:37:03.340
+<v Speaker 1>This was a lot of technical debt that
+
+00:37:03.340 --> 00:37:05.500
+<v Speaker 1>you had to convince leadership to let you
+
+00:37:05.500 --> 00:37:06.140
+<v Speaker 1>go fix.
+
+00:37:08.055 --> 00:37:10.375
+<v Speaker 1>That that's a lot to pay down that
+
+00:37:10.375 --> 00:37:12.535
+<v Speaker 1>you had to kinda catch up on to
+
+00:37:12.535 --> 00:37:13.895
+<v Speaker 1>be able to say, hey. We need time
+
+00:37:13.895 --> 00:37:15.095
+<v Speaker 1>to be able to go do this.
+
+00:37:15.494 --> 00:37:16.215
+<v Speaker 1>In,
+
+00:37:16.455 --> 00:37:17.895
+<v Speaker 1>like, thirty seconds,
+
+00:37:18.455 --> 00:37:19.335
+<v Speaker 1>how did you do it?
+
+00:37:21.090 --> 00:37:23.090
+<v Speaker 1>Because that is, like, the the holy grail
+
+00:37:23.090 --> 00:37:25.650
+<v Speaker 1>of, like, every infrastructure team ever
+
+00:37:25.890 --> 00:37:28.690
+<v Speaker 1>is convincing your leadership that, hey. We need
+
+00:37:28.690 --> 00:37:30.610
+<v Speaker 1>to completely change what we're doing now that
+
+00:37:30.610 --> 00:37:32.050
+<v Speaker 1>we've scaled differently.
+
+00:37:32.850 --> 00:37:33.650
+<v Speaker 0>So Yeah.
+
+00:37:35.255 --> 00:37:36.455
+<v Speaker 2>It's complicated.
+
+00:37:36.695 --> 00:37:38.855
+<v Speaker 1>I thought so. It depends. Oh, yeah. The
+
+00:37:38.855 --> 00:37:39.255
+<v Speaker 2>the
+
+00:37:39.655 --> 00:37:41.655
+<v Speaker 2>it helped a lot that we
+
+00:37:42.695 --> 00:37:44.375
+<v Speaker 2>I'm gonna I'm gonna throw Matt under the
+
+00:37:44.375 --> 00:37:46.135
+<v Speaker 2>bus. Matt is our CTO and and sort
+
+00:37:46.135 --> 00:37:48.615
+<v Speaker 2>of, you know, originally led this this decision.
+
+00:37:49.460 --> 00:37:51.140
+<v Speaker 2>Having him on board from the start was
+
+00:37:51.140 --> 00:37:52.980
+<v Speaker 2>helpful. Right? Like, it was his idea. It
+
+00:37:52.980 --> 00:37:54.579
+<v Speaker 2>wasn't, like, our idea, and then we had
+
+00:37:54.579 --> 00:37:55.460
+<v Speaker 2>to convince him.
+
+00:37:56.579 --> 00:37:57.300
+<v Speaker 2>He
+
+00:37:57.700 --> 00:38:00.420
+<v Speaker 2>did a fairly thorough cost analysis of, this
+
+00:38:00.420 --> 00:38:02.635
+<v Speaker 2>is what it costs now to run both
+
+00:38:02.795 --> 00:38:04.954
+<v Speaker 1>Mhmm. The prod environment, the staging environment, and
+
+00:38:04.954 --> 00:38:06.795
+<v Speaker 2>everyone's developer environments.
+
+00:38:07.515 --> 00:38:09.115
+<v Speaker 2>I think this is too much, and I
+
+00:38:09.115 --> 00:38:10.715
+<v Speaker 2>think the trend, you know,
+
+00:38:11.194 --> 00:38:12.875
+<v Speaker 2>going up means
+
+00:38:12.954 --> 00:38:14.795
+<v Speaker 2>it will get worse the longer we put
+
+00:38:14.795 --> 00:38:16.020
+<v Speaker 2>it off. So,
+
+00:38:16.500 --> 00:38:17.940
+<v Speaker 2>that definitely helped.
+
+00:38:18.980 --> 00:38:19.620
+<v Speaker 2>He,
+
+00:38:19.940 --> 00:38:21.940
+<v Speaker 2>also just sort of started
+
+00:38:22.100 --> 00:38:25.220
+<v Speaker 2>doing it, like, not not, like, migrating us
+
+00:38:25.220 --> 00:38:27.300
+<v Speaker 2>for real, but, like, demonstrating,
+
+00:38:28.020 --> 00:38:29.620
+<v Speaker 2>hey. This is how easy it is to
+
+00:38:29.620 --> 00:38:32.015
+<v Speaker 2>run the service in Cloud Run instead of,
+
+00:38:32.255 --> 00:38:34.495
+<v Speaker 2>on Knative. Here's how easy it is to
+
+00:38:34.495 --> 00:38:36.815
+<v Speaker 2>get GCLB to work. I think it was,
+
+00:38:36.815 --> 00:38:39.135
+<v Speaker 2>like, a a weekend of of hacking for
+
+00:38:39.135 --> 00:38:41.615
+<v Speaker 2>him or maybe a week to, like, get
+
+00:38:41.615 --> 00:38:43.775
+<v Speaker 2>a demo environment that was entirely in Cloud
+
+00:38:43.775 --> 00:38:46.589
+<v Speaker 2>Run. Not production ready, not ready to start
+
+00:38:46.589 --> 00:38:48.510
+<v Speaker 2>migrating to, but, like, hey. It's not as
+
+00:38:48.510 --> 00:38:50.990
+<v Speaker 2>hard as you think. It won't be a
+
+00:38:50.990 --> 00:38:53.150
+<v Speaker 2>nine month, you know, gigantic
+
+00:38:53.150 --> 00:38:55.710
+<v Speaker 2>engineering slog to do. If we rip the
+
+00:38:55.710 --> 00:38:57.710
+<v Speaker 2>Band Aid relatively quickly, we can, you know,
+
+00:38:58.265 --> 00:38:59.865
+<v Speaker 2>get this done and and make the line
+
+00:38:59.865 --> 00:39:01.225
+<v Speaker 2>go down instead of up.
+
+00:39:02.985 --> 00:39:04.665
+<v Speaker 2>All of those are very helpful ways to
+
+00:39:04.665 --> 00:39:06.665
+<v Speaker 2>convince folks that these are useful
+
+00:39:06.985 --> 00:39:09.785
+<v Speaker 2>migrations and not just engineers being nerd sniped
+
+00:39:09.785 --> 00:39:11.270
+<v Speaker 2>and loving migrating
+
+00:39:11.510 --> 00:39:13.349
+<v Speaker 2>for migrating sake. Not that I've ever done
+
+00:39:13.349 --> 00:39:14.790
+<v Speaker 2>that. But,
+
+00:39:16.470 --> 00:39:17.990
+<v Speaker 2>yeah, sort of, like,
+
+00:39:18.470 --> 00:39:21.350
+<v Speaker 2>forecasting the cost, understanding the cost now,
+
+00:39:21.430 --> 00:39:23.030
+<v Speaker 2>and forecasting it and saying,
+
+00:39:23.964 --> 00:39:25.645
+<v Speaker 2>if we don't do anything,
+
+00:39:26.125 --> 00:39:28.605
+<v Speaker 2>this will be a cost in a year.
+
+00:39:29.244 --> 00:39:30.845
+<v Speaker 2>If we do it now, then we
+
+00:39:31.244 --> 00:39:34.045
+<v Speaker 2>upfront that cost and have much less over
+
+00:39:34.045 --> 00:39:35.565
+<v Speaker 2>time. Right.
+
+00:39:36.365 --> 00:39:36.845
+<v Speaker 1>Alright.
+
+00:39:38.550 --> 00:39:40.710
+<v Speaker 0>I got one more question, Orest.
+
+00:39:40.950 --> 00:39:41.670
+<v Speaker 0>Now,
+
+00:39:41.990 --> 00:39:44.630
+<v Speaker 0>again, you you just mentioned dev environments. Now
+
+00:39:44.630 --> 00:39:45.590
+<v Speaker 0>a common
+
+00:39:45.830 --> 00:39:47.910
+<v Speaker 0>challenge when I'm, you know, talking to people
+
+00:39:47.910 --> 00:39:49.430
+<v Speaker 0>or working with companies is the more they
+
+00:39:49.430 --> 00:39:51.670
+<v Speaker 0>move to the cloud, it typically, their development
+
+00:39:51.670 --> 00:39:53.315
+<v Speaker 0>environments get a little bit harder. Right? It's
+
+00:39:53.315 --> 00:39:55.315
+<v Speaker 0>not just running a gold binary that speaks
+
+00:39:55.315 --> 00:39:56.595
+<v Speaker 0>to a local Postgres,
+
+00:39:56.914 --> 00:39:59.234
+<v Speaker 0>which is okay for Cloud SQL. But when
+
+00:39:59.234 --> 00:40:01.795
+<v Speaker 0>you're using KMS for secrets, you're using PubSub
+
+00:40:01.795 --> 00:40:04.194
+<v Speaker 0>for, you know, webhook receivers and all these
+
+00:40:04.194 --> 00:40:06.194
+<v Speaker 0>other bits and pieces. Maybe you can talk
+
+00:40:06.194 --> 00:40:09.530
+<v Speaker 0>about the developer experience of working on this
+
+00:40:09.530 --> 00:40:12.170
+<v Speaker 0>on your own machine and how that compares
+
+00:40:12.170 --> 00:40:13.690
+<v Speaker 0>to what you ship to production.
+
+00:40:14.810 --> 00:40:15.450
+<v Speaker 2>Yeah.
+
+00:40:16.570 --> 00:40:19.290
+<v Speaker 2>We every every engineer that has you know,
+
+00:40:19.290 --> 00:40:21.770
+<v Speaker 2>that touches the infrastructure has their own developer
+
+00:40:21.770 --> 00:40:22.250
+<v Speaker 2>environment.
+
+00:40:24.155 --> 00:40:26.395
+<v Speaker 2>In this case, developer environment means
+
+00:40:26.555 --> 00:40:27.915
+<v Speaker 2>GCP project,
+
+00:40:27.915 --> 00:40:29.435
+<v Speaker 2>Cloud Run service,
+
+00:40:29.515 --> 00:40:30.875
+<v Speaker 2>you know, Constellation,
+
+00:40:30.955 --> 00:40:32.795
+<v Speaker 2>Cloud SQL, KMS,
+
+00:40:33.195 --> 00:40:34.235
+<v Speaker 2>etcetera, etcetera.
+
+00:40:35.115 --> 00:40:35.994
+<v Speaker 2>If you
+
+00:40:36.650 --> 00:40:38.090
+<v Speaker 2>want to run this any of this or
+
+00:40:38.090 --> 00:40:39.450
+<v Speaker 2>if you want to run any of this
+
+00:40:39.450 --> 00:40:40.170
+<v Speaker 2>locally,
+
+00:40:40.810 --> 00:40:42.650
+<v Speaker 2>most of the time, you can. If it
+
+00:40:42.650 --> 00:40:44.490
+<v Speaker 2>talks to KMS, you need to, like, you
+
+00:40:44.490 --> 00:40:45.770
+<v Speaker 2>know, set up the auth to be able
+
+00:40:45.770 --> 00:40:47.130
+<v Speaker 2>to do that. If it talks to Cloud
+
+00:40:47.130 --> 00:40:48.490
+<v Speaker 2>SQL, whatever, you need to do that.
+
+00:40:50.475 --> 00:40:51.115
+<v Speaker 2>So
+
+00:40:51.515 --> 00:40:52.955
+<v Speaker 2>but if it's just, you know, two services
+
+00:40:52.955 --> 00:40:55.195
+<v Speaker 2>talking to each other or a service talking
+
+00:40:55.195 --> 00:40:57.595
+<v Speaker 2>to r two to create a signed URL
+
+00:40:57.595 --> 00:40:58.315
+<v Speaker 2>or something,
+
+00:40:58.955 --> 00:41:01.035
+<v Speaker 2>you can run it locally. I think, generally,
+
+00:41:01.115 --> 00:41:04.075
+<v Speaker 2>it's gotten easy enough to run-in Cloud Run
+
+00:41:04.770 --> 00:41:07.330
+<v Speaker 2>that we just do that. Like, if it's
+
+00:41:07.330 --> 00:41:08.370
+<v Speaker 2>if it's not
+
+00:41:08.610 --> 00:41:10.450
+<v Speaker 2>if it's as easy to get the real
+
+00:41:10.450 --> 00:41:12.930
+<v Speaker 2>actual environment up as it is to run
+
+00:41:12.930 --> 00:41:14.690
+<v Speaker 2>it, you know, two or three services locally
+
+00:41:14.690 --> 00:41:16.850
+<v Speaker 2>and talking to each other, then we'll just
+
+00:41:16.850 --> 00:41:18.530
+<v Speaker 2>put it in the real one and and
+
+00:41:18.530 --> 00:41:19.250
+<v Speaker 2>run it there.
+
+00:41:20.634 --> 00:41:21.994
+<v Speaker 2>It's not, like,
+
+00:41:22.234 --> 00:41:24.474
+<v Speaker 2>as easy as running it locally a lot
+
+00:41:24.474 --> 00:41:26.474
+<v Speaker 2>of times, but but, generally,
+
+00:41:26.474 --> 00:41:28.714
+<v Speaker 2>like, if you're about to do something that
+
+00:41:28.714 --> 00:41:30.954
+<v Speaker 2>integrates with another service or Cloud SQL or
+
+00:41:30.954 --> 00:41:31.994
+<v Speaker 2>or
+
+00:41:32.720 --> 00:41:35.440
+<v Speaker 2>KMS or r two, like, just run it
+
+00:41:35.440 --> 00:41:37.680
+<v Speaker 2>in Cloud Run, and it's it's fine.
+
+00:41:38.480 --> 00:41:40.240
+<v Speaker 2>That was actually a a a big benefit
+
+00:41:40.240 --> 00:41:41.520
+<v Speaker 2>of this in the first place was that,
+
+00:41:41.520 --> 00:41:45.119
+<v Speaker 2>like, everyone's developer environment was a significant cost
+
+00:41:45.119 --> 00:41:48.215
+<v Speaker 2>when we had, you know, Kubernetes clusters to
+
+00:41:48.215 --> 00:41:50.055
+<v Speaker 2>our you know, multiples of them in each
+
+00:41:50.055 --> 00:41:51.175
+<v Speaker 2>developer environment.
+
+00:41:51.655 --> 00:41:53.335
+<v Speaker 2>Not just in terms in terms of, like,
+
+00:41:53.335 --> 00:41:54.615
+<v Speaker 2>unused infrastructure,
+
+00:41:54.615 --> 00:41:55.255
+<v Speaker 2>but, like,
+
+00:41:55.655 --> 00:41:57.415
+<v Speaker 2>okay. It's been three months since I last
+
+00:41:57.415 --> 00:41:58.535
+<v Speaker 2>had to make an infra change.
+
+00:41:59.319 --> 00:42:01.319
+<v Speaker 2>First, I have to get my cluster back,
+
+00:42:01.319 --> 00:42:03.480
+<v Speaker 2>like, into a working state. Right? I'm gonna
+
+00:42:03.480 --> 00:42:05.079
+<v Speaker 2>spend a whole day just, like, kind of
+
+00:42:05.079 --> 00:42:05.720
+<v Speaker 2>getting
+
+00:42:06.119 --> 00:42:08.200
+<v Speaker 2>the cluster back into a workable state, and
+
+00:42:08.200 --> 00:42:10.119
+<v Speaker 2>then I can finally start working on my
+
+00:42:10.119 --> 00:42:10.440
+<v Speaker 2>service.
+
+00:42:11.925 --> 00:42:13.845
+<v Speaker 2>With Cloud Run, there's a lot less
+
+00:42:14.565 --> 00:42:17.045
+<v Speaker 2>bit rot happening underneath you. It's just sort
+
+00:42:17.045 --> 00:42:18.645
+<v Speaker 2>of that service not none, but a little
+
+00:42:18.725 --> 00:42:20.165
+<v Speaker 2>you know, most of that service is already
+
+00:42:20.165 --> 00:42:22.245
+<v Speaker 2>just sort of running there, and it costs
+
+00:42:22.245 --> 00:42:24.085
+<v Speaker 2>nothing while you're not using it, which
+
+00:42:24.680 --> 00:42:27.240
+<v Speaker 2>no one you know? I think my developer
+
+00:42:27.240 --> 00:42:30.440
+<v Speaker 2>environment gets less traffic than my personal blog.
+
+00:42:31.640 --> 00:42:33.400
+<v Speaker 0>I love that to skip for all of
+
+00:42:33.400 --> 00:42:35.400
+<v Speaker 0>our conversations. It's like Jason's blog in the
+
+00:42:35.400 --> 00:42:36.920
+<v Speaker 0>middle of it. Less than Is it bigger
+
+00:42:36.920 --> 00:42:37.800
+<v Speaker 2>or smaller than my blog?
+
+00:42:42.175 --> 00:42:44.255
+<v Speaker 0>Alright. Well, thank you so much for for
+
+00:42:44.255 --> 00:42:46.255
+<v Speaker 0>sharing all that. I mean, it's
+
+00:42:47.214 --> 00:42:48.974
+<v Speaker 0>we don't even talk about bedqueeny, but I
+
+00:42:48.974 --> 00:42:50.415
+<v Speaker 0>don't really wanna keep you too much longer.
+
+00:42:50.415 --> 00:42:51.215
+<v Speaker 0>But, you know
+
+00:42:51.935 --> 00:42:53.295
+<v Speaker 2>Oh my I got nowhere to be.
+
+00:42:55.460 --> 00:42:56.900
+<v Speaker 0>And I don't have a real job, so,
+
+00:42:56.900 --> 00:42:57.940
+<v Speaker 0>I mean, I can sit here for as
+
+00:42:57.940 --> 00:42:58.740
+<v Speaker 0>long as you want.
+
+00:43:00.660 --> 00:43:02.740
+<v Speaker 0>And, yeah, Laura got made unemployed, so I
+
+00:43:02.740 --> 00:43:04.579
+<v Speaker 0>guess we're sat here for a while. Well,
+
+00:43:04.579 --> 00:43:05.780
+<v Speaker 1>just for another,
+
+00:43:06.020 --> 00:43:09.125
+<v Speaker 1>what, thirty six hours, I guess. So
+
+00:43:09.685 --> 00:43:11.205
+<v Speaker 0>Oh, wow. We can get that long.
+
+00:43:12.565 --> 00:43:13.925
+<v Speaker 1>Alright. So we're here for thirty six more
+
+00:43:13.925 --> 00:43:15.845
+<v Speaker 2>hours. Keep it running. Alright. Let's do this.
+
+00:43:15.845 --> 00:43:17.045
+<v Speaker 1>Livestream time.
+
+00:43:18.325 --> 00:43:20.885
+<v Speaker 0>Anyway Well, there's this ongoing meme online. Right?
+
+00:43:20.885 --> 00:43:21.765
+<v Speaker 0>Like, when people
+
+00:43:22.500 --> 00:43:24.020
+<v Speaker 0>I don't know if you've ever searched for
+
+00:43:24.020 --> 00:43:26.100
+<v Speaker 0>the Cloud Run and BigQuery. I do this
+
+00:43:26.100 --> 00:43:27.860
+<v Speaker 0>regularly as I'm exploring.
+
+00:43:27.940 --> 00:43:29.860
+<v Speaker 0>But people often argue over what is the
+
+00:43:29.860 --> 00:43:32.020
+<v Speaker 0>best GCP service between Cloud Run and BigQuery.
+
+00:43:32.020 --> 00:43:33.780
+<v Speaker 0>They're like, they're both exceptional
+
+00:43:34.020 --> 00:43:35.380
+<v Speaker 0>Wait. Products.
+
+00:43:35.700 --> 00:43:36.820
+<v Speaker 0>Are
+
+00:43:37.925 --> 00:43:40.005
+<v Speaker 2>over Not arguing, but there's just a there's
+
+00:43:40.005 --> 00:43:42.005
+<v Speaker 0>a debate. Because Cloud Run and BigQuery give
+
+00:43:42.005 --> 00:43:43.285
+<v Speaker 0>you so much for free.
+
+00:43:44.165 --> 00:43:46.405
+<v Speaker 0>Like, they're both just these stupid amazing products.
+
+00:43:46.405 --> 00:43:48.325
+<v Speaker 0>And So so which one have it. Which
+
+00:43:48.325 --> 00:43:50.485
+<v Speaker 1>one's more valuable is what is what, I
+
+00:43:50.485 --> 00:43:52.580
+<v Speaker 1>guess, people are arguing. Now this is interesting.
+
+00:43:52.580 --> 00:43:53.540
+<v Speaker 1>I don't
+
+00:43:53.540 --> 00:43:55.300
+<v Speaker 1>I don't get involved in these
+
+00:43:55.860 --> 00:43:57.060
+<v Speaker 1>meme arguments.
+
+00:43:57.300 --> 00:43:59.220
+<v Speaker 1>Meme argument? Is that, a thing?
+
+00:43:59.780 --> 00:44:01.620
+<v Speaker 1>I just kind of exist
+
+00:44:01.860 --> 00:44:02.420
+<v Speaker 1>and
+
+00:44:02.660 --> 00:44:04.420
+<v Speaker 1>find out about these things on the fringes
+
+00:44:04.420 --> 00:44:05.700
+<v Speaker 1>of the Internet when you tell me about
+
+00:44:05.700 --> 00:44:06.660
+<v Speaker 1>them. So
+
+00:44:08.075 --> 00:44:10.234
+<v Speaker 0>Well, yes. It's I mean, it's it's not
+
+00:44:10.234 --> 00:44:12.474
+<v Speaker 0>common because that would be tragic. Right? If
+
+00:44:12.474 --> 00:44:13.674
+<v Speaker 0>people would just go on to Google and
+
+00:44:13.674 --> 00:44:15.994
+<v Speaker 0>go, which one's better? But, you know, when
+
+00:44:15.994 --> 00:44:17.835
+<v Speaker 0>it comes down to all of GCP's products,
+
+00:44:17.835 --> 00:44:19.674
+<v Speaker 0>I think that the two shine and torches
+
+00:44:19.674 --> 00:44:22.154
+<v Speaker 0>are Cloudron and BigQuery. They both cost Right.
+
+00:44:22.234 --> 00:44:22.714
+<v Speaker 0>Pennies
+
+00:44:23.079 --> 00:44:25.160
+<v Speaker 0>at really decent scale.
+
+00:44:25.799 --> 00:44:27.799
+<v Speaker 2>Yeah. And I BigQuery is one of these
+
+00:44:27.799 --> 00:44:29.480
+<v Speaker 0>things that I've never personally had a use
+
+00:44:29.480 --> 00:44:31.560
+<v Speaker 0>case to really dive into properly
+
+00:44:31.640 --> 00:44:33.320
+<v Speaker 0>because, again, I I'd be,
+
+00:44:33.640 --> 00:44:35.799
+<v Speaker 0>you know, throwing a tennis ball down a
+
+00:44:36.305 --> 00:44:38.385
+<v Speaker 0>large collider or whatever. I don't that's a
+
+00:44:38.385 --> 00:44:40.785
+<v Speaker 0>horrible analogy, but I didn't have anything. Right?
+
+00:44:40.785 --> 00:44:41.825
+<v Speaker 0>So,
+
+00:44:42.385 --> 00:44:43.985
+<v Speaker 0>yeah, I was just curious about the BigQuery
+
+00:44:43.985 --> 00:44:45.905
+<v Speaker 0>stuff. Like, at what point do you decide
+
+00:44:45.905 --> 00:44:48.065
+<v Speaker 0>that, yeah, we're gonna use BigQuery? Because I've
+
+00:44:48.065 --> 00:44:49.745
+<v Speaker 0>never been there personally, and I'd love to
+
+00:44:49.745 --> 00:44:50.065
+<v Speaker 0>know more.
+
+00:44:51.240 --> 00:44:52.040
+<v Speaker 2>Yeah. We
+
+00:44:52.600 --> 00:44:54.040
+<v Speaker 2>for the record, I would say Cloud Run
+
+00:44:54.040 --> 00:44:55.640
+<v Speaker 2>is the better service, and I will fight
+
+00:44:55.640 --> 00:44:57.720
+<v Speaker 2>you if you disagree. I'm just I'm just
+
+00:44:57.720 --> 00:44:58.280
+<v Speaker 2>kidding.
+
+00:44:59.080 --> 00:45:01.800
+<v Speaker 2>We probably also don't you I'm not. I'm
+
+00:45:01.800 --> 00:45:03.480
+<v Speaker 2>really not. That's the title of the episode
+
+00:45:03.480 --> 00:45:05.240
+<v Speaker 0>now. Jason says Cloud Run is better than
+
+00:45:05.240 --> 00:45:07.855
+<v Speaker 0>BigQuery. There we go. Hey, man. I don't
+
+00:45:07.855 --> 00:45:08.975
+<v Speaker 0>need people
+
+00:45:08.975 --> 00:45:10.655
+<v Speaker 2>to find out on the Internet. Everyone's gonna
+
+00:45:10.655 --> 00:45:11.935
+<v Speaker 0>go to your blog, and then you're gonna
+
+00:45:11.935 --> 00:45:13.215
+<v Speaker 0>have to come up with a new skill.
+
+00:45:13.215 --> 00:45:14.415
+<v Speaker 0>But then Yeah. There we go.
+
+00:45:15.215 --> 00:45:16.735
+<v Speaker 2>I have to run Postgres now.
+
+00:45:19.940 --> 00:45:21.859
+<v Speaker 2>What was I saying? Oh Either way, the
+
+00:45:21.859 --> 00:45:24.420
+<v Speaker 2>no. Also don't use we probably also don't
+
+00:45:24.420 --> 00:45:25.780
+<v Speaker 2>use BigQuery for
+
+00:45:26.180 --> 00:45:29.700
+<v Speaker 2>something that actually needs BigQuery. There's there's also
+
+00:45:29.700 --> 00:45:32.099
+<v Speaker 2>the meme of, like, your dataset fits in
+
+00:45:32.099 --> 00:45:34.180
+<v Speaker 2>memory. You know? Like, if if you are
+
+00:45:34.855 --> 00:45:37.015
+<v Speaker 2>you don't need, you know, BigQuery and managed
+
+00:45:37.015 --> 00:45:39.655
+<v Speaker 2>services for nearly everything you use it for.
+
+00:45:39.815 --> 00:45:41.015
+<v Speaker 2>We probably don't.
+
+00:45:41.415 --> 00:45:42.935
+<v Speaker 2>But, again, the nice thing is that it's
+
+00:45:42.935 --> 00:45:44.855
+<v Speaker 2>a managed service that we just sort of,
+
+00:45:44.855 --> 00:45:47.655
+<v Speaker 2>like, plop data into and can query later.
+
+00:45:49.930 --> 00:45:51.770
+<v Speaker 2>That could be cloud SQL. I think we
+
+00:45:51.770 --> 00:45:54.010
+<v Speaker 2>just like having the not
+
+00:45:56.570 --> 00:45:58.170
+<v Speaker 2>having to care about the scale of these
+
+00:45:58.170 --> 00:45:59.930
+<v Speaker 2>things and just toss it into BigQuery, and
+
+00:45:59.930 --> 00:46:00.970
+<v Speaker 2>and and it works.
+
+00:46:02.985 --> 00:46:04.825
+<v Speaker 2>Thing we use BigQuery heavily for, which I
+
+00:46:04.825 --> 00:46:06.665
+<v Speaker 2>which I do like a lot, is our
+
+00:46:06.665 --> 00:46:08.505
+<v Speaker 2>eventing infrastructure. We didn't get to talk much
+
+00:46:08.505 --> 00:46:09.865
+<v Speaker 2>about our eventing infrastructure.
+
+00:46:10.025 --> 00:46:11.545
+<v Speaker 2>But, basically, like, you know,
+
+00:46:12.105 --> 00:46:13.945
+<v Speaker 2>when a push happens when a when an
+
+00:46:13.945 --> 00:46:16.200
+<v Speaker 2>image push happens, an event is fired inside
+
+00:46:16.200 --> 00:46:18.280
+<v Speaker 2>of our system, and it bounces around, and
+
+00:46:18.280 --> 00:46:20.120
+<v Speaker 2>things can subscribe to it. That's built on
+
+00:46:20.120 --> 00:46:20.920
+<v Speaker 2>PubSub.
+
+00:46:22.120 --> 00:46:25.080
+<v Speaker 2>One of the subscribers to that PubSub is
+
+00:46:25.080 --> 00:46:28.040
+<v Speaker 2>a recorder that records every event into BigQuery.
+
+00:46:28.040 --> 00:46:29.240
+<v Speaker 2>So every
+
+00:46:29.445 --> 00:46:32.805
+<v Speaker 2>thing that happens, every time anything happens,
+
+00:46:33.845 --> 00:46:36.885
+<v Speaker 2>it is emitted into the the event pipe
+
+00:46:37.205 --> 00:46:38.325
+<v Speaker 2>and recorded.
+
+00:46:38.725 --> 00:46:40.805
+<v Speaker 2>And so that is something that's really nice
+
+00:46:40.805 --> 00:46:43.280
+<v Speaker 2>to and we don't even think about it.
+
+00:46:43.280 --> 00:46:44.640
+<v Speaker 2>Like, most of the time, it's just like
+
+00:46:44.640 --> 00:46:46.880
+<v Speaker 2>there is a log of every event somewhere.
+
+00:46:47.840 --> 00:46:49.359
+<v Speaker 2>But when you want to go find that
+
+00:46:49.359 --> 00:46:51.920
+<v Speaker 2>and when you wanna say, like, oh, a
+
+00:46:52.000 --> 00:46:54.720
+<v Speaker 2>GitHub pull request was opened that was approved
+
+00:46:54.720 --> 00:46:56.880
+<v Speaker 2>that did this, that pushed this image, that
+
+00:46:56.880 --> 00:46:58.825
+<v Speaker 2>did this, You
+
+00:46:59.145 --> 00:47:01.785
+<v Speaker 2>have this sort of log of everything to
+
+00:47:01.865 --> 00:47:02.585
+<v Speaker 2>to
+
+00:47:03.225 --> 00:47:05.385
+<v Speaker 2>quickly go through and and visualize. We also
+
+00:47:05.385 --> 00:47:06.665
+<v Speaker 2>use these things for, like,
+
+00:47:07.545 --> 00:47:09.065
+<v Speaker 2>you know, generating
+
+00:47:09.065 --> 00:47:12.505
+<v Speaker 2>dashboards and graphs of, like, are people which
+
+00:47:12.030 --> 00:47:14.270
+<v Speaker 2>customers are pulling which images and which free
+
+00:47:14.270 --> 00:47:16.590
+<v Speaker 2>tier images are most popular and and things
+
+00:47:16.590 --> 00:47:17.630
+<v Speaker 2>like that. So
+
+00:47:18.430 --> 00:47:18.990
+<v Speaker 2>Oh.
+
+00:47:19.710 --> 00:47:22.110
+<v Speaker 2>Yeah. I bet your security team really loves
+
+00:47:22.110 --> 00:47:23.630
+<v Speaker 1>that, though, because
+
+00:47:24.110 --> 00:47:25.895
+<v Speaker 1>one of the biggest things about logging that
+
+00:47:25.895 --> 00:47:27.735
+<v Speaker 1>I always find people don't realize is you
+
+00:47:27.735 --> 00:47:29.335
+<v Speaker 1>need a read only archive that no one
+
+00:47:29.335 --> 00:47:30.535
+<v Speaker 1>can actually change.
+
+00:47:31.815 --> 00:47:33.975
+<v Speaker 1>Every single logging system should have a read
+
+00:47:33.975 --> 00:47:36.849
+<v Speaker 1>only archive of everything. That way if somebody
+
+00:47:36.849 --> 00:47:38.770
+<v Speaker 1>does access the system because usually what they'll
+
+00:47:38.770 --> 00:47:40.210
+<v Speaker 1>try to do is they'll go in and
+
+00:47:40.210 --> 00:47:41.890
+<v Speaker 1>then they'll change the logs so that they
+
+00:47:41.890 --> 00:47:43.090
+<v Speaker 1>hide their tracks.
+
+00:47:43.650 --> 00:47:46.770
+<v Speaker 0>But Right. If it's pre logged into BigQuery,
+
+00:47:46.770 --> 00:47:48.050
+<v Speaker 1>they can't go in and just change it,
+
+00:47:48.050 --> 00:47:50.665
+<v Speaker 1>hopefully. Maybe they could. They If they have
+
+00:47:50.665 --> 00:47:53.065
+<v Speaker 1>the right permissions. But Anyone can do anything.
+
+00:47:53.065 --> 00:47:54.665
+<v Speaker 2>But I know. I know. But, like, I
+
+00:47:54.665 --> 00:47:56.984
+<v Speaker 1>like to dream that's a possibility. I don't
+
+00:47:56.984 --> 00:47:58.744
+<v Speaker 1>know. But But the to your to your
+
+00:47:58.744 --> 00:48:00.744
+<v Speaker 2>point is that the reporter service that that,
+
+00:48:00.744 --> 00:48:02.425
+<v Speaker 2>you know, listens to every event and writes
+
+00:48:02.490 --> 00:48:04.890
+<v Speaker 2>it to BigQuery is the only service that
+
+00:48:05.050 --> 00:48:06.810
+<v Speaker 2>or the only account that has access to
+
+00:48:06.810 --> 00:48:09.369
+<v Speaker 2>write to that dataset. Yeah. There we go.
+
+00:48:09.369 --> 00:48:11.530
+<v Speaker 2>We also have an alert
+
+00:48:12.090 --> 00:48:14.730
+<v Speaker 2>set up for if any user besides this
+
+00:48:17.474 --> 00:48:19.875
+<v Speaker 2>modifies the the dataset or or, you know,
+
+00:48:19.875 --> 00:48:22.595
+<v Speaker 2>reads certain GCS buckets or, you know, does
+
+00:48:22.595 --> 00:48:24.195
+<v Speaker 2>certain things that they shouldn't be doing. We
+
+00:48:24.195 --> 00:48:25.795
+<v Speaker 2>call them the lasers. Matt calls them the
+
+00:48:25.795 --> 00:48:26.115
+<v Speaker 2>lasers.
+
+00:48:27.700 --> 00:48:30.580
+<v Speaker 2>You will trip a laser and, like, fire
+
+00:48:30.820 --> 00:48:32.980
+<v Speaker 2>an alert and and, you know, notify our
+
+00:48:32.980 --> 00:48:35.620
+<v Speaker 2>Slack that, like, someone was editing that dataset
+
+00:48:35.620 --> 00:48:38.820
+<v Speaker 2>in BigQuery. That's weird. Right? Yeah. You can
+
+00:48:38.820 --> 00:48:40.980
+<v Speaker 2>also turn off the lasers. They sufficiently you
+
+00:48:40.980 --> 00:48:43.220
+<v Speaker 2>know, smart person or or
+
+00:48:43.595 --> 00:48:44.954
+<v Speaker 2>a a motivated
+
+00:48:44.954 --> 00:48:47.434
+<v Speaker 2>person could disable the lasers, but it's nice
+
+00:48:47.434 --> 00:48:49.595
+<v Speaker 2>to have another sort of Yeah. Like, layer
+
+00:48:49.595 --> 00:48:51.914
+<v Speaker 2>of defense there. Yeah. Always a good thing.
+
+00:48:51.914 --> 00:48:53.674
+<v Speaker 0>Yeah. But the the attack factor here is
+
+00:48:53.674 --> 00:48:54.555
+<v Speaker 0>internal.
+
+00:48:55.115 --> 00:48:56.555
+<v Speaker 0>So I guess there's also
+
+00:48:57.110 --> 00:48:59.110
+<v Speaker 0>it's it's well, you're you're not looking for
+
+00:48:59.110 --> 00:49:01.350
+<v Speaker 0>malicious activity on the outside trying to deactivate
+
+00:49:01.350 --> 00:49:03.510
+<v Speaker 0>your lasers like it's, you know, robbery or
+
+00:49:03.510 --> 00:49:05.590
+<v Speaker 0>anything like that. This is more of Well,
+
+00:49:05.590 --> 00:49:06.390
+<v Speaker 0>and it it
+
+00:49:06.630 --> 00:49:08.310
+<v Speaker 0>it tends to show up with a Slack
+
+00:49:08.310 --> 00:49:11.430
+<v Speaker 2>alert went off that, like, some coworker was,
+
+00:49:11.430 --> 00:49:14.615
+<v Speaker 2>you know, touching this GCS bucket or something.
+
+00:49:14.615 --> 00:49:16.695
+<v Speaker 2>And and they'll respond to that in Slack
+
+00:49:16.695 --> 00:49:17.895
+<v Speaker 2>and say, yeah. That was me. I was
+
+00:49:17.895 --> 00:49:19.895
+<v Speaker 2>debugging this thing. This is what you know?
+
+00:49:20.135 --> 00:49:23.255
+<v Speaker 2>Or that laser is overly sensitive. We should,
+
+00:49:23.255 --> 00:49:25.255
+<v Speaker 2>you know, detune it so that it's not,
+
+00:49:25.255 --> 00:49:27.230
+<v Speaker 2>you know, gonna bug Slack every time I
+
+00:49:27.230 --> 00:49:28.670
+<v Speaker 2>check my email or something.
+
+00:49:31.550 --> 00:49:33.310
+<v Speaker 0>Yeah. Don't know. It's not good. I wish
+
+00:49:33.310 --> 00:49:35.550
+<v Speaker 1>I could know when they check their email,
+
+00:49:35.550 --> 00:49:38.510
+<v Speaker 1>though. That would be nice. They're just avoiding
+
+00:49:38.510 --> 00:49:39.470
+<v Speaker 2>us. I know.
+
+00:49:41.975 --> 00:49:44.055
+<v Speaker 0>Alright. I mean, I guess the GCS bucket
+
+00:49:44.055 --> 00:49:46.375
+<v Speaker 0>thing ties into your usage of Terraform as
+
+00:49:46.375 --> 00:49:48.295
+<v Speaker 0>well, which we didn't really talk about other
+
+00:49:48.295 --> 00:49:49.335
+<v Speaker 0>than the fact that there's a module. But
+
+00:49:49.335 --> 00:49:51.015
+<v Speaker 0>I'm assuming all your state files live in
+
+00:49:51.015 --> 00:49:52.615
+<v Speaker 0>Terraform. So if anyone were to go in
+
+00:49:52.615 --> 00:49:54.810
+<v Speaker 0>there and start manipulating that, there would be
+
+00:49:54.810 --> 00:49:56.810
+<v Speaker 0>a laser as well. I like this concept
+
+00:49:56.810 --> 00:49:58.170
+<v Speaker 0>of lasers. I would have to start building
+
+00:49:58.170 --> 00:49:58.890
+<v Speaker 0>lasers.
+
+00:49:59.770 --> 00:50:02.010
+<v Speaker 2>We have, there's examples in the repo of
+
+00:50:02.010 --> 00:50:03.690
+<v Speaker 2>our of our lasers around,
+
+00:50:03.850 --> 00:50:06.730
+<v Speaker 2>certain things. If a if a human accesses
+
+00:50:06.730 --> 00:50:08.170
+<v Speaker 2>a service account key,
+
+00:50:09.085 --> 00:50:11.325
+<v Speaker 2>like, that is a event. That is a
+
+00:50:11.405 --> 00:50:13.085
+<v Speaker 2>it's something that a person should never be
+
+00:50:13.085 --> 00:50:13.565
+<v Speaker 2>doing.
+
+00:50:15.165 --> 00:50:16.845
+<v Speaker 2>Even if they have permission to, we don't
+
+00:50:16.845 --> 00:50:18.925
+<v Speaker 2>want we don't want you to be unrecorded
+
+00:50:18.925 --> 00:50:19.485
+<v Speaker 2>doing that.
+
+00:50:20.570 --> 00:50:22.410
+<v Speaker 1>See, this is this is something that you
+
+00:50:22.570 --> 00:50:24.330
+<v Speaker 1>you've told David this now, and this is
+
+00:50:24.330 --> 00:50:25.610
+<v Speaker 1>how we get Skynet.
+
+00:50:26.330 --> 00:50:28.410
+<v Speaker 0>If Dave is just going back time.
+
+00:50:31.690 --> 00:50:33.530
+<v Speaker 2>Eddie. Alright. I think we should finish on
+
+00:50:33.530 --> 00:50:34.490
+<v Speaker 0>stuff in controversial.
+
+00:50:34.925 --> 00:50:35.325
+<v Speaker 0>So
+
+00:50:35.885 --> 00:50:38.605
+<v Speaker 1>Oh, no. We haven't been being controversial.
+
+00:50:38.605 --> 00:50:39.165
+<v Speaker 1>Okay.
+
+00:50:39.965 --> 00:50:42.445
+<v Speaker 1>Sure. Okay. Better than BigQuery.
+
+00:50:42.765 --> 00:50:45.325
+<v Speaker 0>I mean, we've already beat we've we've checked
+
+00:50:45.325 --> 00:50:47.325
+<v Speaker 0>off the meme. Right? Now we can drop
+
+00:50:47.325 --> 00:50:47.805
+<v Speaker 0>into
+
+00:50:48.270 --> 00:50:50.670
+<v Speaker 0>open source OSI definitions and talk about why
+
+00:50:50.670 --> 00:50:52.750
+<v Speaker 0>Terraform over OpenTofu.
+
+00:50:52.830 --> 00:50:54.750
+<v Speaker 1>Have we have we argued about Go and
+
+00:50:54.750 --> 00:50:56.830
+<v Speaker 1>Python yet? We haven't done that yet this
+
+00:50:56.830 --> 00:50:57.470
+<v Speaker 1>episode.
+
+00:50:59.150 --> 00:51:01.070
+<v Speaker 1>Go and Rust. No. Rust. Rust. It was
+
+00:51:01.070 --> 00:51:01.390
+<v Speaker 1>Rust.
+
+00:51:02.025 --> 00:51:03.385
+<v Speaker 1>Was rest that we need to talk about.
+
+00:51:03.385 --> 00:51:04.505
+<v Speaker 1>Right. Right.
+
+00:51:04.825 --> 00:51:06.905
+<v Speaker 1>We almost have all the memes going. Okay.
+
+00:51:06.905 --> 00:51:08.984
+<v Speaker 0>We almost made it one episode. So me
+
+00:51:08.984 --> 00:51:10.585
+<v Speaker 0>having to say Russ Lora, and then then
+
+00:51:10.585 --> 00:51:12.105
+<v Speaker 0>you just you poke the bear.
+
+00:51:13.224 --> 00:51:15.385
+<v Speaker 1>Poke. Poke. Poke. Poke. Anyway,
+
+00:51:16.105 --> 00:51:17.250
+<v Speaker 1>so so what are we thinking? Yeah. I
+
+00:51:17.250 --> 00:51:17.650
+<v Speaker 0>mean, with
+
+00:51:18.370 --> 00:51:20.290
+<v Speaker 0>no. Back on track. We're almost done with
+
+00:51:20.290 --> 00:51:22.290
+<v Speaker 0>this thing. Right? Why not open tofu? Was
+
+00:51:22.290 --> 00:51:24.690
+<v Speaker 0>that even in consideration, or is it, like,
+
+00:51:25.090 --> 00:51:25.890
+<v Speaker 0>you don't see the
+
+00:51:27.650 --> 00:51:29.970
+<v Speaker 2>It it is a consideration. I would say,
+
+00:51:30.050 --> 00:51:32.495
+<v Speaker 2>mainly, we are still floating on inertia of
+
+00:51:32.495 --> 00:51:34.255
+<v Speaker 2>having used Terraform so far.
+
+00:51:34.655 --> 00:51:36.015
+<v Speaker 2>Yeah. I don't think any of us have
+
+00:51:36.015 --> 00:51:36.575
+<v Speaker 2>any
+
+00:51:37.135 --> 00:51:38.735
+<v Speaker 2>reason not to use OpenTofu.
+
+00:51:38.735 --> 00:51:40.895
+<v Speaker 2>A couple of or at least one person
+
+00:51:40.895 --> 00:51:43.295
+<v Speaker 2>at ChangeRad, John, has contributed to OpenTofu to
+
+00:51:43.295 --> 00:51:45.535
+<v Speaker 2>make it faster, to make it more performant,
+
+00:51:45.535 --> 00:51:46.415
+<v Speaker 2>and I think we would
+
+00:51:47.260 --> 00:51:48.700
+<v Speaker 2>love to migrate to it. It's just an
+
+00:51:48.780 --> 00:51:51.660
+<v Speaker 2>another migration to to consider and and prioritize
+
+00:51:51.660 --> 00:51:53.500
+<v Speaker 2>with the rest. We have we have nothing
+
+00:51:53.500 --> 00:51:55.100
+<v Speaker 2>but love for OpenTofu,
+
+00:51:57.260 --> 00:51:59.740
+<v Speaker 2>and we'll we'll migrate to it whenever we
+
+00:51:59.740 --> 00:51:59.900
+<v Speaker 2>can.
+
+00:52:01.494 --> 00:52:03.255
+<v Speaker 2>That wasn't that controversial. So you need to
+
+00:52:03.255 --> 00:52:05.255
+<v Speaker 2>come up with more controversial questions. But I
+
+00:52:05.255 --> 00:52:06.615
+<v Speaker 1>I guess you could say, so you have
+
+00:52:06.615 --> 00:52:08.775
+<v Speaker 1>nothing for love but o for Open Tofu,
+
+00:52:08.775 --> 00:52:11.495
+<v Speaker 1>but there's a but in there. Okay.
+
+00:52:11.734 --> 00:52:13.815
+<v Speaker 1>There there's the controversy. Anyway, I'll stop now.
+
+00:52:14.300 --> 00:52:16.460
+<v Speaker 0>It's alright. We'll we'll deepfake his voice and
+
+00:52:16.460 --> 00:52:17.820
+<v Speaker 0>put in something spicy.
+
+00:52:17.820 --> 00:52:18.540
+<v Speaker 0>Okay.
+
+00:52:18.780 --> 00:52:21.180
+<v Speaker 0>Good. Good. There's AI. We added AI into
+
+00:52:21.180 --> 00:52:23.020
+<v Speaker 1>this. Okay. What else do we need to
+
+00:52:23.020 --> 00:52:24.540
+<v Speaker 1>add in going on right now?
+
+00:52:25.995 --> 00:52:27.595
+<v Speaker 1>If you say cryptic Alright. No. No. No.
+
+00:52:27.595 --> 00:52:28.315
+<v Speaker 1>No.
+
+00:52:29.355 --> 00:52:30.315
+<v Speaker 0>Has been this
+
+00:52:30.555 --> 00:52:32.395
+<v Speaker 0>has been really cool. And, you know, it's
+
+00:52:32.395 --> 00:52:34.475
+<v Speaker 0>a really interesting project. The blog is fantastic.
+
+00:52:34.475 --> 00:52:35.915
+<v Speaker 0>People should go read it. The open source
+
+00:52:35.915 --> 00:52:39.275
+<v Speaker 0>modules examples, I think, are universally adoptable and
+
+00:52:39.275 --> 00:52:41.240
+<v Speaker 0>stealable to anyone listening that just wants to
+
+00:52:41.240 --> 00:52:42.520
+<v Speaker 0>go and do some of this stuff, which
+
+00:52:42.520 --> 00:52:44.040
+<v Speaker 0>is really awesome as well.
+
+00:52:45.000 --> 00:52:46.520
+<v Speaker 0>I'll finish I mean, I don't know if
+
+00:52:46.520 --> 00:52:47.720
+<v Speaker 0>Laura has anything else, but I'll say I'll
+
+00:52:47.720 --> 00:52:49.079
+<v Speaker 0>finish with this. I keep saying one more
+
+00:52:49.079 --> 00:52:50.760
+<v Speaker 0>question, and I'm giving you, like, another six.
+
+00:52:50.760 --> 00:52:52.520
+<v Speaker 0>But, you know, you've said
+
+00:52:53.025 --> 00:52:54.704
+<v Speaker 0>twice now that if we come back in
+
+00:52:54.704 --> 00:52:56.224
+<v Speaker 0>twelve months or three months, it'll all be
+
+00:52:56.224 --> 00:52:58.865
+<v Speaker 0>different. I'm curious. Over the next three, six,
+
+00:52:58.865 --> 00:53:01.105
+<v Speaker 0>and nine months, what is your next what's
+
+00:53:01.105 --> 00:53:02.464
+<v Speaker 0>your next mission? What do you think will
+
+00:53:02.464 --> 00:53:04.785
+<v Speaker 0>change? What are you wanting to experiment with?
+
+00:53:04.785 --> 00:53:06.145
+<v Speaker 0>Like, what's on your road map?
+
+00:53:09.780 --> 00:53:12.099
+<v Speaker 2>Focus. Focus. Focus. I have to only do
+
+00:53:12.099 --> 00:53:14.580
+<v Speaker 2>one thing for each of these things. I
+
+00:53:15.460 --> 00:53:17.619
+<v Speaker 2>mentioned the three sort of pillars of infrastructure
+
+00:53:17.619 --> 00:53:20.260
+<v Speaker 2>we have. The serving infrastructure, I think, is
+
+00:53:20.260 --> 00:53:21.700
+<v Speaker 2>really solid. We just recently
+
+00:53:22.245 --> 00:53:24.325
+<v Speaker 2>are wrapping up sort of an investment in
+
+00:53:24.325 --> 00:53:25.925
+<v Speaker 2>our package build infrastructure.
+
+00:53:25.925 --> 00:53:28.085
+<v Speaker 2>I think the image build infrastructure is the
+
+00:53:28.085 --> 00:53:28.645
+<v Speaker 2>next
+
+00:53:29.045 --> 00:53:31.445
+<v Speaker 2>the next oldest pillar. Maybe we'll just bounce
+
+00:53:31.445 --> 00:53:33.525
+<v Speaker 2>between all three and just, like, keep,
+
+00:53:34.165 --> 00:53:36.485
+<v Speaker 2>improving them in in shifts. But, yeah, the
+
+00:53:36.485 --> 00:53:38.220
+<v Speaker 2>image build infrastructure is something I think we'd
+
+00:53:38.220 --> 00:53:41.340
+<v Speaker 2>we'd, I would love to start improving more.
+
+00:53:43.020 --> 00:53:44.700
+<v Speaker 2>I don't think that would be a three
+
+00:53:44.700 --> 00:53:47.260
+<v Speaker 2>or six month timeline thing. I would love
+
+00:53:47.260 --> 00:53:48.140
+<v Speaker 2>for it to be.
+
+00:53:49.740 --> 00:53:51.100
+<v Speaker 2>What was the rest of your question?
+
+00:53:53.535 --> 00:53:54.575
+<v Speaker 0>Focus. Focus.
+
+00:53:55.135 --> 00:53:57.295
+<v Speaker 2>Focus. Yeah. Great. I mean There's so many
+
+00:53:57.295 --> 00:54:00.255
+<v Speaker 2>there's so many one thing because this is
+
+00:54:00.255 --> 00:54:02.095
+<v Speaker 0>this is why you're shipping, and I'm sitting
+
+00:54:02.095 --> 00:54:04.015
+<v Speaker 0>here. I've got 12 plates that you can't
+
+00:54:04.015 --> 00:54:05.775
+<v Speaker 0>see off camera that I have to go
+
+00:54:05.775 --> 00:54:07.800
+<v Speaker 0>spend. That's why I had to reconnect everything.
+
+00:54:07.800 --> 00:54:10.600
+<v Speaker 0>That's like, I just I can't stop messing
+
+00:54:10.600 --> 00:54:12.520
+<v Speaker 0>with everything. So I really
+
+00:54:13.080 --> 00:54:15.000
+<v Speaker 0>it's it always amazes me when people are
+
+00:54:15.000 --> 00:54:16.680
+<v Speaker 0>able to we're gonna do this one thing
+
+00:54:16.680 --> 00:54:18.680
+<v Speaker 0>and and I'm just like, I
+
+00:54:19.400 --> 00:54:22.040
+<v Speaker 2>Very cool. I I think my coworkers listening
+
+00:54:22.040 --> 00:54:23.585
+<v Speaker 2>to this and hearing you say that I'm
+
+00:54:23.585 --> 00:54:26.385
+<v Speaker 2>very good at focus will be laughing very,
+
+00:54:26.385 --> 00:54:27.025
+<v Speaker 2>very much.
+
+00:54:27.825 --> 00:54:29.265
+<v Speaker 1>Oh, then they need to go work with
+
+00:54:29.265 --> 00:54:30.625
+<v Speaker 1>David for a little while and then see
+
+00:54:30.625 --> 00:54:32.785
+<v Speaker 1>it all I hope that a place. Yeah.
+
+00:54:33.025 --> 00:54:34.704
+<v Speaker 2>I mean, have you even bought a today?
+
+00:54:35.940 --> 00:54:38.180
+<v Speaker 1>Have what? I haven't. Have you even bought
+
+00:54:38.180 --> 00:54:40.740
+<v Speaker 0>a domain today? I mean, come on. Yeah.
+
+00:54:40.740 --> 00:54:42.500
+<v Speaker 2>It's early. It's early here. There's plenty of
+
+00:54:42.500 --> 00:54:44.980
+<v Speaker 2>time. There you go. There you go.
+
+00:54:45.380 --> 00:54:47.380
+<v Speaker 1>Well, my my one thing is just, hey.
+
+00:54:47.380 --> 00:54:48.260
+<v Speaker 1>Congratulations
+
+00:54:48.339 --> 00:54:51.915
+<v Speaker 1>on getting through, like, some technical debt fixes
+
+00:54:51.915 --> 00:54:53.435
+<v Speaker 1>for infrastructure that
+
+00:54:53.915 --> 00:54:55.515
+<v Speaker 1>like, that is the holy grail for every
+
+00:54:55.515 --> 00:54:58.395
+<v Speaker 1>operations person ever. So congratulations
+
+00:54:58.395 --> 00:55:00.795
+<v Speaker 1>on surviving that. Yeah. There's there's plenty more
+
+00:55:00.795 --> 00:55:02.875
+<v Speaker 2>where that came from too. Yeah. It's just
+
+00:55:03.755 --> 00:55:05.920
+<v Speaker 1>you know? I mean, every little bit of
+
+00:55:05.920 --> 00:55:07.680
+<v Speaker 1>debt that we can pay down is always
+
+00:55:07.680 --> 00:55:08.720
+<v Speaker 1>quite nice. Yeah.
+
+00:55:10.720 --> 00:55:10.960
+<v Speaker 0>So
+
+00:55:12.560 --> 00:55:14.400
+<v Speaker 0>Alright. Well, thank you so much for your
+
+00:55:14.400 --> 00:55:17.040
+<v Speaker 0>time. Any final departing words for the audience
+
+00:55:17.040 --> 00:55:18.080
+<v Speaker 0>before we say goodbye?
+
+00:55:19.535 --> 00:55:20.175
+<v Speaker 2>No.
+
+00:55:22.495 --> 00:55:24.735
+<v Speaker 1>Well, now I've known you for an hour,
+
+00:55:25.055 --> 00:55:26.575
+<v Speaker 1>and I still think you're a cool person.
+
+00:55:26.575 --> 00:55:28.015
+<v Speaker 1>So thank you so much for coming Yeah.
+
+00:55:28.815 --> 00:55:31.055
+<v Speaker 2>Thank you. Her next time. Okay.
+
+00:55:32.255 --> 00:55:34.015
+<v Speaker 0>Alright. We'll be back at twelve months to
+
+00:55:34.015 --> 00:55:36.310
+<v Speaker 0>see what's changed. Hope you all have a
+
+00:55:36.310 --> 00:55:37.990
+<v Speaker 0>good day. Take care. Thanks,
+
+00:55:38.950 --> 00:55:39.510
+<v Speaker 1>guys.
+
+00:55:40.790 --> 00:55:42.869
+<v Speaker 1>Thanks for joining us. If you wanna keep
+
+00:55:42.869 --> 00:55:45.270
+<v Speaker 0>up with us, consider subscribing to the podcast
+
+00:55:45.270 --> 00:55:47.910
+<v Speaker 0>on your favorite podcasting app or even go
+
+00:55:47.910 --> 00:55:49.910
+<v Speaker 0>to CloudNativeCompass.fm.
+
+00:55:50.275 --> 00:55:51.715
+<v Speaker 0>And if you want us to talk with
+
+00:55:51.715 --> 00:55:54.595
+<v Speaker 1>someone specific or cover a specific topic,
+
+00:55:54.835 --> 00:55:56.915
+<v Speaker 1>reach out to us on any social media
+
+00:55:56.915 --> 00:55:59.795
+<v Speaker 1>platform. Until next time when exploring the cloud
+
+00:55:59.795 --> 00:56:00.755
+<v Speaker 0>native landscape
+
+00:56:00.835 --> 00:56:01.795
+<v Speaker 0>on three.
+
+00:56:01.955 --> 00:56:03.635
+<v Speaker 1>On three. One,
+
+00:56:03.875 --> 00:56:04.435
+<v Speaker 0>two,
+
+00:56:04.755 --> 00:56:04.994
+<v Speaker 0>three.
+
+00:56:05.670 --> 00:56:07.590
+<v Speaker 0>Don't forget your compass. Forget your compass.

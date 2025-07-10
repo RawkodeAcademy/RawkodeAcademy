@@ -1,0 +1,6644 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 42d8cb93-4763-4af5-91fa-7ef2e5d4be87
+Created: 2025-04-29T19:49:21.769Z
+Duration: 5375.0776
+Channels: 1
+
+00:01:13.815 --> 00:01:16.615
+<v Speaker 0>Hello and welcome to today's episode of Rawkode
+
+00:01:16.615 --> 00:01:19.300
+<v Speaker 0>live. I am your host Rawkode.
+
+00:01:20.100 --> 00:01:20.659
+<v Speaker 0>So
+
+00:01:21.540 --> 00:01:23.300
+<v Speaker 0>as you can see I'm a floaty head
+
+00:01:23.300 --> 00:01:24.900
+<v Speaker 0>today. Steve is doing the same. We're gonna
+
+00:01:24.900 --> 00:01:26.180
+<v Speaker 0>have a little bit of fun with some
+
+00:01:26.180 --> 00:01:27.940
+<v Speaker 0>infrastructure as code.
+
+00:01:27.940 --> 00:01:30.020
+<v Speaker 0>Now before we get started and I introduce
+
+00:01:30.020 --> 00:01:33.045
+<v Speaker 0>Steve, I would encourage you please subscribe and
+
+00:01:33.045 --> 00:01:34.965
+<v Speaker 0>click the bell on YouTube so you get
+
+00:01:34.965 --> 00:01:37.445
+<v Speaker 0>notifications of more awesome episodes
+
+00:01:37.685 --> 00:01:39.445
+<v Speaker 0>and also you'll notice that on most of
+
+00:01:39.445 --> 00:01:41.125
+<v Speaker 0>the scenes we're using today there as a
+
+00:01:41.125 --> 00:01:42.005
+<v Speaker 0>discuss
+
+00:01:42.005 --> 00:01:43.525
+<v Speaker 0>discord embed
+
+00:01:43.925 --> 00:01:46.325
+<v Speaker 0>which discord have currently got broken and you'll
+
+00:01:46.325 --> 00:01:47.925
+<v Speaker 0>see your name as object object but I'm
+
+00:01:47.925 --> 00:01:49.850
+<v Speaker 0>hoping they fix soon. So please feel free
+
+00:01:49.850 --> 00:01:51.530
+<v Speaker 0>to join us in the discord chat.
+
+00:01:52.170 --> 00:01:54.409
+<v Speaker 0>And now I would like to introduce Steve.
+
+00:01:54.890 --> 00:01:57.850
+<v Speaker 0>Steve Wade, an independent consultant and active member
+
+00:01:57.850 --> 00:02:00.170
+<v Speaker 0>of Kubernetes and get up communities. Hey, man.
+
+00:02:00.170 --> 00:02:00.570
+<v Speaker 0>How's it going?
+
+00:02:01.605 --> 00:02:03.125
+<v Speaker 1>Hey. I'm good. How are you?
+
+00:02:03.765 --> 00:02:04.485
+<v Speaker 0>Yeah.
+
+00:02:04.885 --> 00:02:06.405
+<v Speaker 0>I'm very well. I'm looking forward to what
+
+00:02:06.405 --> 00:02:08.885
+<v Speaker 0>we're gonna be kicking the tires on today,
+
+00:02:08.885 --> 00:02:10.485
+<v Speaker 0>having a bit of fun and and generally
+
+00:02:10.485 --> 00:02:12.645
+<v Speaker 0>just chatting gets up in automation.
+
+00:02:13.409 --> 00:02:15.489
+<v Speaker 1>Yes. It's it's gonna be good. Right? We've
+
+00:02:15.650 --> 00:02:17.489
+<v Speaker 1>we had that question that someone was posting
+
+00:02:17.489 --> 00:02:19.250
+<v Speaker 1>on Twitter, and now we're gonna give a
+
+00:02:19.250 --> 00:02:21.489
+<v Speaker 1>demo of a possible way to fix it.
+
+00:02:21.489 --> 00:02:23.569
+<v Speaker 1>So everyone everyone's the winner, and you're showing
+
+00:02:23.569 --> 00:02:25.329
+<v Speaker 1>me some new technologies that I've never used.
+
+00:02:25.329 --> 00:02:25.489
+<v Speaker 1>So
+
+00:02:26.290 --> 00:02:28.815
+<v Speaker 0>Yeah. Mean, I guess if I was smart,
+
+00:02:28.815 --> 00:02:30.975
+<v Speaker 0>would probably have had that tweet ready in
+
+00:02:30.975 --> 00:02:32.415
+<v Speaker 0>advanced and been able to show on the
+
+00:02:32.415 --> 00:02:35.295
+<v Speaker 0>screen but I am not. So we'll talk
+
+00:02:35.295 --> 00:02:37.935
+<v Speaker 0>about the prompt space as we tackle them
+
+00:02:37.935 --> 00:02:38.575
+<v Speaker 0>together.
+
+00:02:40.080 --> 00:02:41.920
+<v Speaker 0>Why don't we give a quick
+
+00:02:42.239 --> 00:02:44.319
+<v Speaker 0>summary of what we wanna do? Why don't
+
+00:02:44.319 --> 00:02:45.920
+<v Speaker 0>you go first and then I'll try and
+
+00:02:45.920 --> 00:02:47.280
+<v Speaker 0>add in anything else that I think is
+
+00:02:47.280 --> 00:02:48.000
+<v Speaker 0>interesting.
+
+00:02:48.160 --> 00:02:51.200
+<v Speaker 1>Sure. So the the plan here is to
+
+00:02:51.200 --> 00:02:53.065
+<v Speaker 1>essentially start from scratch
+
+00:02:53.145 --> 00:02:55.785
+<v Speaker 1>and look at how we can bootstrap infrastructure
+
+00:02:55.864 --> 00:02:58.345
+<v Speaker 1>and also enable deployments
+
+00:02:58.345 --> 00:03:00.905
+<v Speaker 1>straight out of the gate for your workloads
+
+00:03:00.905 --> 00:03:02.425
+<v Speaker 1>that are running within Kubernetes.
+
+00:03:02.584 --> 00:03:05.070
+<v Speaker 1>So, essentially, we're we're starting with that bootstrapping
+
+00:03:05.070 --> 00:03:07.390
+<v Speaker 1>problem. So that initial cluster up
+
+00:03:07.550 --> 00:03:08.350
+<v Speaker 1>plus
+
+00:03:08.350 --> 00:03:10.670
+<v Speaker 1>how we hook that into a number of
+
+00:03:10.670 --> 00:03:13.150
+<v Speaker 1>other repositories in in this scenario, it's gonna
+
+00:03:13.150 --> 00:03:13.870
+<v Speaker 1>be one
+
+00:03:14.190 --> 00:03:16.510
+<v Speaker 1>so that we can start to bootstrap workloads.
+
+00:03:16.590 --> 00:03:18.335
+<v Speaker 1>So this is a common problem that, you
+
+00:03:18.335 --> 00:03:21.535
+<v Speaker 1>know, everyone that's creating Kubernetes clusters may or
+
+00:03:21.535 --> 00:03:22.895
+<v Speaker 1>may not have, but in a kind of
+
+00:03:22.895 --> 00:03:25.455
+<v Speaker 1>GitOps paradigm where you wanna drive everything from
+
+00:03:25.455 --> 00:03:26.015
+<v Speaker 1>Git,
+
+00:03:26.495 --> 00:03:28.655
+<v Speaker 1>having that initial bootstrapping
+
+00:03:28.655 --> 00:03:30.575
+<v Speaker 1>from Git is really the way that we
+
+00:03:30.575 --> 00:03:32.175
+<v Speaker 1>wanna go. That's gonna be the gold standard.
+
+00:03:33.300 --> 00:03:34.660
+<v Speaker 0>Nice. Perfect.
+
+00:03:35.700 --> 00:03:37.140
+<v Speaker 0>Alright. Well,
+
+00:03:37.140 --> 00:03:39.379
+<v Speaker 0>before we get started, let's tackle a couple
+
+00:03:39.379 --> 00:03:41.060
+<v Speaker 0>of comments. So
+
+00:03:42.099 --> 00:03:43.060
+<v Speaker 0>our friend
+
+00:03:43.300 --> 00:03:45.060
+<v Speaker 0>Duffy has left us a message.
+
+00:03:45.459 --> 00:03:46.900
+<v Speaker 0>Set the bar high there mate but we
+
+00:03:46.900 --> 00:03:48.325
+<v Speaker 0>do appreciate the support.
+
+00:03:49.685 --> 00:03:51.205
+<v Speaker 1>Yeah, no question now.
+
+00:03:53.605 --> 00:03:56.005
+<v Speaker 0>Simon, hey man, how's it going? Alright.
+
+00:03:57.125 --> 00:03:57.765
+<v Speaker 0>So
+
+00:03:58.405 --> 00:04:00.085
+<v Speaker 0>what we're gonna do is we're trying, we're
+
+00:04:00.085 --> 00:04:01.365
+<v Speaker 0>gonna try and split this into like two
+
+00:04:01.365 --> 00:04:04.245
+<v Speaker 0>stages basically. Mean, you've already kind of covered
+
+00:04:03.180 --> 00:04:04.540
+<v Speaker 0>us but I'm gonna summarize it for my
+
+00:04:04.540 --> 00:04:07.659
+<v Speaker 0>own sanity here but what we we're gonna
+
+00:04:07.659 --> 00:04:11.019
+<v Speaker 0>use Pulumi today. Now we're doing a skill
+
+00:04:11.019 --> 00:04:12.859
+<v Speaker 0>swap here essentially right like I don't think
+
+00:04:12.859 --> 00:04:14.939
+<v Speaker 0>you've ever used Pulumi before you're not familiar
+
+00:04:14.939 --> 00:04:16.845
+<v Speaker 0>with it So I'm gonna try and impart
+
+00:04:16.845 --> 00:04:18.765
+<v Speaker 0>my Pulumi knowledge on you
+
+00:04:19.644 --> 00:04:21.084
+<v Speaker 0>and we're gonna do that to get the
+
+00:04:21.084 --> 00:04:21.725
+<v Speaker 0>cluster
+
+00:04:21.885 --> 00:04:23.885
+<v Speaker 0>up and running and I'm gonna cheat and
+
+00:04:23.885 --> 00:04:25.965
+<v Speaker 0>I'm only gonna deploy a cane cluster and
+
+00:04:25.965 --> 00:04:27.885
+<v Speaker 0>the interest of speed today. I mean, we
+
+00:04:27.885 --> 00:04:29.405
+<v Speaker 0>don't wanna be spelling up that we don't
+
+00:04:29.405 --> 00:04:31.460
+<v Speaker 0>want to be spinning up multiple nodes. We
+
+00:04:31.460 --> 00:04:34.340
+<v Speaker 0>just really, that's not the interesting part, the
+
+00:04:34.340 --> 00:04:36.820
+<v Speaker 0>code, the automation, the process is the interesting
+
+00:04:36.820 --> 00:04:37.460
+<v Speaker 0>part
+
+00:04:38.020 --> 00:04:39.860
+<v Speaker 0>and then we're gonna flip it over and
+
+00:04:39.860 --> 00:04:41.780
+<v Speaker 0>then you're gonna be driving forward and showing
+
+00:04:41.780 --> 00:04:43.860
+<v Speaker 0>us how to adopt flux and get ups
+
+00:04:43.860 --> 00:04:45.300
+<v Speaker 0>and apply all of that stuff to our
+
+00:04:45.300 --> 00:04:48.155
+<v Speaker 0>cluster and we should have a trade
+
+00:04:48.315 --> 00:04:49.835
+<v Speaker 0>tight feedback loop by the end of this
+
+00:04:49.835 --> 00:04:51.675
+<v Speaker 0>and that we can just push changes to
+
+00:04:51.675 --> 00:04:52.794
+<v Speaker 0>the get repository
+
+00:04:52.875 --> 00:04:55.275
+<v Speaker 0>and automatically see that all deployed in our
+
+00:04:55.275 --> 00:04:55.915
+<v Speaker 0>cluster.
+
+00:04:57.115 --> 00:04:59.435
+<v Speaker 1>That's the plan. Right. Good.
+
+00:05:00.715 --> 00:05:02.235
+<v Speaker 0>I like it where we're on the same
+
+00:05:02.235 --> 00:05:05.590
+<v Speaker 0>page. So let's just get started then. There's
+
+00:05:05.590 --> 00:05:08.789
+<v Speaker 0>no point in messing around. So I
+
+00:05:08.789 --> 00:05:10.870
+<v Speaker 0>have fought a repository that you sent me
+
+00:05:10.870 --> 00:05:12.310
+<v Speaker 0>earlier. This is
+
+00:05:12.870 --> 00:05:14.470
+<v Speaker 0>a get ups example that I think you've
+
+00:05:14.470 --> 00:05:15.830
+<v Speaker 0>got that uses customize.
+
+00:05:17.165 --> 00:05:18.685
+<v Speaker 0>Is there if anyone wants to take a
+
+00:05:18.685 --> 00:05:20.525
+<v Speaker 0>look at it, play with it, etcetera.
+
+00:05:21.645 --> 00:05:23.645
+<v Speaker 0>But first we need to get some machines
+
+00:05:23.645 --> 00:05:24.365
+<v Speaker 0>running.
+
+00:05:24.925 --> 00:05:28.445
+<v Speaker 0>We have a shared Versus code terminal. I
+
+00:05:28.445 --> 00:05:30.765
+<v Speaker 0>can type, Steve can type too hopefully.
+
+00:05:32.290 --> 00:05:33.970
+<v Speaker 0>Say hello. There we go.
+
+00:05:34.450 --> 00:05:37.090
+<v Speaker 0>Guest user. Wow, you're not even logged in.
+
+00:05:37.730 --> 00:05:38.370
+<v Speaker 0>Okay.
+
+00:05:39.650 --> 00:05:42.130
+<v Speaker 0>And we have an empty
+
+00:05:42.370 --> 00:05:45.405
+<v Speaker 0>perimeter entry. We have nothing here whatsoever and
+
+00:05:45.405 --> 00:05:47.485
+<v Speaker 0>we have that same repository that I have
+
+00:05:47.485 --> 00:05:48.525
+<v Speaker 0>fought here.
+
+00:05:49.325 --> 00:05:50.685
+<v Speaker 0>So step one,
+
+00:05:51.885 --> 00:05:54.365
+<v Speaker 0>as we're gonna create a new Pulumi project.
+
+00:05:54.525 --> 00:05:56.605
+<v Speaker 0>I'm gonna walk through the process, explain the
+
+00:05:56.605 --> 00:05:57.965
+<v Speaker 0>decisions that I'm making as I go.
+
+00:05:59.060 --> 00:06:00.900
+<v Speaker 0>Just prod me with questions. Anything that I've
+
+00:06:00.900 --> 00:06:02.580
+<v Speaker 0>not explained or whatever, you know, fire to
+
+00:06:02.580 --> 00:06:04.260
+<v Speaker 0>me. And of course, if you're watching at
+
+00:06:04.260 --> 00:06:05.940
+<v Speaker 0>home, please use either
+
+00:06:06.180 --> 00:06:08.580
+<v Speaker 0>the discord chat or the YouTube comments to
+
+00:06:08.580 --> 00:06:10.420
+<v Speaker 0>throw your questions and we'll do our best
+
+00:06:10.420 --> 00:06:11.780
+<v Speaker 0>to tackle them as we go.
+
+00:06:12.420 --> 00:06:14.505
+<v Speaker 0>And it would probably help if I made
+
+00:06:14.505 --> 00:06:17.145
+<v Speaker 0>the discord chat visible. There we go. Hey,
+
+00:06:17.145 --> 00:06:19.785
+<v Speaker 0>Duffy's joined us there too. Nice. Okay.
+
+00:06:21.225 --> 00:06:22.425
+<v Speaker 0>Let's see if I can work out this
+
+00:06:22.425 --> 00:06:24.905
+<v Speaker 0>Pulumi thing. So if I remember correctly, we
+
+00:06:24.905 --> 00:06:26.585
+<v Speaker 0>could do a Pulumi new and it's got
+
+00:06:26.585 --> 00:06:28.960
+<v Speaker 0>like this nice little CLI based wizard that
+
+00:06:28.960 --> 00:06:30.400
+<v Speaker 0>runs a certain new project.
+
+00:06:32.160 --> 00:06:33.760
+<v Speaker 0>Now one of the questions I always get
+
+00:06:33.760 --> 00:06:36.000
+<v Speaker 0>from people is why am I using Pulumi
+
+00:06:36.000 --> 00:06:37.920
+<v Speaker 0>and why am I not using terraform?
+
+00:06:38.320 --> 00:06:39.600
+<v Speaker 0>Really I should have queued up for you
+
+00:06:39.600 --> 00:06:41.065
+<v Speaker 0>to ask me that right but doesn't matter.
+
+00:06:41.065 --> 00:06:41.785
+<v Speaker 1>That my
+
+00:06:42.505 --> 00:06:44.185
+<v Speaker 1>go to question. Okay
+
+00:06:45.785 --> 00:06:48.345
+<v Speaker 0>so there are a couple of reasons I
+
+00:06:48.345 --> 00:06:50.345
+<v Speaker 0>really like Pulumi,
+
+00:06:50.745 --> 00:06:52.105
+<v Speaker 0>one of them is I get to use
+
+00:06:52.105 --> 00:06:54.825
+<v Speaker 0>my programming language of choice and I think
+
+00:06:54.825 --> 00:06:56.690
+<v Speaker 0>that is super valuable
+
+00:06:57.010 --> 00:06:59.250
+<v Speaker 0>and you know as much as we,
+
+00:06:59.490 --> 00:07:02.130
+<v Speaker 0>we want our infrastructure provision and to be
+
+00:07:02.610 --> 00:07:04.530
+<v Speaker 0>a simple API where I just say give
+
+00:07:04.530 --> 00:07:06.370
+<v Speaker 0>me a machine as it generally we're doing
+
+00:07:06.370 --> 00:07:07.810
+<v Speaker 0>a little bit more with that and having
+
+00:07:07.810 --> 00:07:10.770
+<v Speaker 0>a programming language available for loops and filters
+
+00:07:10.770 --> 00:07:12.035
+<v Speaker 0>and maps etcetera
+
+00:07:12.675 --> 00:07:13.875
+<v Speaker 0>gets really handy.
+
+00:07:14.675 --> 00:07:17.235
+<v Speaker 0>The other really secret amazing just not secret,
+
+00:07:17.235 --> 00:07:18.755
+<v Speaker 0>the other really super awesome thing about using
+
+00:07:18.755 --> 00:07:20.435
+<v Speaker 0>the real programming language is that I can
+
+00:07:20.435 --> 00:07:23.074
+<v Speaker 0>then take common bits of logic through them
+
+00:07:23.074 --> 00:07:25.155
+<v Speaker 0>and encapsulate them in a function and then
+
+00:07:25.155 --> 00:07:27.310
+<v Speaker 0>we use it. I do that all the
+
+00:07:27.310 --> 00:07:27.870
+<v Speaker 0>time
+
+00:07:28.990 --> 00:07:30.910
+<v Speaker 0>and you know I'm just gonna keep throwing
+
+00:07:30.910 --> 00:07:32.830
+<v Speaker 0>more reasons out because they're popping into my
+
+00:07:32.830 --> 00:07:35.470
+<v Speaker 0>head but Pulumi also has the ability to
+
+00:07:35.470 --> 00:07:38.430
+<v Speaker 0>like wrap terraform providers as well so you
+
+00:07:38.430 --> 00:07:40.884
+<v Speaker 0>don't really lose any functionality by using Pulumi.
+
+00:07:40.884 --> 00:07:42.965
+<v Speaker 0>If there's a terraform provider out there, you
+
+00:07:42.965 --> 00:07:45.125
+<v Speaker 0>can generate the Pulumi wrapper that allows you
+
+00:07:45.125 --> 00:07:46.805
+<v Speaker 0>to consume it as well, which is great.
+
+00:07:47.044 --> 00:07:49.284
+<v Speaker 0>And there's that wonderful discord bug where object
+
+00:07:49.284 --> 00:07:51.525
+<v Speaker 0>objects is now talking. So So is is
+
+00:07:51.525 --> 00:07:53.125
+<v Speaker 1>there a is there a kind of command
+
+00:07:53.125 --> 00:07:54.805
+<v Speaker 1>that will allow you to be able to
+
+00:07:55.044 --> 00:07:57.460
+<v Speaker 1>take a existing provider and and wrap it?
+
+00:07:57.460 --> 00:07:59.300
+<v Speaker 1>Is that built into the Pulumi
+
+00:07:59.380 --> 00:08:00.260
+<v Speaker 1>CLI?
+
+00:08:00.740 --> 00:08:02.820
+<v Speaker 0>It's not built into the Pulumi CLI
+
+00:08:02.820 --> 00:08:03.700
+<v Speaker 0>unfortunately.
+
+00:08:05.460 --> 00:08:07.540
+<v Speaker 0>There is let me just pull it up.
+
+00:08:07.540 --> 00:08:09.699
+<v Speaker 0>Right? This is the wonderful thing about the
+
+00:08:09.699 --> 00:08:11.380
+<v Speaker 0>Internet. Everything is a few clicks away.
+
+00:08:12.215 --> 00:08:14.615
+<v Speaker 0>So there is a tf
+
+00:08:14.615 --> 00:08:15.415
+<v Speaker 0>something.
+
+00:08:16.375 --> 00:08:18.055
+<v Speaker 0>Oh yeah, so there's a few projects here
+
+00:08:18.055 --> 00:08:19.575
+<v Speaker 0>that's probably worth mentioning.
+
+00:08:19.895 --> 00:08:21.415
+<v Speaker 0>There's a tf to Pulumi so you can
+
+00:08:21.415 --> 00:08:24.215
+<v Speaker 0>actually generate Pulumi code from Terraform
+
+00:08:24.830 --> 00:08:25.949
+<v Speaker 0>HCL then
+
+00:08:26.830 --> 00:08:29.069
+<v Speaker 0>there's the provider boilerplate so this is the
+
+00:08:29.069 --> 00:08:31.229
+<v Speaker 0>repository that allows you you'd basically just fork
+
+00:08:31.229 --> 00:08:33.630
+<v Speaker 0>this and then tell it the Terraform provider
+
+00:08:33.630 --> 00:08:35.470
+<v Speaker 0>and then do some Go code and it
+
+00:08:35.470 --> 00:08:36.934
+<v Speaker 0>generates all the bits and pieces that you
+
+00:08:36.934 --> 00:08:38.534
+<v Speaker 0>need and it kind of just works.
+
+00:08:39.334 --> 00:08:42.054
+<v Speaker 0>I'm sure I'm oversimplifying it, it does take
+
+00:08:42.054 --> 00:08:43.654
+<v Speaker 0>a little bit of effort but it does
+
+00:08:43.654 --> 00:08:45.335
+<v Speaker 0>pay back handsomely.
+
+00:08:46.695 --> 00:08:47.575
+<v Speaker 0>Alright,
+
+00:08:47.654 --> 00:08:50.935
+<v Speaker 0>so today we are gonna do
+
+00:08:54.940 --> 00:08:58.060
+<v Speaker 0>I've forgotten who I work for. Sorry. Equinix
+
+00:08:58.060 --> 00:09:00.780
+<v Speaker 0>metal. So yeah Equinix metal is in this
+
+00:09:00.780 --> 00:09:03.580
+<v Speaker 0>weird stage where the providers always called packet
+
+00:09:03.900 --> 00:09:05.740
+<v Speaker 0>and we've not renamed everything yet to Equinix
+
+00:09:05.740 --> 00:09:08.074
+<v Speaker 0>metal because obviously that's really tough to rename
+
+00:09:08.074 --> 00:09:10.154
+<v Speaker 0>packages that are being openly available for so
+
+00:09:10.154 --> 00:09:12.074
+<v Speaker 0>long. So what I'm actually gonna do is
+
+00:09:12.074 --> 00:09:14.074
+<v Speaker 0>just create a very generic TypeScript one and
+
+00:09:14.074 --> 00:09:15.834
+<v Speaker 0>then I'll I'll drop in the Equinix metal
+
+00:09:15.834 --> 00:09:16.555
+<v Speaker 0>provider.
+
+00:09:18.154 --> 00:09:21.194
+<v Speaker 0>Okay, so project name we'll call this
+
+00:09:21.589 --> 00:09:23.350
+<v Speaker 0>get ops not high ops
+
+00:09:24.310 --> 00:09:26.630
+<v Speaker 0>description I'm not fussed about and I realized
+
+00:09:26.630 --> 00:09:28.230
+<v Speaker 0>I've made a mistake already.
+
+00:09:28.470 --> 00:09:30.550
+<v Speaker 0>Pulumi login local.
+
+00:09:30.790 --> 00:09:32.550
+<v Speaker 0>Let me explain this too. So
+
+00:09:33.829 --> 00:09:36.735
+<v Speaker 0>Pulumi and Terraform both have state files, Hopefully
+
+00:09:36.735 --> 00:09:38.175
+<v Speaker 0>I don't need to kind of explain that
+
+00:09:38.175 --> 00:09:40.175
+<v Speaker 0>to anyone like when you create resources it
+
+00:09:40.175 --> 00:09:41.135
+<v Speaker 0>has some
+
+00:09:41.455 --> 00:09:44.415
+<v Speaker 0>state that understands what resources were created, what
+
+00:09:44.415 --> 00:09:46.895
+<v Speaker 0>condition they're in and how to reconcile them.
+
+00:09:47.695 --> 00:09:50.655
+<v Speaker 0>Pulumi provides a managed service much like HashiCorp
+
+00:09:50.655 --> 00:09:52.300
+<v Speaker 0>do where they can store the state for
+
+00:09:52.300 --> 00:09:54.380
+<v Speaker 0>you and handle locking and you know our
+
+00:09:54.380 --> 00:09:56.220
+<v Speaker 0>back and stuff like that for today I'm
+
+00:09:56.220 --> 00:09:57.500
+<v Speaker 0>not gonna use that so that's why I'm
+
+00:09:57.500 --> 00:09:58.780
+<v Speaker 0>just doing a login local
+
+00:09:59.340 --> 00:10:00.380
+<v Speaker 0>and
+
+00:10:00.380 --> 00:10:02.620
+<v Speaker 0>I'm gonna then just recreate my project
+
+00:10:02.780 --> 00:10:04.700
+<v Speaker 0>and then now I've got a non empty
+
+00:10:04.700 --> 00:10:05.580
+<v Speaker 0>thing so
+
+00:10:06.185 --> 00:10:07.625
+<v Speaker 0>off to a crack and start.
+
+00:10:09.945 --> 00:10:11.785
+<v Speaker 1>This is how every project starts. Right? You
+
+00:10:11.785 --> 00:10:14.745
+<v Speaker 0>know, the initial bootstrapping, that's what we're talking
+
+00:10:14.745 --> 00:10:15.305
+<v Speaker 1>about.
+
+00:10:15.945 --> 00:10:16.665
+<v Speaker 0>Exactly.
+
+00:10:16.985 --> 00:10:18.425
+<v Speaker 0>So text script,
+
+00:10:20.080 --> 00:10:20.960
+<v Speaker 0>get ops.
+
+00:10:21.440 --> 00:10:22.080
+<v Speaker 0>Yes.
+
+00:10:22.320 --> 00:10:23.600
+<v Speaker 0>My stack name,
+
+00:10:24.240 --> 00:10:26.160
+<v Speaker 0>we're just gonna go straight into production
+
+00:10:27.520 --> 00:10:28.320
+<v Speaker 0>and
+
+00:10:28.880 --> 00:10:29.520
+<v Speaker 0>because
+
+00:10:29.840 --> 00:10:32.800
+<v Speaker 0>another really cool thing about Pulumi is it
+
+00:10:32.800 --> 00:10:36.320
+<v Speaker 0>enables get ops by default and that it
+
+00:10:34.925 --> 00:10:35.964
+<v Speaker 0>already
+
+00:10:35.964 --> 00:10:37.964
+<v Speaker 0>ships web secret support.
+
+00:10:38.285 --> 00:10:40.045
+<v Speaker 0>So when I provide a password here, this
+
+00:10:40.045 --> 00:10:41.725
+<v Speaker 0>is actually gonna be used because I'm in
+
+00:10:41.725 --> 00:10:43.165
+<v Speaker 0>Pulumi local mode,
+
+00:10:43.564 --> 00:10:45.725
+<v Speaker 0>gonna be used to encrypt all the secrets
+
+00:10:45.725 --> 00:10:47.485
+<v Speaker 0>that we store inside of the repository.
+
+00:10:49.070 --> 00:10:50.269
+<v Speaker 0>If I was just in
+
+00:10:51.709 --> 00:10:52.589
+<v Speaker 0>Pulumi
+
+00:10:52.589 --> 00:10:53.390
+<v Speaker 0>cloud,
+
+00:10:53.790 --> 00:10:55.550
+<v Speaker 0>sorry they call it Pulumi teams
+
+00:10:55.790 --> 00:10:58.269
+<v Speaker 0>or if I had another cloud provider like
+
+00:10:58.269 --> 00:11:01.389
+<v Speaker 0>AWS, GCP or Azure available or even vault,
+
+00:11:01.389 --> 00:11:03.550
+<v Speaker 0>I can use those as KMS
+
+00:11:03.925 --> 00:11:06.325
+<v Speaker 0>instead of a password here but those all
+
+00:11:06.325 --> 00:11:08.565
+<v Speaker 0>take time to configure and we're doing this
+
+00:11:08.565 --> 00:11:10.165
+<v Speaker 0>the hacky way today. So
+
+00:11:10.965 --> 00:11:11.845
+<v Speaker 0>password
+
+00:11:13.285 --> 00:11:14.165
+<v Speaker 0>something
+
+00:11:15.365 --> 00:11:16.885
+<v Speaker 0>probably shouldn't say that out.
+
+00:11:17.685 --> 00:11:18.005
+<v Speaker 0>Anyway.
+
+00:11:19.330 --> 00:11:21.410
+<v Speaker 1>Unless it's actually the word something.
+
+00:11:21.970 --> 00:11:23.490
+<v Speaker 0>No it was not that it was password
+
+00:11:23.490 --> 00:11:24.210
+<v Speaker 0>and then
+
+00:11:24.530 --> 00:11:26.770
+<v Speaker 0>wasn't one two three, wasn't four five six
+
+00:11:26.770 --> 00:11:28.370
+<v Speaker 0>or seven eight nine you know, I'm not
+
+00:11:28.370 --> 00:11:30.785
+<v Speaker 0>that much of a cowboy but it's close.
+
+00:11:32.865 --> 00:11:34.785
+<v Speaker 0>So let's see what we're dealing with now.
+
+00:11:34.785 --> 00:11:35.264
+<v Speaker 0>We
+
+00:11:37.185 --> 00:11:39.665
+<v Speaker 0>have a Pulumi. Yaml that describes our Pulumi
+
+00:11:39.665 --> 00:11:40.305
+<v Speaker 0>project.
+
+00:11:40.545 --> 00:11:42.545
+<v Speaker 0>We have a stack file,
+
+00:11:43.024 --> 00:11:45.540
+<v Speaker 0>so Pulumi has stacks much like Terraform, this
+
+00:11:45.540 --> 00:11:47.620
+<v Speaker 0>is our production stack file, this is where
+
+00:11:47.620 --> 00:11:50.180
+<v Speaker 0>we can store a configuration and secrets for
+
+00:11:50.180 --> 00:11:51.140
+<v Speaker 0>that stack.
+
+00:11:51.700 --> 00:11:53.459
+<v Speaker 0>We also have an index dot TS which
+
+00:11:53.459 --> 00:11:56.180
+<v Speaker 0>was generated for its upfront which just pulls
+
+00:11:56.180 --> 00:11:57.940
+<v Speaker 0>on the Pulumi module, now I can begin
+
+00:11:57.940 --> 00:11:59.700
+<v Speaker 0>to create Pulumi resources.
+
+00:12:00.715 --> 00:12:02.475
+<v Speaker 1>So is this stack in this regards kind
+
+00:12:02.475 --> 00:12:04.075
+<v Speaker 1>of like a module in Terraform or is
+
+00:12:04.075 --> 00:12:05.995
+<v Speaker 1>it a is it an encapsulation of many
+
+00:12:05.995 --> 00:12:06.635
+<v Speaker 1>modules?
+
+00:12:09.195 --> 00:12:10.475
+<v Speaker 0>Can you say that again?
+
+00:12:11.035 --> 00:12:12.315
+<v Speaker 1>So in
+
+00:12:12.315 --> 00:12:14.235
+<v Speaker 1>in Pulumi world is a stack.
+
+00:12:15.620 --> 00:12:18.420
+<v Speaker 1>Does a stack equal a module in Terraform,
+
+00:12:18.420 --> 00:12:20.340
+<v Speaker 1>or does it equal the
+
+00:12:20.900 --> 00:12:23.540
+<v Speaker 1>execution of one or more modules that kind
+
+00:12:23.540 --> 00:12:25.780
+<v Speaker 1>of come together before create
+
+00:12:25.780 --> 00:12:28.100
+<v Speaker 1>your infrastructure or whatever that thing is that
+
+00:12:28.100 --> 00:12:28.980
+<v Speaker 1>you're trying to
+
+00:12:29.380 --> 00:12:29.700
+<v Speaker 1>configure?
+
+00:12:30.455 --> 00:12:32.535
+<v Speaker 0>Yeah. So a stacks like an environment dev
+
+00:12:32.535 --> 00:12:35.655
+<v Speaker 0>station production, it can consume multiple modules, multiple
+
+00:12:35.655 --> 00:12:39.095
+<v Speaker 0>Terraform modules, multiple multiple Pulumi modules, etcetera.
+
+00:12:39.655 --> 00:12:42.135
+<v Speaker 0>And Paul's corrected me. Paul works. That's the
+
+00:12:42.135 --> 00:12:43.335
+<v Speaker 1>one I was looking for. Yeah.
+
+00:12:44.455 --> 00:12:46.680
+<v Speaker 0>Terraform has work species. I'm just so embedded
+
+00:12:46.680 --> 00:12:47.959
+<v Speaker 0>in the Pulumi way of life now that
+
+00:12:47.959 --> 00:12:49.800
+<v Speaker 0>I don't even remember how to Terraform to
+
+00:12:49.800 --> 00:12:51.000
+<v Speaker 0>be fair. Anyway,
+
+00:12:51.639 --> 00:12:53.480
+<v Speaker 0>we also have a couple more. So we
+
+00:12:53.480 --> 00:12:55.399
+<v Speaker 0>got a hello heritage.
+
+00:12:56.360 --> 00:12:58.845
+<v Speaker 0>Don't know why Duffy is in RimRath.
+
+00:12:58.845 --> 00:13:00.445
+<v Speaker 0>I don't know if that's important but
+
+00:13:05.725 --> 00:13:07.085
+<v Speaker 0>Let's get back to it. See if I
+
+00:13:07.085 --> 00:13:08.685
+<v Speaker 0>can remember how to Pulumi now. Now the
+
+00:13:08.685 --> 00:13:10.360
+<v Speaker 0>first thing and I'm glad Paul's watching because
+
+00:13:10.360 --> 00:13:11.640
+<v Speaker 0>I do this in every stack and it's
+
+00:13:11.640 --> 00:13:12.360
+<v Speaker 0>so annoying.
+
+00:13:12.760 --> 00:13:14.360
+<v Speaker 0>I don't want my code
+
+00:13:14.920 --> 00:13:17.400
+<v Speaker 0>to be an index. Ts in my root
+
+00:13:17.400 --> 00:13:19.800
+<v Speaker 0>project right? I know user go developers but
+
+00:13:19.800 --> 00:13:21.080
+<v Speaker 0>it's
+
+00:13:21.080 --> 00:13:23.080
+<v Speaker 0>messy so I always move it into a
+
+00:13:23.080 --> 00:13:25.035
+<v Speaker 0>source folder and update the Pulumi. Yaml to
+
+00:13:25.035 --> 00:13:26.315
+<v Speaker 0>tell it that the main file lives in
+
+00:13:26.315 --> 00:13:27.835
+<v Speaker 0>there and it's such this is one of
+
+00:13:27.835 --> 00:13:29.675
+<v Speaker 0>those wee small things that always create something
+
+00:13:29.675 --> 00:13:30.955
+<v Speaker 0>in every new project.
+
+00:13:31.355 --> 00:13:33.435
+<v Speaker 0>That's my mild rant done.
+
+00:13:33.835 --> 00:13:34.395
+<v Speaker 0>So
+
+00:13:35.035 --> 00:13:37.269
+<v Speaker 0>now we're in position, in fact we could
+
+00:13:37.269 --> 00:13:38.470
+<v Speaker 0>probably just run
+
+00:13:38.870 --> 00:13:40.790
+<v Speaker 0>pulumi up with nothing
+
+00:13:44.870 --> 00:13:46.389
+<v Speaker 0>good someone's at my door, my dog is
+
+00:13:46.389 --> 00:13:47.910
+<v Speaker 0>going wild but I'm sure someone else will
+
+00:13:47.910 --> 00:13:48.310
+<v Speaker 0>handle it.
+
+00:13:49.964 --> 00:13:51.404
+<v Speaker 0>And we can let go
+
+00:13:51.565 --> 00:13:53.165
+<v Speaker 0>and this is just creating a stack, there's
+
+00:13:53.165 --> 00:13:55.005
+<v Speaker 0>no resources and nothing for it to actually
+
+00:13:55.005 --> 00:13:55.885
+<v Speaker 0>do here.
+
+00:13:57.884 --> 00:13:58.845
+<v Speaker 0>It's all good.
+
+00:13:59.165 --> 00:14:00.685
+<v Speaker 0>So let's make it do something.
+
+00:14:02.764 --> 00:14:05.279
+<v Speaker 0>What we wanted to know is add a
+
+00:14:05.279 --> 00:14:06.000
+<v Speaker 0>provider.
+
+00:14:06.720 --> 00:14:08.959
+<v Speaker 0>So when we created a project, all we
+
+00:14:08.959 --> 00:14:11.279
+<v Speaker 0>selected was TypeScript. We never told any providers
+
+00:14:11.279 --> 00:14:12.880
+<v Speaker 0>that we actually want access to.
+
+00:14:13.279 --> 00:14:14.800
+<v Speaker 0>So we can
+
+00:14:16.320 --> 00:14:19.040
+<v Speaker 0>come to
+
+00:14:21.505 --> 00:14:23.105
+<v Speaker 0>type metal
+
+00:14:24.464 --> 00:14:26.065
+<v Speaker 0>and this is the
+
+00:14:26.305 --> 00:14:28.545
+<v Speaker 0>Equinix metal polymer provider.
+
+00:14:29.985 --> 00:14:31.745
+<v Speaker 0>And I am just going to copy.
+
+00:14:33.889 --> 00:14:35.170
+<v Speaker 0>I don't even know if I have yarn
+
+00:14:35.170 --> 00:14:36.529
+<v Speaker 0>or NPM installed
+
+00:14:38.130 --> 00:14:39.569
+<v Speaker 0>and I don't wanna create a next dot
+
+00:14:39.569 --> 00:14:41.410
+<v Speaker 0>shell so we're just gonna hope.
+
+00:14:42.690 --> 00:14:44.690
+<v Speaker 0>Yeah, NPM looks green there so I think
+
+00:14:44.690 --> 00:14:46.964
+<v Speaker 0>we're okay. So I'm gonna add the provider.
+
+00:14:47.285 --> 00:14:48.644
+<v Speaker 0>The next thing I need to do is
+
+00:14:48.644 --> 00:14:49.685
+<v Speaker 0>get my
+
+00:14:51.285 --> 00:14:52.325
+<v Speaker 0>off token
+
+00:14:52.565 --> 00:14:53.925
+<v Speaker 0>which is also just in the docs here
+
+00:14:53.925 --> 00:14:55.605
+<v Speaker 0>and I'm not really doing anything
+
+00:14:56.325 --> 00:14:58.245
+<v Speaker 0>magic here but we have to provide us
+
+00:14:58.245 --> 00:14:59.580
+<v Speaker 0>so that knows how to speak with the
+
+00:14:59.580 --> 00:15:00.300
+<v Speaker 0>API.
+
+00:15:00.700 --> 00:15:03.260
+<v Speaker 0>Now I'll show adding the secret to our
+
+00:15:03.260 --> 00:15:05.900
+<v Speaker 0>stack through the galaxy fashion but obviously I'm
+
+00:15:05.900 --> 00:15:08.220
+<v Speaker 0>not going to show you my API token.
+
+00:15:08.220 --> 00:15:10.140
+<v Speaker 0>So I'm gonna jump over to my other
+
+00:15:11.340 --> 00:15:12.620
+<v Speaker 0>monitor
+
+00:15:14.315 --> 00:15:16.075
+<v Speaker 0>and see a Pulumi
+
+00:15:16.075 --> 00:15:16.875
+<v Speaker 0>token.
+
+00:15:21.675 --> 00:15:24.635
+<v Speaker 0>Alright. So because we got secrets management
+
+00:15:24.635 --> 00:15:27.675
+<v Speaker 0>here we can do Pulumi config
+
+00:15:28.060 --> 00:15:28.940
+<v Speaker 0>set
+
+00:15:29.100 --> 00:15:30.060
+<v Speaker 0>secret
+
+00:15:30.459 --> 00:15:31.899
+<v Speaker 0>Equinix metal
+
+00:15:32.060 --> 00:15:34.540
+<v Speaker 0>off token and that should just match what
+
+00:15:34.540 --> 00:15:35.339
+<v Speaker 0>we have here.
+
+00:15:35.740 --> 00:15:37.500
+<v Speaker 0>Yep. I don't think I've messed that up.
+
+00:15:37.740 --> 00:15:38.940
+<v Speaker 0>We can hit return.
+
+00:15:39.339 --> 00:15:41.019
+<v Speaker 0>I should be able to paste this in
+
+00:15:41.575 --> 00:15:43.335
+<v Speaker 0>and we need the password so that gets
+
+00:15:43.335 --> 00:15:44.615
+<v Speaker 0>encrypted correctly.
+
+00:15:46.215 --> 00:15:48.695
+<v Speaker 1>So does Pulumi not preset your password that
+
+00:15:48.695 --> 00:15:50.855
+<v Speaker 1>you set the first time when we started
+
+00:15:50.855 --> 00:15:51.735
+<v Speaker 1>the local?
+
+00:15:52.615 --> 00:15:54.300
+<v Speaker 1>Do you have to add it every time?
+
+00:15:54.300 --> 00:15:56.459
+<v Speaker 0>So I can export it to my shell
+
+00:15:57.180 --> 00:15:59.500
+<v Speaker 0>Yeah. Which would avoid me typing it every
+
+00:15:59.500 --> 00:16:00.459
+<v Speaker 0>time but
+
+00:16:01.500 --> 00:16:03.100
+<v Speaker 0>yeah, it's not a big deal. Like, I
+
+00:16:03.100 --> 00:16:04.620
+<v Speaker 0>don't mind typing it. It's
+
+00:16:05.180 --> 00:16:06.540
+<v Speaker 0>it's not too bad. So
+
+00:16:07.180 --> 00:16:08.380
+<v Speaker 0>what does that look like in our stack
+
+00:16:08.380 --> 00:16:09.315
+<v Speaker 0>file? Well,
+
+00:16:09.714 --> 00:16:11.714
+<v Speaker 0>we can open this up and we can
+
+00:16:11.714 --> 00:16:13.795
+<v Speaker 0>see here we have some secure value,
+
+00:16:14.595 --> 00:16:16.115
+<v Speaker 0>which is our encrypted
+
+00:16:16.115 --> 00:16:17.795
+<v Speaker 0>Equinix metal off token.
+
+00:16:18.355 --> 00:16:20.355
+<v Speaker 0>If we look at our package dot JSON,
+
+00:16:20.355 --> 00:16:22.195
+<v Speaker 0>we have our Equinix metal provider.
+
+00:16:22.514 --> 00:16:22.834
+<v Speaker 0>So
+
+00:16:25.399 --> 00:16:28.120
+<v Speaker 0>what changes read me TS config should be
+
+00:16:28.120 --> 00:16:28.680
+<v Speaker 0>alright.
+
+00:16:29.000 --> 00:16:31.399
+<v Speaker 0>So now we're gonna write some preliminary code,
+
+00:16:31.399 --> 00:16:33.080
+<v Speaker 0>let's actually spin up a device.
+
+00:16:35.560 --> 00:16:37.480
+<v Speaker 0>So this is TypeScript,
+
+00:16:37.480 --> 00:16:39.455
+<v Speaker 0>the reason I like using this is it's
+
+00:16:39.455 --> 00:16:40.575
+<v Speaker 0>really easy to
+
+00:16:40.895 --> 00:16:43.535
+<v Speaker 0>kinda get strict types that I can pass
+
+00:16:43.535 --> 00:16:45.935
+<v Speaker 0>around and functions and you know get some
+
+00:16:45.935 --> 00:16:47.775
+<v Speaker 0>sort of safety guarantees but at the same
+
+00:16:47.775 --> 00:16:49.375
+<v Speaker 0>time working with JSON is not as painful
+
+00:16:49.375 --> 00:16:50.510
+<v Speaker 0>as as we go.
+
+00:16:51.550 --> 00:16:52.510
+<v Speaker 0>We're gonna create a new
+
+00:16:54.350 --> 00:16:55.630
+<v Speaker 1>I said how day?
+
+00:16:56.670 --> 00:16:58.830
+<v Speaker 0>I I really like go for some things
+
+00:16:58.830 --> 00:17:00.190
+<v Speaker 0>right but
+
+00:17:00.350 --> 00:17:03.070
+<v Speaker 0>juggling JSON or any kind of structured config
+
+00:17:03.070 --> 00:17:04.430
+<v Speaker 0>is not as strong so
+
+00:17:05.405 --> 00:17:07.004
+<v Speaker 1>I hear you. Yeah.
+
+00:17:07.484 --> 00:17:09.165
+<v Speaker 0>I've forgotten how to code. Oh yeah. We
+
+00:17:09.165 --> 00:17:10.524
+<v Speaker 0>need to import our provider.
+
+00:17:12.045 --> 00:17:15.164
+<v Speaker 0>So let's get import as metal from,
+
+00:17:15.645 --> 00:17:17.244
+<v Speaker 0>we pull in our provider.
+
+00:17:17.724 --> 00:17:20.119
+<v Speaker 0>I can now do a new metal
+
+00:17:21.079 --> 00:17:21.880
+<v Speaker 0>device
+
+00:17:21.880 --> 00:17:24.279
+<v Speaker 0>see and again nice auto complete here.
+
+00:17:25.480 --> 00:17:27.799
+<v Speaker 0>I've never really had successful auto complete on
+
+00:17:27.799 --> 00:17:29.080
+<v Speaker 0>Golang to be fair
+
+00:17:30.200 --> 00:17:32.279
+<v Speaker 0>but that's a rant for another day. So
+
+00:17:32.279 --> 00:17:34.360
+<v Speaker 0>this is our get ops machine
+
+00:17:35.285 --> 00:17:37.285
+<v Speaker 0>and that takes a device args, I have
+
+00:17:37.285 --> 00:17:39.045
+<v Speaker 0>no idea what device args is yet, so
+
+00:17:39.045 --> 00:17:40.404
+<v Speaker 0>I'm just gonna pop open
+
+00:17:40.804 --> 00:17:43.445
+<v Speaker 0>an empty JSON object and then trust the
+
+00:17:43.445 --> 00:17:45.764
+<v Speaker 0>IO complete to lead me through this. So
+
+00:17:46.085 --> 00:17:47.365
+<v Speaker 0>bell and cycle
+
+00:17:48.245 --> 00:17:49.200
+<v Speaker 0>will be
+
+00:17:50.240 --> 00:17:52.480
+<v Speaker 0>Bell and Cycle and all the types are
+
+00:17:52.480 --> 00:17:54.160
+<v Speaker 0>here as well. This is another reason I
+
+00:17:54.160 --> 00:17:56.080
+<v Speaker 0>really like the TypeScript SDK.
+
+00:17:56.240 --> 00:17:58.480
+<v Speaker 0>It's just all there like I'm,
+
+00:17:58.799 --> 00:18:00.960
+<v Speaker 0>I'm not actually coding, I'm really just all
+
+00:18:00.960 --> 00:18:02.160
+<v Speaker 0>completing my way through this.
+
+00:18:08.025 --> 00:18:09.625
+<v Speaker 0>Really suck if my boss found out I
+
+00:18:09.625 --> 00:18:13.225
+<v Speaker 0>can't actually code so I'm
+
+00:18:13.225 --> 00:18:14.905
+<v Speaker 0>just gonna speed up a little bit because
+
+00:18:14.905 --> 00:18:17.225
+<v Speaker 0>it's not particularly exciting.
+
+00:18:17.945 --> 00:18:18.345
+<v Speaker 0>Let's see.
+
+00:18:20.330 --> 00:18:23.049
+<v Speaker 0>Throw in all these required fields.
+
+00:18:25.370 --> 00:18:28.010
+<v Speaker 0>C three medium should be alright hopefully. Project
+
+00:18:28.010 --> 00:18:29.530
+<v Speaker 0>ID we don't have yet, so we can
+
+00:18:29.530 --> 00:18:30.809
+<v Speaker 0>talk about config.
+
+00:18:32.090 --> 00:18:33.575
+<v Speaker 0>What else do I need?
+
+00:18:34.295 --> 00:18:35.335
+<v Speaker 0>User data.
+
+00:18:36.295 --> 00:18:37.015
+<v Speaker 0>Alright.
+
+00:18:39.495 --> 00:18:40.455
+<v Speaker 0>So that's
+
+00:18:40.695 --> 00:18:42.855
+<v Speaker 0>pretty much it. I'm gonna tweak the last
+
+00:18:42.855 --> 00:18:44.775
+<v Speaker 0>few things as I talk about them. So
+
+00:18:46.620 --> 00:18:48.780
+<v Speaker 0>first of all we've got this thing called
+
+00:18:48.780 --> 00:18:49.980
+<v Speaker 0>a project ID.
+
+00:18:50.780 --> 00:18:53.820
+<v Speaker 0>So what we actually want here is maybe
+
+00:18:53.820 --> 00:18:55.660
+<v Speaker 0>something that we would want to configure at
+
+00:18:55.660 --> 00:18:56.779
+<v Speaker 0>the stack level.
+
+00:18:57.260 --> 00:18:58.940
+<v Speaker 0>Excuse me. Like we may want to deploy
+
+00:18:58.940 --> 00:19:01.180
+<v Speaker 0>production to a different Equinix metal project
+
+00:19:01.555 --> 00:19:04.115
+<v Speaker 0>than we would our staging environment etcetera.
+
+00:19:06.755 --> 00:19:08.355
+<v Speaker 0>So let me pull up the Equinix metal
+
+00:19:08.355 --> 00:19:09.235
+<v Speaker 0>console.
+
+00:19:10.435 --> 00:19:12.275
+<v Speaker 0>Hopefully it logged me into the right one.
+
+00:19:12.275 --> 00:19:14.675
+<v Speaker 0>Yep. There's my Rawkode project. I don't know
+
+00:19:14.675 --> 00:19:16.595
+<v Speaker 0>if there's anything here. No, we're good. Okay.
+
+00:19:19.340 --> 00:19:21.820
+<v Speaker 0>And I'm gonna copy this project ID.
+
+00:19:23.260 --> 00:19:25.100
+<v Speaker 0>Now because I want this to be configurable,
+
+00:19:25.100 --> 00:19:27.179
+<v Speaker 0>I'm gonna do a config set.
+
+00:19:28.779 --> 00:19:30.059
+<v Speaker 0>It's not a secret so I don't need
+
+00:19:30.059 --> 00:19:31.659
+<v Speaker 0>to pass in the secret thing here. I'm
+
+00:19:31.659 --> 00:19:33.735
+<v Speaker 0>just gonna call this project ID.
+
+00:19:36.455 --> 00:19:37.015
+<v Speaker 0>And
+
+00:19:39.495 --> 00:19:41.335
+<v Speaker 0>all this does is drop it in here
+
+00:19:41.335 --> 00:19:44.775
+<v Speaker 0>it uses our Pulumi project get ops as
+
+00:19:44.775 --> 00:19:45.575
+<v Speaker 0>a prefix
+
+00:19:45.840 --> 00:19:47.760
+<v Speaker 0>to you know providers use their own key
+
+00:19:47.760 --> 00:19:48.239
+<v Speaker 0>here
+
+00:19:48.960 --> 00:19:50.559
+<v Speaker 0>and one of the things I also really
+
+00:19:50.559 --> 00:19:52.480
+<v Speaker 0>like about Pulumi and I won't spend,
+
+00:19:52.960 --> 00:19:54.240
+<v Speaker 0>don't want to shell it too much right
+
+00:19:54.240 --> 00:19:55.200
+<v Speaker 0>but it's really cool
+
+00:19:55.600 --> 00:19:58.720
+<v Speaker 0>is that these take arbitrary objects as well
+
+00:19:58.095 --> 00:20:00.174
+<v Speaker 0>like you know I could just do like
+
+00:20:02.655 --> 00:20:03.374
+<v Speaker 0>metal,
+
+00:20:04.095 --> 00:20:06.254
+<v Speaker 0>I could have my project ID here,
+
+00:20:06.655 --> 00:20:09.294
+<v Speaker 0>I could have my instant size,
+
+00:20:10.095 --> 00:20:12.575
+<v Speaker 0>I could really make all of this configurable
+
+00:20:12.575 --> 00:20:14.309
+<v Speaker 0>and then just load this object as a
+
+00:20:14.309 --> 00:20:16.629
+<v Speaker 0>single type inside of Pulumi but
+
+00:20:16.710 --> 00:20:17.509
+<v Speaker 0>don't need to do that right So
+
+00:20:23.350 --> 00:20:25.749
+<v Speaker 0>we've got a question from Paul,
+
+00:20:26.149 --> 00:20:28.549
+<v Speaker 0>he's asking why is the person from Pulumi
+
+00:20:28.549 --> 00:20:30.545
+<v Speaker 0>asking me a question about why I have
+
+00:20:30.545 --> 00:20:32.065
+<v Speaker 0>Pulumi? I guess it's good to understand why
+
+00:20:32.065 --> 00:20:35.105
+<v Speaker 0>users do things. Okay so why set the
+
+00:20:35.105 --> 00:20:36.625
+<v Speaker 0>value rather than making a request to look
+
+00:20:36.625 --> 00:20:37.585
+<v Speaker 0>up the project?
+
+00:20:38.305 --> 00:20:41.264
+<v Speaker 0>Yeah. That's a really good point. The
+
+00:20:41.745 --> 00:20:43.139
+<v Speaker 0>reason I don't do it is what what
+
+00:20:43.139 --> 00:20:44.820
+<v Speaker 0>Paul is suggesting is that I could do
+
+00:20:44.820 --> 00:20:45.859
+<v Speaker 0>project name
+
+00:20:46.899 --> 00:20:48.659
+<v Speaker 0>and just put Rawkode and then actually do
+
+00:20:48.659 --> 00:20:50.500
+<v Speaker 0>a lookup using the SDK to get the
+
+00:20:50.500 --> 00:20:52.659
+<v Speaker 0>ID rather than the store an ID to
+
+00:20:52.659 --> 00:20:54.659
+<v Speaker 0>me they're much the same and so I
+
+00:20:54.659 --> 00:20:56.244
+<v Speaker 0>just avoid a network quest.
+
+00:20:56.565 --> 00:20:58.725
+<v Speaker 0>That's it. No real brain or reason to
+
+00:20:58.725 --> 00:20:59.445
+<v Speaker 0>be fair.
+
+00:21:00.085 --> 00:21:01.525
+<v Speaker 0>Okay, so now we need to get our
+
+00:21:01.525 --> 00:21:03.684
+<v Speaker 0>project ID here, so what we need to
+
+00:21:03.684 --> 00:21:05.445
+<v Speaker 0>do is first get a config
+
+00:21:06.165 --> 00:21:07.605
+<v Speaker 0>from the Pulumi object
+
+00:21:09.170 --> 00:21:10.049
+<v Speaker 0>and
+
+00:21:10.530 --> 00:21:12.850
+<v Speaker 0>then we can define a
+
+00:21:14.210 --> 00:21:15.010
+<v Speaker 0>type,
+
+00:21:15.010 --> 00:21:16.610
+<v Speaker 0>so we'll call this my
+
+00:21:17.810 --> 00:21:18.610
+<v Speaker 0>config
+
+00:21:18.930 --> 00:21:21.169
+<v Speaker 0>and it's gonna have a project ID
+
+00:21:21.410 --> 00:21:22.850
+<v Speaker 0>which is a string
+
+00:21:24.765 --> 00:21:25.405
+<v Speaker 0>and
+
+00:21:26.925 --> 00:21:28.925
+<v Speaker 0>no, I didn't use an object. Sorry. That's
+
+00:21:28.925 --> 00:21:30.605
+<v Speaker 0>what I normally do. I'm just gonna do
+
+00:21:30.605 --> 00:21:31.565
+<v Speaker 0>project ID.
+
+00:21:33.245 --> 00:21:34.845
+<v Speaker 0>This is the pressure, that's what it is
+
+00:21:34.845 --> 00:21:36.125
+<v Speaker 0>and that's just a required
+
+00:21:36.365 --> 00:21:36.765
+<v Speaker 0>field.
+
+00:21:37.279 --> 00:21:39.679
+<v Speaker 0>So I can say my project ID is
+
+00:21:39.679 --> 00:21:42.240
+<v Speaker 0>what I want, nice and simple. You'll see
+
+00:21:42.240 --> 00:21:43.440
+<v Speaker 0>if we take a look at the config
+
+00:21:43.440 --> 00:21:44.159
+<v Speaker 0>thing here,
+
+00:21:44.640 --> 00:21:46.640
+<v Speaker 0>you know there's gets for things that are
+
+00:21:46.640 --> 00:21:48.880
+<v Speaker 0>optional, there's require billions like if I want
+
+00:21:48.880 --> 00:21:50.479
+<v Speaker 0>to do some sort of type enforcement,
+
+00:21:50.720 --> 00:21:52.745
+<v Speaker 0>there's require object if I am doing something
+
+00:21:52.745 --> 00:21:54.105
+<v Speaker 0>a bit more advanced and then there's secret
+
+00:21:54.105 --> 00:21:56.585
+<v Speaker 0>helpers too. So So can can you do
+
+00:21:56.585 --> 00:21:58.345
+<v Speaker 1>can you do a get and it works
+
+00:21:58.345 --> 00:21:59.784
+<v Speaker 1>out in the background if it's a secret
+
+00:21:59.784 --> 00:22:01.705
+<v Speaker 1>or not not a secret? Or do you
+
+00:22:01.705 --> 00:22:03.880
+<v Speaker 1>have to explicitly pass the get command if
+
+00:22:04.120 --> 00:22:05.559
+<v Speaker 1>like do you have to pass get secret
+
+00:22:05.559 --> 00:22:06.279
+<v Speaker 1>if you're
+
+00:22:06.520 --> 00:22:08.440
+<v Speaker 1>hoping to return a secret or you're looking
+
+00:22:08.440 --> 00:22:09.799
+<v Speaker 1>up a secret or can you just use
+
+00:22:09.799 --> 00:22:10.919
+<v Speaker 1>the generic get?
+
+00:22:11.320 --> 00:22:12.600
+<v Speaker 0>No. I I,
+
+00:22:12.760 --> 00:22:14.200
+<v Speaker 0>you know, I've never tried it but I
+
+00:22:14.200 --> 00:22:15.080
+<v Speaker 0>don't think it would work.
+
+00:22:16.695 --> 00:22:19.575
+<v Speaker 0>Maybe if Paul's watching, Paul's still watching he
+
+00:22:19.575 --> 00:22:20.374
+<v Speaker 0>can answer.
+
+00:22:20.855 --> 00:22:22.934
+<v Speaker 0>Okay, so we have our project ID here
+
+00:22:22.934 --> 00:22:24.855
+<v Speaker 0>now, project ID now so we can just
+
+00:22:24.855 --> 00:22:25.894
+<v Speaker 0>drop that in.
+
+00:22:27.015 --> 00:22:29.015
+<v Speaker 0>We want a host name so I'm just
+
+00:22:29.015 --> 00:22:30.690
+<v Speaker 0>gonna call this get ops, it's not very
+
+00:22:30.690 --> 00:22:31.570
+<v Speaker 0>interesting
+
+00:22:31.890 --> 00:22:33.409
+<v Speaker 0>and then the way that we provision the
+
+00:22:33.409 --> 00:22:35.250
+<v Speaker 0>machine is gonna be through user data here.
+
+00:22:35.250 --> 00:22:37.570
+<v Speaker 0>So we're, we're just gonna hack this today
+
+00:22:37.570 --> 00:22:40.289
+<v Speaker 0>because it's not the most exciting thing.
+
+00:22:41.490 --> 00:22:43.409
+<v Speaker 0>So I'm literally just gonna do
+
+00:22:43.649 --> 00:22:44.690
+<v Speaker 0>run a script
+
+00:22:47.035 --> 00:22:47.835
+<v Speaker 0>grab
+
+00:22:47.995 --> 00:22:50.475
+<v Speaker 0>my favorite helper of all time.
+
+00:22:50.875 --> 00:22:52.155
+<v Speaker 0>Get Docker.
+
+00:22:52.315 --> 00:22:52.715
+<v Speaker 0>Io.
+
+00:22:54.715 --> 00:22:56.475
+<v Speaker 0>I preferred it when they gave you the
+
+00:22:56.475 --> 00:22:58.475
+<v Speaker 0>pipe to shell version but whatever.
+
+00:23:01.170 --> 00:23:03.410
+<v Speaker 0>And then we will run
+
+00:23:04.130 --> 00:23:05.410
+<v Speaker 0>get docker.
+
+00:23:05.490 --> 00:23:07.730
+<v Speaker 0>So that will install docker.
+
+00:23:08.370 --> 00:23:09.970
+<v Speaker 0>We then need kind.
+
+00:23:12.610 --> 00:23:14.770
+<v Speaker 0>Docker kind Kubernetes.
+
+00:23:16.130 --> 00:23:17.534
+<v Speaker 0>I'm assuming I just need to grab the
+
+00:23:17.534 --> 00:23:19.934
+<v Speaker 0>release from the GitHub page actually
+
+00:23:21.215 --> 00:23:22.974
+<v Speaker 0>unless it's got something here.
+
+00:23:23.615 --> 00:23:25.615
+<v Speaker 1>So Paul was saying that you can use
+
+00:23:25.615 --> 00:23:26.254
+<v Speaker 1>git
+
+00:23:26.575 --> 00:23:28.654
+<v Speaker 1>but ideally you use git secret and they're
+
+00:23:28.654 --> 00:23:29.455
+<v Speaker 1>gonna change that now.
+
+00:23:30.960 --> 00:23:32.720
+<v Speaker 0>Nice. I'll pop that on the screen.
+
+00:23:37.200 --> 00:23:41.600
+<v Speaker 0>Okay. So we can on Linux copy this
+
+00:23:44.345 --> 00:23:47.305
+<v Speaker 0>and we're gonna need to keep control.
+
+00:23:48.025 --> 00:23:48.665
+<v Speaker 1>Yep.
+
+00:23:51.625 --> 00:23:53.225
+<v Speaker 0>And this is of course not the best
+
+00:23:53.225 --> 00:23:54.905
+<v Speaker 0>way to be doing any of this.
+
+00:23:55.625 --> 00:23:57.785
+<v Speaker 0>This is just to keep things moving at
+
+00:23:57.785 --> 00:24:00.450
+<v Speaker 0>a sensible pace this afternoon so
+
+00:24:00.770 --> 00:24:03.010
+<v Speaker 0>you can imagine really what this would be
+
+00:24:03.010 --> 00:24:04.130
+<v Speaker 0>doing is like
+
+00:24:04.850 --> 00:24:05.890
+<v Speaker 0>because I'm
+
+00:24:08.450 --> 00:24:09.169
+<v Speaker 0>yes.
+
+00:24:09.490 --> 00:24:10.370
+<v Speaker 0>Thank you William.
+
+00:24:15.725 --> 00:24:16.604
+<v Speaker 0>There we go.
+
+00:24:17.164 --> 00:24:19.725
+<v Speaker 0>I've got everybody's telling me now so William
+
+00:24:19.725 --> 00:24:21.804
+<v Speaker 0>you were first you you can win bragging
+
+00:24:21.804 --> 00:24:24.205
+<v Speaker 0>rates and then no results so quickly in
+
+00:24:24.205 --> 00:24:25.884
+<v Speaker 0>as well. So yeah, trim off the script
+
+00:24:25.884 --> 00:24:28.320
+<v Speaker 0>we run it. I'm gonna pull down control.
+
+00:24:28.640 --> 00:24:30.559
+<v Speaker 0>I'm not sure where that's putting it.
+
+00:24:31.200 --> 00:24:33.119
+<v Speaker 0>Probably just the local directory.
+
+00:24:34.080 --> 00:24:35.840
+<v Speaker 0>So we'll probably want to
+
+00:24:36.480 --> 00:24:38.080
+<v Speaker 1>move that. And
+
+00:24:41.040 --> 00:24:43.794
+<v Speaker 0>then kind which does this, I never even
+
+00:24:43.794 --> 00:24:45.874
+<v Speaker 0>noticed that path that was wild. Okay.
+
+00:24:47.154 --> 00:24:48.355
+<v Speaker 1>Was about to tell you we need to
+
+00:24:48.355 --> 00:24:49.154
+<v Speaker 1>change that.
+
+00:24:50.115 --> 00:24:52.195
+<v Speaker 0>Yeah. Now there's something I want to kind
+
+00:24:52.195 --> 00:24:54.034
+<v Speaker 0>of explain here before we go any further
+
+00:24:54.034 --> 00:24:56.434
+<v Speaker 0>like I'm just using user data to install
+
+00:24:56.434 --> 00:24:58.400
+<v Speaker 0>Docker and install Kube control and install Kine
+
+00:24:58.400 --> 00:24:59.760
+<v Speaker 0>so that we can get across a cluster
+
+00:24:59.760 --> 00:25:01.920
+<v Speaker 0>and then I'm gonna run Kine cluster create
+
+00:25:01.920 --> 00:25:02.880
+<v Speaker 0>and just
+
+00:25:03.360 --> 00:25:04.880
+<v Speaker 0>that is not what we would normally be
+
+00:25:04.880 --> 00:25:06.480
+<v Speaker 0>doing in a production environment
+
+00:25:06.560 --> 00:25:08.880
+<v Speaker 0>and normally you'd be using a managed Kubernetes
+
+00:25:08.880 --> 00:25:11.075
+<v Speaker 0>or a cluster API or anything else that
+
+00:25:11.075 --> 00:25:11.794
+<v Speaker 0>provides
+
+00:25:12.035 --> 00:25:14.755
+<v Speaker 0>better ways to do this but again those
+
+00:25:14.755 --> 00:25:16.674
+<v Speaker 0>are not the focus for today. So
+
+00:25:17.795 --> 00:25:18.434
+<v Speaker 0>kind
+
+00:25:19.315 --> 00:25:20.115
+<v Speaker 0>cluster.
+
+00:25:22.355 --> 00:25:22.835
+<v Speaker 0>Done.
+
+00:25:24.890 --> 00:25:26.889
+<v Speaker 0>Are we are we confident that's gonna work?
+
+00:25:28.410 --> 00:25:30.730
+<v Speaker 1>Do we want a couple of of actual
+
+00:25:31.130 --> 00:25:32.970
+<v Speaker 1>nodes in our kind cluster
+
+00:25:33.130 --> 00:25:34.490
+<v Speaker 1>or do we wanna go with just a
+
+00:25:34.490 --> 00:25:34.970
+<v Speaker 1>single node?
+
+00:25:37.695 --> 00:25:39.215
+<v Speaker 0>We can just go with one I think,
+
+00:25:39.215 --> 00:25:41.695
+<v Speaker 0>like we're not deploying anything to Wales to
+
+00:25:41.695 --> 00:25:44.415
+<v Speaker 0>it, right? So Let's do it. Alright. So
+
+00:25:44.415 --> 00:25:46.255
+<v Speaker 0>I'm happy with that, you can see we've
+
+00:25:46.255 --> 00:25:48.174
+<v Speaker 0>got Pulumi, we're using TypeScript.
+
+00:25:48.975 --> 00:25:51.135
+<v Speaker 0>I'll just kinda show off again my favorite
+
+00:25:51.135 --> 00:25:53.240
+<v Speaker 0>feature is that this could be in a
+
+00:25:53.240 --> 00:25:55.399
+<v Speaker 0>library that I consume for NPM.
+
+00:25:55.720 --> 00:25:57.479
+<v Speaker 0>This could be a create
+
+00:25:57.480 --> 00:25:58.759
+<v Speaker 0>kind cluster
+
+00:25:59.480 --> 00:26:00.279
+<v Speaker 0>thing
+
+00:26:00.679 --> 00:26:02.279
+<v Speaker 0>that as a function
+
+00:26:02.600 --> 00:26:04.359
+<v Speaker 0>that returns this object
+
+00:26:04.919 --> 00:26:07.320
+<v Speaker 0>and I could then use
+
+00:26:08.684 --> 00:26:10.524
+<v Speaker 0>create kind cluster
+
+00:26:11.804 --> 00:26:14.205
+<v Speaker 0>and I think that just on itself is
+
+00:26:14.205 --> 00:26:17.085
+<v Speaker 0>a really really good reason for using Pulumi
+
+00:26:17.085 --> 00:26:18.124
+<v Speaker 0>over terraform.
+
+00:26:18.365 --> 00:26:20.045
+<v Speaker 1>You're you're selling it to me now.
+
+00:26:21.090 --> 00:26:23.250
+<v Speaker 0>Yeah, it's just those weird things really. Oh
+
+00:26:23.250 --> 00:26:25.890
+<v Speaker 0>yeah, I can take these four different resources,
+
+00:26:25.890 --> 00:26:28.050
+<v Speaker 0>group them together and provide an abstraction that's
+
+00:26:28.050 --> 00:26:30.370
+<v Speaker 0>just create the thing and nobody else has
+
+00:26:30.370 --> 00:26:31.490
+<v Speaker 0>to worry about it. I can end up
+
+00:26:31.490 --> 00:26:33.250
+<v Speaker 0>in types to pass in as parameters to
+
+00:26:33.250 --> 00:26:35.235
+<v Speaker 0>tweak the configuration and of course you can
+
+00:26:35.235 --> 00:26:36.595
+<v Speaker 0>go down a rabbit hole and start getting
+
+00:26:36.595 --> 00:26:38.755
+<v Speaker 0>the abstractions wrong and too much configuration and
+
+00:26:38.755 --> 00:26:41.075
+<v Speaker 0>making it a bit of a spaghetti monster
+
+00:26:41.635 --> 00:26:42.355
+<v Speaker 0>but
+
+00:26:42.515 --> 00:26:43.794
+<v Speaker 0>still very cool.
+
+00:26:44.035 --> 00:26:44.755
+<v Speaker 0>Anyway,
+
+00:26:44.915 --> 00:26:46.275
+<v Speaker 0>sorry I digress.
+
+00:26:46.515 --> 00:26:47.795
+<v Speaker 0>So I'm gonna run a Pulumi up and
+
+00:26:47.795 --> 00:26:49.315
+<v Speaker 0>what we're gonna see here is it's gonna
+
+00:26:48.990 --> 00:26:50.350
+<v Speaker 0>try and work out what it wants to
+
+00:26:50.350 --> 00:26:52.750
+<v Speaker 0>create and then hopefully we get a plan
+
+00:26:52.750 --> 00:26:54.350
+<v Speaker 0>that we're happy with and we can approve
+
+00:26:54.350 --> 00:26:54.909
+<v Speaker 0>it.
+
+00:26:56.670 --> 00:26:59.150
+<v Speaker 1>So Pulumi app is can you do a
+
+00:26:59.150 --> 00:27:00.990
+<v Speaker 1>Pulumi plan or an equivalent of just the
+
+00:27:00.990 --> 00:27:02.495
+<v Speaker 1>plan or do you always do an app
+
+00:27:02.495 --> 00:27:04.095
+<v Speaker 1>and the plan happens regardless?
+
+00:27:04.174 --> 00:27:07.215
+<v Speaker 0>There's a Pulumi preview command as well. Alright.
+
+00:27:08.335 --> 00:27:09.375
+<v Speaker 0>So we can see here it wants to
+
+00:27:09.375 --> 00:27:10.494
+<v Speaker 0>create a new device.
+
+00:27:10.735 --> 00:27:12.575
+<v Speaker 0>In fact, one thing I will do then
+
+00:27:12.575 --> 00:27:14.174
+<v Speaker 0>is do a preview and we can also
+
+00:27:14.174 --> 00:27:15.374
+<v Speaker 0>specify a def.
+
+00:27:15.775 --> 00:27:17.480
+<v Speaker 0>So we'll we'll actually see the user data
+
+00:27:17.480 --> 00:27:19.000
+<v Speaker 0>and a whole bunch of other things.
+
+00:27:23.880 --> 00:27:24.679
+<v Speaker 0>Yep.
+
+00:27:26.360 --> 00:27:28.520
+<v Speaker 0>Good comment from Paul as well,
+
+00:27:28.920 --> 00:27:30.840
+<v Speaker 0>very new feature in Pulumi is that you
+
+00:27:30.840 --> 00:27:33.435
+<v Speaker 0>can write these abstractions in these libraries publish
+
+00:27:33.435 --> 00:27:35.835
+<v Speaker 0>them in TypeScript or go or Python or
+
+00:27:35.835 --> 00:27:37.675
+<v Speaker 0>.net and then consume them from any of
+
+00:27:37.675 --> 00:27:40.635
+<v Speaker 0>those languages too. So even like Steve, could
+
+00:27:40.635 --> 00:27:42.635
+<v Speaker 0>write a go library for creating kind customers
+
+00:27:42.635 --> 00:27:44.475
+<v Speaker 0>on Equinix metal and I and my TypeScript
+
+00:27:44.475 --> 00:27:46.060
+<v Speaker 0>thing could still use that which I think
+
+00:27:46.060 --> 00:27:47.820
+<v Speaker 0>is really cool. That's nice.
+
+00:27:47.980 --> 00:27:50.540
+<v Speaker 0>Alright, this is a resource we're gonna try
+
+00:27:50.540 --> 00:27:52.300
+<v Speaker 0>and spin up a c three medium and
+
+00:27:52.300 --> 00:27:55.260
+<v Speaker 0>Amsterdam Six and hopefully get a cane cluster
+
+00:27:55.260 --> 00:27:56.860
+<v Speaker 0>out of it. So I'm just gonna
+
+00:27:57.740 --> 00:27:59.260
+<v Speaker 0>go for that and hope for the best.
+
+00:28:04.815 --> 00:28:06.095
+<v Speaker 0>And now we wait.
+
+00:28:07.375 --> 00:28:09.615
+<v Speaker 0>The chat is is really kicking off object
+
+00:28:09.615 --> 00:28:11.855
+<v Speaker 0>object is having a party to themselves there.
+
+00:28:12.815 --> 00:28:14.655
+<v Speaker 0>It's weird like you can hide it and
+
+00:28:14.655 --> 00:28:16.150
+<v Speaker 0>then bring it back and like the names
+
+00:28:16.150 --> 00:28:16.789
+<v Speaker 0>work.
+
+00:28:21.670 --> 00:28:22.390
+<v Speaker 1>So
+
+00:28:23.350 --> 00:28:25.670
+<v Speaker 0>Bala asked in the Discord chat on local
+
+00:28:25.670 --> 00:28:27.350
+<v Speaker 0>does it store secrets on a file or
+
+00:28:27.350 --> 00:28:27.990
+<v Speaker 0>some DB?
+
+00:28:29.184 --> 00:28:30.705
+<v Speaker 0>I'm pretty sure Paul will be able to
+
+00:28:30.705 --> 00:28:32.544
+<v Speaker 0>answer that much better than I.
+
+00:28:34.065 --> 00:28:35.664
+<v Speaker 0>So one of the things Pulumi does is
+
+00:28:35.664 --> 00:28:37.824
+<v Speaker 0>in my local home directory. I
+
+00:28:38.144 --> 00:28:39.184
+<v Speaker 0>wonder if we can just take a look
+
+00:28:39.184 --> 00:28:40.144
+<v Speaker 0>at that quickly.
+
+00:28:41.585 --> 00:28:42.705
+<v Speaker 0>Pulumi
+
+00:28:42.430 --> 00:28:44.270
+<v Speaker 0>and we have all of our stacks
+
+00:28:45.470 --> 00:28:47.630
+<v Speaker 0>and we'll see my production one, we've got
+
+00:28:47.630 --> 00:28:49.150
+<v Speaker 0>this like JSON and I don't know what
+
+00:28:49.150 --> 00:28:51.630
+<v Speaker 0>the ATTRs is. I'm not even sure.
+
+00:28:51.950 --> 00:28:55.310
+<v Speaker 0>Won't guess but all of our encryption information
+
+00:28:55.310 --> 00:28:57.524
+<v Speaker 0>or secrets are all kind of stuffed in
+
+00:28:57.524 --> 00:28:59.605
+<v Speaker 0>there and you can use KMS,
+
+00:28:59.605 --> 00:29:00.804
+<v Speaker 0>you can use
+
+00:29:03.125 --> 00:29:05.764
+<v Speaker 0>vault and you can use Pulumi teams which
+
+00:29:05.764 --> 00:29:07.524
+<v Speaker 0>is a bit secure but
+
+00:29:08.485 --> 00:29:10.200
+<v Speaker 0>you know as I think what's just really
+
+00:29:10.200 --> 00:29:11.080
+<v Speaker 0>cool is that
+
+00:29:11.559 --> 00:29:13.000
+<v Speaker 0>I mean I could just store a big
+
+00:29:13.000 --> 00:29:15.400
+<v Speaker 0>long password and one password and distribute it
+
+00:29:15.400 --> 00:29:17.080
+<v Speaker 0>to my team and I can still commit
+
+00:29:17.080 --> 00:29:18.840
+<v Speaker 0>all this to get and it's secure like
+
+00:29:18.840 --> 00:29:20.840
+<v Speaker 0>you know it's a really quick way to
+
+00:29:20.840 --> 00:29:23.480
+<v Speaker 0>get started to bring and get
+
+00:29:23.265 --> 00:29:25.585
+<v Speaker 0>platform side rather than just the application
+
+00:29:25.665 --> 00:29:26.945
+<v Speaker 0>workload side.
+
+00:29:30.305 --> 00:29:32.065
+<v Speaker 0>Objects is object is awesome.
+
+00:29:35.025 --> 00:29:37.025
+<v Speaker 1>All the same we need to approve. Clean
+
+00:29:37.025 --> 00:29:39.900
+<v Speaker 1>me up. Did. I did. Did. It's running.
+
+00:29:39.900 --> 00:29:41.100
+<v Speaker 0>Yeah. I left it sitting there for too
+
+00:29:41.100 --> 00:29:42.380
+<v Speaker 0>long and I noticed it. I don't think
+
+00:29:42.380 --> 00:29:44.059
+<v Speaker 0>anyone noticed but obviously
+
+00:29:44.059 --> 00:29:45.659
+<v Speaker 0>Paul's keeping me honest here.
+
+00:29:47.179 --> 00:29:49.580
+<v Speaker 0>Alright. Well, spinning up some bare metal on
+
+00:29:49.580 --> 00:29:50.940
+<v Speaker 0>Echorus metal takes
+
+00:29:51.660 --> 00:29:54.875
+<v Speaker 0>about ninety seconds to hopefully two minutes worst
+
+00:29:54.875 --> 00:29:56.715
+<v Speaker 0>case. Oh did I use a fast provision?
+
+00:29:56.715 --> 00:29:58.394
+<v Speaker 0>What what I've been to today is?
+
+00:30:01.595 --> 00:30:02.394
+<v Speaker 0>Alright,
+
+00:30:02.955 --> 00:30:04.795
+<v Speaker 0>it may take four minutes. I should have
+
+00:30:04.795 --> 00:30:07.275
+<v Speaker 0>used a bunch of 24 but still we'll
+
+00:30:07.275 --> 00:30:09.379
+<v Speaker 0>we'll we'll get some at the end and
+
+00:30:10.179 --> 00:30:11.780
+<v Speaker 0>I think just for the sake of today
+
+00:30:11.780 --> 00:30:13.780
+<v Speaker 0>if you're alright with that Steve like if
+
+00:30:13.780 --> 00:30:15.539
+<v Speaker 0>if I don't get a Kain cluster I'll
+
+00:30:15.539 --> 00:30:18.340
+<v Speaker 0>probably just manually SSHN and create it
+
+00:30:18.820 --> 00:30:20.100
+<v Speaker 0>so we can move on to the next
+
+00:30:20.100 --> 00:30:21.914
+<v Speaker 0>step but I'm
+
+00:30:21.914 --> 00:30:24.794
+<v Speaker 0>confident our user data that's I mean that's
+
+00:30:24.794 --> 00:30:26.635
+<v Speaker 0>some pretty solid IP there I think we
+
+00:30:26.635 --> 00:30:27.514
+<v Speaker 0>could sell that.
+
+00:30:33.275 --> 00:30:35.240
+<v Speaker 0>Quite like being a floating head especially when
+
+00:30:35.240 --> 00:30:35.799
+<v Speaker 0>I'm
+
+00:30:36.200 --> 00:30:37.719
+<v Speaker 0>got code behind me.
+
+00:30:41.320 --> 00:30:43.639
+<v Speaker 0>Yeah. Hold on. You have to review my
+
+00:30:43.639 --> 00:30:44.759
+<v Speaker 0>code for me.
+
+00:30:45.159 --> 00:30:45.880
+<v Speaker 0>How's it look?
+
+00:30:47.015 --> 00:30:48.134
+<v Speaker 1>Problem there.
+
+00:30:53.255 --> 00:30:54.215
+<v Speaker 0>Let's see.
+
+00:30:54.375 --> 00:30:55.654
+<v Speaker 0>Pulumi Pulumi.
+
+00:30:56.054 --> 00:30:57.495
+<v Speaker 0>I guess we can go over to my
+
+00:30:57.495 --> 00:30:58.375
+<v Speaker 0>dashboard.
+
+00:30:58.375 --> 00:31:00.215
+<v Speaker 0>Yeah. We can see our Gallup's device here.
+
+00:31:00.215 --> 00:31:01.600
+<v Speaker 0>We can actually just click on the table
+
+00:31:01.600 --> 00:31:04.159
+<v Speaker 0>in. Okay. So it was pretty quick.
+
+00:31:04.640 --> 00:31:07.440
+<v Speaker 0>We're just the servers being rebooted. We're just
+
+00:31:07.440 --> 00:31:09.679
+<v Speaker 0>waiting for it to dial in. Probably
+
+00:31:10.799 --> 00:31:13.600
+<v Speaker 0>find I'm getting pretty close to being able
+
+00:31:13.600 --> 00:31:14.159
+<v Speaker 0>to
+
+00:31:14.785 --> 00:31:16.304
+<v Speaker 0>SSH into that. Not
+
+00:31:25.025 --> 00:31:25.265
+<v Speaker 0>quite.
+
+00:31:28.320 --> 00:31:29.919
+<v Speaker 0>So there's one other thing.
+
+00:31:30.960 --> 00:31:33.039
+<v Speaker 0>We we we have a cane cluster, we've
+
+00:31:33.039 --> 00:31:35.599
+<v Speaker 0>not deployed a flux to or anything yet.
+
+00:31:36.559 --> 00:31:39.200
+<v Speaker 0>No. I can do that manually or I
+
+00:31:39.200 --> 00:31:40.880
+<v Speaker 0>can show off a really cool feature of
+
+00:31:40.880 --> 00:31:42.640
+<v Speaker 0>Pulumi and I'm trying to decide what I
+
+00:31:42.640 --> 00:31:43.039
+<v Speaker 0>wanna do.
+
+00:31:45.675 --> 00:31:46.554
+<v Speaker 1>I'll talk If
+
+00:31:47.275 --> 00:31:49.434
+<v Speaker 1>if we're trying to bootstrap properly,
+
+00:31:50.075 --> 00:31:52.155
+<v Speaker 1>then then that's let's use the tools for
+
+00:31:52.155 --> 00:31:53.595
+<v Speaker 1>the job. So
+
+00:31:53.835 --> 00:31:55.115
+<v Speaker 1>if I if I if I were if
+
+00:31:55.115 --> 00:31:56.475
+<v Speaker 1>I was gonna bootstrap
+
+00:31:56.475 --> 00:31:57.115
+<v Speaker 1>the
+
+00:31:57.595 --> 00:31:58.475
+<v Speaker 1>the cluster,
+
+00:31:58.875 --> 00:32:00.770
+<v Speaker 1>I would in in in Terraform world, which
+
+00:32:00.770 --> 00:32:02.370
+<v Speaker 1>I'm familiar with, we deploy
+
+00:32:02.530 --> 00:32:05.410
+<v Speaker 1>flux using that. So it's it's standing up
+
+00:32:05.410 --> 00:32:07.889
+<v Speaker 1>the cluster plus the initial bootstracking process.
+
+00:32:08.130 --> 00:32:09.490
+<v Speaker 0>And it relate to you.
+
+00:32:11.170 --> 00:32:12.930
+<v Speaker 0>Alright. We'll do it properly. We do have
+
+00:32:12.930 --> 00:32:14.675
+<v Speaker 0>this as itch. So let's see when are
+
+00:32:14.675 --> 00:32:15.235
+<v Speaker 0>we.
+
+00:32:20.515 --> 00:32:21.395
+<v Speaker 0>Silly me.
+
+00:32:27.870 --> 00:32:28.830
+<v Speaker 0>Okay.
+
+00:32:28.910 --> 00:32:30.669
+<v Speaker 0>Docker container.
+
+00:32:34.990 --> 00:32:36.909
+<v Speaker 0>Why did I not get my cluster?
+
+00:32:40.910 --> 00:32:42.825
+<v Speaker 0>Oh, it's not cluster create. Oh, it's create
+
+00:32:42.825 --> 00:32:43.945
+<v Speaker 0>cluster. Alright.
+
+00:32:47.784 --> 00:32:49.945
+<v Speaker 0>So let's just do that. We'll fix it
+
+00:32:49.945 --> 00:32:50.504
+<v Speaker 0>here.
+
+00:32:50.825 --> 00:32:52.744
+<v Speaker 0>So when we push the code it works
+
+00:32:53.625 --> 00:32:55.145
+<v Speaker 0>and we'll blame the chat because they should
+
+00:32:55.145 --> 00:32:56.025
+<v Speaker 0>have been all over that.
+
+00:33:00.160 --> 00:33:02.880
+<v Speaker 0>Yeah and we never chimaudied our acute control.
+
+00:33:08.000 --> 00:33:09.120
+<v Speaker 0>Nice, okay.
+
+00:33:10.000 --> 00:33:12.000
+<v Speaker 0>Now it's definitely a million dollar script.
+
+00:33:12.765 --> 00:33:14.605
+<v Speaker 0>So what I'm gonna do then so that
+
+00:33:14.605 --> 00:33:16.845
+<v Speaker 0>we can still use Pulumi to apply flux
+
+00:33:16.845 --> 00:33:17.885
+<v Speaker 0>to our cluster
+
+00:33:18.285 --> 00:33:20.445
+<v Speaker 0>as I'm gonna actually just grab the cube
+
+00:33:20.445 --> 00:33:22.925
+<v Speaker 0>config from this machine store it in the
+
+00:33:22.925 --> 00:33:23.565
+<v Speaker 0>Pulumi
+
+00:33:24.150 --> 00:33:25.190
+<v Speaker 0>config
+
+00:33:26.790 --> 00:33:27.669
+<v Speaker 0>and then
+
+00:33:28.950 --> 00:33:30.549
+<v Speaker 0>use it and the provider.
+
+00:33:34.790 --> 00:33:36.309
+<v Speaker 0>Yeah. Okay. We have a working. Okay.
+
+00:33:36.950 --> 00:33:38.614
+<v Speaker 0>Much better. Okay.
+
+00:33:40.215 --> 00:33:42.534
+<v Speaker 0>Now we did also change the user data.
+
+00:33:42.534 --> 00:33:45.334
+<v Speaker 0>I don't wanna force the device to change
+
+00:33:45.975 --> 00:33:46.774
+<v Speaker 0>on me.
+
+00:33:47.095 --> 00:33:49.095
+<v Speaker 0>I'm actually gonna revert these changes and I
+
+00:33:49.095 --> 00:33:50.695
+<v Speaker 0>will fix it before I push the code
+
+00:33:50.695 --> 00:33:51.654
+<v Speaker 0>to the Internet.
+
+00:33:52.054 --> 00:33:52.695
+<v Speaker 0>I promise.
+
+00:33:53.940 --> 00:33:56.179
+<v Speaker 0>And the reason why is that I wanna
+
+00:33:56.179 --> 00:33:58.019
+<v Speaker 0>be able to run Pulumi
+
+00:33:58.500 --> 00:33:59.619
+<v Speaker 0>preview dev
+
+00:33:59.860 --> 00:34:01.619
+<v Speaker 0>after I've added the cube.
+
+00:34:04.820 --> 00:34:05.140
+<v Speaker 0>What?
+
+00:34:09.185 --> 00:34:10.305
+<v Speaker 0>How dare you?
+
+00:34:16.225 --> 00:34:18.065
+<v Speaker 0>Did I break it? What have I done?
+
+00:34:20.020 --> 00:34:22.340
+<v Speaker 0>I
+
+00:34:25.619 --> 00:34:28.179
+<v Speaker 0>can't use ignore changes, so Paul suggested I
+
+00:34:28.179 --> 00:34:29.539
+<v Speaker 0>can just say ignored. Oh, I can't do
+
+00:34:29.539 --> 00:34:31.059
+<v Speaker 0>that on the actual resource, that's a kill
+
+00:34:31.059 --> 00:34:32.739
+<v Speaker 0>feature. He is a legend.
+
+00:34:33.574 --> 00:34:35.415
+<v Speaker 0>Sorry I did to you. Okay.
+
+00:34:36.454 --> 00:34:39.335
+<v Speaker 0>Make my changes again and you know you
+
+00:34:39.335 --> 00:34:41.014
+<v Speaker 0>can tell me why Pulumi is telling me
+
+00:34:41.014 --> 00:34:42.614
+<v Speaker 0>my password is incorrect if you've a minute
+
+00:34:42.614 --> 00:34:43.094
+<v Speaker 0>to me.
+
+00:34:46.000 --> 00:34:49.600
+<v Speaker 0>Chimaud plus x user Ben cube control.
+
+00:34:49.600 --> 00:34:50.160
+<v Speaker 0>Okay.
+
+00:34:52.080 --> 00:34:52.960
+<v Speaker 0>That
+
+00:34:53.840 --> 00:34:55.520
+<v Speaker 0>doesn't help me does it?
+
+00:34:57.840 --> 00:34:59.600
+<v Speaker 0>That is a known bug I am working
+
+00:34:59.600 --> 00:35:01.494
+<v Speaker 0>on as we speak. How do I fix
+
+00:35:01.494 --> 00:35:02.615
+<v Speaker 0>it for just now?
+
+00:35:03.575 --> 00:35:04.455
+<v Speaker 0>I'll wait.
+
+00:35:10.375 --> 00:35:12.375
+<v Speaker 0>I'm gonna export my secret so hold on
+
+00:35:12.375 --> 00:35:14.230
+<v Speaker 0>see that helps. Well I'm just gonna move
+
+00:35:14.230 --> 00:35:15.510
+<v Speaker 0>this window over here.
+
+00:35:19.910 --> 00:35:21.910
+<v Speaker 0>Yeah, he's told me I need to just
+
+00:35:21.910 --> 00:35:23.109
+<v Speaker 0>export. Yeah. Oh
+
+00:35:24.069 --> 00:35:26.305
+<v Speaker 0>and I tried the wrong tab. Okay. Let's
+
+00:35:26.305 --> 00:35:28.465
+<v Speaker 0>go back. So export.
+
+00:35:29.585 --> 00:35:30.945
+<v Speaker 0>Pulumi config
+
+00:35:30.945 --> 00:35:32.385
+<v Speaker 0>passphrase
+
+00:35:32.785 --> 00:35:33.745
+<v Speaker 0>equals.
+
+00:35:37.985 --> 00:35:38.465
+<v Speaker 0>Alright.
+
+00:35:40.140 --> 00:35:41.819
+<v Speaker 0>I mean it's not even a real password.
+
+00:35:41.819 --> 00:35:42.780
+<v Speaker 0>I don't know why I'm going through so
+
+00:35:42.780 --> 00:35:43.900
+<v Speaker 0>much effort to.
+
+00:35:49.980 --> 00:35:50.780
+<v Speaker 0>Okay.
+
+00:35:50.940 --> 00:35:51.819
+<v Speaker 0>So let's see.
+
+00:35:52.485 --> 00:35:53.525
+<v Speaker 0>Preview.
+
+00:35:54.165 --> 00:35:55.605
+<v Speaker 0>Now if I do a deaf now.
+
+00:35:58.485 --> 00:36:00.165
+<v Speaker 0>Yeah. Paul's told me to, no, I'm just
+
+00:36:00.165 --> 00:36:01.845
+<v Speaker 0>gonna export to Paul because even though it's
+
+00:36:01.845 --> 00:36:03.045
+<v Speaker 0>not a real password,
+
+00:36:04.005 --> 00:36:06.085
+<v Speaker 0>there was a blob visible in my production
+
+00:36:06.085 --> 00:36:07.605
+<v Speaker 0>dot YAML that if they had the password
+
+00:36:07.605 --> 00:36:09.900
+<v Speaker 0>they could maybe correct with that salt
+
+00:36:10.220 --> 00:36:11.420
+<v Speaker 0>be a lot of effort but I'm still
+
+00:36:11.420 --> 00:36:13.420
+<v Speaker 0>not gonna do it. So we can see
+
+00:36:13.420 --> 00:36:14.940
+<v Speaker 0>that with my fixes this wants to recreate
+
+00:36:14.940 --> 00:36:16.619
+<v Speaker 0>this device. I do not want to do
+
+00:36:16.619 --> 00:36:18.300
+<v Speaker 0>that and as Paul
+
+00:36:18.460 --> 00:36:19.260
+<v Speaker 0>reminded
+
+00:36:19.260 --> 00:36:21.339
+<v Speaker 0>me is that after our device RX we
+
+00:36:21.339 --> 00:36:22.460
+<v Speaker 0>have some Pulumi RX
+
+00:36:23.405 --> 00:36:23.885
+<v Speaker 0>one
+
+00:36:24.525 --> 00:36:25.805
+<v Speaker 0>of the really cool things you can do
+
+00:36:25.805 --> 00:36:27.645
+<v Speaker 0>there is just tell it to ignore changes.
+
+00:36:32.685 --> 00:36:33.485
+<v Speaker 1>String.
+
+00:36:35.244 --> 00:36:36.605
+<v Speaker 0>Am I not using that right?
+
+00:36:42.390 --> 00:36:45.110
+<v Speaker 0>Ignore changes to any of the specified properties.
+
+00:36:45.110 --> 00:36:46.790
+<v Speaker 0>Yeah. So user
+
+00:36:47.270 --> 00:36:47.990
+<v Speaker 0>data.
+
+00:36:48.390 --> 00:36:48.950
+<v Speaker 0>So
+
+00:36:49.830 --> 00:36:51.830
+<v Speaker 0>hopefully when I run deaf now, it doesn't
+
+00:36:51.830 --> 00:36:53.945
+<v Speaker 0>want to change this resource and then we
+
+00:36:53.945 --> 00:36:56.985
+<v Speaker 0>can bring in that cube config and user
+
+00:36:56.985 --> 00:36:58.425
+<v Speaker 0>data with a capital D.
+
+00:37:03.225 --> 00:37:04.265
+<v Speaker 0>No, no changes.
+
+00:37:06.099 --> 00:37:08.740
+<v Speaker 0>Don't
+
+00:37:08.740 --> 00:37:10.260
+<v Speaker 0>ever use that flag. Thanks.
+
+00:37:10.740 --> 00:37:13.220
+<v Speaker 0>It was very special use case. So now
+
+00:37:13.220 --> 00:37:15.380
+<v Speaker 0>I'm gonna grab this cube config.
+
+00:37:17.460 --> 00:37:19.115
+<v Speaker 0>Run it locally.
+
+00:37:21.035 --> 00:37:22.954
+<v Speaker 0>Where does kind store that I can do
+
+00:37:22.954 --> 00:37:23.835
+<v Speaker 0>kind
+
+00:37:25.434 --> 00:37:26.875
+<v Speaker 0>how do I get the cube configs on
+
+00:37:26.875 --> 00:37:27.835
+<v Speaker 0>this, do you know?
+
+00:37:28.234 --> 00:37:29.915
+<v Speaker 1>Is it is it kind
+
+00:37:30.075 --> 00:37:31.595
+<v Speaker 1>plastic conflict?
+
+00:37:31.915 --> 00:37:32.234
+<v Speaker 1>Yeah.
+
+00:37:34.530 --> 00:37:35.170
+<v Speaker 0>Okay.
+
+00:37:37.810 --> 00:37:39.410
+<v Speaker 0>If anyone wants to take that out and
+
+00:37:39.410 --> 00:37:40.850
+<v Speaker 0>have access to a cane cluster for the
+
+00:37:40.850 --> 00:37:42.370
+<v Speaker 0>next area, you're more than welcome.
+
+00:37:44.370 --> 00:37:46.210
+<v Speaker 0>I shouldn't say that Duffy's probably got some
+
+00:37:46.210 --> 00:37:47.810
+<v Speaker 0>OCR running already that does it.
+
+00:37:51.625 --> 00:37:53.785
+<v Speaker 0>Okay. So what am I gonna do? I
+
+00:37:53.785 --> 00:37:55.704
+<v Speaker 0>am gonna store this
+
+00:37:56.825 --> 00:37:58.425
+<v Speaker 0>as a secret
+
+00:37:58.984 --> 00:38:00.665
+<v Speaker 0>called cube config
+
+00:38:01.785 --> 00:38:02.744
+<v Speaker 0>config set.
+
+00:38:06.250 --> 00:38:07.930
+<v Speaker 0>Woah. No. That didn't work.
+
+00:38:11.849 --> 00:38:12.570
+<v Speaker 0>No.
+
+00:38:12.730 --> 00:38:15.450
+<v Speaker 0>Let's base encode it. Base 64.
+
+00:38:21.695 --> 00:38:22.895
+<v Speaker 0>I broke it.
+
+00:38:23.215 --> 00:38:25.295
+<v Speaker 1>Yeah. That that looks like half of it.
+
+00:38:29.055 --> 00:38:29.855
+<v Speaker 0>Okay.
+
+00:38:32.360 --> 00:38:33.080
+<v Speaker 0>Copy.
+
+00:38:34.840 --> 00:38:36.680
+<v Speaker 0>Who just thought I got stuck on the
+
+00:38:36.680 --> 00:38:38.920
+<v Speaker 0>cube config. Alright. There we go.
+
+00:38:41.400 --> 00:38:43.080
+<v Speaker 0>Is that it? Yeah.
+
+00:38:43.320 --> 00:38:44.520
+<v Speaker 1>Yeah. That's it.
+
+00:38:47.640 --> 00:38:50.175
+<v Speaker 0>Okay. So let's do
+
+00:38:53.135 --> 00:38:53.935
+<v Speaker 0>cat
+
+00:38:54.575 --> 00:38:55.375
+<v Speaker 0>cube
+
+00:38:58.335 --> 00:38:59.535
+<v Speaker 0>cube config.
+
+00:39:00.570 --> 00:39:05.210
+<v Speaker 0>Pipe that into a Pulumi config set secret
+
+00:39:06.010 --> 00:39:07.130
+<v Speaker 0>kube config
+
+00:39:07.850 --> 00:39:08.650
+<v Speaker 0>and
+
+00:39:08.650 --> 00:39:10.170
+<v Speaker 0>hope that just put the dash on this
+
+00:39:10.170 --> 00:39:10.970
+<v Speaker 0>will do what I want.
+
+00:39:14.095 --> 00:39:15.135
+<v Speaker 0>Looks promising.
+
+00:39:15.455 --> 00:39:16.255
+<v Speaker 1>Success.
+
+00:39:19.775 --> 00:39:21.295
+<v Speaker 1>Oh, you have three of the same thing,
+
+00:39:21.295 --> 00:39:21.935
+<v Speaker 1>but
+
+00:39:27.615 --> 00:39:28.940
+<v Speaker 0>Try that again.
+
+00:39:37.579 --> 00:39:39.980
+<v Speaker 0>That can't be big enough for me. That
+
+00:39:39.980 --> 00:39:42.215
+<v Speaker 0>can't be big enough. Right? Right.
+
+00:39:49.095 --> 00:39:50.375
+<v Speaker 0>You know what? I'm not gonna store it
+
+00:39:50.375 --> 00:39:50.935
+<v Speaker 0>as a secret.
+
+00:39:54.210 --> 00:39:56.370
+<v Speaker 0>It's not a big deal, it doesn't matter.
+
+00:39:56.530 --> 00:39:57.570
+<v Speaker 0>Let's just do
+
+00:39:58.530 --> 00:39:59.410
+<v Speaker 0>get ups
+
+00:40:05.650 --> 00:40:07.915
+<v Speaker 0>and just store it as a multi
+
+00:40:09.434 --> 00:40:10.234
+<v Speaker 0>liner.
+
+00:40:12.555 --> 00:40:13.195
+<v Speaker 0>Yeah.
+
+00:40:13.355 --> 00:40:14.715
+<v Speaker 0>That's alright. Yeah.
+
+00:40:16.474 --> 00:40:17.355
+<v Speaker 1>That'll do.
+
+00:40:18.075 --> 00:40:18.715
+<v Speaker 0>Okay.
+
+00:40:18.875 --> 00:40:19.515
+<v Speaker 0>So
+
+00:40:20.660 --> 00:40:22.500
+<v Speaker 0>let's get me finished in the next few
+
+00:40:22.500 --> 00:40:25.460
+<v Speaker 0>minutes. So we need one more Pulumi provider,
+
+00:40:27.140 --> 00:40:28.660
+<v Speaker 0>which is the Kubernetes one.
+
+00:40:35.705 --> 00:40:37.145
+<v Speaker 0>Which I'm sure I could just have done
+
+00:40:37.145 --> 00:40:40.025
+<v Speaker 0>NPM install with roughly the same thing.
+
+00:40:45.545 --> 00:40:47.545
+<v Speaker 0>This gives us access to the Kubernetes thing.
+
+00:40:47.545 --> 00:40:49.225
+<v Speaker 0>I'm gonna create a custom provider with my
+
+00:40:49.225 --> 00:40:52.369
+<v Speaker 0>cube. Now this last five minutes is obviously
+
+00:40:52.369 --> 00:40:54.450
+<v Speaker 0>the hacky approach where I'm trying to make
+
+00:40:54.450 --> 00:40:56.130
+<v Speaker 0>it work. If you were using Pulumi it
+
+00:40:56.130 --> 00:40:58.930
+<v Speaker 0>has been up JKE or EKS you would
+
+00:40:58.930 --> 00:41:00.690
+<v Speaker 0>already have access to a cube config through
+
+00:41:00.690 --> 00:41:01.730
+<v Speaker 0>programmatic means.
+
+00:41:03.915 --> 00:41:05.435
+<v Speaker 0>I was just trying to speed things up
+
+00:41:05.435 --> 00:41:07.515
+<v Speaker 0>and probably slow them down a little bit,
+
+00:41:07.515 --> 00:41:08.235
+<v Speaker 0>but still.
+
+00:41:09.355 --> 00:41:12.475
+<v Speaker 0>So now we can import our Kubernetes provider.
+
+00:41:13.755 --> 00:41:14.875
+<v Speaker 0>I just called Kate.
+
+00:41:18.210 --> 00:41:19.810
+<v Speaker 0>We go down here. We're going to create
+
+00:41:19.810 --> 00:41:21.410
+<v Speaker 0>a Kubernetes provider.
+
+00:41:25.730 --> 00:41:27.650
+<v Speaker 0>Give it a name Kubernetes.
+
+00:41:27.970 --> 00:41:29.970
+<v Speaker 0>It should take a cube config as a
+
+00:41:29.970 --> 00:41:30.770
+<v Speaker 0>resource
+
+00:41:31.250 --> 00:41:34.485
+<v Speaker 0>and I'm going to do config dot require
+
+00:41:35.525 --> 00:41:37.125
+<v Speaker 0>cube config
+
+00:41:37.845 --> 00:41:39.924
+<v Speaker 0>and that should give me a Kubernetes provider
+
+00:41:39.924 --> 00:41:41.685
+<v Speaker 0>that I can apply a resource to.
+
+00:41:42.085 --> 00:41:44.724
+<v Speaker 0>So we're gonna be using flux one today.
+
+00:41:44.724 --> 00:41:45.525
+<v Speaker 0>Is that correct?
+
+00:41:46.005 --> 00:41:47.525
+<v Speaker 1>That's correct. Yeah. Flux one.
+
+00:41:48.150 --> 00:41:48.950
+<v Speaker 0>Alright.
+
+00:41:49.829 --> 00:41:52.069
+<v Speaker 1>So long story short is that I didn't
+
+00:41:52.069 --> 00:41:54.069
+<v Speaker 1>have enough time to actually rework the whole
+
+00:41:54.069 --> 00:41:56.230
+<v Speaker 1>entire repository over to Flux two.
+
+00:41:56.549 --> 00:41:58.150
+<v Speaker 1>So maybe we should do this again once
+
+00:41:58.150 --> 00:41:59.030
+<v Speaker 1>I've done that.
+
+00:41:59.430 --> 00:42:01.510
+<v Speaker 0>Sounds good to me. I think Noel's trying
+
+00:42:01.510 --> 00:42:02.309
+<v Speaker 0>to ruin my day today.
+
+00:42:04.085 --> 00:42:06.005
+<v Speaker 0>Your Cane cluster won't be available on the
+
+00:42:06.005 --> 00:42:07.125
+<v Speaker 0>internet. So
+
+00:42:09.365 --> 00:42:10.164
+<v Speaker 0>let's try.
+
+00:42:19.380 --> 00:42:21.619
+<v Speaker 0>Alright. Maybe we will be doing this manually.
+
+00:42:21.619 --> 00:42:24.180
+<v Speaker 0>Docker. Is it actually published in the port?
+
+00:42:25.380 --> 00:42:27.380
+<v Speaker 0>It only banks to 12700.
+
+00:42:27.380 --> 00:42:28.260
+<v Speaker 0>Right. Yeah.
+
+00:42:28.500 --> 00:42:29.700
+<v Speaker 0>Is that something I can change?
+
+00:42:31.355 --> 00:42:33.355
+<v Speaker 1>Let's just do it from here. Yeah. Let's
+
+00:42:33.355 --> 00:42:34.875
+<v Speaker 0>just apply flux one. So I'll show you
+
+00:42:34.875 --> 00:42:37.115
+<v Speaker 0>what this would have looked like. I'm sorry
+
+00:42:37.115 --> 00:42:38.714
+<v Speaker 0>that I can't show you it for real
+
+00:42:38.714 --> 00:42:40.155
+<v Speaker 0>but we could have done
+
+00:42:40.474 --> 00:42:41.275
+<v Speaker 0>flux
+
+00:42:41.835 --> 00:42:44.474
+<v Speaker 0>v one equals new Kubernetes deployment.
+
+00:42:47.069 --> 00:42:47.710
+<v Speaker 0>Core,
+
+00:42:48.030 --> 00:42:49.070
+<v Speaker 0>no apps.
+
+00:42:50.750 --> 00:42:51.230
+<v Speaker 0>V
+
+00:42:52.430 --> 00:42:53.230
+<v Speaker 0>two
+
+00:42:54.510 --> 00:42:55.310
+<v Speaker 0>deployment.
+
+00:42:55.630 --> 00:42:56.750
+<v Speaker 0>Give it a name.
+
+00:42:57.150 --> 00:42:58.910
+<v Speaker 0>And then when we open up the braces
+
+00:42:58.910 --> 00:43:01.505
+<v Speaker 0>here, we have access to all of the
+
+00:43:01.505 --> 00:43:02.464
+<v Speaker 0>spec,
+
+00:43:03.585 --> 00:43:04.224
+<v Speaker 0>the
+
+00:43:04.464 --> 00:43:05.345
+<v Speaker 0>template,
+
+00:43:05.345 --> 00:43:07.744
+<v Speaker 0>etcetera. Right. So you can flesh out your
+
+00:43:07.744 --> 00:43:09.744
+<v Speaker 0>Kubernetes spec this way. Another really cool thing
+
+00:43:09.744 --> 00:43:11.505
+<v Speaker 0>you can do is do a new Kubernetes
+
+00:43:12.980 --> 00:43:15.540
+<v Speaker 0>dot yaml dot config file,
+
+00:43:15.940 --> 00:43:17.060
+<v Speaker 0>give it a name,
+
+00:43:17.460 --> 00:43:19.220
+<v Speaker 0>point it to a
+
+00:43:20.020 --> 00:43:20.740
+<v Speaker 0>fail
+
+00:43:20.820 --> 00:43:23.700
+<v Speaker 0>which actually accepts remote locations
+
+00:43:23.780 --> 00:43:25.700
+<v Speaker 0>and so you can apply remote yaml.
+
+00:43:26.180 --> 00:43:28.065
+<v Speaker 0>One last thing you can do is you
+
+00:43:28.065 --> 00:43:31.105
+<v Speaker 0>can do helm charts v three chart,
+
+00:43:31.665 --> 00:43:32.705
+<v Speaker 0>give it a name
+
+00:43:34.305 --> 00:43:36.065
+<v Speaker 0>and then provide all the details and the
+
+00:43:36.065 --> 00:43:37.665
+<v Speaker 0>values here too.
+
+00:43:37.825 --> 00:43:39.890
+<v Speaker 0>So like there's so much flexibility with the
+
+00:43:39.890 --> 00:43:42.050
+<v Speaker 0>Kubernetes provider that allows you to do everything
+
+00:43:42.050 --> 00:43:43.410
+<v Speaker 0>that you need to do as well.
+
+00:43:44.290 --> 00:43:46.370
+<v Speaker 0>Alright. Let's just do it manually.
+
+00:43:47.330 --> 00:43:49.890
+<v Speaker 0>So flux one, I just grabbed that from
+
+00:43:50.530 --> 00:43:52.610
+<v Speaker 1>So what we what we could do is
+
+00:43:52.610 --> 00:43:54.850
+<v Speaker 1>the majority of the scripts are actually in
+
+00:43:54.850 --> 00:43:56.585
+<v Speaker 1>the repo. So if we if you're if
+
+00:43:56.585 --> 00:43:58.744
+<v Speaker 1>the repository that you thought that you thought
+
+00:43:58.744 --> 00:43:59.385
+<v Speaker 1>was
+
+00:43:59.545 --> 00:44:00.585
+<v Speaker 1>is public,
+
+00:44:00.665 --> 00:44:02.984
+<v Speaker 1>we can climb that whole repo onto the
+
+00:44:02.984 --> 00:44:03.625
+<v Speaker 1>machine.
+
+00:44:05.944 --> 00:44:06.345
+<v Speaker 0>Okay.
+
+00:44:07.880 --> 00:44:09.800
+<v Speaker 0>No give us a good idea here. Instead
+
+00:44:09.800 --> 00:44:11.400
+<v Speaker 0>of using kind I should have used case
+
+00:44:11.400 --> 00:44:13.400
+<v Speaker 0>three d or case yes. That's actually a
+
+00:44:13.400 --> 00:44:14.280
+<v Speaker 0>really good point.
+
+00:44:15.560 --> 00:44:17.160
+<v Speaker 0>That would have been much better.
+
+00:44:17.480 --> 00:44:18.440
+<v Speaker 0>I'm
+
+00:44:18.440 --> 00:44:19.560
+<v Speaker 0>learning, learning
+
+00:44:20.085 --> 00:44:21.365
+<v Speaker 0>much. So
+
+00:44:22.325 --> 00:44:23.685
+<v Speaker 0>let's install git.
+
+00:44:27.605 --> 00:44:29.925
+<v Speaker 0>Git clone. So this is
+
+00:44:34.299 --> 00:44:35.820
+<v Speaker 0>SSH URL.
+
+00:44:44.460 --> 00:44:46.140
+<v Speaker 0>Alright. What do you want me to run
+
+00:44:46.140 --> 00:44:46.700
+<v Speaker 0>here?
+
+00:44:47.420 --> 00:44:50.315
+<v Speaker 1>So there's a script inside the scripts directory.
+
+00:44:52.955 --> 00:44:54.635
+<v Speaker 1>There's a flux in it. So if you
+
+00:44:54.635 --> 00:44:56.474
+<v Speaker 1>run the flux ah, yeah. We're gonna need
+
+00:44:56.474 --> 00:44:57.915
+<v Speaker 1>help. So of course.
+
+00:45:00.234 --> 00:45:02.075
+<v Speaker 0>With all these little things we don't think
+
+00:45:02.075 --> 00:45:02.315
+<v Speaker 0>about.
+
+00:45:05.230 --> 00:45:06.110
+<v Speaker 0>Install.
+
+00:45:08.109 --> 00:45:09.230
+<v Speaker 0>Quick start.
+
+00:45:14.270 --> 00:45:15.870
+<v Speaker 0>Just give me a
+
+00:45:16.270 --> 00:45:17.309
+<v Speaker 0>curl out there.
+
+00:45:27.325 --> 00:45:29.964
+<v Speaker 1>Oh, there's a you spelled your mark wrong.
+
+00:45:37.190 --> 00:45:38.310
+<v Speaker 1>Oh, of course.
+
+00:45:42.070 --> 00:45:43.590
+<v Speaker 0>Get her You can get that from the
+
+00:45:43.590 --> 00:45:45.670
+<v Speaker 1>main flux repo. So flux c d slash
+
+00:45:45.670 --> 00:45:46.070
+<v Speaker 1>flux.
+
+00:45:52.605 --> 00:45:54.285
+<v Speaker 0>Give me a curl version.
+
+00:45:55.885 --> 00:45:56.925
+<v Speaker 0>Alright. Release it.
+
+00:46:01.010 --> 00:46:03.250
+<v Speaker 0>There we go. Oh, wait. Yeah. Flux one
+
+00:46:03.250 --> 00:46:04.290
+<v Speaker 0>two. Okay.
+
+00:46:05.809 --> 00:46:06.290
+<v Speaker 0>Linux.
+
+00:46:31.369 --> 00:46:31.850
+<v Speaker 1>No.
+
+00:46:32.250 --> 00:46:34.330
+<v Speaker 0>No. I don't know what.
+
+00:46:35.849 --> 00:46:37.210
+<v Speaker 1>I know what you think. I think it's
+
+00:46:37.210 --> 00:46:38.650
+<v Speaker 0>okay. I think it's fine. I've got
+
+00:46:39.450 --> 00:46:41.290
+<v Speaker 0>we're we're we've got one more release left
+
+00:46:41.290 --> 00:46:42.925
+<v Speaker 0>on us before that stops working.
+
+00:46:52.285 --> 00:46:54.444
+<v Speaker 0>Yeah. It's just installing the helm operator now.
+
+00:46:54.444 --> 00:46:55.565
+<v Speaker 0>So we'll give that a few seconds.
+
+00:47:02.230 --> 00:47:04.470
+<v Speaker 0>Okay. Cool. So, yeah, that's your Bitlab deploy
+
+00:47:04.470 --> 00:47:07.670
+<v Speaker 1>key. So for for anyone that doesn't really
+
+00:47:07.670 --> 00:47:10.545
+<v Speaker 1>understand how this process works, essentially, we're gonna
+
+00:47:10.545 --> 00:47:12.865
+<v Speaker 1>do is Flux is the agent that's running
+
+00:47:12.865 --> 00:47:14.625
+<v Speaker 1>inside of our client cluster.
+
+00:47:14.865 --> 00:47:16.865
+<v Speaker 1>We're gonna have a repository that is gonna
+
+00:47:16.865 --> 00:47:18.865
+<v Speaker 1>store essentially the definitions
+
+00:47:19.265 --> 00:47:21.265
+<v Speaker 1>of the manifests and the resources that we
+
+00:47:21.265 --> 00:47:23.529
+<v Speaker 1>want to deploy into the cluster. So we
+
+00:47:23.529 --> 00:47:25.289
+<v Speaker 1>have to use this deploy key as a
+
+00:47:25.289 --> 00:47:27.210
+<v Speaker 1>way for flux to be able to talk
+
+00:47:27.210 --> 00:47:28.490
+<v Speaker 1>to that repository.
+
+00:47:32.089 --> 00:47:34.250
+<v Speaker 0>So I just need to add this to
+
+00:47:34.730 --> 00:47:36.329
+<v Speaker 0>this get ops repository then?
+
+00:47:38.425 --> 00:47:40.505
+<v Speaker 1>Yes, please. Apply keys.
+
+00:47:43.464 --> 00:47:44.025
+<v Speaker 0>Go
+
+00:47:44.665 --> 00:47:45.625
+<v Speaker 0>demo.
+
+00:47:46.105 --> 00:47:47.225
+<v Speaker 0>Do we need to Yeah.
+
+00:47:47.545 --> 00:47:48.744
+<v Speaker 1>Yeah. Do that. Click that.
+
+00:47:57.220 --> 00:47:57.940
+<v Speaker 0>Alright.
+
+00:48:00.100 --> 00:48:01.700
+<v Speaker 1>Cool. If you go back to the script
+
+00:48:01.700 --> 00:48:02.420
+<v Speaker 1>now.
+
+00:48:03.140 --> 00:48:04.340
+<v Speaker 0>And just hit the button?
+
+00:48:05.375 --> 00:48:06.974
+<v Speaker 1>It it will wait. And as soon as
+
+00:48:06.974 --> 00:48:09.775
+<v Speaker 1>it's seen that it's able to get connectivity,
+
+00:48:09.775 --> 00:48:10.815
+<v Speaker 1>it will continue.
+
+00:48:11.454 --> 00:48:13.535
+<v Speaker 0>Alright. So while we give that a second,
+
+00:48:13.535 --> 00:48:15.215
+<v Speaker 0>I'm just gonna make sure you've got
+
+00:48:15.694 --> 00:48:18.575
+<v Speaker 0>SSH ability via the shared terminal.
+
+00:48:20.610 --> 00:48:21.250
+<v Speaker 0>Oh,
+
+00:48:29.010 --> 00:48:30.210
+<v Speaker 0>come on computer.
+
+00:48:30.770 --> 00:48:31.730
+<v Speaker 0>Seems to be
+
+00:48:34.690 --> 00:48:35.730
+<v Speaker 0>happy with me today.
+
+00:48:37.115 --> 00:48:38.955
+<v Speaker 0>Alright. So you should be able to
+
+00:48:39.515 --> 00:48:42.075
+<v Speaker 0>modify that repository which we have open here.
+
+00:48:42.075 --> 00:48:43.595
+<v Speaker 0>You've also got a terminal.
+
+00:48:44.075 --> 00:48:45.515
+<v Speaker 0>Let's check on the status.
+
+00:48:50.350 --> 00:48:51.790
+<v Speaker 0>How often does it check?
+
+00:48:53.230 --> 00:48:54.990
+<v Speaker 1>It hit enter. It should it should have
+
+00:48:54.990 --> 00:48:55.710
+<v Speaker 1>checked by now.
+
+00:49:00.605 --> 00:49:02.765
+<v Speaker 0>Oh, which repository is that using? It's using
+
+00:49:02.765 --> 00:49:05.244
+<v Speaker 0>yours. Right? Yeah. We haven't made we haven't
+
+00:49:05.244 --> 00:49:06.205
+<v Speaker 1>made the changes.
+
+00:49:08.525 --> 00:49:09.565
+<v Speaker 0>There we go.
+
+00:49:12.204 --> 00:49:13.405
+<v Speaker 0>Easy fix.
+
+00:49:14.204 --> 00:49:16.204
+<v Speaker 0>It's not gonna change the deploy key, is
+
+00:49:16.204 --> 00:49:16.365
+<v Speaker 0>it?
+
+00:49:17.630 --> 00:49:18.270
+<v Speaker 1>It
+
+00:49:18.430 --> 00:49:20.110
+<v Speaker 1>essentially, we're about to find out.
+
+00:49:21.550 --> 00:49:23.150
+<v Speaker 1>I guess it's the best for everybody. Right?
+
+00:49:23.150 --> 00:49:25.230
+<v Speaker 1>Don't just copy random random repairs off the
+
+00:49:25.230 --> 00:49:26.750
+<v Speaker 1>Internet and expect them to work first time
+
+00:49:26.750 --> 00:49:27.390
+<v Speaker 1>for you.
+
+00:49:28.670 --> 00:49:29.550
+<v Speaker 0>Oh,
+
+00:49:30.590 --> 00:49:33.015
+<v Speaker 0>Waleed has joined us. Hey, Wally.
+
+00:49:33.255 --> 00:49:34.295
+<v Speaker 1>Hi, Wally.
+
+00:49:35.655 --> 00:49:39.095
+<v Speaker 0>Who says he's getting TGIK episode deja vu.
+
+00:49:41.974 --> 00:49:43.895
+<v Speaker 0>Alright. It looks like the cluster is now
+
+00:49:43.895 --> 00:49:44.695
+<v Speaker 0>ready.
+
+00:49:45.960 --> 00:49:47.400
+<v Speaker 1>Cool. So now if you do
+
+00:49:48.200 --> 00:49:49.080
+<v Speaker 1>kubectl
+
+00:49:49.080 --> 00:49:50.360
+<v Speaker 1>get pods
+
+00:49:52.359 --> 00:49:54.200
+<v Speaker 0>Feel free to type in the terminal. Why
+
+00:49:54.200 --> 00:49:54.920
+<v Speaker 0>don't you take over?
+
+00:49:58.475 --> 00:50:01.035
+<v Speaker 1>I cannot edit unless I sign in. Okay.
+
+00:50:01.035 --> 00:50:01.995
+<v Speaker 1>Bear with me two seconds.
+
+00:50:17.770 --> 00:50:19.610
+<v Speaker 0>I can see we've got the helm operator
+
+00:50:19.610 --> 00:50:20.490
+<v Speaker 0>running
+
+00:50:21.690 --> 00:50:23.850
+<v Speaker 0>and we have a flux namespace.
+
+00:50:27.530 --> 00:50:29.635
+<v Speaker 0>Oh, my alias doesn't doesn't exist here.
+
+00:50:32.674 --> 00:50:35.234
+<v Speaker 0>We should run-in flux, memcached and
+
+00:50:35.315 --> 00:50:36.355
+<v Speaker 0>op editor.
+
+00:50:37.875 --> 00:50:39.714
+<v Speaker 0>Oh, you have joined. Let me give you
+
+00:50:39.714 --> 00:50:41.474
+<v Speaker 0>access to that terminal.
+
+00:50:42.595 --> 00:50:42.914
+<v Speaker 0>Done.
+
+00:50:43.440 --> 00:50:44.480
+<v Speaker 0>All yours.
+
+00:50:47.040 --> 00:50:49.200
+<v Speaker 0>You may wanna alias keep control to key.
+
+00:50:51.200 --> 00:50:53.359
+<v Speaker 0>Do you use that alias? No. Yeah. I
+
+00:50:53.520 --> 00:50:54.880
+<v Speaker 1>yeah. I do. But I'm gonna get myself
+
+00:50:54.880 --> 00:50:56.320
+<v Speaker 1>so confused if I do that.
+
+00:50:56.720 --> 00:50:57.040
+<v Speaker 1>So
+
+00:50:58.560 --> 00:51:00.075
+<v Speaker 1>yes. So get
+
+00:51:00.075 --> 00:51:00.875
+<v Speaker 1>pods.
+
+00:51:01.835 --> 00:51:04.155
+<v Speaker 1>So, again, got the default Helm operator in
+
+00:51:04.155 --> 00:51:06.475
+<v Speaker 1>the default namespace, and then as you showed,
+
+00:51:06.875 --> 00:51:08.635
+<v Speaker 1>the dash n Flux here.
+
+00:51:09.355 --> 00:51:09.995
+<v Speaker 1>So
+
+00:51:10.235 --> 00:51:12.555
+<v Speaker 1>we have when we deploy Flux, Flux comes
+
+00:51:12.555 --> 00:51:15.830
+<v Speaker 1>as two main components. We've got the actual
+
+00:51:15.830 --> 00:51:18.070
+<v Speaker 1>Flux agent itself that is gonna sit there
+
+00:51:18.070 --> 00:51:19.670
+<v Speaker 1>and interact and
+
+00:51:20.390 --> 00:51:22.790
+<v Speaker 1>reconcile our repository, and then we have a
+
+00:51:22.790 --> 00:51:25.110
+<v Speaker 1>Flux mem cached pod that you can see
+
+00:51:25.110 --> 00:51:28.310
+<v Speaker 1>here, which is actually gonna store or is
+
+00:51:28.310 --> 00:51:31.325
+<v Speaker 1>used to store all of your image tags.
+
+00:51:31.964 --> 00:51:32.525
+<v Speaker 1>So
+
+00:51:32.765 --> 00:51:35.165
+<v Speaker 1>imagine you're doing continuous deployment,
+
+00:51:35.565 --> 00:51:37.325
+<v Speaker 1>and you what we don't wanna do is
+
+00:51:37.325 --> 00:51:39.645
+<v Speaker 1>have to constantly keep updating
+
+00:51:39.805 --> 00:51:41.325
+<v Speaker 1>our specifications
+
+00:51:41.325 --> 00:51:43.580
+<v Speaker 1>in Git. We want a way to be
+
+00:51:43.580 --> 00:51:46.220
+<v Speaker 1>able to configure that once,
+
+00:51:46.460 --> 00:51:47.820
+<v Speaker 1>check that into
+
+00:51:48.380 --> 00:51:49.740
+<v Speaker 1>our Git repository,
+
+00:51:49.820 --> 00:51:51.980
+<v Speaker 1>and then essentially have Flux be able to
+
+00:51:51.980 --> 00:51:52.780
+<v Speaker 1>determine
+
+00:51:52.860 --> 00:51:55.420
+<v Speaker 1>and look at the image registry for new
+
+00:51:55.420 --> 00:51:56.060
+<v Speaker 1>image tags,
+
+00:51:56.565 --> 00:51:59.285
+<v Speaker 1>automate the deploy of those image tags, and
+
+00:51:59.285 --> 00:52:01.125
+<v Speaker 1>then the kind of secret sources are already
+
+00:52:01.125 --> 00:52:03.045
+<v Speaker 1>writing it back to Git. So Git is
+
+00:52:03.045 --> 00:52:05.445
+<v Speaker 1>our centralized source of truth here for the
+
+00:52:05.445 --> 00:52:07.445
+<v Speaker 1>workloads that are running within the cluster.
+
+00:52:07.925 --> 00:52:09.445
+<v Speaker 0>Nice. And then
+
+00:52:09.685 --> 00:52:11.350
+<v Speaker 1>kind of Flux's
+
+00:52:12.390 --> 00:52:14.630
+<v Speaker 1>kind of right hand man essentially
+
+00:52:14.790 --> 00:52:17.510
+<v Speaker 1>is the the Helm operator, and the job
+
+00:52:17.510 --> 00:52:19.190
+<v Speaker 1>of the Helm operator is
+
+00:52:19.510 --> 00:52:20.230
+<v Speaker 1>to
+
+00:52:20.310 --> 00:52:23.350
+<v Speaker 1>manage the life cycle of Helm releases.
+
+00:52:23.590 --> 00:52:25.934
+<v Speaker 1>So with Flux, you have this a resource
+
+00:52:25.934 --> 00:52:27.775
+<v Speaker 1>in Kubernetes called the Helm release.
+
+00:52:28.174 --> 00:52:30.015
+<v Speaker 1>And, essentially, what that is
+
+00:52:30.494 --> 00:52:34.255
+<v Speaker 1>is a Helm chart at a specific version
+
+00:52:34.654 --> 00:52:37.135
+<v Speaker 1>with a specific set of values.
+
+00:52:37.375 --> 00:52:39.369
+<v Speaker 1>So rather than you kind of in the
+
+00:52:39.369 --> 00:52:40.570
+<v Speaker 1>old world having
+
+00:52:40.970 --> 00:52:43.290
+<v Speaker 1>a home chart and different values dot YAML
+
+00:52:43.290 --> 00:52:44.890
+<v Speaker 1>files, so you may have had, like, dev
+
+00:52:44.890 --> 00:52:47.450
+<v Speaker 1>values dot YAML and staging values dot YAML.
+
+00:52:47.690 --> 00:52:50.090
+<v Speaker 1>You essentially can define all of that as
+
+00:52:50.090 --> 00:52:51.370
+<v Speaker 1>a single resource
+
+00:52:51.530 --> 00:52:53.530
+<v Speaker 1>that can then be committed to Git.
+
+00:52:54.330 --> 00:52:56.625
+<v Speaker 1>Flux will sync that. Flux doesn't have the
+
+00:52:56.625 --> 00:52:58.145
+<v Speaker 1>understanding of knowing what to do with it.
+
+00:52:58.145 --> 00:53:00.225
+<v Speaker 1>It's just being used as a sync mechanism.
+
+00:53:00.785 --> 00:53:02.945
+<v Speaker 1>And then the Helm operator itself
+
+00:53:03.105 --> 00:53:05.105
+<v Speaker 1>will pick that up and actually be able
+
+00:53:05.105 --> 00:53:07.185
+<v Speaker 1>to reconcile that. So the Helm operator is
+
+00:53:07.185 --> 00:53:09.340
+<v Speaker 1>doing the Helm upgrades, the Helm installs, the
+
+00:53:09.340 --> 00:53:11.820
+<v Speaker 1>Helm rollbacks, the Helm deletes, and Flux is
+
+00:53:11.820 --> 00:53:14.300
+<v Speaker 1>just actually being used as syncing those into
+
+00:53:14.300 --> 00:53:15.100
+<v Speaker 1>the cluster.
+
+00:53:15.900 --> 00:53:17.340
+<v Speaker 1>Does that make sense to everybody?
+
+00:53:18.700 --> 00:53:19.900
+<v Speaker 0>Yeah. That sounds good.
+
+00:53:21.075 --> 00:53:22.435
+<v Speaker 0>Let's see the magic.
+
+00:53:24.994 --> 00:53:27.075
+<v Speaker 1>Can you guys see me expanding out the
+
+00:53:27.075 --> 00:53:28.355
+<v Speaker 1>the terminal there?
+
+00:53:29.315 --> 00:53:30.835
+<v Speaker 0>No. But I can expand to that. That's
+
+00:53:30.835 --> 00:53:31.475
+<v Speaker 0>okay.
+
+00:53:31.795 --> 00:53:32.515
+<v Speaker 1>Okay.
+
+00:53:33.155 --> 00:53:35.849
+<v Speaker 1>So if we take a look at sorry.
+
+00:53:35.849 --> 00:53:37.210
+<v Speaker 1>Not the terminal. The
+
+00:53:37.849 --> 00:53:39.529
+<v Speaker 1>the the repository on the on the right
+
+00:53:39.529 --> 00:53:40.810
+<v Speaker 1>hand side of the directories.
+
+00:53:40.970 --> 00:53:43.130
+<v Speaker 0>Let me follow you.
+
+00:53:43.450 --> 00:53:45.530
+<v Speaker 0>Right? Now anything you do, we will see.
+
+00:53:45.849 --> 00:53:47.290
+<v Speaker 1>Cool. Okay. So
+
+00:53:48.569 --> 00:53:50.170
+<v Speaker 1>with regards to
+
+00:53:51.345 --> 00:53:53.984
+<v Speaker 1>how Flux is configured, especially specifically for this
+
+00:53:53.984 --> 00:53:54.865
+<v Speaker 1>repository,
+
+00:53:55.025 --> 00:53:55.665
+<v Speaker 1>we
+
+00:53:55.905 --> 00:53:56.865
+<v Speaker 1>are using
+
+00:53:57.025 --> 00:53:59.985
+<v Speaker 1>customize. So the way that customize works is
+
+00:54:01.105 --> 00:54:02.705
+<v Speaker 1>essentially you have a base,
+
+00:54:02.865 --> 00:54:04.385
+<v Speaker 1>and the base is really how I like
+
+00:54:04.385 --> 00:54:06.039
+<v Speaker 1>to think about it is an a la
+
+00:54:06.039 --> 00:54:07.080
+<v Speaker 1>carte menu
+
+00:54:07.160 --> 00:54:09.080
+<v Speaker 1>of multiple resources
+
+00:54:09.160 --> 00:54:10.599
+<v Speaker 1>that can be used
+
+00:54:10.680 --> 00:54:13.720
+<v Speaker 1>within a specific cluster or within multiple in
+
+00:54:13.720 --> 00:54:15.160
+<v Speaker 1>multiple clusters.
+
+00:54:15.240 --> 00:54:17.319
+<v Speaker 1>So here, all we're talking about is the
+
+00:54:17.319 --> 00:54:19.000
+<v Speaker 1>the development cluster.
+
+00:54:19.160 --> 00:54:20.920
+<v Speaker 1>So that we have a development cluster,
+
+00:54:21.365 --> 00:54:24.165
+<v Speaker 1>and then that is going to inherit
+
+00:54:24.964 --> 00:54:28.325
+<v Speaker 1>resources that currently sit within the base configuration.
+
+00:54:29.045 --> 00:54:31.525
+<v Speaker 1>So the base configuration is gonna store all
+
+00:54:31.525 --> 00:54:32.645
+<v Speaker 1>of the resources
+
+00:54:32.964 --> 00:54:36.480
+<v Speaker 1>without the environment specific configuration. So think of
+
+00:54:36.480 --> 00:54:37.920
+<v Speaker 1>things like URLs
+
+00:54:37.920 --> 00:54:41.040
+<v Speaker 1>or maybe an API an API token or
+
+00:54:41.040 --> 00:54:42.800
+<v Speaker 1>something that we're gonna deploy as a secret.
+
+00:54:42.880 --> 00:54:45.760
+<v Speaker 1>Those are the diffs. So the diffs sit
+
+00:54:45.840 --> 00:54:47.520
+<v Speaker 1>in your environment directory,
+
+00:54:47.760 --> 00:54:49.125
+<v Speaker 1>and a large majority of your majority of
+
+00:54:49.125 --> 00:54:51.765
+<v Speaker 1>your of your YAMLs essentially sits in base.
+
+00:54:51.765 --> 00:54:53.205
+<v Speaker 1>So if we take an example,
+
+00:54:53.445 --> 00:54:54.965
+<v Speaker 1>so inside base,
+
+00:54:55.605 --> 00:54:56.805
+<v Speaker 1>we have
+
+00:54:57.525 --> 00:54:58.485
+<v Speaker 1>cluster.
+
+00:54:58.485 --> 00:55:01.940
+<v Speaker 1>And, again, inside cluster, we have a a
+
+00:55:01.940 --> 00:55:03.140
+<v Speaker 1>namespace here.
+
+00:55:06.900 --> 00:55:08.420
+<v Speaker 1>So we can see the namespace in this
+
+00:55:08.420 --> 00:55:09.940
+<v Speaker 1>example is called a demo.
+
+00:55:10.660 --> 00:55:13.220
+<v Speaker 1>And then if we expand out into
+
+00:55:14.125 --> 00:55:15.725
+<v Speaker 1>into the dev directory
+
+00:55:15.805 --> 00:55:19.005
+<v Speaker 1>underneath cluster, you'll see that there's this customization.
+
+00:55:20.045 --> 00:55:22.125
+<v Speaker 1>And for this customization, what we're doing is
+
+00:55:22.125 --> 00:55:24.605
+<v Speaker 1>we're going back up to the base directory,
+
+00:55:24.925 --> 00:55:26.920
+<v Speaker 1>and we are gonna in we're gonna basically
+
+00:55:26.920 --> 00:55:28.360
+<v Speaker 1>consume everything
+
+00:55:28.360 --> 00:55:30.680
+<v Speaker 1>within that cluster directory.
+
+00:55:33.560 --> 00:55:35.240
+<v Speaker 1>So this allows us to be able to
+
+00:55:35.240 --> 00:55:37.720
+<v Speaker 1>put a large majority of our configuration in
+
+00:55:37.720 --> 00:55:38.440
+<v Speaker 1>base,
+
+00:55:38.760 --> 00:55:42.085
+<v Speaker 1>reference to that configuration within our environment
+
+00:55:42.164 --> 00:55:43.765
+<v Speaker 1>specific configuration,
+
+00:55:44.085 --> 00:55:45.684
+<v Speaker 1>and then have the ability to be able
+
+00:55:45.684 --> 00:55:46.645
+<v Speaker 1>to override
+
+00:55:46.645 --> 00:55:49.605
+<v Speaker 1>certain portions of that. So the best example
+
+00:55:49.605 --> 00:55:51.685
+<v Speaker 1>really here is gonna be for our
+
+00:55:52.005 --> 00:55:53.045
+<v Speaker 1>pod info.
+
+00:55:53.924 --> 00:55:56.570
+<v Speaker 1>So pod info, again, has a namespace
+
+00:55:56.730 --> 00:55:59.370
+<v Speaker 1>with the name pod info, pretty self explanatory.
+
+00:56:00.170 --> 00:56:02.730
+<v Speaker 1>And then we have a helm release here.
+
+00:56:02.730 --> 00:56:04.090
+<v Speaker 1>So this is a definition of a helm
+
+00:56:04.090 --> 00:56:04.730
+<v Speaker 1>release.
+
+00:56:05.770 --> 00:56:08.330
+<v Speaker 1>So the helm release is saying we
+
+00:56:08.490 --> 00:56:10.365
+<v Speaker 1>gonna give it a name. So name being
+
+00:56:10.365 --> 00:56:12.925
+<v Speaker 1>pod info. We're gonna deploy it to the
+
+00:56:12.925 --> 00:56:14.445
+<v Speaker 1>namespace pod info.
+
+00:56:15.725 --> 00:56:17.565
+<v Speaker 1>We have a chart,
+
+00:56:17.725 --> 00:56:20.045
+<v Speaker 1>and Stefan has provided us a nice
+
+00:56:21.005 --> 00:56:22.365
+<v Speaker 1>chart registry there
+
+00:56:23.085 --> 00:56:25.980
+<v Speaker 1>that we can use at a specific version.
+
+00:56:25.980 --> 00:56:27.340
+<v Speaker 1>So here it can be
+
+00:56:27.900 --> 00:56:29.420
+<v Speaker 1>can be a reference to git if we
+
+00:56:29.420 --> 00:56:30.700
+<v Speaker 1>wanted to. It doesn't have to be a
+
+00:56:30.700 --> 00:56:32.620
+<v Speaker 1>URL. It can even be local.
+
+00:56:33.900 --> 00:56:35.660
+<v Speaker 1>And then a release name. So this release
+
+00:56:35.660 --> 00:56:38.540
+<v Speaker 1>name is a release name for
+
+00:56:39.185 --> 00:56:40.305
+<v Speaker 1>the specific
+
+00:56:41.265 --> 00:56:42.385
+<v Speaker 1>instantiation
+
+00:56:42.385 --> 00:56:43.345
+<v Speaker 1>of this
+
+00:56:43.665 --> 00:56:44.705
+<v Speaker 1>helm release.
+
+00:56:44.945 --> 00:56:47.425
+<v Speaker 1>So this name needs to be unique at
+
+00:56:47.425 --> 00:56:49.425
+<v Speaker 1>the cluster scope. So one of the things
+
+00:56:49.425 --> 00:56:51.425
+<v Speaker 1>that I'll kind of come on to is
+
+00:56:51.425 --> 00:56:53.470
+<v Speaker 1>the CI portion of this. This is one
+
+00:56:53.470 --> 00:56:55.150
+<v Speaker 1>thing you wanna guard against. So what we
+
+00:56:55.150 --> 00:56:57.070
+<v Speaker 1>don't wanna do is be deploying the same
+
+00:56:57.710 --> 00:56:59.310
+<v Speaker 1>multiple different helm releases
+
+00:56:59.390 --> 00:57:01.790
+<v Speaker 1>with the same helm release name. We really
+
+00:57:01.790 --> 00:57:03.470
+<v Speaker 1>wanna be keeping these things unique.
+
+00:57:04.830 --> 00:57:06.750
+<v Speaker 1>And then finally, the values file. So this
+
+00:57:06.750 --> 00:57:08.110
+<v Speaker 1>is your kind of common
+
+00:57:08.625 --> 00:57:11.345
+<v Speaker 1>dev dash values dot YAML. And all this
+
+00:57:11.345 --> 00:57:13.425
+<v Speaker 1>is doing is going to take
+
+00:57:13.745 --> 00:57:16.545
+<v Speaker 1>the default values that are in the pod
+
+00:57:16.545 --> 00:57:20.305
+<v Speaker 1>info helm chart and then override with with
+
+00:57:20.305 --> 00:57:22.225
+<v Speaker 1>this one here. So what we're saying is
+
+00:57:22.225 --> 00:57:25.540
+<v Speaker 1>for any base configuration configuration in any environment,
+
+00:57:25.859 --> 00:57:27.140
+<v Speaker 1>we want to deploy
+
+00:57:27.460 --> 00:57:29.220
+<v Speaker 1>this version of the Helm chart
+
+00:57:29.460 --> 00:57:30.740
+<v Speaker 1>with this tag.
+
+00:57:33.300 --> 00:57:35.060
+<v Speaker 1>The way that kind of all gets bundled
+
+00:57:35.060 --> 00:57:37.605
+<v Speaker 1>together is via a customization.
+
+00:57:37.605 --> 00:57:39.845
+<v Speaker 1>So the customization here is saying,
+
+00:57:40.485 --> 00:57:42.965
+<v Speaker 1>for this specific customization, we want to add
+
+00:57:42.965 --> 00:57:45.605
+<v Speaker 1>these two specific resources. So we wanna add
+
+00:57:45.605 --> 00:57:48.165
+<v Speaker 1>the namespace, and we want to add the
+
+00:57:48.165 --> 00:57:49.045
+<v Speaker 1>helm release.
+
+00:57:49.365 --> 00:57:51.845
+<v Speaker 1>And then when flux actually gets hooked in,
+
+00:57:52.260 --> 00:57:55.380
+<v Speaker 1>it essentially traverses the tree from bottom up.
+
+00:57:55.380 --> 00:57:56.740
+<v Speaker 1>So if we go back to the dev
+
+00:57:56.740 --> 00:57:57.540
+<v Speaker 1>directory,
+
+00:57:57.940 --> 00:58:00.100
+<v Speaker 1>you'll see here that there is a Flux
+
+00:58:00.100 --> 00:58:00.740
+<v Speaker 1>customization
+
+00:58:00.980 --> 00:58:03.700
+<v Speaker 1>a customization, sorry, in the dev directory,
+
+00:58:04.194 --> 00:58:06.275
+<v Speaker 1>and this points to all of the other
+
+00:58:06.275 --> 00:58:07.715
+<v Speaker 1>directories within
+
+00:58:07.795 --> 00:58:09.955
+<v Speaker 1>this top level directory for the environment.
+
+00:58:10.595 --> 00:58:12.994
+<v Speaker 1>So we can see here actually, I'm gonna
+
+00:58:12.994 --> 00:58:14.595
+<v Speaker 1>kind of gloss over pod info.
+
+00:58:14.994 --> 00:58:17.714
+<v Speaker 1>In our Helm releases directory, again, we're just
+
+00:58:17.714 --> 00:58:18.915
+<v Speaker 1>going up to
+
+00:58:19.234 --> 00:58:21.720
+<v Speaker 1>the top level Helm releases directory because we
+
+00:58:21.720 --> 00:58:24.760
+<v Speaker 1>don't need to keep repeating the same configuration.
+
+00:58:24.760 --> 00:58:27.400
+<v Speaker 1>We're always gonna be deploying a Helm operator
+
+00:58:27.480 --> 00:58:29.800
+<v Speaker 1>the same way in every environment. Otherwise, this
+
+00:58:29.800 --> 00:58:31.240
+<v Speaker 1>is not gonna be able to be reconciled.
+
+00:58:32.565 --> 00:58:34.565
+<v Speaker 1>And then, again, the same thing with the
+
+00:58:34.565 --> 00:58:37.045
+<v Speaker 1>customization for the cluster. So all we're doing
+
+00:58:37.045 --> 00:58:40.405
+<v Speaker 1>here is essentially building up the overall makeup
+
+00:58:40.405 --> 00:58:41.125
+<v Speaker 1>of
+
+00:58:42.005 --> 00:58:43.845
+<v Speaker 1>our of our environment.
+
+00:58:45.770 --> 00:58:46.410
+<v Speaker 1>So
+
+00:58:46.810 --> 00:58:48.730
+<v Speaker 1>now what we have is and what I've
+
+00:58:48.730 --> 00:58:50.890
+<v Speaker 1>shown you is simply just
+
+00:58:52.250 --> 00:58:54.170
+<v Speaker 1>a a kind of rinse and repeat. Right?
+
+00:58:54.170 --> 00:58:56.010
+<v Speaker 1>It's a copy. It's an exact copy of
+
+00:58:56.010 --> 00:58:57.930
+<v Speaker 1>base. But now what do we wanna do,
+
+00:58:58.244 --> 00:59:01.045
+<v Speaker 1>or how can we make changes
+
+00:59:01.285 --> 00:59:04.244
+<v Speaker 1>to base that are specific to our environment?
+
+00:59:04.244 --> 00:59:06.484
+<v Speaker 1>And the way that works is by leveraging
+
+00:59:06.484 --> 00:59:08.724
+<v Speaker 1>something called a a customized
+
+00:59:08.724 --> 00:59:09.605
+<v Speaker 1>patch.
+
+00:59:10.325 --> 00:59:12.050
+<v Speaker 1>So in pod info here,
+
+00:59:12.690 --> 00:59:15.570
+<v Speaker 1>you'll see we have a customization again, and
+
+00:59:15.570 --> 00:59:17.490
+<v Speaker 1>we are taking a resource,
+
+00:59:17.810 --> 00:59:20.690
+<v Speaker 1>and that resource is that top level declaration
+
+00:59:20.850 --> 00:59:22.770
+<v Speaker 1>that we have in our base directory.
+
+00:59:22.850 --> 00:59:25.525
+<v Speaker 1>And then we are gonna perform strategic merge.
+
+00:59:25.605 --> 00:59:28.325
+<v Speaker 1>And we're gonna take this strategic merge from
+
+00:59:28.805 --> 00:59:32.165
+<v Speaker 1>the Helm release YAML in the same directory.
+
+00:59:33.765 --> 00:59:35.445
+<v Speaker 1>And our Helm release YAML
+
+00:59:35.925 --> 00:59:37.125
+<v Speaker 1>looks like this.
+
+00:59:38.005 --> 00:59:39.205
+<v Speaker 1>So what we could do if we wanted
+
+00:59:39.205 --> 00:59:40.610
+<v Speaker 1>to is change this to six.
+
+00:59:41.410 --> 00:59:43.090
+<v Speaker 1>Right? And imagine we had a lot of
+
+00:59:43.090 --> 00:59:45.570
+<v Speaker 1>configuration in base. All it will do is
+
+00:59:45.570 --> 00:59:47.730
+<v Speaker 1>it will blend what's in base with what
+
+00:59:47.730 --> 00:59:50.370
+<v Speaker 1>we've got in here, perform the strategic merge,
+
+00:59:50.370 --> 00:59:52.530
+<v Speaker 1>and then what flux will do is deploy
+
+00:59:52.530 --> 00:59:54.290
+<v Speaker 1>the exact same chart but just with a
+
+00:59:54.290 --> 00:59:54.850
+<v Speaker 1>different tag.
+
+00:59:56.085 --> 00:59:57.205
+<v Speaker 1>Does that make sense?
+
+00:59:58.085 --> 00:59:59.365
+<v Speaker 0>Yeah. It does.
+
+00:59:59.685 --> 01:00:00.645
+<v Speaker 0>Sounds good.
+
+01:00:02.085 --> 01:00:02.805
+<v Speaker 1>So
+
+01:00:03.925 --> 01:00:06.165
+<v Speaker 1>because this is already checked into Git,
+
+01:00:06.725 --> 01:00:08.965
+<v Speaker 1>we've actually already deployed this. So if we
+
+01:00:08.965 --> 01:00:10.245
+<v Speaker 1>go back to the terminal
+
+01:00:10.890 --> 01:00:11.530
+<v Speaker 1>and
+
+01:00:13.210 --> 01:00:14.250
+<v Speaker 1>the kubectl
+
+01:00:14.250 --> 01:00:16.570
+<v Speaker 1>get pods dash n pod info,
+
+01:00:18.490 --> 01:00:20.250
+<v Speaker 1>you'll see here that we've already got pod
+
+01:00:20.250 --> 01:00:20.970
+<v Speaker 1>info deployed.
+
+01:00:28.625 --> 01:00:30.305
+<v Speaker 1>This is where auto complete is gonna kill
+
+01:00:30.305 --> 01:00:30.464
+<v Speaker 1>me.
+
+01:00:36.360 --> 01:00:37.880
+<v Speaker 0>Yeah. It's annoying when you don't have your
+
+01:00:37.880 --> 01:00:40.360
+<v Speaker 0>tools in front of your normal workstation tools
+
+01:00:40.360 --> 01:00:41.160
+<v Speaker 0>available.
+
+01:00:43.400 --> 01:00:45.800
+<v Speaker 0>You actually have to remember commands and stuff.
+
+01:00:47.240 --> 01:00:48.920
+<v Speaker 1>Can I copy it?
+
+01:00:50.040 --> 01:00:51.555
+<v Speaker 0>Yeah. I think you're about right.
+
+01:00:54.755 --> 01:00:56.675
+<v Speaker 1>Okay. So what we can see here is
+
+01:00:56.675 --> 01:00:57.235
+<v Speaker 1>that,
+
+01:00:57.715 --> 01:01:00.195
+<v Speaker 1>actually, we've gone to version four dot zero
+
+01:01:00.195 --> 01:01:01.075
+<v Speaker 1>dot six.
+
+01:01:01.555 --> 01:01:02.275
+<v Speaker 1>However,
+
+01:01:02.435 --> 01:01:04.515
+<v Speaker 1>at no point in this
+
+01:01:05.100 --> 01:01:06.060
+<v Speaker 1>declaration
+
+01:01:06.060 --> 01:01:08.700
+<v Speaker 1>have we ever specified the version four dot
+
+01:01:08.700 --> 01:01:09.820
+<v Speaker 1>zero dot six.
+
+01:01:10.060 --> 01:01:12.380
+<v Speaker 1>Even in our dev directory, we have specified
+
+01:01:12.380 --> 01:01:14.300
+<v Speaker 1>the version four dot zero dot three.
+
+01:01:14.940 --> 01:01:16.780
+<v Speaker 1>However, if you remember before, I said we
+
+01:01:16.780 --> 01:01:18.140
+<v Speaker 1>need a way of being able to do
+
+01:01:18.140 --> 01:01:19.180
+<v Speaker 1>continuous deployment.
+
+01:01:19.585 --> 01:01:22.305
+<v Speaker 1>So I made a a major assumption that
+
+01:01:22.305 --> 01:01:24.865
+<v Speaker 1>Stefan is already doing work whilst we're recording
+
+01:01:24.865 --> 01:01:25.505
+<v Speaker 1>this
+
+01:01:25.665 --> 01:01:28.065
+<v Speaker 1>and has created us a new image.
+
+01:01:29.505 --> 01:01:31.585
+<v Speaker 1>And we use this flux annotation.
+
+01:01:31.585 --> 01:01:32.225
+<v Speaker 1>So
+
+01:01:32.810 --> 01:01:35.290
+<v Speaker 1>like everything in Kubernetes, we have this concept
+
+01:01:35.290 --> 01:01:36.410
+<v Speaker 1>of annotations,
+
+01:01:36.730 --> 01:01:39.050
+<v Speaker 1>and we are gonna set the Flux automation
+
+01:01:39.050 --> 01:01:41.210
+<v Speaker 1>to true. So once we set this value
+
+01:01:41.210 --> 01:01:42.010
+<v Speaker 1>to true,
+
+01:01:42.330 --> 01:01:43.930
+<v Speaker 1>we are telling Flux
+
+01:01:44.010 --> 01:01:45.450
+<v Speaker 1>that every
+
+01:01:45.770 --> 01:01:46.490
+<v Speaker 1>every time
+
+01:01:47.465 --> 01:01:49.865
+<v Speaker 1>you perform a sync with our registry,
+
+01:01:49.945 --> 01:01:52.105
+<v Speaker 1>can you go and look for new image
+
+01:01:52.105 --> 01:01:52.825
+<v Speaker 1>tags
+
+01:01:52.905 --> 01:01:54.025
+<v Speaker 1>that match
+
+01:01:54.425 --> 01:01:56.585
+<v Speaker 1>the prefix or the semantic version that we
+
+01:01:56.585 --> 01:01:57.625
+<v Speaker 1>have set below?
+
+01:01:58.825 --> 01:02:00.790
+<v Speaker 1>So you can set this in flux five
+
+01:02:01.190 --> 01:02:03.670
+<v Speaker 1>minutes, ten minutes, fifteen minutes, one minute. It
+
+01:02:03.670 --> 01:02:06.069
+<v Speaker 1>doesn't matter. And every time it goes and
+
+01:02:06.069 --> 01:02:07.350
+<v Speaker 1>looks at the registry,
+
+01:02:07.829 --> 01:02:09.510
+<v Speaker 1>it will see if there's a new version.
+
+01:02:10.069 --> 01:02:10.950
+<v Speaker 1>It will
+
+01:02:11.510 --> 01:02:14.025
+<v Speaker 1>deploy that version for us, and then finally,
+
+01:02:14.025 --> 01:02:15.545
+<v Speaker 1>will write it back to Git.
+
+01:02:17.065 --> 01:02:19.145
+<v Speaker 1>Here is the slight difference between
+
+01:02:19.785 --> 01:02:22.505
+<v Speaker 1>using customize as the way of
+
+01:02:22.744 --> 01:02:25.464
+<v Speaker 1>implementing this and just kind of having a
+
+01:02:25.464 --> 01:02:27.704
+<v Speaker 1>load of YAML files that you don't use
+
+01:02:27.704 --> 01:02:28.505
+<v Speaker 1>customize on.
+
+01:02:29.740 --> 01:02:31.260
+<v Speaker 1>So what you'll see here is there's a
+
+01:02:31.260 --> 01:02:32.700
+<v Speaker 1>flux patch directory
+
+01:02:33.500 --> 01:02:36.700
+<v Speaker 1>sorry, a flux patch file within the dev
+
+01:02:36.700 --> 01:02:37.420
+<v Speaker 1>directory.
+
+01:02:38.220 --> 01:02:40.540
+<v Speaker 1>And now this is saying, okay. Well,
+
+01:02:41.735 --> 01:02:44.455
+<v Speaker 1>the flux patch has specified that the image
+
+01:02:44.455 --> 01:02:45.255
+<v Speaker 1>tag
+
+01:02:45.255 --> 01:02:46.855
+<v Speaker 1>for this Helm release
+
+01:02:47.095 --> 01:02:50.055
+<v Speaker 1>has gone to four dot zero dot six.
+
+01:02:51.495 --> 01:02:54.455
+<v Speaker 1>So when you're looking for diffs between environments,
+
+01:02:54.455 --> 01:02:56.135
+<v Speaker 1>you're not just looking
+
+01:02:56.580 --> 01:02:59.300
+<v Speaker 1>at the YAML files. You're also looking at
+
+01:02:59.300 --> 01:03:01.780
+<v Speaker 1>the flux patches as well. If you weren't
+
+01:03:01.780 --> 01:03:02.500
+<v Speaker 1>using
+
+01:03:02.820 --> 01:03:03.860
+<v Speaker 1>customize,
+
+01:03:03.860 --> 01:03:05.780
+<v Speaker 1>it would actually make the changes to the
+
+01:03:05.780 --> 01:03:07.300
+<v Speaker 1>YAML files directly,
+
+01:03:07.460 --> 01:03:08.740
+<v Speaker 1>and you would we would just be able
+
+01:03:08.740 --> 01:03:11.115
+<v Speaker 1>to go straight to to here and actually
+
+01:03:11.115 --> 01:03:12.715
+<v Speaker 1>see the fact that there's a change to
+
+01:03:12.715 --> 01:03:13.355
+<v Speaker 1>six.
+
+01:03:13.835 --> 01:03:14.875
+<v Speaker 1>That make sense?
+
+01:03:15.355 --> 01:03:16.075
+<v Speaker 0>Uh-huh.
+
+01:03:16.475 --> 01:03:18.235
+<v Speaker 0>They're just two different ways of being able
+
+01:03:18.235 --> 01:03:18.955
+<v Speaker 1>to see it.
+
+01:03:21.035 --> 01:03:21.675
+<v Speaker 1>So
+
+01:03:22.235 --> 01:03:24.315
+<v Speaker 1>I don't think I can commit easily from
+
+01:03:24.315 --> 01:03:25.915
+<v Speaker 1>here to your repository.
+
+01:03:26.240 --> 01:03:28.640
+<v Speaker 1>Why don't I drive you through making a
+
+01:03:28.640 --> 01:03:30.000
+<v Speaker 1>couple of changes and we can actually see
+
+01:03:30.000 --> 01:03:30.960
+<v Speaker 1>this in action?
+
+01:03:31.280 --> 01:03:32.320
+<v Speaker 0>Yeah. Of course.
+
+01:03:34.960 --> 01:03:36.000
+<v Speaker 1>Alright. So
+
+01:03:36.480 --> 01:03:37.520
+<v Speaker 1>go ahead. What's first?
+
+01:03:39.035 --> 01:03:40.795
+<v Speaker 1>So let's start with something very basic. Let's
+
+01:03:40.795 --> 01:03:42.075
+<v Speaker 1>just create a namespace.
+
+01:03:42.715 --> 01:03:43.355
+<v Speaker 1>So
+
+01:03:44.635 --> 01:03:46.635
+<v Speaker 1>we have multiple options here. We could add
+
+01:03:46.635 --> 01:03:48.875
+<v Speaker 1>the namespace to base or we could add
+
+01:03:48.875 --> 01:03:50.315
+<v Speaker 1>the namespace just
+
+01:03:50.395 --> 01:03:51.835
+<v Speaker 1>to our dev cluster.
+
+01:03:53.339 --> 01:03:55.019
+<v Speaker 0>It feels to me that we should maybe
+
+01:03:55.019 --> 01:03:57.180
+<v Speaker 0>add it to the base.
+
+01:03:57.900 --> 01:03:59.339
+<v Speaker 1>Yeah. So we could add it to base
+
+01:03:59.339 --> 01:04:01.660
+<v Speaker 1>and then inherit it in our
+
+01:04:03.259 --> 01:04:05.765
+<v Speaker 1>our dev cluster. Definitely. Let's do So I
+
+01:04:05.765 --> 01:04:07.765
+<v Speaker 0>can just call this the Rawkode namespace.
+
+01:04:07.765 --> 01:04:09.605
+<v Speaker 0>I'm just kinda copying what you already have
+
+01:04:09.605 --> 01:04:11.685
+<v Speaker 0>anyway in the demo one.
+
+01:04:13.285 --> 01:04:14.005
+<v Speaker 0>And then
+
+01:04:17.445 --> 01:04:18.165
+<v Speaker 0>namespace.
+
+01:04:27.670 --> 01:04:29.270
+<v Speaker 0>It's a meta data or spec for namespace.
+
+01:04:29.270 --> 01:04:30.390
+<v Speaker 0>I can never remember.
+
+01:04:30.550 --> 01:04:31.910
+<v Speaker 0>I think it's meta data.
+
+01:04:33.510 --> 01:04:34.950
+<v Speaker 0>I think that's valid. Let me let me
+
+01:04:34.950 --> 01:04:36.125
+<v Speaker 0>check your demo one.
+
+01:04:41.565 --> 01:04:42.845
+<v Speaker 0>API version.
+
+01:04:43.005 --> 01:04:45.245
+<v Speaker 0>I should know better. That was poor.
+
+01:04:45.964 --> 01:04:48.525
+<v Speaker 0>Metadata name. Yeah. I'm good. There we go.
+
+01:04:49.885 --> 01:04:51.080
+<v Speaker 1>Okay. So
+
+01:04:51.560 --> 01:04:53.160
+<v Speaker 1>key thing to note here is that you've
+
+01:04:53.160 --> 01:04:54.760
+<v Speaker 1>just created a namespace. Now we need to
+
+01:04:54.760 --> 01:04:57.560
+<v Speaker 1>create a customization that actually inherits that namespace.
+
+01:04:57.560 --> 01:04:58.520
+<v Speaker 1>But because
+
+01:04:58.840 --> 01:05:02.200
+<v Speaker 1>you've added it to the namespaces directory,
+
+01:05:02.440 --> 01:05:05.080
+<v Speaker 1>where we need to add that file is
+
+01:05:05.265 --> 01:05:08.305
+<v Speaker 1>customization that sits under the namespaces directory. So
+
+01:05:08.305 --> 01:05:10.625
+<v Speaker 1>stay where you are, and then underneath your
+
+01:05:10.625 --> 01:05:13.025
+<v Speaker 1>namespace dot YAML, you'll see that customization dot
+
+01:05:13.025 --> 01:05:14.305
+<v Speaker 1>YAML. Yep.
+
+01:05:15.585 --> 01:05:17.744
+<v Speaker 1>Now we need to we need to add
+
+01:05:17.280 --> 01:05:18.880
+<v Speaker 1>your namespace to here.
+
+01:05:20.240 --> 01:05:22.960
+<v Speaker 0>Now could I just do namespaces
+
+01:05:23.760 --> 01:05:26.080
+<v Speaker 0>star star star or do I need to
+
+01:05:26.080 --> 01:05:28.000
+<v Speaker 0>very explicitly say Rawkode?
+
+01:05:30.605 --> 01:05:32.365
+<v Speaker 1>Let let's try it and actually we can
+
+01:05:32.365 --> 01:05:34.444
+<v Speaker 1>we can run a test script locally and
+
+01:05:34.444 --> 01:05:35.965
+<v Speaker 1>actually see what gets rendered.
+
+01:05:36.845 --> 01:05:39.164
+<v Speaker 0>I'm
+
+01:05:39.164 --> 01:05:40.924
+<v Speaker 0>just gonna do that. That that may be
+
+01:05:40.924 --> 01:05:41.565
+<v Speaker 0>right.
+
+01:05:43.805 --> 01:05:44.204
+<v Speaker 1>Okay.
+
+01:05:44.930 --> 01:05:47.170
+<v Speaker 1>And now because so you've made that to
+
+01:05:47.170 --> 01:05:48.530
+<v Speaker 1>base. Right? And if we go to the
+
+01:05:48.530 --> 01:05:50.610
+<v Speaker 1>dev directory and we look at cluster, if
+
+01:05:50.610 --> 01:05:52.690
+<v Speaker 1>you expand the cluster definition
+
+01:05:52.930 --> 01:05:55.010
+<v Speaker 1>and you look at this one, we inherit
+
+01:05:55.010 --> 01:05:55.970
+<v Speaker 1>everything
+
+01:05:56.370 --> 01:05:58.450
+<v Speaker 1>from cluster. So you can naturally you're gonna
+
+01:05:58.450 --> 01:05:58.930
+<v Speaker 1>get this.
+
+01:06:00.015 --> 01:06:01.694
+<v Speaker 1>So now if you go back to your
+
+01:06:01.694 --> 01:06:02.575
+<v Speaker 1>console,
+
+01:06:04.974 --> 01:06:05.935
+<v Speaker 1>you should
+
+01:06:07.375 --> 01:06:09.214
+<v Speaker 1>be able to run make
+
+01:06:09.214 --> 01:06:10.095
+<v Speaker 1>and then
+
+01:06:10.895 --> 01:06:12.095
+<v Speaker 1>yeah. You need to
+
+01:06:13.855 --> 01:06:16.350
+<v Speaker 1>and then test dash dev.
+
+01:06:16.750 --> 01:06:18.990
+<v Speaker 0>Am I gonna need flux control?
+
+01:06:19.309 --> 01:06:19.950
+<v Speaker 0>Nope.
+
+01:06:20.190 --> 01:06:20.830
+<v Speaker 0>Nope.
+
+01:06:24.750 --> 01:06:26.430
+<v Speaker 1>Okay. So this is basically saying that it
+
+01:06:26.430 --> 01:06:28.305
+<v Speaker 1>doesn't I don't think it Yeah. Don't think
+
+01:06:28.305 --> 01:06:29.825
+<v Speaker 0>it like that. So I'll do the I'm
+
+01:06:29.825 --> 01:06:31.345
+<v Speaker 0>gonna try a few more because I'm feeling
+
+01:06:31.345 --> 01:06:31.985
+<v Speaker 0>brave.
+
+01:06:37.265 --> 01:06:38.065
+<v Speaker 0>Okay.
+
+01:06:38.065 --> 01:06:39.265
+<v Speaker 0>I'm not gonna do that then.
+
+01:06:43.190 --> 01:06:44.309
+<v Speaker 0>Namespaces
+
+01:06:44.309 --> 01:06:45.270
+<v Speaker 0>Rawkode
+
+01:06:45.430 --> 01:06:46.390
+<v Speaker 0>namespace.
+
+01:06:46.630 --> 01:06:49.910
+<v Speaker 0>Yeah. Cool. Okay. Let's try that again. Yeah.
+
+01:06:49.910 --> 01:06:52.150
+<v Speaker 0>Much happier now. There we go. That's better.
+
+01:06:52.150 --> 01:06:54.150
+<v Speaker 1>Okay. So then now if in your directory,
+
+01:06:54.795 --> 01:06:56.474
+<v Speaker 1>if you go to there then there'll be
+
+01:06:56.474 --> 01:06:57.675
+<v Speaker 1>an underscore test.
+
+01:06:58.555 --> 01:06:59.595
+<v Speaker 1>I don't know if you wanna show it
+
+01:06:59.595 --> 01:07:00.635
+<v Speaker 1>in Versus Code.
+
+01:07:01.035 --> 01:07:01.755
+<v Speaker 1>Perfect.
+
+01:07:02.315 --> 01:07:04.155
+<v Speaker 1>So you can see that if you now
+
+01:07:04.155 --> 01:07:06.075
+<v Speaker 1>look for for Rawkode,
+
+01:07:06.954 --> 01:07:08.715
+<v Speaker 1>you should be able to see
+
+01:07:09.115 --> 01:07:10.670
+<v Speaker 1>the namespace got added.
+
+01:07:11.150 --> 01:07:13.950
+<v Speaker 1>So if we now commit that to git,
+
+01:07:13.950 --> 01:07:16.030
+<v Speaker 1>we're gonna need to do kind of two
+
+01:07:16.510 --> 01:07:19.310
+<v Speaker 1>we probably want two split terminals here because
+
+01:07:19.310 --> 01:07:20.830
+<v Speaker 1>what we're gonna wanna do is do a
+
+01:07:20.830 --> 01:07:22.910
+<v Speaker 1>get namespaces and have it in a watch,
+
+01:07:22.910 --> 01:07:24.110
+<v Speaker 1>and then you're gonna wanna commit.
+
+01:07:28.125 --> 01:07:30.525
+<v Speaker 0>Okay. So get namespace watch
+
+01:07:31.565 --> 01:07:33.245
+<v Speaker 0>and then we're gonna pop over here. So
+
+01:07:33.245 --> 01:07:34.445
+<v Speaker 0>what what's the
+
+01:07:35.085 --> 01:07:37.005
+<v Speaker 0>how often I'm assuming that flux isn't pulling
+
+01:07:37.005 --> 01:07:39.490
+<v Speaker 0>GitHub every one second. Like, what's the what's
+
+01:07:39.490 --> 01:07:41.410
+<v Speaker 0>the Alright. So we we've configured it now
+
+01:07:41.410 --> 01:07:43.010
+<v Speaker 1>to be I think we've configured it now
+
+01:07:43.010 --> 01:07:44.770
+<v Speaker 1>to be about every every minute or every
+
+01:07:44.770 --> 01:07:45.410
+<v Speaker 1>couple of minutes.
+
+01:07:52.185 --> 01:07:54.185
+<v Speaker 0>Get Pesh. I always type that.
+
+01:07:54.905 --> 01:07:55.785
+<v Speaker 0>Alright.
+
+01:07:58.505 --> 01:08:00.025
+<v Speaker 0>So that's the way
+
+01:08:01.225 --> 01:08:02.665
+<v Speaker 0>we pop over here,
+
+01:08:02.905 --> 01:08:04.745
+<v Speaker 0>and we wait for the the magic to
+
+01:08:04.745 --> 01:08:05.385
+<v Speaker 0>happen.
+
+01:08:05.865 --> 01:08:07.940
+<v Speaker 1>Yeah. So what we probably should show what
+
+01:08:07.940 --> 01:08:09.940
+<v Speaker 1>we can show is the logs from Flux.
+
+01:08:10.020 --> 01:08:11.220
+<v Speaker 1>So if we go and get the Flux
+
+01:08:11.220 --> 01:08:13.380
+<v Speaker 1>pod logs, we can actually see the fact
+
+01:08:13.380 --> 01:08:14.819
+<v Speaker 1>of exactly what it's gonna do in the
+
+01:08:14.819 --> 01:08:15.540
+<v Speaker 1>background.
+
+01:08:17.939 --> 01:08:20.100
+<v Speaker 0>Okay. Flux get pods.
+
+01:08:22.055 --> 01:08:22.774
+<v Speaker 1>Nice.
+
+01:08:25.655 --> 01:08:27.175
+<v Speaker 0>Log slash f.
+
+01:08:29.895 --> 01:08:31.975
+<v Speaker 0>What's the timestamp I've So what you're seeing
+
+01:08:31.975 --> 01:08:33.575
+<v Speaker 1>is the old if you see here on
+
+01:08:33.575 --> 01:08:35.255
+<v Speaker 1>the your line there, you've got the old
+
+01:08:35.255 --> 01:08:37.090
+<v Speaker 1>Git shard and the new Git shard.
+
+01:08:37.970 --> 01:08:40.290
+<v Speaker 1>So it's now seeing a new a new
+
+01:08:40.290 --> 01:08:41.410
+<v Speaker 1>Git shard there.
+
+01:08:44.050 --> 01:08:45.810
+<v Speaker 1>So, yeah, where you are there. So you're
+
+01:08:45.810 --> 01:08:47.010
+<v Speaker 1>gonna see the old one and then the
+
+01:08:47.010 --> 01:08:48.450
+<v Speaker 1>new one. So so
+
+01:08:49.090 --> 01:08:52.415
+<v Speaker 1>Flux is obviously gone. It's constantly reconciling Git.
+
+01:08:52.655 --> 01:08:55.135
+<v Speaker 1>So the key thing to note is that,
+
+01:08:55.135 --> 01:08:55.774
+<v Speaker 1>again,
+
+01:08:56.655 --> 01:08:59.215
+<v Speaker 1>flux and well, kube Kubernetes in general is
+
+01:08:59.215 --> 01:09:01.774
+<v Speaker 1>eventually consistent, but flux is also
+
+01:09:01.935 --> 01:09:03.295
+<v Speaker 1>eventually consistent.
+
+01:09:04.734 --> 01:09:05.990
+<v Speaker 1>So we're gonna have to go around this
+
+01:09:05.990 --> 01:09:07.990
+<v Speaker 1>loop possibly a few times for us to
+
+01:09:07.990 --> 01:09:09.109
+<v Speaker 1>be able to actually
+
+01:09:10.229 --> 01:09:11.350
+<v Speaker 1>sync that
+
+01:09:11.830 --> 01:09:12.710
+<v Speaker 1>namespace.
+
+01:09:13.510 --> 01:09:14.950
+<v Speaker 0>Alright. Okay. So it's just not seen the
+
+01:09:14.950 --> 01:09:17.109
+<v Speaker 0>namespace yet. Is that? It's not seen any.
+
+01:09:17.510 --> 01:09:19.524
+<v Speaker 0>Alright. Guess we'd see something here. Yeah. I'm
+
+01:09:19.524 --> 01:09:21.444
+<v Speaker 0>seeing a lot of unchanged so far so
+
+01:09:21.444 --> 01:09:22.484
+<v Speaker 0>we just have to
+
+01:09:22.804 --> 01:09:24.564
+<v Speaker 0>make sure I pushed it properly and actually
+
+01:09:24.564 --> 01:09:27.284
+<v Speaker 0>left. Right? Yeah. Okay. That's okay.
+
+01:09:31.444 --> 01:09:32.804
+<v Speaker 0>See if I can see it on GitHub.
+
+01:09:39.659 --> 01:09:41.979
+<v Speaker 0>Alright. So we added this and we got
+
+01:09:41.979 --> 01:09:43.099
+<v Speaker 0>this. Cool.
+
+01:09:45.580 --> 01:09:48.234
+<v Speaker 0>And this is definitely using our dev overlay.
+
+01:09:48.795 --> 01:09:50.074
+<v Speaker 0>Can we confirm that?
+
+01:09:50.635 --> 01:09:51.274
+<v Speaker 1>Yep.
+
+01:09:51.515 --> 01:09:53.034
+<v Speaker 1>If you go to
+
+01:09:53.515 --> 01:09:56.715
+<v Speaker 1>do a cube CTL describe deployment and then
+
+01:09:57.835 --> 01:09:59.355
+<v Speaker 1>check the flux deployment.
+
+01:09:59.435 --> 01:10:00.739
+<v Speaker 0>Oh, gotcha.
+
+01:10:07.300 --> 01:10:08.820
+<v Speaker 0>Flux describe
+
+01:10:09.219 --> 01:10:10.580
+<v Speaker 0>deploy flux.
+
+01:10:15.305 --> 01:10:17.465
+<v Speaker 0>And what were we looking for here? We're
+
+01:10:17.465 --> 01:10:19.225
+<v Speaker 1>looking for the
+
+01:10:19.545 --> 01:10:21.065
+<v Speaker 1>branch configuration.
+
+01:10:22.025 --> 01:10:24.265
+<v Speaker 1>Scroll stay where you want. Yeah. So git
+
+01:10:24.265 --> 01:10:25.945
+<v Speaker 1>git branch master.
+
+01:10:26.105 --> 01:10:26.824
+<v Speaker 1>Ah,
+
+01:10:26.905 --> 01:10:28.105
+<v Speaker 1>are you pushing to master or are you
+
+01:10:28.105 --> 01:10:28.825
+<v Speaker 1>pushing to main?
+
+01:10:30.750 --> 01:10:32.270
+<v Speaker 1>Oh, you must be pushing to master. Otherwise,
+
+01:10:32.270 --> 01:10:33.870
+<v Speaker 1>it wouldn't have sunk. I pushed to master.
+
+01:10:33.870 --> 01:10:34.350
+<v Speaker 0>Yeah.
+
+01:10:35.630 --> 01:10:36.270
+<v Speaker 0>Okay.
+
+01:10:40.430 --> 01:10:42.030
+<v Speaker 0>I would have expected to have kinda seen
+
+01:10:42.030 --> 01:10:43.470
+<v Speaker 0>the names. Yeah. I would have expected to
+
+01:10:43.470 --> 01:10:44.430
+<v Speaker 0>do it for now as well.
+
+01:10:46.284 --> 01:10:48.284
+<v Speaker 0>So I got something wrong. Let's let's call
+
+01:10:48.284 --> 01:10:50.044
+<v Speaker 0>it that. What did I get wrong then?
+
+01:10:54.685 --> 01:10:57.005
+<v Speaker 1>Go back to the flux logs.
+
+01:10:57.565 --> 01:10:58.045
+<v Speaker 0>Of course.
+
+01:11:03.090 --> 01:11:04.610
+<v Speaker 0>So we can actually I guess we can
+
+01:11:04.610 --> 01:11:07.490
+<v Speaker 0>verify the commit shot here. Right? So Yeah.
+
+01:11:07.410 --> 01:11:10.450
+<v Speaker 0>This is saying that it pulled 52CF
+
+01:11:11.090 --> 01:11:13.170
+<v Speaker 0>which oh, it actually is my commit.
+
+01:11:17.514 --> 01:11:19.195
+<v Speaker 1>Yeah. So what we also did as well
+
+01:11:19.195 --> 01:11:20.875
+<v Speaker 1>is that we did the we did a
+
+01:11:20.875 --> 01:11:21.594
+<v Speaker 1>test
+
+01:11:21.755 --> 01:11:22.874
+<v Speaker 1>which essentially
+
+01:11:23.435 --> 01:11:25.755
+<v Speaker 1>showed us what flux was going to reconcile.
+
+01:11:30.630 --> 01:11:31.989
+<v Speaker 0>That's interesting.
+
+01:11:33.989 --> 01:11:35.749
+<v Speaker 0>Why? Is this a valid
+
+01:11:36.310 --> 01:11:37.269
+<v Speaker 0>namespace?
+
+01:11:37.909 --> 01:11:39.909
+<v Speaker 0>Maybe I have to test that That looks
+
+01:11:39.909 --> 01:11:40.550
+<v Speaker 1>valid to me.
+
+01:11:42.675 --> 01:11:45.155
+<v Speaker 0>Where is this split? Let's just be sure.
+
+01:11:46.195 --> 01:11:47.235
+<v Speaker 0>Rawkode.
+
+01:11:48.514 --> 01:11:49.395
+<v Speaker 0>API
+
+01:11:49.395 --> 01:11:50.915
+<v Speaker 0>version kind.
+
+01:11:50.915 --> 01:11:52.755
+<v Speaker 0>Oh, that got capital n.
+
+01:11:53.235 --> 01:11:55.795
+<v Speaker 1>Oh, yeah. That might do. Metadata name.
+
+01:11:56.370 --> 01:11:57.969
+<v Speaker 0>Yeah. I wonder if that's it. I wonder
+
+01:11:57.969 --> 01:11:59.249
+<v Speaker 0>if it's really just
+
+01:12:00.530 --> 01:12:01.889
+<v Speaker 0>you think you would get an error message
+
+01:12:01.889 --> 01:12:03.489
+<v Speaker 0>in the Flux logs. Yeah. That's that's not
+
+01:12:03.489 --> 01:12:04.289
+<v Speaker 0>a resource.
+
+01:12:05.889 --> 01:12:06.530
+<v Speaker 0>Fix.
+
+01:12:07.409 --> 01:12:09.010
+<v Speaker 0>Don't be a dummy.
+
+01:12:09.250 --> 01:12:09.889
+<v Speaker 0>There we go.
+
+01:12:11.034 --> 01:12:14.155
+<v Speaker 0>I always do that. So annoying. Anyway,
+
+01:12:14.635 --> 01:12:17.274
+<v Speaker 0>let's push. Let's jump back over here
+
+01:12:17.994 --> 01:12:20.155
+<v Speaker 0>and I'm so confident that this one is
+
+01:12:20.155 --> 01:12:21.034
+<v Speaker 0>gonna work.
+
+01:12:23.434 --> 01:12:25.675
+<v Speaker 0>I would just give that sixty seconds.
+
+01:12:29.170 --> 01:12:31.329
+<v Speaker 0>Yeah. Small end. That was still the other.
+
+01:12:31.969 --> 01:12:33.329
+<v Speaker 0>Hopefully, was it.
+
+01:12:35.250 --> 01:12:36.530
+<v Speaker 1>This is why if we were doing if
+
+01:12:36.530 --> 01:12:38.130
+<v Speaker 1>we were doing a PR properly, alright, we'd
+
+01:12:38.130 --> 01:12:39.170
+<v Speaker 1>we'd catch it with CI.
+
+01:12:40.844 --> 01:12:42.525
+<v Speaker 1>So one of the things we probably do
+
+01:12:42.525 --> 01:12:44.284
+<v Speaker 1>wanna show is whilst we're waiting for this
+
+01:12:44.284 --> 01:12:46.764
+<v Speaker 1>is if you go to
+
+01:12:47.324 --> 01:12:47.965
+<v Speaker 1>the
+
+01:12:48.445 --> 01:12:50.364
+<v Speaker 1>the circle CI directory,
+
+01:12:51.890 --> 01:12:53.730
+<v Speaker 1>we can actually show some of the CI
+
+01:12:53.730 --> 01:12:55.810
+<v Speaker 1>that is done or could be done to
+
+01:12:55.810 --> 01:12:56.370
+<v Speaker 1>this
+
+01:12:57.730 --> 01:12:59.170
+<v Speaker 1>to this repository.
+
+01:13:03.090 --> 01:13:03.810
+<v Speaker 0>Okay.
+
+01:13:04.690 --> 01:13:08.025
+<v Speaker 1>So using a there we go. Rawkode. There
+
+01:13:08.025 --> 01:13:09.065
+<v Speaker 1>we go. Ta da.
+
+01:13:09.465 --> 01:13:10.905
+<v Speaker 1>The Told you it was my fault. It's
+
+01:13:10.905 --> 01:13:12.505
+<v Speaker 0>always my fault. So,
+
+01:13:14.905 --> 01:13:15.785
+<v Speaker 1>obviously,
+
+01:13:16.905 --> 01:13:19.145
+<v Speaker 1>what you did was a prime example of
+
+01:13:19.145 --> 01:13:21.590
+<v Speaker 1>why we want to be using some mechanisms
+
+01:13:21.590 --> 01:13:23.350
+<v Speaker 1>that we have available to us in gits
+
+01:13:23.350 --> 01:13:25.190
+<v Speaker 1>to stop those kind of things from happening.
+
+01:13:25.190 --> 01:13:27.590
+<v Speaker 1>Right? We don't want someone to accidentally
+
+01:13:27.590 --> 01:13:29.270
+<v Speaker 1>merge something to master,
+
+01:13:29.430 --> 01:13:31.030
+<v Speaker 1>and we end up breaking the whole entire
+
+01:13:31.030 --> 01:13:33.030
+<v Speaker 1>cluster. That's not ideal. So
+
+01:13:33.830 --> 01:13:36.585
+<v Speaker 1>in terms of tooling that I would recommend
+
+01:13:36.585 --> 01:13:37.784
+<v Speaker 1>people leverage
+
+01:13:38.505 --> 01:13:40.664
+<v Speaker 1>to stop this from these kind of things
+
+01:13:40.664 --> 01:13:42.425
+<v Speaker 1>from happening, there are a number of tools.
+
+01:13:42.425 --> 01:13:44.585
+<v Speaker 1>So the first one is is kubectl. And,
+
+01:13:44.585 --> 01:13:46.985
+<v Speaker 1>actually, if we executed kubectl, kubectl would have
+
+01:13:46.985 --> 01:13:49.304
+<v Speaker 1>told us that that was not a valid
+
+01:13:49.304 --> 01:13:51.030
+<v Speaker 1>YAML file and would have stopped us from
+
+01:13:51.030 --> 01:13:52.709
+<v Speaker 1>being able to merge it. Yep.
+
+01:13:53.030 --> 01:13:54.869
+<v Speaker 1>So that's the first one that we have.
+
+01:13:54.869 --> 01:13:56.710
+<v Speaker 1>So that's just doing strict
+
+01:13:56.710 --> 01:13:58.630
+<v Speaker 1>validation against the upstream
+
+01:13:59.110 --> 01:14:00.389
+<v Speaker 1>JSON schema.
+
+01:14:00.949 --> 01:14:02.949
+<v Speaker 1>Check for duplicate Helm releases.
+
+01:14:03.110 --> 01:14:05.325
+<v Speaker 1>Again, that's what we talked about earlier about
+
+01:14:05.325 --> 01:14:06.925
+<v Speaker 1>how your Helm release names, you don't want
+
+01:14:06.925 --> 01:14:08.844
+<v Speaker 1>them to clash. So this is just checking
+
+01:14:08.844 --> 01:14:09.804
+<v Speaker 1>for duplication.
+
+01:14:11.565 --> 01:14:13.485
+<v Speaker 1>Deprecates check. So,
+
+01:14:14.205 --> 01:14:14.925
+<v Speaker 1>obviously,
+
+01:14:15.165 --> 01:14:18.364
+<v Speaker 1>as everybody knows, Kubernetes loves to deprecate APIs
+
+01:14:18.364 --> 01:14:19.565
+<v Speaker 1>to click at one sixteen.
+
+01:14:20.960 --> 01:14:23.280
+<v Speaker 1>So what this is doing is it runs
+
+01:14:23.280 --> 01:14:25.760
+<v Speaker 1>in the background a set of Reggo policies.
+
+01:14:25.760 --> 01:14:28.239
+<v Speaker 1>So Reggo policies think Open Policy Agent,
+
+01:14:28.719 --> 01:14:31.199
+<v Speaker 1>uses conf test as a kind of command
+
+01:14:31.199 --> 01:14:33.039
+<v Speaker 1>line tool to be able to run those,
+
+01:14:33.679 --> 01:14:36.079
+<v Speaker 1>and we'll run those against the output
+
+01:14:36.239 --> 01:14:37.280
+<v Speaker 1>of a
+
+01:14:37.495 --> 01:14:40.534
+<v Speaker 1>customized build. So when they would run
+
+01:14:40.935 --> 01:14:43.495
+<v Speaker 1>make test dev, what he as actually running
+
+01:14:43.495 --> 01:14:46.535
+<v Speaker 1>behind the scenes is customized build pointing at
+
+01:14:46.535 --> 01:14:47.655
+<v Speaker 1>the dev directory.
+
+01:14:47.975 --> 01:14:49.910
+<v Speaker 1>And it will run all the Reggo policies
+
+01:14:49.910 --> 01:14:51.430
+<v Speaker 1>against all the outputs
+
+01:14:51.750 --> 01:14:53.990
+<v Speaker 1>and then validate that you're not using any
+
+01:14:53.990 --> 01:14:55.270
+<v Speaker 1>deprecated APIs.
+
+01:14:56.710 --> 01:14:58.230
+<v Speaker 1>So these are kind of the top top
+
+01:14:58.230 --> 01:15:00.310
+<v Speaker 1>level ones to stop us from, you know,
+
+01:15:00.310 --> 01:15:02.150
+<v Speaker 1>making slightly silly mistakes.
+
+01:15:02.775 --> 01:15:04.374
+<v Speaker 1>But the main one
+
+01:15:05.175 --> 01:15:07.094
+<v Speaker 1>that we really wanna talk about is is
+
+01:15:07.094 --> 01:15:08.935
+<v Speaker 1>HR Vowel. So if you noticed, we were
+
+01:15:08.935 --> 01:15:10.454
+<v Speaker 1>deploying Helm releases.
+
+01:15:10.695 --> 01:15:12.935
+<v Speaker 1>Right? So so doing KubeVowel
+
+01:15:12.935 --> 01:15:16.000
+<v Speaker 1>and doing some contest against that, not really
+
+01:15:16.000 --> 01:15:18.159
+<v Speaker 1>that useful in the in the grand scheme
+
+01:15:18.159 --> 01:15:20.400
+<v Speaker 1>of things because the Helm chart is actually
+
+01:15:20.400 --> 01:15:21.999
+<v Speaker 1>what's what contains
+
+01:15:22.000 --> 01:15:23.920
+<v Speaker 1>the raw YAML files. So what we really
+
+01:15:23.920 --> 01:15:26.400
+<v Speaker 1>wanna be doing is validating the output of
+
+01:15:26.400 --> 01:15:29.825
+<v Speaker 1>them or essentially what the Helm operator is
+
+01:15:29.825 --> 01:15:30.945
+<v Speaker 1>going to be deploying.
+
+01:15:32.225 --> 01:15:34.705
+<v Speaker 1>So what HR Vowel does is it takes
+
+01:15:34.705 --> 01:15:36.225
+<v Speaker 1>a combination of
+
+01:15:36.865 --> 01:15:39.585
+<v Speaker 1>obtaining the Helm chart at the at the
+
+01:15:39.585 --> 01:15:41.025
+<v Speaker 1>version that you've specified,
+
+01:15:41.825 --> 01:15:45.390
+<v Speaker 1>passing in a mixture of the default values
+
+01:15:45.390 --> 01:15:47.470
+<v Speaker 1>and the values that you've specified in your
+
+01:15:47.470 --> 01:15:48.350
+<v Speaker 1>Helm release,
+
+01:15:49.070 --> 01:15:51.710
+<v Speaker 1>performing a Helm template. So Helm template is
+
+01:15:51.710 --> 01:15:53.470
+<v Speaker 1>just gonna spit all of that out,
+
+01:15:53.950 --> 01:15:55.965
+<v Speaker 1>all of the raw YAMLs for that Helm
+
+01:15:55.965 --> 01:15:57.324
+<v Speaker 1>release out into
+
+01:15:58.205 --> 01:15:59.485
+<v Speaker 1>into the console
+
+01:15:59.645 --> 01:16:03.324
+<v Speaker 1>and then runs kubectl against them because those
+
+01:16:03.324 --> 01:16:05.405
+<v Speaker 1>are the actual things that we're deploying. The
+
+01:16:05.405 --> 01:16:07.084
+<v Speaker 1>Helm release is just a wrapper.
+
+01:16:07.165 --> 01:16:09.324
+<v Speaker 1>What we wanna be doing is actually validating
+
+01:16:09.405 --> 01:16:10.445
+<v Speaker 1>the inside,
+
+01:16:10.764 --> 01:16:12.040
+<v Speaker 1>the kind of the, you know, the the
+
+01:16:12.040 --> 01:16:13.960
+<v Speaker 1>meat and potatoes of the Helm chart, not
+
+01:16:13.960 --> 01:16:16.120
+<v Speaker 1>assuming that the Helm chart is gonna deploy.
+
+01:16:17.320 --> 01:16:19.800
+<v Speaker 1>And then the the final one is is
+
+01:16:19.800 --> 01:16:20.520
+<v Speaker 1>one
+
+01:16:20.680 --> 01:16:23.000
+<v Speaker 1>that I've added because it catches me every
+
+01:16:23.000 --> 01:16:23.880
+<v Speaker 1>single time,
+
+01:16:24.440 --> 01:16:28.114
+<v Speaker 1>which is the customization specification is so specific
+
+01:16:28.195 --> 01:16:30.355
+<v Speaker 1>that what you want is something that tells
+
+01:16:30.355 --> 01:16:32.915
+<v Speaker 1>you that you've made a mistake before
+
+01:16:32.915 --> 01:16:34.835
+<v Speaker 1>you give it to Flux to tell you.
+
+01:16:35.395 --> 01:16:38.034
+<v Speaker 1>So there's a customized edit
+
+01:16:39.475 --> 01:16:42.619
+<v Speaker 1>fix, which essentially its job is to tell
+
+01:16:42.619 --> 01:16:45.179
+<v Speaker 1>you that you've either misspelled something in your
+
+01:16:45.179 --> 01:16:49.099
+<v Speaker 1>customization dot YAML or you're not conforming to
+
+01:16:49.099 --> 01:16:51.019
+<v Speaker 1>the recommended way of doing it.
+
+01:16:51.659 --> 01:16:52.219
+<v Speaker 1>So
+
+01:16:52.619 --> 01:16:55.145
+<v Speaker 1>release the order of having releases and then
+
+01:16:55.145 --> 01:16:55.945
+<v Speaker 1>patches,
+
+01:16:56.265 --> 01:16:58.505
+<v Speaker 1>etcetera, etcetera. They are very they have very
+
+01:16:58.505 --> 01:16:59.704
+<v Speaker 1>specific standards.
+
+01:17:00.425 --> 01:17:02.825
+<v Speaker 1>So having that is gonna make your life
+
+01:17:02.825 --> 01:17:05.225
+<v Speaker 1>more easier by the time Flux gets it
+
+01:17:05.225 --> 01:17:06.425
+<v Speaker 1>and can't actually
+
+01:17:07.065 --> 01:17:08.744
+<v Speaker 1>execute the customized build.
+
+01:17:09.945 --> 01:17:11.670
+<v Speaker 1>And if you scroll down, I think that
+
+01:17:11.670 --> 01:17:13.190
+<v Speaker 1>that's possibly it.
+
+01:17:15.190 --> 01:17:17.270
+<v Speaker 0>Yep. Yep. And then we just put them
+
+01:17:17.270 --> 01:17:19.590
+<v Speaker 1>all together. So there, all we're doing again
+
+01:17:19.590 --> 01:17:21.750
+<v Speaker 1>with CI is just getting more confidence
+
+01:17:21.830 --> 01:17:22.949
+<v Speaker 1>that before
+
+01:17:23.030 --> 01:17:25.030
+<v Speaker 1>Flux actually syncs the repository,
+
+01:17:25.535 --> 01:17:27.055
+<v Speaker 1>it's gonna be able to deal with what
+
+01:17:27.055 --> 01:17:27.935
+<v Speaker 1>we gave it.
+
+01:17:29.295 --> 01:17:31.135
+<v Speaker 0>Yeah. But I was making up my wildcard
+
+01:17:31.135 --> 01:17:33.935
+<v Speaker 0>syntax. I probably should have run this one.
+
+01:17:36.975 --> 01:17:38.255
+<v Speaker 0>So that's really cool.
+
+01:17:39.855 --> 01:17:41.780
+<v Speaker 0>I I like the way that works.
+
+01:17:42.099 --> 01:17:43.940
+<v Speaker 0>I like, you know, the way we can
+
+01:17:43.940 --> 01:17:46.420
+<v Speaker 0>compose those layers together with the bases and
+
+01:17:46.420 --> 01:17:48.099
+<v Speaker 0>the dev and stuff like that and you
+
+01:17:48.099 --> 01:17:50.099
+<v Speaker 0>know, there's something running in my cluster containers
+
+01:17:50.099 --> 01:17:51.939
+<v Speaker 0>with pillow chase using apply them like,
+
+01:17:52.659 --> 01:17:53.539
+<v Speaker 0>get up to Rawkode. Yeah.
+
+01:17:55.385 --> 01:17:56.025
+<v Speaker 1>So
+
+01:17:56.425 --> 01:17:59.065
+<v Speaker 1>I think the the great thing about this,
+
+01:17:59.065 --> 01:18:00.824
+<v Speaker 1>right, is let's let's assume that we didn't
+
+01:18:00.824 --> 01:18:02.824
+<v Speaker 1>have to manually SSH into the cluster. We
+
+01:18:02.824 --> 01:18:04.344
+<v Speaker 1>didn't have to run a couple of commands.
+
+01:18:04.425 --> 01:18:05.545
+<v Speaker 1>And what we did is we had a
+
+01:18:05.545 --> 01:18:08.344
+<v Speaker 1>really nice way of bootstrapping the cluster
+
+01:18:08.750 --> 01:18:09.950
+<v Speaker 1>with flux,
+
+01:18:10.750 --> 01:18:13.070
+<v Speaker 1>with a SSH key or a deploy key
+
+01:18:13.070 --> 01:18:14.910
+<v Speaker 1>pointing at the right directory.
+
+01:18:15.390 --> 01:18:18.030
+<v Speaker 1>We just run Pulumi up, and the whole
+
+01:18:18.030 --> 01:18:19.790
+<v Speaker 1>cluster just bootstraps itself.
+
+01:18:20.030 --> 01:18:21.470
+<v Speaker 1>Right. And then after
+
+01:18:21.630 --> 01:18:22.670
+<v Speaker 1>x minutes,
+
+01:18:22.990 --> 01:18:24.030
+<v Speaker 1>we come back
+
+01:18:24.275 --> 01:18:26.834
+<v Speaker 1>and the whole cluster's there, all the
+
+01:18:27.395 --> 01:18:29.635
+<v Speaker 1>all the workloads are there, all the services,
+
+01:18:29.795 --> 01:18:32.915
+<v Speaker 1>all the ingress, everything. Right? But let's then
+
+01:18:32.915 --> 01:18:34.675
+<v Speaker 1>take it one step further and go, actually,
+
+01:18:34.675 --> 01:18:37.235
+<v Speaker 1>do you know what? By accident, I run
+
+01:18:37.395 --> 01:18:38.994
+<v Speaker 1>I don't know what the equivalent of Terraform
+
+01:18:38.994 --> 01:18:41.380
+<v Speaker 1>destroyers. I'm assuming probably Pulumi down or something
+
+01:18:41.380 --> 01:18:42.020
+<v Speaker 1>like that.
+
+01:18:42.900 --> 01:18:44.980
+<v Speaker 1>We run the equivalent of Pulumi down because
+
+01:18:44.980 --> 01:18:46.580
+<v Speaker 1>I did it by complete accident.
+
+01:18:47.460 --> 01:18:49.540
+<v Speaker 1>I just run Pulumi up again, and I
+
+01:18:49.540 --> 01:18:51.220
+<v Speaker 1>get back to exactly where I was the
+
+01:18:51.220 --> 01:18:53.775
+<v Speaker 1>last time the cluster sunk because everything is
+
+01:18:53.775 --> 01:18:55.775
+<v Speaker 1>stored in Git. Right? And if I want
+
+01:18:55.775 --> 01:18:56.255
+<v Speaker 1>to
+
+01:18:56.655 --> 01:18:58.574
+<v Speaker 1>take dev and create staging,
+
+01:18:59.295 --> 01:19:01.454
+<v Speaker 1>I take my lovely Pulumi config.
+
+01:19:01.695 --> 01:19:03.614
+<v Speaker 1>I change the word dev to stage
+
+01:19:04.140 --> 01:19:06.219
+<v Speaker 1>and make the changes in the staging directory
+
+01:19:06.219 --> 01:19:07.739
+<v Speaker 1>and I just run Pulumi up and I've
+
+01:19:07.739 --> 01:19:08.940
+<v Speaker 1>got a staging environment.
+
+01:19:09.900 --> 01:19:11.820
+<v Speaker 0>Well, I I feel like you were calling
+
+01:19:11.820 --> 01:19:13.580
+<v Speaker 0>me out here and saying that it would
+
+01:19:13.580 --> 01:19:14.780
+<v Speaker 0>have been nice if the bit that I
+
+01:19:14.780 --> 01:19:16.860
+<v Speaker 0>did actually worked and I I know
+
+01:19:17.165 --> 01:19:19.645
+<v Speaker 0>that it's harsh but you're right
+
+01:19:20.445 --> 01:19:22.605
+<v Speaker 0>and what I will do you know obviously
+
+01:19:22.605 --> 01:19:23.645
+<v Speaker 0>we're not gonna have time to do this
+
+01:19:23.645 --> 01:19:25.485
+<v Speaker 0>this afternoon I am gonna swap out the
+
+01:19:25.485 --> 01:19:28.285
+<v Speaker 0>user data to do a KCS cluster which
+
+01:19:28.285 --> 01:19:29.885
+<v Speaker 0>will be exposed to the internet
+
+01:19:30.045 --> 01:19:32.460
+<v Speaker 0>I will dynamically get the cube config and
+
+01:19:32.460 --> 01:19:34.060
+<v Speaker 0>I will install flux and I'll put I
+
+01:19:34.060 --> 01:19:35.500
+<v Speaker 0>would just push this as an example of
+
+01:19:35.500 --> 01:19:36.700
+<v Speaker 0>a way to do it so that people
+
+01:19:36.700 --> 01:19:37.420
+<v Speaker 0>can see it.
+
+01:19:37.820 --> 01:19:39.900
+<v Speaker 0>So why don't we just is there sorry.
+
+01:19:39.900 --> 01:19:41.180
+<v Speaker 0>Is there anything else you wanna cover or
+
+01:19:41.180 --> 01:19:42.620
+<v Speaker 0>should we just jump into like a summary
+
+01:19:42.620 --> 01:19:43.580
+<v Speaker 0>of of what we put together?
+
+01:19:44.315 --> 01:19:45.994
+<v Speaker 1>No. That that's yeah. Let's jump into a
+
+01:19:45.994 --> 01:19:48.554
+<v Speaker 1>summary. Make sure that we've answered answered everybody's
+
+01:19:48.554 --> 01:19:50.475
+<v Speaker 1>questions that they have. Yeah. Please if you
+
+01:19:50.475 --> 01:19:51.994
+<v Speaker 0>if you have questions drop them into the
+
+01:19:51.994 --> 01:19:53.514
+<v Speaker 0>chat or into the discord, we'll tackle them
+
+01:19:53.514 --> 01:19:55.755
+<v Speaker 0>just now before we finish up. But you
+
+01:19:55.755 --> 01:19:58.290
+<v Speaker 0>know, the two pieces of the system that
+
+01:19:58.290 --> 01:19:59.810
+<v Speaker 0>we're I think we're kind of drawing a
+
+01:19:59.810 --> 01:20:01.170
+<v Speaker 0>line in the sand here, right? What we're
+
+01:20:01.170 --> 01:20:03.010
+<v Speaker 0>saying is that you need automation
+
+01:20:03.010 --> 01:20:05.090
+<v Speaker 0>something like Terraform or Pulumi that does the
+
+01:20:05.090 --> 01:20:07.410
+<v Speaker 0>platform provisioning aspect.
+
+01:20:07.890 --> 01:20:09.585
+<v Speaker 0>And then we have the flux which is
+
+01:20:09.585 --> 01:20:11.825
+<v Speaker 0>the workload provision aspect and if you can
+
+01:20:11.825 --> 01:20:13.745
+<v Speaker 0>really get them working together,
+
+01:20:14.545 --> 01:20:16.705
+<v Speaker 0>you have that ability in a single command
+
+01:20:16.705 --> 01:20:18.465
+<v Speaker 0>to spin up an entire environment.
+
+01:20:18.945 --> 01:20:21.105
+<v Speaker 0>But because we weren't using a kind of
+
+01:20:21.105 --> 01:20:23.659
+<v Speaker 0>managed Kubernetes or like cluster API, a real
+
+01:20:23.659 --> 01:20:25.100
+<v Speaker 0>way to spin up a bare metal cluster
+
+01:20:25.100 --> 01:20:26.699
+<v Speaker 0>because I thought it would be quicker.
+
+01:20:27.739 --> 01:20:29.900
+<v Speaker 0>We didn't have that programmatic access to a
+
+01:20:29.900 --> 01:20:32.219
+<v Speaker 0>cube config which is unfortunate because we could
+
+01:20:32.219 --> 01:20:35.340
+<v Speaker 0>have deployed flux and a nice shiny fashion.
+
+01:20:35.980 --> 01:20:38.460
+<v Speaker 0>That would have handed over to your flux
+
+01:20:38.285 --> 01:20:40.925
+<v Speaker 0>pulling on the manifest using customize and the
+
+01:20:40.925 --> 01:20:43.165
+<v Speaker 0>bases deploying the workloads and all of that
+
+01:20:43.165 --> 01:20:45.165
+<v Speaker 0>would have been amazing demo of just pulling
+
+01:20:45.165 --> 01:20:45.885
+<v Speaker 0>me up,
+
+01:20:46.285 --> 01:20:47.485
+<v Speaker 0>boom, work.
+
+01:20:47.725 --> 01:20:49.725
+<v Speaker 1>I I I think what we're trying to
+
+01:20:49.725 --> 01:20:50.844
+<v Speaker 1>say right is that
+
+01:20:51.245 --> 01:20:54.100
+<v Speaker 1>a lot of with with a specifically a
+
+01:20:54.100 --> 01:20:57.060
+<v Speaker 1>GitOps paradigm, we want everything in Git. That's
+
+01:20:57.060 --> 01:20:58.900
+<v Speaker 1>the kind of, you know, the golden standard
+
+01:20:58.900 --> 01:20:59.620
+<v Speaker 1>here. So
+
+01:21:01.220 --> 01:21:03.220
+<v Speaker 1>what we don't wanna be doing is pushing
+
+01:21:03.220 --> 01:21:04.580
+<v Speaker 1>a lot of code or a lot of
+
+01:21:04.580 --> 01:21:07.940
+<v Speaker 1>YAML files or manifests into the Kubernetes cluster.
+
+01:21:08.020 --> 01:21:10.364
+<v Speaker 1>We want the absolute bare minimum, and the
+
+01:21:10.364 --> 01:21:12.844
+<v Speaker 1>bare minimum is gonna be flux pointing at
+
+01:21:12.844 --> 01:21:15.005
+<v Speaker 1>our repository at a given directory.
+
+01:21:15.485 --> 01:21:17.005
+<v Speaker 1>And then all of the config that you
+
+01:21:17.005 --> 01:21:18.925
+<v Speaker 1>need gets sunk into
+
+01:21:19.085 --> 01:21:21.405
+<v Speaker 1>the cluster. So it's not it's it's a
+
+01:21:21.405 --> 01:21:24.364
+<v Speaker 1>very small push based model because you're gonna
+
+01:21:23.910 --> 01:21:26.070
+<v Speaker 1>have to push some initial configuration, but then
+
+01:21:26.070 --> 01:21:27.990
+<v Speaker 1>there is a massive pull based model as
+
+01:21:27.990 --> 01:21:28.470
+<v Speaker 1>well.
+
+01:21:29.110 --> 01:21:30.870
+<v Speaker 1>And I think the the one thing that
+
+01:21:30.870 --> 01:21:32.310
+<v Speaker 1>you and I were actually going back on
+
+01:21:32.310 --> 01:21:33.590
+<v Speaker 1>Twitter talking about
+
+01:21:33.990 --> 01:21:34.550
+<v Speaker 1>was
+
+01:21:35.510 --> 01:21:38.150
+<v Speaker 1>Flux can upgrade itself. So Flux can upgrade
+
+01:21:38.150 --> 01:21:40.395
+<v Speaker 1>Flux. So you can have a Flux in
+
+01:21:40.395 --> 01:21:42.555
+<v Speaker 1>your Pulumi config, and you can have a
+
+01:21:42.555 --> 01:21:45.035
+<v Speaker 1>corresponding Flux in your Flux repository.
+
+01:21:45.195 --> 01:21:47.995
+<v Speaker 0>Yep. And you could start your cluster with,
+
+01:21:48.075 --> 01:21:49.755
+<v Speaker 1>you know, Flux one dot five,
+
+01:21:50.075 --> 01:21:51.195
+<v Speaker 1>but then in your repository,
+
+01:21:51.820 --> 01:21:54.060
+<v Speaker 1>have one dot six, and it would constantly
+
+01:21:54.060 --> 01:21:55.340
+<v Speaker 1>keep itself upgraded.
+
+01:21:55.500 --> 01:21:57.340
+<v Speaker 1>So that initial push,
+
+01:21:57.900 --> 01:22:00.060
+<v Speaker 1>you're not bothered about after Pulumi up has
+
+01:22:00.060 --> 01:22:01.500
+<v Speaker 1>has completed
+
+01:22:01.500 --> 01:22:03.660
+<v Speaker 1>because all of your life cycle now is
+
+01:22:03.660 --> 01:22:04.620
+<v Speaker 1>done in that repository.
+
+01:22:04.975 --> 01:22:07.135
+<v Speaker 1>And you're back to git, you're back to
+
+01:22:07.135 --> 01:22:08.735
+<v Speaker 1>CI, and you're back to all of the
+
+01:22:08.735 --> 01:22:11.695
+<v Speaker 1>PR process, etcetera, etcetera, etcetera. And you're driving
+
+01:22:11.695 --> 01:22:14.335
+<v Speaker 1>everything from from there. Yeah. Definitely.
+
+01:22:15.614 --> 01:22:16.495
+<v Speaker 1>Hey, Marky.
+
+01:22:17.270 --> 01:22:18.710
+<v Speaker 1>Good to see you. Hope you are.
+
+01:22:20.710 --> 01:22:21.510
+<v Speaker 0>Alright.
+
+01:22:22.630 --> 01:22:24.630
+<v Speaker 0>I'll give people just, I guess, thirty more
+
+01:22:24.630 --> 01:22:26.710
+<v Speaker 0>seconds, please. If you have questions, let's let's
+
+01:22:26.710 --> 01:22:27.510
+<v Speaker 0>get them in.
+
+01:22:28.390 --> 01:22:30.155
+<v Speaker 0>Thank you for joining me today. It was
+
+01:22:30.155 --> 01:22:31.915
+<v Speaker 0>really good to actually sit down with you
+
+01:22:31.915 --> 01:22:33.835
+<v Speaker 0>and have a proper conversation and pair on
+
+01:22:33.835 --> 01:22:35.594
+<v Speaker 0>something that we've not done that before.
+
+01:22:35.995 --> 01:22:38.235
+<v Speaker 1>It's been very, it's it's always you and
+
+01:22:38.235 --> 01:22:39.675
+<v Speaker 1>I going back and forth on Twitter and
+
+01:22:39.675 --> 01:22:41.515
+<v Speaker 0>it's been really pretty good to sit down
+
+01:22:41.515 --> 01:22:44.170
+<v Speaker 1>and I've learned loads. Right? I've never I've
+
+01:22:44.170 --> 01:22:46.010
+<v Speaker 1>looked at Pulumi from the outside. I'm I'm
+
+01:22:46.010 --> 01:22:48.410
+<v Speaker 1>so kind of head in Terraform land because
+
+01:22:48.410 --> 01:22:50.330
+<v Speaker 1>that's kind of what I'm what I'm familiar
+
+01:22:50.330 --> 01:22:51.929
+<v Speaker 1>with. And actually seeing
+
+01:22:52.170 --> 01:22:54.330
+<v Speaker 1>the the power of Pulumi and some of
+
+01:22:54.330 --> 01:22:55.610
+<v Speaker 1>the things that actually
+
+01:22:55.770 --> 01:22:58.505
+<v Speaker 1>Terraform doesn't do very nicely, and Pulumi's got
+
+01:22:58.505 --> 01:23:01.224
+<v Speaker 1>that obstruction and how that can fit into
+
+01:23:01.385 --> 01:23:03.625
+<v Speaker 1>the current workflow of, you know, just hooking
+
+01:23:03.625 --> 01:23:05.784
+<v Speaker 1>in some some manifests and getting them to
+
+01:23:05.784 --> 01:23:07.784
+<v Speaker 1>reconcile. Like, I think it's great. The the
+
+01:23:07.784 --> 01:23:10.985
+<v Speaker 1>the bootstrapping mechanism is there whether you choose
+
+01:23:10.985 --> 01:23:13.040
+<v Speaker 1>Pulumi, whether you choose Terraform, or whether you
+
+01:23:13.040 --> 01:23:14.000
+<v Speaker 1>choose any other
+
+01:23:14.560 --> 01:23:17.280
+<v Speaker 1>infrastructure as code tool. But the the pieces
+
+01:23:17.280 --> 01:23:19.120
+<v Speaker 1>of the puzzle are there. Stop. Get the
+
+01:23:19.120 --> 01:23:21.200
+<v Speaker 1>cluster up, get a Flux instance, and away
+
+01:23:21.200 --> 01:23:22.880
+<v Speaker 1>you go. You're you're ready to reconcile and
+
+01:23:22.880 --> 01:23:24.159
+<v Speaker 1>start to deploy workloads.
+
+01:23:24.880 --> 01:23:26.960
+<v Speaker 0>Yes. Definitely. I
+
+01:23:27.200 --> 01:23:30.295
+<v Speaker 0>I just can't see past Pulumi anymore. I've
+
+01:23:30.295 --> 01:23:32.215
+<v Speaker 0>just been using it too long, I understand
+
+01:23:32.215 --> 01:23:33.895
+<v Speaker 0>you know it's got some weird things in
+
+01:23:33.895 --> 01:23:35.895
+<v Speaker 0>it of course all software does but I
+
+01:23:35.895 --> 01:23:38.135
+<v Speaker 0>know I've got over the hump there and
+
+01:23:38.135 --> 01:23:40.215
+<v Speaker 0>I just when I go back to TerraForm
+
+01:23:40.215 --> 01:23:42.740
+<v Speaker 0>or I try to we have Terraform modules
+
+01:23:42.740 --> 01:23:44.340
+<v Speaker 0>for Equinix Medal and when I go to
+
+01:23:44.340 --> 01:23:45.700
+<v Speaker 0>try and contribute to them I'm just like
+
+01:23:45.700 --> 01:23:47.540
+<v Speaker 0>I feel like I've actually traveled back in
+
+01:23:47.540 --> 01:23:49.700
+<v Speaker 0>time like the Stone Age or something I
+
+01:23:49.700 --> 01:23:51.860
+<v Speaker 0>find the tool is working against me and
+
+01:23:51.860 --> 01:23:53.974
+<v Speaker 0>I used to love Terraform and it's still
+
+01:23:53.974 --> 01:23:56.054
+<v Speaker 0>a great tool I just I don't know
+
+01:23:56.054 --> 01:23:58.295
+<v Speaker 0>I struggle with it now and it's my
+
+01:23:58.295 --> 01:24:00.454
+<v Speaker 0>thing and not not a bad thing about
+
+01:24:00.454 --> 01:24:01.094
+<v Speaker 0>the tool.
+
+01:24:02.375 --> 01:24:03.974
+<v Speaker 0>Guess just because we have a few minutes
+
+01:24:03.974 --> 01:24:05.815
+<v Speaker 0>and you know you're a very knowledgeable person
+
+01:24:05.815 --> 01:24:07.494
+<v Speaker 0>why don't we just talk about get ups
+
+01:24:07.560 --> 01:24:10.360
+<v Speaker 0>then? Like Sure. What are the big changes
+
+01:24:10.360 --> 01:24:11.800
+<v Speaker 0>with flux v two? Have you been keeping
+
+01:24:11.800 --> 01:24:12.679
+<v Speaker 0>an eye on that?
+
+01:24:13.720 --> 01:24:15.960
+<v Speaker 1>So I think with with flux v two,
+
+01:24:15.960 --> 01:24:17.800
+<v Speaker 1>if you if you think about flux
+
+01:24:17.960 --> 01:24:19.720
+<v Speaker 1>or the flux agent, it was doing a
+
+01:24:19.720 --> 01:24:22.120
+<v Speaker 1>lot of stuff. Right? It it it was
+
+01:24:22.615 --> 01:24:24.455
+<v Speaker 1>looking for new images from its from the
+
+01:24:24.455 --> 01:24:25.574
+<v Speaker 1>image registries.
+
+01:24:25.575 --> 01:24:27.574
+<v Speaker 1>It was syncing repositories.
+
+01:24:28.775 --> 01:24:30.375
+<v Speaker 1>And what Flux v two is doing is
+
+01:24:30.375 --> 01:24:31.895
+<v Speaker 1>essentially splitting out
+
+01:24:32.055 --> 01:24:35.015
+<v Speaker 1>and decoupling these things into into smaller agents
+
+01:24:35.015 --> 01:24:36.534
+<v Speaker 1>or smaller controllers.
+
+01:24:36.535 --> 01:24:39.100
+<v Speaker 1>So there's an image controller. There's a customized
+
+01:24:39.100 --> 01:24:39.900
+<v Speaker 1>controller.
+
+01:24:40.460 --> 01:24:41.659
+<v Speaker 1>There's a
+
+01:24:43.580 --> 01:24:46.460
+<v Speaker 1>Helm operator that they've called Helm controller. So
+
+01:24:46.460 --> 01:24:47.739
+<v Speaker 1>they're decoupling them,
+
+01:24:48.220 --> 01:24:48.699
+<v Speaker 1>and
+
+01:24:49.180 --> 01:24:51.260
+<v Speaker 1>they're they're moving much more to a model
+
+01:24:51.260 --> 01:24:54.184
+<v Speaker 1>whereby you can declare absolutely everything with their
+
+01:24:54.184 --> 01:24:54.985
+<v Speaker 1>configuration.
+
+01:24:54.985 --> 01:24:56.905
+<v Speaker 1>So think about you've got a fleet of
+
+01:24:56.905 --> 01:24:58.905
+<v Speaker 1>clusters. In this scenario, we've just got a
+
+01:24:58.905 --> 01:25:00.824
+<v Speaker 1>single cluster. Yeah. So how do you define
+
+01:25:00.824 --> 01:25:02.905
+<v Speaker 1>a fleet when you do when you stand
+
+01:25:02.905 --> 01:25:05.065
+<v Speaker 1>up one of those clusters within that fleet?
+
+01:25:05.065 --> 01:25:06.630
+<v Speaker 1>What's it gonna be reconciling?
+
+01:25:07.430 --> 01:25:10.470
+<v Speaker 1>And the overall observability of flux v two
+
+01:25:10.470 --> 01:25:13.430
+<v Speaker 1>is is generally incredible compared to compared to
+
+01:25:13.430 --> 01:25:15.590
+<v Speaker 1>flux v one, knowing we wouldn't be able
+
+01:25:15.590 --> 01:25:16.950
+<v Speaker 1>to go to a dashboard and see that
+
+01:25:16.950 --> 01:25:19.675
+<v Speaker 1>that sync wasn't being successful as an example.
+
+01:25:19.675 --> 01:25:21.915
+<v Speaker 1>So a lot of the kind of griping
+
+01:25:21.915 --> 01:25:24.475
+<v Speaker 1>pains that people had with flux v one
+
+01:25:25.115 --> 01:25:27.675
+<v Speaker 1>is being fixed in flux v two,
+
+01:25:28.075 --> 01:25:30.555
+<v Speaker 1>and they're essentially decoupling it. So that is,
+
+01:25:30.690 --> 01:25:33.250
+<v Speaker 1>unfortunately slightly more YAML files that you do
+
+01:25:33.250 --> 01:25:34.449
+<v Speaker 1>have to get your head around,
+
+01:25:35.090 --> 01:25:35.730
+<v Speaker 1>but
+
+01:25:36.210 --> 01:25:38.610
+<v Speaker 1>you you have a tighter control over what
+
+01:25:38.610 --> 01:25:40.530
+<v Speaker 1>each of those things does. And,
+
+01:25:41.330 --> 01:25:42.610
+<v Speaker 1>yeah, I think that's I think that's a
+
+01:25:42.610 --> 01:25:43.745
+<v Speaker 1>really powerful mechanism.
+
+01:25:44.305 --> 01:25:46.065
+<v Speaker 0>Alright let me throw another question at you
+
+01:25:46.065 --> 01:25:46.945
+<v Speaker 0>then like,
+
+01:25:47.425 --> 01:25:49.265
+<v Speaker 0>is there ever a reason you shouldn't use
+
+01:25:49.265 --> 01:25:50.145
+<v Speaker 0>GetOps?
+
+01:25:51.105 --> 01:25:52.385
+<v Speaker 0>Because I think you've
+
+01:25:52.385 --> 01:25:54.625
+<v Speaker 0>sold me on it, I see this incredible
+
+01:25:54.625 --> 01:25:57.520
+<v Speaker 0>power and flexibility and continuous delivery, but as
+
+01:25:57.520 --> 01:25:59.120
+<v Speaker 0>there as there anyone is watching, they should
+
+01:25:59.120 --> 01:26:00.640
+<v Speaker 0>be like, oh, I shouldn't be doing this.
+
+01:26:00.640 --> 01:26:02.160
+<v Speaker 0>Is there any of those gotchas that people
+
+01:26:02.160 --> 01:26:03.120
+<v Speaker 0>should be aware of?
+
+01:26:03.520 --> 01:26:04.880
+<v Speaker 1>I I think
+
+01:26:05.360 --> 01:26:08.160
+<v Speaker 1>it it comes down to firstly
+
+01:26:08.160 --> 01:26:09.200
+<v Speaker 1>understanding
+
+01:26:09.200 --> 01:26:12.054
+<v Speaker 1>the mech like Kubernetes as a as a
+
+01:26:12.295 --> 01:26:13.415
+<v Speaker 1>as an orchestrator.
+
+01:26:13.415 --> 01:26:15.494
+<v Speaker 1>Right? You there is a lot of power
+
+01:26:15.494 --> 01:26:18.054
+<v Speaker 1>there just from what Kubernetes is doing itself.
+
+01:26:18.375 --> 01:26:20.934
+<v Speaker 1>And if you have already got a load
+
+01:26:20.934 --> 01:26:24.454
+<v Speaker 1>of pipelines that push your code or push
+
+01:26:23.610 --> 01:26:25.449
+<v Speaker 1>your helm charts
+
+01:26:26.010 --> 01:26:27.769
+<v Speaker 1>into Kubernetes,
+
+01:26:27.929 --> 01:26:30.010
+<v Speaker 1>actually pulling that out and putting it into
+
+01:26:30.010 --> 01:26:30.809
+<v Speaker 1>GitOps
+
+01:26:30.810 --> 01:26:33.610
+<v Speaker 1>could be very, very painful. Right? There could
+
+01:26:33.610 --> 01:26:35.530
+<v Speaker 1>there could be so much logic that's in
+
+01:26:35.530 --> 01:26:36.489
+<v Speaker 1>those pipelines
+
+01:26:36.730 --> 01:26:39.584
+<v Speaker 1>that developers or engineers may or may not
+
+01:26:39.744 --> 01:26:42.304
+<v Speaker 1>fully grasp. They just hope it works or,
+
+01:26:42.304 --> 01:26:43.744
+<v Speaker 1>you know, they haven't they haven't looked at
+
+01:26:43.744 --> 01:26:45.584
+<v Speaker 1>it for for a long time. Yeah.
+
+01:26:46.465 --> 01:26:48.704
+<v Speaker 1>Maybe maybe that's not necessarily
+
+01:26:48.784 --> 01:26:50.864
+<v Speaker 1>move the best way to move to to.
+
+01:26:51.290 --> 01:26:53.610
+<v Speaker 1>But I think for me, it's not about
+
+01:26:53.610 --> 01:26:54.570
+<v Speaker 1>the syncing.
+
+01:26:54.890 --> 01:26:58.490
+<v Speaker 1>It's about two things. One is using the
+
+01:26:58.490 --> 01:27:00.730
+<v Speaker 1>tools that every developer knows how to use,
+
+01:27:00.730 --> 01:27:03.050
+<v Speaker 1>which is Git, understands PRs, understands
+
+01:27:03.385 --> 01:27:04.744
+<v Speaker 1>CI. Then
+
+01:27:05.625 --> 01:27:08.505
+<v Speaker 1>also the ability to to some degree, and
+
+01:27:08.505 --> 01:27:11.225
+<v Speaker 1>I'm gonna caveat this with, obviously, of a
+
+01:27:11.225 --> 01:27:12.824
+<v Speaker 1>number of caveats here.
+
+01:27:13.145 --> 01:27:15.385
+<v Speaker 1>You can start to move to seeing your
+
+01:27:15.385 --> 01:27:16.505
+<v Speaker 1>cluster as ephemeral
+
+01:27:18.300 --> 01:27:21.340
+<v Speaker 1>because the cluster is just is just a
+
+01:27:21.340 --> 01:27:23.659
+<v Speaker 1>way to deploy workloads, and it it always
+
+01:27:23.659 --> 01:27:24.939
+<v Speaker 1>to some degree has.
+
+01:27:25.260 --> 01:27:26.940
+<v Speaker 1>But if we can, like we were talking
+
+01:27:26.940 --> 01:27:28.619
+<v Speaker 1>about earlier, remove
+
+01:27:29.179 --> 01:27:31.785
+<v Speaker 1>or destroy the cluster, re spin it back
+
+01:27:31.785 --> 01:27:34.745
+<v Speaker 1>up, and reconcile everything from a known state.
+
+01:27:35.465 --> 01:27:36.985
+<v Speaker 1>That is extremely powerful.
+
+01:27:37.785 --> 01:27:39.545
+<v Speaker 1>Obviously, you've got storage that you have to
+
+01:27:39.545 --> 01:27:41.545
+<v Speaker 1>deal with, etcetera, etcetera, etcetera. So those there
+
+01:27:41.545 --> 01:27:43.385
+<v Speaker 1>there comes the caveats, and Yep. I'm definitely
+
+01:27:43.385 --> 01:27:45.145
+<v Speaker 1>not gonna talk about CloudMated storage.
+
+01:27:46.260 --> 01:27:47.699
+<v Speaker 1>But also as well,
+
+01:27:48.739 --> 01:27:50.260
+<v Speaker 1>I think the other useful thing is you
+
+01:27:50.260 --> 01:27:52.260
+<v Speaker 1>have an audit trail of changes. I don't
+
+01:27:52.260 --> 01:27:54.739
+<v Speaker 1>have to troll the CI pipelines and work
+
+01:27:54.739 --> 01:27:57.139
+<v Speaker 1>out how far things got through. I have
+
+01:27:57.139 --> 01:27:59.475
+<v Speaker 1>an audit trail of all the changes. So
+
+01:27:59.475 --> 01:28:02.034
+<v Speaker 1>if you're working in a financial or regulatory
+
+01:28:02.034 --> 01:28:04.034
+<v Speaker 1>industry like I am with insurance,
+
+01:28:04.435 --> 01:28:06.275
+<v Speaker 1>I can show the order to all the
+
+01:28:06.275 --> 01:28:07.955
+<v Speaker 1>changes that happened at any point in time.
+
+01:28:07.955 --> 01:28:10.275
+<v Speaker 1>I don't have to collate this lovely spreadsheet
+
+01:28:10.275 --> 01:28:12.355
+<v Speaker 1>that they love to see. I just show
+
+01:28:12.355 --> 01:28:14.700
+<v Speaker 1>them the commit history of our, you know,
+
+01:28:14.700 --> 01:28:16.940
+<v Speaker 1>our x number of repositories that we have.
+
+01:28:17.020 --> 01:28:18.139
+<v Speaker 0>Awesome.
+
+01:28:19.100 --> 01:28:19.739
+<v Speaker 0>Alright.
+
+01:28:20.300 --> 01:28:21.739
+<v Speaker 0>I could easily keep you here for another
+
+01:28:21.739 --> 01:28:23.340
+<v Speaker 0>hour but I'm gonna let you get back
+
+01:28:23.340 --> 01:28:25.980
+<v Speaker 0>to your evening. I'm sure it's late where
+
+01:28:25.980 --> 01:28:27.660
+<v Speaker 0>we are so thank
+
+01:28:27.660 --> 01:28:29.645
+<v Speaker 0>you very much for joining me. I had
+
+01:28:29.645 --> 01:28:31.005
+<v Speaker 0>a lot of fun. I hope we do
+
+01:28:31.005 --> 01:28:33.324
+<v Speaker 0>this again with more stuff. I
+
+01:28:33.965 --> 01:28:36.525
+<v Speaker 0>hope that people watching enjoy themselves as well.
+
+01:28:37.405 --> 01:28:40.045
+<v Speaker 0>Steve's Twitter handle is there under his head
+
+01:28:40.045 --> 01:28:41.165
+<v Speaker 0>sway1987
+
+01:28:41.165 --> 01:28:43.219
+<v Speaker 0>give him a follow he is always tweeting
+
+01:28:43.219 --> 01:28:43.860
+<v Speaker 0>on
+
+01:28:44.020 --> 01:28:46.340
+<v Speaker 0>awesome stuff on get ups and I also
+
+01:28:46.340 --> 01:28:48.100
+<v Speaker 0>see him answering so many questions from people
+
+01:28:48.100 --> 01:28:49.300
+<v Speaker 0>as well like so if you need help
+
+01:28:49.300 --> 01:28:50.580
+<v Speaker 0>I'm sure he'd be more than happy for
+
+01:28:50.580 --> 01:28:52.020
+<v Speaker 0>you to reach out and he'll do his
+
+01:28:52.020 --> 01:28:53.699
+<v Speaker 0>best and of course you can reach out
+
+01:28:53.699 --> 01:28:56.625
+<v Speaker 0>to me I'm just not as useful. So
+
+01:28:56.705 --> 01:28:58.545
+<v Speaker 0>Steve have a great evening, thank you for
+
+01:28:58.545 --> 01:29:00.545
+<v Speaker 0>joining me, will speak to you again soon.
+
+01:29:00.625 --> 01:29:02.865
+<v Speaker 1>You too, it's a pleasure. Thanks. Thanks. Bye.

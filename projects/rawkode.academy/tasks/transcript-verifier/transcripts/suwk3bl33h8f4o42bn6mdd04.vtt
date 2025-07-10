@@ -1,0 +1,368 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 733b0b2f-ffff-49a1-9997-acd1f4536daf
+Created: 2025-04-29T23:05:13.544Z
+Duration: 298.55713
+Channels: 1
+
+00:00:01.199 --> 00:00:02.159
+<v Speaker 0>Hi, everyone.
+
+00:00:03.840 --> 00:00:05.920
+<v Speaker 0>So what I wanna show off today
+
+00:00:06.879 --> 00:00:08.080
+<v Speaker 0>is using
+
+00:00:08.080 --> 00:00:08.880
+<v Speaker 0>Zalando's
+
+00:00:08.880 --> 00:00:10.320
+<v Speaker 0>metrics adapter
+
+00:00:10.960 --> 00:00:15.135
+<v Speaker 0>in order to scale your Kubernetes deployment objects
+
+00:00:15.775 --> 00:00:19.455
+<v Speaker 0>using the horizontal pod autoscaler with custom metrics.
+
+00:00:20.175 --> 00:00:22.815
+<v Speaker 0>Those custom metrics are going to come from
+
+00:00:22.815 --> 00:00:25.055
+<v Speaker 0>InfluxDB running inside of your cluster,
+
+00:00:25.960 --> 00:00:28.999
+<v Speaker 0>and we do that by annotating the HPA
+
+00:00:29.320 --> 00:00:30.759
+<v Speaker 0>with a flux query.
+
+00:00:31.800 --> 00:00:33.480
+<v Speaker 0>Alright. So let's take a look at what's
+
+00:00:33.480 --> 00:00:34.120
+<v Speaker 0>going on.
+
+00:00:36.120 --> 00:00:36.920
+<v Speaker 0>Firstly,
+
+00:00:37.000 --> 00:00:39.399
+<v Speaker 0>we have to deploy the metrics adapter. This
+
+00:00:39.399 --> 00:00:41.239
+<v Speaker 0>code is in a repository. I'm not going
+
+00:00:41.239 --> 00:00:42.895
+<v Speaker 0>to go through it right now, but feel
+
+00:00:42.895 --> 00:00:44.175
+<v Speaker 0>free to take a look and I'll make
+
+00:00:44.175 --> 00:00:45.615
+<v Speaker 0>sure the links at the end.
+
+00:00:47.535 --> 00:00:50.895
+<v Speaker 0>We're deploying engine x because it's relatively easy
+
+00:00:50.895 --> 00:00:54.655
+<v Speaker 0>to force a scaling event using any HTTP
+
+00:00:54.655 --> 00:00:56.095
+<v Speaker 0>load stress tool.
+
+00:00:57.350 --> 00:00:59.270
+<v Speaker 0>We're using any containers just to make sure
+
+00:00:59.270 --> 00:01:00.789
+<v Speaker 0>that the bucket exists
+
+00:01:01.030 --> 00:01:05.269
+<v Speaker 0>and we have a sidecar container running telegraph.
+
+00:01:05.269 --> 00:01:08.150
+<v Speaker 0>That sidecar container is scraping the NGINX status
+
+00:01:08.150 --> 00:01:08.950
+<v Speaker 0>endpoint
+
+00:01:09.110 --> 00:01:11.735
+<v Speaker 0>to get a few basic stats from the
+
+00:01:11.735 --> 00:01:13.015
+<v Speaker 0>container itself.
+
+00:01:15.095 --> 00:01:17.895
+<v Speaker 0>We also have an HPA configured.
+
+00:01:18.535 --> 00:01:20.615
+<v Speaker 0>Now like I said at the start,
+
+00:01:21.255 --> 00:01:24.215
+<v Speaker 0>we're gonna annotate it with a flux query.
+
+00:01:25.060 --> 00:01:26.980
+<v Speaker 0>This flux query is going to run every
+
+00:01:26.980 --> 00:01:28.980
+<v Speaker 0>five seconds. It's going to pull out the
+
+00:01:28.980 --> 00:01:30.580
+<v Speaker 0>NGINX metrics,
+
+00:01:30.740 --> 00:01:32.820
+<v Speaker 0>and we're gonna kind of introspect this waiting
+
+00:01:32.820 --> 00:01:34.740
+<v Speaker 0>field. What we want to know is are
+
+00:01:34.740 --> 00:01:37.460
+<v Speaker 0>there any HTTP requests that are waiting
+
+00:01:37.620 --> 00:01:39.924
+<v Speaker 0>for something to handle it? When that number
+
+00:01:39.924 --> 00:01:41.765
+<v Speaker 0>gets too high, we have our goal being
+
+00:01:41.765 --> 00:01:43.604
+<v Speaker 0>it to be one or less, then we
+
+00:01:43.604 --> 00:01:45.365
+<v Speaker 0>want to scale up the number of pods
+
+00:01:45.365 --> 00:01:46.965
+<v Speaker 0>to be able to satisfy and handle that
+
+00:01:46.965 --> 00:01:47.685
+<v Speaker 0>traffic.
+
+00:01:48.725 --> 00:01:49.445
+<v Speaker 0>Okay.
+
+00:01:50.405 --> 00:01:52.165
+<v Speaker 0>So what we have running here on the
+
+00:01:52.165 --> 00:01:52.805
+<v Speaker 0>top
+
+00:01:52.979 --> 00:01:54.899
+<v Speaker 0>is just a watcher
+
+00:01:54.899 --> 00:01:57.540
+<v Speaker 0>monitoring all the pods and we can see
+
+00:01:57.540 --> 00:02:00.420
+<v Speaker 0>our NGINX HPA is running here. And we
+
+00:02:00.420 --> 00:02:02.740
+<v Speaker 0>have the two containers, which just means NGINX
+
+00:02:02.740 --> 00:02:04.580
+<v Speaker 0>with telegraph running side by side.
+
+00:02:05.885 --> 00:02:08.045
+<v Speaker 0>If I jump over to this other tab,
+
+00:02:10.445 --> 00:02:12.045
+<v Speaker 0>what we want to do is just take
+
+00:02:12.045 --> 00:02:12.765
+<v Speaker 0>a look
+
+00:02:13.165 --> 00:02:15.485
+<v Speaker 0>and see that we have influx DB running.
+
+00:02:16.285 --> 00:02:17.805
+<v Speaker 0>And I'm going to port forward to this
+
+00:02:17.805 --> 00:02:18.845
+<v Speaker 0>and show you the metrics.
+
+00:02:23.870 --> 00:02:28.670
+<v Speaker 0>It's InfluxDV799999999.
+
+00:02:30.110 --> 00:02:32.030
+<v Speaker 0>I jump up to my browser,
+
+00:02:32.670 --> 00:02:34.430
+<v Speaker 0>we can browse to influx
+
+00:02:36.925 --> 00:02:38.685
+<v Speaker 0>and we can log in.
+
+00:02:40.925 --> 00:02:41.965
+<v Speaker 0>There we go.
+
+00:02:42.365 --> 00:02:43.325
+<v Speaker 0>And if we take a look at the
+
+00:02:43.325 --> 00:02:46.285
+<v Speaker 0>metric explorer, we have our NGINX HPA bucket,
+
+00:02:46.285 --> 00:02:48.205
+<v Speaker 0>which was created by the end of container.
+
+00:02:48.205 --> 00:02:49.965
+<v Speaker 0>We have our NGINX measurement
+
+00:02:50.045 --> 00:02:52.260
+<v Speaker 0>and have a whole bunch of different fields
+
+00:02:52.260 --> 00:02:54.099
+<v Speaker 0>that we can use to determine how to
+
+00:02:54.099 --> 00:02:55.700
+<v Speaker 0>scale this pod.
+
+00:02:57.060 --> 00:02:59.140
+<v Speaker 0>And if we just take a look at
+
+00:02:59.379 --> 00:03:00.580
+<v Speaker 0>the waiting
+
+00:03:01.060 --> 00:03:01.620
+<v Speaker 0>field,
+
+00:03:02.885 --> 00:03:05.525
+<v Speaker 0>We'll see that, you know, it's zero zero
+
+00:03:05.525 --> 00:03:07.605
+<v Speaker 0>zero zero and except for my test over
+
+00:03:07.605 --> 00:03:09.685
+<v Speaker 0>here where I managed to cause the scaling
+
+00:03:09.685 --> 00:03:12.325
+<v Speaker 0>a bit earlier. It's been zero ever since.
+
+00:03:12.325 --> 00:03:12.885
+<v Speaker 0>So
+
+00:03:13.685 --> 00:03:15.765
+<v Speaker 0>the other thing that we want to do
+
+00:03:17.910 --> 00:03:18.630
+<v Speaker 0>is
+
+00:03:19.190 --> 00:03:21.030
+<v Speaker 0>now provide enough traffic
+
+00:03:21.670 --> 00:03:23.670
+<v Speaker 0>that we can see the scale
+
+00:03:23.670 --> 00:03:24.870
+<v Speaker 0>in real time.
+
+00:03:26.950 --> 00:03:28.390
+<v Speaker 0>Now in order to do that, I do
+
+00:03:28.390 --> 00:03:30.150
+<v Speaker 0>need to port forward one more time.
+
+00:03:31.565 --> 00:03:34.445
+<v Speaker 0>So we're going to jump up here and
+
+00:03:37.325 --> 00:03:39.565
+<v Speaker 0>we want to port forward to the engine
+
+00:03:39.565 --> 00:03:41.645
+<v Speaker 0>x pod so that my load balancing tool
+
+00:03:41.645 --> 00:03:43.885
+<v Speaker 0>which is running locally on my machine can
+
+00:03:43.885 --> 00:03:44.525
+<v Speaker 0>still hit it.
+
+00:03:45.439 --> 00:03:47.360
+<v Speaker 0>So we're gonna port forward.
+
+00:03:47.599 --> 00:03:49.680
+<v Speaker 0>I wonder if that's changed. Let's just double
+
+00:03:49.680 --> 00:03:51.519
+<v Speaker 0>check. It has not. So we're going to
+
+00:03:51.519 --> 00:03:54.159
+<v Speaker 0>expose engine X on port 9,000
+
+00:03:54.159 --> 00:03:55.280
+<v Speaker 0>locally on this machine.
+
+00:03:57.894 --> 00:03:59.974
+<v Speaker 0>Which means if I go into the same
+
+00:03:59.974 --> 00:04:02.135
+<v Speaker 0>directory, the command should be in my history.
+
+00:04:02.935 --> 00:04:04.855
+<v Speaker 0>But we can run BATIN and we're just
+
+00:04:04.855 --> 00:04:06.295
+<v Speaker 0>gonna tell it to go to local host
+
+00:04:06.295 --> 00:04:08.535
+<v Speaker 0>on 9,000 as support forward import.
+
+00:04:08.614 --> 00:04:10.215
+<v Speaker 0>We're going to run 512
+
+00:04:10.215 --> 00:04:11.655
+<v Speaker 0>concurrent go routines
+
+00:04:11.820 --> 00:04:13.500
+<v Speaker 0>and we wanna try and hit this with
+
+00:04:13.500 --> 00:04:14.700
+<v Speaker 0>200,000
+
+00:04:14.700 --> 00:04:15.500
+<v Speaker 0>requests.
+
+00:04:17.180 --> 00:04:18.620
+<v Speaker 0>If we hit return
+
+00:04:19.339 --> 00:04:21.180
+<v Speaker 0>and if we jump up here and we
+
+00:04:21.180 --> 00:04:23.980
+<v Speaker 0>just stick this on a cycle of refreshing,
+
+00:04:24.540 --> 00:04:26.460
+<v Speaker 0>we can see now that the waiting
+
+00:04:27.224 --> 00:04:29.865
+<v Speaker 0>is beginning to increase quite drastically.
+
+00:04:30.504 --> 00:04:33.465
+<v Speaker 0>And now right on queue, our watcher has
+
+00:04:33.465 --> 00:04:34.905
+<v Speaker 0>picked up that we have to spin up
+
+00:04:34.905 --> 00:04:36.745
+<v Speaker 0>more pods to handle the traffic.
+
+00:04:37.384 --> 00:04:39.625
+<v Speaker 0>So that's horizontal pod auto scaling with the
+
+00:04:39.625 --> 00:04:40.745
+<v Speaker 0>metrics adapter
+
+00:04:40.824 --> 00:04:43.600
+<v Speaker 0>using a flux query annotated on the HPA.
+
+00:04:43.759 --> 00:04:45.759
+<v Speaker 0>I hope you find that useful, and there'll
+
+00:04:45.759 --> 00:04:47.440
+<v Speaker 0>be a blog published shortly and a link
+
+00:04:47.440 --> 00:04:49.120
+<v Speaker 0>at the end of this video. Thank you
+
+00:04:49.120 --> 00:04:49.520
+<v Speaker 0>very much.

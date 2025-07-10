@@ -1,0 +1,4529 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 6208bba7-63c8-4459-bce0-11f11f6b82ed
+Created: 2025-04-29T21:07:43.585Z
+Duration: 3834.0159
+Channels: 1
+
+00:01:21.900 --> 00:01:24.540
+<v Speaker 0>Hello, and welcome to today's episode.
+
+00:01:24.860 --> 00:01:26.300
+<v Speaker 0>Today, we're gonna be taking a look at
+
+00:01:26.300 --> 00:01:27.180
+<v Speaker 0>InfluxDB
+
+00:01:27.180 --> 00:01:29.180
+<v Speaker 0>two and the Flux language.
+
+00:01:29.180 --> 00:01:30.940
+<v Speaker 0>Now before we do that, I wanna say
+
+00:01:30.940 --> 00:01:32.940
+<v Speaker 0>thank you to Equinix Medal for providing the
+
+00:01:32.940 --> 00:01:34.540
+<v Speaker 0>time and resources for me to put this
+
+00:01:34.540 --> 00:01:36.325
+<v Speaker 0>show together so that we can learn from
+
+00:01:36.325 --> 00:01:38.165
+<v Speaker 0>experts around the world about all these cool
+
+00:01:38.165 --> 00:01:39.685
+<v Speaker 0>cloud native technologies.
+
+00:01:40.245 --> 00:01:43.125
+<v Speaker 0>Now joining me today to look at InfluxDB,
+
+00:01:43.125 --> 00:01:46.245
+<v Speaker 0>I have Anais Dottis Georgia from Influx Data.
+
+00:01:46.245 --> 00:01:47.205
+<v Speaker 0>How are you, Anais?
+
+00:01:47.730 --> 00:01:49.570
+<v Speaker 1>I'm doing well. Thanks. How are you?
+
+00:01:49.890 --> 00:01:53.010
+<v Speaker 0>Yeah. I'm very well. Thank you. Would you
+
+00:01:53.010 --> 00:01:55.650
+<v Speaker 0>like to firstly take a moment just to
+
+00:01:55.650 --> 00:01:57.410
+<v Speaker 0>introduce yourself, tell us a little bit about
+
+00:01:57.410 --> 00:01:59.330
+<v Speaker 0>you, and then we'll talk about InfluxDB.
+
+00:01:59.825 --> 00:02:00.545
+<v Speaker 1>Sure.
+
+00:02:00.625 --> 00:02:03.344
+<v Speaker 1>So I'm a developer advocate at InfluxData,
+
+00:02:03.344 --> 00:02:06.225
+<v Speaker 1>and I've been at InfluxData for about two
+
+00:02:06.225 --> 00:02:07.424
+<v Speaker 1>and a half years now.
+
+00:02:09.345 --> 00:02:10.705
+<v Speaker 1>A little bit about me and then a
+
+00:02:10.705 --> 00:02:12.224
+<v Speaker 1>little bit about InfluxData
+
+00:02:12.224 --> 00:02:14.290
+<v Speaker 1>in general. Well, I guess a little bit
+
+00:02:14.290 --> 00:02:15.810
+<v Speaker 1>more about me. I have two really cute
+
+00:02:15.810 --> 00:02:16.530
+<v Speaker 1>cats.
+
+00:02:16.610 --> 00:02:19.170
+<v Speaker 1>Their names are Chester and Nikita, and they're
+
+00:02:19.170 --> 00:02:21.010
+<v Speaker 1>always snuggling, which is adorable.
+
+00:02:21.170 --> 00:02:23.010
+<v Speaker 1>And I like to make art and
+
+00:02:23.410 --> 00:02:26.050
+<v Speaker 1>get outside and feel the sunshine as much
+
+00:02:26.050 --> 00:02:26.530
+<v Speaker 1>as I can.
+
+00:02:28.715 --> 00:02:30.795
+<v Speaker 1>And then a little bit about InfluxData.
+
+00:02:30.795 --> 00:02:31.995
+<v Speaker 1>So InfluxData
+
+00:02:31.995 --> 00:02:34.635
+<v Speaker 1>is a platform for building and operating time
+
+00:02:34.635 --> 00:02:35.755
+<v Speaker 1>series applications.
+
+00:02:36.315 --> 00:02:38.875
+<v Speaker 1>And it consists of two parts, InfluxDB,
+
+00:02:38.875 --> 00:02:41.755
+<v Speaker 1>which is the database and processing engine, and
+
+00:02:41.755 --> 00:02:43.755
+<v Speaker 1>then also the UI.
+
+00:02:44.840 --> 00:02:47.560
+<v Speaker 1>And then the second bit is Telegraph,
+
+00:02:47.560 --> 00:02:48.840
+<v Speaker 1>which is a
+
+00:02:49.000 --> 00:02:51.880
+<v Speaker 1>collection agent for metrics and events.
+
+00:02:53.159 --> 00:02:53.800
+<v Speaker 1>So
+
+00:02:55.000 --> 00:02:57.640
+<v Speaker 1>should we get into using InfluxDB,
+
+00:02:57.640 --> 00:02:59.239
+<v Speaker 1>or do you wanna learn some about
+
+00:02:59.814 --> 00:03:02.855
+<v Speaker 1>some interesting customer use cases or how are
+
+00:03:02.855 --> 00:03:03.495
+<v Speaker 1>you feeling?
+
+00:03:04.775 --> 00:03:06.935
+<v Speaker 0>Well, why don't we do the little bit
+
+00:03:06.935 --> 00:03:09.814
+<v Speaker 0>of setup work that's involved first, then we'll
+
+00:03:09.814 --> 00:03:10.694
+<v Speaker 0>talk about
+
+00:03:11.640 --> 00:03:13.480
+<v Speaker 0>some of those things and then by the
+
+00:03:13.480 --> 00:03:15.400
+<v Speaker 0>magic of the Internet and time, we'll have
+
+00:03:15.400 --> 00:03:18.120
+<v Speaker 0>what we need to get started. So Perfect.
+
+00:03:19.080 --> 00:03:21.400
+<v Speaker 0>I put up the InfluxDB
+
+00:03:21.400 --> 00:03:23.560
+<v Speaker 0>website which we'll use to download it, but
+
+00:03:23.560 --> 00:03:25.240
+<v Speaker 0>before we do that, we do need some
+
+00:03:25.240 --> 00:03:27.605
+<v Speaker 0>hardware. So we're gonna spin up a new
+
+00:03:27.605 --> 00:03:28.325
+<v Speaker 0>server.
+
+00:03:31.285 --> 00:03:33.845
+<v Speaker 0>And this is Equinix metal, so it's all
+
+00:03:33.925 --> 00:03:36.005
+<v Speaker 0>bare metal goodness. I'll spin this up in
+
+00:03:36.005 --> 00:03:36.965
+<v Speaker 0>Amsterdam.
+
+00:03:37.765 --> 00:03:40.005
+<v Speaker 0>Now does it matter what size of machine
+
+00:03:40.005 --> 00:03:40.565
+<v Speaker 0>we use?
+
+00:03:42.860 --> 00:03:45.100
+<v Speaker 0>No. It doesn't really. Let's just use an
+
+00:03:45.100 --> 00:03:47.260
+<v Speaker 0>expensive one anyway. Makes it more fun.
+
+00:03:48.060 --> 00:03:50.780
+<v Speaker 0>Let's go with it been to 20.
+
+00:03:51.420 --> 00:03:53.660
+<v Speaker 0>In fact, let's pick a faster provisioning one,
+
+00:03:53.660 --> 00:03:54.380
+<v Speaker 0>twenty o four.
+
+00:03:55.485 --> 00:03:57.165
+<v Speaker 0>And we'll call this InfluxDB.
+
+00:03:57.805 --> 00:03:59.084
+<v Speaker 0>I always like to make sure that I
+
+00:03:59.084 --> 00:04:01.325
+<v Speaker 0>don't really do anything upfront so that people
+
+00:04:01.325 --> 00:04:03.165
+<v Speaker 0>can kind of follow along. We won't do
+
+00:04:03.165 --> 00:04:05.165
+<v Speaker 0>any user data here. We're just gonna spin
+
+00:04:05.165 --> 00:04:07.004
+<v Speaker 0>this up as a vanilla Linux machine, and
+
+00:04:07.004 --> 00:04:08.845
+<v Speaker 0>then we'll walk through the installation steps.
+
+00:04:10.269 --> 00:04:12.670
+<v Speaker 0>Now hopefully this will refresh. The box is
+
+00:04:12.670 --> 00:04:14.269
+<v Speaker 0>spinning up and that is gonna take one
+
+00:04:14.269 --> 00:04:16.670
+<v Speaker 0>to two minutes. So why don't
+
+00:04:17.229 --> 00:04:18.829
+<v Speaker 0>you give us one to two minutes of
+
+00:04:18.829 --> 00:04:22.430
+<v Speaker 0>awesome information about maybe what's new with InfluxDB
+
+00:04:22.430 --> 00:04:24.669
+<v Speaker 0>two. I believe that was GA, was it,
+
+00:04:24.669 --> 00:04:25.725
+<v Speaker 0>last week?
+
+00:04:25.965 --> 00:04:28.045
+<v Speaker 0>Yeah. And then if you want, you can
+
+00:04:28.045 --> 00:04:29.885
+<v Speaker 0>feel free to share some user stories if
+
+00:04:29.885 --> 00:04:32.765
+<v Speaker 0>you wish. Sure. So InfluxDB
+
+00:04:32.765 --> 00:04:33.645
+<v Speaker 1>two is
+
+00:04:33.965 --> 00:04:36.285
+<v Speaker 1>quite different from the one dot x
+
+00:04:36.765 --> 00:04:37.005
+<v Speaker 1>line.
+
+00:04:38.270 --> 00:04:40.670
+<v Speaker 1>Primarily, it's that previously,
+
+00:04:40.750 --> 00:04:42.830
+<v Speaker 1>all the components of the platform are separated
+
+00:04:42.830 --> 00:04:44.510
+<v Speaker 1>and now they've been unified
+
+00:04:44.910 --> 00:04:47.470
+<v Speaker 1>from four components into two. And so the
+
+00:04:47.470 --> 00:04:49.870
+<v Speaker 1>collection agent is separate, but all the capabilities
+
+00:04:49.870 --> 00:04:52.349
+<v Speaker 1>of the UI and the data processing and
+
+00:04:52.349 --> 00:04:55.065
+<v Speaker 1>task engine and the actual time series database
+
+00:04:55.065 --> 00:04:57.385
+<v Speaker 1>is now just one unified,
+
+00:04:58.025 --> 00:04:58.745
+<v Speaker 1>component.
+
+00:04:59.145 --> 00:04:59.705
+<v Speaker 1>So
+
+00:05:00.505 --> 00:05:02.425
+<v Speaker 1>that's one part. And then the other thing
+
+00:05:02.425 --> 00:05:05.785
+<v Speaker 1>that we introduced with, or the not me,
+
+00:05:05.880 --> 00:05:08.840
+<v Speaker 1>but engineers introduced with the two dot o
+
+00:05:08.840 --> 00:05:10.200
+<v Speaker 1>is that they
+
+00:05:11.160 --> 00:05:13.560
+<v Speaker 1>created Flux, which is a functional
+
+00:05:13.720 --> 00:05:16.360
+<v Speaker 1>query and scripting language for
+
+00:05:16.520 --> 00:05:19.640
+<v Speaker 1>time series in particular. It's kinda JavaScript esque,
+
+00:05:19.705 --> 00:05:21.225
+<v Speaker 1>and you can do a lot of fancy
+
+00:05:21.225 --> 00:05:23.305
+<v Speaker 1>things with it and it, like, takes your
+
+00:05:23.305 --> 00:05:23.865
+<v Speaker 1>data
+
+00:05:24.345 --> 00:05:26.265
+<v Speaker 1>and allows you to play with it in
+
+00:05:26.265 --> 00:05:28.505
+<v Speaker 1>what sort of feels much more relational than
+
+00:05:28.505 --> 00:05:29.625
+<v Speaker 1>it than it is.
+
+00:05:30.585 --> 00:05:31.625
+<v Speaker 1>Just extends
+
+00:05:32.360 --> 00:05:34.520
+<v Speaker 1>all like, a bunch of functionality to working
+
+00:05:34.520 --> 00:05:35.880
+<v Speaker 1>and analyzing your data.
+
+00:05:36.280 --> 00:05:38.760
+<v Speaker 1>And I will say when I first started
+
+00:05:38.760 --> 00:05:40.600
+<v Speaker 1>learning it, it took
+
+00:05:40.840 --> 00:05:42.440
+<v Speaker 1>a little second for me to get used
+
+00:05:42.440 --> 00:05:44.760
+<v Speaker 1>to it. But then once I got accustomed
+
+00:05:44.760 --> 00:05:47.285
+<v Speaker 1>to it, don't even understand how people do
+
+00:05:47.285 --> 00:05:48.965
+<v Speaker 1>things in SQL anymore.
+
+00:05:49.125 --> 00:05:51.604
+<v Speaker 1>It's just too many parentheses, too many nested
+
+00:05:51.604 --> 00:05:54.725
+<v Speaker 1>queries, and I really prefer Flex. So
+
+00:05:54.965 --> 00:05:56.725
+<v Speaker 1>you definitely have a shift in thinking, but
+
+00:05:56.725 --> 00:05:58.645
+<v Speaker 1>once you get used to it, then it's
+
+00:05:58.645 --> 00:05:59.365
+<v Speaker 1>a lot more comfortable.
+
+00:06:00.860 --> 00:06:02.140
+<v Speaker 1>Some cool stories.
+
+00:06:02.460 --> 00:06:04.380
+<v Speaker 1>If I still have time do I have
+
+00:06:04.380 --> 00:06:04.940
+<v Speaker 1>time?
+
+00:06:05.420 --> 00:06:07.100
+<v Speaker 0>You've got time. Okay.
+
+00:06:07.260 --> 00:06:07.980
+<v Speaker 1>Cool.
+
+00:06:08.380 --> 00:06:11.260
+<v Speaker 1>A cool story is well, recently, the Ruben
+
+00:06:11.260 --> 00:06:12.220
+<v Speaker 1>Observatory
+
+00:06:13.604 --> 00:06:17.205
+<v Speaker 1>is doing some awesome work work with InfluxDB.
+
+00:06:18.405 --> 00:06:21.604
+<v Speaker 1>So they are trying to if I remember
+
+00:06:21.604 --> 00:06:22.965
+<v Speaker 1>correctly, I'm not
+
+00:06:23.925 --> 00:06:26.405
+<v Speaker 1>that well versed in physics and star stuff.
+
+00:06:26.405 --> 00:06:26.884
+<v Speaker 1>So
+
+00:06:27.400 --> 00:06:28.920
+<v Speaker 1>apologies if I get it wrong, but I
+
+00:06:28.920 --> 00:06:30.840
+<v Speaker 1>think they're trying to prove the existence of
+
+00:06:30.840 --> 00:06:34.200
+<v Speaker 1>dark matter. And so they're doing a ten
+
+00:06:34.200 --> 00:06:36.520
+<v Speaker 1>year survey of the sky and they're collect
+
+00:06:37.240 --> 00:06:39.560
+<v Speaker 1>collecting 500 petabytes of
+
+00:06:40.294 --> 00:06:43.014
+<v Speaker 1>images of the sky with, I think, the
+
+00:06:43.014 --> 00:06:45.415
+<v Speaker 1>world's largest telescope.
+
+00:06:45.895 --> 00:06:46.535
+<v Speaker 1>And
+
+00:06:48.055 --> 00:06:50.615
+<v Speaker 1>they're using Influx to both monitor their telescope,
+
+00:06:50.615 --> 00:06:52.935
+<v Speaker 1>and I think they're actually also collecting some
+
+00:06:54.080 --> 00:06:57.600
+<v Speaker 1>some image related metadata as well with it.
+
+00:06:59.040 --> 00:07:01.440
+<v Speaker 1>But 500 petabytes, that's fun.
+
+00:07:02.880 --> 00:07:05.600
+<v Speaker 1>Yeah. Yeah. That's that's a sizable chunk of
+
+00:07:05.600 --> 00:07:06.720
+<v Speaker 0>data. That's for sure.
+
+00:07:07.505 --> 00:07:08.945
+<v Speaker 0>There were a couple of things there that
+
+00:07:08.945 --> 00:07:10.385
+<v Speaker 0>I I really liked. So of course, the
+
+00:07:10.385 --> 00:07:12.065
+<v Speaker 0>physics stuff is cool, but that just that
+
+00:07:12.065 --> 00:07:14.065
+<v Speaker 0>quote of physics and star stuff, think is
+
+00:07:14.065 --> 00:07:16.305
+<v Speaker 0>now my new go to for describing astronomy.
+
+00:07:16.305 --> 00:07:17.825
+<v Speaker 0>That is that is no cemented.
+
+00:07:18.545 --> 00:07:20.625
+<v Speaker 0>And also, I'll I'll share your I don't
+
+00:07:20.625 --> 00:07:23.190
+<v Speaker 0>know if it was frustration followed by joy
+
+00:07:23.190 --> 00:07:25.030
+<v Speaker 0>of Flux, but I I remember the first
+
+00:07:25.030 --> 00:07:26.389
+<v Speaker 0>few times I was trying to write a
+
+00:07:26.389 --> 00:07:28.229
+<v Speaker 0>Flux script and it it felt like just
+
+00:07:28.229 --> 00:07:29.910
+<v Speaker 0>banging my head off of a wall. And
+
+00:07:29.910 --> 00:07:32.150
+<v Speaker 0>then eventually you just I I really struggled
+
+00:07:32.150 --> 00:07:34.310
+<v Speaker 0>to write queries in any other language, so
+
+00:07:34.310 --> 00:07:36.150
+<v Speaker 0>I definitely shared that journey with you.
+
+00:07:37.545 --> 00:07:40.665
+<v Speaker 0>Alright. And right on queue, we have a
+
+00:07:40.665 --> 00:07:41.945
+<v Speaker 0>machine as well.
+
+00:07:42.345 --> 00:07:44.025
+<v Speaker 0>So now because
+
+00:07:44.105 --> 00:07:46.505
+<v Speaker 0>this is an entirely professional production, I did
+
+00:07:46.505 --> 00:07:47.865
+<v Speaker 0>forget to put this on the screen when
+
+00:07:47.865 --> 00:07:49.305
+<v Speaker 0>I was spinning up. If anyone wants to
+
+00:07:49.305 --> 00:07:51.385
+<v Speaker 0>spin up their own Equinix medal, there's $50
+
+00:07:51.385 --> 00:07:53.250
+<v Speaker 0>coupon from the show code. Feel free to
+
+00:07:53.250 --> 00:07:53.970
+<v Speaker 0>use it.
+
+00:07:55.330 --> 00:07:55.970
+<v Speaker 0>So
+
+00:07:56.449 --> 00:07:57.810
+<v Speaker 0>dot oh no.
+
+00:07:58.610 --> 00:08:00.370
+<v Speaker 0>There we go. Don't close the tab. So
+
+00:08:00.370 --> 00:08:02.050
+<v Speaker 0>I'm gonna click get InfluxDB,
+
+00:08:02.289 --> 00:08:04.610
+<v Speaker 0>we're gonna ignore the pop up, we're gonna
+
+00:08:04.610 --> 00:08:05.970
+<v Speaker 0>click on 201.
+
+00:08:05.970 --> 00:08:09.044
+<v Speaker 0>So this is the docker images, the static
+
+00:08:09.044 --> 00:08:11.044
+<v Speaker 0>binaries that we can just pull this down
+
+00:08:11.044 --> 00:08:12.965
+<v Speaker 0>onto our machine and get started.
+
+00:08:14.245 --> 00:08:16.565
+<v Speaker 0>And if I get anything wrong, just interject
+
+00:08:16.565 --> 00:08:17.604
+<v Speaker 0>and tell me I'm wrong.
+
+00:08:19.669 --> 00:08:21.030
+<v Speaker 0>Alright. We're good.
+
+00:08:22.150 --> 00:08:23.990
+<v Speaker 0>So I will copy this
+
+00:08:24.230 --> 00:08:25.110
+<v Speaker 0>and
+
+00:08:25.190 --> 00:08:26.870
+<v Speaker 0>where's my terminal?
+
+00:08:27.750 --> 00:08:29.910
+<v Speaker 0>There we go. Ah, no. I need an
+
+00:08:29.910 --> 00:08:30.870
+<v Speaker 0>IP address, don't I?
+
+00:08:33.424 --> 00:08:34.705
+<v Speaker 0>So let's make sure I can get on
+
+00:08:34.705 --> 00:08:35.585
+<v Speaker 0>my machine.
+
+00:08:37.905 --> 00:08:39.745
+<v Speaker 0>So I've moved all of my hardware around
+
+00:08:39.745 --> 00:08:41.505
+<v Speaker 0>and now my fingerprint scanner is over here
+
+00:08:41.505 --> 00:08:43.184
+<v Speaker 0>which makes it a very smooth move to
+
+00:08:43.184 --> 00:08:45.425
+<v Speaker 0>get onto my SSH as well. Yeah.
+
+00:08:47.170 --> 00:08:49.250
+<v Speaker 0>Alright. Let's grab this again.
+
+00:08:49.810 --> 00:08:52.290
+<v Speaker 0>So we're just going to pull this down,
+
+00:08:52.370 --> 00:08:54.769
+<v Speaker 0>AMD sixty four debian fail. I mean, I
+
+00:08:54.769 --> 00:08:56.850
+<v Speaker 0>think that's the right one. Installed.
+
+00:08:56.850 --> 00:08:57.410
+<v Speaker 0>That's good.
+
+00:08:58.305 --> 00:08:59.425
+<v Speaker 0>Let's confirm.
+
+00:09:00.385 --> 00:09:02.065
+<v Speaker 0>Okay. So it's not running, so we could
+
+00:09:02.065 --> 00:09:04.945
+<v Speaker 0>just just start InfluxDB.
+
+00:09:07.425 --> 00:09:09.185
+<v Speaker 0>Easy bit. Yeah.
+
+00:09:10.145 --> 00:09:10.865
+<v Speaker 0>So
+
+00:09:11.279 --> 00:09:13.279
+<v Speaker 0>this is the new single binary that you
+
+00:09:13.279 --> 00:09:14.959
+<v Speaker 0>said is is available. This is new with
+
+00:09:14.959 --> 00:09:17.120
+<v Speaker 0>InfluxDB two. All the components are shipped by
+
+00:09:17.120 --> 00:09:17.680
+<v Speaker 0>one.
+
+00:09:18.959 --> 00:09:21.279
+<v Speaker 0>So now I can just browse to this
+
+00:09:21.360 --> 00:09:23.839
+<v Speaker 0>IP address and we'll get the web interface.
+
+00:09:23.839 --> 00:09:24.160
+<v Speaker 0>Right?
+
+00:09:26.035 --> 00:09:26.755
+<v Speaker 1>Hopefully.
+
+00:09:30.835 --> 00:09:32.355
+<v Speaker 0>There we go. So
+
+00:09:33.395 --> 00:09:34.595
+<v Speaker 0>let's click getting started.
+
+00:09:40.269 --> 00:09:43.550
+<v Speaker 0>So this is the setup screen. Right? This
+
+00:09:43.550 --> 00:09:45.550
+<v Speaker 0>is because InfluxDB
+
+00:09:46.829 --> 00:09:47.709
+<v Speaker 0>two
+
+00:09:47.949 --> 00:09:49.550
+<v Speaker 0>can't be unauthenticated,
+
+00:09:49.550 --> 00:09:50.589
+<v Speaker 0>if I remember correctly?
+
+00:09:51.005 --> 00:09:52.205
+<v Speaker 1>Correct. Yeah.
+
+00:09:56.925 --> 00:09:59.005
+<v Speaker 1>And the design team has done really awesome
+
+00:09:59.005 --> 00:10:02.205
+<v Speaker 1>stuff with integrating tutorials into the UI so
+
+00:10:02.205 --> 00:10:04.045
+<v Speaker 1>that if you are a beginner like this,
+
+00:10:04.045 --> 00:10:04.925
+<v Speaker 1>we can just, like,
+
+00:10:06.519 --> 00:10:09.399
+<v Speaker 1>hit clicks quick start and be walked through
+
+00:10:09.399 --> 00:10:10.920
+<v Speaker 1>everything that we need.
+
+00:10:11.399 --> 00:10:13.640
+<v Speaker 0>Alright. Well, choose your own adventure then, I
+
+00:10:13.640 --> 00:10:15.240
+<v Speaker 0>know. What what what path are we taking
+
+00:10:15.240 --> 00:10:15.960
+<v Speaker 0>today?
+
+00:10:17.640 --> 00:10:19.800
+<v Speaker 1>Yeah. Let's do quick start. Let's pretend that
+
+00:10:19.800 --> 00:10:21.720
+<v Speaker 1>we're we're not an expert already.
+
+00:10:24.895 --> 00:10:27.295
+<v Speaker 0>Alright. So what did that do?
+
+00:10:28.335 --> 00:10:30.335
+<v Speaker 1>Looks like it brought us to the getting
+
+00:10:30.335 --> 00:10:31.455
+<v Speaker 1>starting page
+
+00:10:31.615 --> 00:10:33.775
+<v Speaker 1>where we have an option to either go
+
+00:10:33.775 --> 00:10:36.069
+<v Speaker 1>ahead and load our data or build a
+
+00:10:36.069 --> 00:10:37.829
+<v Speaker 1>dashboard or set up alerting.
+
+00:10:38.149 --> 00:10:39.829
+<v Speaker 1>But we don't have any data yet, so
+
+00:10:39.829 --> 00:10:41.509
+<v Speaker 1>let's let's load our data.
+
+00:10:42.470 --> 00:10:44.949
+<v Speaker 0>Oh, those animations are really stick. I know.
+
+00:10:44.949 --> 00:10:45.509
+<v Speaker 1>Right?
+
+00:10:46.389 --> 00:10:48.310
+<v Speaker 1>I also love the color palette.
+
+00:10:48.550 --> 00:10:50.215
+<v Speaker 0>Yeah. I mean, I'm just gonna sit and
+
+00:10:50.215 --> 00:10:52.055
+<v Speaker 0>watch that one I think because it's cool
+
+00:10:52.055 --> 00:10:53.975
+<v Speaker 0>then. Yeah. And Can we do the third
+
+00:10:53.975 --> 00:10:54.535
+<v Speaker 1>one?
+
+00:10:54.775 --> 00:10:55.495
+<v Speaker 0>Oh, yeah.
+
+00:10:57.895 --> 00:10:59.575
+<v Speaker 1>It's not Sorry. What? It's not as good.
+
+00:10:59.575 --> 00:11:01.255
+<v Speaker 1>Like the second one. Yeah. The second one.
+
+00:11:01.255 --> 00:11:02.980
+<v Speaker 0>The first two are really good. You know,
+
+00:11:02.980 --> 00:11:04.340
+<v Speaker 0>this is the important stuff that we need
+
+00:11:04.340 --> 00:11:05.780
+<v Speaker 0>to kind of break down on this show.
+
+00:11:05.780 --> 00:11:09.140
+<v Speaker 0>So and I love that randomly or serendipitously,
+
+00:11:09.140 --> 00:11:10.980
+<v Speaker 0>the color palette actually kind of matches my
+
+00:11:10.980 --> 00:11:14.020
+<v Speaker 0>shows colors too. Like it's purpley pinkiness.
+
+00:11:15.595 --> 00:11:16.715
+<v Speaker 0>Alright. So
+
+00:11:16.955 --> 00:11:18.555
+<v Speaker 0>what are we doing? Are we are we
+
+00:11:18.555 --> 00:11:20.955
+<v Speaker 0>loading data? Yeah. Let's load our data.
+
+00:11:22.635 --> 00:11:25.675
+<v Speaker 0>Okay. So this is offering me client libraries,
+
+00:11:25.675 --> 00:11:26.395
+<v Speaker 0>tell oh, wow.
+
+00:11:28.260 --> 00:11:29.620
+<v Speaker 0>So I I mean, I should say because
+
+00:11:29.620 --> 00:11:31.220
+<v Speaker 0>there's gonna be conversations where I say, oh,
+
+00:11:31.220 --> 00:11:32.900
+<v Speaker 0>I don't remember this. I I we used
+
+00:11:32.900 --> 00:11:34.660
+<v Speaker 0>to work together in Flux. So I am
+
+00:11:34.660 --> 00:11:36.740
+<v Speaker 0>familiar with the tool and the languages.
+
+00:11:37.140 --> 00:11:39.380
+<v Speaker 0>But I have been detached from it for
+
+00:11:39.380 --> 00:11:41.620
+<v Speaker 0>like what? Six months now? Five months? I
+
+00:11:41.620 --> 00:11:42.020
+<v Speaker 0>can't remember.
+
+00:11:43.185 --> 00:11:45.185
+<v Speaker 0>So I'm sure it's changed a lot. But
+
+00:11:45.185 --> 00:11:47.185
+<v Speaker 0>this is offering us the client libraries that
+
+00:11:47.185 --> 00:11:48.945
+<v Speaker 0>we have available, which is if we want
+
+00:11:48.945 --> 00:11:52.065
+<v Speaker 0>to instrument something ourselves, which I'm assuming we're
+
+00:11:52.065 --> 00:11:53.985
+<v Speaker 0>not doing today. We'll try and
+
+00:11:54.465 --> 00:11:55.345
+<v Speaker 0>we'll skip that.
+
+00:11:55.970 --> 00:11:58.930
+<v Speaker 0>Has this telegraph thing which I've definitely not
+
+00:11:58.930 --> 00:12:01.170
+<v Speaker 0>seen before. Now I'm assuming if I click
+
+00:12:01.170 --> 00:12:02.770
+<v Speaker 0>on one of these, is it gonna offer
+
+00:12:02.770 --> 00:12:06.210
+<v Speaker 0>me like a pre canned config for Yeah.
+
+00:12:06.210 --> 00:12:06.610
+<v Speaker 1>It should.
+
+00:12:08.495 --> 00:12:10.095
+<v Speaker 0>Yeah. Right. Okay. So I can just copy
+
+00:12:10.095 --> 00:12:12.015
+<v Speaker 0>that to clipboard, and it tells me a
+
+00:12:12.015 --> 00:12:13.535
+<v Speaker 0>little bit about the data structure.
+
+00:12:14.654 --> 00:12:16.495
+<v Speaker 0>Alright. In fact, this just looks like it's
+
+00:12:16.495 --> 00:12:18.655
+<v Speaker 0>generated from the from the.
+
+00:12:19.775 --> 00:12:20.735
+<v Speaker 0>Yeah. I think so.
+
+00:12:22.570 --> 00:12:25.130
+<v Speaker 0>Okay. What's next? What else we got?
+
+00:12:25.930 --> 00:12:26.810
+<v Speaker 0>Is that it?
+
+00:12:28.410 --> 00:12:30.570
+<v Speaker 1>Yeah. I think so. So you can also
+
+00:12:30.570 --> 00:12:33.770
+<v Speaker 1>click Telegraph itself too and generate a new
+
+00:12:33.770 --> 00:12:34.570
+<v Speaker 1>config that way.
+
+00:12:37.954 --> 00:12:40.435
+<v Speaker 0>Well, I mean, we know this stuff. We
+
+00:12:40.435 --> 00:12:42.995
+<v Speaker 0>we can we can manually write a telegraph
+
+00:12:42.995 --> 00:12:43.795
+<v Speaker 0>config.
+
+00:12:44.115 --> 00:12:46.435
+<v Speaker 1>Yeah. We can, but you don't have to.
+
+00:12:46.834 --> 00:12:49.315
+<v Speaker 0>Right. Okay. So let's see. I just click
+
+00:12:49.315 --> 00:12:50.435
+<v Speaker 0>create configuration.
+
+00:12:52.570 --> 00:12:54.330
+<v Speaker 1>Either way, I mean
+
+00:12:56.010 --> 00:12:58.570
+<v Speaker 0>No. Because then I have to remember bits
+
+00:12:58.570 --> 00:12:59.850
+<v Speaker 0>and stuff and
+
+00:13:00.410 --> 00:13:02.970
+<v Speaker 0>other non star stuff. So let's just do
+
+00:13:02.970 --> 00:13:05.385
+<v Speaker 0>it this way. So I'll click system.
+
+00:13:05.865 --> 00:13:07.305
+<v Speaker 0>Off the top of my head, I'm assuming
+
+00:13:07.305 --> 00:13:08.825
+<v Speaker 0>we're gonna get CPU,
+
+00:13:08.905 --> 00:13:10.505
+<v Speaker 0>memory, network, disk.
+
+00:13:11.225 --> 00:13:13.065
+<v Speaker 0>I'm sure there'll be one or two others.
+
+00:13:14.345 --> 00:13:15.465
+<v Speaker 0>Okay. System.
+
+00:13:18.380 --> 00:13:20.220
+<v Speaker 1>Processes swapped.
+
+00:13:21.180 --> 00:13:22.860
+<v Speaker 0>Yeah. I haven't ever remembered that list. So
+
+00:13:22.860 --> 00:13:24.380
+<v Speaker 0>this this is probably better.
+
+00:13:25.580 --> 00:13:28.700
+<v Speaker 0>Oh, there's a nice InfluxDB token for everybody.
+
+00:13:28.940 --> 00:13:31.020
+<v Speaker 0>With my IP address, it's very public. So
+
+00:13:33.915 --> 00:13:34.555
+<v Speaker 0>alright.
+
+00:13:34.795 --> 00:13:35.595
+<v Speaker 0>Export.
+
+00:13:36.395 --> 00:13:38.955
+<v Speaker 0>Oh, and we don't have Telegraph. Right? So
+
+00:13:39.195 --> 00:13:41.355
+<v Speaker 1>Oh, yeah. We need to go install Telegraph.
+
+00:13:42.155 --> 00:13:45.035
+<v Speaker 0>K. App update. App install.
+
+00:13:45.675 --> 00:13:46.715
+<v Speaker 0>Telegraph. Yes.
+
+00:13:55.399 --> 00:13:57.320
+<v Speaker 0>Alright. Let's download the binary.
+
+00:13:57.959 --> 00:14:01.399
+<v Speaker 0>I was sure it was in the
+
+00:14:00.165 --> 00:14:01.205
+<v Speaker 0>Ubuntu
+
+00:14:02.725 --> 00:14:03.845
+<v Speaker 0>archives,
+
+00:14:05.205 --> 00:14:07.045
+<v Speaker 0>but maybe there's an
+
+00:14:07.365 --> 00:14:08.325
+<v Speaker 0>app repository.
+
+00:14:13.680 --> 00:14:15.360
+<v Speaker 0>There's a dev fail. There we go. Let's
+
+00:14:15.360 --> 00:14:16.160
+<v Speaker 0>use that.
+
+00:14:21.040 --> 00:14:21.760
+<v Speaker 0>Okay.
+
+00:14:23.200 --> 00:14:25.920
+<v Speaker 0>So we go to slash etc slash telegraph
+
+00:14:26.785 --> 00:14:27.745
+<v Speaker 0>and
+
+00:14:27.985 --> 00:14:29.505
+<v Speaker 0>oh, no. We don't, do we? We just
+
+00:14:29.505 --> 00:14:31.025
+<v Speaker 0>run telegraph with our special flag.
+
+00:14:39.940 --> 00:14:42.020
+<v Speaker 1>Right. Yeah. And then we can see if
+
+00:14:42.020 --> 00:14:43.940
+<v Speaker 1>Influx is gathering
+
+00:14:43.940 --> 00:14:45.140
+<v Speaker 1>data successfully.
+
+00:14:45.140 --> 00:14:45.780
+<v Speaker 1>Yay.
+
+00:14:49.300 --> 00:14:52.020
+<v Speaker 1>And it's worth noting too that if you
+
+00:14:52.020 --> 00:14:53.540
+<v Speaker 1>click setup instructions,
+
+00:14:53.620 --> 00:14:55.365
+<v Speaker 1>you can follow that again.
+
+00:14:55.925 --> 00:14:57.204
+<v Speaker 1>So if you like, I don't know if
+
+00:14:57.204 --> 00:14:59.045
+<v Speaker 1>that's apparent to everyone that that's a button.
+
+00:14:59.045 --> 00:15:00.644
+<v Speaker 1>And then also,
+
+00:15:00.805 --> 00:15:02.565
+<v Speaker 1>if you actually click system,
+
+00:15:02.964 --> 00:15:03.925
+<v Speaker 1>the config itself,
+
+00:15:06.500 --> 00:15:09.140
+<v Speaker 1>then you have an opportunity to both download
+
+00:15:09.140 --> 00:15:11.060
+<v Speaker 1>the config and change it if you need
+
+00:15:11.060 --> 00:15:14.180
+<v Speaker 1>to make adjustments to the configuration.
+
+00:15:15.380 --> 00:15:16.500
+<v Speaker 0>Alright.
+
+00:15:17.220 --> 00:15:18.100
+<v Speaker 0>Well, I'm
+
+00:15:18.535 --> 00:15:20.695
+<v Speaker 0>assuming based on or you see just today,
+
+00:15:20.695 --> 00:15:22.535
+<v Speaker 0>we'll probably get away with just this this
+
+00:15:22.535 --> 00:15:24.295
+<v Speaker 0>ten second interval. I mean, could speed it
+
+00:15:24.295 --> 00:15:25.895
+<v Speaker 0>up, see it a little bit quicker, but
+
+00:15:25.895 --> 00:15:27.895
+<v Speaker 0>we've already wasted the first ten seconds. I'm
+
+00:15:27.895 --> 00:15:29.975
+<v Speaker 0>assuming when we go through this explorer view,
+
+00:15:30.695 --> 00:15:33.090
+<v Speaker 0>we will hopefully have something. So
+
+00:15:33.330 --> 00:15:35.570
+<v Speaker 0>let's take a look at that.
+
+00:15:36.850 --> 00:15:39.490
+<v Speaker 0>I've got my bucket here.
+
+00:15:39.890 --> 00:15:41.010
+<v Speaker 0>Do you wanna just
+
+00:15:41.410 --> 00:15:43.330
+<v Speaker 0>break down the vocabulary to them for people
+
+00:15:43.330 --> 00:15:45.810
+<v Speaker 0>that aren't as familiar with InfluxDB? You know,
+
+00:15:45.810 --> 00:15:47.089
+<v Speaker 0>so far we've mentioned
+
+00:15:47.935 --> 00:15:49.935
+<v Speaker 0>like the system stuff we're gonna scrape and
+
+00:15:49.935 --> 00:15:51.375
+<v Speaker 0>then a bucket like
+
+00:15:51.774 --> 00:15:53.535
+<v Speaker 0>what words and what things do people need
+
+00:15:53.535 --> 00:15:55.695
+<v Speaker 0>to be familiar with with InfluxDB two especially
+
+00:15:55.695 --> 00:15:57.055
+<v Speaker 0>compared to Versys one?
+
+00:15:57.935 --> 00:16:01.135
+<v Speaker 1>So a bucket is a combination of a
+
+00:16:01.135 --> 00:16:01.774
+<v Speaker 1>database
+
+00:16:01.940 --> 00:16:04.740
+<v Speaker 1>and a retention policy, all packaged as one
+
+00:16:04.740 --> 00:16:06.500
+<v Speaker 1>and it's that's known as a bucket. And
+
+00:16:06.500 --> 00:16:08.500
+<v Speaker 1>I like to think of just if you
+
+00:16:08.500 --> 00:16:09.700
+<v Speaker 1>have a stream of data
+
+00:16:10.100 --> 00:16:12.020
+<v Speaker 1>and it's coming into a bucket,
+
+00:16:12.660 --> 00:16:14.660
+<v Speaker 1>eventually, depending on the size of the data,
+
+00:16:14.660 --> 00:16:15.779
+<v Speaker 1>it's gonna overfill
+
+00:16:16.045 --> 00:16:18.445
+<v Speaker 1>and expire some of your old data naturally.
+
+00:16:18.685 --> 00:16:20.125
+<v Speaker 1>So you can think of the size of
+
+00:16:20.125 --> 00:16:22.045
+<v Speaker 1>the bucket as the retention policy
+
+00:16:22.445 --> 00:16:23.165
+<v Speaker 1>and
+
+00:16:23.645 --> 00:16:26.285
+<v Speaker 1>otherwise a bucket being like a database.
+
+00:16:28.620 --> 00:16:31.100
+<v Speaker 1>And then after that, we have measurements,
+
+00:16:31.340 --> 00:16:32.860
+<v Speaker 1>tags, and fields.
+
+00:16:35.180 --> 00:16:36.940
+<v Speaker 1>Measurements and tags
+
+00:16:36.940 --> 00:16:41.260
+<v Speaker 1>and buckets are indexed and fields are not.
+
+00:16:41.260 --> 00:16:43.765
+<v Speaker 1>So that means that if you are writing
+
+00:16:43.765 --> 00:16:44.965
+<v Speaker 1>to InfluxDB
+
+00:16:44.965 --> 00:16:46.325
+<v Speaker 1>and let's say,
+
+00:16:46.725 --> 00:16:49.125
+<v Speaker 1>you're either gonna create your own Telegraph plugin
+
+00:16:49.125 --> 00:16:50.005
+<v Speaker 1>or you're gonna
+
+00:16:51.285 --> 00:16:52.725
+<v Speaker 1>you have to make a decision as to
+
+00:16:52.725 --> 00:16:54.085
+<v Speaker 1>whether or not you want data to be
+
+00:16:54.085 --> 00:16:54.965
+<v Speaker 1>a tag or a field.
+
+00:16:55.730 --> 00:16:58.050
+<v Speaker 1>You wanna keep in mind that any queries
+
+00:16:58.050 --> 00:17:00.050
+<v Speaker 1>that you filter by a specific tag will
+
+00:17:00.050 --> 00:17:01.730
+<v Speaker 1>be a lot faster than if you filter
+
+00:17:01.730 --> 00:17:03.010
+<v Speaker 1>by a
+
+00:17:03.089 --> 00:17:03.889
+<v Speaker 1>specific
+
+00:17:04.130 --> 00:17:04.849
+<v Speaker 1>field.
+
+00:17:05.329 --> 00:17:07.089
+<v Speaker 1>And then the other thing to keep in
+
+00:17:07.089 --> 00:17:08.369
+<v Speaker 1>mind is that
+
+00:17:08.530 --> 00:17:11.875
+<v Speaker 1>it's much easier to cross compare data that
+
+00:17:11.875 --> 00:17:13.714
+<v Speaker 1>is in one single measurement
+
+00:17:14.035 --> 00:17:14.835
+<v Speaker 1>than
+
+00:17:16.195 --> 00:17:17.715
+<v Speaker 1>than if your data is in separate measurements.
+
+00:17:17.715 --> 00:17:20.035
+<v Speaker 1>So if your data is very correlated or
+
+00:17:20.035 --> 00:17:21.795
+<v Speaker 1>related and you need to be able to
+
+00:17:21.795 --> 00:17:22.355
+<v Speaker 1>visualize
+
+00:17:23.050 --> 00:17:25.450
+<v Speaker 1>two different fields at the same time frequently,
+
+00:17:25.450 --> 00:17:27.130
+<v Speaker 1>then you wanna probably put those in the
+
+00:17:27.130 --> 00:17:27.929
+<v Speaker 1>same measurement.
+
+00:17:28.170 --> 00:17:29.930
+<v Speaker 1>That being said, one of the cool things
+
+00:17:29.930 --> 00:17:32.250
+<v Speaker 1>that Flex lets you do is to perform
+
+00:17:32.250 --> 00:17:35.530
+<v Speaker 1>math cross measurements and join data across measurements
+
+00:17:35.530 --> 00:17:36.330
+<v Speaker 1>or even buckets.
+
+00:17:36.895 --> 00:17:39.534
+<v Speaker 1>So that's totally up to you. And then
+
+00:17:39.855 --> 00:17:41.855
+<v Speaker 1>the other thing worth noting is that you
+
+00:17:41.855 --> 00:17:44.735
+<v Speaker 1>can scope tokens on the per bucket basis.
+
+00:17:44.895 --> 00:17:46.895
+<v Speaker 1>So if you're building some sort of IoT
+
+00:17:46.895 --> 00:17:48.735
+<v Speaker 1>app, for example, and you have
+
+00:17:49.695 --> 00:17:51.215
+<v Speaker 1>a reason that
+
+00:17:51.520 --> 00:17:54.320
+<v Speaker 1>security purposes that you want to maybe separate
+
+00:17:54.320 --> 00:17:54.879
+<v Speaker 1>out
+
+00:17:55.440 --> 00:17:56.159
+<v Speaker 1>various
+
+00:17:56.799 --> 00:17:59.840
+<v Speaker 1>data sessions with individual tokens or or users
+
+00:17:59.840 --> 00:18:03.280
+<v Speaker 1>data with individual tokens, and you can think
+
+00:18:03.280 --> 00:18:06.575
+<v Speaker 1>about scoping tokens to individual buckets and directing
+
+00:18:06.575 --> 00:18:07.775
+<v Speaker 1>your data in the way that you see
+
+00:18:07.775 --> 00:18:08.335
+<v Speaker 1>fit.
+
+00:18:10.975 --> 00:18:12.815
+<v Speaker 1>So does that is there anything else that
+
+00:18:12.815 --> 00:18:14.735
+<v Speaker 1>you think I can clarify? Or if we
+
+00:18:14.815 --> 00:18:16.335
+<v Speaker 1>should we just start I think we should
+
+00:18:16.335 --> 00:18:18.895
+<v Speaker 1>just start clicking and see what happens, basically,
+
+00:18:18.895 --> 00:18:19.295
+<v Speaker 1>is my
+
+00:18:20.970 --> 00:18:22.810
+<v Speaker 0>Yeah. I think you covered everything there that
+
+00:18:22.810 --> 00:18:24.490
+<v Speaker 0>I I thought of at least that we
+
+00:18:24.490 --> 00:18:26.570
+<v Speaker 0>should break down. So I think if we
+
+00:18:26.570 --> 00:18:29.049
+<v Speaker 0>just start clicking now, start exploring this data,
+
+00:18:29.210 --> 00:18:31.130
+<v Speaker 0>show people kind of how the UI works
+
+00:18:31.130 --> 00:18:32.890
+<v Speaker 0>and how you discover this stuff, and then
+
+00:18:32.890 --> 00:18:34.330
+<v Speaker 0>we can try and get a little bit
+
+00:18:34.330 --> 00:18:34.570
+<v Speaker 0>more
+
+00:18:35.924 --> 00:18:38.804
+<v Speaker 0>pragmatic after that. So Sure. What's what's your
+
+00:18:38.804 --> 00:18:41.284
+<v Speaker 0>favorite measurement? I always look at CPU
+
+00:18:43.125 --> 00:18:44.085
+<v Speaker 1>and then
+
+00:18:44.485 --> 00:18:45.605
+<v Speaker 1>like usage system.
+
+00:18:47.780 --> 00:18:50.100
+<v Speaker 1>And then maybe I'll pick two or all
+
+00:18:50.100 --> 00:18:52.259
+<v Speaker 1>of them. Yeah. Let's just
+
+00:18:52.500 --> 00:18:54.980
+<v Speaker 0>click go on this. And alright. So right
+
+00:18:54.980 --> 00:18:56.340
+<v Speaker 0>now, we've got
+
+00:18:57.460 --> 00:18:57.860
+<v Speaker 0>data.
+
+00:18:59.945 --> 00:19:01.625
+<v Speaker 0>Yeah. Let's drop this down to five minutes
+
+00:19:01.625 --> 00:19:02.905
+<v Speaker 0>so that we can there we go. That's
+
+00:19:02.905 --> 00:19:04.585
+<v Speaker 0>a bit more spread out. So
+
+00:19:06.185 --> 00:19:08.425
+<v Speaker 1>It's also worth noting that if you look
+
+00:19:08.425 --> 00:19:10.745
+<v Speaker 1>on the right hand side underneath the submit
+
+00:19:10.745 --> 00:19:13.940
+<v Speaker 1>button, there's a section there that we've selected
+
+00:19:13.940 --> 00:19:16.100
+<v Speaker 1>with an aggregate function. So we've applied the
+
+00:19:16.100 --> 00:19:16.820
+<v Speaker 1>mean
+
+00:19:18.260 --> 00:19:20.659
+<v Speaker 1>with an auto interval based on
+
+00:19:21.220 --> 00:19:22.980
+<v Speaker 1>the amount of data that you're querying for.
+
+00:19:22.980 --> 00:19:23.860
+<v Speaker 1>And this is
+
+00:19:24.180 --> 00:19:26.820
+<v Speaker 1>just to make the visualization
+
+00:19:27.460 --> 00:19:30.155
+<v Speaker 1>easier because if you're clearing hundreds of thousands
+
+00:19:30.155 --> 00:19:32.154
+<v Speaker 1>of points and your data is really noisy,
+
+00:19:32.235 --> 00:19:34.715
+<v Speaker 1>you're gonna probably wanna apply a trend anyways.
+
+00:19:34.715 --> 00:19:35.915
+<v Speaker 1>So it does that for you off the
+
+00:19:35.915 --> 00:19:36.394
+<v Speaker 1>bat.
+
+00:19:36.875 --> 00:19:38.875
+<v Speaker 1>But if you wanna exclude that, you can
+
+00:19:38.875 --> 00:19:40.154
+<v Speaker 1>just unclick the mean,
+
+00:19:41.435 --> 00:19:41.915
+<v Speaker 1>I believe.
+
+00:19:43.420 --> 00:19:45.980
+<v Speaker 0>No. Computers said can't. Oh, never mind. Well,
+
+00:19:46.460 --> 00:19:48.220
+<v Speaker 1>then if you go to the script editor,
+
+00:19:50.060 --> 00:19:52.380
+<v Speaker 1>we can see the query that Flex generated
+
+00:19:52.380 --> 00:19:55.260
+<v Speaker 1>for us, and then we could always remove
+
+00:19:55.260 --> 00:19:57.179
+<v Speaker 1>the aggregate function when
+
+00:19:57.635 --> 00:20:00.355
+<v Speaker 1>function and then hit submit and then we'd
+
+00:20:00.355 --> 00:20:02.355
+<v Speaker 1>see the raw data without the
+
+00:20:03.075 --> 00:20:04.115
+<v Speaker 1>the mean.
+
+00:20:06.755 --> 00:20:08.755
+<v Speaker 0>Do you want to remove the aggregate window?
+
+00:20:08.755 --> 00:20:11.155
+<v Speaker 1>First, let's let me look maybe we should
+
+00:20:11.155 --> 00:20:13.310
+<v Speaker 1>just talk about flux and what's going on
+
+00:20:13.310 --> 00:20:13.790
+<v Speaker 1>here.
+
+00:20:15.310 --> 00:20:18.030
+<v Speaker 1>So Yeah. Go for it. Yeah. So first,
+
+00:20:18.030 --> 00:20:19.470
+<v Speaker 1>we're select Let me try and submit on
+
+00:20:19.470 --> 00:20:20.830
+<v Speaker 0>this because I don't think that's gonna be
+
+00:20:20.830 --> 00:20:21.870
+<v Speaker 0>particularly
+
+00:20:22.270 --> 00:20:25.310
+<v Speaker 0>readable. Right? Yeah. That's that's better.
+
+00:20:27.255 --> 00:20:30.295
+<v Speaker 1>Also, the data with this aggregate window is
+
+00:20:30.295 --> 00:20:31.895
+<v Speaker 1>really visually pleasing.
+
+00:20:33.975 --> 00:20:35.575
+<v Speaker 1>It's got a lot of diamonds in it,
+
+00:20:35.575 --> 00:20:36.695
+<v Speaker 1>which I appreciate. Anyways,
+
+00:20:39.289 --> 00:20:41.289
+<v Speaker 1>so the way that Flux works is that
+
+00:20:41.289 --> 00:20:41.929
+<v Speaker 1>you
+
+00:20:42.090 --> 00:20:44.169
+<v Speaker 1>first specify the bucket that you wanna get
+
+00:20:44.169 --> 00:20:45.129
+<v Speaker 1>your data from
+
+00:20:45.450 --> 00:20:46.970
+<v Speaker 1>using the from function.
+
+00:20:47.770 --> 00:20:50.650
+<v Speaker 1>And then you use pipe forward operators for
+
+00:20:50.650 --> 00:20:53.915
+<v Speaker 1>every data transformation that you make on your
+
+00:20:53.915 --> 00:20:55.115
+<v Speaker 1>data. So
+
+00:20:55.595 --> 00:20:58.555
+<v Speaker 1>I like the pipe forward operators because it
+
+00:20:58.555 --> 00:21:00.154
+<v Speaker 1>really helps
+
+00:21:00.155 --> 00:21:02.315
+<v Speaker 1>bring my attention to the fact that I'm
+
+00:21:02.315 --> 00:21:05.115
+<v Speaker 1>now changing my data and also
+
+00:21:05.510 --> 00:21:07.670
+<v Speaker 1>is indicative of how the stored engine works
+
+00:21:07.670 --> 00:21:09.350
+<v Speaker 1>and how the the Flux
+
+00:21:09.670 --> 00:21:12.710
+<v Speaker 1>engine works and how it operates with push
+
+00:21:12.710 --> 00:21:14.230
+<v Speaker 1>downs and is pushing down
+
+00:21:14.710 --> 00:21:15.430
+<v Speaker 1>each,
+
+00:21:17.030 --> 00:21:17.670
+<v Speaker 1>essentially,
+
+00:21:17.990 --> 00:21:18.710
+<v Speaker 1>operation
+
+00:21:19.430 --> 00:21:21.350
+<v Speaker 1>within the Flux engine. So
+
+00:21:22.285 --> 00:21:23.965
+<v Speaker 1>the first thing we're gonna do is select
+
+00:21:23.965 --> 00:21:25.245
+<v Speaker 1>a range and
+
+00:21:25.565 --> 00:21:28.525
+<v Speaker 1>filter for our start and stop times, or
+
+00:21:28.525 --> 00:21:30.605
+<v Speaker 1>you can just filter for a start time
+
+00:21:31.405 --> 00:21:33.485
+<v Speaker 1>and say, like, minus five minutes.
+
+00:21:34.300 --> 00:21:36.060
+<v Speaker 1>You can also manually
+
+00:21:36.060 --> 00:21:38.860
+<v Speaker 1>put in a time, but this references
+
+00:21:40.620 --> 00:21:43.340
+<v Speaker 1>the v the variable time range stop references
+
+00:21:43.340 --> 00:21:45.820
+<v Speaker 1>the click down option that you used previously.
+
+00:21:47.255 --> 00:21:49.335
+<v Speaker 1>And you can also select a custom date
+
+00:21:49.335 --> 00:21:51.575
+<v Speaker 1>with that click down option as well.
+
+00:21:52.215 --> 00:21:54.054
+<v Speaker 1>And then if you ever doing any sort
+
+00:21:54.054 --> 00:21:56.054
+<v Speaker 1>of forecasting and you wanna look at data
+
+00:21:56.054 --> 00:21:58.054
+<v Speaker 1>into the future, you would do a stop
+
+00:21:58.054 --> 00:21:59.815
+<v Speaker 1>time of
+
+00:21:59.429 --> 00:22:02.070
+<v Speaker 1>just five minutes without a plus or anything.
+
+00:22:03.830 --> 00:22:06.870
+<v Speaker 1>And then we filter for the measurements and
+
+00:22:06.870 --> 00:22:08.709
+<v Speaker 1>the fields that we wanna look at.
+
+00:22:10.070 --> 00:22:12.070
+<v Speaker 1>And then afterwards, we can apply any other
+
+00:22:12.070 --> 00:22:12.950
+<v Speaker 1>functions that we want.
+
+00:22:14.345 --> 00:22:15.945
+<v Speaker 1>So, yeah, I guess we can get rid
+
+00:22:15.945 --> 00:22:18.185
+<v Speaker 1>of the aggregate window to see kinda what
+
+00:22:18.185 --> 00:22:19.785
+<v Speaker 1>it was doing just for fun.
+
+00:22:20.345 --> 00:22:21.145
+<v Speaker 0>For fun.
+
+00:22:21.545 --> 00:22:22.185
+<v Speaker 1>Yeah.
+
+00:22:23.385 --> 00:22:25.625
+<v Speaker 0>Alright. So I think there's a couple of
+
+00:22:25.625 --> 00:22:27.260
+<v Speaker 0>really thing. Like a couple of really nice
+
+00:22:27.260 --> 00:22:28.860
+<v Speaker 0>things that I'd, you know, we don't see
+
+00:22:28.860 --> 00:22:31.020
+<v Speaker 0>in other programming languages that much but I
+
+00:22:31.020 --> 00:22:32.460
+<v Speaker 0>know for time series it makes sense and
+
+00:22:32.460 --> 00:22:34.700
+<v Speaker 0>that's like these duration literals.
+
+00:22:34.700 --> 00:22:36.140
+<v Speaker 0>Like the five m and the minus five
+
+00:22:36.140 --> 00:22:37.499
+<v Speaker 0>m I think are really cool.
+
+00:22:38.299 --> 00:22:39.980
+<v Speaker 0>And you I like the pay forward operator
+
+00:22:39.980 --> 00:22:42.445
+<v Speaker 0>too. Not that partial to the diamond shape
+
+00:22:42.445 --> 00:22:44.045
+<v Speaker 0>but you know, I can appreciate it a
+
+00:22:44.045 --> 00:22:44.684
+<v Speaker 0>little bit.
+
+00:22:45.245 --> 00:22:48.285
+<v Speaker 0>So we are now ignoring just to make
+
+00:22:48.285 --> 00:22:50.365
+<v Speaker 0>sure everything is quite clear here by changing
+
+00:22:50.365 --> 00:22:52.285
+<v Speaker 0>that range statement to be start minus five
+
+00:22:52.285 --> 00:22:53.965
+<v Speaker 0>and stop five. We're
+
+00:22:54.470 --> 00:22:56.310
+<v Speaker 0>essentially making this drop down redundant in our
+
+00:22:56.310 --> 00:22:57.830
+<v Speaker 0>use case. Like I could go back and
+
+00:22:57.830 --> 00:22:58.870
+<v Speaker 0>see an hour
+
+00:22:59.510 --> 00:23:01.750
+<v Speaker 0>or actually that no. Changed it because time
+
+00:23:01.750 --> 00:23:03.910
+<v Speaker 0>has passed. Like seconds have passed since the
+
+00:23:03.910 --> 00:23:04.870
+<v Speaker 0>last time I did it.
+
+00:23:06.550 --> 00:23:07.669
+<v Speaker 0>These are
+
+00:23:08.225 --> 00:23:09.585
+<v Speaker 0>I'm not quick enough.
+
+00:23:10.145 --> 00:23:11.345
+<v Speaker 0>That is irrelevant.
+
+00:23:11.745 --> 00:23:13.505
+<v Speaker 0>We've removed the mean
+
+00:23:14.225 --> 00:23:14.865
+<v Speaker 0>and
+
+00:23:15.025 --> 00:23:17.505
+<v Speaker 0>we're still getting a graph that looks pretty
+
+00:23:17.505 --> 00:23:18.544
+<v Speaker 0>much the same.
+
+00:23:18.785 --> 00:23:19.825
+<v Speaker 0>Is that expected?
+
+00:23:21.630 --> 00:23:23.149
+<v Speaker 1>With removing the mean?
+
+00:23:23.390 --> 00:23:24.029
+<v Speaker 0>Yeah.
+
+00:23:26.910 --> 00:23:29.150
+<v Speaker 1>I don't think so. Maybe I think maybe
+
+00:23:29.150 --> 00:23:31.470
+<v Speaker 1>because we have so little data that maybe
+
+00:23:31.470 --> 00:23:32.990
+<v Speaker 1>the mean is
+
+00:23:33.070 --> 00:23:35.605
+<v Speaker 1>really similar. So maybe if we instead of
+
+00:23:35.605 --> 00:23:37.445
+<v Speaker 1>doing a window period, I wonder
+
+00:23:38.005 --> 00:23:39.845
+<v Speaker 1>if we did a window period of one
+
+00:23:39.845 --> 00:23:40.484
+<v Speaker 1>hour
+
+00:23:41.445 --> 00:23:43.125
+<v Speaker 1>in the aggregate window if we'd see a
+
+00:23:43.125 --> 00:23:43.764
+<v Speaker 1>difference.
+
+00:23:45.365 --> 00:23:46.645
+<v Speaker 0>We well, we don't have a lot of
+
+00:23:46.645 --> 00:23:48.965
+<v Speaker 0>data yet. But Right. So we would see,
+
+00:23:48.965 --> 00:23:50.325
+<v Speaker 1>we would expect to see one point.
+
+00:23:52.139 --> 00:23:53.339
+<v Speaker 0>Okay. So
+
+00:23:55.100 --> 00:23:56.619
+<v Speaker 0>let's kind of
+
+00:23:57.179 --> 00:23:59.259
+<v Speaker 0>we pulled data from the bucket. We've set
+
+00:23:59.259 --> 00:24:00.620
+<v Speaker 0>up our own start and stop range and
+
+00:24:00.620 --> 00:24:02.460
+<v Speaker 0>we fell through the data. Now we can
+
+00:24:02.460 --> 00:24:04.620
+<v Speaker 0>have the ability to aggregate and
+
+00:24:04.975 --> 00:24:06.254
+<v Speaker 0>the calculations.
+
+00:24:06.495 --> 00:24:08.414
+<v Speaker 0>What else can we do besides just the
+
+00:24:08.414 --> 00:24:09.774
+<v Speaker 0>mean then? Like, if we were to bring
+
+00:24:09.774 --> 00:24:11.294
+<v Speaker 0>this back in, what what is a a
+
+00:24:11.294 --> 00:24:14.174
+<v Speaker 0>good common use case for for aggregate window?
+
+00:24:17.299 --> 00:24:19.299
+<v Speaker 1>Gosh. That's a hard question because it it's
+
+00:24:19.299 --> 00:24:21.299
+<v Speaker 1>one of those things that feels obvious.
+
+00:24:21.940 --> 00:24:23.940
+<v Speaker 1>And just because if you're close to it,
+
+00:24:23.940 --> 00:24:24.020
+<v Speaker 1>you
+
+00:24:24.820 --> 00:24:26.580
+<v Speaker 1>and then stepping back and trying to explain
+
+00:24:26.580 --> 00:24:27.539
+<v Speaker 1>it is harder.
+
+00:24:29.780 --> 00:24:31.780
+<v Speaker 1>I would just say I would say
+
+00:24:32.585 --> 00:24:34.184
+<v Speaker 1>one common use
+
+00:24:34.345 --> 00:24:35.705
+<v Speaker 1>would maybe be
+
+00:24:36.185 --> 00:24:39.145
+<v Speaker 1>for also downsampling your data. So if you
+
+00:24:39.145 --> 00:24:41.225
+<v Speaker 1>have really high resolution data
+
+00:24:41.545 --> 00:24:42.985
+<v Speaker 1>and
+
+00:24:44.040 --> 00:24:46.360
+<v Speaker 1>you decide that after a certain time
+
+00:24:46.600 --> 00:24:48.840
+<v Speaker 1>that that high resolution data is no longer
+
+00:24:48.840 --> 00:24:51.160
+<v Speaker 1>valuable to you and you're only concerned with
+
+00:24:51.400 --> 00:24:52.280
+<v Speaker 1>overall
+
+00:24:53.960 --> 00:24:56.495
+<v Speaker 1>patterns in the data rather than than the
+
+00:24:56.495 --> 00:24:57.295
+<v Speaker 1>granular
+
+00:24:58.495 --> 00:25:00.815
+<v Speaker 1>granular shape of it, then you might create
+
+00:25:00.815 --> 00:25:03.375
+<v Speaker 1>a downsampling task with the aggregate window
+
+00:25:05.295 --> 00:25:07.215
+<v Speaker 1>to pull that data in in a in
+
+00:25:07.215 --> 00:25:07.695
+<v Speaker 1>a
+
+00:25:08.190 --> 00:25:09.869
+<v Speaker 1>lower resolution form,
+
+00:25:10.029 --> 00:25:11.710
+<v Speaker 1>and only save that and then expire the
+
+00:25:11.710 --> 00:25:13.389
+<v Speaker 1>old data so that you can
+
+00:25:13.870 --> 00:25:17.869
+<v Speaker 1>reduce your overall resources and disco disc space.
+
+00:25:19.549 --> 00:25:22.465
+<v Speaker 1>So that's one one reason. I think I
+
+00:25:22.465 --> 00:25:25.105
+<v Speaker 1>use aggregate window when I just want to
+
+00:25:25.105 --> 00:25:27.184
+<v Speaker 1>smooth the data when I'm clearing it so
+
+00:25:27.184 --> 00:25:29.904
+<v Speaker 1>I can better understand overall trends in my
+
+00:25:29.904 --> 00:25:30.464
+<v Speaker 1>data.
+
+00:25:32.465 --> 00:25:35.024
+<v Speaker 1>But you also have a a window function
+
+00:25:35.024 --> 00:25:36.705
+<v Speaker 1>as well
+
+00:25:37.200 --> 00:25:38.799
+<v Speaker 1>in case you need to
+
+00:25:39.120 --> 00:25:41.039
+<v Speaker 1>maybe window data and then
+
+00:25:42.399 --> 00:25:44.720
+<v Speaker 1>perform unions across windows or
+
+00:25:45.679 --> 00:25:47.679
+<v Speaker 1>I mean, really, what you what you do
+
+00:25:47.679 --> 00:25:49.679
+<v Speaker 1>with the Flux is kinda it's so dependent
+
+00:25:49.679 --> 00:25:51.315
+<v Speaker 1>on your use case and what, you know,
+
+00:25:51.315 --> 00:25:53.075
+<v Speaker 1>data transformation is all about,
+
+00:25:53.635 --> 00:25:54.914
+<v Speaker 1>what your data is, what you're trying to
+
+00:25:54.914 --> 00:25:56.674
+<v Speaker 1>achieve, what insights you're trying to get out
+
+00:25:56.674 --> 00:25:58.914
+<v Speaker 1>of it. So it's so specific.
+
+00:26:01.955 --> 00:26:02.594
+<v Speaker 0>Okay.
+
+00:26:02.835 --> 00:26:04.995
+<v Speaker 0>That that that that makes sense. Like, I
+
+00:26:04.995 --> 00:26:06.969
+<v Speaker 0>I understand that. So now
+
+00:26:08.730 --> 00:26:10.889
+<v Speaker 0>people have the choice. Right? They can
+
+00:26:11.769 --> 00:26:13.529
+<v Speaker 0>they can just use the query builder and
+
+00:26:13.529 --> 00:26:15.690
+<v Speaker 0>probably get a substantial way through what they
+
+00:26:15.690 --> 00:26:17.049
+<v Speaker 0>need to do at least from a a
+
+00:26:17.049 --> 00:26:20.409
+<v Speaker 0>superficial level without really ever rate in flux.
+
+00:26:20.649 --> 00:26:22.090
+<v Speaker 0>Is that a fair
+
+00:26:22.505 --> 00:26:24.905
+<v Speaker 0>fair statement? Yeah. I think so.
+
+00:26:25.305 --> 00:26:26.025
+<v Speaker 1>For sure.
+
+00:26:26.345 --> 00:26:27.785
+<v Speaker 0>Alright. Well, let's see if we can go
+
+00:26:27.785 --> 00:26:30.105
+<v Speaker 0>back to it just now. So we explored
+
+00:26:30.105 --> 00:26:31.305
+<v Speaker 0>our CPU.
+
+00:26:31.305 --> 00:26:31.945
+<v Speaker 0>Oops.
+
+00:26:33.385 --> 00:26:34.905
+<v Speaker 0>Why don't we take a look at one
+
+00:26:34.905 --> 00:26:35.705
+<v Speaker 0>more thing?
+
+00:26:36.105 --> 00:26:38.025
+<v Speaker 0>And then we'll do some dashboard y bits.
+
+00:26:38.210 --> 00:26:38.850
+<v Speaker 0>So
+
+00:26:40.930 --> 00:26:42.610
+<v Speaker 0>there's quite a lot in here.
+
+00:26:44.450 --> 00:26:46.370
+<v Speaker 0>How about we look at one of the
+
+00:26:46.370 --> 00:26:47.809
+<v Speaker 0>InfluxDB ones?
+
+00:26:48.050 --> 00:26:48.930
+<v Speaker 0>What do we got?
+
+00:26:51.805 --> 00:26:54.845
+<v Speaker 0>Whatever the rate stats are. Do you know?
+
+00:26:57.565 --> 00:26:58.845
+<v Speaker 1>What about them?
+
+00:27:00.765 --> 00:27:02.925
+<v Speaker 0>Well, maybe that's it there. Let's try that.
+
+00:27:02.925 --> 00:27:03.485
+<v Speaker 0>Go.
+
+00:27:03.990 --> 00:27:06.310
+<v Speaker 0>Yeah. Okay. That's gonna I just wanted to
+
+00:27:06.310 --> 00:27:08.630
+<v Speaker 0>see like because we've got telegraph which is
+
+00:27:08.630 --> 00:27:10.550
+<v Speaker 0>on the loop which is writing data every
+
+00:27:10.550 --> 00:27:13.030
+<v Speaker 0>ten seconds. We should see this linear
+
+00:27:13.030 --> 00:27:15.269
+<v Speaker 0>growth of the number of frames. Okay.
+
+00:27:16.230 --> 00:27:18.150
+<v Speaker 0>But it's also not that exciting to show.
+
+00:27:18.150 --> 00:27:19.030
+<v Speaker 0>So let's pick one more.
+
+00:27:19.715 --> 00:27:21.475
+<v Speaker 0>How about the memory consumption?
+
+00:27:22.275 --> 00:27:23.795
+<v Speaker 0>Because I'm zoomed in, that makes it a
+
+00:27:23.795 --> 00:27:25.555
+<v Speaker 0>little bit tricky. And we don't need this
+
+00:27:25.555 --> 00:27:27.235
+<v Speaker 0>flux script right now. So
+
+00:27:27.955 --> 00:27:29.075
+<v Speaker 0>so that's
+
+00:27:29.875 --> 00:27:30.595
+<v Speaker 0>mem.
+
+00:27:31.315 --> 00:27:33.235
+<v Speaker 0>We've got all the go runtime stuff.
+
+00:27:34.390 --> 00:27:36.549
+<v Speaker 0>We've got memory here. So let's take a
+
+00:27:36.549 --> 00:27:37.429
+<v Speaker 0>look at
+
+00:27:39.110 --> 00:27:40.549
+<v Speaker 0>available percent.
+
+00:27:42.070 --> 00:27:44.790
+<v Speaker 0>And you can see I'm assuming here that
+
+00:27:44.790 --> 00:27:47.110
+<v Speaker 0>just because we are writing to InfluxDB
+
+00:27:47.110 --> 00:27:49.669
+<v Speaker 0>which has an end memory right ahead log,
+
+00:27:49.755 --> 00:27:51.755
+<v Speaker 0>That's why our memory is dropping.
+
+00:27:52.715 --> 00:27:53.355
+<v Speaker 0>And
+
+00:27:56.315 --> 00:27:58.955
+<v Speaker 0>we're just looking at available with that. Well,
+
+00:27:58.955 --> 00:27:59.675
+<v Speaker 0>that's not very good.
+
+00:28:02.290 --> 00:28:04.610
+<v Speaker 0>Alright. Okay. So the query builder is quite
+
+00:28:04.610 --> 00:28:06.610
+<v Speaker 0>cool. We can drop down to Flux when
+
+00:28:06.610 --> 00:28:07.409
+<v Speaker 0>we need it.
+
+00:28:07.810 --> 00:28:08.929
+<v Speaker 0>Shall we try
+
+00:28:09.170 --> 00:28:09.889
+<v Speaker 0>a
+
+00:28:10.050 --> 00:28:11.730
+<v Speaker 0>dashboard, some of those, and see if we
+
+00:28:11.730 --> 00:28:13.970
+<v Speaker 0>can understand what a healthy Linux system looks
+
+00:28:13.970 --> 00:28:15.010
+<v Speaker 0>like? Sure.
+
+00:28:17.445 --> 00:28:19.365
+<v Speaker 1>So if you go back to the explorer,
+
+00:28:19.365 --> 00:28:20.804
+<v Speaker 1>you can actually click
+
+00:28:23.045 --> 00:28:24.404
+<v Speaker 1>oh, yeah. Click your
+
+00:28:27.125 --> 00:28:30.085
+<v Speaker 1>measurement that you want. Alright. Let's do CPU
+
+00:28:30.085 --> 00:28:31.525
+<v Speaker 0>first. Right? So Okay.
+
+00:28:35.630 --> 00:28:38.190
+<v Speaker 1>So, like, I think the intended workflow here
+
+00:28:38.190 --> 00:28:39.950
+<v Speaker 1>is that once I mean, there's a million
+
+00:28:39.950 --> 00:28:42.269
+<v Speaker 1>ways to skin a cat. That's so dark.
+
+00:28:42.510 --> 00:28:44.029
+<v Speaker 1>But once you
+
+00:28:43.965 --> 00:28:46.605
+<v Speaker 1>once you find your query and you're happy
+
+00:28:46.605 --> 00:28:48.365
+<v Speaker 1>with it in the explore tab, then you
+
+00:28:48.365 --> 00:28:50.684
+<v Speaker 1>can click the right hand little button that
+
+00:28:50.684 --> 00:28:52.605
+<v Speaker 1>says save as, and you can kinda save
+
+00:28:52.605 --> 00:28:54.365
+<v Speaker 1>it as a dashboard if I remember correctly.
+
+00:28:58.590 --> 00:29:01.789
+<v Speaker 0>So we are did we add that? No.
+
+00:29:01.790 --> 00:29:03.710
+<v Speaker 1>So I created it for you. Yeah.
+
+00:29:04.750 --> 00:29:06.430
+<v Speaker 0>Alright. Well, we'll create a new one just
+
+00:29:06.430 --> 00:29:08.190
+<v Speaker 0>now, and then we'll we'll take a look.
+
+00:29:08.190 --> 00:29:09.870
+<v Speaker 0>So we'll call this system
+
+00:29:11.150 --> 00:29:11.550
+<v Speaker 0>manual,
+
+00:29:13.235 --> 00:29:15.235
+<v Speaker 0>and we'll call this CPU.
+
+00:29:19.635 --> 00:29:20.835
+<v Speaker 0>It would be nice if it took me
+
+00:29:20.835 --> 00:29:21.795
+<v Speaker 0>to the dashboard.
+
+00:29:22.275 --> 00:29:23.475
+<v Speaker 1>I'll make a note.
+
+00:29:25.235 --> 00:29:26.195
+<v Speaker 0>There
+
+00:29:26.195 --> 00:29:26.595
+<v Speaker 0>we go.
+
+00:29:28.360 --> 00:29:30.039
+<v Speaker 0>Alright.
+
+00:29:30.919 --> 00:29:32.039
+<v Speaker 0>What else will we add? Will we do
+
+00:29:32.039 --> 00:29:33.239
+<v Speaker 0>memory again then?
+
+00:29:33.559 --> 00:29:34.440
+<v Speaker 1>Yeah. And disk
+
+00:29:34.840 --> 00:29:35.479
+<v Speaker 1>maybe.
+
+00:29:36.360 --> 00:29:39.159
+<v Speaker 0>Yeah. Well, disk is something that's relatively easy
+
+00:29:39.159 --> 00:29:40.200
+<v Speaker 0>for us to
+
+00:29:40.760 --> 00:29:41.559
+<v Speaker 0>destroy quickly.
+
+00:29:44.975 --> 00:29:47.295
+<v Speaker 0>Put that in there and
+
+00:29:47.935 --> 00:29:48.655
+<v Speaker 0>memory.
+
+00:29:51.775 --> 00:29:53.695
+<v Speaker 0>I really should just use a search, shouldn't
+
+00:29:53.695 --> 00:29:54.095
+<v Speaker 0>I?
+
+00:29:55.615 --> 00:29:56.175
+<v Speaker 0>Mem
+
+00:29:56.415 --> 00:29:58.575
+<v Speaker 0>let's do just available.
+
+00:30:01.150 --> 00:30:02.590
+<v Speaker 0>Let's add used.
+
+00:30:06.750 --> 00:30:09.630
+<v Speaker 0>Now these don't look terribly exciting just now
+
+00:30:09.710 --> 00:30:10.510
+<v Speaker 0>because
+
+00:30:11.070 --> 00:30:13.230
+<v Speaker 0>I probably threw too big a box at
+
+00:30:13.230 --> 00:30:16.175
+<v Speaker 0>this and we're not really, we're barely tackling
+
+00:30:16.175 --> 00:30:18.255
+<v Speaker 0>it, I would say right now. So
+
+00:30:19.775 --> 00:30:20.575
+<v Speaker 0>let's
+
+00:30:22.095 --> 00:30:23.855
+<v Speaker 0>cause a little bit of trouble.
+
+00:30:26.175 --> 00:30:27.535
+<v Speaker 0>Well, they pop
+
+00:30:27.535 --> 00:30:28.655
+<v Speaker 0>open another
+
+00:30:29.040 --> 00:30:29.920
+<v Speaker 0>shell,
+
+00:30:30.160 --> 00:30:32.240
+<v Speaker 0>then we can say
+
+00:30:32.240 --> 00:30:33.120
+<v Speaker 0>rate
+
+00:30:34.160 --> 00:30:34.960
+<v Speaker 0>from
+
+00:30:37.440 --> 00:30:38.400
+<v Speaker 0>random
+
+00:30:38.400 --> 00:30:41.440
+<v Speaker 0>to a fail called big fail.
+
+00:30:46.705 --> 00:30:48.784
+<v Speaker 0>And that should
+
+00:30:49.825 --> 00:30:52.065
+<v Speaker 0>just keep writing random bytes to the disk.
+
+00:30:52.065 --> 00:30:52.544
+<v Speaker 0>So
+
+00:30:53.905 --> 00:30:54.305
+<v Speaker 0>what
+
+00:30:55.345 --> 00:30:57.585
+<v Speaker 0>what's happening here with telegraph, right, is that
+
+00:30:57.585 --> 00:30:59.665
+<v Speaker 0>it's scraping metrics every ten seconds, drag them
+
+00:30:59.665 --> 00:31:00.700
+<v Speaker 0>to InfluxDB.
+
+00:31:01.020 --> 00:31:03.420
+<v Speaker 0>Our dashboard is not all refreshing, but we'll
+
+00:31:03.420 --> 00:31:05.580
+<v Speaker 0>just set that on ten seconds now anyway.
+
+00:31:05.740 --> 00:31:08.540
+<v Speaker 0>We'll look at the last five minutes and
+
+00:31:09.980 --> 00:31:11.980
+<v Speaker 0>I'm assuming we should see some movement on
+
+00:31:11.980 --> 00:31:13.020
+<v Speaker 0>some of these cells. Right?
+
+00:31:16.235 --> 00:31:17.835
+<v Speaker 0>Depending on how big the file and how
+
+00:31:17.835 --> 00:31:19.674
+<v Speaker 0>quickly it's writing that to disk, of course.
+
+00:31:20.235 --> 00:31:21.915
+<v Speaker 1>What is that CPU that
+
+00:31:22.555 --> 00:31:23.995
+<v Speaker 1>jumped up? Let's see.
+
+00:31:24.395 --> 00:31:27.515
+<v Speaker 0>No. Because DD is a single core application,
+
+00:31:27.515 --> 00:31:30.955
+<v Speaker 0>one of the CPUs is now
+
+00:31:29.980 --> 00:31:33.579
+<v Speaker 0>essentially continuously just writing this big file. Oh,
+
+00:31:35.820 --> 00:31:38.460
+<v Speaker 0>and we can kinda I mean, again, the
+
+00:31:38.460 --> 00:31:41.019
+<v Speaker 0>desk is so large in this machine, 800
+
+00:31:41.019 --> 00:31:43.179
+<v Speaker 0>gig that but I do see a small
+
+00:31:43.179 --> 00:31:44.220
+<v Speaker 0>curve forming.
+
+00:31:45.405 --> 00:31:46.765
+<v Speaker 0>Right? Yeah.
+
+00:31:47.805 --> 00:31:49.325
+<v Speaker 0>Maybe not as quickly as I would have
+
+00:31:49.325 --> 00:31:51.805
+<v Speaker 0>laid, and the memory hasn't moved at all.
+
+00:31:52.925 --> 00:31:54.205
+<v Speaker 0>Wonder how we could eat up memory.
+
+00:31:58.000 --> 00:31:59.680
+<v Speaker 0>Let's see. Linux
+
+00:31:59.680 --> 00:32:00.560
+<v Speaker 0>consume
+
+00:32:00.560 --> 00:32:02.399
+<v Speaker 0>memory fast.
+
+00:32:03.200 --> 00:32:04.799
+<v Speaker 1>Googled no one ever.
+
+00:32:07.600 --> 00:32:08.000
+<v Speaker 0>So
+
+00:32:11.485 --> 00:32:13.245
+<v Speaker 0>I have a script that consumes a constant
+
+00:32:13.245 --> 00:32:15.005
+<v Speaker 0>amount of ram for a user to find
+
+00:32:15.005 --> 00:32:16.044
+<v Speaker 0>them in a time.
+
+00:32:17.565 --> 00:32:19.644
+<v Speaker 0>I mean, do we trust Stack Overflow?
+
+00:32:20.284 --> 00:32:21.965
+<v Speaker 1>I I always do blindly.
+
+00:32:25.450 --> 00:32:28.010
+<v Speaker 0>I mean that script looks really safe.
+
+00:32:34.730 --> 00:32:37.130
+<v Speaker 0>I mean if I understood it even remotely
+
+00:32:37.130 --> 00:32:38.010
+<v Speaker 0>maybe
+
+00:32:38.010 --> 00:32:39.804
+<v Speaker 0>I would do it. And this If I
+
+00:32:39.804 --> 00:32:42.124
+<v Speaker 1>could read it, it would be Oh.
+
+00:32:43.085 --> 00:32:43.964
+<v Speaker 1>Thanks.
+
+00:32:45.804 --> 00:32:48.605
+<v Speaker 0>So this one has some sort of imperative
+
+00:32:48.605 --> 00:32:50.845
+<v Speaker 0>loop. It does some multiplication,
+
+00:32:50.845 --> 00:32:51.965
+<v Speaker 0>and then evolves it.
+
+00:32:52.650 --> 00:32:54.970
+<v Speaker 0>I think that's just continually adding
+
+00:32:55.770 --> 00:32:57.210
+<v Speaker 0>to the rate. Let's see if we can
+
+00:32:57.210 --> 00:32:59.290
+<v Speaker 0>find one more before I trust that one.
+
+00:33:00.810 --> 00:33:01.450
+<v Speaker 0>I
+
+00:33:01.770 --> 00:33:03.850
+<v Speaker 0>mean, I tried to, like, dot dot go,
+
+00:33:03.850 --> 00:33:05.370
+<v Speaker 0>but it never gives me the answers I
+
+00:33:05.370 --> 00:33:06.010
+<v Speaker 0>want. So.
+
+00:33:07.335 --> 00:33:09.095
+<v Speaker 1>That's it's charm. Right?
+
+00:33:11.255 --> 00:33:13.255
+<v Speaker 0>And now Google is telling me how to
+
+00:33:13.255 --> 00:33:15.735
+<v Speaker 0>stop processes eating all my ram when I
+
+00:33:15.735 --> 00:33:18.135
+<v Speaker 0>actually want to cause a very explosive. I'm
+
+00:33:18.135 --> 00:33:20.070
+<v Speaker 0>just gonna trust it. Let's let's go with
+
+00:33:20.070 --> 00:33:20.789
+<v Speaker 0>this guy.
+
+00:33:23.910 --> 00:33:24.629
+<v Speaker 0>So
+
+00:33:26.070 --> 00:33:28.149
+<v Speaker 0>we'll get one more tab.
+
+00:33:31.190 --> 00:33:32.549
+<v Speaker 0>All of this just so I can see
+
+00:33:32.549 --> 00:33:35.030
+<v Speaker 0>a graph modify on the dashboard. That's it.
+
+00:33:35.164 --> 00:33:35.884
+<v Speaker 0>So
+
+00:33:37.645 --> 00:33:38.764
+<v Speaker 1>We could also
+
+00:33:39.085 --> 00:33:42.445
+<v Speaker 1>write data to Influx with Flux too, but
+
+00:33:42.445 --> 00:33:43.965
+<v Speaker 1>this is more fun because
+
+00:33:44.125 --> 00:33:46.845
+<v Speaker 1>you're just messing with things causing chaos.
+
+00:33:48.220 --> 00:33:50.539
+<v Speaker 0>Well, if I get it working, perhaps.
+
+00:33:52.220 --> 00:33:54.140
+<v Speaker 0>Am I supposed to oh, no. Wait. Because
+
+00:33:54.140 --> 00:33:55.899
+<v Speaker 0>the numbers aren't very big. Right?
+
+00:33:58.620 --> 00:34:00.059
+<v Speaker 0>That's not consuming RAM.
+
+00:34:05.215 --> 00:34:06.815
+<v Speaker 0>Whale through
+
+00:34:06.815 --> 00:34:07.215
+<v Speaker 0>to
+
+00:34:10.655 --> 00:34:11.375
+<v Speaker 0>okay.
+
+00:34:11.695 --> 00:34:13.695
+<v Speaker 0>That's maybe gonna consume some RAM.
+
+00:34:14.335 --> 00:34:16.094
+<v Speaker 0>Let's see. Let's see what Influx is.
+
+00:34:19.889 --> 00:34:21.890
+<v Speaker 0>Well, we'll find out in ten seconds.
+
+00:34:24.929 --> 00:34:27.090
+<v Speaker 0>This is gonna be so anticlimactic,
+
+00:34:27.090 --> 00:34:27.810
+<v Speaker 0>isn't it?
+
+00:34:28.290 --> 00:34:31.409
+<v Speaker 1>I don't know. We'll find out. I'm hopeful.
+
+00:34:32.835 --> 00:34:35.475
+<v Speaker 0>Oh, yes. I had a funny comment from
+
+00:34:35.475 --> 00:34:38.114
+<v Speaker 0>Nikolay who said, just install Slack.
+
+00:34:39.315 --> 00:34:41.554
+<v Speaker 0>Yeah. That would definitely eat around pretty fast,
+
+00:34:41.554 --> 00:34:43.475
+<v Speaker 0>wouldn't it? We do see
+
+00:34:46.100 --> 00:34:48.420
+<v Speaker 0>oh, no. That is kinda bending too. Okay.
+
+00:34:48.580 --> 00:34:50.420
+<v Speaker 0>I mean, we're still not really doing much
+
+00:34:50.420 --> 00:34:53.060
+<v Speaker 0>damage, but it's slowly we can see these
+
+00:34:53.060 --> 00:34:55.140
+<v Speaker 0>graphs being manipulated and we can see resources
+
+00:34:55.140 --> 00:34:56.180
+<v Speaker 0>being consumed.
+
+00:34:57.140 --> 00:34:59.655
+<v Speaker 0>Just not in the fun chaotic way that
+
+00:34:59.655 --> 00:35:00.935
+<v Speaker 0>I was kind of hoping.
+
+00:35:01.655 --> 00:35:02.935
+<v Speaker 0>Alright. Let's
+
+00:35:03.255 --> 00:35:05.495
+<v Speaker 0>do something a bit more practical then. That
+
+00:35:05.495 --> 00:35:06.055
+<v Speaker 0>was
+
+00:35:06.615 --> 00:35:08.455
+<v Speaker 0>that was okay. So we take a look
+
+00:35:08.455 --> 00:35:10.775
+<v Speaker 0>at the system dashboard that got generated for
+
+00:35:10.775 --> 00:35:12.055
+<v Speaker 0>us then. Is that gonna be a bit
+
+00:35:12.055 --> 00:35:13.015
+<v Speaker 0>better than mine?
+
+00:35:13.255 --> 00:35:13.655
+<v Speaker 0>Ours?
+
+00:35:14.480 --> 00:35:16.000
+<v Speaker 1>I guess we can find out. I think
+
+00:35:16.000 --> 00:35:17.040
+<v Speaker 1>that's subjective.
+
+00:35:20.960 --> 00:35:24.640
+<v Speaker 0>Yeah. Okay. Cool. So we've got system uptime,
+
+00:35:24.640 --> 00:35:25.680
+<v Speaker 0>which you can see if we could for
+
+00:35:25.680 --> 00:35:26.640
+<v Speaker 0>a eight CPUs.
+
+00:35:28.215 --> 00:35:30.615
+<v Speaker 0>We've got some system load here.
+
+00:35:30.775 --> 00:35:32.215
+<v Speaker 0>We got our memory.
+
+00:35:34.295 --> 00:35:35.975
+<v Speaker 0>Our memory. Yes. I mean, we're not even
+
+00:35:35.975 --> 00:35:38.455
+<v Speaker 0>at 1% memory usage, so and then we
+
+00:35:38.455 --> 00:35:40.615
+<v Speaker 0>got this guy over network processes and swap.
+
+00:35:41.410 --> 00:35:42.610
+<v Speaker 0>If we break us down to the last
+
+00:35:42.610 --> 00:35:44.050
+<v Speaker 0>five minutes, it'll look a little bit more
+
+00:35:44.050 --> 00:35:45.810
+<v Speaker 0>full. There we go and we can see
+
+00:35:45.810 --> 00:35:48.370
+<v Speaker 0>where we we we tried. Right? We tried
+
+00:35:48.370 --> 00:35:50.130
+<v Speaker 0>our best to consume a better load and
+
+00:35:50.130 --> 00:35:51.410
+<v Speaker 0>consume a better memory.
+
+00:35:53.090 --> 00:35:54.450
+<v Speaker 0>You maybe just
+
+00:35:54.770 --> 00:35:55.570
+<v Speaker 0>then
+
+00:35:56.130 --> 00:35:58.885
+<v Speaker 0>break down the the different cell types that
+
+00:35:58.885 --> 00:36:01.125
+<v Speaker 0>are available? Like, this is not a graph.
+
+00:36:01.125 --> 00:36:01.685
+<v Speaker 0>Right?
+
+00:36:02.005 --> 00:36:04.325
+<v Speaker 1>Yeah. So you have a variety of different
+
+00:36:04.325 --> 00:36:05.285
+<v Speaker 1>visualizations
+
+00:36:05.285 --> 00:36:08.005
+<v Speaker 1>both available to your explorer tab and also
+
+00:36:08.005 --> 00:36:08.645
+<v Speaker 1>your dashboard.
+
+00:36:09.710 --> 00:36:11.390
+<v Speaker 1>So you can add a cell and then
+
+00:36:11.390 --> 00:36:13.869
+<v Speaker 1>change the visualization where you can configure
+
+00:36:14.190 --> 00:36:17.710
+<v Speaker 1>individual cell to display a different visualization.
+
+00:36:17.710 --> 00:36:20.109
+<v Speaker 1>So let's do that. Let's click the gear
+
+00:36:20.109 --> 00:36:21.549
+<v Speaker 1>icon on any one of these cells.
+
+00:36:24.755 --> 00:36:26.595
+<v Speaker 1>And then, yeah, hit configure.
+
+00:36:29.315 --> 00:36:31.955
+<v Speaker 1>Yep. There you go. So there's heat maps,
+
+00:36:31.955 --> 00:36:32.915
+<v Speaker 1>histograms.
+
+00:36:32.915 --> 00:36:35.715
+<v Speaker 1>I really like the single stat on top
+
+00:36:35.715 --> 00:36:37.475
+<v Speaker 1>of the graph
+
+00:36:38.289 --> 00:36:40.050
+<v Speaker 1>graph plus single stat,
+
+00:36:40.369 --> 00:36:42.450
+<v Speaker 1>especially for things like memory and stuff like
+
+00:36:42.450 --> 00:36:44.210
+<v Speaker 1>that. I think it makes it
+
+00:36:45.569 --> 00:36:46.609
+<v Speaker 1>pretty powerful.
+
+00:36:47.250 --> 00:36:49.730
+<v Speaker 0>Probably not too useful, but I clicked on
+
+00:36:49.730 --> 00:36:51.890
+<v Speaker 0>one of those boarding ones though. Right? So
+
+00:36:52.369 --> 00:36:52.609
+<v Speaker 0>Yeah.
+
+00:36:54.385 --> 00:36:56.305
+<v Speaker 0>Let's use the desk IO since we managed
+
+00:36:56.305 --> 00:36:57.745
+<v Speaker 0>to get at least cause a little bit
+
+00:36:57.745 --> 00:37:00.305
+<v Speaker 0>of graphing there. There.
+
+00:37:02.385 --> 00:37:04.305
+<v Speaker 0>Well, what else did you say? We got
+
+00:37:04.305 --> 00:37:06.720
+<v Speaker 0>heat maps and histograms. You know, I've never
+
+00:37:06.720 --> 00:37:08.720
+<v Speaker 0>really understood the difference between when to use
+
+00:37:08.720 --> 00:37:10.080
+<v Speaker 0>a heat map or histogram.
+
+00:37:10.480 --> 00:37:12.640
+<v Speaker 0>You got any thoughts on that? Oh,
+
+00:37:12.880 --> 00:37:14.320
+<v Speaker 1>fascinating question.
+
+00:37:14.960 --> 00:37:16.160
+<v Speaker 1>Honestly,
+
+00:37:16.240 --> 00:37:19.200
+<v Speaker 1>no. I don't really ever use histograms.
+
+00:37:21.895 --> 00:37:23.495
+<v Speaker 1>Let's click on a heat map. Let's just
+
+00:37:23.495 --> 00:37:25.975
+<v Speaker 1>see if it speaks to us intuitively. Nope.
+
+00:37:25.975 --> 00:37:27.255
+<v Speaker 1>See? It doesn't.
+
+00:37:28.455 --> 00:37:30.935
+<v Speaker 1>I think if the visualization doesn't help you
+
+00:37:30.935 --> 00:37:33.255
+<v Speaker 1>understand what's going on, then it then it's
+
+00:37:33.255 --> 00:37:34.935
+<v Speaker 1>not the visualization for you.
+
+00:37:35.335 --> 00:37:38.069
+<v Speaker 0>Well, I mean, maybe that's not the visualization's
+
+00:37:38.069 --> 00:37:39.750
+<v Speaker 0>fault and just the fact that we have
+
+00:37:39.750 --> 00:37:42.069
+<v Speaker 0>less than twenty minutes worth of data that's
+
+00:37:42.069 --> 00:37:44.549
+<v Speaker 0>not really moving too much either. So, like,
+
+00:37:44.549 --> 00:37:45.829
+<v Speaker 0>I don't I don't think we're gonna get
+
+00:37:45.829 --> 00:37:48.069
+<v Speaker 0>particularly useful things. Like, there's like it's our
+
+00:37:48.069 --> 00:37:50.895
+<v Speaker 0>gauge. Right? It's like, hey, you're zero. Nice
+
+00:37:50.895 --> 00:37:52.735
+<v Speaker 0>work. Try harder. So
+
+00:37:53.615 --> 00:37:54.175
+<v Speaker 0>Yeah.
+
+00:37:54.735 --> 00:37:56.655
+<v Speaker 0>I mean, if I didn't have my rule
+
+00:37:56.655 --> 00:37:59.295
+<v Speaker 0>of doing everything live, perhaps I should have
+
+00:37:59.295 --> 00:38:01.215
+<v Speaker 0>spun one up earlier and left it running
+
+00:38:01.215 --> 00:38:03.560
+<v Speaker 0>for a few days with some weird workloads
+
+00:38:03.560 --> 00:38:05.320
+<v Speaker 0>on it. Or maybe a crypto miner. That
+
+00:38:05.320 --> 00:38:06.920
+<v Speaker 0>would have been a good idea. I mean,
+
+00:38:06.920 --> 00:38:08.840
+<v Speaker 0>we could always fork bomb the machine. That
+
+00:38:08.840 --> 00:38:11.400
+<v Speaker 0>would really cause some problems. Let's do that.
+
+00:38:14.775 --> 00:38:16.615
+<v Speaker 0>Are you familiar with a fork bomb?
+
+00:38:19.414 --> 00:38:22.455
+<v Speaker 1>I just it sounds good. So I'm excited.
+
+00:38:23.015 --> 00:38:25.655
+<v Speaker 0>So is this voodoo piece of bash
+
+00:38:26.950 --> 00:38:27.750
+<v Speaker 0>that
+
+00:38:27.750 --> 00:38:28.710
+<v Speaker 0>spawns
+
+00:38:28.710 --> 00:38:31.750
+<v Speaker 0>infinite processes until the machine falls over?
+
+00:38:31.990 --> 00:38:32.790
+<v Speaker 0>No.
+
+00:38:33.110 --> 00:38:35.830
+<v Speaker 0>Generally, the it may not like consume all
+
+00:38:35.830 --> 00:38:37.430
+<v Speaker 0>of the memory or the CPU,
+
+00:38:37.670 --> 00:38:39.670
+<v Speaker 0>but it will give us something interesting in
+
+00:38:39.670 --> 00:38:42.755
+<v Speaker 0>the processes table and we probably will run
+
+00:38:42.755 --> 00:38:44.035
+<v Speaker 0>out of pet IDs,
+
+00:38:44.115 --> 00:38:46.355
+<v Speaker 0>which is generally when the machine stops functioning.
+
+00:38:49.555 --> 00:38:51.395
+<v Speaker 0>And I don't even remember how it works
+
+00:38:51.395 --> 00:38:53.474
+<v Speaker 0>in practice because I haven't been stupid enough
+
+00:38:53.474 --> 00:38:54.994
+<v Speaker 0>to run it on my own machines for
+
+00:38:54.994 --> 00:38:55.474
+<v Speaker 0>a long time,
+
+00:38:56.630 --> 00:38:58.310
+<v Speaker 0>But we may have a better time to
+
+00:38:58.310 --> 00:38:59.030
+<v Speaker 0>run it
+
+00:38:59.590 --> 00:39:01.270
+<v Speaker 0>before it kills itself.
+
+00:39:01.350 --> 00:39:03.510
+<v Speaker 1>Why do people ever use it practically?
+
+00:39:03.750 --> 00:39:05.670
+<v Speaker 0>No. People don't. Okay.
+
+00:39:09.110 --> 00:39:11.535
+<v Speaker 0>Alright. Let's let's let's do this a little
+
+00:39:11.535 --> 00:39:13.535
+<v Speaker 0>bit safer. Right? Let's not I won't be
+
+00:39:13.535 --> 00:39:15.695
+<v Speaker 0>too chaotic. Let's get Docker installed.
+
+00:39:18.734 --> 00:39:21.215
+<v Speaker 0>Because there's a really cool feature with Docker
+
+00:39:21.455 --> 00:39:24.335
+<v Speaker 0>where we can limit the the pedal. We
+
+00:39:24.335 --> 00:39:25.695
+<v Speaker 0>can do a pedal limit so that it
+
+00:39:25.695 --> 00:39:27.700
+<v Speaker 0>won't destroy the machine.
+
+00:39:28.580 --> 00:39:29.220
+<v Speaker 0>So
+
+00:39:29.620 --> 00:39:30.660
+<v Speaker 0>let's do
+
+00:39:30.820 --> 00:39:32.020
+<v Speaker 0>command docker
+
+00:39:36.260 --> 00:39:38.740
+<v Speaker 0>image pool Alpine three.
+
+00:39:39.805 --> 00:39:41.805
+<v Speaker 0>In fact, it needs bash. Let's just do
+
+00:39:41.805 --> 00:39:42.445
+<v Speaker 0>bash.
+
+00:39:44.765 --> 00:39:46.285
+<v Speaker 0>Okay. So we should be able to do
+
+00:39:46.285 --> 00:39:49.965
+<v Speaker 0>a container run dash dash r m bash
+
+00:39:50.285 --> 00:39:51.245
+<v Speaker 0>echo hello.
+
+00:39:54.050 --> 00:39:55.970
+<v Speaker 0>Let's make sure the ped limit flag works
+
+00:39:55.970 --> 00:39:56.770
+<v Speaker 0>first.
+
+00:40:01.810 --> 00:40:02.770
+<v Speaker 0>Memory failure.
+
+00:40:06.365 --> 00:40:07.165
+<v Speaker 0>Pedsler.
+
+00:40:07.165 --> 00:40:08.045
+<v Speaker 0>Course.
+
+00:40:12.845 --> 00:40:13.405
+<v Speaker 0>No?
+
+00:40:14.845 --> 00:40:15.885
+<v Speaker 1>Oh, yeah.
+
+00:40:16.525 --> 00:40:17.484
+<v Speaker 0>What did I get wrong?
+
+00:40:18.300 --> 00:40:19.260
+<v Speaker 1>No space?
+
+00:40:19.900 --> 00:40:21.100
+<v Speaker 1>No equal sign?
+
+00:40:21.740 --> 00:40:23.180
+<v Speaker 1>No. No. I know.
+
+00:40:25.580 --> 00:40:27.340
+<v Speaker 0>Docker container.
+
+00:40:27.420 --> 00:40:28.700
+<v Speaker 0>Oh, no. It has to be after the
+
+00:40:28.700 --> 00:40:29.020
+<v Speaker 0>run.
+
+00:40:31.905 --> 00:40:34.065
+<v Speaker 0>Peds limit equals two.
+
+00:40:34.225 --> 00:40:36.305
+<v Speaker 0>Okay. So now we have
+
+00:40:37.025 --> 00:40:38.785
+<v Speaker 0>oh, my dog is going wild.
+
+00:40:42.465 --> 00:40:44.305
+<v Speaker 0>Oh, we need to pass that in as
+
+00:40:44.305 --> 00:40:47.339
+<v Speaker 0>a string, so let me re copy that.
+
+00:40:48.380 --> 00:40:50.220
+<v Speaker 0>This is a long way about just to
+
+00:40:50.220 --> 00:40:52.140
+<v Speaker 0>show something that's not even that exciting.
+
+00:40:52.619 --> 00:40:53.099
+<v Speaker 0>So
+
+00:40:54.859 --> 00:40:55.660
+<v Speaker 0>paste.
+
+00:40:55.660 --> 00:40:57.099
+<v Speaker 0>Copy it as one line.
+
+00:41:07.465 --> 00:41:09.385
+<v Speaker 0>Don't fail me now. I'll do it in
+
+00:41:09.385 --> 00:41:10.265
+<v Speaker 0>line. Okay.
+
+00:41:11.625 --> 00:41:13.145
+<v Speaker 0>I feel like I'm committed now.
+
+00:41:14.720 --> 00:41:17.119
+<v Speaker 1>Yeah. We have to see this through. Alright.
+
+00:41:17.119 --> 00:41:19.359
+<v Speaker 0>So now we're inside of a batch container.
+
+00:41:23.520 --> 00:41:24.800
+<v Speaker 0>Okay. Cool.
+
+00:41:25.200 --> 00:41:27.119
+<v Speaker 0>Now that wasn't very same because we only
+
+00:41:27.119 --> 00:41:28.640
+<v Speaker 0>ran it with a pad limit of two.
+
+00:41:28.640 --> 00:41:31.355
+<v Speaker 0>Let's let's see if we can visualize that.
+
+00:41:31.355 --> 00:41:32.555
+<v Speaker 0>I'm not gonna be able to visualize it
+
+00:41:32.555 --> 00:41:33.994
+<v Speaker 0>with two though, so let's bump it up.
+
+00:41:33.994 --> 00:41:36.955
+<v Speaker 0>Let's do 500.
+
+00:41:39.355 --> 00:41:41.355
+<v Speaker 0>Okay. And now it's setting the limit and
+
+00:41:41.355 --> 00:41:43.275
+<v Speaker 0>see if we get anything here.
+
+00:41:46.630 --> 00:41:48.310
+<v Speaker 0>We just need to wait ten seconds or
+
+00:41:48.310 --> 00:41:49.030
+<v Speaker 0>won't we?
+
+00:41:50.550 --> 00:41:52.390
+<v Speaker 0>Maybe we should do this from here.
+
+00:41:52.790 --> 00:41:53.590
+<v Speaker 0>And
+
+00:41:54.470 --> 00:41:56.150
+<v Speaker 0>this is the episode where we stopped looking
+
+00:41:56.150 --> 00:41:57.990
+<v Speaker 0>at Influx and instead just tried to break
+
+00:41:57.990 --> 00:41:58.470
+<v Speaker 0>the machine.
+
+00:42:00.545 --> 00:42:01.345
+<v Speaker 0>So
+
+00:42:04.065 --> 00:42:06.145
+<v Speaker 0>will that give me all fields? It does.
+
+00:42:06.145 --> 00:42:06.705
+<v Speaker 0>Okay.
+
+00:42:10.225 --> 00:42:10.785
+<v Speaker 1>Hey.
+
+00:42:11.985 --> 00:42:15.345
+<v Speaker 0>We did cause some artificial load. What is
+
+00:42:14.670 --> 00:42:16.829
+<v Speaker 0>the diff how many pets can we have?
+
+00:42:16.829 --> 00:42:18.590
+<v Speaker 0>Max, pets, Linux.
+
+00:42:18.990 --> 00:42:20.349
+<v Speaker 0>I don't wanna raise it and then find
+
+00:42:20.349 --> 00:42:21.630
+<v Speaker 0>out that I put it too high and
+
+00:42:21.630 --> 00:42:23.470
+<v Speaker 0>then we do destroy the machine.
+
+00:42:24.109 --> 00:42:25.150
+<v Speaker 0>4,000,000?
+
+00:42:25.790 --> 00:42:26.990
+<v Speaker 0>That's that's million. Right?
+
+00:42:28.175 --> 00:42:29.055
+<v Speaker 1>Yeah.
+
+00:42:29.055 --> 00:42:31.535
+<v Speaker 0>Yeah. Sure. Just yeah. Just agree. That's fine.
+
+00:42:32.175 --> 00:42:33.375
+<v Speaker 1>I
+
+00:42:33.375 --> 00:42:34.815
+<v Speaker 1>read 4,000,000. So
+
+00:42:36.015 --> 00:42:37.615
+<v Speaker 0>So we'll do 1,000,000.
+
+00:42:38.175 --> 00:42:40.015
+<v Speaker 0>And that's either the end of the episode
+
+00:42:40.015 --> 00:42:41.615
+<v Speaker 0>because we measure at the number
+
+00:42:42.255 --> 00:42:43.295
+<v Speaker 0>or
+
+00:42:44.530 --> 00:42:45.810
+<v Speaker 0>it'll just work.
+
+00:42:46.210 --> 00:42:49.090
+<v Speaker 0>Now it's not printing resource error yet.
+
+00:42:49.730 --> 00:42:51.010
+<v Speaker 0>And I've lost the machine.
+
+00:42:57.095 --> 00:42:58.935
+<v Speaker 0>And and now we have helpful comments from
+
+00:42:58.935 --> 00:43:00.855
+<v Speaker 0>people who are suggesting other ways to cause
+
+00:43:00.855 --> 00:43:02.055
+<v Speaker 0>artificial light.
+
+00:43:05.015 --> 00:43:06.855
+<v Speaker 0>Oh, no. The telegraph one. Okay. So it's
+
+00:43:06.855 --> 00:43:08.455
+<v Speaker 0>just I've just lost this window. So
+
+00:43:10.340 --> 00:43:11.140
+<v Speaker 0>maybe.
+
+00:43:12.740 --> 00:43:14.900
+<v Speaker 0>Yep. Okay. Telegraph is trying to exit nicely,
+
+00:43:14.900 --> 00:43:16.660
+<v Speaker 0>which is not very helpful right now.
+
+00:43:17.220 --> 00:43:19.380
+<v Speaker 0>Docker container l s.
+
+00:43:20.660 --> 00:43:21.460
+<v Speaker 0>Destroy
+
+00:43:21.460 --> 00:43:22.180
+<v Speaker 0>that container.
+
+00:43:25.115 --> 00:43:26.555
+<v Speaker 0>There, not too dangerous.
+
+00:43:33.595 --> 00:43:34.555
+<v Speaker 0>Come on.
+
+00:43:37.194 --> 00:43:39.430
+<v Speaker 0>Right. And then we'll do it the nice
+
+00:43:39.430 --> 00:43:41.110
+<v Speaker 0>way instead of that way.
+
+00:43:41.350 --> 00:43:43.030
+<v Speaker 0>Let's see what we see here though.
+
+00:43:45.430 --> 00:43:46.790
+<v Speaker 0>Oh, wow. Okay.
+
+00:43:47.750 --> 00:43:50.230
+<v Speaker 0>That's good. And then that's where we saved
+
+00:43:50.230 --> 00:43:50.470
+<v Speaker 0>it.
+
+00:43:52.015 --> 00:43:53.135
+<v Speaker 0>Now the
+
+00:43:53.375 --> 00:43:55.615
+<v Speaker 0>nicer way would have been this comment stress
+
+00:43:55.615 --> 00:43:58.095
+<v Speaker 0>n g which I'm not familiar with but
+
+00:43:58.095 --> 00:43:59.295
+<v Speaker 0>I guess we might as well check it
+
+00:43:59.295 --> 00:43:59.455
+<v Speaker 0>out.
+
+00:44:05.559 --> 00:44:07.240
+<v Speaker 0>Let's see what this does.
+
+00:44:12.280 --> 00:44:13.880
+<v Speaker 0>I'm assuming it needs some flags.
+
+00:44:16.359 --> 00:44:17.880
+<v Speaker 0>Right. Let's
+
+00:44:17.960 --> 00:44:20.335
+<v Speaker 0>forget that. That was a nice
+
+00:44:21.295 --> 00:44:22.175
+<v Speaker 0>digression,
+
+00:44:22.175 --> 00:44:22.975
+<v Speaker 0>I guess.
+
+00:44:23.935 --> 00:44:26.815
+<v Speaker 0>So we also have this InfluxDB two OSS
+
+00:44:26.815 --> 00:44:29.775
+<v Speaker 0>dashboard. This is what using the internal metrics?
+
+00:44:30.175 --> 00:44:30.495
+<v Speaker 1>Yeah.
+
+00:44:32.170 --> 00:44:32.890
+<v Speaker 1>So
+
+00:44:33.130 --> 00:44:34.090
+<v Speaker 1>there's a
+
+00:44:34.410 --> 00:44:36.890
+<v Speaker 1>InfluxDB OSS, and then there's also a free
+
+00:44:36.890 --> 00:44:39.290
+<v Speaker 1>tier. So hot tip, if you are using
+
+00:44:39.290 --> 00:44:41.610
+<v Speaker 1>either or use one to monitor your own
+
+00:44:41.610 --> 00:44:43.050
+<v Speaker 1>InfluxDB instance as well.
+
+00:44:44.035 --> 00:44:44.835
+<v Speaker 1>Okay.
+
+00:44:48.035 --> 00:44:49.955
+<v Speaker 0>Now as a do I have to build
+
+00:44:49.955 --> 00:44:51.955
+<v Speaker 0>all these dashboards myself? Is there somewhere I
+
+00:44:51.955 --> 00:44:54.675
+<v Speaker 0>can get more of these pre canned ones?
+
+00:44:54.915 --> 00:44:56.035
+<v Speaker 1>There is
+
+00:44:56.355 --> 00:44:59.549
+<v Speaker 1>a community templates repo and InfluxData,
+
+00:44:59.549 --> 00:45:02.269
+<v Speaker 1>and there's a bunch of temp we should
+
+00:45:02.269 --> 00:45:04.670
+<v Speaker 1>actually test the template I just
+
+00:45:08.029 --> 00:45:09.470
+<v Speaker 1>just merged yesterday.
+
+00:45:12.025 --> 00:45:12.745
+<v Speaker 0>So
+
+00:45:13.225 --> 00:45:14.825
+<v Speaker 0>this one? Mhmm.
+
+00:45:15.385 --> 00:45:17.065
+<v Speaker 0>And what was your template called?
+
+00:45:17.225 --> 00:45:18.105
+<v Speaker 1>InfluxDB
+
+00:45:18.105 --> 00:45:20.025
+<v Speaker 1>two operational
+
+00:45:20.105 --> 00:45:20.905
+<v Speaker 1>metrics.
+
+00:45:20.905 --> 00:45:21.865
+<v Speaker 1>There you go. I think you just passed
+
+00:45:21.865 --> 00:45:22.105
+<v Speaker 1>it.
+
+00:45:26.720 --> 00:45:28.960
+<v Speaker 0>So I just copy this YAML?
+
+00:45:28.960 --> 00:45:31.200
+<v Speaker 1>So you can just copy the URL actually.
+
+00:45:34.000 --> 00:45:34.800
+<v Speaker 1>And then
+
+00:45:35.599 --> 00:45:36.720
+<v Speaker 1>go to
+
+00:45:36.960 --> 00:45:37.760
+<v Speaker 1>settings
+
+00:45:38.880 --> 00:45:40.240
+<v Speaker 1>and then templates.
+
+00:45:41.424 --> 00:45:44.865
+<v Speaker 1>And then in and then click the copy
+
+00:45:44.865 --> 00:45:45.905
+<v Speaker 1>and paste. Yeah.
+
+00:45:48.464 --> 00:45:50.545
+<v Speaker 0>Okay. So this is gonna create
+
+00:45:50.944 --> 00:45:53.984
+<v Speaker 0>some task summary dashboards, some cardinality explorer.
+
+00:45:53.984 --> 00:45:54.545
+<v Speaker 0>We've got
+
+00:45:56.130 --> 00:45:58.450
+<v Speaker 0>bucket. We've got a task and then some
+
+00:45:58.450 --> 00:46:00.610
+<v Speaker 0>labels. Okay. I'll trust it.
+
+00:46:01.329 --> 00:46:03.089
+<v Speaker 0>Let's go and see what we have then.
+
+00:46:07.065 --> 00:46:09.625
+<v Speaker 1>So I don't know. I think we're gonna
+
+00:46:09.625 --> 00:46:11.865
+<v Speaker 1>have to change the frequency at which we're
+
+00:46:11.865 --> 00:46:14.984
+<v Speaker 1>writing today. So we created a cardinality task
+
+00:46:14.984 --> 00:46:16.505
+<v Speaker 1>as a part of this
+
+00:46:16.744 --> 00:46:19.625
+<v Speaker 1>template. So let's change that cardinality by bucket
+
+00:46:21.060 --> 00:46:23.540
+<v Speaker 1>every period and make it less than an
+
+00:46:23.540 --> 00:46:24.900
+<v Speaker 1>hour. Maybe make it
+
+00:46:25.540 --> 00:46:26.500
+<v Speaker 1>ten seconds
+
+00:46:26.980 --> 00:46:28.340
+<v Speaker 1>or thirty
+
+00:46:28.340 --> 00:46:30.100
+<v Speaker 1>seconds or something. So we actually start getting
+
+00:46:30.100 --> 00:46:30.660
+<v Speaker 1>some data.
+
+00:46:34.984 --> 00:46:37.464
+<v Speaker 1>Says fail. Let's find out why.
+
+00:46:38.505 --> 00:46:39.704
+<v Speaker 0>How do we do that?
+
+00:46:40.025 --> 00:46:42.825
+<v Speaker 1>So we can either can we I think
+
+00:46:42.825 --> 00:46:43.865
+<v Speaker 1>if we click
+
+00:46:43.944 --> 00:46:46.585
+<v Speaker 1>on yeah. Let's try clicking on that view.
+
+00:46:46.585 --> 00:46:47.144
+<v Speaker 1>There we go.
+
+00:46:49.119 --> 00:46:51.120
+<v Speaker 1>View logs. Why'd you fail?
+
+00:46:55.840 --> 00:46:57.760
+<v Speaker 1>Can you make it a little bigger, please?
+
+00:46:59.119 --> 00:47:00.320
+<v Speaker 1>Oh, perfect. Okay.
+
+00:47:07.464 --> 00:47:09.705
+<v Speaker 1>Requires host to be specified.
+
+00:47:11.385 --> 00:47:13.145
+<v Speaker 1>Maybe I shouldn't have picked a
+
+00:47:13.545 --> 00:47:14.984
+<v Speaker 1>template that I just
+
+00:47:16.105 --> 00:47:16.585
+<v Speaker 1>added,
+
+00:47:18.080 --> 00:47:19.920
+<v Speaker 1>But we could try to debug it. I
+
+00:47:19.920 --> 00:47:21.200
+<v Speaker 1>could go to
+
+00:47:21.280 --> 00:47:24.640
+<v Speaker 1>the task and see what they mean by
+
+00:47:27.040 --> 00:47:28.800
+<v Speaker 1>oh, wait. But part of this is a
+
+00:47:28.800 --> 00:47:30.000
+<v Speaker 1>task failure
+
+00:47:30.615 --> 00:47:32.855
+<v Speaker 1>monitoring template. So maybe that'll give us more
+
+00:47:32.855 --> 00:47:34.855
+<v Speaker 1>information as to why this is failing.
+
+00:47:39.415 --> 00:47:40.535
+<v Speaker 1>InfluxDB.
+
+00:47:44.259 --> 00:47:46.020
+<v Speaker 1>What does it mean problem with
+
+00:47:46.900 --> 00:47:48.980
+<v Speaker 1>host isn't identified?
+
+00:47:51.779 --> 00:47:53.299
+<v Speaker 0>I don't know. Let me look at the
+
+00:47:53.299 --> 00:47:55.220
+<v Speaker 0>header. I should have been paying more attention.
+
+00:47:55.835 --> 00:47:56.555
+<v Speaker 0>So
+
+00:47:58.154 --> 00:48:00.394
+<v Speaker 0>cannot execute task run run time map fail
+
+00:48:00.394 --> 00:48:01.915
+<v Speaker 0>to evaluate map function.
+
+00:48:05.595 --> 00:48:07.755
+<v Speaker 0>And so it says the InfluxDB provider requires
+
+00:48:07.755 --> 00:48:09.435
+<v Speaker 0>a host to be specified.
+
+00:48:09.515 --> 00:48:10.234
+<v Speaker 0>So
+
+00:48:11.030 --> 00:48:13.750
+<v Speaker 0>to me, that means that
+
+00:48:15.910 --> 00:48:18.230
+<v Speaker 0>this needs some configuration.
+
+00:48:20.390 --> 00:48:22.070
+<v Speaker 0>Maybe maybe here.
+
+00:48:22.710 --> 00:48:23.990
+<v Speaker 0>Does this have a open plate?
+
+00:48:26.195 --> 00:48:27.475
+<v Speaker 1>I'll
+
+00:48:27.475 --> 00:48:30.755
+<v Speaker 1>look at the InfluxDB cardinality package.
+
+00:48:34.835 --> 00:48:35.955
+<v Speaker 0>I'm not sure.
+
+00:48:42.329 --> 00:48:44.410
+<v Speaker 0>Why don't we just write our own task?
+
+00:48:44.490 --> 00:48:46.329
+<v Speaker 1>Yeah. We should just write our own task.
+
+00:48:46.569 --> 00:48:49.690
+<v Speaker 1>Oh, you can specify. Yeah. Does that work
+
+00:48:49.690 --> 00:48:51.210
+<v Speaker 1>when you specify the host?
+
+00:48:51.769 --> 00:48:55.305
+<v Speaker 1>There's a parameter for that. Alright. Okay. Let's
+
+00:48:55.305 --> 00:48:56.025
+<v Speaker 0>let's see.
+
+00:48:58.025 --> 00:49:00.345
+<v Speaker 0>12702021.
+
+00:49:00.505 --> 00:49:01.305
+<v Speaker 0>Save.
+
+00:49:02.345 --> 00:49:04.425
+<v Speaker 0>Can I just force a run? Yeah. There
+
+00:49:04.425 --> 00:49:04.825
+<v Speaker 0>we go.
+
+00:49:07.799 --> 00:49:09.240
+<v Speaker 0>Oh, it wants the port number in the
+
+00:49:09.240 --> 00:49:10.119
+<v Speaker 0>host. Okay.
+
+00:49:11.960 --> 00:49:13.320
+<v Speaker 0>I can fix that.
+
+00:49:15.400 --> 00:49:16.680
+<v Speaker 0>8086.
+
+00:49:16.680 --> 00:49:18.599
+<v Speaker 0>Might as well just protocol two.
+
+00:49:21.795 --> 00:49:22.915
+<v Speaker 0>Force run.
+
+00:49:24.595 --> 00:49:25.635
+<v Speaker 0>Unauthorized.
+
+00:49:26.595 --> 00:49:28.515
+<v Speaker 1>Oh, so you need to include your organization
+
+00:49:28.515 --> 00:49:29.635
+<v Speaker 1>and your token.
+
+00:49:32.435 --> 00:49:33.315
+<v Speaker 0>Okay.
+
+00:49:33.635 --> 00:49:34.355
+<v Speaker 0>Tokens.
+
+00:49:38.690 --> 00:49:39.650
+<v Speaker 0>Copy.
+
+00:49:44.290 --> 00:49:46.930
+<v Speaker 0>Alright. So organization.
+
+00:49:47.089 --> 00:49:48.290
+<v Speaker 1>It's just org.
+
+00:49:48.369 --> 00:49:48.930
+<v Speaker 1>Yeah.
+
+00:49:49.170 --> 00:49:49.809
+<v Speaker 0>Token.
+
+00:49:50.785 --> 00:49:51.505
+<v Speaker 0>Okay.
+
+00:49:54.385 --> 00:49:56.545
+<v Speaker 0>Or and can I just be the name?
+
+00:49:56.545 --> 00:49:57.265
+<v Speaker 1>Mhmm.
+
+00:50:00.065 --> 00:50:00.785
+<v Speaker 0>Run.
+
+00:50:02.625 --> 00:50:03.185
+<v Speaker 1>Oh.
+
+00:50:04.010 --> 00:50:05.850
+<v Speaker 0>Requires a host to be specified.
+
+00:50:06.010 --> 00:50:08.089
+<v Speaker 0>Alright. Let's write our own task then. Okay.
+
+00:50:08.089 --> 00:50:08.970
+<v Speaker 1>Let's do that.
+
+00:50:09.930 --> 00:50:12.010
+<v Speaker 0>So let's say we wanna downsample
+
+00:50:12.010 --> 00:50:13.050
+<v Speaker 0>our CPU.
+
+00:50:13.530 --> 00:50:14.170
+<v Speaker 1>Mhmm.
+
+00:50:14.410 --> 00:50:16.970
+<v Speaker 0>Let's run this every well, let's do every
+
+00:50:16.970 --> 00:50:18.569
+<v Speaker 0>ten seconds for quickness.
+
+00:50:19.615 --> 00:50:20.015
+<v Speaker 0>So
+
+00:50:20.415 --> 00:50:22.175
+<v Speaker 1>Do we wanna write it from scratch or
+
+00:50:22.175 --> 00:50:23.935
+<v Speaker 1>let the UI write it for us?
+
+00:50:27.055 --> 00:50:29.935
+<v Speaker 0>I feel like I should say UI. So
+
+00:50:29.935 --> 00:50:30.575
+<v Speaker 0>Okay.
+
+00:50:31.375 --> 00:50:33.055
+<v Speaker 0>I guess we just find the measurement we
+
+00:50:33.055 --> 00:50:33.375
+<v Speaker 0>want.
+
+00:50:36.890 --> 00:50:38.810
+<v Speaker 0>Let's do system.
+
+00:50:42.410 --> 00:50:43.050
+<v Speaker 0>K.
+
+00:50:43.369 --> 00:50:46.089
+<v Speaker 0>Do I just copy the script? Or Yeah.
+
+00:50:46.089 --> 00:50:49.289
+<v Speaker 1>Or do you wanna I think we're just
+
+00:50:48.355 --> 00:50:51.475
+<v Speaker 1>doing a window aggregation. Do we maybe wanna
+
+00:50:52.835 --> 00:50:54.435
+<v Speaker 1>find a metric that's a little bit more
+
+00:50:54.435 --> 00:50:56.195
+<v Speaker 1>obvious? Like, I think we should do it
+
+00:50:56.195 --> 00:50:57.635
+<v Speaker 1>maybe, like, return the max.
+
+00:51:00.590 --> 00:51:02.110
+<v Speaker 1>So I would just go to the script
+
+00:51:02.110 --> 00:51:02.830
+<v Speaker 1>editor.
+
+00:51:05.950 --> 00:51:07.950
+<v Speaker 0>Like that? I would just go to the
+
+00:51:07.950 --> 00:51:09.790
+<v Speaker 1>script editor and then
+
+00:51:11.070 --> 00:51:14.110
+<v Speaker 1>remove aggregate window and just create max instead.
+
+00:51:18.715 --> 00:51:20.155
+<v Speaker 0>Like that? Mhmm.
+
+00:51:26.555 --> 00:51:28.750
+<v Speaker 0>Is that what we want? That's that's what
+
+00:51:28.750 --> 00:51:29.470
+<v Speaker 1>I want.
+
+00:51:31.069 --> 00:51:33.470
+<v Speaker 0>Alright. So I I copy this and then
+
+00:51:33.470 --> 00:51:35.789
+<v Speaker 0>we just go to the task here? Yeah.
+
+00:51:35.789 --> 00:51:37.630
+<v Speaker 1>Or no. You can click save as. Oh,
+
+00:51:37.630 --> 00:51:39.150
+<v Speaker 1>sorry. Go back to the explorer.
+
+00:51:39.230 --> 00:51:40.750
+<v Speaker 1>And then you can click save as.
+
+00:51:41.895 --> 00:51:43.415
+<v Speaker 1>And then you can say
+
+00:51:44.135 --> 00:51:45.175
+<v Speaker 1>a task.
+
+00:51:45.415 --> 00:51:47.415
+<v Speaker 0>Ah, okay. So downsample
+
+00:51:47.415 --> 00:51:48.295
+<v Speaker 0>CPU
+
+00:51:49.015 --> 00:51:51.575
+<v Speaker 0>run every thirty seconds.
+
+00:51:54.775 --> 00:51:56.570
+<v Speaker 0>I guess we can just use that bucket
+
+00:51:56.570 --> 00:51:58.730
+<v Speaker 0>since it's there. I don't think there's any
+
+00:51:58.730 --> 00:52:00.250
+<v Speaker 1>data in it. I I was trying to
+
+00:52:00.250 --> 00:52:02.650
+<v Speaker 1>use that that cardinality task to write
+
+00:52:02.810 --> 00:52:05.610
+<v Speaker 1>data from your Rawkode
+
+00:52:05.610 --> 00:52:08.410
+<v Speaker 1>bucket to the cardinality bucket about
+
+00:52:08.490 --> 00:52:08.810
+<v Speaker 1>your
+
+00:52:09.395 --> 00:52:10.275
+<v Speaker 1>cardinality,
+
+00:52:10.275 --> 00:52:12.355
+<v Speaker 1>but I obviously need to fix something. So
+
+00:52:12.515 --> 00:52:14.595
+<v Speaker 0>We can start to reuse the cardinality bucket,
+
+00:52:14.595 --> 00:52:16.435
+<v Speaker 0>and we'll just download sample CPU into it.
+
+00:52:16.435 --> 00:52:18.515
+<v Speaker 0>So if I hit save Oh, the output.
+
+00:52:18.515 --> 00:52:19.795
+<v Speaker 1>Got it. Yeah. And
+
+00:52:21.155 --> 00:52:22.994
+<v Speaker 0>we'll run this manually now.
+
+00:52:22.994 --> 00:52:24.755
+<v Speaker 0>What we should see is
+
+00:52:28.339 --> 00:52:29.540
+<v Speaker 0>something.
+
+00:52:30.420 --> 00:52:33.220
+<v Speaker 0>I'm not sure. Let's see. Current oh, yeah.
+
+00:52:33.220 --> 00:52:34.020
+<v Speaker 0>CPU.
+
+00:52:34.260 --> 00:52:35.940
+<v Speaker 0>We got UC system.
+
+00:52:37.140 --> 00:52:39.475
+<v Speaker 0>And we probably only got one point right
+
+00:52:39.475 --> 00:52:41.075
+<v Speaker 0>now because it's only run
+
+00:52:41.315 --> 00:52:42.195
+<v Speaker 0>once.
+
+00:52:43.475 --> 00:52:44.675
+<v Speaker 0>Is that why it's not
+
+00:52:45.395 --> 00:52:46.355
+<v Speaker 0>graphable?
+
+00:52:47.315 --> 00:52:49.555
+<v Speaker 1>I think it's because it's finding if if
+
+00:52:49.555 --> 00:52:52.195
+<v Speaker 1>you do a group, maybe you'll find that
+
+00:52:52.195 --> 00:52:54.035
+<v Speaker 1>you'll be able to
+
+00:53:01.420 --> 00:53:02.860
+<v Speaker 1>on time. I would just do a plain
+
+00:53:02.860 --> 00:53:04.460
+<v Speaker 1>group without any columns.
+
+00:53:06.755 --> 00:53:09.075
+<v Speaker 1>Oh, that's why. Because it automatically added a
+
+00:53:08.915 --> 00:53:10.915
+<v Speaker 1>our window too. So
+
+00:53:11.315 --> 00:53:12.755
+<v Speaker 1>oh, yeah. I don't think you wanna group.
+
+00:53:12.755 --> 00:53:13.875
+<v Speaker 1>I changed my mind.
+
+00:53:14.275 --> 00:53:15.395
+<v Speaker 1>Ungroup. Ungroup.
+
+00:53:21.119 --> 00:53:23.920
+<v Speaker 0>No. I like the group. You do? Okay.
+
+00:53:25.599 --> 00:53:26.400
+<v Speaker 0>Alright.
+
+00:53:27.359 --> 00:53:29.200
+<v Speaker 0>Okay. So we get a max value at
+
+00:53:29.200 --> 00:53:29.760
+<v Speaker 0>least.
+
+00:53:30.079 --> 00:53:31.279
+<v Speaker 0>I think we we just don't have a
+
+00:53:31.279 --> 00:53:32.559
+<v Speaker 0>lot of data. But I I think that's
+
+00:53:32.559 --> 00:53:34.880
+<v Speaker 0>really cool anyway. So we have
+
+00:53:36.714 --> 00:53:37.994
+<v Speaker 0>I don't know we could do that for
+
+00:53:37.994 --> 00:53:39.835
+<v Speaker 0>the UI which I also really like. So
+
+00:53:39.835 --> 00:53:41.835
+<v Speaker 0>we have a Rawkode bucket right in ten
+
+00:53:41.835 --> 00:53:43.035
+<v Speaker 0>second granularity
+
+00:53:43.035 --> 00:53:44.395
+<v Speaker 0>usage data,
+
+00:53:45.275 --> 00:53:47.915
+<v Speaker 0>which looks like this. We then created a
+
+00:53:47.915 --> 00:53:48.954
+<v Speaker 0>query to
+
+00:53:49.760 --> 00:53:52.880
+<v Speaker 0>fetch the max value of that over a
+
+00:53:52.880 --> 00:53:53.920
+<v Speaker 0>given window.
+
+00:53:54.319 --> 00:53:56.160
+<v Speaker 0>And that is now being written to the
+
+00:53:56.160 --> 00:53:57.680
+<v Speaker 0>cardinality bucket
+
+00:53:58.720 --> 00:53:59.280
+<v Speaker 0>here.
+
+00:54:02.125 --> 00:54:03.645
+<v Speaker 0>And we do have points, but we just
+
+00:54:03.645 --> 00:54:05.165
+<v Speaker 0>don't have a lot of data in here
+
+00:54:05.165 --> 00:54:06.525
+<v Speaker 0>yet. No.
+
+00:54:07.005 --> 00:54:08.685
+<v Speaker 0>I guess we could speed the task up,
+
+00:54:08.685 --> 00:54:10.605
+<v Speaker 0>but I guess that's not particularly important.
+
+00:54:10.685 --> 00:54:12.525
+<v Speaker 0>Do you wanna walk us through the process
+
+00:54:12.525 --> 00:54:15.405
+<v Speaker 0>of alerting on that max going above a
+
+00:54:15.405 --> 00:54:16.205
+<v Speaker 0>certain value?
+
+00:54:16.880 --> 00:54:17.600
+<v Speaker 1>Sure.
+
+00:54:17.840 --> 00:54:19.920
+<v Speaker 1>So we can just go to the alerts
+
+00:54:20.000 --> 00:54:20.800
+<v Speaker 1>tab,
+
+00:54:21.360 --> 00:54:22.160
+<v Speaker 1>and then
+
+00:54:22.400 --> 00:54:24.080
+<v Speaker 1>I think it'd be useful to create a
+
+00:54:24.080 --> 00:54:25.360
+<v Speaker 1>threshold alert here.
+
+00:54:27.440 --> 00:54:29.040
+<v Speaker 1>And I guess we'll just make one to
+
+00:54:29.040 --> 00:54:30.400
+<v Speaker 1>fail to start with.
+
+00:54:31.305 --> 00:54:33.145
+<v Speaker 1>Do we wanna alert on our dance sample
+
+00:54:33.145 --> 00:54:34.984
+<v Speaker 1>data or our raw data? I think we
+
+00:54:34.984 --> 00:54:36.505
+<v Speaker 1>should alert on our raw data.
+
+00:54:37.385 --> 00:54:38.585
+<v Speaker 0>Yeah. I guess
+
+00:54:38.905 --> 00:54:41.225
+<v Speaker 0>the dance sample data is really for
+
+00:54:41.545 --> 00:54:44.665
+<v Speaker 0>longer term analytics and look back whereas we'd
+
+00:54:44.665 --> 00:54:47.080
+<v Speaker 0>wanna we'd want the real high resolution data
+
+00:54:47.080 --> 00:54:49.480
+<v Speaker 0>for the alert. Right? Yeah.
+
+00:54:50.440 --> 00:54:51.160
+<v Speaker 0>Okay.
+
+00:54:51.720 --> 00:54:54.040
+<v Speaker 0>So if we find a max
+
+00:54:56.760 --> 00:54:59.720
+<v Speaker 1>Now we can just click on a threshold
+
+00:54:59.720 --> 00:55:00.840
+<v Speaker 1>basically on the graph.
+
+00:55:01.685 --> 00:55:03.365
+<v Speaker 1>Once we click configure
+
+00:55:03.925 --> 00:55:06.405
+<v Speaker 1>configure check, the next tab.
+
+00:55:08.725 --> 00:55:09.125
+<v Speaker 0>Oh.
+
+00:55:15.560 --> 00:55:18.280
+<v Speaker 0>I'm just clicking now. I don't okay. Critical.
+
+00:55:18.280 --> 00:55:20.520
+<v Speaker 0>There we go. Yeah. There you go. Yeah.
+
+00:55:21.000 --> 00:55:22.920
+<v Speaker 0>Alright. So if we keep this relatively low,
+
+00:55:22.920 --> 00:55:24.520
+<v Speaker 0>we should be able to trigger that
+
+00:55:24.920 --> 00:55:27.080
+<v Speaker 0>not with another thought on, but, you know,
+
+00:55:27.080 --> 00:55:28.600
+<v Speaker 0>with with something else.
+
+00:55:30.120 --> 00:55:31.454
+<v Speaker 0>So did I just click
+
+00:55:31.775 --> 00:55:32.494
+<v Speaker 0>done?
+
+00:55:33.055 --> 00:55:35.135
+<v Speaker 1>I I believe so. Yeah.
+
+00:55:36.095 --> 00:55:38.734
+<v Speaker 0>And then I see a tab for endpoints.
+
+00:55:41.535 --> 00:55:42.815
+<v Speaker 0>Let's use HTTP.
+
+00:55:43.760 --> 00:55:45.440
+<v Speaker 0>There's this thing called Rbox.
+
+00:55:45.440 --> 00:55:47.280
+<v Speaker 0>App which is really cool. Which just gives
+
+00:55:47.280 --> 00:55:49.440
+<v Speaker 0>you like an endpoint you can throw arbitrary
+
+00:55:49.440 --> 00:55:50.560
+<v Speaker 0>payloads to.
+
+00:55:53.440 --> 00:55:54.160
+<v Speaker 0>R box.
+
+00:56:01.954 --> 00:56:03.635
+<v Speaker 0>And then rules.
+
+00:56:06.915 --> 00:56:08.195
+<v Speaker 0>What do I do here?
+
+00:56:09.395 --> 00:56:11.155
+<v Speaker 1>I think you can just like, this is
+
+00:56:11.155 --> 00:56:12.035
+<v Speaker 1>where you
+
+00:56:12.910 --> 00:56:14.990
+<v Speaker 1>change the conditions as well as
+
+00:56:15.710 --> 00:56:18.590
+<v Speaker 1>add more information about what's happening. Like, I
+
+00:56:18.590 --> 00:56:19.870
+<v Speaker 1>think you can specify.
+
+00:56:21.150 --> 00:56:22.190
+<v Speaker 0>Okay. So
+
+00:56:22.430 --> 00:56:25.070
+<v Speaker 0>a rule being that every five seconds,
+
+00:56:25.070 --> 00:56:29.390
+<v Speaker 0>if we see something in
+
+00:56:26.865 --> 00:56:27.745
+<v Speaker 0>critical,
+
+00:56:27.905 --> 00:56:28.705
+<v Speaker 0>notify
+
+00:56:28.705 --> 00:56:29.745
+<v Speaker 0>the standpoint.
+
+00:56:31.025 --> 00:56:31.745
+<v Speaker 1>Yeah.
+
+00:56:32.945 --> 00:56:33.505
+<v Speaker 1>Done.
+
+00:56:34.385 --> 00:56:35.985
+<v Speaker 1>Cool. Let's make
+
+00:56:36.625 --> 00:56:38.385
+<v Speaker 1>the CPU or
+
+00:56:39.025 --> 00:56:40.705
+<v Speaker 1>surpass our threshold.
+
+00:56:42.650 --> 00:56:43.610
+<v Speaker 0>Okay.
+
+00:56:44.330 --> 00:56:45.290
+<v Speaker 0>Let's try.
+
+00:56:49.690 --> 00:56:51.450
+<v Speaker 0>And then do I want it? Yeah. Let's
+
+00:56:51.450 --> 00:56:53.370
+<v Speaker 0>find an example of stress n g rather
+
+00:56:53.370 --> 00:56:55.930
+<v Speaker 0>than me running that thing again. So stress
+
+00:56:55.930 --> 00:56:57.050
+<v Speaker 0>n g example.
+
+00:56:58.674 --> 00:57:00.434
+<v Speaker 0>Because we had it recommended to us, so
+
+00:57:00.434 --> 00:57:02.275
+<v Speaker 0>we should we should use it.
+
+00:57:03.635 --> 00:57:05.315
+<v Speaker 1>I thought that was really neat how you
+
+00:57:05.315 --> 00:57:05.955
+<v Speaker 1>also
+
+00:57:06.275 --> 00:57:08.595
+<v Speaker 1>shared the the comment with everybody.
+
+00:57:08.835 --> 00:57:09.795
+<v Speaker 1>This is a cool tool.
+
+00:57:10.420 --> 00:57:12.260
+<v Speaker 0>Oh, yeah. Yeah. I really like this.
+
+00:57:14.740 --> 00:57:16.260
+<v Speaker 0>Okay. I mean, I've just copy and pasted
+
+00:57:16.260 --> 00:57:18.100
+<v Speaker 0>that. I don't know what one matrix is.
+
+00:57:18.820 --> 00:57:20.660
+<v Speaker 0>I'm assuming the dash t one minute means
+
+00:57:20.660 --> 00:57:22.740
+<v Speaker 0>run it for one minute. Oh, yeah. And
+
+00:57:22.740 --> 00:57:23.700
+<v Speaker 0>we also got another.
+
+00:57:24.295 --> 00:57:26.535
+<v Speaker 0>You're very helpful today. Thank you, Nicolas.
+
+00:57:26.935 --> 00:57:29.095
+<v Speaker 0>Stress n g dash dash CPU. What did
+
+00:57:29.095 --> 00:57:31.895
+<v Speaker 0>I do? Yeah. Let's let's just document. So
+
+00:57:31.895 --> 00:57:33.255
+<v Speaker 0>dash dash CPU.
+
+00:57:33.735 --> 00:57:35.895
+<v Speaker 0>Let's how many CPUs do I have?
+
+00:57:46.280 --> 00:57:47.240
+<v Speaker 0>Try again.
+
+00:57:48.200 --> 00:57:49.400
+<v Speaker 0>I have
+
+00:57:49.560 --> 00:57:50.360
+<v Speaker 0>48.
+
+00:57:51.665 --> 00:57:53.345
+<v Speaker 0>So dash dash CPU,
+
+00:57:53.665 --> 00:57:54.785
+<v Speaker 0>48.
+
+00:57:56.865 --> 00:57:57.665
+<v Speaker 0>Alright.
+
+00:57:58.705 --> 00:58:00.385
+<v Speaker 0>So that means
+
+00:58:00.545 --> 00:58:03.265
+<v Speaker 0>should we view this from here first? So
+
+00:58:03.265 --> 00:58:05.505
+<v Speaker 0>we should be able to see on our
+
+00:58:05.505 --> 00:58:06.705
+<v Speaker 0>CPU metrics here.
+
+00:58:07.740 --> 00:58:08.460
+<v Speaker 0>System.
+
+00:58:08.780 --> 00:58:10.700
+<v Speaker 1>I'm still seeing this comment, so it's hard
+
+00:58:10.700 --> 00:58:12.060
+<v Speaker 1>for me to Oh.
+
+00:58:16.540 --> 00:58:18.620
+<v Speaker 0>There we go. Thank you. So while the
+
+00:58:18.620 --> 00:58:21.020
+<v Speaker 0>tool is really cool, sadly, it's still operated
+
+00:58:21.020 --> 00:58:23.065
+<v Speaker 0>by an idiot. So we we do our
+
+00:58:23.065 --> 00:58:23.625
+<v Speaker 0>best.
+
+00:58:24.425 --> 00:58:25.145
+<v Speaker 0>Now
+
+00:58:26.025 --> 00:58:27.305
+<v Speaker 0>yeah. Our CPU is
+
+00:58:27.785 --> 00:58:30.665
+<v Speaker 0>it's claiming there. So that should mean
+
+00:58:32.105 --> 00:58:33.545
+<v Speaker 0>my alert should
+
+00:58:34.040 --> 00:58:35.000
+<v Speaker 0>be firing.
+
+00:58:35.560 --> 00:58:37.080
+<v Speaker 1>Yeah. It looks like it's got a green
+
+00:58:37.080 --> 00:58:38.360
+<v Speaker 1>check. So
+
+00:58:39.240 --> 00:58:40.920
+<v Speaker 0>Is that good or bad? That looks good.
+
+00:58:40.920 --> 00:58:43.000
+<v Speaker 1>Let's click on the I I eye icon.
+
+00:58:43.000 --> 00:58:44.600
+<v Speaker 1>Oh, that's hard to say.
+
+00:58:47.240 --> 00:58:48.359
+<v Speaker 1>I don't know. Yeah.
+
+00:58:51.965 --> 00:58:54.765
+<v Speaker 0>Which CPU metric are we alerting on, though?
+
+00:58:55.645 --> 00:58:57.085
+<v Speaker 1>I thought we were alerting on all of
+
+00:58:57.085 --> 00:58:59.325
+<v Speaker 1>them. No? I don't know. Let's find out.
+
+00:59:02.410 --> 00:59:03.850
+<v Speaker 0>You said system.
+
+00:59:04.170 --> 00:59:05.610
+<v Speaker 1>We're learning on all of them.
+
+00:59:06.730 --> 00:59:09.050
+<v Speaker 0>And that's what I created here.
+
+00:59:10.570 --> 00:59:13.210
+<v Speaker 0>Oh, no. You should use our ah, okay.
+
+00:59:13.850 --> 00:59:15.450
+<v Speaker 0>So let's change that.
+
+00:59:19.855 --> 00:59:20.494
+<v Speaker 0>User.
+
+00:59:24.255 --> 00:59:25.455
+<v Speaker 0>There we go.
+
+00:59:27.295 --> 00:59:29.454
+<v Speaker 0>So can I We we can't? We just
+
+00:59:29.454 --> 00:59:31.295
+<v Speaker 0>had to wait the ten seconds, won't we?
+
+00:59:31.580 --> 00:59:33.500
+<v Speaker 1>Mhmm. So if you do you did you
+
+00:59:33.500 --> 00:59:35.580
+<v Speaker 0>bring a joke? If you got a joke?
+
+00:59:35.660 --> 00:59:38.460
+<v Speaker 1>I only have the world's worst pun or
+
+00:59:38.460 --> 00:59:41.180
+<v Speaker 1>like dad joke, but it's so Texas for
+
+00:59:41.180 --> 00:59:42.140
+<v Speaker 1>specific.
+
+00:59:43.820 --> 00:59:45.500
+<v Speaker 1>So what did
+
+00:59:45.785 --> 00:59:47.945
+<v Speaker 1>how did Davy Crockett like his pie?
+
+00:59:48.505 --> 00:59:50.985
+<v Speaker 1>Do know who Davy Crockett is? Yeah. I'm
+
+00:59:50.985 --> 00:59:52.905
+<v Speaker 0>familiar. Okay. L mode.
+
+00:59:59.820 --> 01:00:02.140
+<v Speaker 0>So that updated a few seconds ago. We
+
+01:00:02.140 --> 01:00:04.140
+<v Speaker 0>have a green tech. I don't know if
+
+01:00:04.140 --> 01:00:05.260
+<v Speaker 0>the green tech is good too. It just
+
+01:00:05.260 --> 01:00:07.660
+<v Speaker 0>means it's check ran or it's failing.
+
+01:00:08.140 --> 01:00:09.340
+<v Speaker 0>I guess the rule would be
+
+01:00:10.140 --> 01:00:12.485
+<v Speaker 1>I think it says that it's running
+
+01:00:12.485 --> 01:00:14.325
+<v Speaker 1>successfully. And then if you look at the
+
+01:00:14.325 --> 01:00:15.205
+<v Speaker 1>history,
+
+01:00:15.445 --> 01:00:17.605
+<v Speaker 1>we'll see that it I think it's failing.
+
+01:00:18.485 --> 01:00:19.605
+<v Speaker 0>Oh, yeah. So
+
+01:00:20.405 --> 01:00:21.285
+<v Speaker 0>that means
+
+01:00:21.925 --> 01:00:24.165
+<v Speaker 0>I refresh this bit. Ah, there we go.
+
+01:00:24.165 --> 01:00:25.445
+<v Speaker 0>We have old oh, wow.
+
+01:00:27.730 --> 01:00:31.490
+<v Speaker 0>So I I know. Obviously, that HTTP
+
+01:00:31.570 --> 01:00:34.450
+<v Speaker 0>web hook thing is entirely contrived,
+
+01:00:34.450 --> 01:00:36.210
+<v Speaker 0>but, you know, that could be PagerDuty,
+
+01:00:36.210 --> 01:00:39.090
+<v Speaker 0>Opsgenie, Slack, whatever tool people are using.
+
+01:00:39.570 --> 01:00:41.410
+<v Speaker 0>Let's stop that stress testing tool.
+
+01:00:44.444 --> 01:00:46.765
+<v Speaker 0>Alright. So what did we do? We
+
+01:00:47.325 --> 01:00:49.645
+<v Speaker 0>used a quick start. We got a telegraph
+
+01:00:49.645 --> 01:00:51.724
+<v Speaker 0>config for free. We start to collect the
+
+01:00:51.724 --> 01:00:53.005
+<v Speaker 0>data of a telegraph.
+
+01:00:53.484 --> 01:00:53.885
+<v Speaker 0>We
+
+01:00:54.950 --> 01:00:57.350
+<v Speaker 0>went down the wrong path and started playing
+
+01:00:57.350 --> 01:00:58.950
+<v Speaker 0>with the FortBomb stuff,
+
+01:00:59.110 --> 01:01:00.470
+<v Speaker 0>trying to make our graphs look a bit
+
+01:01:00.470 --> 01:01:01.430
+<v Speaker 0>more interesting.
+
+01:01:02.470 --> 01:01:05.190
+<v Speaker 0>And I failed miserably, but we did manage
+
+01:01:05.190 --> 01:01:06.950
+<v Speaker 0>to cover a few cool features there as
+
+01:01:06.950 --> 01:01:08.630
+<v Speaker 0>well. Let me just pull this back up,
+
+01:01:08.630 --> 01:01:09.750
+<v Speaker 0>see if it's any more interesting.
+
+01:01:11.234 --> 01:01:12.115
+<v Speaker 0>Bucket.
+
+01:01:13.154 --> 01:01:14.035
+<v Speaker 0>And
+
+01:01:14.755 --> 01:01:15.955
+<v Speaker 0>then we
+
+01:01:17.474 --> 01:01:19.234
+<v Speaker 0>imported a dashboard,
+
+01:01:19.315 --> 01:01:20.435
+<v Speaker 0>which was nice.
+
+01:01:20.755 --> 01:01:23.075
+<v Speaker 0>It didn't work, but well,
+
+01:01:23.394 --> 01:01:25.875
+<v Speaker 0>we then then sampled some data
+
+01:01:26.390 --> 01:01:29.590
+<v Speaker 0>from the Rawkode bucket and our cardinality bucket.
+
+01:01:29.590 --> 01:01:31.270
+<v Speaker 0>That was relatively easy to do. I didn't
+
+01:01:31.350 --> 01:01:33.270
+<v Speaker 0>I I wasn't familiar. I didn't remember that
+
+01:01:33.270 --> 01:01:35.350
+<v Speaker 0>we could just do that from the query
+
+01:01:35.350 --> 01:01:37.110
+<v Speaker 0>builder and then save that to a task.
+
+01:01:37.110 --> 01:01:38.070
+<v Speaker 0>That was a really nice touch.
+
+01:01:39.345 --> 01:01:41.505
+<v Speaker 0>And then we configured an alert in back
+
+01:01:41.505 --> 01:01:43.265
+<v Speaker 0>end and we start to send an alert
+
+01:01:43.265 --> 01:01:44.225
+<v Speaker 0>space on
+
+01:01:44.785 --> 01:01:47.505
+<v Speaker 0>again, a contrived situation of just making that
+
+01:01:47.505 --> 01:01:49.265
+<v Speaker 0>CPU spikes to the ref.
+
+01:01:49.745 --> 01:01:52.065
+<v Speaker 0>Did I miss anything? No. That was perfect
+
+01:01:52.065 --> 01:01:52.545
+<v Speaker 1>summary.
+
+01:01:53.940 --> 01:01:56.100
+<v Speaker 0>Is there anything else you wanna show before
+
+01:01:56.100 --> 01:01:58.100
+<v Speaker 0>we finish up for the day?
+
+01:02:00.980 --> 01:02:02.980
+<v Speaker 1>That's a great question.
+
+01:02:03.060 --> 01:02:04.100
+<v Speaker 1>I think that
+
+01:02:04.580 --> 01:02:06.340
+<v Speaker 1>feels pretty well rounded,
+
+01:02:06.340 --> 01:02:07.860
+<v Speaker 1>so I'm inclined to say
+
+01:02:08.415 --> 01:02:09.695
+<v Speaker 1>to say no.
+
+01:02:10.975 --> 01:02:13.055
+<v Speaker 1>Right. Yeah. I mean, I think the best
+
+01:02:13.295 --> 01:02:14.975
+<v Speaker 0>we forgot the best feature which is toggle
+
+01:02:14.975 --> 01:02:17.455
+<v Speaker 0>on the dashboard onto the other mode. Anyway,
+
+01:02:17.935 --> 01:02:19.935
+<v Speaker 0>I was so impressed when that came out
+
+01:02:19.935 --> 01:02:21.375
+<v Speaker 0>for a while and then realized I don't
+
+01:02:21.375 --> 01:02:23.230
+<v Speaker 0>like bright colors. But, you know.
+
+01:02:23.790 --> 01:02:26.110
+<v Speaker 0>Okay. Well, that was a good fun. I
+
+01:02:26.110 --> 01:02:27.710
+<v Speaker 0>think it was nice to explore and FluxDB
+
+01:02:27.710 --> 01:02:29.630
+<v Speaker 0>to take a look at Flux and
+
+01:02:30.270 --> 01:02:32.110
+<v Speaker 0>and just see what's coming out of that
+
+01:02:32.110 --> 01:02:34.190
+<v Speaker 0>space. It was GA last week, so people
+
+01:02:34.190 --> 01:02:36.110
+<v Speaker 0>should I guess start to play with this.
+
+01:02:36.825 --> 01:02:38.585
+<v Speaker 0>If they have any problems, I'm assuming they
+
+01:02:38.585 --> 01:02:40.425
+<v Speaker 0>can just come and speak to you. Right?
+
+01:02:40.505 --> 01:02:42.425
+<v Speaker 1>Yeah. So we have a Slack channel and
+
+01:02:42.425 --> 01:02:44.905
+<v Speaker 1>a community forum as well. So
+
+01:02:45.545 --> 01:02:47.705
+<v Speaker 1>come find us. Come come ask questions.
+
+01:02:48.185 --> 01:02:50.265
+<v Speaker 1>The community forum, there's a there's a little
+
+01:02:50.505 --> 01:02:52.430
+<v Speaker 1>if you want immediate response from somebody, I
+
+01:02:52.430 --> 01:02:54.030
+<v Speaker 1>would recommend going to Slack.
+
+01:02:55.230 --> 01:02:56.430
+<v Speaker 1>But if you
+
+01:02:56.750 --> 01:02:58.510
+<v Speaker 1>have a more complicated question
+
+01:02:58.670 --> 01:03:00.829
+<v Speaker 1>or you wanna brag about a solution you
+
+01:03:00.829 --> 01:03:02.589
+<v Speaker 1>found, you should just post it on the
+
+01:03:02.589 --> 01:03:03.549
+<v Speaker 1>community forum.
+
+01:03:04.855 --> 01:03:06.135
+<v Speaker 0>Alright. Awesome.
+
+01:03:06.295 --> 01:03:08.455
+<v Speaker 0>We got one final comment there, which I'm
+
+01:03:08.455 --> 01:03:10.455
+<v Speaker 0>hoping is in relation to the the theme
+
+01:03:10.455 --> 01:03:12.295
+<v Speaker 0>change, but, know you know,
+
+01:03:12.695 --> 01:03:14.295
+<v Speaker 0>some people like it, some people hate it.
+
+01:03:14.295 --> 01:03:16.615
+<v Speaker 0>Anyway, thank you for joining me today, Annie.
+
+01:03:16.615 --> 01:03:17.975
+<v Speaker 0>I will speak to you soon, and I
+
+01:03:17.975 --> 01:03:19.480
+<v Speaker 0>hope you have a great day. Thank you.
+
+01:03:19.480 --> 01:03:21.000
+<v Speaker 1>Thank you for having me. Thanks. Bye.

@@ -1,0 +1,806 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 09a19cb0-1a27-4421-8d8b-a4230f62c9c3
+Created: 2025-04-29T22:55:17.860Z
+Duration: 581.6316
+Channels: 1
+
+00:00:01.599 --> 00:00:02.639
+<v Speaker 0>Hey, everyone.
+
+00:00:04.560 --> 00:00:07.600
+<v Speaker 0>So there was a really good tweet at
+
+00:00:07.600 --> 00:00:08.799
+<v Speaker 0>the end of last week
+
+00:00:09.440 --> 00:00:10.879
+<v Speaker 0>from Steve Wade
+
+00:00:11.759 --> 00:00:15.185
+<v Speaker 0>who was curious what people are doing when
+
+00:00:15.185 --> 00:00:17.904
+<v Speaker 1>they use a get ops deployment architecture.
+
+00:00:19.585 --> 00:00:21.425
+<v Speaker 1>And how they alert if there's something running
+
+00:00:21.425 --> 00:00:23.585
+<v Speaker 1>in their cluster that wasn't deployed
+
+00:00:24.224 --> 00:00:25.345
+<v Speaker 1>through the automation.
+
+00:00:26.450 --> 00:00:29.010
+<v Speaker 1>And that could be either a bad actor
+
+00:00:29.010 --> 00:00:31.250
+<v Speaker 1>deploying something into your cluster, which is obviously,
+
+00:00:31.250 --> 00:00:33.329
+<v Speaker 1>you know, definitely something you wanna alert on.
+
+00:00:33.410 --> 00:00:35.489
+<v Speaker 1>Or even just a developer
+
+00:00:35.570 --> 00:00:38.765
+<v Speaker 1>who is messing around in production. And
+
+00:00:39.085 --> 00:00:41.405
+<v Speaker 1>although what they're doing might be okay, still
+
+00:00:41.405 --> 00:00:43.885
+<v Speaker 1>usually best to purchase a warning or something
+
+00:00:43.885 --> 00:00:45.165
+<v Speaker 1>in a Slack channel.
+
+00:00:47.085 --> 00:00:49.005
+<v Speaker 1>And what I replied with was
+
+00:00:49.485 --> 00:00:51.485
+<v Speaker 1>how I would do this, which is what
+
+00:00:51.485 --> 00:00:53.005
+<v Speaker 1>I'm gonna try and demonstrate just now.
+
+00:00:54.030 --> 00:00:57.310
+<v Speaker 1>So my suggestion was that through whatever your
+
+00:00:57.310 --> 00:00:58.110
+<v Speaker 1>continuous
+
+00:00:58.990 --> 00:01:00.990
+<v Speaker 1>deployment or get up space architecture as well,
+
+00:01:00.990 --> 00:01:03.230
+<v Speaker 1>that'd be through a customized cube CTL on
+
+00:01:03.230 --> 00:01:04.030
+<v Speaker 1>its own
+
+00:01:04.830 --> 00:01:06.910
+<v Speaker 1>or RLCD is that all of these tools
+
+00:01:06.910 --> 00:01:08.510
+<v Speaker 1>will allow you to inject some sort of
+
+00:01:08.510 --> 00:01:11.075
+<v Speaker 1>annotation or label onto all the resources.
+
+00:01:12.034 --> 00:01:13.475
+<v Speaker 1>And you could just use the GET shaft
+
+00:01:13.475 --> 00:01:14.835
+<v Speaker 1>which might
+
+00:01:14.835 --> 00:01:16.515
+<v Speaker 1>be useful over time.
+
+00:01:16.914 --> 00:01:19.795
+<v Speaker 1>And anything that doesn't have that label or
+
+00:01:19.795 --> 00:01:20.674
+<v Speaker 1>annotation
+
+00:01:21.409 --> 00:01:23.490
+<v Speaker 1>is something not controlled by
+
+00:01:23.570 --> 00:01:24.850
+<v Speaker 1>your automation.
+
+00:01:26.210 --> 00:01:26.850
+<v Speaker 1>So
+
+00:01:27.170 --> 00:01:30.689
+<v Speaker 1>what I have is a repository here,
+
+00:01:31.090 --> 00:01:32.450
+<v Speaker 1>InfluxDB examples.
+
+00:01:32.450 --> 00:01:35.005
+<v Speaker 1>This is on GitLab and GitHub. Regardless of
+
+00:01:35.005 --> 00:01:36.685
+<v Speaker 1>that, the username is Rawkode.
+
+00:01:36.765 --> 00:01:40.365
+<v Speaker 1>The repository repository name is InfluxDB dash examples.
+
+00:01:40.685 --> 00:01:42.765
+<v Speaker 1>And inside of that, there is a Kubernetes
+
+00:01:42.765 --> 00:01:45.725
+<v Speaker 1>folder which is a demonstration of how to
+
+00:01:45.725 --> 00:01:46.845
+<v Speaker 1>use InfluxDB
+
+00:01:46.845 --> 00:01:47.810
+<v Speaker 1>for complete
+
+00:01:48.450 --> 00:01:49.890
+<v Speaker 1>monitoring experience
+
+00:01:50.050 --> 00:01:51.250
+<v Speaker 1>of Kubernetes.
+
+00:01:52.290 --> 00:01:54.370
+<v Speaker 1>Now there's a couple of caveats to the
+
+00:01:54.370 --> 00:01:56.210
+<v Speaker 1>demos I'm doing just now. And the first
+
+00:01:56.210 --> 00:01:59.410
+<v Speaker 1>one is that I'm having to compile Telegraph
+
+00:01:59.410 --> 00:02:02.065
+<v Speaker 1>from the master branch because of a new
+
+00:02:02.065 --> 00:02:04.385
+<v Speaker 1>feature that hasn't had the one thirteen release
+
+00:02:04.385 --> 00:02:06.465
+<v Speaker 1>yet, but will be part of one fourteen.
+
+00:02:07.185 --> 00:02:09.345
+<v Speaker 1>And that is the ability to take the
+
+00:02:09.345 --> 00:02:10.305
+<v Speaker 1>labels
+
+00:02:10.465 --> 00:02:11.905
+<v Speaker 1>from any resource
+
+00:02:12.625 --> 00:02:14.849
+<v Speaker 1>and add those to your metrics you store
+
+00:02:14.849 --> 00:02:15.970
+<v Speaker 1>in InfluxDB.
+
+00:02:16.530 --> 00:02:19.730
+<v Speaker 1>So here, I'm just saying don't exclude anything
+
+00:02:20.370 --> 00:02:23.650
+<v Speaker 1>and only include the gitops.com/sha
+
+00:02:23.650 --> 00:02:25.330
+<v Speaker 1>label on resources.
+
+00:02:25.890 --> 00:02:27.265
+<v Speaker 1>So this will store all of my pod
+
+00:02:27.265 --> 00:02:29.345
+<v Speaker 1>metrics and analytics DB and add on this
+
+00:02:29.345 --> 00:02:30.865
+<v Speaker 1>label if it exists.
+
+00:02:31.905 --> 00:02:34.144
+<v Speaker 1>And the automation to do that is here.
+
+00:02:34.144 --> 00:02:35.665
+<v Speaker 1>Feel free to take a look if you
+
+00:02:35.665 --> 00:02:36.305
+<v Speaker 1>wish.
+
+00:02:38.144 --> 00:02:39.425
+<v Speaker 1>Beyond that,
+
+00:02:39.905 --> 00:02:40.865
+<v Speaker 1>I have
+
+00:02:41.345 --> 00:02:43.590
+<v Speaker 1>this Kubernetes YAML and
+
+00:02:44.150 --> 00:02:46.870
+<v Speaker 1>this is going to create a GitOps namespace,
+
+00:02:46.870 --> 00:02:50.150
+<v Speaker 1>deploy NGINX and we're gonna we're gonna pretend
+
+00:02:50.150 --> 00:02:52.070
+<v Speaker 1>this was through my automation. So I've added
+
+00:02:52.070 --> 00:02:54.070
+<v Speaker 1>a label here called gitops.com/share.
+
+00:02:55.135 --> 00:02:58.175
+<v Speaker 1>And we also have a second deployment which
+
+00:02:58.175 --> 00:03:01.295
+<v Speaker 1>does not have any sort of getops.com/share.
+
+00:03:01.295 --> 00:03:02.415
+<v Speaker 1>And this is the one that we wanna
+
+00:03:02.415 --> 00:03:04.255
+<v Speaker 1>alert on. We wanna send some sort of
+
+00:03:04.255 --> 00:03:06.335
+<v Speaker 1>message to Slack that says, hey, this is
+
+00:03:06.335 --> 00:03:07.695
+<v Speaker 1>running in the cluster.
+
+00:03:07.775 --> 00:03:09.790
+<v Speaker 1>Doesn't look like it was managed by our
+
+00:03:09.790 --> 00:03:10.590
+<v Speaker 1>automation.
+
+00:03:12.430 --> 00:03:14.430
+<v Speaker 1>So if we take a look at our
+
+00:03:14.430 --> 00:03:15.230
+<v Speaker 1>cluster,
+
+00:03:16.189 --> 00:03:18.189
+<v Speaker 1>you can see on this bottom tab, I'm
+
+00:03:18.189 --> 00:03:20.109
+<v Speaker 1>just port forwarding to InfluxDB so I have
+
+00:03:20.109 --> 00:03:23.105
+<v Speaker 1>access to the web interface. And up here,
+
+00:03:23.105 --> 00:03:25.345
+<v Speaker 1>I have k nine, which is just a
+
+00:03:25.345 --> 00:03:27.105
+<v Speaker 1>two way tool for introspecting
+
+00:03:27.105 --> 00:03:28.785
+<v Speaker 1>your Kubernetes cluster.
+
+00:03:29.185 --> 00:03:31.025
+<v Speaker 1>And we can see that we have
+
+00:03:31.825 --> 00:03:33.665
+<v Speaker 1>our telegraph notes, which is the one we
+
+00:03:33.665 --> 00:03:36.145
+<v Speaker 1>built for master running and collecting metrics.
+
+00:03:36.385 --> 00:03:38.470
+<v Speaker 1>We're also scraping previous targets for a different
+
+00:03:38.470 --> 00:03:41.190
+<v Speaker 1>configuration. We also do some control plane monitoring.
+
+00:03:42.709 --> 00:03:44.950
+<v Speaker 1>And then all the other regular
+
+00:03:45.670 --> 00:03:47.350
+<v Speaker 1>Kubernetes stuff you would expect to see.
+
+00:03:49.245 --> 00:03:51.485
+<v Speaker 1>If I come up here, we can take
+
+00:03:51.485 --> 00:03:53.165
+<v Speaker 1>a look at the InfluxDB
+
+00:03:53.165 --> 00:03:53.965
+<v Speaker 1>UI.
+
+00:03:54.364 --> 00:03:56.045
+<v Speaker 1>So I can come into the data explorer
+
+00:03:56.045 --> 00:03:57.405
+<v Speaker 1>and these are all of the metrics that
+
+00:03:57.405 --> 00:03:59.245
+<v Speaker 1>are being fetched by the telegraphs.
+
+00:03:59.965 --> 00:04:01.805
+<v Speaker 1>You know, the only one I really am
+
+00:04:01.805 --> 00:04:05.084
+<v Speaker 1>interested in just now is our pod metrics.
+
+00:04:05.084 --> 00:04:07.540
+<v Speaker 1>We're gonna filter by namespace and we're gonna
+
+00:04:07.540 --> 00:04:09.220
+<v Speaker 1>take a look at everything we get back.
+
+00:04:09.780 --> 00:04:11.220
+<v Speaker 1>And you can see we've got some stuff
+
+00:04:11.220 --> 00:04:13.060
+<v Speaker 1>coming through. So we feel the raw data
+
+00:04:13.060 --> 00:04:13.700
+<v Speaker 1>here.
+
+00:04:14.260 --> 00:04:16.180
+<v Speaker 1>You can see the collection interval.
+
+00:04:16.820 --> 00:04:18.820
+<v Speaker 1>We can see the value depending on the
+
+00:04:18.820 --> 00:04:21.065
+<v Speaker 1>fields. So we've got some log fs and
+
+00:04:21.065 --> 00:04:22.745
+<v Speaker 1>memory stuff, etcetera.
+
+00:04:23.705 --> 00:04:24.745
+<v Speaker 1>If we just go back up to the
+
+00:04:24.745 --> 00:04:26.985
+<v Speaker 1>calling headings, we can see we have container
+
+00:04:26.985 --> 00:04:29.305
+<v Speaker 1>name, we have this label that we're being
+
+00:04:29.385 --> 00:04:31.385
+<v Speaker 1>we're having pulled through by Telegraph
+
+00:04:31.465 --> 00:04:33.065
+<v Speaker 1>as well as the host, the namespace, the
+
+00:04:33.065 --> 00:04:34.345
+<v Speaker 1>node name, and the pod name.
+
+00:04:35.120 --> 00:04:37.600
+<v Speaker 1>So of course, in our real production infrastructure,
+
+00:04:37.600 --> 00:04:38.960
+<v Speaker 1>I would have wider
+
+00:04:39.120 --> 00:04:40.080
+<v Speaker 1>context
+
+00:04:40.080 --> 00:04:42.000
+<v Speaker 1>here with many more columns. But for now,
+
+00:04:42.000 --> 00:04:43.200
+<v Speaker 1>this is gonna allow us to kind of
+
+00:04:43.200 --> 00:04:45.520
+<v Speaker 1>look at how this would work within InfluxDB.
+
+00:04:47.600 --> 00:04:48.800
+<v Speaker 1>So what's really
+
+00:04:50.475 --> 00:04:51.595
+<v Speaker 1>important
+
+00:04:51.595 --> 00:04:53.115
+<v Speaker 1>now is that we wanna be able to
+
+00:04:53.115 --> 00:04:53.755
+<v Speaker 1>alert
+
+00:04:54.075 --> 00:04:55.675
+<v Speaker 1>when this doesn't exist.
+
+00:04:55.915 --> 00:04:58.395
+<v Speaker 1>Now InfluxDB two has some really cool features
+
+00:04:58.395 --> 00:04:59.675
+<v Speaker 1>built in for this,
+
+00:05:00.555 --> 00:05:02.075
+<v Speaker 1>and we're gonna use one of them called
+
+00:05:02.075 --> 00:05:02.555
+<v Speaker 1>tasks,
+
+00:05:03.319 --> 00:05:05.479
+<v Speaker 1>which is just a flux script that are
+
+00:05:05.479 --> 00:05:07.400
+<v Speaker 1>run on any given interval
+
+00:05:07.960 --> 00:05:10.280
+<v Speaker 1>and introspector metrics and allow you to do
+
+00:05:10.280 --> 00:05:10.919
+<v Speaker 1>something.
+
+00:05:11.879 --> 00:05:13.639
+<v Speaker 1>So what we're having here is we're gonna
+
+00:05:13.639 --> 00:05:15.479
+<v Speaker 1>see this is the get ops alert task.
+
+00:05:15.479 --> 00:05:17.000
+<v Speaker 1>It's gonna run every one minute
+
+00:05:17.405 --> 00:05:19.085
+<v Speaker 1>and it's gonna look at our metrics and
+
+00:05:19.085 --> 00:05:20.445
+<v Speaker 1>try and determine something.
+
+00:05:21.164 --> 00:05:23.405
+<v Speaker 1>Now because of the awesome work by some
+
+00:05:23.405 --> 00:05:25.165
+<v Speaker 1>people in the InfluxDB team,
+
+00:05:25.645 --> 00:05:26.605
+<v Speaker 1>there is
+
+00:05:26.845 --> 00:05:27.565
+<v Speaker 1>a
+
+00:05:27.884 --> 00:05:31.980
+<v Speaker 1>manifest format that resembles a Kubernetes manifest format
+
+00:05:32.620 --> 00:05:34.380
+<v Speaker 1>that allows you to deploy
+
+00:05:35.100 --> 00:05:38.220
+<v Speaker 1>any InfluxDB resource to your InfluxDB
+
+00:05:38.220 --> 00:05:39.180
+<v Speaker 1>instance.
+
+00:05:39.900 --> 00:05:41.500
+<v Speaker 1>I'm not gonna use the tooling for that.
+
+00:05:41.500 --> 00:05:42.620
+<v Speaker 1>I'm just gonna copy and do it through
+
+00:05:42.620 --> 00:05:44.175
+<v Speaker 1>the UI so that we can
+
+00:05:45.055 --> 00:05:47.135
+<v Speaker 1>see it running very quickly, but you could
+
+00:05:47.135 --> 00:05:49.855
+<v Speaker 1>do influx package dash f point it to
+
+00:05:49.855 --> 00:05:51.135
+<v Speaker 1>this the same way you would with Kube
+
+00:05:51.135 --> 00:05:53.375
+<v Speaker 1>CTL. So really, really cool setup.
+
+00:05:54.495 --> 00:05:56.495
+<v Speaker 1>Will talk through the flux script as I
+
+00:05:56.495 --> 00:05:57.615
+<v Speaker 1>go here, but
+
+00:05:58.160 --> 00:06:00.480
+<v Speaker 1>the first thing I wanna do is import
+
+00:06:00.480 --> 00:06:02.160
+<v Speaker 1>http and JSON
+
+00:06:02.560 --> 00:06:04.480
+<v Speaker 1>so that I can send alerts.
+
+00:06:05.280 --> 00:06:07.520
+<v Speaker 1>And then because it's a time series data,
+
+00:06:07.520 --> 00:06:09.600
+<v Speaker 1>we have to specify a bucket and arrange
+
+00:06:09.600 --> 00:06:12.285
+<v Speaker 1>to read from. So all of my telegraphs
+
+00:06:12.285 --> 00:06:14.685
+<v Speaker 1>are configured to write metrics into Kubernetes.
+
+00:06:15.165 --> 00:06:17.485
+<v Speaker 1>Because my task runs every one minute, my
+
+00:06:17.485 --> 00:06:19.005
+<v Speaker 1>range is only gonna be one minute. So
+
+00:06:19.005 --> 00:06:20.445
+<v Speaker 1>I wanna take a look at the previous
+
+00:06:20.445 --> 00:06:21.965
+<v Speaker 1>minute to see if there were any new
+
+00:06:21.965 --> 00:06:23.405
+<v Speaker 1>pods I should be alerting on.
+
+00:06:24.139 --> 00:06:26.540
+<v Speaker 1>And just as I did that through to
+
+00:06:27.259 --> 00:06:29.020
+<v Speaker 1>the data explorer UI,
+
+00:06:29.580 --> 00:06:30.060
+<v Speaker 1>we
+
+00:06:30.620 --> 00:06:33.419
+<v Speaker 1>can just do the filters and our Flux
+
+00:06:33.419 --> 00:06:33.979
+<v Speaker 1>task.
+
+00:06:34.379 --> 00:06:36.379
+<v Speaker 1>So I only care
+
+00:06:36.405 --> 00:06:38.565
+<v Speaker 1>measurement that is about the pilots.
+
+00:06:38.965 --> 00:06:40.725
+<v Speaker 1>I'm only gonna look inside the get ops
+
+00:06:40.725 --> 00:06:42.805
+<v Speaker 1>namespace. The reason I'm doing that is just
+
+00:06:42.805 --> 00:06:44.245
+<v Speaker 1>to simplify this demo.
+
+00:06:44.565 --> 00:06:46.165
+<v Speaker 1>Of course, there are things in the cube
+
+00:06:46.165 --> 00:06:48.565
+<v Speaker 1>system namespace that aren't gonna be deployed through
+
+00:06:48.565 --> 00:06:51.044
+<v Speaker 1>your automation or what have those shares.
+
+00:06:52.030 --> 00:06:53.630
+<v Speaker 1>So you should really build that into your
+
+00:06:53.630 --> 00:06:54.350
+<v Speaker 1>query
+
+00:06:54.910 --> 00:06:56.430
+<v Speaker 1>or provide a way to put those labels
+
+00:06:56.430 --> 00:06:57.790
+<v Speaker 1>on it. That's up to you.
+
+00:06:58.030 --> 00:06:59.790
+<v Speaker 1>The other filter I wanna do here is
+
+00:06:59.790 --> 00:07:02.830
+<v Speaker 1>just say, only show me records pulled out
+
+00:07:02.830 --> 00:07:03.710
+<v Speaker 1>from the
+
+00:07:04.245 --> 00:07:06.645
+<v Speaker 1>from the bucket that do not have this
+
+00:07:06.645 --> 00:07:07.365
+<v Speaker 1>column.
+
+00:07:08.165 --> 00:07:09.685
+<v Speaker 1>And then go to group by pod name
+
+00:07:09.685 --> 00:07:11.525
+<v Speaker 1>and just grab the first one and then
+
+00:07:11.525 --> 00:07:14.165
+<v Speaker 1>map over it to then stand by message.
+
+00:07:15.044 --> 00:07:19.604
+<v Speaker 1>So I'm just constructing an arbitrary object here
+
+00:07:18.620 --> 00:07:20.700
+<v Speaker 1>a message that says, oh, look, there's something
+
+00:07:20.700 --> 00:07:22.300
+<v Speaker 1>unexpected in our cluster.
+
+00:07:22.540 --> 00:07:24.540
+<v Speaker 1>I'm gonna add on the context that I
+
+00:07:24.540 --> 00:07:26.700
+<v Speaker 1>have available. So that's the pod name, namespace
+
+00:07:26.700 --> 00:07:28.140
+<v Speaker 1>and node name.
+
+00:07:28.780 --> 00:07:31.020
+<v Speaker 1>And I'm not going to post this to
+
+00:07:31.020 --> 00:07:31.580
+<v Speaker 1>Slack
+
+00:07:32.295 --> 00:07:34.535
+<v Speaker 1>because I don't wanna share any keys online
+
+00:07:34.535 --> 00:07:36.935
+<v Speaker 1>or even just have Slack running just now.
+
+00:07:37.015 --> 00:07:38.855
+<v Speaker 1>So I'm gonna use our books.app,
+
+00:07:38.855 --> 00:07:40.055
+<v Speaker 1>which is a really
+
+00:07:40.695 --> 00:07:41.495
+<v Speaker 1>cool
+
+00:07:41.655 --> 00:07:42.535
+<v Speaker 1>I don't know.
+
+00:07:43.175 --> 00:07:45.975
+<v Speaker 1>Fake HTTP end oh, real HTTP end point,
+
+00:07:45.975 --> 00:07:48.680
+<v Speaker 1>but this takes any arbitrary request that you
+
+00:07:48.680 --> 00:07:50.360
+<v Speaker 1>send to it and then shows you in
+
+00:07:50.360 --> 00:07:51.080
+<v Speaker 1>a browser.
+
+00:07:51.560 --> 00:07:53.960
+<v Speaker 1>So I'm just gonna copy this
+
+00:07:54.280 --> 00:07:55.640
+<v Speaker 1>and update that.
+
+00:07:56.200 --> 00:07:58.040
+<v Speaker 1>And then we're just gonna JSON encode the
+
+00:07:58.040 --> 00:07:59.880
+<v Speaker 1>object we created above and then I'm just
+
+00:07:59.880 --> 00:08:00.840
+<v Speaker 1>gonna return
+
+00:08:00.840 --> 00:08:01.240
+<v Speaker 1>this.
+
+00:08:02.375 --> 00:08:04.535
+<v Speaker 1>And that's just gonna satisfy the data explorer
+
+00:08:04.535 --> 00:08:06.215
+<v Speaker 1>because one thing I can do is copy
+
+00:08:06.215 --> 00:08:07.175
+<v Speaker 1>and paste this
+
+00:08:07.495 --> 00:08:09.574
+<v Speaker 1>and run it real time as well as
+
+00:08:09.574 --> 00:08:12.375
+<v Speaker 1>through the task. So we'll save this.
+
+00:08:13.095 --> 00:08:16.420
+<v Speaker 1>We can see view task runs and within
+
+00:08:16.420 --> 00:08:18.260
+<v Speaker 1>the next minute, a task run will show
+
+00:08:18.260 --> 00:08:20.260
+<v Speaker 1>up here to show us that it ran.
+
+00:08:21.940 --> 00:08:24.340
+<v Speaker 1>From the data explorer, we can switch to
+
+00:08:24.340 --> 00:08:25.380
+<v Speaker 1>the script editor,
+
+00:08:25.620 --> 00:08:28.500
+<v Speaker 1>paste on this exact same task only.
+
+00:08:28.980 --> 00:08:31.585
+<v Speaker 1>I'm gonna comment out the HTTP post because
+
+00:08:31.585 --> 00:08:33.025
+<v Speaker 1>we only want that to happen in a
+
+00:08:33.025 --> 00:08:33.664
+<v Speaker 1>task.
+
+00:08:34.304 --> 00:08:35.904
+<v Speaker 1>And we can see that we do have
+
+00:08:35.904 --> 00:08:38.065
+<v Speaker 1>something coming back and that's because we have
+
+00:08:38.065 --> 00:08:40.385
+<v Speaker 1>that fake or unmanaged
+
+00:08:40.385 --> 00:08:42.145
+<v Speaker 1>deployment running in our cluster.
+
+00:08:42.625 --> 00:08:44.065
+<v Speaker 1>And if we just view the raw data,
+
+00:08:44.379 --> 00:08:46.060
+<v Speaker 1>we can see all the information that we're
+
+00:08:46.060 --> 00:08:49.100
+<v Speaker 1>gonna expect to see on our HTTP alert.
+
+00:08:50.220 --> 00:08:52.779
+<v Speaker 1>I come over here and I hit refresh.
+
+00:08:53.660 --> 00:08:55.420
+<v Speaker 1>We don't have a test run yet. So
+
+00:08:55.420 --> 00:08:57.500
+<v Speaker 1>we're gonna have to wait for thirteen
+
+00:08:57.500 --> 00:08:58.860
+<v Speaker 1>forty seven roughly.
+
+00:09:00.575 --> 00:09:03.535
+<v Speaker 1>Oh, actually, we just caught forty six. Perfect.
+
+00:09:03.535 --> 00:09:04.495
+<v Speaker 1>Even better.
+
+00:09:04.815 --> 00:09:06.334
+<v Speaker 1>And if I jump over here
+
+00:09:06.894 --> 00:09:08.255
+<v Speaker 1>and hit refresh,
+
+00:09:08.654 --> 00:09:11.135
+<v Speaker 1>you can see that our alert triggered, sent
+
+00:09:11.135 --> 00:09:13.695
+<v Speaker 1>an HTTP post request to our box and
+
+00:09:13.695 --> 00:09:15.420
+<v Speaker 1>we can see that we've got an unexpected
+
+00:09:15.420 --> 00:09:17.100
+<v Speaker 1>pod running in our cluster
+
+00:09:17.339 --> 00:09:19.420
+<v Speaker 1>and the get ops near space on this
+
+00:09:19.420 --> 00:09:21.500
+<v Speaker 1>node with this pod name.
+
+00:09:21.899 --> 00:09:23.579
+<v Speaker 1>And that's it. That's how I would alert
+
+00:09:23.579 --> 00:09:24.860
+<v Speaker 1>using InfluxDB,
+
+00:09:24.860 --> 00:09:27.019
+<v Speaker 1>the flux language, and
+
+00:09:27.215 --> 00:09:29.215
+<v Speaker 1>to detect unmanaged
+
+00:09:29.535 --> 00:09:31.295
+<v Speaker 1>unmanaged
+
+00:09:31.455 --> 00:09:33.615
+<v Speaker 1>resources and my Kubernetes cluster.
+
+00:09:34.335 --> 00:09:36.015
+<v Speaker 1>That's it. Thank you very much for watching,
+
+00:09:36.015 --> 00:09:37.135
+<v Speaker 1>and I'll try and do more of these
+
+00:09:37.135 --> 00:09:39.215
+<v Speaker 1>in the coming days and weeks. Cheers.

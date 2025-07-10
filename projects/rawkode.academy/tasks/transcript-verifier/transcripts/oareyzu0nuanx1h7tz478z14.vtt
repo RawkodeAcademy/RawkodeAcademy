@@ -1,0 +1,461 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 0cfb11e5-efa9-4325-bd9a-70baa79d4cc4
+Created: 2025-04-29T13:56:37.043Z
+Duration: 358.12787
+Channels: 1
+
+00:00:00.320 --> 00:00:02.240
+<v Speaker 0>Let's take a look at something cool.
+
+00:00:02.639 --> 00:00:05.120
+<v Speaker 0>Today, we're going to integrate Komodor
+
+00:00:05.120 --> 00:00:06.480
+<v Speaker 0>with vCluster.
+
+00:00:06.640 --> 00:00:08.400
+<v Speaker 0>What is vCluster?
+
+00:00:08.480 --> 00:00:10.639
+<v Speaker 0>VCluster is a tool from Loft
+
+00:00:10.800 --> 00:00:13.679
+<v Speaker 0>that allows you to have ephemeral
+
+00:00:13.679 --> 00:00:14.880
+<v Speaker 0>or potentially
+
+00:00:14.880 --> 00:00:15.599
+<v Speaker 0>ephemeral
+
+00:00:15.755 --> 00:00:16.635
+<v Speaker 0>clusters
+
+00:00:16.635 --> 00:00:17.515
+<v Speaker 0>inside
+
+00:00:17.515 --> 00:00:20.315
+<v Speaker 0>of another Kubernetes cluster. It does this by
+
+00:00:20.315 --> 00:00:22.635
+<v Speaker 0>running a control plane and save a namespace
+
+00:00:22.635 --> 00:00:23.835
+<v Speaker 0>on Kubernetes
+
+00:00:23.994 --> 00:00:27.115
+<v Speaker 0>to give you a complete virtual cluster, hence
+
+00:00:27.115 --> 00:00:28.314
+<v Speaker 0>the name vCluster
+
+00:00:28.730 --> 00:00:30.810
+<v Speaker 0>inside the host cluster.
+
+00:00:31.130 --> 00:00:32.809
+<v Speaker 0>There are a lot of advantages to this
+
+00:00:32.809 --> 00:00:33.450
+<v Speaker 0>approach.
+
+00:00:33.690 --> 00:00:35.930
+<v Speaker 0>It allows you to operate and maintain a
+
+00:00:35.930 --> 00:00:37.370
+<v Speaker 0>slightly larger cluster,
+
+00:00:37.690 --> 00:00:39.850
+<v Speaker 0>but delegate virtual clusters to all of your
+
+00:00:39.850 --> 00:00:41.610
+<v Speaker 0>teams, organizations,
+
+00:00:41.770 --> 00:00:43.370
+<v Speaker 0>or maybe even just micro services.
+
+00:00:43.905 --> 00:00:47.105
+<v Speaker 0>That means that it's very easy to delete
+
+00:00:47.265 --> 00:00:48.545
+<v Speaker 0>the virtual cluster,
+
+00:00:48.625 --> 00:00:50.704
+<v Speaker 0>spin up a new one and you have
+
+00:00:50.704 --> 00:00:52.464
+<v Speaker 0>pretty happy days.
+
+00:00:52.785 --> 00:00:54.864
+<v Speaker 0>Of course, you have to provision
+
+00:00:54.864 --> 00:00:57.985
+<v Speaker 0>those clusters, those still have to be debuggable,
+
+00:00:58.290 --> 00:01:01.010
+<v Speaker 0>you still need to understand when things go
+
+00:01:01.010 --> 00:01:04.130
+<v Speaker 0>wrong and this is where Komodor comes in.
+
+00:01:04.530 --> 00:01:06.370
+<v Speaker 0>So today, I'm going to show you how
+
+00:01:06.370 --> 00:01:08.610
+<v Speaker 0>to automatically deploy Komodor
+
+00:01:08.610 --> 00:01:10.850
+<v Speaker 0>to all of your virtual clusters.
+
+00:01:11.570 --> 00:01:13.570
+<v Speaker 0>We'll start off with the current landscape,
+
+00:01:13.955 --> 00:01:16.995
+<v Speaker 0>this is my real production scale away Kubernetes
+
+00:01:16.995 --> 00:01:17.715
+<v Speaker 0>cluster
+
+00:01:17.955 --> 00:01:20.675
+<v Speaker 0>which has access to six nodes.
+
+00:01:21.315 --> 00:01:24.115
+<v Speaker 0>Now these nodes aren't that heavily utilized, but
+
+00:01:24.115 --> 00:01:25.875
+<v Speaker 0>I want to open this up to members
+
+00:01:25.875 --> 00:01:27.635
+<v Speaker 0>of the Rawkode Academy community
+
+00:01:28.280 --> 00:01:30.360
+<v Speaker 0>and to do so, I'm going to get
+
+00:01:30.360 --> 00:01:31.799
+<v Speaker 0>them a virtual cluster,
+
+00:01:32.280 --> 00:01:33.880
+<v Speaker 0>but I still have to make sure those
+
+00:01:33.880 --> 00:01:36.440
+<v Speaker 0>clusters are healthy and to do that, I
+
+00:01:36.440 --> 00:01:38.600
+<v Speaker 0>100% need Komodor.
+
+00:01:39.560 --> 00:01:41.720
+<v Speaker 0>As you can see, I've run Komodor already
+
+00:01:41.720 --> 00:01:43.799
+<v Speaker 0>on my production cluster
+
+00:01:44.385 --> 00:01:46.145
+<v Speaker 0>and if we click on the cluster drop
+
+00:01:46.145 --> 00:01:48.225
+<v Speaker 0>down, you'll see that I only have Skidway
+
+00:01:48.225 --> 00:01:49.025
+<v Speaker 0>production.
+
+00:01:49.665 --> 00:01:51.905
+<v Speaker 0>Here I have a just file, this just
+
+00:01:51.905 --> 00:01:54.625
+<v Speaker 0>file has a simple target for deploying a
+
+00:01:54.625 --> 00:01:57.025
+<v Speaker 0>new virtual clusters with whatever name I give
+
+00:01:57.025 --> 00:01:57.185
+<v Speaker 0>it.
+
+00:01:58.000 --> 00:01:59.920
+<v Speaker 0>To do this, it uses helm upgrade
+
+00:02:00.479 --> 00:02:01.280
+<v Speaker 0>install
+
+00:02:01.680 --> 00:02:04.400
+<v Speaker 0>using the arguments provided to provide the cluster
+
+00:02:04.400 --> 00:02:07.840
+<v Speaker 0>name and also the values. Yaml.
+
+00:02:08.959 --> 00:02:11.039
+<v Speaker 0>Instead of our values. Yaml, we see that
+
+00:02:11.039 --> 00:02:13.200
+<v Speaker 0>we want all virtual clusters to be KCS,
+
+00:02:13.395 --> 00:02:16.275
+<v Speaker 0>here I'm just using version 123.5.
+
+00:02:17.315 --> 00:02:19.635
+<v Speaker 0>We can then use the init section of
+
+00:02:19.635 --> 00:02:21.635
+<v Speaker 0>the values file to say that we wish
+
+00:02:21.635 --> 00:02:23.235
+<v Speaker 0>to deploy some helm charts.
+
+00:02:24.195 --> 00:02:26.595
+<v Speaker 0>Here I'm specifying one chart and that's what
+
+00:02:26.595 --> 00:02:29.395
+<v Speaker 0>I want to deploy to Kubernetes workshop chart
+
+00:02:28.830 --> 00:02:31.390
+<v Speaker 0>from the Komodor LJOX repository.
+
+00:02:32.110 --> 00:02:34.190
+<v Speaker 0>I've hard coded my key here, but of
+
+00:02:34.190 --> 00:02:35.950
+<v Speaker 0>course you can find better ways to do
+
+00:02:35.950 --> 00:02:38.910
+<v Speaker 0>that through secret management or even interpolation of
+
+00:02:38.910 --> 00:02:39.390
+<v Speaker 0>the template.
+
+00:02:41.235 --> 00:02:43.795
+<v Speaker 0>I'm using values template here so that I
+
+00:02:43.795 --> 00:02:46.035
+<v Speaker 0>can also reference the release name as the
+
+00:02:46.035 --> 00:02:48.355
+<v Speaker 0>cluster name so that I can differentiate my
+
+00:02:48.355 --> 00:02:50.195
+<v Speaker 0>virtual clusters within Komodor.
+
+00:02:52.515 --> 00:02:54.115
+<v Speaker 0>Now we can just run
+
+00:02:54.435 --> 00:02:55.475
+<v Speaker 0>vCluster
+
+00:02:56.050 --> 00:02:57.090
+<v Speaker 0>Rawkode
+
+00:02:59.010 --> 00:03:01.170
+<v Speaker 0>and that should just take a few seconds.
+
+00:03:02.370 --> 00:03:03.810
+<v Speaker 0>And I'm gonna run it one more time
+
+00:03:03.810 --> 00:03:06.690
+<v Speaker 0>only this time we'll call it academy
+
+00:03:06.770 --> 00:03:07.890
+<v Speaker 0>one two three.
+
+00:03:09.090 --> 00:03:11.490
+<v Speaker 0>So with these two simple commands
+
+00:03:11.245 --> 00:03:14.125
+<v Speaker 0>on my production gateway cluster, I'm deploying two
+
+00:03:14.125 --> 00:03:15.325
+<v Speaker 0>virtual clusters,
+
+00:03:15.325 --> 00:03:17.885
+<v Speaker 0>both those virtual clusters are configured to automatically
+
+00:03:17.885 --> 00:03:21.245
+<v Speaker 0>deploy Komodor injecting the release name which happens
+
+00:03:21.245 --> 00:03:22.685
+<v Speaker 0>to be the cluster name.
+
+00:03:23.420 --> 00:03:25.340
+<v Speaker 0>What does mean is that when I browse
+
+00:03:25.340 --> 00:03:28.060
+<v Speaker 0>back to Komodor in just a few seconds,
+
+00:03:28.220 --> 00:03:29.740
+<v Speaker 0>we'll now have access
+
+00:03:29.740 --> 00:03:31.100
+<v Speaker 0>and observability,
+
+00:03:31.100 --> 00:03:34.460
+<v Speaker 0>debug ability, the ability to visualize and understand
+
+00:03:34.620 --> 00:03:37.340
+<v Speaker 0>the Kubernetes landscape of our virtual clusters.
+
+00:03:38.415 --> 00:03:39.935
+<v Speaker 0>Easy peasy.
+
+00:03:41.535 --> 00:03:44.095
+<v Speaker 0>Well, let's jump back and hit refresh
+
+00:03:44.974 --> 00:03:47.295
+<v Speaker 0>and we can see that the Rawkode cluster
+
+00:03:47.295 --> 00:03:48.575
+<v Speaker 0>is still available.
+
+00:03:49.375 --> 00:03:51.375
+<v Speaker 0>I'm gonna wait a few more seconds
+
+00:03:52.530 --> 00:03:55.250
+<v Speaker 0>for the academy cluster to also show up.
+
+00:03:55.330 --> 00:03:57.730
+<v Speaker 0>There we go. So now if we filter
+
+00:03:57.730 --> 00:03:58.770
+<v Speaker 0>to Rawkode,
+
+00:03:59.810 --> 00:04:02.450
+<v Speaker 0>we'll see version one twenty three point five
+
+00:04:02.450 --> 00:04:04.530
+<v Speaker 0>for the two nodes in that cluster
+
+00:04:04.845 --> 00:04:07.005
+<v Speaker 0>and if we switch to the academy,
+
+00:04:09.085 --> 00:04:10.925
+<v Speaker 0>we're still waiting on a node coming up
+
+00:04:10.925 --> 00:04:12.045
+<v Speaker 0>but that's okay.
+
+00:04:12.925 --> 00:04:15.165
+<v Speaker 0>We can then use Komodor just as we
+
+00:04:15.165 --> 00:04:17.245
+<v Speaker 0>always do. Here we can see the core
+
+00:04:17.245 --> 00:04:19.725
+<v Speaker 0>DNS and the watcher for the academy cluster
+
+00:04:19.950 --> 00:04:21.950
+<v Speaker 0>and if we switch to Rawkode,
+
+00:04:21.950 --> 00:04:23.550
+<v Speaker 0>we have to save there.
+
+00:04:24.430 --> 00:04:28.110
+<v Speaker 0>So let's deploy a broken workload to our
+
+00:04:28.110 --> 00:04:29.150
+<v Speaker 0>virtual cluster.
+
+00:04:29.390 --> 00:04:31.390
+<v Speaker 0>To do so, we do vCluster,
+
+00:04:33.885 --> 00:04:35.805
+<v Speaker 0>connect to Rawkode
+
+00:04:35.885 --> 00:04:37.725
+<v Speaker 0>in the default namespace
+
+00:04:38.044 --> 00:04:39.805
+<v Speaker 0>and kubectl apply
+
+00:04:39.885 --> 00:04:41.885
+<v Speaker 0>dash f nginx
+
+00:04:41.885 --> 00:04:42.925
+<v Speaker 0>dot yaml.
+
+00:04:43.005 --> 00:04:43.405
+<v Speaker 0>Easy.
+
+00:04:44.690 --> 00:04:47.010
+<v Speaker 0>So let's pop back over to Komodor and
+
+00:04:47.330 --> 00:04:50.290
+<v Speaker 0>already we can see our nginx deployment under
+
+00:04:50.290 --> 00:04:52.450
+<v Speaker 0>the pod workloads screen
+
+00:04:52.770 --> 00:04:55.010
+<v Speaker 0>and we can see that there's an error
+
+00:04:55.010 --> 00:04:56.530
+<v Speaker 0>pulling our image.
+
+00:04:57.330 --> 00:04:58.930
+<v Speaker 0>So if we click on this
+
+00:05:01.205 --> 00:05:03.205
+<v Speaker 0>and pop open the containers,
+
+00:05:04.085 --> 00:05:06.405
+<v Speaker 0>we'll see that the image being used is
+
+00:05:06.405 --> 00:05:07.284
+<v Speaker 0>NGINX
+
+00:05:07.284 --> 00:05:08.645
+<v Speaker 0>non existent.
+
+00:05:09.525 --> 00:05:11.044
+<v Speaker 0>Not really a typhoon,
+
+00:05:11.205 --> 00:05:13.125
+<v Speaker 0>but a common problem that we all have
+
+00:05:13.125 --> 00:05:16.000
+<v Speaker 0>to debug and one that Komodor solves with
+
+00:05:16.000 --> 00:05:16.640
+<v Speaker 0>ease.
+
+00:05:19.360 --> 00:05:23.760
+<v Speaker 0>Let's fix this to deploy NGINX one nineteen,
+
+00:05:25.280 --> 00:05:27.199
+<v Speaker 0>and we'll run our apply command one more
+
+00:05:27.199 --> 00:05:27.600
+<v Speaker 0>time.
+
+00:05:29.065 --> 00:05:32.105
+<v Speaker 0>And let's just watch from the Commodore UI.
+
+00:05:32.665 --> 00:05:34.985
+<v Speaker 0>We already see the new pod, we already
+
+00:05:34.985 --> 00:05:36.505
+<v Speaker 0>see its container creating
+
+00:05:36.665 --> 00:05:38.185
+<v Speaker 0>and now it's running.
+
+00:05:39.225 --> 00:05:42.185
+<v Speaker 0>So vCluster and Commodore work together just like
+
+00:05:42.185 --> 00:05:42.665
+<v Speaker 0>a charm.
+
+00:05:43.440 --> 00:05:46.880
+<v Speaker 0>Take advantage of ephemeral clusters within mega clusters,
+
+00:05:46.960 --> 00:05:49.920
+<v Speaker 0>but don't sacrifice your ability to operate each
+
+00:05:49.920 --> 00:05:51.120
+<v Speaker 0>of those clusters
+
+00:05:52.000 --> 00:05:54.240
+<v Speaker 0>as well. I hope you enjoyed this video.
+
+00:05:54.640 --> 00:05:57.040
+<v Speaker 0>We'll be back with more Komodor videos soon.
+
+00:05:57.200 --> 00:05:57.920
+<v Speaker 0>Have a good day.

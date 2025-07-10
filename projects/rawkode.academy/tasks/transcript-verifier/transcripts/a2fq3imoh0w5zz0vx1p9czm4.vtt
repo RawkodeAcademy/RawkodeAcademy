@@ -1,0 +1,5126 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 7e24058d-2103-4e22-86f9-17a449b7dbfb
+Created: 2025-04-29T22:16:40.424Z
+Duration: 4025.0093
+Channels: 1
+
+00:01:39.695 --> 00:01:42.415
+<v Speaker 0>Hello, and thank you for joining us today.
+
+00:01:42.415 --> 00:01:46.360
+<v Speaker 0>I am with Phil Estes, a distinguished engineer
+
+00:01:46.520 --> 00:01:49.560
+<v Speaker 0>at IBM and also the maintainer of the
+
+00:01:49.560 --> 00:01:50.520
+<v Speaker 0>containerd
+
+00:01:50.520 --> 00:01:52.840
+<v Speaker 0>project. Hello, Phil. Thank you for joining us.
+
+00:01:52.840 --> 00:01:55.640
+<v Speaker 0>How are you? Great. Yeah. Glad to be
+
+00:01:55.640 --> 00:01:56.120
+<v Speaker 1>here.
+
+00:01:56.680 --> 00:01:57.800
+<v Speaker 1>Thanks for having me on.
+
+00:01:58.655 --> 00:02:00.975
+<v Speaker 0>No. This is awesome. Containerd
+
+00:02:00.975 --> 00:02:03.134
+<v Speaker 0>is one of those projects where I am
+
+00:02:03.134 --> 00:02:05.774
+<v Speaker 0>familiar with it exists. I am familiar that
+
+00:02:05.774 --> 00:02:07.134
+<v Speaker 0>I'm using it in production,
+
+00:02:07.375 --> 00:02:09.294
+<v Speaker 0>and I don't really know much more about
+
+00:02:09.294 --> 00:02:11.295
+<v Speaker 0>it beyond that. So I'm looking forward today
+
+00:02:11.295 --> 00:02:12.894
+<v Speaker 0>to getting into some of the details of
+
+00:02:12.894 --> 00:02:16.180
+<v Speaker 0>how containerd works and why it exists.
+
+00:02:16.740 --> 00:02:18.100
+<v Speaker 1>Awesome. Yeah.
+
+00:02:18.500 --> 00:02:19.220
+<v Speaker 0>Excellent.
+
+00:02:19.780 --> 00:02:21.140
+<v Speaker 0>So I think
+
+00:02:21.380 --> 00:02:23.140
+<v Speaker 0>let's just start with
+
+00:02:23.300 --> 00:02:25.700
+<v Speaker 0>a viewer question because I think it is
+
+00:02:25.700 --> 00:02:27.460
+<v Speaker 0>important, and I may already have made my
+
+00:02:27.460 --> 00:02:29.300
+<v Speaker 0>first mistake of the stream. But this person
+
+00:02:29.300 --> 00:02:30.875
+<v Speaker 0>asked on Reddit prior,
+
+00:02:31.275 --> 00:02:33.754
+<v Speaker 0>how do I pronounce it? Is it containerd
+
+00:02:33.754 --> 00:02:35.355
+<v Speaker 0>or is it containerd?
+
+00:02:36.394 --> 00:02:37.754
+<v Speaker 1>Yeah. So
+
+00:02:37.754 --> 00:02:38.875
+<v Speaker 1>the project,
+
+00:02:39.834 --> 00:02:42.155
+<v Speaker 1>officially, we we call it containerd,
+
+00:02:43.659 --> 00:02:46.140
+<v Speaker 1>but it's definitely been an inside joke or
+
+00:02:46.140 --> 00:02:48.219
+<v Speaker 1>not so inside joke that we call each
+
+00:02:48.219 --> 00:02:49.260
+<v Speaker 1>other containers.
+
+00:02:51.340 --> 00:02:53.819
+<v Speaker 1>So, yeah, officially, the project name is definitely
+
+00:02:53.819 --> 00:02:54.620
+<v Speaker 1>containerd,
+
+00:02:56.065 --> 00:02:59.025
+<v Speaker 1>Thinking, you know, how systemd and other daemon
+
+00:02:59.025 --> 00:03:00.145
+<v Speaker 1>like processes
+
+00:03:00.145 --> 00:03:00.785
+<v Speaker 1>are
+
+00:03:00.945 --> 00:03:04.305
+<v Speaker 1>are called. That's kind of the the nomenclature.
+
+00:03:05.265 --> 00:03:08.225
+<v Speaker 0>Right. See, that's sometimes you just don't think
+
+00:03:08.225 --> 00:03:09.790
+<v Speaker 0>about that, but I think it's so prevalent,
+
+00:03:09.790 --> 00:03:12.269
+<v Speaker 0>especially, you know, in the technology community. We
+
+00:03:12.269 --> 00:03:13.870
+<v Speaker 0>have so many projects where
+
+00:03:14.030 --> 00:03:15.470
+<v Speaker 0>you don't always know the right way to
+
+00:03:15.470 --> 00:03:16.829
+<v Speaker 0>see it. You know, we always have these
+
+00:03:16.829 --> 00:03:19.470
+<v Speaker 0>weird debates around, is it MySQL or MySQL
+
+00:03:19.470 --> 00:03:21.549
+<v Speaker 0>and all this stuff. So I think it's
+
+00:03:21.549 --> 00:03:23.390
+<v Speaker 0>good to be clear clear that up for
+
+00:03:23.390 --> 00:03:24.430
+<v Speaker 0>sure. Yep.
+
+00:03:25.365 --> 00:03:27.125
+<v Speaker 0>Alright. Do you wanna if you don't mind,
+
+00:03:27.125 --> 00:03:28.405
+<v Speaker 0>just give us a little bit of a
+
+00:03:28.405 --> 00:03:30.485
+<v Speaker 0>backstory then. How did containerd
+
+00:03:30.485 --> 00:03:31.605
+<v Speaker 0>come to exist?
+
+00:03:32.005 --> 00:03:32.485
+<v Speaker 0>Yeah.
+
+00:03:34.005 --> 00:03:34.565
+<v Speaker 1>So,
+
+00:03:35.525 --> 00:03:37.685
+<v Speaker 1>you know, I think the the easiest
+
+00:03:37.970 --> 00:03:40.050
+<v Speaker 1>starting point is to think about, you know,
+
+00:03:40.050 --> 00:03:43.170
+<v Speaker 1>Docker's rise as a developer tool,
+
+00:03:43.970 --> 00:03:46.130
+<v Speaker 1>you know, that 2014,
+
+00:03:47.170 --> 00:03:48.530
+<v Speaker 1>'20 '15 era.
+
+00:03:49.970 --> 00:03:52.450
+<v Speaker 1>It was really easy to use and install
+
+00:03:52.450 --> 00:03:53.845
+<v Speaker 1>because, essentially,
+
+00:03:54.084 --> 00:03:55.605
+<v Speaker 1>that single binary,
+
+00:03:56.485 --> 00:03:58.965
+<v Speaker 1>at least, you know, speaking in Linux terms,
+
+00:03:59.925 --> 00:04:02.165
+<v Speaker 1>you know, there wasn't Docker desktop. There weren't
+
+00:04:02.165 --> 00:04:03.605
+<v Speaker 1>all these other products around it. It was
+
+00:04:03.605 --> 00:04:05.285
+<v Speaker 1>just Docker. And Docker, the tool,
+
+00:04:07.300 --> 00:04:09.460
+<v Speaker 1>could easily be put on any Linux system.
+
+00:04:09.460 --> 00:04:11.300
+<v Speaker 1>It was statically linked. You didn't have to
+
+00:04:11.300 --> 00:04:12.820
+<v Speaker 1>worry about your distributor
+
+00:04:13.300 --> 00:04:15.460
+<v Speaker 1>giving you the right version linked to the
+
+00:04:15.460 --> 00:04:16.500
+<v Speaker 1>right libraries.
+
+00:04:16.820 --> 00:04:18.100
+<v Speaker 1>And it was sort of an all in
+
+00:04:18.100 --> 00:04:20.820
+<v Speaker 1>one tool. It had registry support. It had
+
+00:04:20.985 --> 00:04:24.664
+<v Speaker 1>ability to build containers. It ran containers.
+
+00:04:25.625 --> 00:04:27.705
+<v Speaker 1>And, obviously, you know, over those next few
+
+00:04:27.705 --> 00:04:30.104
+<v Speaker 1>years, there was an explosion of features,
+
+00:04:30.425 --> 00:04:30.905
+<v Speaker 1>and,
+
+00:04:31.705 --> 00:04:32.504
+<v Speaker 1>there was also,
+
+00:04:33.240 --> 00:04:36.600
+<v Speaker 1>you know, some community tensions around when Swarm
+
+00:04:36.600 --> 00:04:39.240
+<v Speaker 1>got added and Kubernetes was coming on the
+
+00:04:39.240 --> 00:04:42.440
+<v Speaker 1>scene or effectively was already there, but rising
+
+00:04:42.440 --> 00:04:44.280
+<v Speaker 1>in significance and usage.
+
+00:04:46.195 --> 00:04:47.955
+<v Speaker 1>Out of all that, you know, you also
+
+00:04:47.955 --> 00:04:50.275
+<v Speaker 1>had people with other ideas for what a
+
+00:04:50.275 --> 00:04:52.035
+<v Speaker 1>container runtime should look like.
+
+00:04:53.715 --> 00:04:55.475
+<v Speaker 1>And so out of that, the OCI was
+
+00:04:55.475 --> 00:04:57.635
+<v Speaker 1>born, so the open container initiative.
+
+00:04:58.515 --> 00:04:59.075
+<v Speaker 1>So
+
+00:04:59.650 --> 00:05:00.610
+<v Speaker 1>most people,
+
+00:05:00.850 --> 00:05:03.090
+<v Speaker 1>you know, may know this, but at
+
+00:05:03.970 --> 00:05:05.970
+<v Speaker 1>from about 2015 on,
+
+00:05:06.690 --> 00:05:09.170
+<v Speaker 1>Docker or other container engines that are OCI
+
+00:05:09.170 --> 00:05:10.130
+<v Speaker 1>compliant
+
+00:05:10.530 --> 00:05:13.170
+<v Speaker 1>rarely are actually doing the execution of your
+
+00:05:13.170 --> 00:05:14.290
+<v Speaker 1>contained process.
+
+00:05:15.125 --> 00:05:17.685
+<v Speaker 1>That's left to a binary called run c
+
+00:05:17.685 --> 00:05:20.325
+<v Speaker 1>of of open source project maintained by the
+
+00:05:20.325 --> 00:05:21.125
+<v Speaker 1>OCI.
+
+00:05:22.485 --> 00:05:23.365
+<v Speaker 1>And so
+
+00:05:24.085 --> 00:05:26.085
+<v Speaker 1>as soon as run c sort of came
+
+00:05:26.085 --> 00:05:28.085
+<v Speaker 1>on the scene and Docker started using run
+
+00:05:28.085 --> 00:05:28.405
+<v Speaker 1>c,
+
+00:05:29.370 --> 00:05:32.170
+<v Speaker 1>Michael Crosby and some others inside Docker
+
+00:05:33.770 --> 00:05:35.850
+<v Speaker 1>built this kind of shim layer between the
+
+00:05:35.850 --> 00:05:38.490
+<v Speaker 1>full Docker engine and run c, and that
+
+00:05:38.490 --> 00:05:41.050
+<v Speaker 1>was the initial containerd code base.
+
+00:05:41.610 --> 00:05:44.844
+<v Speaker 1>If you look back in our GitHub GitHub
+
+00:05:44.844 --> 00:05:47.564
+<v Speaker 1>history, you'll see a branch zero dot two
+
+00:05:47.564 --> 00:05:48.445
+<v Speaker 1>dot x.
+
+00:05:49.245 --> 00:05:51.324
+<v Speaker 1>That's the code base that
+
+00:05:51.645 --> 00:05:53.164
+<v Speaker 1>effectively was that
+
+00:05:53.405 --> 00:05:55.245
+<v Speaker 1>start of containerd
+
+00:05:55.485 --> 00:05:56.604
+<v Speaker 1>back in that era.
+
+00:05:57.550 --> 00:05:59.550
+<v Speaker 1>So containerd at the time was really a
+
+00:05:59.550 --> 00:06:01.150
+<v Speaker 1>a runtime manager.
+
+00:06:01.230 --> 00:06:04.590
+<v Speaker 1>So Docker said, you know, hey. Somebody called
+
+00:06:04.590 --> 00:06:05.630
+<v Speaker 1>Docker run.
+
+00:06:06.270 --> 00:06:08.430
+<v Speaker 1>Containerd, can you go start a run c
+
+00:06:08.430 --> 00:06:10.510
+<v Speaker 1>process? Here's all the details.
+
+00:06:10.830 --> 00:06:12.590
+<v Speaker 1>It builds the OCI spec,
+
+00:06:13.525 --> 00:06:15.845
+<v Speaker 1>you know, which declares things like which binary
+
+00:06:15.845 --> 00:06:18.485
+<v Speaker 1>am I running, which namespaces am I using,
+
+00:06:18.645 --> 00:06:20.725
+<v Speaker 1>you know, any c groups. So all these
+
+00:06:20.725 --> 00:06:21.605
+<v Speaker 1>configuration
+
+00:06:21.605 --> 00:06:22.405
+<v Speaker 1>details
+
+00:06:22.725 --> 00:06:25.125
+<v Speaker 1>that, if you're a developer, you think of
+
+00:06:25.125 --> 00:06:27.365
+<v Speaker 1>those are flags like on Docker run, you
+
+00:06:27.365 --> 00:06:29.920
+<v Speaker 1>know, things I wanna change to this user
+
+00:06:30.000 --> 00:06:33.120
+<v Speaker 1>or, you know, add this volume mount. All
+
+00:06:33.120 --> 00:06:35.120
+<v Speaker 1>that ended up passing down through these layers
+
+00:06:35.120 --> 00:06:38.240
+<v Speaker 1>and containerd effectively managed that run c layer.
+
+00:06:40.574 --> 00:06:43.294
+<v Speaker 1>So, again, kinda skipping a lot of exciting
+
+00:06:43.294 --> 00:06:46.335
+<v Speaker 1>history in the container ecosystem at that at
+
+00:06:46.335 --> 00:06:47.055
+<v Speaker 1>that time.
+
+00:06:48.495 --> 00:06:50.255
+<v Speaker 1>You know, you can go back and find
+
+00:06:50.255 --> 00:06:52.255
+<v Speaker 1>tweets and blog posts. You know, Docker is
+
+00:06:52.255 --> 00:06:54.895
+<v Speaker 1>getting too big. Swarm is competing with Kubernetes.
+
+00:06:55.919 --> 00:06:56.720
+<v Speaker 1>And so,
+
+00:06:57.840 --> 00:07:00.240
+<v Speaker 1>you know, cloud providers like IBM and others
+
+00:07:00.240 --> 00:07:02.800
+<v Speaker 1>were talking to Docker about, you know, maybe
+
+00:07:02.800 --> 00:07:04.400
+<v Speaker 1>it is time for a more kind of
+
+00:07:04.400 --> 00:07:05.120
+<v Speaker 1>stable
+
+00:07:05.280 --> 00:07:08.495
+<v Speaker 1>core runtime. You know, Docker has storage plug
+
+00:07:08.495 --> 00:07:12.015
+<v Speaker 1>ins and registry features and an enterprise product,
+
+00:07:12.255 --> 00:07:14.655
+<v Speaker 1>you know, maybe we can segment out just
+
+00:07:14.655 --> 00:07:16.015
+<v Speaker 1>that core runtime
+
+00:07:16.015 --> 00:07:16.895
+<v Speaker 1>idea
+
+00:07:17.695 --> 00:07:19.375
+<v Speaker 1>into its own
+
+00:07:19.879 --> 00:07:23.000
+<v Speaker 1>into its own layer. And so containerd effectively
+
+00:07:23.000 --> 00:07:25.720
+<v Speaker 1>moved from that zero dot two branch to
+
+00:07:25.720 --> 00:07:26.919
+<v Speaker 1>the one o
+
+00:07:27.720 --> 00:07:28.919
+<v Speaker 1>sort of release
+
+00:07:29.319 --> 00:07:31.960
+<v Speaker 1>time time frame in late twenty sixteen.
+
+00:07:33.319 --> 00:07:35.479
+<v Speaker 1>And that became the more full
+
+00:07:35.775 --> 00:07:38.975
+<v Speaker 1>container runtime that if you install containerd today,
+
+00:07:38.975 --> 00:07:41.294
+<v Speaker 1>if you do the latest one four o
+
+00:07:41.294 --> 00:07:43.775
+<v Speaker 1>or or you're using Docker, which I think
+
+00:07:43.775 --> 00:07:46.014
+<v Speaker 1>over the weekend updated to one three seven.
+
+00:07:48.030 --> 00:07:49.470
+<v Speaker 1>You know, this this
+
+00:07:49.630 --> 00:07:51.550
+<v Speaker 1>version of containerd is now
+
+00:07:52.030 --> 00:07:54.430
+<v Speaker 1>has, you know, full image support to push
+
+00:07:54.430 --> 00:07:55.550
+<v Speaker 1>and pull images.
+
+00:07:56.350 --> 00:07:58.510
+<v Speaker 1>It's not just a runtime manager, but it
+
+00:07:58.510 --> 00:07:59.790
+<v Speaker 1>handles the content
+
+00:08:00.350 --> 00:08:02.990
+<v Speaker 1>and the task management and
+
+00:08:03.535 --> 00:08:06.015
+<v Speaker 1>metadata and all those things so that it
+
+00:08:06.015 --> 00:08:08.975
+<v Speaker 1>can be a full run time underneath Kubernetes,
+
+00:08:08.975 --> 00:08:10.735
+<v Speaker 1>which is probably the most popular use case
+
+00:08:10.735 --> 00:08:11.935
+<v Speaker 1>for containerd.
+
+00:08:12.575 --> 00:08:15.295
+<v Speaker 1>But there's still millions of Docker engines that
+
+00:08:15.295 --> 00:08:17.055
+<v Speaker 1>use containerd under the covers,
+
+00:08:17.599 --> 00:08:19.919
+<v Speaker 1>again, to manage that run c
+
+00:08:20.319 --> 00:08:23.919
+<v Speaker 1>layer of, the actual processes being contained.
+
+00:08:25.199 --> 00:08:27.199
+<v Speaker 1>So, yeah, that's the whirlwind tour. You can
+
+00:08:27.199 --> 00:08:29.840
+<v Speaker 1>find some talks on YouTube about, you know,
+
+00:08:29.840 --> 00:08:31.885
+<v Speaker 1>what is containerd, where did it come from,
+
+00:08:31.885 --> 00:08:33.404
+<v Speaker 1>and maybe a little more of that history.
+
+00:08:33.404 --> 00:08:33.885
+<v Speaker 1>But
+
+00:08:34.365 --> 00:08:36.284
+<v Speaker 1>that's kind of the the quick version.
+
+00:08:37.645 --> 00:08:40.605
+<v Speaker 0>Excellent. You actually answered another viewer question there
+
+00:08:40.605 --> 00:08:42.445
+<v Speaker 0>as part of that kind of summary there.
+
+00:08:42.445 --> 00:08:42.525
+<v Speaker 0>There's
+
+00:08:43.400 --> 00:08:46.200
+<v Speaker 0>another question from Reddit was why does containerd
+
+00:08:46.200 --> 00:08:48.520
+<v Speaker 0>exist when Docker, you know, was a thing
+
+00:08:48.520 --> 00:08:51.000
+<v Speaker 0>even though they understood that Docker now uses
+
+00:08:51.000 --> 00:08:53.080
+<v Speaker 0>containerd? And I think the answer there as
+
+00:08:53.080 --> 00:08:55.240
+<v Speaker 0>well, this was at least in the initial
+
+00:08:55.240 --> 00:08:57.480
+<v Speaker 0>version was spun out of Docker to simplify
+
+00:08:57.480 --> 00:08:58.600
+<v Speaker 0>that runtime aspect.
+
+00:08:59.145 --> 00:08:59.945
+<v Speaker 1>Absolutely.
+
+00:09:00.745 --> 00:09:01.305
+<v Speaker 1>Yeah.
+
+00:09:02.265 --> 00:09:03.225
+<v Speaker 0>Okay. So,
+
+00:09:03.705 --> 00:09:05.465
+<v Speaker 0>I mean, as far as containerd
+
+00:09:05.465 --> 00:09:07.545
+<v Speaker 0>goes and and as touch points with the
+
+00:09:07.545 --> 00:09:10.185
+<v Speaker 0>container ecosystem, you you've mentioned Docker there. So
+
+00:09:10.185 --> 00:09:12.985
+<v Speaker 0>Docker uses containerd to actually orchestrate or run
+
+00:09:12.985 --> 00:09:15.959
+<v Speaker 0>the containers. Kubernetes now uses containerd as as
+
+00:09:15.959 --> 00:09:17.959
+<v Speaker 0>the default runtime implementation.
+
+00:09:17.959 --> 00:09:19.959
+<v Speaker 0>Are there is there anything missing there that
+
+00:09:19.959 --> 00:09:22.279
+<v Speaker 0>we haven't covered? Is containerd used in any
+
+00:09:22.279 --> 00:09:25.240
+<v Speaker 0>other large substantial projects that that's worth mentioning?
+
+00:09:26.200 --> 00:09:27.240
+<v Speaker 1>Yeah. So
+
+00:09:28.200 --> 00:09:29.480
+<v Speaker 1>the
+
+00:09:30.925 --> 00:09:33.805
+<v Speaker 1>I I think yeah. There's two aspects that
+
+00:09:33.805 --> 00:09:34.525
+<v Speaker 1>I I'm
+
+00:09:36.205 --> 00:09:38.685
+<v Speaker 1>stumbling because I there there's a couple aspects
+
+00:09:38.685 --> 00:09:41.085
+<v Speaker 1>to that. There's because containerd
+
+00:09:41.085 --> 00:09:42.205
+<v Speaker 1>really
+
+00:09:42.685 --> 00:09:44.045
+<v Speaker 1>has a
+
+00:09:44.459 --> 00:09:47.339
+<v Speaker 1>a API layer that's been very attractive. There's
+
+00:09:47.339 --> 00:09:49.980
+<v Speaker 1>a lot of sort of consuming of containerd
+
+00:09:50.300 --> 00:09:51.660
+<v Speaker 1>across a
+
+00:09:51.980 --> 00:09:54.459
+<v Speaker 1>pretty large number of projects that
+
+00:09:55.420 --> 00:09:58.220
+<v Speaker 1>aren't necessarily just using it as a runtime,
+
+00:09:59.355 --> 00:10:00.875
+<v Speaker 1>but consuming it,
+
+00:10:01.195 --> 00:10:02.555
+<v Speaker 1>in some other way,
+
+00:10:03.115 --> 00:10:06.075
+<v Speaker 1>or expanding on its capabilities because
+
+00:10:06.155 --> 00:10:08.715
+<v Speaker 1>many parts of the architecture are pluggable.
+
+00:10:10.155 --> 00:10:12.550
+<v Speaker 1>So I think you know? So what what
+
+00:10:12.550 --> 00:10:13.990
+<v Speaker 1>aspect of this whole thing is we could
+
+00:10:13.990 --> 00:10:16.230
+<v Speaker 1>talk about all the cloud Kubernetes services that
+
+00:10:16.230 --> 00:10:18.550
+<v Speaker 1>use it by default. We've already mentioned that.
+
+00:10:19.670 --> 00:10:22.070
+<v Speaker 1>Linux kit, which a project that came out
+
+00:10:22.070 --> 00:10:22.630
+<v Speaker 1>of Docker,
+
+00:10:23.825 --> 00:10:25.745
+<v Speaker 1>kind of a containerized,
+
+00:10:26.625 --> 00:10:29.985
+<v Speaker 1>you know, minimal secure Linux uses containerd as
+
+00:10:29.985 --> 00:10:31.345
+<v Speaker 1>the core runtime.
+
+00:10:32.225 --> 00:10:33.345
+<v Speaker 1>A lot of the
+
+00:10:34.945 --> 00:10:37.105
+<v Speaker 1>sort of lightweight hypervisor
+
+00:10:37.105 --> 00:10:38.385
+<v Speaker 1>or other
+
+00:10:38.880 --> 00:10:40.320
+<v Speaker 1>advanced isolation
+
+00:10:40.960 --> 00:10:45.440
+<v Speaker 1>capabilities like Amazon's firecracker project or cata containers.
+
+00:10:45.840 --> 00:10:48.320
+<v Speaker 1>They've built shims. When we look at the
+
+00:10:48.320 --> 00:10:50.400
+<v Speaker 1>architecture, we'll we'll see what that means. But
+
+00:10:50.400 --> 00:10:52.764
+<v Speaker 1>they've built shims so that you can, again,
+
+00:10:52.764 --> 00:10:56.365
+<v Speaker 1>drive containerd through its API or from Kubernetes.
+
+00:10:57.565 --> 00:10:59.404
+<v Speaker 1>And you can use these custom, you know,
+
+00:10:59.404 --> 00:11:00.765
+<v Speaker 1>isolation engines,
+
+00:11:01.884 --> 00:11:02.685
+<v Speaker 1>gVisor,
+
+00:11:02.685 --> 00:11:05.084
+<v Speaker 1>again, another option there. And then
+
+00:11:05.725 --> 00:11:06.524
+<v Speaker 1>Cloud Foundry
+
+00:11:07.450 --> 00:11:09.930
+<v Speaker 1>used to have a run c management
+
+00:11:10.250 --> 00:11:10.970
+<v Speaker 1>layer,
+
+00:11:11.370 --> 00:11:13.210
+<v Speaker 1>and they've effectively
+
+00:11:13.210 --> 00:11:14.890
+<v Speaker 1>switched to use containerd.
+
+00:11:14.890 --> 00:11:17.210
+<v Speaker 1>So, again, Cloud Foundry is a pass
+
+00:11:17.210 --> 00:11:18.490
+<v Speaker 1>like Heroku,
+
+00:11:19.610 --> 00:11:21.690
+<v Speaker 1>and so that's another kind of major user.
+
+00:11:22.245 --> 00:11:23.925
+<v Speaker 1>And then, you know, there's just a a
+
+00:11:23.925 --> 00:11:28.245
+<v Speaker 1>set of various vendor projects. So Alibaba Cloud
+
+00:11:28.245 --> 00:11:28.965
+<v Speaker 1>built
+
+00:11:29.365 --> 00:11:31.685
+<v Speaker 1>a tool called pouch container, which is almost
+
+00:11:31.685 --> 00:11:35.205
+<v Speaker 1>like a a Swiss army knife, docker like
+
+00:11:35.670 --> 00:11:38.710
+<v Speaker 1>container runtime that, again, embeds containerd
+
+00:11:38.790 --> 00:11:41.510
+<v Speaker 1>and exposes all these features that Alibaba Cloud
+
+00:11:41.510 --> 00:11:42.230
+<v Speaker 1>uses
+
+00:11:42.710 --> 00:11:43.910
+<v Speaker 1>on their platform.
+
+00:11:44.630 --> 00:11:46.630
+<v Speaker 1>And then Rancher did something similar
+
+00:11:46.870 --> 00:11:48.230
+<v Speaker 1>when they built
+
+00:11:48.555 --> 00:11:49.915
+<v Speaker 1>k three s.
+
+00:11:50.555 --> 00:11:52.795
+<v Speaker 1>So this kind of minimize Kubernetes.
+
+00:11:53.755 --> 00:11:56.475
+<v Speaker 1>Darren chose to build containerd directly into k
+
+00:11:56.475 --> 00:11:58.235
+<v Speaker 1>three s. So you don't even use a
+
+00:11:58.235 --> 00:11:59.995
+<v Speaker 1>separate containerd binary.
+
+00:12:00.475 --> 00:12:02.714
+<v Speaker 1>Containerd is the run time for k three
+
+00:12:02.714 --> 00:12:05.250
+<v Speaker 1>s, and it's built directly into that single
+
+00:12:05.730 --> 00:12:07.090
+<v Speaker 1>binary. So
+
+00:12:07.970 --> 00:12:09.810
+<v Speaker 1>and then, you know, I guess one more
+
+00:12:09.810 --> 00:12:13.170
+<v Speaker 1>that comes to mind, Alex Ellis built FASD.
+
+00:12:13.170 --> 00:12:15.490
+<v Speaker 1>So, again, part of his open FASD
+
+00:12:15.490 --> 00:12:17.570
+<v Speaker 1>hierarchy of projects. FASD
+
+00:12:18.205 --> 00:12:19.885
+<v Speaker 1>gives you a way to you know, you
+
+00:12:19.885 --> 00:12:22.765
+<v Speaker 1>could deploy open FASD as Kubernetes
+
+00:12:23.165 --> 00:12:24.365
+<v Speaker 1>based deployment,
+
+00:12:24.765 --> 00:12:26.605
+<v Speaker 1>but you can also run FASD and you're
+
+00:12:26.605 --> 00:12:29.325
+<v Speaker 1>just effectively using the containerd runtime
+
+00:12:29.325 --> 00:12:30.845
+<v Speaker 1>to run your functions
+
+00:12:31.005 --> 00:12:32.125
+<v Speaker 1>as a service
+
+00:12:32.365 --> 00:12:33.404
+<v Speaker 1>in containers.
+
+00:12:35.150 --> 00:12:37.310
+<v Speaker 1>So yeah. That you know, I'm probably missing
+
+00:12:37.310 --> 00:12:39.950
+<v Speaker 1>some, but that's you know, people seem to
+
+00:12:39.950 --> 00:12:42.910
+<v Speaker 1>be happy to kind of explore how to
+
+00:12:42.910 --> 00:12:45.390
+<v Speaker 1>embed containerd in other projects because of this
+
+00:12:45.390 --> 00:12:47.070
+<v Speaker 1>simple kind of API layer.
+
+00:12:49.005 --> 00:12:52.045
+<v Speaker 1>Actually, one one other project that's worth mentioning
+
+00:12:52.445 --> 00:12:54.685
+<v Speaker 1>because you may already be using it, the
+
+00:12:54.685 --> 00:12:56.845
+<v Speaker 1>build kit, which again is an open source
+
+00:12:56.845 --> 00:12:58.205
+<v Speaker 1>project out of Docker.
+
+00:12:59.245 --> 00:13:01.725
+<v Speaker 1>If you're using a very recent Docker, I'm
+
+00:13:01.725 --> 00:13:03.245
+<v Speaker 1>not sure if they've made the switch where
+
+00:13:03.245 --> 00:13:04.365
+<v Speaker 1>build kit is default,
+
+00:13:04.900 --> 00:13:06.260
+<v Speaker 1>but it will be soon.
+
+00:13:06.980 --> 00:13:08.420
+<v Speaker 1>But, again, a a a
+
+00:13:08.980 --> 00:13:12.660
+<v Speaker 1>container build engine that uses containerd's API under
+
+00:13:12.660 --> 00:13:15.860
+<v Speaker 1>the covers and can build directly with containerd
+
+00:13:15.860 --> 00:13:17.060
+<v Speaker 1>without Docker at all.
+
+00:13:18.805 --> 00:13:21.045
+<v Speaker 1>So, yeah, those that's a handful of kinda
+
+00:13:21.045 --> 00:13:22.885
+<v Speaker 1>containerd using or
+
+00:13:23.125 --> 00:13:24.565
+<v Speaker 1>exploiting projects.
+
+00:13:26.565 --> 00:13:27.685
+<v Speaker 0>That was a lot.
+
+00:13:28.965 --> 00:13:29.925
+<v Speaker 0>There's a lot there.
+
+00:13:30.740 --> 00:13:32.019
+<v Speaker 0>Is now a good time then where we
+
+00:13:32.019 --> 00:13:33.940
+<v Speaker 0>pull up this architecture diagram and you can
+
+00:13:33.940 --> 00:13:35.540
+<v Speaker 0>give us the the quick tour of some
+
+00:13:35.540 --> 00:13:36.819
+<v Speaker 0>of those things you were talking about as
+
+00:13:36.819 --> 00:13:38.339
+<v Speaker 0>well? Yeah. Yeah. Absolutely.
+
+00:13:39.940 --> 00:13:41.300
+<v Speaker 0>Alright. There we go.
+
+00:13:42.420 --> 00:13:44.100
+<v Speaker 1>Yeah. Look at all the boxes.
+
+00:13:46.575 --> 00:13:48.495
+<v Speaker 1>So let I I think
+
+00:13:49.935 --> 00:13:52.975
+<v Speaker 1>one reason why, you know, this particular image
+
+00:13:53.295 --> 00:13:56.255
+<v Speaker 1>is useful is you can kinda see ways
+
+00:13:56.255 --> 00:13:56.975
+<v Speaker 1>that
+
+00:13:57.215 --> 00:14:00.735
+<v Speaker 1>various tools kinda insert themselves of various layers
+
+00:14:00.735 --> 00:14:02.910
+<v Speaker 1>of the containerd architecture.
+
+00:14:04.589 --> 00:14:06.430
+<v Speaker 1>One thing to note here
+
+00:14:06.829 --> 00:14:08.990
+<v Speaker 1>that is important is that
+
+00:14:09.470 --> 00:14:12.910
+<v Speaker 1>the containerd architecture, that core layer in the,
+
+00:14:12.910 --> 00:14:15.905
+<v Speaker 1>I guess, greenish, light greenish color,
+
+00:14:16.705 --> 00:14:19.025
+<v Speaker 1>is actually built as a unique
+
+00:14:19.345 --> 00:14:20.705
+<v Speaker 1>or differentiated
+
+00:14:20.705 --> 00:14:23.505
+<v Speaker 1>set of gRPC driven services.
+
+00:14:24.145 --> 00:14:26.785
+<v Speaker 1>So all these services could be used by
+
+00:14:26.785 --> 00:14:29.279
+<v Speaker 1>themselves. And the reason that's important is that
+
+00:14:29.279 --> 00:14:32.000
+<v Speaker 1>there are people who have written libraries or
+
+00:14:32.000 --> 00:14:33.680
+<v Speaker 1>uses of containerd
+
+00:14:34.240 --> 00:14:35.440
+<v Speaker 1>that replace,
+
+00:14:35.440 --> 00:14:37.920
+<v Speaker 1>you know, a specific service so that you
+
+00:14:37.920 --> 00:14:40.560
+<v Speaker 1>can use, you know, this construct
+
+00:14:40.560 --> 00:14:43.839
+<v Speaker 1>even outside of using the containerd daemon altogether.
+
+00:14:45.065 --> 00:14:45.705
+<v Speaker 1>So,
+
+00:14:46.345 --> 00:14:48.745
+<v Speaker 1>you know, or as I don't maybe some
+
+00:14:48.745 --> 00:14:51.145
+<v Speaker 1>listeners have heard of or as out of
+
+00:14:51.145 --> 00:14:53.385
+<v Speaker 1>the desk labs team at Microsoft,
+
+00:14:53.945 --> 00:14:57.385
+<v Speaker 1>but they liked the simplicity by which you
+
+00:14:57.385 --> 00:14:59.730
+<v Speaker 1>could use the Go API for containerd to
+
+00:14:59.730 --> 00:15:01.010
+<v Speaker 1>talk to a registry.
+
+00:15:01.490 --> 00:15:03.890
+<v Speaker 1>But they didn't want the content service
+
+00:15:04.209 --> 00:15:07.490
+<v Speaker 1>to be writing or to writing to containerd's
+
+00:15:07.490 --> 00:15:09.570
+<v Speaker 1>content store, which you would need the containerd
+
+00:15:09.570 --> 00:15:10.610
+<v Speaker 1>daemon running.
+
+00:15:10.930 --> 00:15:12.690
+<v Speaker 1>So they just were you can make these
+
+00:15:12.690 --> 00:15:14.930
+<v Speaker 1>calls and say, actually, my content service is
+
+00:15:14.930 --> 00:15:17.465
+<v Speaker 1>just this place in memory over here or
+
+00:15:17.465 --> 00:15:18.665
+<v Speaker 1>this file system.
+
+00:15:19.225 --> 00:15:21.065
+<v Speaker 1>And now you can write a library
+
+00:15:21.305 --> 00:15:23.625
+<v Speaker 1>that uses a piece of containerd
+
+00:15:23.705 --> 00:15:25.945
+<v Speaker 1>to do registry interaction, but you don't need
+
+00:15:25.945 --> 00:15:27.385
+<v Speaker 1>the containerd daemon at all.
+
+00:15:28.430 --> 00:15:30.430
+<v Speaker 1>So there's all kinds of uses where
+
+00:15:30.910 --> 00:15:33.310
+<v Speaker 1>any one of these GRP services, so the
+
+00:15:33.310 --> 00:15:36.750
+<v Speaker 1>content, diff, images, leases, namespaces,
+
+00:15:36.990 --> 00:15:39.310
+<v Speaker 1>all these services are available. You should call
+
+00:15:39.310 --> 00:15:40.990
+<v Speaker 1>them directly via gRPC,
+
+00:15:41.265 --> 00:15:43.265
+<v Speaker 1>or you could write your own implementation and
+
+00:15:43.265 --> 00:15:44.785
+<v Speaker 1>and tell containerd,
+
+00:15:44.865 --> 00:15:48.785
+<v Speaker 1>actually, no. Here's my implementation of content or
+
+00:15:48.865 --> 00:15:50.705
+<v Speaker 1>containers or tasks.
+
+00:15:51.985 --> 00:15:53.905
+<v Speaker 1>Most people aren't gonna wanna do that. They're
+
+00:15:53.905 --> 00:15:55.650
+<v Speaker 1>just gonna use it. They're gonna go a
+
+00:15:55.650 --> 00:15:58.450
+<v Speaker 1>layer up. So then containerd has an API
+
+00:15:58.610 --> 00:16:01.570
+<v Speaker 1>where it simplifies talking and and meshing these
+
+00:16:01.570 --> 00:16:03.650
+<v Speaker 1>services together. So you can think of,
+
+00:16:04.050 --> 00:16:07.010
+<v Speaker 1>like, using it from Kubernetes through the CRI.
+
+00:16:07.010 --> 00:16:10.175
+<v Speaker 1>So that's that left block of the containerd
+
+00:16:10.175 --> 00:16:11.135
+<v Speaker 1>API.
+
+00:16:12.095 --> 00:16:13.135
+<v Speaker 1>You're calling
+
+00:16:13.855 --> 00:16:17.615
+<v Speaker 1>the it's using a containerd client go API
+
+00:16:17.935 --> 00:16:20.175
+<v Speaker 1>to do things like run a container, pull
+
+00:16:20.175 --> 00:16:22.495
+<v Speaker 1>an image, and all those services are used
+
+00:16:22.495 --> 00:16:23.695
+<v Speaker 1>by that API
+
+00:16:24.810 --> 00:16:25.770
+<v Speaker 1>to do that.
+
+00:16:26.170 --> 00:16:28.410
+<v Speaker 1>And, if you know about if you've ever
+
+00:16:28.410 --> 00:16:31.370
+<v Speaker 1>configure configured the Docker engine with a specific
+
+00:16:31.370 --> 00:16:32.490
+<v Speaker 1>graph driver,
+
+00:16:32.890 --> 00:16:34.970
+<v Speaker 1>like, oh, I use overlay or I use
+
+00:16:34.970 --> 00:16:35.770
+<v Speaker 1>device mapper,
+
+00:16:36.865 --> 00:16:38.705
+<v Speaker 1>We call those snapshatters
+
+00:16:38.705 --> 00:16:40.945
+<v Speaker 1>in containerd lingo.
+
+00:16:41.105 --> 00:16:42.625
+<v Speaker 1>And so, again, we support a lot of
+
+00:16:42.625 --> 00:16:44.385
+<v Speaker 1>the same ones you've seen before,
+
+00:16:44.705 --> 00:16:47.585
+<v Speaker 1>but it's also pluggable. And that's interesting in
+
+00:16:47.585 --> 00:16:48.145
+<v Speaker 1>that
+
+00:16:48.980 --> 00:16:51.140
+<v Speaker 1>If you don't like any of these snapshatters,
+
+00:16:51.140 --> 00:16:52.660
+<v Speaker 1>you can write your own, and there's some
+
+00:16:52.660 --> 00:16:53.860
+<v Speaker 1>very interesting work.
+
+00:16:54.340 --> 00:16:56.340
+<v Speaker 1>There's a talk from KubeCon a few weeks
+
+00:16:56.340 --> 00:16:59.300
+<v Speaker 1>ago on the star g z snapshot, which
+
+00:16:59.300 --> 00:17:02.415
+<v Speaker 1>does lazy image pull and anyway, it can
+
+00:17:02.415 --> 00:17:05.375
+<v Speaker 1>do major speed up in container startup time.
+
+00:17:05.935 --> 00:17:08.175
+<v Speaker 1>So having the snapshot or be pluggable means
+
+00:17:08.175 --> 00:17:10.494
+<v Speaker 1>you're not limited by the ones that we've
+
+00:17:10.494 --> 00:17:11.294
+<v Speaker 1>thought up
+
+00:17:11.535 --> 00:17:12.734
+<v Speaker 1>or implemented.
+
+00:17:12.895 --> 00:17:14.734
+<v Speaker 1>And it allows things like, you know, Windows
+
+00:17:14.734 --> 00:17:18.095
+<v Speaker 1>to use their own snapshot or their own
+
+00:17:16.950 --> 00:17:17.750
+<v Speaker 1>implementations
+
+00:17:17.750 --> 00:17:18.389
+<v Speaker 1>that
+
+00:17:18.869 --> 00:17:20.309
+<v Speaker 1>Microsoft has written.
+
+00:17:21.510 --> 00:17:23.269
+<v Speaker 1>Stepping to the right of that, when you
+
+00:17:23.269 --> 00:17:26.149
+<v Speaker 1>actually run a container, I talked about shims.
+
+00:17:26.470 --> 00:17:28.549
+<v Speaker 1>You know, obviously, the most natural shim is
+
+00:17:28.549 --> 00:17:30.789
+<v Speaker 1>to call run c. I'm on Linux. I
+
+00:17:30.789 --> 00:17:33.794
+<v Speaker 1>just want Linux kernel based containers.
+
+00:17:34.115 --> 00:17:36.195
+<v Speaker 1>I just want run c to run my
+
+00:17:36.195 --> 00:17:38.515
+<v Speaker 1>process with the isolation I specify.
+
+00:17:39.155 --> 00:17:41.875
+<v Speaker 1>But because our shim API is pluggable and
+
+00:17:41.875 --> 00:17:43.875
+<v Speaker 1>you can extend it and configure your own,
+
+00:17:44.419 --> 00:17:46.419
+<v Speaker 1>This is where you see Cata containers or
+
+00:17:46.419 --> 00:17:47.220
+<v Speaker 1>Firecracker
+
+00:17:47.220 --> 00:17:48.499
+<v Speaker 1>or gVisor
+
+00:17:48.659 --> 00:17:51.460
+<v Speaker 1>or on my on Windows, the run HCS
+
+00:17:51.460 --> 00:17:52.259
+<v Speaker 1>tool
+
+00:17:52.580 --> 00:17:55.299
+<v Speaker 1>or or shim that Microsoft has built to
+
+00:17:55.299 --> 00:17:55.859
+<v Speaker 1>run
+
+00:17:56.419 --> 00:17:58.900
+<v Speaker 1>Linux containers on Windows as well as Windows
+
+00:17:58.900 --> 00:18:00.020
+<v Speaker 1>containers on Windows.
+
+00:18:02.145 --> 00:18:03.985
+<v Speaker 1>So, yeah, we've got so the shims are
+
+00:18:03.985 --> 00:18:05.505
+<v Speaker 1>down there at the bottom. We've talked about
+
+00:18:05.505 --> 00:18:06.784
+<v Speaker 1>Snapshotters,
+
+00:18:07.345 --> 00:18:09.105
+<v Speaker 1>the pluggable content store,
+
+00:18:09.505 --> 00:18:11.825
+<v Speaker 1>the array of gRPC services.
+
+00:18:13.260 --> 00:18:15.580
+<v Speaker 1>And then, of course, above that,
+
+00:18:16.140 --> 00:18:19.020
+<v Speaker 1>you know, you can have container engines consuming
+
+00:18:19.580 --> 00:18:22.140
+<v Speaker 1>all of this by using the the Go
+
+00:18:22.140 --> 00:18:22.940
+<v Speaker 1>library
+
+00:18:22.940 --> 00:18:24.940
+<v Speaker 1>or calling the API.
+
+00:18:25.325 --> 00:18:27.645
+<v Speaker 1>And so Docker does that. The pouch container
+
+00:18:27.645 --> 00:18:29.485
+<v Speaker 1>project I talked about does that,
+
+00:18:30.285 --> 00:18:32.045
+<v Speaker 1>via the CRI API.
+
+00:18:32.045 --> 00:18:33.565
+<v Speaker 1>Kubernetes does that.
+
+00:18:33.965 --> 00:18:37.165
+<v Speaker 1>And then build kit, again, another consumer who
+
+00:18:37.165 --> 00:18:40.125
+<v Speaker 1>also just says, I wanna use containerd as
+
+00:18:40.125 --> 00:18:42.510
+<v Speaker 1>a client. I'm gonna use the Go API
+
+00:18:42.510 --> 00:18:44.349
+<v Speaker 1>to use their features for
+
+00:18:44.590 --> 00:18:46.669
+<v Speaker 1>pushing and pulling from registries,
+
+00:18:47.149 --> 00:18:49.070
+<v Speaker 1>and so on. And then we have a
+
+00:18:49.070 --> 00:18:52.269
+<v Speaker 1>simple administrative client called CTR
+
+00:18:52.830 --> 00:18:54.590
+<v Speaker 1>on the far right there of the client.
+
+00:18:55.215 --> 00:18:56.254
+<v Speaker 1>And that's,
+
+00:18:56.575 --> 00:18:58.815
+<v Speaker 1>I think, the most important point for developers
+
+00:18:58.815 --> 00:19:01.375
+<v Speaker 1>is we don't really expect that to be
+
+00:19:01.375 --> 00:19:04.014
+<v Speaker 1>a replacement for the Docker command line.
+
+00:19:04.255 --> 00:19:06.895
+<v Speaker 1>The Docker command line, of course, has grown
+
+00:19:06.895 --> 00:19:08.414
+<v Speaker 1>over the years to have
+
+00:19:09.850 --> 00:19:11.369
+<v Speaker 1>lots and lots of features.
+
+00:19:11.850 --> 00:19:14.730
+<v Speaker 1>We're not seeing containerd as a replacement for
+
+00:19:14.730 --> 00:19:16.970
+<v Speaker 1>a direct kind of developer workflow.
+
+00:19:16.970 --> 00:19:18.330
+<v Speaker 1>So CTR
+
+00:19:18.730 --> 00:19:21.049
+<v Speaker 1>will probably feel clunky in some ways to
+
+00:19:21.049 --> 00:19:22.890
+<v Speaker 1>to a developer who's used to the docker
+
+00:19:22.890 --> 00:19:23.370
+<v Speaker 1>workflow.
+
+00:19:24.055 --> 00:19:26.055
+<v Speaker 1>And there's a purpose to that because it's
+
+00:19:26.055 --> 00:19:28.055
+<v Speaker 1>not really meant to be a replacement for
+
+00:19:28.055 --> 00:19:31.095
+<v Speaker 1>your day to day use. It's more administrative
+
+00:19:31.095 --> 00:19:32.135
+<v Speaker 1>debug
+
+00:19:32.695 --> 00:19:34.455
+<v Speaker 1>so that, you know, you can test out
+
+00:19:34.455 --> 00:19:35.175
+<v Speaker 1>containerd,
+
+00:19:36.150 --> 00:19:38.550
+<v Speaker 1>But we expect you're probably using it via
+
+00:19:38.550 --> 00:19:39.910
+<v Speaker 1>some other wrapping
+
+00:19:40.070 --> 00:19:42.470
+<v Speaker 1>tool like a platform. So that top layer,
+
+00:19:42.470 --> 00:19:43.190
+<v Speaker 1>I'm using
+
+00:19:43.510 --> 00:19:44.390
+<v Speaker 1>Azure's
+
+00:19:44.390 --> 00:19:46.870
+<v Speaker 1>Kubernetes service. I'm using Docker.
+
+00:19:47.510 --> 00:19:50.445
+<v Speaker 1>I'm using Rancher's k three s. You know,
+
+00:19:50.445 --> 00:19:53.325
+<v Speaker 1>all the all these use cases don't require
+
+00:19:53.325 --> 00:19:55.804
+<v Speaker 1>me to to use containerd as kind of
+
+00:19:55.804 --> 00:19:57.325
+<v Speaker 1>my main development tool,
+
+00:19:57.725 --> 00:19:59.884
+<v Speaker 1>but containerd is there providing,
+
+00:20:00.284 --> 00:20:01.404
+<v Speaker 1>the platform,
+
+00:20:01.965 --> 00:20:05.280
+<v Speaker 1>for these tools to then have a easy
+
+00:20:05.280 --> 00:20:06.560
+<v Speaker 1>API for
+
+00:20:06.720 --> 00:20:08.560
+<v Speaker 1>a container runtime.
+
+00:20:08.880 --> 00:20:10.960
+<v Speaker 1>And so that that's kind of the end
+
+00:20:10.960 --> 00:20:12.880
+<v Speaker 1>result of what we talked about with the
+
+00:20:12.880 --> 00:20:13.920
+<v Speaker 1>the history
+
+00:20:14.080 --> 00:20:16.320
+<v Speaker 1>is that containerd is kind of the stable
+
+00:20:16.320 --> 00:20:17.040
+<v Speaker 1>layer
+
+00:20:17.200 --> 00:20:18.880
+<v Speaker 1>that gives you all those features,
+
+00:20:19.615 --> 00:20:21.534
+<v Speaker 1>but really is not meant to be a
+
+00:20:21.534 --> 00:20:22.335
+<v Speaker 1>replacement
+
+00:20:22.654 --> 00:20:24.414
+<v Speaker 1>for the developer workflow.
+
+00:20:25.455 --> 00:20:27.534
+<v Speaker 1>So, yeah, I I hope I did it
+
+00:20:27.534 --> 00:20:29.455
+<v Speaker 1>justice. There's a lot a lot there, but
+
+00:20:29.455 --> 00:20:30.174
+<v Speaker 1>that's
+
+00:20:30.255 --> 00:20:32.495
+<v Speaker 1>that's the bulk of of how it's assembled
+
+00:20:32.495 --> 00:20:33.615
+<v Speaker 1>and what the pieces are.
+
+00:20:35.200 --> 00:20:37.600
+<v Speaker 0>Yes. You definitely did that justice.
+
+00:20:37.680 --> 00:20:40.240
+<v Speaker 0>I think I'm just in complete
+
+00:20:40.720 --> 00:20:43.680
+<v Speaker 0>not shocked, but maybe all. Just the size
+
+00:20:43.680 --> 00:20:45.600
+<v Speaker 0>and breadth of the of the project, you
+
+00:20:45.600 --> 00:20:47.545
+<v Speaker 0>know, and previously when I've always thought about
+
+00:20:47.545 --> 00:20:49.545
+<v Speaker 0>containerd, I think of the cube blitz telling
+
+00:20:49.545 --> 00:20:51.225
+<v Speaker 0>containerd to go run a container for me
+
+00:20:51.225 --> 00:20:53.625
+<v Speaker 0>and it being such a small API surface.
+
+00:20:53.625 --> 00:20:55.625
+<v Speaker 0>But, really, there's a lot of moving parts
+
+00:20:55.625 --> 00:20:57.305
+<v Speaker 0>and a lot of things that can be
+
+00:20:57.305 --> 00:20:59.465
+<v Speaker 0>swapped in. I mean, just looking at the,
+
+00:20:59.465 --> 00:21:01.890
+<v Speaker 0>you the containerdish shims there, moving between run
+
+00:21:01.890 --> 00:21:04.610
+<v Speaker 0>c and maybe kinda containers or firecracker. Like,
+
+00:21:04.610 --> 00:21:07.170
+<v Speaker 0>a lot of flexibility in this architecture that,
+
+00:21:07.170 --> 00:21:09.010
+<v Speaker 0>I guess, is why people are adopting it
+
+00:21:09.010 --> 00:21:10.289
+<v Speaker 0>for their own tooling.
+
+00:21:11.650 --> 00:21:12.770
+<v Speaker 1>I you know, I think,
+
+00:21:14.845 --> 00:21:16.684
+<v Speaker 1>you know, we've gotten a lot of positive
+
+00:21:16.684 --> 00:21:19.164
+<v Speaker 1>comments about the API over the last couple
+
+00:21:19.164 --> 00:21:20.445
+<v Speaker 1>years. You know,
+
+00:21:20.765 --> 00:21:23.164
+<v Speaker 1>when Alex came and said, hey. Let's you
+
+00:21:23.164 --> 00:21:24.445
+<v Speaker 1>know, can you help me figure out how
+
+00:21:24.445 --> 00:21:26.684
+<v Speaker 1>I might use containerd underneath FASD?
+
+00:21:28.180 --> 00:21:30.340
+<v Speaker 1>We've worked as used it underneath a few
+
+00:21:30.340 --> 00:21:31.380
+<v Speaker 1>of their projects.
+
+00:21:31.460 --> 00:21:31.940
+<v Speaker 1>And,
+
+00:21:32.740 --> 00:21:34.820
+<v Speaker 1>you know, there there's always a learning curve.
+
+00:21:34.820 --> 00:21:36.340
+<v Speaker 1>It's like, oh, I didn't expect it to
+
+00:21:36.340 --> 00:21:38.180
+<v Speaker 1>work this way. And and I
+
+00:21:38.740 --> 00:21:40.180
+<v Speaker 1>think there's another question
+
+00:21:40.500 --> 00:21:42.500
+<v Speaker 1>that you got about documentation,
+
+00:21:42.580 --> 00:21:44.384
+<v Speaker 1>which we can talk a little bit more
+
+00:21:44.384 --> 00:21:46.784
+<v Speaker 1>about. But, you know, it's hard to
+
+00:21:47.264 --> 00:21:50.065
+<v Speaker 1>as a small team of maintainers to to
+
+00:21:50.065 --> 00:21:52.065
+<v Speaker 1>cover all the use cases and make sure
+
+00:21:52.065 --> 00:21:54.304
+<v Speaker 1>everybody has the information they need
+
+00:21:55.184 --> 00:21:55.825
+<v Speaker 1>to
+
+00:21:56.040 --> 00:21:59.160
+<v Speaker 1>consume containerd. But in general, you're absolutely right
+
+00:21:59.160 --> 00:22:01.240
+<v Speaker 1>that people that have dug in a little
+
+00:22:01.240 --> 00:22:03.960
+<v Speaker 1>bit say, hey. This is actually really easy
+
+00:22:04.440 --> 00:22:06.679
+<v Speaker 1>to provide all the features I need
+
+00:22:06.920 --> 00:22:07.480
+<v Speaker 1>for,
+
+00:22:08.455 --> 00:22:11.415
+<v Speaker 1>you know, embedding or utilizing a container runtime
+
+00:22:11.415 --> 00:22:12.535
+<v Speaker 1>of my project,
+
+00:22:13.015 --> 00:22:15.575
+<v Speaker 1>and it just works. It's stable. It it's
+
+00:22:15.575 --> 00:22:16.695
+<v Speaker 1>simple. And and
+
+00:22:17.175 --> 00:22:19.095
+<v Speaker 1>so, yeah, we're pretty happy with
+
+00:22:19.575 --> 00:22:21.895
+<v Speaker 1>the comments we've gotten from people that that
+
+00:22:21.895 --> 00:22:23.495
+<v Speaker 1>have ended up using it for their project.
+
+00:22:25.190 --> 00:22:27.430
+<v Speaker 0>Excellent. I'm gonna quote you that when anyone
+
+00:22:27.430 --> 00:22:29.350
+<v Speaker 0>ever asked me how difficult is it to
+
+00:22:29.350 --> 00:22:31.670
+<v Speaker 0>integrate containerdames with a project. It's be Phil
+
+00:22:31.670 --> 00:22:33.910
+<v Speaker 0>said this is easy. That's that's difficult.
+
+00:22:35.190 --> 00:22:37.350
+<v Speaker 0>Do you see a future where
+
+00:22:37.430 --> 00:22:37.990
+<v Speaker 0>more
+
+00:22:39.265 --> 00:22:40.785
+<v Speaker 0>I I don't wanna say something's gonna try
+
+00:22:40.785 --> 00:22:42.865
+<v Speaker 0>to replace Docker as, a developer tool, but
+
+00:22:42.865 --> 00:22:45.184
+<v Speaker 0>do see more people using containerd as base
+
+00:22:45.184 --> 00:22:47.345
+<v Speaker 0>for developer tooling? You know, I know a
+
+00:22:47.345 --> 00:22:49.184
+<v Speaker 0>lot of people are frustrated with, you know,
+
+00:22:49.184 --> 00:22:51.505
+<v Speaker 0>local development tooling for Kubernetes. And do you
+
+00:22:51.505 --> 00:22:54.050
+<v Speaker 0>see containerd be in the API that people
+
+00:22:54.050 --> 00:22:56.210
+<v Speaker 0>start to adopt for things like that?
+
+00:22:56.850 --> 00:22:59.170
+<v Speaker 1>Yeah. I I would hesitate
+
+00:22:59.250 --> 00:23:02.930
+<v Speaker 1>thinking that containerd will will fully replace
+
+00:23:03.250 --> 00:23:05.650
+<v Speaker 1>those kind of workflows. I I again, we
+
+00:23:05.650 --> 00:23:07.170
+<v Speaker 1>see it as a
+
+00:23:07.915 --> 00:23:09.515
+<v Speaker 1>more as an embeddable
+
+00:23:09.595 --> 00:23:10.635
+<v Speaker 1>runtime.
+
+00:23:13.115 --> 00:23:15.035
+<v Speaker 1>You know, I mean, a couple of comments
+
+00:23:15.035 --> 00:23:15.755
+<v Speaker 1>like
+
+00:23:17.595 --> 00:23:18.475
+<v Speaker 1>I think the
+
+00:23:19.940 --> 00:23:21.540
+<v Speaker 1>there are a lot of people on Macs,
+
+00:23:21.540 --> 00:23:24.740
+<v Speaker 1>for example. There there's people using Windows and
+
+00:23:24.740 --> 00:23:26.019
+<v Speaker 1>WSL two.
+
+00:23:27.700 --> 00:23:30.179
+<v Speaker 1>And so, you know, because containerd is a
+
+00:23:30.179 --> 00:23:30.899
+<v Speaker 1>Linux
+
+00:23:30.980 --> 00:23:32.499
+<v Speaker 1>focused project,
+
+00:23:32.580 --> 00:23:34.660
+<v Speaker 1>and, of course, we have Windows support as
+
+00:23:34.660 --> 00:23:34.820
+<v Speaker 1>well,
+
+00:23:35.554 --> 00:23:36.674
+<v Speaker 1>You know, you're
+
+00:23:37.395 --> 00:23:39.715
+<v Speaker 1>you know, unless we find people who
+
+00:23:40.115 --> 00:23:42.355
+<v Speaker 1>who really wanna dig in and build kind
+
+00:23:42.355 --> 00:23:44.275
+<v Speaker 1>of another layer around it, you're not gonna
+
+00:23:44.275 --> 00:23:46.994
+<v Speaker 1>get the ease of, like, Docker desktop.
+
+00:23:47.075 --> 00:23:48.595
+<v Speaker 1>You know, where on my Mac, I've got
+
+00:23:48.595 --> 00:23:50.520
+<v Speaker 1>this sort of streamlined.
+
+00:23:50.520 --> 00:23:53.000
+<v Speaker 1>It feels like I'm running Docker commands on
+
+00:23:53.000 --> 00:23:56.200
+<v Speaker 1>my, you know, Mac terminal prompt, and I'm
+
+00:23:56.200 --> 00:23:57.160
+<v Speaker 1>pulling images.
+
+00:23:57.480 --> 00:23:58.600
+<v Speaker 1>You know, all those
+
+00:23:59.720 --> 00:24:02.840
+<v Speaker 1>all that ecosystem doesn't exist for containerd. So
+
+00:24:03.345 --> 00:24:06.144
+<v Speaker 1>if you're a Linux only developer
+
+00:24:06.625 --> 00:24:08.065
+<v Speaker 1>and you're,
+
+00:24:08.945 --> 00:24:11.585
+<v Speaker 1>you know, building on a sort of Kubernetes
+
+00:24:11.585 --> 00:24:13.024
+<v Speaker 1>ecosystem layer,
+
+00:24:14.225 --> 00:24:16.865
+<v Speaker 1>then CTR as a tool may be enough
+
+00:24:16.865 --> 00:24:18.544
+<v Speaker 1>for, like, what you wanna do.
+
+00:24:19.110 --> 00:24:21.030
+<v Speaker 1>Because, you know, quickly, you're gonna go from
+
+00:24:21.030 --> 00:24:23.750
+<v Speaker 1>CTR to using kubectl,
+
+00:24:23.750 --> 00:24:25.350
+<v Speaker 1>you know, for actually doing
+
+00:24:25.670 --> 00:24:29.669
+<v Speaker 1>deployments or or your Kubernetes based work. So
+
+00:24:31.265 --> 00:24:33.105
+<v Speaker 1>yeah. I'm I'm rambling a little, but I
+
+00:24:33.105 --> 00:24:35.825
+<v Speaker 1>think, you know, I I don't see containerd
+
+00:24:36.465 --> 00:24:39.665
+<v Speaker 1>really ever being that full kind of Docker
+
+00:24:39.905 --> 00:24:41.505
+<v Speaker 1>ecosystem replacement.
+
+00:24:41.505 --> 00:24:44.059
+<v Speaker 1>Because, again, Docker is more than just the
+
+00:24:44.059 --> 00:24:46.460
+<v Speaker 1>container runtime these days anyway.
+
+00:24:47.420 --> 00:24:49.740
+<v Speaker 1>You know, one thing we haven't said officially
+
+00:24:49.740 --> 00:24:52.700
+<v Speaker 1>here is that there is no CTR build.
+
+00:24:53.020 --> 00:24:55.340
+<v Speaker 1>So you're gonna either need build kit or
+
+00:24:55.340 --> 00:24:56.620
+<v Speaker 1>you're need Docker
+
+00:24:56.885 --> 00:25:00.565
+<v Speaker 1>or some in cloud, you know, CICD build
+
+00:25:00.565 --> 00:25:03.925
+<v Speaker 1>service to actually take docker files or whatever
+
+00:25:03.925 --> 00:25:07.605
+<v Speaker 1>your input is to build containers. Containerd has
+
+00:25:07.605 --> 00:25:08.245
+<v Speaker 1>no
+
+00:25:09.765 --> 00:25:11.125
+<v Speaker 1>container assembly
+
+00:25:11.125 --> 00:25:12.485
+<v Speaker 1>code build code in it.
+
+00:25:14.150 --> 00:25:15.990
+<v Speaker 0>Alright. Got it. So
+
+00:25:16.710 --> 00:25:18.470
+<v Speaker 0>there was a a talk you gave at
+
+00:25:18.470 --> 00:25:19.270
+<v Speaker 0>KubeCon
+
+00:25:19.270 --> 00:25:20.790
+<v Speaker 0>a couple of weeks ago, and there was
+
+00:25:20.790 --> 00:25:22.790
+<v Speaker 0>a slightly different version of the of the
+
+00:25:22.790 --> 00:25:23.830
+<v Speaker 0>architecture diagram.
+
+00:25:25.355 --> 00:25:27.435
+<v Speaker 1>Yeah. Is there anything here we should we
+
+00:25:27.435 --> 00:25:28.235
+<v Speaker 0>should cover?
+
+00:25:29.355 --> 00:25:31.915
+<v Speaker 1>Yeah. It's it's a good question. I I'm
+
+00:25:31.915 --> 00:25:33.755
+<v Speaker 1>gonna I'm getting old, so I'm gonna put
+
+00:25:33.755 --> 00:25:35.115
+<v Speaker 1>on my glasses and make sure I can
+
+00:25:35.115 --> 00:25:35.835
+<v Speaker 1>read this.
+
+00:25:37.435 --> 00:25:39.355
+<v Speaker 1>So the yeah. This is
+
+00:25:40.290 --> 00:25:42.530
+<v Speaker 1>kind of a a it's almost the same
+
+00:25:42.530 --> 00:25:44.370
+<v Speaker 1>view turned on its side,
+
+00:25:45.330 --> 00:25:47.490
+<v Speaker 1>and it's trying to give a little more
+
+00:25:47.890 --> 00:25:48.850
+<v Speaker 1>functional
+
+00:25:49.410 --> 00:25:51.170
+<v Speaker 1>I mean, we're trying to make it clear,
+
+00:25:51.170 --> 00:25:53.730
+<v Speaker 1>like, how the pieces actually connect together.
+
+00:25:54.655 --> 00:25:57.135
+<v Speaker 1>And so the client has been expanded, and
+
+00:25:57.135 --> 00:25:59.535
+<v Speaker 1>we've kinda taken out the consumer part of
+
+00:25:59.535 --> 00:26:00.015
+<v Speaker 1>it.
+
+00:26:00.495 --> 00:26:02.735
+<v Speaker 1>So you can see, like, the client now
+
+00:26:02.735 --> 00:26:05.615
+<v Speaker 1>helps you see how do I actually access,
+
+00:26:06.015 --> 00:26:08.175
+<v Speaker 1>you know, what's behind this. You know, how
+
+00:26:08.175 --> 00:26:08.895
+<v Speaker 1>do I
+
+00:26:10.030 --> 00:26:12.190
+<v Speaker 1>you know, so I configure my client with
+
+00:26:12.190 --> 00:26:13.790
+<v Speaker 1>some options. How do I connect to the
+
+00:26:13.790 --> 00:26:15.149
+<v Speaker 1>gRPC socket?
+
+00:26:15.790 --> 00:26:17.789
+<v Speaker 1>I subscribe to events.
+
+00:26:18.270 --> 00:26:18.909
+<v Speaker 1>I
+
+00:26:19.230 --> 00:26:21.470
+<v Speaker 1>you know, for containers themselves, I pass in
+
+00:26:21.470 --> 00:26:23.309
+<v Speaker 1>options. I get an OCI spec.
+
+00:26:25.225 --> 00:26:28.105
+<v Speaker 1>And then these proxies, that's that's the actual
+
+00:26:28.105 --> 00:26:29.705
+<v Speaker 1>gRPC traffic
+
+00:26:30.585 --> 00:26:33.385
+<v Speaker 1>across that boundary to the containerd one dot
+
+00:26:33.385 --> 00:26:34.424
+<v Speaker 1>x API.
+
+00:26:34.825 --> 00:26:36.664
+<v Speaker 1>And so that kinda you know, it it
+
+00:26:36.664 --> 00:26:39.350
+<v Speaker 1>looks duplicated, but that's that helps you see
+
+00:26:39.350 --> 00:26:41.829
+<v Speaker 1>that, like, on my client side,
+
+00:26:42.630 --> 00:26:44.469
+<v Speaker 1>when I say CTR run,
+
+00:26:45.190 --> 00:26:46.629
+<v Speaker 1>that task service
+
+00:26:46.710 --> 00:26:49.349
+<v Speaker 1>will talk to the the task API
+
+00:26:49.750 --> 00:26:51.990
+<v Speaker 1>and then use the actual implementation
+
+00:26:51.990 --> 00:26:53.029
+<v Speaker 1>on the server side,
+
+00:26:53.875 --> 00:26:55.395
+<v Speaker 1>which could use a
+
+00:26:56.034 --> 00:26:57.794
+<v Speaker 1>you know, it's gonna use the images and
+
+00:26:57.794 --> 00:26:58.835
+<v Speaker 1>snapshots
+
+00:26:59.075 --> 00:26:59.955
+<v Speaker 1>service
+
+00:27:00.755 --> 00:27:03.715
+<v Speaker 1>to assemble the right root file system to
+
+00:27:03.715 --> 00:27:05.955
+<v Speaker 1>actually call the task manager to start a
+
+00:27:05.955 --> 00:27:08.830
+<v Speaker 1>shim if I'm using run c by default.
+
+00:27:08.830 --> 00:27:10.269
+<v Speaker 1>So this view,
+
+00:27:10.510 --> 00:27:12.510
+<v Speaker 1>you know, is easier to talk through the
+
+00:27:12.510 --> 00:27:15.470
+<v Speaker 1>flow of, like, how does, you know, CTR
+
+00:27:15.470 --> 00:27:18.190
+<v Speaker 1>run actually turn into a series of steps
+
+00:27:18.350 --> 00:27:20.910
+<v Speaker 1>that gets me a running run c shim
+
+00:27:20.910 --> 00:27:22.350
+<v Speaker 1>at the at the far right side.
+
+00:27:23.495 --> 00:27:25.335
+<v Speaker 1>But there you know, as far as the
+
+00:27:25.335 --> 00:27:26.214
+<v Speaker 1>API,
+
+00:27:26.215 --> 00:27:28.615
+<v Speaker 1>the the great news for consumers is, like,
+
+00:27:28.615 --> 00:27:30.695
+<v Speaker 1>we have not had to break that gRPC
+
+00:27:30.695 --> 00:27:31.575
+<v Speaker 1>API
+
+00:27:32.134 --> 00:27:33.815
+<v Speaker 1>for two years now.
+
+00:27:33.975 --> 00:27:36.455
+<v Speaker 1>And so we hope we hope that this
+
+00:27:36.455 --> 00:27:38.375
+<v Speaker 1>API is extremely stable
+
+00:27:38.800 --> 00:27:39.520
+<v Speaker 1>that
+
+00:27:40.400 --> 00:27:42.640
+<v Speaker 1>if people need functional differences,
+
+00:27:43.040 --> 00:27:44.640
+<v Speaker 1>they shouldn't be coming to us and say,
+
+00:27:44.640 --> 00:27:46.799
+<v Speaker 1>hey. Please change the containerd API.
+
+00:27:47.120 --> 00:27:49.200
+<v Speaker 1>They should be looking at the pluggability of
+
+00:27:49.200 --> 00:27:50.159
+<v Speaker 1>this core
+
+00:27:50.320 --> 00:27:52.335
+<v Speaker 1>and saying, oh, I could do that. You
+
+00:27:52.335 --> 00:27:54.095
+<v Speaker 1>know, I need a different shim because I'm
+
+00:27:54.095 --> 00:27:56.255
+<v Speaker 1>trying to do some fancy thing at the
+
+00:27:56.255 --> 00:27:57.455
+<v Speaker 1>runtime level,
+
+00:27:57.615 --> 00:27:59.855
+<v Speaker 1>or I need a plug in for snapshots
+
+00:27:59.855 --> 00:28:01.615
+<v Speaker 1>because I want a new way to, like,
+
+00:28:01.615 --> 00:28:02.414
+<v Speaker 1>represent
+
+00:28:02.655 --> 00:28:03.534
+<v Speaker 1>the file system.
+
+00:28:04.540 --> 00:28:06.380
+<v Speaker 1>Or I have this cool file system that
+
+00:28:06.380 --> 00:28:08.380
+<v Speaker 1>you guys don't know about in my lab,
+
+00:28:08.540 --> 00:28:11.100
+<v Speaker 1>and I want to utilize it with a
+
+00:28:11.100 --> 00:28:11.820
+<v Speaker 1>snapshot or
+
+00:28:13.260 --> 00:28:14.300
+<v Speaker 1>so, yeah, the
+
+00:28:14.780 --> 00:28:16.380
+<v Speaker 1>I think the main point of this is
+
+00:28:16.380 --> 00:28:16.780
+<v Speaker 1>that
+
+00:28:17.804 --> 00:28:20.525
+<v Speaker 1>actually, one more comment. The API layer, you
+
+00:28:20.525 --> 00:28:22.205
+<v Speaker 1>see the CRI plug in.
+
+00:28:22.924 --> 00:28:25.164
+<v Speaker 1>So one thing I didn't mention in the
+
+00:28:25.164 --> 00:28:27.885
+<v Speaker 1>history is that containerd was initially built without
+
+00:28:27.885 --> 00:28:28.684
+<v Speaker 1>an implementation
+
+00:28:29.539 --> 00:28:31.460
+<v Speaker 1>for Kubernetes
+
+00:28:31.460 --> 00:28:34.179
+<v Speaker 1>CRI, which is the container runtime interface.
+
+00:28:34.580 --> 00:28:37.380
+<v Speaker 1>So that is a separate gRPC API defined
+
+00:28:37.380 --> 00:28:39.059
+<v Speaker 1>by the Kubernetes community.
+
+00:28:39.700 --> 00:28:40.899
+<v Speaker 1>If you're interested,
+
+00:28:41.220 --> 00:28:42.020
+<v Speaker 1>SIGNode
+
+00:28:42.020 --> 00:28:44.179
+<v Speaker 1>is the Kubernetes
+
+00:28:44.035 --> 00:28:46.755
+<v Speaker 1>special interest group that deals with the CRI
+
+00:28:46.915 --> 00:28:47.875
+<v Speaker 1>API,
+
+00:28:48.115 --> 00:28:50.034
+<v Speaker 1>and it does evolve over time.
+
+00:28:50.995 --> 00:28:51.635
+<v Speaker 1>So
+
+00:28:52.115 --> 00:28:54.115
+<v Speaker 1>a set of sort of
+
+00:28:55.635 --> 00:28:58.355
+<v Speaker 1>separate maintainers built a CRI plug in for
+
+00:28:58.355 --> 00:28:59.075
+<v Speaker 1>containerd,
+
+00:28:59.160 --> 00:29:01.000
+<v Speaker 1>and so you can find two different
+
+00:29:01.480 --> 00:29:03.960
+<v Speaker 1>GitHub projects. We brought them in to the
+
+00:29:03.960 --> 00:29:06.040
+<v Speaker 1>containerd repository
+
+00:29:06.040 --> 00:29:07.320
+<v Speaker 1>several years ago,
+
+00:29:08.040 --> 00:29:09.400
+<v Speaker 1>but we're now actually
+
+00:29:09.560 --> 00:29:12.520
+<v Speaker 1>for Kubernetes I'm sorry. For containerd one dot
+
+00:29:12.520 --> 00:29:15.625
+<v Speaker 1>five, we plan on actually bringing their code
+
+00:29:15.625 --> 00:29:18.264
+<v Speaker 1>into containerd, and so this plug in continues
+
+00:29:18.264 --> 00:29:20.104
+<v Speaker 1>to get more tightly integrated.
+
+00:29:20.825 --> 00:29:23.465
+<v Speaker 1>So if you're using containerd one two, one
+
+00:29:23.465 --> 00:29:24.824
+<v Speaker 1>three, one four,
+
+00:29:25.705 --> 00:29:28.105
+<v Speaker 1>that binary does have the CRI plug in
+
+00:29:28.105 --> 00:29:28.585
+<v Speaker 1>built in.
+
+00:29:29.299 --> 00:29:32.260
+<v Speaker 1>The code base change is just to continue
+
+00:29:32.260 --> 00:29:34.340
+<v Speaker 1>that natural progression of
+
+00:29:34.900 --> 00:29:37.380
+<v Speaker 1>we're all maintaining the same code. We're all
+
+00:29:37.380 --> 00:29:40.260
+<v Speaker 1>working together, so the CRI doesn't need to
+
+00:29:40.260 --> 00:29:42.019
+<v Speaker 1>be a separate project anymore.
+
+00:29:43.059 --> 00:29:43.995
+<v Speaker 1>So, again, that just
+
+00:29:44.555 --> 00:29:45.995
+<v Speaker 1>by default, that gives us a
+
+00:29:46.715 --> 00:29:49.355
+<v Speaker 1>makes us a Kubernetes runtime. The Kubelet can
+
+00:29:49.355 --> 00:29:52.475
+<v Speaker 1>talk to the same gRPC socket and talk
+
+00:29:52.475 --> 00:29:54.075
+<v Speaker 1>that CRI API
+
+00:29:54.555 --> 00:29:55.995
+<v Speaker 1>directly to containerd.
+
+00:29:57.680 --> 00:29:58.559
+<v Speaker 1>So yeah.
+
+00:29:59.440 --> 00:30:00.960
+<v Speaker 0>Excellent. I think
+
+00:30:01.200 --> 00:30:03.520
+<v Speaker 0>there's definitely a lot to unpack there with,
+
+00:30:03.520 --> 00:30:05.680
+<v Speaker 0>you know, both architectural diagrams and the different
+
+00:30:05.680 --> 00:30:06.480
+<v Speaker 0>components.
+
+00:30:06.720 --> 00:30:09.280
+<v Speaker 0>And really cool that that kind of CRI
+
+00:30:09.440 --> 00:30:11.855
+<v Speaker 0>layer and the API layer are maybe gonna
+
+00:30:11.855 --> 00:30:12.815
+<v Speaker 0>consolidate.
+
+00:30:13.055 --> 00:30:14.175
+<v Speaker 0>Does that mean
+
+00:30:14.895 --> 00:30:18.575
+<v Speaker 0>that containerd then becomes a competitor with with
+
+00:30:18.575 --> 00:30:19.375
+<v Speaker 0>cryo?
+
+00:30:21.295 --> 00:30:22.335
+<v Speaker 1>Yeah. I
+
+00:30:22.735 --> 00:30:25.295
+<v Speaker 1>I always try and be careful when I
+
+00:30:25.775 --> 00:30:28.070
+<v Speaker 1>you know, I think a lot of a
+
+00:30:28.070 --> 00:30:30.390
+<v Speaker 1>lot of folks wanna see
+
+00:30:30.950 --> 00:30:34.070
+<v Speaker 1>kinda sparks fly between containerd and creo.
+
+00:30:36.550 --> 00:30:38.470
+<v Speaker 1>You know, creo is
+
+00:30:39.430 --> 00:30:40.070
+<v Speaker 1>really
+
+00:30:40.310 --> 00:30:42.230
+<v Speaker 1>had a similar vision to
+
+00:30:43.005 --> 00:30:44.125
+<v Speaker 1>containerd
+
+00:30:44.285 --> 00:30:45.804
+<v Speaker 1>and that Red Hat
+
+00:30:46.445 --> 00:30:49.005
+<v Speaker 1>and Docker had, you know, some
+
+00:30:49.565 --> 00:30:50.924
+<v Speaker 1>some competitive
+
+00:30:52.205 --> 00:30:53.645
+<v Speaker 1>disagreements over
+
+00:30:53.645 --> 00:30:54.445
+<v Speaker 1>Docker's
+
+00:30:54.445 --> 00:30:55.725
+<v Speaker 1>kind of future,
+
+00:30:55.805 --> 00:30:57.325
+<v Speaker 1>definitely around swarm
+
+00:30:58.190 --> 00:31:01.230
+<v Speaker 1>and, you know, other issues around distributing
+
+00:31:01.550 --> 00:31:03.070
+<v Speaker 1>Docker and Red Hat
+
+00:31:03.310 --> 00:31:04.909
+<v Speaker 1>distributions of Linux.
+
+00:31:05.870 --> 00:31:09.070
+<v Speaker 1>And so Creo had the same idea of
+
+00:31:09.390 --> 00:31:11.470
+<v Speaker 1>kind of this core runtime built on some
+
+00:31:11.470 --> 00:31:12.270
+<v Speaker 1>building blocks.
+
+00:31:13.924 --> 00:31:15.605
+<v Speaker 1>And so if you go look on GitHub,
+
+00:31:15.605 --> 00:31:18.404
+<v Speaker 1>you can see a project containers slash storage.
+
+00:31:18.965 --> 00:31:21.684
+<v Speaker 1>That's actually a copy of the Docker graph
+
+00:31:21.684 --> 00:31:23.364
+<v Speaker 1>drivers implementation
+
+00:31:23.445 --> 00:31:26.325
+<v Speaker 1>from, like, old Docker one twelve, one 13
+
+00:31:26.325 --> 00:31:26.725
+<v Speaker 1>era.
+
+00:31:27.550 --> 00:31:30.350
+<v Speaker 1>And then Red Hat continued to develop it
+
+00:31:30.750 --> 00:31:33.550
+<v Speaker 1>and, of of course, officially maintains it today
+
+00:31:33.550 --> 00:31:36.270
+<v Speaker 1>as an open source project under that containers
+
+00:31:36.750 --> 00:31:37.630
+<v Speaker 1>repo.
+
+00:31:37.630 --> 00:31:40.190
+<v Speaker 1>So there's container storage and containers image.
+
+00:31:40.635 --> 00:31:42.235
+<v Speaker 1>And what you'll see is that Red Hat
+
+00:31:42.235 --> 00:31:43.995
+<v Speaker 1>has built a layer of tools on top
+
+00:31:43.995 --> 00:31:45.274
+<v Speaker 1>of those two projects.
+
+00:31:45.675 --> 00:31:48.795
+<v Speaker 1>So it's not just Creo, it's Podman
+
+00:31:48.795 --> 00:31:49.995
+<v Speaker 1>and Builda
+
+00:31:50.075 --> 00:31:51.355
+<v Speaker 1>and Scorpio.
+
+00:31:51.355 --> 00:31:53.675
+<v Speaker 1>They all use the same layer, and that
+
+00:31:53.675 --> 00:31:54.315
+<v Speaker 1>gives them
+
+00:31:55.090 --> 00:31:57.730
+<v Speaker 1>the ability to say, hey. Our tools are
+
+00:31:57.730 --> 00:31:58.370
+<v Speaker 1>actually
+
+00:31:58.850 --> 00:32:00.770
+<v Speaker 1>not dependent on a daemon
+
+00:32:01.010 --> 00:32:03.890
+<v Speaker 1>because they're all using the same container container
+
+00:32:03.890 --> 00:32:05.650
+<v Speaker 1>storage file store.
+
+00:32:06.290 --> 00:32:09.010
+<v Speaker 1>They're all using this container's image library
+
+00:32:09.170 --> 00:32:10.610
+<v Speaker 1>for talking to registries.
+
+00:32:11.275 --> 00:32:13.355
+<v Speaker 1>And so all of this can happen, like,
+
+00:32:13.355 --> 00:32:15.434
+<v Speaker 1>kind of in the tool itself.
+
+00:32:17.355 --> 00:32:20.475
+<v Speaker 1>Creo is is not necessarily daemonless in the
+
+00:32:20.475 --> 00:32:21.274
+<v Speaker 1>sense that
+
+00:32:22.075 --> 00:32:25.179
+<v Speaker 1>the Kubelet has to have a CRI socket
+
+00:32:25.179 --> 00:32:26.620
+<v Speaker 1>to talk to. So you have to have
+
+00:32:26.620 --> 00:32:27.739
+<v Speaker 1>some listener
+
+00:32:27.899 --> 00:32:28.700
+<v Speaker 1>somewhere.
+
+00:32:29.500 --> 00:32:32.139
+<v Speaker 1>And so Creo does have, you know, these
+
+00:32:32.299 --> 00:32:35.739
+<v Speaker 1>small daemons that listen for the CRI API
+
+00:32:35.820 --> 00:32:38.299
+<v Speaker 1>and to do some monitoring of the processes.
+
+00:32:40.325 --> 00:32:42.405
+<v Speaker 1>But, you know, it's it's really
+
+00:32:42.725 --> 00:32:45.205
+<v Speaker 1>born out of the same time frame as
+
+00:32:45.205 --> 00:32:46.085
+<v Speaker 1>containerd.
+
+00:32:46.085 --> 00:32:46.725
+<v Speaker 1>And,
+
+00:32:47.045 --> 00:32:49.765
+<v Speaker 1>you know, as a a a very personal
+
+00:32:49.765 --> 00:32:52.405
+<v Speaker 1>comment, not representing IBM or Red Hat or
+
+00:32:52.405 --> 00:32:52.805
+<v Speaker 1>Docker,
+
+00:32:54.130 --> 00:32:55.649
+<v Speaker 1>You know, there was definitely,
+
+00:32:56.130 --> 00:32:59.250
+<v Speaker 1>personally, a hope that that we could rally
+
+00:32:59.250 --> 00:33:02.370
+<v Speaker 1>around one or the other. And, of course,
+
+00:33:02.370 --> 00:33:03.169
+<v Speaker 1>naturally,
+
+00:33:03.570 --> 00:33:06.770
+<v Speaker 1>containerd was my intention to to convince them
+
+00:33:06.770 --> 00:33:09.105
+<v Speaker 1>to work together on that. And the the
+
+00:33:09.105 --> 00:33:10.945
+<v Speaker 1>cool thing is that we've shared code over
+
+00:33:10.945 --> 00:33:11.585
+<v Speaker 1>the years.
+
+00:33:11.905 --> 00:33:14.945
+<v Speaker 1>They import some of our sub packages
+
+00:33:15.105 --> 00:33:17.585
+<v Speaker 1>and use containerd code for some things.
+
+00:33:18.465 --> 00:33:19.825
+<v Speaker 1>And so, you know,
+
+00:33:20.865 --> 00:33:23.105
+<v Speaker 1>at the maintainer level, you know, we've always
+
+00:33:23.930 --> 00:33:26.250
+<v Speaker 1>had good relationship and work together.
+
+00:33:26.890 --> 00:33:29.370
+<v Speaker 1>But to me, it's I hope it's becoming
+
+00:33:29.370 --> 00:33:31.690
+<v Speaker 1>more like, you know, some people use Firefox,
+
+00:33:31.690 --> 00:33:32.970
+<v Speaker 1>some people use Chrome,
+
+00:33:33.450 --> 00:33:35.050
+<v Speaker 1>you know, maybe on a Mac, you like
+
+00:33:35.050 --> 00:33:36.730
+<v Speaker 1>Safari. You know, these aren't
+
+00:33:37.355 --> 00:33:39.675
+<v Speaker 1>they are competitive in in a general sense
+
+00:33:39.675 --> 00:33:41.515
+<v Speaker 1>that you have to make a choice about
+
+00:33:41.515 --> 00:33:43.915
+<v Speaker 1>which kind of community you're gonna use or
+
+00:33:43.915 --> 00:33:47.035
+<v Speaker 1>get involved in, but they're just options. They're
+
+00:33:47.035 --> 00:33:48.715
+<v Speaker 1>just options that are out there. And, yes,
+
+00:33:48.715 --> 00:33:50.235
+<v Speaker 1>there are some differences in
+
+00:33:50.640 --> 00:33:51.919
+<v Speaker 1>kind of the design,
+
+00:33:52.320 --> 00:33:54.880
+<v Speaker 1>but that that's where I see it today.
+
+00:33:55.920 --> 00:33:57.200
+<v Speaker 0>Alright. Awesome.
+
+00:33:57.440 --> 00:33:58.560
+<v Speaker 0>It's
+
+00:33:58.560 --> 00:34:01.120
+<v Speaker 0>great context there just to understand how those
+
+00:34:01.120 --> 00:34:03.135
+<v Speaker 0>two projects fit. And, you know, with the
+
+00:34:03.135 --> 00:34:05.535
+<v Speaker 0>CRI there and the OCI stuff, like, the
+
+00:34:05.535 --> 00:34:08.655
+<v Speaker 0>compatibility is there for people to Exactly. Have
+
+00:34:08.415 --> 00:34:08.895
+<v Speaker 0>preference.
+
+00:34:09.614 --> 00:34:11.614
+<v Speaker 1>Yep. So we have one more question, and
+
+00:34:11.614 --> 00:34:12.735
+<v Speaker 0>then I think what we'll do is we
+
+00:34:12.735 --> 00:34:14.495
+<v Speaker 0>jump onto the hands on component of this
+
+00:34:14.495 --> 00:34:16.495
+<v Speaker 0>session. And the question came from Reddit again,
+
+00:34:17.120 --> 00:34:19.199
+<v Speaker 0>and it was, what are some best practices
+
+00:34:19.199 --> 00:34:21.840
+<v Speaker 0>while running containerd via systemd?
+
+00:34:22.080 --> 00:34:23.600
+<v Speaker 0>That's that seems like a way a wide
+
+00:34:23.600 --> 00:34:25.360
+<v Speaker 0>scope, so I'll let you if you want
+
+00:34:25.360 --> 00:34:25.920
+<v Speaker 0>to
+
+00:34:26.160 --> 00:34:28.640
+<v Speaker 1>Yeah. Go back to that. Yeah. Hopefully, I'll
+
+00:34:28.640 --> 00:34:30.320
+<v Speaker 1>answer the right question because
+
+00:34:30.400 --> 00:34:31.840
+<v Speaker 1>there's not really
+
+00:34:33.315 --> 00:34:34.755
+<v Speaker 1>like, I'm not sure if they're asking if
+
+00:34:34.755 --> 00:34:36.995
+<v Speaker 1>there's kind of a strong integration with, like,
+
+00:34:36.995 --> 00:34:38.755
+<v Speaker 1>the way systemd manages
+
+00:34:40.034 --> 00:34:40.915
+<v Speaker 1>processes
+
+00:34:40.915 --> 00:34:42.594
+<v Speaker 1>because, you know, there are
+
+00:34:43.315 --> 00:34:44.675
+<v Speaker 1>there have been methods.
+
+00:34:45.870 --> 00:34:47.950
+<v Speaker 1>And and I know some people still use
+
+00:34:47.950 --> 00:34:50.190
+<v Speaker 1>these where, you know, systemd is much more
+
+00:34:50.190 --> 00:34:52.990
+<v Speaker 1>integrated in actually the spawning and management of
+
+00:34:52.990 --> 00:34:54.350
+<v Speaker 1>container processes.
+
+00:34:55.230 --> 00:34:57.870
+<v Speaker 1>That's not the case with containerd. So,
+
+00:34:58.350 --> 00:35:00.270
+<v Speaker 1>you know, we have
+
+00:35:01.725 --> 00:35:03.645
+<v Speaker 1>we have in our repo, and I believe
+
+00:35:03.645 --> 00:35:05.485
+<v Speaker 1>it's delivered in our full
+
+00:35:05.805 --> 00:35:07.165
+<v Speaker 1>release tarball,
+
+00:35:08.205 --> 00:35:10.845
+<v Speaker 1>a systemd unit for containerd. And that just
+
+00:35:10.845 --> 00:35:13.565
+<v Speaker 1>means that, you know, containerd will be started
+
+00:35:13.645 --> 00:35:16.285
+<v Speaker 1>on boot, you know, with other system processes.
+
+00:35:17.030 --> 00:35:19.589
+<v Speaker 1>At that point, that's that's really the last
+
+00:35:19.589 --> 00:35:21.430
+<v Speaker 1>sort of interconnection
+
+00:35:21.430 --> 00:35:23.750
+<v Speaker 1>with system d. There's no other management
+
+00:35:24.390 --> 00:35:26.710
+<v Speaker 1>other than the way system d manages,
+
+00:35:27.589 --> 00:35:30.230
+<v Speaker 1>you know, units on the system. You can
+
+00:35:30.230 --> 00:35:32.470
+<v Speaker 1>start it. You can check its status, etcetera.
+
+00:35:33.945 --> 00:35:35.225
+<v Speaker 1>So I I don't know if that's the
+
+00:35:35.225 --> 00:35:37.465
+<v Speaker 1>question being asked, but today, that's kind of
+
+00:35:37.465 --> 00:35:38.025
+<v Speaker 1>our
+
+00:35:38.425 --> 00:35:40.825
+<v Speaker 1>our interaction with systemd is if you're on
+
+00:35:40.825 --> 00:35:41.865
+<v Speaker 1>a systemd
+
+00:35:42.425 --> 00:35:43.145
+<v Speaker 1>controlled
+
+00:35:43.545 --> 00:35:44.825
+<v Speaker 1>Linux distribution,
+
+00:35:44.905 --> 00:35:46.160
+<v Speaker 1>then containerd's
+
+00:35:46.160 --> 00:35:48.720
+<v Speaker 1>unit will make sure that containerd is started
+
+00:35:48.720 --> 00:35:49.680
+<v Speaker 1>and and
+
+00:35:50.560 --> 00:35:52.880
+<v Speaker 1>but containerd at that point will manage its
+
+00:35:52.880 --> 00:35:53.440
+<v Speaker 1>own
+
+00:35:53.920 --> 00:35:56.880
+<v Speaker 1>processes that are run via containerd. There won't
+
+00:35:56.880 --> 00:35:59.360
+<v Speaker 1>be any integration with systemd as far as
+
+00:35:59.555 --> 00:36:01.395
+<v Speaker 1>the spotting of containers
+
+00:36:02.195 --> 00:36:03.155
+<v Speaker 1>at that point.
+
+00:36:04.595 --> 00:36:05.155
+<v Speaker 0>Okay.
+
+00:36:05.635 --> 00:36:07.155
+<v Speaker 0>So just a question that popped in my
+
+00:36:07.155 --> 00:36:09.235
+<v Speaker 0>head then as you were kinda talking about
+
+00:36:09.235 --> 00:36:09.875
+<v Speaker 0>that.
+
+00:36:10.435 --> 00:36:13.795
+<v Speaker 0>Are there any rules around restarting the containerd
+
+00:36:13.795 --> 00:36:16.770
+<v Speaker 0>process about how that would affect running containers,
+
+00:36:16.770 --> 00:36:18.290
+<v Speaker 0>or does it pretty similar?
+
+00:36:18.930 --> 00:36:19.650
+<v Speaker 1>Yeah. It's
+
+00:36:20.290 --> 00:36:20.850
+<v Speaker 1>yeah.
+
+00:36:21.250 --> 00:36:24.610
+<v Speaker 1>There shouldn't be any issues with with restart
+
+00:36:24.770 --> 00:36:27.810
+<v Speaker 1>similar to how over the years Docker
+
+00:36:28.930 --> 00:36:30.210
+<v Speaker 1>matured to where
+
+00:36:30.684 --> 00:36:33.085
+<v Speaker 1>it's not gonna crash all your containers. You're
+
+00:36:33.085 --> 00:36:35.645
+<v Speaker 1>not gonna lose state. You know, containerd will
+
+00:36:35.645 --> 00:36:38.525
+<v Speaker 1>restart and try and reconnect to the shims.
+
+00:36:38.684 --> 00:36:40.365
+<v Speaker 1>So that's one of the reasons the shims
+
+00:36:40.365 --> 00:36:42.125
+<v Speaker 1>exist. The shims are the parent
+
+00:36:42.620 --> 00:36:45.020
+<v Speaker 1>of your actual containerized process.
+
+00:36:45.500 --> 00:36:47.340
+<v Speaker 1>And so if containerd goes away,
+
+00:36:47.740 --> 00:36:50.060
+<v Speaker 1>the shims, thankfully, are still parented.
+
+00:36:50.060 --> 00:36:52.140
+<v Speaker 1>I I mean, it's still parenting your
+
+00:36:52.300 --> 00:36:54.300
+<v Speaker 1>container, so it's it's not gonna wipe out
+
+00:36:54.540 --> 00:36:55.900
+<v Speaker 1>I don't know if people remember. In the
+
+00:36:55.900 --> 00:36:58.165
+<v Speaker 1>early days of Docker, you crash your Docker
+
+00:36:58.165 --> 00:37:00.165
+<v Speaker 1>daemon, you lose all your containers.
+
+00:37:00.724 --> 00:37:03.845
+<v Speaker 1>That's not the case. So containerd can restart.
+
+00:37:04.565 --> 00:37:06.485
+<v Speaker 1>It'll go find all the shims,
+
+00:37:06.645 --> 00:37:07.525
+<v Speaker 1>and you should
+
+00:37:07.845 --> 00:37:09.605
+<v Speaker 1>you know, unless there's a bug or some
+
+00:37:09.605 --> 00:37:13.349
+<v Speaker 1>other complicated issue, you'll still have access and
+
+00:37:13.349 --> 00:37:15.670
+<v Speaker 1>and management of the containers that we're already
+
+00:37:15.670 --> 00:37:16.230
+<v Speaker 1>running.
+
+00:37:17.109 --> 00:37:17.910
+<v Speaker 0>Nice.
+
+00:37:19.109 --> 00:37:21.510
+<v Speaker 0>Alright. Let me share my screen then and
+
+00:37:21.510 --> 00:37:22.710
+<v Speaker 0>we'll kinda
+
+00:37:22.869 --> 00:37:25.865
+<v Speaker 0>let's let's actually play with this. Right? So
+
+00:37:26.984 --> 00:37:28.985
+<v Speaker 0>what I have in front of me
+
+00:37:29.625 --> 00:37:33.225
+<v Speaker 0>is a Linux machine unpack it because I
+
+00:37:33.225 --> 00:37:35.545
+<v Speaker 0>run a Mac and that's not gonna work.
+
+00:37:35.545 --> 00:37:35.785
+<v Speaker 0>So
+
+00:37:36.549 --> 00:37:39.349
+<v Speaker 0>I have got snap installed
+
+00:37:39.430 --> 00:37:41.030
+<v Speaker 0>and I went ahead
+
+00:37:41.270 --> 00:37:44.390
+<v Speaker 0>and ran snap install Michael Kates classic.
+
+00:37:44.950 --> 00:37:47.910
+<v Speaker 0>I have done this your advice as you
+
+00:37:47.910 --> 00:37:51.190
+<v Speaker 0>said that Michael Kates gives us access to
+
+00:37:51.190 --> 00:37:51.990
+<v Speaker 0>the containerd
+
+00:37:52.205 --> 00:37:54.445
+<v Speaker 0>tooling as well as access to containerd running
+
+00:37:54.445 --> 00:37:56.845
+<v Speaker 0>as the CRI implementation for Kubernetes.
+
+00:37:57.245 --> 00:37:58.605
+<v Speaker 0>So that's all I've done. I've not done
+
+00:37:58.605 --> 00:37:59.565
+<v Speaker 0>anything else.
+
+00:38:00.125 --> 00:38:01.645
+<v Speaker 0>What do I do now? Yeah.
+
+00:38:02.685 --> 00:38:03.165
+<v Speaker 1>So
+
+00:38:04.539 --> 00:38:07.259
+<v Speaker 1>yeah. In the in true Internet fashion, we're
+
+00:38:07.259 --> 00:38:08.940
+<v Speaker 1>flying by the seat of our pants because
+
+00:38:08.940 --> 00:38:11.500
+<v Speaker 1>I haven't messed with microcates in a little
+
+00:38:11.500 --> 00:38:12.859
+<v Speaker 1>bit. But
+
+00:38:13.099 --> 00:38:15.819
+<v Speaker 1>but just to give people a quick flavor,
+
+00:38:15.819 --> 00:38:17.740
+<v Speaker 1>this is Canonical's
+
+00:38:18.714 --> 00:38:19.995
+<v Speaker 1>kind of like kind.
+
+00:38:20.155 --> 00:38:21.755
+<v Speaker 1>People have used kind
+
+00:38:22.714 --> 00:38:24.875
+<v Speaker 1>where you you kind of have a single
+
+00:38:24.875 --> 00:38:26.155
+<v Speaker 1>node Kubernetes
+
+00:38:27.755 --> 00:38:28.555
+<v Speaker 1>distribution
+
+00:38:28.555 --> 00:38:31.115
+<v Speaker 1>all in one, which means, of course, you've
+
+00:38:31.115 --> 00:38:32.714
+<v Speaker 1>got the Kubelet. You have
+
+00:38:33.279 --> 00:38:35.759
+<v Speaker 1>your your single node is now everything. You're
+
+00:38:35.759 --> 00:38:37.680
+<v Speaker 1>the master. You've got a Kubelet. You have
+
+00:38:37.680 --> 00:38:38.960
+<v Speaker 1>a container runtime.
+
+00:38:39.279 --> 00:38:41.359
+<v Speaker 1>And it just so happens that microcates uses
+
+00:38:41.359 --> 00:38:43.280
+<v Speaker 1>containerd as their runtime.
+
+00:38:43.920 --> 00:38:46.799
+<v Speaker 1>And so we should, at this point, have
+
+00:38:46.799 --> 00:38:47.839
+<v Speaker 1>a running
+
+00:38:49.155 --> 00:38:50.275
+<v Speaker 1>containerd,
+
+00:38:50.355 --> 00:38:52.435
+<v Speaker 1>and we should have the CTR
+
+00:38:53.315 --> 00:38:55.315
+<v Speaker 1>tool available to us. So,
+
+00:38:56.195 --> 00:38:58.675
+<v Speaker 1>yeah, for Lucky, this should show us
+
+00:38:59.395 --> 00:39:01.235
+<v Speaker 1>yeah. So we can see the path there
+
+00:39:01.235 --> 00:39:03.475
+<v Speaker 1>is inside this snap of microcates.
+
+00:39:03.620 --> 00:39:06.820
+<v Speaker 1>It has its own, varlib containerd,
+
+00:39:07.460 --> 00:39:09.060
+<v Speaker 1>and that seems to be running.
+
+00:39:09.700 --> 00:39:10.420
+<v Speaker 1>And,
+
+00:39:12.420 --> 00:39:14.580
+<v Speaker 1>yeah, we can actually see some shims because,
+
+00:39:14.580 --> 00:39:16.740
+<v Speaker 1>again, this is a Kubernetes deployment.
+
+00:39:17.115 --> 00:39:19.115
+<v Speaker 1>So there are actually some containers.
+
+00:39:19.195 --> 00:39:21.755
+<v Speaker 1>As you know, if you start up Kubernetes,
+
+00:39:21.755 --> 00:39:23.835
+<v Speaker 1>you have some some system
+
+00:39:24.075 --> 00:39:27.035
+<v Speaker 1>cube system containers, pods that are already up
+
+00:39:27.035 --> 00:39:27.835
+<v Speaker 1>and running. So
+
+00:39:30.609 --> 00:39:33.490
+<v Speaker 0>I don't know. Yeah. Go ahead. So based
+
+00:39:33.490 --> 00:39:35.410
+<v Speaker 0>on what I kinda picked up then on
+
+00:39:35.410 --> 00:39:38.130
+<v Speaker 0>on the API surface of containerd is that
+
+00:39:38.130 --> 00:39:40.210
+<v Speaker 0>I should although we're not recommending it as
+
+00:39:40.210 --> 00:39:42.050
+<v Speaker 0>a, like, you know, daily driver, be able
+
+00:39:42.050 --> 00:39:43.730
+<v Speaker 0>to pull an image and and run a
+
+00:39:43.730 --> 00:39:44.930
+<v Speaker 0>container using
+
+00:39:44.930 --> 00:39:45.490
+<v Speaker 0>CTR.
+
+00:39:46.745 --> 00:39:49.625
+<v Speaker 1>Yeah. So let's see if CTR is in
+
+00:39:49.625 --> 00:39:51.305
+<v Speaker 1>your path. I can't remember if you have
+
+00:39:51.305 --> 00:39:53.385
+<v Speaker 1>to do microkates.ctr
+
+00:39:53.385 --> 00:39:54.025
+<v Speaker 1>or
+
+00:39:54.185 --> 00:39:55.785
+<v Speaker 1>Yeah. You you you do. But I do
+
+00:39:55.785 --> 00:39:58.185
+<v Speaker 0>have access to CTR. So Okay. Yeah. Great.
+
+00:39:59.710 --> 00:40:01.150
+<v Speaker 1>One of the things we should talk about
+
+00:40:01.150 --> 00:40:03.470
+<v Speaker 1>at this point is that containerd,
+
+00:40:03.470 --> 00:40:04.270
+<v Speaker 1>unlike
+
+00:40:05.150 --> 00:40:07.150
+<v Speaker 1>the sort of default docker
+
+00:40:07.150 --> 00:40:08.590
+<v Speaker 1>model, is that every
+
+00:40:09.310 --> 00:40:10.110
+<v Speaker 1>every
+
+00:40:11.630 --> 00:40:14.030
+<v Speaker 1>bit of content and metadata is namespaced.
+
+00:40:14.555 --> 00:40:18.155
+<v Speaker 1>And so maybe do a CTR space namespaces
+
+00:40:18.235 --> 00:40:19.115
+<v Speaker 1>l s
+
+00:40:20.075 --> 00:40:22.155
+<v Speaker 1>or or n s works as well.
+
+00:40:23.035 --> 00:40:24.395
+<v Speaker 1>So you can see that there's already a
+
+00:40:24.395 --> 00:40:27.110
+<v Speaker 1>kates dot I o, and this means that
+
+00:40:27.110 --> 00:40:30.470
+<v Speaker 1>that micro kates deployment is actually whenever it
+
+00:40:30.470 --> 00:40:31.590
+<v Speaker 1>runs containers
+
+00:40:31.590 --> 00:40:32.790
+<v Speaker 1>through the CRI,
+
+00:40:33.030 --> 00:40:33.830
+<v Speaker 1>they're getting
+
+00:40:34.150 --> 00:40:36.550
+<v Speaker 1>placed in this kates.i0
+
+00:40:36.550 --> 00:40:37.430
+<v Speaker 1>namespace.
+
+00:40:37.510 --> 00:40:39.430
+<v Speaker 1>It's kinda cool because now if we use
+
+00:40:39.430 --> 00:40:41.190
+<v Speaker 1>CTR from the command line and we don't
+
+00:40:41.190 --> 00:40:43.785
+<v Speaker 1>wanna mess Now, again, there's not this is
+
+00:40:43.785 --> 00:40:46.825
+<v Speaker 1>really administrative. There's no security being applied here.
+
+00:40:47.065 --> 00:40:50.105
+<v Speaker 1>There's no RBAC. That's all handled at higher
+
+00:40:50.105 --> 00:40:50.825
+<v Speaker 1>layers.
+
+00:40:51.305 --> 00:40:52.265
+<v Speaker 1>But we can do
+
+00:40:53.960 --> 00:40:56.440
+<v Speaker 1>we can basically create a new namespace.
+
+00:40:56.440 --> 00:40:58.680
+<v Speaker 1>So we we can create one called default
+
+00:40:58.680 --> 00:41:00.359
+<v Speaker 1>or Rawkode.
+
+00:41:02.279 --> 00:41:04.839
+<v Speaker 1>I think it's just create and then a
+
+00:41:04.839 --> 00:41:07.240
+<v Speaker 1>name. Yeah. I'm just assuming that that was
+
+00:41:07.240 --> 00:41:08.039
+<v Speaker 0>gonna work. So
+
+00:41:09.585 --> 00:41:11.185
+<v Speaker 1>Okay. So now if we do the l
+
+00:41:11.185 --> 00:41:12.945
+<v Speaker 1>s, we have Rawkode.
+
+00:41:13.265 --> 00:41:16.224
+<v Speaker 1>Now every other command takes a dash n
+
+00:41:16.224 --> 00:41:17.984
+<v Speaker 1>or a dash dash namespace,
+
+00:41:17.984 --> 00:41:19.105
+<v Speaker 1>which gets really
+
+00:41:19.585 --> 00:41:22.450
+<v Speaker 1>annoying to type. So if you export the
+
+00:41:22.450 --> 00:41:23.250
+<v Speaker 1>containerd
+
+00:41:23.250 --> 00:41:26.210
+<v Speaker 1>underscore namespace equals Rawkode
+
+00:41:26.210 --> 00:41:27.330
+<v Speaker 1>environment
+
+00:41:27.410 --> 00:41:29.090
+<v Speaker 1>into the environment, then,
+
+00:41:29.570 --> 00:41:30.370
+<v Speaker 1>basically
+
+00:41:31.650 --> 00:41:33.890
+<v Speaker 1>now if we do a a micro k
+
+00:41:33.890 --> 00:41:35.410
+<v Speaker 1>CTR
+
+00:41:38.565 --> 00:41:41.445
+<v Speaker 1>containers or or just c by itself, l
+
+00:41:41.445 --> 00:41:42.005
+<v Speaker 1>s.
+
+00:41:45.285 --> 00:41:45.925
+<v Speaker 1>We'll see
+
+00:41:46.645 --> 00:41:48.645
+<v Speaker 1>now why do we see containers?
+
+00:41:48.805 --> 00:41:50.725
+<v Speaker 1>I was about to say we shouldn't see
+
+00:41:50.725 --> 00:41:53.045
+<v Speaker 1>anything because we've exported our namespace.
+
+00:41:53.500 --> 00:41:55.100
+<v Speaker 0>Did I mess up the export?
+
+00:41:55.340 --> 00:41:58.860
+<v Speaker 1>It looks right. Container d namespace.
+
+00:41:59.660 --> 00:42:00.460
+<v Speaker 1>So let's try
+
+00:42:01.740 --> 00:42:04.620
+<v Speaker 1>just bring back the CLS command and preface
+
+00:42:04.620 --> 00:42:05.100
+<v Speaker 1>it
+
+00:42:05.664 --> 00:42:06.785
+<v Speaker 1>with dash
+
+00:42:07.025 --> 00:42:08.464
+<v Speaker 1>before the c.
+
+00:42:09.825 --> 00:42:11.184
+<v Speaker 1>Just do dash
+
+00:42:11.184 --> 00:42:12.704
+<v Speaker 1>n Rawkode.
+
+00:42:16.625 --> 00:42:18.865
+<v Speaker 1>And what did I do wrong? Oh, connect
+
+00:42:18.865 --> 00:42:20.625
+<v Speaker 1>two forms of the same flag.
+
+00:42:22.320 --> 00:42:24.560
+<v Speaker 1>Does that mean it's reading the environment?
+
+00:42:24.960 --> 00:42:27.280
+<v Speaker 0>Yeah. Yeah. That's what I'm kinda getting from.
+
+00:42:27.280 --> 00:42:27.840
+<v Speaker 1>Yeah.
+
+00:42:28.800 --> 00:42:30.080
+<v Speaker 1>Interesting. I
+
+00:42:31.520 --> 00:42:32.320
+<v Speaker 1>I
+
+00:42:32.800 --> 00:42:35.200
+<v Speaker 1>yeah. That's fun. I I can't think of
+
+00:42:35.200 --> 00:42:36.000
+<v Speaker 1>why you're seeing.
+
+00:42:36.665 --> 00:42:38.025
+<v Speaker 1>Yeah. I think
+
+00:42:38.105 --> 00:42:38.905
+<v Speaker 1>CLS
+
+00:42:38.905 --> 00:42:39.785
+<v Speaker 1>should be
+
+00:42:40.744 --> 00:42:41.865
+<v Speaker 1>namespaced.
+
+00:42:44.185 --> 00:42:45.945
+<v Speaker 1>Oh, you know what?
+
+00:42:46.505 --> 00:42:48.744
+<v Speaker 1>The I think we're having fun with micro
+
+00:42:48.744 --> 00:42:50.265
+<v Speaker 1>case doing something
+
+00:42:50.425 --> 00:42:51.945
+<v Speaker 1>default
+
+00:42:51.400 --> 00:42:54.280
+<v Speaker 1>behind our backs. I think they're I think
+
+00:42:54.280 --> 00:42:56.200
+<v Speaker 1>they're setting the namespace
+
+00:42:57.880 --> 00:42:59.320
+<v Speaker 1>for us so that
+
+00:43:00.280 --> 00:43:02.520
+<v Speaker 1>so that we get the microcates environment.
+
+00:43:04.305 --> 00:43:06.704
+<v Speaker 0>Okay. That makes sense. Yeah. So that's kind
+
+00:43:06.704 --> 00:43:07.825
+<v Speaker 1>of fun. I don't know if there's a
+
+00:43:07.825 --> 00:43:09.984
+<v Speaker 1>way to to tell micro case not to
+
+00:43:09.984 --> 00:43:12.065
+<v Speaker 1>do that, but that we can still play
+
+00:43:12.065 --> 00:43:14.385
+<v Speaker 1>around. We don't Yeah. We'll just ignore it.
+
+00:43:14.385 --> 00:43:15.985
+<v Speaker 1>Yeah. We'll ignore it. Yeah.
+
+00:43:16.704 --> 00:43:19.505
+<v Speaker 1>So, yeah, that's the fun of using somebody's
+
+00:43:19.010 --> 00:43:19.810
+<v Speaker 1>sort of
+
+00:43:20.369 --> 00:43:22.609
+<v Speaker 1>embodiment. So, yeah, these are the pods that
+
+00:43:22.609 --> 00:43:24.290
+<v Speaker 1>are running, you know, via
+
+00:43:25.490 --> 00:43:28.290
+<v Speaker 1>the microcades environment. So we can let's pull
+
+00:43:28.290 --> 00:43:30.210
+<v Speaker 1>our own image. So So can I ask
+
+00:43:30.210 --> 00:43:31.250
+<v Speaker 0>you a question? Yeah.
+
+00:43:31.755 --> 00:43:34.394
+<v Speaker 0>So is the part a native concept in
+
+00:43:34.394 --> 00:43:36.474
+<v Speaker 0>containerd rather than a container?
+
+00:43:37.035 --> 00:43:38.075
+<v Speaker 1>No. So,
+
+00:43:38.474 --> 00:43:40.795
+<v Speaker 1>again, we implement the CRI,
+
+00:43:41.515 --> 00:43:43.755
+<v Speaker 1>which has some of those concepts, but it
+
+00:43:43.755 --> 00:43:46.474
+<v Speaker 1>doesn't require the runtime itself to to
+
+00:43:47.300 --> 00:43:50.100
+<v Speaker 1>have those concepts in its own. So there
+
+00:43:50.340 --> 00:43:51.780
+<v Speaker 1>if if you go back and look at
+
+00:43:51.780 --> 00:43:54.500
+<v Speaker 1>that architecture diagram, it just thinks in tasks
+
+00:43:54.500 --> 00:43:55.700
+<v Speaker 1>and containers.
+
+00:43:57.460 --> 00:44:00.180
+<v Speaker 1>There's nothing on here that says there's no
+
+00:44:00.180 --> 00:44:01.780
+<v Speaker 1>med data type called upon.
+
+00:44:02.295 --> 00:44:03.015
+<v Speaker 0>And
+
+00:44:03.255 --> 00:44:05.494
+<v Speaker 1>so it's really the CRI plug in that
+
+00:44:05.494 --> 00:44:08.454
+<v Speaker 1>that that has the knowledge that, oh, these
+
+00:44:08.454 --> 00:44:10.775
+<v Speaker 1>two containers are in the same pod, so
+
+00:44:11.015 --> 00:44:13.335
+<v Speaker 1>I need to share the network
+
+00:44:13.335 --> 00:44:16.055
+<v Speaker 1>namespace and UTS namespace,
+
+00:44:16.055 --> 00:44:16.375
+<v Speaker 1>etcetera.
+
+00:44:18.230 --> 00:44:19.990
+<v Speaker 1>So, yeah, containerd's
+
+00:44:20.069 --> 00:44:22.869
+<v Speaker 1>core code base does not have the pod
+
+00:44:22.869 --> 00:44:23.750
+<v Speaker 1>concept.
+
+00:44:25.430 --> 00:44:26.470
+<v Speaker 0>Okay. Perfect.
+
+00:44:29.285 --> 00:44:30.325
+<v Speaker 1>Yeah. So,
+
+00:44:31.045 --> 00:44:33.205
+<v Speaker 1>I guess, just to show the poll and
+
+00:44:33.205 --> 00:44:34.485
+<v Speaker 1>run scenario,
+
+00:44:34.645 --> 00:44:36.325
+<v Speaker 1>we can do CTR
+
+00:44:36.885 --> 00:44:37.605
+<v Speaker 1>images,
+
+00:44:40.005 --> 00:44:40.965
+<v Speaker 1>and then it's pull.
+
+00:44:41.600 --> 00:44:44.160
+<v Speaker 1>And the only difference between, like, the way
+
+00:44:44.160 --> 00:44:45.680
+<v Speaker 1>you do it in Docker is you need
+
+00:44:45.680 --> 00:44:48.080
+<v Speaker 1>to you need to fully specify,
+
+00:44:48.080 --> 00:44:50.400
+<v Speaker 1>so there's no default to Docker Hub.
+
+00:44:50.720 --> 00:44:52.400
+<v Speaker 1>So you need to preface that with docker
+
+00:44:52.400 --> 00:44:53.520
+<v Speaker 1>dot I o
+
+00:44:54.355 --> 00:44:55.875
+<v Speaker 1>slash library
+
+00:44:56.995 --> 00:44:59.235
+<v Speaker 1>because it's actually the core library
+
+00:44:59.395 --> 00:45:01.795
+<v Speaker 1>slash n's in NGINX, and you have to
+
+00:45:01.795 --> 00:45:03.635
+<v Speaker 1>add a tag. Like, we don't let you
+
+00:45:03.635 --> 00:45:04.115
+<v Speaker 1>do
+
+00:45:04.435 --> 00:45:06.515
+<v Speaker 1>the so cold latest is fine.
+
+00:45:08.560 --> 00:45:11.840
+<v Speaker 1>So you fully specify the the exact image.
+
+00:45:12.560 --> 00:45:14.640
+<v Speaker 1>It's gonna pull the layers,
+
+00:45:15.839 --> 00:45:17.520
+<v Speaker 1>and it will unpack the one for your
+
+00:45:17.520 --> 00:45:20.079
+<v Speaker 1>architecture if it's a multi platform image. So
+
+00:45:20.325 --> 00:45:23.365
+<v Speaker 1>it's a okay. Your Linux AMD sixty four,
+
+00:45:23.685 --> 00:45:25.845
+<v Speaker 1>and now you have that image locally. And
+
+00:45:25.845 --> 00:45:27.925
+<v Speaker 1>so you can do a CTR images l
+
+00:45:27.925 --> 00:45:28.485
+<v Speaker 1>s
+
+00:45:29.765 --> 00:45:31.205
+<v Speaker 1>just to kinda see.
+
+00:45:31.605 --> 00:45:33.605
+<v Speaker 1>And it it's a little messy because it's
+
+00:45:33.605 --> 00:45:36.410
+<v Speaker 1>showing a lot of detail around the architectures
+
+00:45:36.410 --> 00:45:37.610
+<v Speaker 1>that are supported,
+
+00:45:38.010 --> 00:45:40.490
+<v Speaker 1>the media type of the image.
+
+00:45:41.450 --> 00:45:42.170
+<v Speaker 1>Again,
+
+00:45:43.049 --> 00:45:44.410
+<v Speaker 1>you know A large font would be helping
+
+00:45:44.410 --> 00:45:46.570
+<v Speaker 0>either. Yeah. Yeah. So
+
+00:45:48.410 --> 00:45:50.925
+<v Speaker 1>but if you if, you know, it's hard
+
+00:45:50.925 --> 00:45:52.205
+<v Speaker 1>to see in here, but if you've grabbed
+
+00:45:52.205 --> 00:45:54.765
+<v Speaker 1>on your NGINX, you'd you'd see that, you
+
+00:45:54.765 --> 00:45:56.605
+<v Speaker 1>know, we've officially pulled
+
+00:45:56.925 --> 00:45:59.005
+<v Speaker 1>the NGINX latest. Yep.
+
+00:45:59.325 --> 00:46:01.245
+<v Speaker 1>And that it was a multi arc image.
+
+00:46:01.245 --> 00:46:03.245
+<v Speaker 1>It supports all those platforms, but it only
+
+00:46:03.245 --> 00:46:04.045
+<v Speaker 1>unpacked
+
+00:46:04.569 --> 00:46:05.210
+<v Speaker 1>the
+
+00:46:05.690 --> 00:46:06.410
+<v Speaker 1>the
+
+00:46:06.890 --> 00:46:09.050
+<v Speaker 1>Linux AMD sixty four image.
+
+00:46:09.770 --> 00:46:11.930
+<v Speaker 1>So now we can run it.
+
+00:46:14.089 --> 00:46:15.770
+<v Speaker 1>And the way we do that is just
+
+00:46:15.770 --> 00:46:16.730
+<v Speaker 1>a CTR.
+
+00:46:18.885 --> 00:46:20.725
+<v Speaker 1>We actually have a simplified
+
+00:46:20.725 --> 00:46:23.445
+<v Speaker 1>run command, but, yeah, container run
+
+00:46:23.525 --> 00:46:24.405
+<v Speaker 1>works.
+
+00:46:29.365 --> 00:46:32.150
+<v Speaker 1>Actually, yeah, run run, you don't need to
+
+00:46:32.150 --> 00:46:34.630
+<v Speaker 1>specify kind of the the object type. So
+
+00:46:34.630 --> 00:46:37.990
+<v Speaker 1>CTR run by itself without the container.
+
+00:46:39.750 --> 00:46:41.030
+<v Speaker 0>Do I need to fill
+
+00:46:41.430 --> 00:46:42.470
+<v Speaker 1>Yeah. No.
+
+00:46:43.109 --> 00:46:44.630
+<v Speaker 1>You don't have to fill all that.
+
+00:46:45.109 --> 00:46:45.430
+<v Speaker 1>Actually,
+
+00:46:46.815 --> 00:46:48.495
+<v Speaker 1>yes. You do. I'm sorry.
+
+00:46:49.775 --> 00:46:51.455
+<v Speaker 0>Let's just see if I break it then.
+
+00:46:51.455 --> 00:46:52.255
+<v Speaker 1>Yeah. Yeah.
+
+00:46:53.295 --> 00:46:55.135
+<v Speaker 0>Oh, I need a container ID.
+
+00:46:55.455 --> 00:46:57.615
+<v Speaker 1>Yeah. So you have to name your container.
+
+00:46:57.615 --> 00:46:59.775
+<v Speaker 1>We don't have the fancy fun, like, default
+
+00:46:59.775 --> 00:47:00.895
+<v Speaker 1>name like Docker.
+
+00:47:01.780 --> 00:47:02.420
+<v Speaker 1>So
+
+00:47:04.020 --> 00:47:05.700
+<v Speaker 0>I feel it would be remiss if I
+
+00:47:05.700 --> 00:47:07.140
+<v Speaker 0>didn't give it a name and it's been,
+
+00:47:07.140 --> 00:47:09.300
+<v Speaker 0>though. So let's call it angry Linus.
+
+00:47:09.460 --> 00:47:11.540
+<v Speaker 1>I think yeah. So there's no
+
+00:47:12.900 --> 00:47:15.605
+<v Speaker 1>it actually just takes positional parameters. So you
+
+00:47:15.765 --> 00:47:17.765
+<v Speaker 1>the dash end isn't needed. So just give
+
+00:47:17.765 --> 00:47:18.325
+<v Speaker 1>it
+
+00:47:19.525 --> 00:47:21.045
+<v Speaker 1>I'm trying to think if there's an order
+
+00:47:21.045 --> 00:47:22.485
+<v Speaker 1>here that I'm forgetting.
+
+00:47:24.405 --> 00:47:25.605
+<v Speaker 1>So the image
+
+00:47:26.325 --> 00:47:28.085
+<v Speaker 1>and then the
+
+00:47:31.970 --> 00:47:33.730
+<v Speaker 1>there is a default command. You don't need
+
+00:47:33.730 --> 00:47:35.570
+<v Speaker 1>to specify command in args.
+
+00:47:36.530 --> 00:47:38.530
+<v Speaker 1>So the ID is the last. So
+
+00:47:38.930 --> 00:47:40.850
+<v Speaker 1>what did you get an error? I was
+
+00:47:41.090 --> 00:47:41.970
+<v Speaker 1>I missed it.
+
+00:47:42.935 --> 00:47:44.695
+<v Speaker 1>You should just be able to specify a
+
+00:47:44.695 --> 00:47:46.935
+<v Speaker 1>name after the the image.
+
+00:47:48.695 --> 00:47:50.295
+<v Speaker 1>Oh, but you'll need the
+
+00:47:50.535 --> 00:47:53.495
+<v Speaker 1>you'll need the docker I o slash library
+
+00:47:53.495 --> 00:47:54.615
+<v Speaker 1>in front of NGINX.
+
+00:47:55.260 --> 00:47:56.060
+<v Speaker 1>Alright.
+
+00:47:56.060 --> 00:47:58.460
+<v Speaker 1>But, again, it it there's no default to
+
+00:47:58.460 --> 00:47:59.580
+<v Speaker 1>Docker Hub.
+
+00:48:03.260 --> 00:48:04.060
+<v Speaker 1>Alright.
+
+00:48:04.060 --> 00:48:06.460
+<v Speaker 1>You're get oh, you're a pseudo. Well, that's
+
+00:48:06.460 --> 00:48:07.020
+<v Speaker 1>fun.
+
+00:48:08.300 --> 00:48:09.260
+<v Speaker 1>You are as root.
+
+00:48:10.065 --> 00:48:11.265
+<v Speaker 0>Still weird
+
+00:48:11.345 --> 00:48:13.265
+<v Speaker 0>micro case thing, probably.
+
+00:48:13.665 --> 00:48:14.305
+<v Speaker 1>Yeah.
+
+00:48:14.945 --> 00:48:15.985
+<v Speaker 1>But I'm
+
+00:48:17.025 --> 00:48:17.825
+<v Speaker 1>again,
+
+00:48:17.825 --> 00:48:19.345
+<v Speaker 1>they may they may
+
+00:48:19.585 --> 00:48:21.825
+<v Speaker 1>have made some changes in micro case to
+
+00:48:21.825 --> 00:48:24.480
+<v Speaker 1>kind of keep you on the farm, like,
+
+00:48:24.640 --> 00:48:26.640
+<v Speaker 1>not off running random images.
+
+00:48:28.560 --> 00:48:30.880
+<v Speaker 1>So I yeah. I'm sorry. I I should've
+
+00:48:30.880 --> 00:48:33.360
+<v Speaker 1>messed around with that too because I I
+
+00:48:33.760 --> 00:48:36.560
+<v Speaker 1>I will take credit or
+
+00:48:37.115 --> 00:48:39.674
+<v Speaker 1>or the fall for recommending that we use
+
+00:48:39.674 --> 00:48:41.595
+<v Speaker 1>microcades just as a simple way to get
+
+00:48:41.595 --> 00:48:42.635
+<v Speaker 1>containerd.
+
+00:48:43.434 --> 00:48:45.675
+<v Speaker 0>Alright. Let's just snap
+
+00:48:46.635 --> 00:48:49.275
+<v Speaker 0>on install microcades.
+
+00:48:49.755 --> 00:48:51.194
+<v Speaker 0>What's the numbers? Remove.
+
+00:48:52.830 --> 00:48:58.750
+<v Speaker 0>Spell it right. We'll
+
+00:48:58.750 --> 00:49:00.990
+<v Speaker 0>get there. And then I just we'll just
+
+00:49:00.990 --> 00:49:03.630
+<v Speaker 0>do a curl get dot docker dot I
+
+00:49:03.630 --> 00:49:05.950
+<v Speaker 0>o. Yeah. That that'll that'll give us a
+
+00:49:05.950 --> 00:49:06.750
+<v Speaker 1>containerd
+
+00:49:08.525 --> 00:49:11.645
+<v Speaker 1>instance that's our that should actually start it
+
+00:49:11.645 --> 00:49:12.685
+<v Speaker 1>for us as well.
+
+00:49:16.605 --> 00:49:18.845
+<v Speaker 0>No. It's not faster than moving things, is
+
+00:49:18.845 --> 00:49:19.005
+<v Speaker 0>it?
+
+00:49:20.630 --> 00:49:22.870
+<v Speaker 1>Yeah. It it actually has to stop the
+
+00:49:22.870 --> 00:49:25.430
+<v Speaker 1>Kubelet and the container engine and stop a
+
+00:49:25.430 --> 00:49:27.030
+<v Speaker 1>bunch of pods, and it tries to do
+
+00:49:27.030 --> 00:49:27.590
+<v Speaker 1>it.
+
+00:49:30.950 --> 00:49:32.310
+<v Speaker 0>I guess I don't really need it to
+
+00:49:32.310 --> 00:49:34.230
+<v Speaker 0>go away, so let's just
+
+00:49:37.755 --> 00:49:40.475
+<v Speaker 1>yeah. I mean, the snap is actually not
+
+00:49:40.475 --> 00:49:42.315
+<v Speaker 1>gonna get in the way of the standard
+
+00:49:42.315 --> 00:49:43.515
+<v Speaker 1>containerd.
+
+00:49:45.675 --> 00:49:47.515
+<v Speaker 0>Well, it's not it's not listening to my
+
+00:49:47.515 --> 00:49:48.635
+<v Speaker 0>wonderful signal. So
+
+00:49:50.210 --> 00:49:51.730
+<v Speaker 0>I will grab
+
+00:49:52.049 --> 00:49:54.369
+<v Speaker 0>this IP address, and I'll just
+
+00:49:57.250 --> 00:49:58.369
+<v Speaker 0>that's it.
+
+00:49:58.609 --> 00:50:00.050
+<v Speaker 0>That's the same one.
+
+00:50:00.849 --> 00:50:02.530
+<v Speaker 0>Course, it comes back. Right? Right.
+
+00:50:02.609 --> 00:50:04.130
+<v Speaker 0>So curl,
+
+00:50:04.130 --> 00:50:05.410
+<v Speaker 0>it should be at
+
+00:50:05.655 --> 00:50:07.975
+<v Speaker 0>get dot docker dot I o.
+
+00:50:08.375 --> 00:50:09.575
+<v Speaker 0>And we'll just
+
+00:50:17.015 --> 00:50:19.095
+<v Speaker 0>okay. Let's just save it.
+
+00:50:21.970 --> 00:50:23.330
+<v Speaker 0>Have I got that wrong?
+
+00:50:26.210 --> 00:50:28.370
+<v Speaker 0>Get.DockerIO.
+
+00:50:29.970 --> 00:50:31.570
+<v Speaker 0>I just copy it from here.
+
+00:50:36.065 --> 00:50:37.185
+<v Speaker 0>Get off there.
+
+00:50:37.825 --> 00:50:39.505
+<v Speaker 0>There we go. There you go.
+
+00:50:41.265 --> 00:50:44.065
+<v Speaker 1>Yeah. So that's interesting. I I
+
+00:50:44.065 --> 00:50:44.785
+<v Speaker 1>was
+
+00:50:45.185 --> 00:50:48.305
+<v Speaker 1>chatting with the microcades folks now and then
+
+00:50:48.710 --> 00:50:50.869
+<v Speaker 1>and and seeing if I could use it
+
+00:50:50.869 --> 00:50:53.670
+<v Speaker 1>for kind of as a standalone containerd,
+
+00:50:53.910 --> 00:50:56.069
+<v Speaker 1>but that's it's been a while. So maybe
+
+00:50:56.069 --> 00:50:56.790
+<v Speaker 1>something
+
+00:50:57.670 --> 00:50:58.789
+<v Speaker 1>has changed with that.
+
+00:51:00.465 --> 00:51:01.265
+<v Speaker 0>Alright.
+
+00:51:01.265 --> 00:51:02.145
+<v Speaker 0>Yeah. I
+
+00:51:02.945 --> 00:51:04.465
+<v Speaker 0>mean, I I've used micro kits a few
+
+00:51:04.465 --> 00:51:06.305
+<v Speaker 0>times. It usually works pretty well. I'm sure
+
+00:51:06.305 --> 00:51:08.785
+<v Speaker 0>it's just something silly. But we can
+
+00:51:09.185 --> 00:51:10.705
+<v Speaker 0>quickly get back to where we were. So
+
+00:51:10.705 --> 00:51:13.425
+<v Speaker 0>we've built the engine with latest image. And
+
+00:51:13.425 --> 00:51:15.265
+<v Speaker 0>in theory, now I should be able to
+
+00:51:15.265 --> 00:51:15.665
+<v Speaker 0>do
+
+00:51:16.270 --> 00:51:17.070
+<v Speaker 0>run,
+
+00:51:17.230 --> 00:51:18.990
+<v Speaker 0>and it was Docker
+
+00:51:19.070 --> 00:51:20.590
+<v Speaker 0>IO library
+
+00:51:20.670 --> 00:51:21.790
+<v Speaker 0>engine next
+
+00:51:21.950 --> 00:51:24.510
+<v Speaker 0>latest and then angry
+
+00:51:24.590 --> 00:51:25.390
+<v Speaker 0>wireless.
+
+00:51:25.550 --> 00:51:26.270
+<v Speaker 0>Ta da.
+
+00:51:27.310 --> 00:51:28.510
+<v Speaker 1>Yep. There we go.
+
+00:51:30.525 --> 00:51:31.165
+<v Speaker 1>So
+
+00:51:32.045 --> 00:51:33.245
+<v Speaker 1>a couple things
+
+00:51:33.565 --> 00:51:35.405
+<v Speaker 1>that are worth mentioning. So
+
+00:51:36.205 --> 00:51:38.685
+<v Speaker 1>that can be disappointing for folks.
+
+00:51:39.805 --> 00:51:42.125
+<v Speaker 1>You know, Docker defaulted
+
+00:51:42.205 --> 00:51:44.365
+<v Speaker 1>or had a default implementation
+
+00:51:44.445 --> 00:51:45.085
+<v Speaker 1>of
+
+00:51:45.460 --> 00:51:48.180
+<v Speaker 1>an a core kind of networking implementation
+
+00:51:48.660 --> 00:51:51.300
+<v Speaker 1>because containerd was built in the context of
+
+00:51:51.300 --> 00:51:52.980
+<v Speaker 1>just, again, this core,
+
+00:51:53.380 --> 00:51:55.140
+<v Speaker 1>like, run an OCI image,
+
+00:51:55.460 --> 00:51:56.980
+<v Speaker 1>you know, take the spec,
+
+00:51:57.540 --> 00:51:59.220
+<v Speaker 1>create the right namespaces.
+
+00:51:59.460 --> 00:52:00.820
+<v Speaker 1>There's no default, like,
+
+00:52:01.434 --> 00:52:02.795
+<v Speaker 1>IP forwarding,
+
+00:52:02.795 --> 00:52:05.275
+<v Speaker 1>bridge, all those pieces that people kind of
+
+00:52:05.275 --> 00:52:08.075
+<v Speaker 1>expect out of the box because Docker had
+
+00:52:08.075 --> 00:52:09.595
+<v Speaker 1>it. Kubernetes
+
+00:52:09.595 --> 00:52:11.835
+<v Speaker 1>doesn't need that, right, because you've got a
+
+00:52:11.835 --> 00:52:14.795
+<v Speaker 1>CNI plug in providing the that networking layer.
+
+00:52:16.860 --> 00:52:19.740
+<v Speaker 1>So this NGINX we just built, there's no
+
+00:52:19.740 --> 00:52:21.500
+<v Speaker 1>way to, like, talk to it
+
+00:52:22.140 --> 00:52:24.540
+<v Speaker 1>because there's no IP address in this container
+
+00:52:24.540 --> 00:52:25.660
+<v Speaker 1>you just started.
+
+00:52:27.180 --> 00:52:30.005
+<v Speaker 1>There are some fun tools people have written.
+
+00:52:30.005 --> 00:52:31.525
+<v Speaker 1>You can kinda add that on your own.
+
+00:52:31.525 --> 00:52:32.965
+<v Speaker 1>You can mess around with that.
+
+00:52:34.725 --> 00:52:36.965
+<v Speaker 1>Or, again, you can use it via
+
+00:52:37.205 --> 00:52:38.485
+<v Speaker 1>another layer,
+
+00:52:38.565 --> 00:52:40.965
+<v Speaker 1>and you get that to however that other
+
+00:52:40.965 --> 00:52:42.085
+<v Speaker 1>layer provides it. So,
+
+00:52:42.810 --> 00:52:44.410
+<v Speaker 1>you know, if people wanna play around with
+
+00:52:44.410 --> 00:52:47.530
+<v Speaker 1>that, Michael Crosby has a a nifty tool
+
+00:52:48.330 --> 00:52:49.690
+<v Speaker 1>called BOSS,
+
+00:52:50.330 --> 00:52:51.610
+<v Speaker 1>b o s s,
+
+00:52:51.930 --> 00:52:52.490
+<v Speaker 1>that
+
+00:52:53.050 --> 00:52:54.250
+<v Speaker 1>wraps containerd,
+
+00:52:54.635 --> 00:52:55.675
+<v Speaker 1>add some
+
+00:52:56.474 --> 00:52:59.194
+<v Speaker 1>management. I think he runs, like, his kind
+
+00:52:59.194 --> 00:53:01.835
+<v Speaker 1>of personal network services and and
+
+00:53:03.115 --> 00:53:04.875
+<v Speaker 1>system using BOSS.
+
+00:53:05.115 --> 00:53:08.395
+<v Speaker 1>It has some nice restart and checkpoint features.
+
+00:53:10.319 --> 00:53:10.960
+<v Speaker 1>So, again,
+
+00:53:11.359 --> 00:53:12.480
+<v Speaker 1>containerd
+
+00:53:12.880 --> 00:53:13.680
+<v Speaker 1>is
+
+00:53:13.680 --> 00:53:16.160
+<v Speaker 1>really built as something you build on top
+
+00:53:16.160 --> 00:53:18.720
+<v Speaker 1>of. And so there are things that just
+
+00:53:18.720 --> 00:53:20.640
+<v Speaker 1>don't come out of the box such as
+
+00:53:20.640 --> 00:53:22.000
+<v Speaker 1>networking by default.
+
+00:53:23.415 --> 00:53:25.815
+<v Speaker 1>Yeah. I was gonna say, like, you know,
+
+00:53:25.815 --> 00:53:28.055
+<v Speaker 0>you said earlier, and you've kind of we
+
+00:53:28.615 --> 00:53:30.215
+<v Speaker 0>said it again there. This is not a
+
+00:53:30.215 --> 00:53:31.575
+<v Speaker 0>tool for people sitting in front of a
+
+00:53:31.575 --> 00:53:33.335
+<v Speaker 0>computer that wanna run containers. And I was
+
+00:53:33.335 --> 00:53:35.975
+<v Speaker 0>thinking, but CTR run wasn't that bad, and
+
+00:53:35.975 --> 00:53:36.910
+<v Speaker 0>then that
+
+00:53:37.070 --> 00:53:39.310
+<v Speaker 0>there's no networking. There's no volume system.
+
+00:53:39.870 --> 00:53:40.830
+<v Speaker 0>Maybe
+
+00:53:40.830 --> 00:53:42.510
+<v Speaker 0>not something I wanna do then.
+
+00:53:43.070 --> 00:53:43.710
+<v Speaker 1>Yeah.
+
+00:53:44.110 --> 00:53:45.550
+<v Speaker 1>Yeah. And then, again,
+
+00:53:47.150 --> 00:53:48.990
+<v Speaker 1>with the CRI plug in as being one
+
+00:53:48.990 --> 00:53:50.670
+<v Speaker 1>of our primary use cases,
+
+00:53:51.665 --> 00:53:53.265
+<v Speaker 1>you know, you can think, well,
+
+00:53:53.585 --> 00:53:55.825
+<v Speaker 1>if I put that in containerd, I'd be
+
+00:53:55.825 --> 00:53:58.625
+<v Speaker 1>duplicating things that the Kubernetes layer already does
+
+00:53:58.625 --> 00:53:59.345
+<v Speaker 1>for me.
+
+00:53:59.665 --> 00:54:01.505
+<v Speaker 1>And so that's some of the thinking behind
+
+00:54:01.505 --> 00:54:02.305
+<v Speaker 1>that is,
+
+00:54:03.025 --> 00:54:04.945
+<v Speaker 1>you know, I don't need those features because
+
+00:54:04.945 --> 00:54:07.185
+<v Speaker 1>the layer above me is gonna provide those.
+
+00:54:08.120 --> 00:54:09.320
+<v Speaker 1>And, you know,
+
+00:54:09.640 --> 00:54:12.040
+<v Speaker 1>it it it's a it's a good point,
+
+00:54:12.120 --> 00:54:14.760
+<v Speaker 1>especially for that Kubernetes use case because
+
+00:54:14.920 --> 00:54:16.520
+<v Speaker 1>I know for a fact that,
+
+00:54:17.480 --> 00:54:20.120
+<v Speaker 1>it becomes a security issue to some consumers
+
+00:54:20.120 --> 00:54:21.720
+<v Speaker 1>of Kubernetes services
+
+00:54:21.954 --> 00:54:24.115
+<v Speaker 1>when they find out, oh, you use Docker
+
+00:54:24.115 --> 00:54:25.715
+<v Speaker 1>as the Kubernetes runtime.
+
+00:54:25.795 --> 00:54:27.315
+<v Speaker 1>What do you do with the Docker default
+
+00:54:27.315 --> 00:54:30.115
+<v Speaker 1>bridge? Because it's not it shouldn't be used,
+
+00:54:30.674 --> 00:54:33.234
+<v Speaker 1>but it's there because Docker created it when
+
+00:54:33.234 --> 00:54:34.915
+<v Speaker 1>it when the daemon started.
+
+00:54:35.395 --> 00:54:36.355
+<v Speaker 1>And so
+
+00:54:37.280 --> 00:54:39.680
+<v Speaker 1>people that use the Docker engine as a
+
+00:54:39.680 --> 00:54:41.120
+<v Speaker 1>Kubernetes runtime,
+
+00:54:41.760 --> 00:54:44.320
+<v Speaker 1>you may be asked in a security audit,
+
+00:54:44.560 --> 00:54:46.800
+<v Speaker 1>you know, have you removed the Docker bridge
+
+00:54:46.800 --> 00:54:49.520
+<v Speaker 1>because, you know, your containers are being connected
+
+00:54:49.599 --> 00:54:51.280
+<v Speaker 1>potentially to two different networks,
+
+00:54:51.795 --> 00:54:54.595
+<v Speaker 1>the Kubernetes CNI implementation you use,
+
+00:54:54.835 --> 00:54:56.835
+<v Speaker 1>but also the Docker default bridge.
+
+00:54:57.875 --> 00:55:00.275
+<v Speaker 1>So, again, not having that in containerd is
+
+00:55:00.275 --> 00:55:02.194
+<v Speaker 1>one less thing that you have to monkey
+
+00:55:02.194 --> 00:55:02.674
+<v Speaker 1>with
+
+00:55:03.950 --> 00:55:07.070
+<v Speaker 1>because there's no default kind of network implementation.
+
+00:55:08.350 --> 00:55:09.150
+<v Speaker 0>Right.
+
+00:55:09.230 --> 00:55:12.110
+<v Speaker 0>Got it. So we're approaching the the hour
+
+00:55:12.110 --> 00:55:13.950
+<v Speaker 0>now, and we have a few more questions
+
+00:55:13.950 --> 00:55:16.190
+<v Speaker 0>that were submitted via Reddit and Twitter,
+
+00:55:16.935 --> 00:55:18.695
+<v Speaker 0>which I'll I'll run through if you're happy
+
+00:55:18.695 --> 00:55:20.455
+<v Speaker 0>to, and then we'll we'll wrap up for
+
+00:55:20.455 --> 00:55:22.215
+<v Speaker 0>for there for the day. I think that's
+
+00:55:22.215 --> 00:55:23.495
+<v Speaker 1>great. So
+
+00:55:24.295 --> 00:55:27.095
+<v Speaker 0>the first question I have now is how
+
+00:55:27.095 --> 00:55:29.815
+<v Speaker 0>do I debug containerd issues? Which log files
+
+00:55:29.815 --> 00:55:31.335
+<v Speaker 0>should I look in, and how do I
+
+00:55:31.335 --> 00:55:31.735
+<v Speaker 0>fix it?
+
+00:55:33.150 --> 00:55:35.550
+<v Speaker 1>Yeah. So if you're in charge of running
+
+00:55:35.550 --> 00:55:36.670
+<v Speaker 1>containerd,
+
+00:55:38.190 --> 00:55:39.630
+<v Speaker 1>the daemon, there
+
+00:55:40.430 --> 00:55:42.510
+<v Speaker 1>is a log level setting
+
+00:55:42.510 --> 00:55:45.390
+<v Speaker 1>that if you do, you know, dash d
+
+00:55:46.205 --> 00:55:47.565
+<v Speaker 1>on containerd,
+
+00:55:47.565 --> 00:55:50.205
+<v Speaker 1>you go into deep debug mode and you
+
+00:55:50.205 --> 00:55:50.765
+<v Speaker 1>get
+
+00:55:51.405 --> 00:55:53.405
+<v Speaker 1>significant volumes of
+
+00:55:53.805 --> 00:55:55.085
+<v Speaker 1>of information
+
+00:55:55.085 --> 00:55:56.125
+<v Speaker 1>on events,
+
+00:55:56.365 --> 00:55:57.085
+<v Speaker 1>the
+
+00:55:57.245 --> 00:55:59.725
+<v Speaker 1>API, on registry interactions.
+
+00:56:00.285 --> 00:56:00.685
+<v Speaker 1>So,
+
+00:56:01.910 --> 00:56:03.910
+<v Speaker 1>obviously, if if you're able to
+
+00:56:04.230 --> 00:56:07.110
+<v Speaker 1>to restart the daemon, reproduce your issue in
+
+00:56:07.110 --> 00:56:08.150
+<v Speaker 1>debug mode,
+
+00:56:08.950 --> 00:56:12.230
+<v Speaker 1>that's almost always a a valuable source of,
+
+00:56:12.230 --> 00:56:14.310
+<v Speaker 1>you know, what happened? Why didn't this happen?
+
+00:56:14.310 --> 00:56:16.625
+<v Speaker 1>What what was the error? Why did the
+
+00:56:16.625 --> 00:56:18.785
+<v Speaker 1>daemon say my container couldn't start or the
+
+00:56:18.785 --> 00:56:20.065
+<v Speaker 1>OCI runtime
+
+00:56:21.825 --> 00:56:23.744
+<v Speaker 1>So that that's kind of step one, run
+
+00:56:23.744 --> 00:56:26.145
+<v Speaker 1>your daemon in debug mode. Gonna be a
+
+00:56:26.145 --> 00:56:28.464
+<v Speaker 1>little trickier if you're a consumer of something
+
+00:56:28.464 --> 00:56:29.665
+<v Speaker 1>that's using containerd,
+
+00:56:29.970 --> 00:56:32.130
+<v Speaker 1>how do you get them to turn containerd
+
+00:56:32.130 --> 00:56:33.970
+<v Speaker 1>into debug mode? So that that may be
+
+00:56:33.970 --> 00:56:35.970
+<v Speaker 1>a secondary thing you have to figure out.
+
+00:56:38.290 --> 00:56:38.930
+<v Speaker 1>If
+
+00:56:39.170 --> 00:56:40.210
+<v Speaker 1>again, that that
+
+00:56:41.090 --> 00:56:43.650
+<v Speaker 1>depending on your your setup, where that actually
+
+00:56:43.650 --> 00:56:45.650
+<v Speaker 1>logs when you're in in debug mode.
+
+00:56:46.665 --> 00:56:47.465
+<v Speaker 1>You know,
+
+00:56:47.785 --> 00:56:50.345
+<v Speaker 1>as a as a developer of containerd, I'm
+
+00:56:50.345 --> 00:56:51.785
+<v Speaker 1>just running containerd
+
+00:56:52.105 --> 00:56:53.545
+<v Speaker 1>in a separate terminal,
+
+00:56:53.625 --> 00:56:56.265
+<v Speaker 1>you know, either piping to a file. But
+
+00:56:56.265 --> 00:56:58.105
+<v Speaker 1>if you're running via systemd,
+
+00:56:58.345 --> 00:56:59.545
+<v Speaker 1>you should be able to
+
+00:57:00.390 --> 00:57:01.990
+<v Speaker 1>extract the logs
+
+00:57:02.069 --> 00:57:04.630
+<v Speaker 1>using the journal, you know, commands for system
+
+00:57:04.630 --> 00:57:05.270
+<v Speaker 1>d.
+
+00:57:07.430 --> 00:57:08.710
+<v Speaker 1>If that's not
+
+00:57:09.269 --> 00:57:12.070
+<v Speaker 1>producing the information you need, say you have
+
+00:57:12.230 --> 00:57:15.065
+<v Speaker 1>a hang, you know, containerd seems to not
+
+00:57:15.065 --> 00:57:16.905
+<v Speaker 1>be responding to the API.
+
+00:57:18.025 --> 00:57:20.345
+<v Speaker 1>Similar to Docker and other tools written in
+
+00:57:20.345 --> 00:57:20.985
+<v Speaker 1>Go,
+
+00:57:21.385 --> 00:57:24.505
+<v Speaker 1>you can send a sig user one.
+
+00:57:25.224 --> 00:57:27.390
+<v Speaker 1>And if there's actually a keystroke you you
+
+00:57:27.390 --> 00:57:29.069
+<v Speaker 1>can do if if, again, if you're running
+
+00:57:29.069 --> 00:57:30.510
+<v Speaker 1>containerd in a terminal.
+
+00:57:31.230 --> 00:57:32.750
+<v Speaker 1>But if you send the signal
+
+00:57:33.630 --> 00:57:35.470
+<v Speaker 1>and the cool thing is our shim's supported
+
+00:57:35.470 --> 00:57:37.950
+<v Speaker 1>too. So remember that the shim is a
+
+00:57:37.950 --> 00:57:39.549
+<v Speaker 1>separate process from the daemon.
+
+00:57:40.655 --> 00:57:42.255
+<v Speaker 1>You can send both of them a sig
+
+00:57:42.255 --> 00:57:44.495
+<v Speaker 1>user one and get a full Golang
+
+00:57:44.655 --> 00:57:46.815
+<v Speaker 1>thread dump process dump.
+
+00:57:47.695 --> 00:57:49.535
+<v Speaker 1>And a lot of times, you know, we
+
+00:57:49.535 --> 00:57:51.455
+<v Speaker 1>ask people reporting issues
+
+00:57:51.695 --> 00:57:53.215
+<v Speaker 1>about hangs or
+
+00:57:53.520 --> 00:57:54.640
+<v Speaker 1>unresponsive
+
+00:57:54.640 --> 00:57:55.840
+<v Speaker 1>containerd
+
+00:57:56.240 --> 00:57:58.480
+<v Speaker 1>to get hub, we ask them to send,
+
+00:57:58.480 --> 00:58:00.560
+<v Speaker 1>you know, that signal and send us the
+
+00:58:00.560 --> 00:58:01.760
+<v Speaker 1>the Golang
+
+00:58:03.360 --> 00:58:05.440
+<v Speaker 1>routine output. And a lot of times, can
+
+00:58:05.440 --> 00:58:05.920
+<v Speaker 1>see, oh,
+
+00:58:07.815 --> 00:58:09.575
+<v Speaker 1>your root file system,
+
+00:58:09.655 --> 00:58:11.655
+<v Speaker 1>like, isn't going away, like, when we're trying
+
+00:58:11.655 --> 00:58:13.015
+<v Speaker 1>to clean up your container,
+
+00:58:13.655 --> 00:58:15.575
+<v Speaker 1>and there's another
+
+00:58:15.655 --> 00:58:17.895
+<v Speaker 1>the shim process is waiting for that to
+
+00:58:17.895 --> 00:58:19.495
+<v Speaker 1>happen, and it won't return.
+
+00:58:20.935 --> 00:58:22.295
+<v Speaker 1>So, again, the Golang
+
+00:58:23.319 --> 00:58:26.760
+<v Speaker 1>output can be really helpful for debugging containerd
+
+00:58:26.760 --> 00:58:27.320
+<v Speaker 1>as
+
+00:58:28.520 --> 00:58:31.720
+<v Speaker 1>it's useful for other go go based tools
+
+00:58:31.720 --> 00:58:32.440
+<v Speaker 1>as well.
+
+00:58:34.680 --> 00:58:36.675
+<v Speaker 1>So, yeah, that's probably I mean, those two
+
+00:58:36.675 --> 00:58:38.675
+<v Speaker 1>things are gonna get you 99%
+
+00:58:38.675 --> 00:58:39.395
+<v Speaker 1>of the way.
+
+00:58:39.875 --> 00:58:41.875
+<v Speaker 1>People working at a much lower level, you
+
+00:58:41.875 --> 00:58:44.275
+<v Speaker 1>know, you're building the next gVisor,
+
+00:58:44.275 --> 00:58:46.515
+<v Speaker 1>kind of containers, and you're down in the
+
+00:58:46.515 --> 00:58:48.755
+<v Speaker 1>bowels of kernel interactions.
+
+00:58:48.755 --> 00:58:50.790
+<v Speaker 1>You know, there may be other you know,
+
+00:58:50.790 --> 00:58:51.510
+<v Speaker 1>obviously,
+
+00:58:52.150 --> 00:58:53.990
+<v Speaker 1>lots of cool things that are happening with
+
+00:58:53.990 --> 00:58:55.110
+<v Speaker 1>eBPF
+
+00:58:55.110 --> 00:58:57.830
+<v Speaker 1>and tools that, you know, track syscalls.
+
+00:58:57.830 --> 00:58:59.270
+<v Speaker 1>You know, that if you're down at that
+
+00:58:59.270 --> 00:58:59.910
+<v Speaker 1>layer,
+
+00:59:00.230 --> 00:59:02.470
+<v Speaker 1>there there are probably a series of tools
+
+00:59:02.550 --> 00:59:03.510
+<v Speaker 1>that could be valuable
+
+00:59:04.575 --> 00:59:06.335
+<v Speaker 1>to figure out things like, oh,
+
+00:59:06.655 --> 00:59:09.215
+<v Speaker 1>there's a seccomp profile blocking my container from
+
+00:59:09.215 --> 00:59:11.135
+<v Speaker 1>using a certain Cisco. That's why it's not
+
+00:59:11.135 --> 00:59:11.695
+<v Speaker 1>working.
+
+00:59:12.974 --> 00:59:15.775
+<v Speaker 1>But that's gonna be more BPF layer related.
+
+00:59:18.050 --> 00:59:19.890
+<v Speaker 0>Thanks. That was an awesome answer to a
+
+00:59:19.890 --> 00:59:21.330
+<v Speaker 0>very big question.
+
+00:59:21.490 --> 00:59:22.530
+<v Speaker 0>So
+
+00:59:23.730 --> 00:59:25.410
+<v Speaker 0>the next one I'm gonna try and bridge
+
+00:59:25.410 --> 00:59:27.330
+<v Speaker 0>it for you is is is quite lengthy.
+
+00:59:27.330 --> 00:59:29.730
+<v Speaker 0>But this what I could the premise of
+
+00:59:29.730 --> 00:59:31.805
+<v Speaker 0>the question is there seems to be some
+
+00:59:31.805 --> 00:59:33.965
+<v Speaker 0>discrepancies between a v one and v two
+
+00:59:33.965 --> 00:59:35.965
+<v Speaker 0>configuration schema. Now I'm not sure what that
+
+00:59:35.965 --> 00:59:37.885
+<v Speaker 0>is, so maybe you could clarify that. Yep.
+
+00:59:37.885 --> 00:59:40.205
+<v Speaker 0>But the question is then, are there any
+
+00:59:40.205 --> 00:59:42.445
+<v Speaker 0>plans to improve the documentation around that so
+
+00:59:42.445 --> 00:59:44.605
+<v Speaker 0>that there's some those hurdles for people adopting
+
+00:59:44.605 --> 00:59:45.245
+<v Speaker 0>containerd?
+
+00:59:46.340 --> 00:59:48.500
+<v Speaker 1>Yeah. That's a good question. So
+
+00:59:49.060 --> 00:59:51.300
+<v Speaker 1>I'm pretty sure they're referring to
+
+00:59:52.500 --> 00:59:53.780
+<v Speaker 1>containerd's
+
+00:59:53.780 --> 00:59:55.380
+<v Speaker 1>TOML configuration
+
+00:59:55.380 --> 00:59:56.420
+<v Speaker 1>file. So
+
+00:59:57.060 --> 00:59:58.260
+<v Speaker 1>like most daemons,
+
+00:59:58.914 --> 00:59:59.714
+<v Speaker 1>you can
+
+00:59:59.954 --> 01:00:00.755
+<v Speaker 1>run it
+
+01:00:01.075 --> 01:00:03.555
+<v Speaker 1>with a default config. You don't have ever
+
+01:00:03.555 --> 01:00:04.994
+<v Speaker 1>have to look at it. It probably is
+
+01:00:04.994 --> 01:00:07.555
+<v Speaker 1>gonna do you know, when you just installed
+
+01:00:07.714 --> 01:00:10.434
+<v Speaker 1>Docker and you got CTR and containerds running,
+
+01:00:10.434 --> 01:00:12.355
+<v Speaker 1>you didn't have to create a config
+
+01:00:12.530 --> 01:00:13.730
+<v Speaker 1>TOML file
+
+01:00:14.770 --> 01:00:16.690
+<v Speaker 1>because Docker created one,
+
+01:00:17.250 --> 01:00:19.329
+<v Speaker 1>containerd started, and you didn't have to worry
+
+01:00:19.329 --> 01:00:19.890
+<v Speaker 1>about
+
+01:00:20.369 --> 01:00:21.490
+<v Speaker 1>those settings.
+
+01:00:23.010 --> 01:00:23.730
+<v Speaker 1>Because
+
+01:00:23.810 --> 01:00:26.290
+<v Speaker 1>containerd has this plug in model
+
+01:00:26.635 --> 01:00:28.875
+<v Speaker 1>and there are a series of switches, you
+
+01:00:28.875 --> 01:00:30.875
+<v Speaker 1>know, turn this on, turn this off.
+
+01:00:32.715 --> 01:00:35.115
+<v Speaker 1>Over the years, the you know, we chose
+
+01:00:35.115 --> 01:00:36.715
+<v Speaker 1>TOML. It's very simple,
+
+01:00:37.675 --> 01:00:38.635
+<v Speaker 1>descriptive language,
+
+01:00:40.329 --> 01:00:42.250
+<v Speaker 1>you know, has some
+
+01:00:42.250 --> 01:00:44.330
+<v Speaker 1>similarities to YAML, of course.
+
+01:00:46.010 --> 01:00:46.650
+<v Speaker 1>But
+
+01:00:46.890 --> 01:00:49.049
+<v Speaker 1>over time, we found that as we were
+
+01:00:49.049 --> 01:00:49.690
+<v Speaker 1>adding
+
+01:00:50.089 --> 01:00:50.890
+<v Speaker 1>features
+
+01:00:52.635 --> 01:00:53.835
+<v Speaker 1>to containerd,
+
+01:00:53.835 --> 01:00:56.715
+<v Speaker 1>especially around, like, registry
+
+01:00:58.155 --> 01:00:59.675
+<v Speaker 1>authorizer support,
+
+01:00:59.755 --> 01:01:02.315
+<v Speaker 1>like, you know, pull through caches, all all
+
+01:01:02.315 --> 01:01:04.795
+<v Speaker 1>these kind of fancy configuration options,
+
+01:01:04.795 --> 01:01:06.940
+<v Speaker 1>and the fact that each plug in can
+
+01:01:06.940 --> 01:01:09.180
+<v Speaker 1>have its own section in the TOML file.
+
+01:01:10.540 --> 01:01:12.300
+<v Speaker 1>We found that what we had started with
+
+01:01:12.300 --> 01:01:14.140
+<v Speaker 1>was just gonna be too
+
+01:01:14.460 --> 01:01:17.820
+<v Speaker 1>simplistic to handle some of the capabilities we
+
+01:01:17.820 --> 01:01:18.380
+<v Speaker 1>needed.
+
+01:01:19.020 --> 01:01:21.660
+<v Speaker 1>And so there's a new TOML format that
+
+01:01:22.055 --> 01:01:24.135
+<v Speaker 1>the parser in containerd,
+
+01:01:24.455 --> 01:01:26.535
+<v Speaker 1>if you have version equals two at the
+
+01:01:26.535 --> 01:01:28.775
+<v Speaker 1>top of your containerd config,
+
+01:01:29.175 --> 01:01:30.535
+<v Speaker 1>which is now the default,
+
+01:01:31.175 --> 01:01:32.455
+<v Speaker 1>it will be read,
+
+01:01:32.535 --> 01:01:35.095
+<v Speaker 1>obviously, as a version two config file
+
+01:01:35.495 --> 01:01:37.495
+<v Speaker 1>instead of version one. And
+
+01:01:37.820 --> 01:01:38.780
+<v Speaker 1>I
+
+01:01:38.780 --> 01:01:41.740
+<v Speaker 1>think the feedback is right on that, like,
+
+01:01:41.900 --> 01:01:43.100
+<v Speaker 1>maybe we haven't
+
+01:01:43.500 --> 01:01:45.900
+<v Speaker 1>again, there's a there's a set of users
+
+01:01:45.900 --> 01:01:48.140
+<v Speaker 1>who will never care about those things and
+
+01:01:48.140 --> 01:01:49.260
+<v Speaker 1>never have to worry about it.
+
+01:01:50.115 --> 01:01:51.795
+<v Speaker 1>But for the people that do,
+
+01:01:52.595 --> 01:01:55.075
+<v Speaker 1>I think it's absolutely correct that we
+
+01:01:55.475 --> 01:01:58.435
+<v Speaker 1>have struggled to keep up all the documentation
+
+01:01:58.435 --> 01:02:00.515
+<v Speaker 1>and all the way avenues that people come
+
+01:02:00.515 --> 01:02:02.275
+<v Speaker 1>to containerd to be able to find
+
+01:02:03.290 --> 01:02:04.890
+<v Speaker 1>the right documentation
+
+01:02:04.890 --> 01:02:07.450
+<v Speaker 1>for that version two config.
+
+01:02:09.210 --> 01:02:11.210
+<v Speaker 1>We do have we've been talking to the
+
+01:02:11.210 --> 01:02:12.090
+<v Speaker 1>CNCF
+
+01:02:12.090 --> 01:02:13.850
+<v Speaker 1>about and I think there were I don't
+
+01:02:13.850 --> 01:02:15.210
+<v Speaker 1>know if it was part of this question
+
+01:02:15.210 --> 01:02:16.810
+<v Speaker 1>that you had shared with me, but,
+
+01:02:18.225 --> 01:02:20.625
+<v Speaker 1>you know, because there's so many use cases
+
+01:02:20.625 --> 01:02:23.185
+<v Speaker 1>for containerd, there's the docker use case, the
+
+01:02:23.185 --> 01:02:25.745
+<v Speaker 1>Kubernetes use case, there's it's embedded in this
+
+01:02:25.745 --> 01:02:26.945
+<v Speaker 1>other vendor tool.
+
+01:02:27.825 --> 01:02:29.825
+<v Speaker 1>It's been hard to kind of cover those
+
+01:02:29.825 --> 01:02:30.785
+<v Speaker 1>broadly from
+
+01:02:31.460 --> 01:02:32.660
+<v Speaker 1>a documentation
+
+01:02:32.660 --> 01:02:33.540
+<v Speaker 1>standpoint.
+
+01:02:34.180 --> 01:02:35.859
+<v Speaker 1>And so we have been trying to get
+
+01:02:35.859 --> 01:02:38.740
+<v Speaker 1>more help to raise the level of documentation
+
+01:02:38.740 --> 01:02:39.460
+<v Speaker 1>that
+
+01:02:39.619 --> 01:02:42.099
+<v Speaker 1>can start with how are you using containerd?
+
+01:02:42.099 --> 01:02:45.140
+<v Speaker 1>Oh, you probably wanna start with API docs
+
+01:02:44.765 --> 01:02:46.845
+<v Speaker 1>or, oh, you wanna see how to configure
+
+01:02:46.845 --> 01:02:48.125
+<v Speaker 1>it in a certain way.
+
+01:02:49.325 --> 01:02:51.725
+<v Speaker 1>And so, yeah, bear with us. We're
+
+01:02:52.365 --> 01:02:54.445
+<v Speaker 1>we're trying to get there. It's an open
+
+01:02:54.445 --> 01:02:56.045
+<v Speaker 1>source project. So as you know,
+
+01:02:57.420 --> 01:02:59.660
+<v Speaker 1>it depends on the level of commitment from
+
+01:02:59.660 --> 01:03:01.660
+<v Speaker 1>folks. We've had people say, hey. I wanna
+
+01:03:01.660 --> 01:03:03.900
+<v Speaker 1>help with docs, and then they got busy
+
+01:03:03.900 --> 01:03:04.940
+<v Speaker 1>with other stuff.
+
+01:03:05.660 --> 01:03:07.980
+<v Speaker 1>So, yeah, we're still looking for people who'd
+
+01:03:07.980 --> 01:03:09.900
+<v Speaker 1>love to help us improve that area of
+
+01:03:09.900 --> 01:03:10.380
+<v Speaker 1>the project.
+
+01:03:12.785 --> 01:03:14.865
+<v Speaker 0>Alright. Awesome answer again.
+
+01:03:15.345 --> 01:03:17.505
+<v Speaker 0>We've got one final question.
+
+01:03:18.545 --> 01:03:22.225
+<v Speaker 0>And I'll read this one out, because I'm
+
+01:03:22.225 --> 01:03:24.545
+<v Speaker 0>not sure I understand this one. So someone
+
+01:03:24.545 --> 01:03:27.025
+<v Speaker 0>has asked if it is possible to transparently
+
+01:03:27.025 --> 01:03:27.745
+<v Speaker 0>use matters
+
+01:03:28.380 --> 01:03:30.380
+<v Speaker 0>for all kinds of registries.
+
+01:03:30.380 --> 01:03:32.460
+<v Speaker 0>Now they provide an example. They want to
+
+01:03:32.460 --> 01:03:34.859
+<v Speaker 0>use a pull through cache for Docker IO,
+
+01:03:34.859 --> 01:03:35.980
+<v Speaker 0>Quito IO,
+
+01:03:36.460 --> 01:03:38.060
+<v Speaker 0>the GCR repository.
+
+01:03:38.700 --> 01:03:40.140
+<v Speaker 0>They say that they have tried this in
+
+01:03:40.140 --> 01:03:42.299
+<v Speaker 0>the past. However, they run into problems with
+
+01:03:42.299 --> 01:03:43.819
+<v Speaker 0>certificates and authentication.
+
+01:03:44.435 --> 01:03:46.275
+<v Speaker 0>Is that something that has changed or gotten
+
+01:03:46.275 --> 01:03:47.475
+<v Speaker 0>better recently?
+
+01:03:49.395 --> 01:03:52.035
+<v Speaker 1>Yeah. I there has been I and I
+
+01:03:52.035 --> 01:03:53.155
+<v Speaker 1>don't know which
+
+01:03:53.315 --> 01:03:53.715
+<v Speaker 1>how
+
+01:03:54.355 --> 01:03:56.675
+<v Speaker 1>long ago or which version of containerd they
+
+01:03:56.675 --> 01:03:56.994
+<v Speaker 1>tried.
+
+01:03:58.080 --> 01:04:00.800
+<v Speaker 1>You know, containerd one four just came out,
+
+01:04:01.360 --> 01:04:01.840
+<v Speaker 1>which
+
+01:04:03.360 --> 01:04:05.200
+<v Speaker 1>I think one four is the
+
+01:04:05.840 --> 01:04:07.840
+<v Speaker 1>maybe the first version that has, like, a
+
+01:04:07.840 --> 01:04:10.560
+<v Speaker 1>rework of how you configure
+
+01:04:11.440 --> 01:04:12.560
+<v Speaker 1>registry
+
+01:04:13.905 --> 01:04:15.745
+<v Speaker 1>connections, I guess, is one way to say
+
+01:04:15.745 --> 01:04:16.945
+<v Speaker 1>it. But, you know, the
+
+01:04:17.265 --> 01:04:18.545
+<v Speaker 1>the, you know,
+
+01:04:19.185 --> 01:04:20.385
+<v Speaker 1>the certificates,
+
+01:04:20.545 --> 01:04:22.385
+<v Speaker 1>the authentication,
+
+01:04:22.945 --> 01:04:24.065
+<v Speaker 1>you know, which
+
+01:04:24.225 --> 01:04:27.665
+<v Speaker 1>order to to visit registries in when looking
+
+01:04:27.665 --> 01:04:28.225
+<v Speaker 1>for an image.
+
+01:04:29.349 --> 01:04:30.950
+<v Speaker 1>I just found an issue
+
+01:04:32.470 --> 01:04:34.630
+<v Speaker 1>from seventeen days ago,
+
+01:04:36.070 --> 01:04:39.030
+<v Speaker 1>containerd issue four five three one, if people
+
+01:04:39.030 --> 01:04:40.230
+<v Speaker 1>wanna go look it up.
+
+01:04:40.950 --> 01:04:41.990
+<v Speaker 1>But it it shows
+
+01:04:42.405 --> 01:04:44.405
+<v Speaker 1>some of the plug in configuration
+
+01:04:45.205 --> 01:04:47.765
+<v Speaker 1>for doing registry mirroring.
+
+01:04:48.165 --> 01:04:50.725
+<v Speaker 1>And so, definitely, it's supported in containerd.
+
+01:04:50.965 --> 01:04:54.405
+<v Speaker 1>It is a complicated area because, yeah, you're
+
+01:04:54.405 --> 01:04:56.630
+<v Speaker 1>you're having to set up a series of
+
+01:04:56.630 --> 01:04:59.430
+<v Speaker 1>registries and then all the authentication information.
+
+01:05:00.710 --> 01:05:01.750
+<v Speaker 1>I wanna say,
+
+01:05:02.070 --> 01:05:03.830
+<v Speaker 1>I hope it's a lot better in one
+
+01:05:03.830 --> 01:05:05.510
+<v Speaker 1>four than it has been. It's been an
+
+01:05:05.510 --> 01:05:06.550
+<v Speaker 1>area that we've
+
+01:05:06.870 --> 01:05:08.790
+<v Speaker 1>focused on. It may be an area where
+
+01:05:08.790 --> 01:05:10.405
+<v Speaker 1>we need. I I feel like I see
+
+01:05:10.405 --> 01:05:12.005
+<v Speaker 1>a lot of issues around this.
+
+01:05:12.325 --> 01:05:14.244
+<v Speaker 1>And it it also is a point in
+
+01:05:14.244 --> 01:05:15.525
+<v Speaker 1>time, so some
+
+01:05:16.085 --> 01:05:17.765
+<v Speaker 1>registry implementations
+
+01:05:18.005 --> 01:05:20.885
+<v Speaker 1>aren't really following the OCI spec well. So
+
+01:05:21.125 --> 01:05:24.180
+<v Speaker 1>we've been we've been trying to resist adding
+
+01:05:24.180 --> 01:05:26.180
+<v Speaker 1>tons of if else. Oh, well, this is
+
+01:05:26.180 --> 01:05:28.020
+<v Speaker 1>artifactory, and they do a four zero three
+
+01:05:28.020 --> 01:05:30.099
+<v Speaker 1>on this, and then you gotta respond with
+
+01:05:30.099 --> 01:05:30.580
+<v Speaker 1>this.
+
+01:05:31.220 --> 01:05:33.140
+<v Speaker 1>Or, oh, this is Docker Hub, and it
+
+01:05:33.140 --> 01:05:34.900
+<v Speaker 1>it has it expects
+
+01:05:34.900 --> 01:05:36.660
+<v Speaker 1>this series of of
+
+01:05:36.980 --> 01:05:37.780
+<v Speaker 1>events to happen.
+
+01:05:39.025 --> 01:05:39.825
+<v Speaker 1>So we've been
+
+01:05:40.705 --> 01:05:42.625
+<v Speaker 1>you know, we've had people from, you know,
+
+01:05:42.625 --> 01:05:43.825
+<v Speaker 1>GitHub registry
+
+01:05:43.825 --> 01:05:45.825
+<v Speaker 1>come work with us in the community to
+
+01:05:45.825 --> 01:05:46.785
+<v Speaker 1>make sure their
+
+01:05:47.105 --> 01:05:47.905
+<v Speaker 1>implementation
+
+01:05:47.905 --> 01:05:50.545
+<v Speaker 1>works with containerd, which they just
+
+01:05:51.520 --> 01:05:54.080
+<v Speaker 1>got the GitHub container registry working well with
+
+01:05:54.080 --> 01:05:55.760
+<v Speaker 1>containerd in the last month.
+
+01:05:56.240 --> 01:05:58.960
+<v Speaker 1>So it's a growing area, I guess, the
+
+01:05:58.960 --> 01:06:00.240
+<v Speaker 1>simplest way to put it.
+
+01:06:01.040 --> 01:06:01.600
+<v Speaker 1>If
+
+01:06:01.840 --> 01:06:04.480
+<v Speaker 1>someone's really stuck, please come to the repo,
+
+01:06:04.480 --> 01:06:05.200
+<v Speaker 1>open an issue
+
+01:06:06.115 --> 01:06:08.275
+<v Speaker 1>because there are people smarter than me about
+
+01:06:08.275 --> 01:06:10.355
+<v Speaker 1>kinda how the fallback and mirroring
+
+01:06:10.515 --> 01:06:11.715
+<v Speaker 1>configs work.
+
+01:06:12.435 --> 01:06:14.835
+<v Speaker 1>And then finally, hopefully, our documentation
+
+01:06:15.155 --> 01:06:17.315
+<v Speaker 1>keeps improving that you can, you know, say,
+
+01:06:17.315 --> 01:06:19.690
+<v Speaker 1>hey. Pull through cache. Where's the doc on
+
+01:06:19.690 --> 01:06:21.050
+<v Speaker 1>that? And how do I get it set
+
+01:06:21.050 --> 01:06:22.810
+<v Speaker 1>up? And, hopefully, we'll have a place
+
+01:06:23.290 --> 01:06:25.530
+<v Speaker 1>that gives you the lowdown on on making
+
+01:06:25.530 --> 01:06:26.250
+<v Speaker 1>that work.
+
+01:06:27.210 --> 01:06:30.010
+<v Speaker 0>Awesome. Thank you very much. We are all
+
+01:06:30.010 --> 01:06:32.444
+<v Speaker 0>out of questions. I just wanna say thank
+
+01:06:32.444 --> 01:06:33.565
+<v Speaker 0>you very much for taking the time out
+
+01:06:33.565 --> 01:06:35.244
+<v Speaker 0>of your day to join me. This has
+
+01:06:35.244 --> 01:06:36.765
+<v Speaker 0>been really helpful for me to help my
+
+01:06:36.765 --> 01:06:38.204
+<v Speaker 0>understanding of containerd.
+
+01:06:38.204 --> 01:06:39.484
+<v Speaker 0>I'm sure it's gonna be very helpful for
+
+01:06:39.484 --> 01:06:41.164
+<v Speaker 0>loads of other people. So thank you very
+
+01:06:41.164 --> 01:06:43.484
+<v Speaker 0>much, Phil. Yeah. Awesome. Thanks for having me.
+
+01:06:43.680 --> 01:06:46.480
+<v Speaker 0>No problem. Alright. Have a nice day, and
+
+01:06:46.480 --> 01:06:48.080
+<v Speaker 0>I'll speak to you soon. Thanks.
+
+01:06:48.400 --> 01:06:49.200
+<v Speaker 1>Alright.
+
+01:06:49.280 --> 01:06:49.760
+<v Speaker 1>Bye now.

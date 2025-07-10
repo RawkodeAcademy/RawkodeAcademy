@@ -12,6 +12,7 @@ export interface Env {
 type Payload = {
 	videoId: string;
 	language: string;
+	force?: boolean;
 };
 
 export default {
@@ -32,7 +33,7 @@ export default {
 		}
 
 		const providedApiKey = authHeader.substring(7); // Remove "Bearer " prefix
-		if (providedApiKey !== await env.HTTP_TRANSCRIPTION_TOKEN.get()) {
+		if (providedApiKey !== (await env.HTTP_TRANSCRIPTION_TOKEN.get())) {
 			return new Response("Unauthorized: Invalid API key", { status: 401 });
 		}
 
@@ -44,6 +45,13 @@ export default {
 
 			if (!params.videoId || !params.language) {
 				return new Response("Missing videoId or language in request body", {
+					status: 400,
+				});
+			}
+
+			// Force parameter is optional and defaults to false
+			if (params.force !== undefined && typeof params.force !== "boolean") {
+				return new Response("Invalid force parameter: must be boolean", {
 					status: 400,
 				});
 			}

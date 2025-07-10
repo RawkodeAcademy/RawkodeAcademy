@@ -1,0 +1,1550 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 11c10b70-d769-4ed1-81c7-648a27b60f14
+Created: 2025-04-29T12:15:01.208Z
+Duration: 1255.7533
+Channels: 1
+
+00:00:00.640 --> 00:00:03.439
+<v Speaker 0>Hello, and welcome back to the Rawkode Academy.
+
+00:00:04.319 --> 00:00:06.560
+<v Speaker 0>In this video, we're following on from our
+
+00:00:06.560 --> 00:00:09.360
+<v Speaker 0>installation and overview guide of Tetragon,
+
+00:00:09.440 --> 00:00:11.039
+<v Speaker 0>an eBPF
+
+00:00:11.280 --> 00:00:13.679
+<v Speaker 0>security and observability tool
+
+00:00:14.115 --> 00:00:16.114
+<v Speaker 0>for your Kubernetes cluster.
+
+00:00:16.595 --> 00:00:18.355
+<v Speaker 0>In this video, we're going to go a
+
+00:00:18.355 --> 00:00:20.355
+<v Speaker 0>little bit deeper than the installation and a
+
+00:00:20.355 --> 00:00:21.395
+<v Speaker 0>general overview,
+
+00:00:21.795 --> 00:00:23.395
+<v Speaker 0>and we're gonna look at one of the
+
+00:00:23.395 --> 00:00:26.195
+<v Speaker 0>main use cases for adopting Tetragon within your
+
+00:00:26.195 --> 00:00:26.595
+<v Speaker 0>clusters,
+
+00:00:27.420 --> 00:00:30.540
+<v Speaker 0>and that is runtime enforcement and observability
+
+00:00:30.540 --> 00:00:32.700
+<v Speaker 0>of file access across
+
+00:00:32.860 --> 00:00:35.580
+<v Speaker 0>your container workloads and the host they run
+
+00:00:35.580 --> 00:00:36.060
+<v Speaker 0>on.
+
+00:00:37.100 --> 00:00:37.739
+<v Speaker 0>So
+
+00:00:38.140 --> 00:00:40.140
+<v Speaker 0>let's get into the docs and have some
+
+00:00:40.140 --> 00:00:40.300
+<v Speaker 0>fun.
+
+00:00:41.305 --> 00:00:44.265
+<v Speaker 0>Alright. Here we are at the Tetragon documentation
+
+00:00:44.265 --> 00:00:46.505
+<v Speaker 0>or at least we will be now.
+
+00:00:47.145 --> 00:00:48.585
+<v Speaker 0>Now there's a few things I want to
+
+00:00:48.585 --> 00:00:50.985
+<v Speaker 0>cover before we get to the use cases
+
+00:00:51.305 --> 00:00:54.745
+<v Speaker 0>and the documentation itself well covers file name
+
+00:00:54.745 --> 00:00:56.265
+<v Speaker 0>access and what we can do.
+
+00:00:57.030 --> 00:00:58.950
+<v Speaker 0>But there is a little bit of vocabulary
+
+00:00:58.950 --> 00:01:00.710
+<v Speaker 0>that you have to be comfortable with and
+
+00:01:00.710 --> 00:01:02.470
+<v Speaker 0>a few concepts that you need to know
+
+00:01:02.470 --> 00:01:05.750
+<v Speaker 0>before you should really start writing tracing policies.
+
+00:01:06.630 --> 00:01:09.110
+<v Speaker 0>Fortunately, the documentation has us pretty well covered
+
+00:01:09.110 --> 00:01:11.345
+<v Speaker 0>too. So if we go to concepts,
+
+00:01:11.665 --> 00:01:12.945
+<v Speaker 0>tracing policy,
+
+00:01:13.585 --> 00:01:15.585
+<v Speaker 0>we can now begin to dive in to
+
+00:01:15.585 --> 00:01:18.064
+<v Speaker 0>what a tracing policy is composed of.
+
+00:01:18.465 --> 00:01:21.025
+<v Speaker 0>So the first thing that every tracing policy
+
+00:01:21.025 --> 00:01:22.945
+<v Speaker 0>needs is a hook point.
+
+00:01:23.750 --> 00:01:25.670
+<v Speaker 0>A hook point can be one of three
+
+00:01:25.670 --> 00:01:26.150
+<v Speaker 0>things.
+
+00:01:26.470 --> 00:01:29.350
+<v Speaker 0>First, a k probe. This is a kernel
+
+00:01:29.350 --> 00:01:31.750
+<v Speaker 0>probe that allows you to hook in to
+
+00:01:31.750 --> 00:01:34.150
+<v Speaker 0>functions called within the kernel.
+
+00:01:34.790 --> 00:01:35.590
+<v Speaker 0>Second,
+
+00:01:36.070 --> 00:01:37.110
+<v Speaker 0>we have u probes.
+
+00:01:37.515 --> 00:01:40.875
+<v Speaker 0>These are user probes. Go figure.
+
+00:01:41.035 --> 00:01:43.275
+<v Speaker 0>And these allow you to hook in to
+
+00:01:43.275 --> 00:01:46.555
+<v Speaker 0>any function called within a user land binary.
+
+00:01:47.515 --> 00:01:49.435
+<v Speaker 0>And lastly, we have trace points.
+
+00:01:50.680 --> 00:01:53.240
+<v Speaker 0>These are more generalized points within the kernel
+
+00:01:53.240 --> 00:01:55.720
+<v Speaker 0>that you can hook into that are stable
+
+00:01:55.720 --> 00:01:57.320
+<v Speaker 0>across kernel versions.
+
+00:01:57.560 --> 00:01:59.240
+<v Speaker 0>Like the documentation says,
+
+00:01:59.240 --> 00:02:01.320
+<v Speaker 0>going from kernel version to kernel version, k
+
+00:02:01.320 --> 00:02:03.479
+<v Speaker 0>probes are not guaranteed to be consistent,
+
+00:02:04.755 --> 00:02:06.595
+<v Speaker 0>but trace points are.
+
+00:02:07.635 --> 00:02:09.074
+<v Speaker 0>And we'll take a look at each of
+
+00:02:09.074 --> 00:02:12.675
+<v Speaker 0>these as we explore how to do file
+
+00:02:12.675 --> 00:02:13.715
+<v Speaker 0>access
+
+00:02:15.235 --> 00:02:16.035
+<v Speaker 0>observability
+
+00:02:16.035 --> 00:02:17.475
+<v Speaker 0>and runtime enforcement.
+
+00:02:19.920 --> 00:02:22.160
+<v Speaker 0>And we're gonna kick things off with
+
+00:02:22.480 --> 00:02:23.680
+<v Speaker 0>the k probe.
+
+00:02:25.600 --> 00:02:29.040
+<v Speaker 0>Okay. So let's write our first tracing policy
+
+00:02:29.040 --> 00:02:30.400
+<v Speaker 0>using a k probe.
+
+00:02:31.235 --> 00:02:33.155
+<v Speaker 0>Now when you're working with a new Kubernetes
+
+00:02:33.155 --> 00:02:33.955
+<v Speaker 0>resource,
+
+00:02:34.515 --> 00:02:37.635
+<v Speaker 0>usually helps to find some examples online or
+
+00:02:37.635 --> 00:02:39.955
+<v Speaker 0>just use kubectl explain
+
+00:02:40.595 --> 00:02:43.875
+<v Speaker 0>followed by the name of your resource. Here,
+
+00:02:43.875 --> 00:02:45.155
+<v Speaker 0>the tracing policy
+
+00:02:46.050 --> 00:02:47.810
+<v Speaker 0>tells you that we need an API version
+
+00:02:47.810 --> 00:02:50.290
+<v Speaker 0>kind metadata and spec, but, of course, you
+
+00:02:50.290 --> 00:02:51.250
+<v Speaker 0>already knew that.
+
+00:02:51.810 --> 00:02:53.490
+<v Speaker 0>But at the top, we do get the
+
+00:02:53.490 --> 00:02:55.570
+<v Speaker 0>group, the kind, and the version that we
+
+00:02:55.570 --> 00:02:58.530
+<v Speaker 0>need to successfully write the start of our
+
+00:02:58.530 --> 00:02:59.010
+<v Speaker 0>manifest.
+
+00:02:59.935 --> 00:03:02.015
+<v Speaker 0>So let's do API version,
+
+00:03:02.655 --> 00:03:05.855
+<v Speaker 0>cilium dot I o b one alpha
+
+00:03:05.855 --> 00:03:06.415
+<v Speaker 0>one
+
+00:03:06.814 --> 00:03:07.695
+<v Speaker 0>kind
+
+00:03:08.015 --> 00:03:08.735
+<v Speaker 0>tracing
+
+00:03:09.534 --> 00:03:10.575
+<v Speaker 0>policy.
+
+00:03:11.694 --> 00:03:13.935
+<v Speaker 0>Like everything, we need a metadata with a
+
+00:03:13.935 --> 00:03:15.780
+<v Speaker 0>name. I'm not fussed what that is. We
+
+00:03:15.780 --> 00:03:17.780
+<v Speaker 0>leave it like so and then we need
+
+00:03:18.180 --> 00:03:19.060
+<v Speaker 0>something.
+
+00:03:19.460 --> 00:03:22.100
+<v Speaker 0>So let's jump back and do kubectl explain
+
+00:03:22.100 --> 00:03:22.980
+<v Speaker 0>again.
+
+00:03:23.860 --> 00:03:26.500
+<v Speaker 0>Only this time, we'll add spec.
+
+00:03:27.555 --> 00:03:29.475
+<v Speaker 0>We can see all of the properties that
+
+00:03:29.475 --> 00:03:31.075
+<v Speaker 0>our spec can take,
+
+00:03:31.315 --> 00:03:34.755
+<v Speaker 0>and we're curious about k probes. So we'll
+
+00:03:34.755 --> 00:03:36.675
+<v Speaker 0>expand that like so.
+
+00:03:37.315 --> 00:03:39.075
+<v Speaker 0>Now we can see that this is a
+
+00:03:39.075 --> 00:03:41.715
+<v Speaker 0>list of k probes with an args, a
+
+00:03:41.715 --> 00:03:42.115
+<v Speaker 0>call,
+
+00:03:43.140 --> 00:03:46.100
+<v Speaker 0>return return ack, return ack, action, selectors, and
+
+00:03:46.100 --> 00:03:46.900
+<v Speaker 0>syscall.
+
+00:03:48.420 --> 00:03:50.180
+<v Speaker 0>So let's start to fill this out.
+
+00:03:51.220 --> 00:03:54.020
+<v Speaker 0>We know that we have k probes. We
+
+00:03:54.020 --> 00:03:54.580
+<v Speaker 0>know
+
+00:03:54.980 --> 00:03:55.700
+<v Speaker 0>it's a list.
+
+00:03:56.545 --> 00:03:58.945
+<v Speaker 0>It needs some sort of call.
+
+00:03:59.425 --> 00:04:01.505
+<v Speaker 0>Well, the call is the name of a
+
+00:04:01.505 --> 00:04:03.985
+<v Speaker 0>function to apply the k probe spec to.
+
+00:04:04.865 --> 00:04:06.385
+<v Speaker 0>This just means the name of the kernel
+
+00:04:06.385 --> 00:04:08.225
+<v Speaker 0>function or Cisco that you wanna monitor.
+
+00:04:08.940 --> 00:04:11.660
+<v Speaker 0>Now we're doing file access stuff today, so
+
+00:04:11.660 --> 00:04:14.140
+<v Speaker 0>we're gonna take a look at syswrite.
+
+00:04:14.620 --> 00:04:16.700
+<v Speaker 0>And this is a syscall,
+
+00:04:16.779 --> 00:04:19.500
+<v Speaker 0>so we're gonna mark this as syscall true.
+
+00:04:19.820 --> 00:04:20.940
+<v Speaker 0>We know this
+
+00:04:21.260 --> 00:04:22.780
+<v Speaker 0>because we can see here
+
+00:04:23.745 --> 00:04:25.745
+<v Speaker 0>that we can specify a billion to indicate
+
+00:04:25.745 --> 00:04:27.745
+<v Speaker 0>whether this is a function or a syscall
+
+00:04:27.745 --> 00:04:29.825
+<v Speaker 0>with the syscall being true.
+
+00:04:31.345 --> 00:04:34.065
+<v Speaker 0>Now, unfortunately, this is not enough for us
+
+00:04:34.065 --> 00:04:37.425
+<v Speaker 0>to start tracking and observing the syscall with
+
+00:04:37.425 --> 00:04:38.065
+<v Speaker 0>Tetragon.
+
+00:04:38.539 --> 00:04:40.940
+<v Speaker 0>We have to provide the RX,
+
+00:04:41.580 --> 00:04:43.900
+<v Speaker 0>which is a list. Let's jump back to
+
+00:04:43.900 --> 00:04:44.780
+<v Speaker 0>the terminal.
+
+00:04:46.539 --> 00:04:47.979
+<v Speaker 0>And we can see the RX here needs
+
+00:04:47.979 --> 00:04:50.539
+<v Speaker 0>index and it needs type. These are the
+
+00:04:50.539 --> 00:04:52.764
+<v Speaker 0>two required properties that we need and this
+
+00:04:52.764 --> 00:04:55.324
+<v Speaker 0>has to describe the function signature
+
+00:04:55.485 --> 00:04:57.805
+<v Speaker 0>for the kernel function or syscall that you
+
+00:04:57.805 --> 00:04:58.845
+<v Speaker 0>want to observe.
+
+00:04:59.645 --> 00:05:03.324
+<v Speaker 0>Now assuming you probably haven't memorized this stuff,
+
+00:05:03.565 --> 00:05:05.085
+<v Speaker 0>you can look it up on the man
+
+00:05:05.085 --> 00:05:07.710
+<v Speaker 0>page if you want or it is available
+
+00:05:07.710 --> 00:05:11.790
+<v Speaker 0>on any good man page website like di.net.
+
+00:05:12.510 --> 00:05:15.150
+<v Speaker 0>And here we can see the function signature
+
+00:05:15.150 --> 00:05:17.070
+<v Speaker 0>for the right syscall.
+
+00:05:20.975 --> 00:05:22.975
+<v Speaker 0>So let's just paste that here for now
+
+00:05:22.975 --> 00:05:24.335
+<v Speaker 0>and work this out.
+
+00:05:25.375 --> 00:05:27.775
+<v Speaker 0>So when we did kubectl explain, it said
+
+00:05:27.775 --> 00:05:29.455
+<v Speaker 0>that we need an index
+
+00:05:30.575 --> 00:05:31.695
+<v Speaker 0>and a type.
+
+00:05:32.590 --> 00:05:34.750
+<v Speaker 0>The index just maps through the additive of
+
+00:05:34.750 --> 00:05:36.030
+<v Speaker 0>the function signature.
+
+00:05:36.670 --> 00:05:37.390
+<v Speaker 0>Meaning,
+
+00:05:37.710 --> 00:05:39.550
+<v Speaker 0>we have an index one
+
+00:05:39.950 --> 00:05:41.310
+<v Speaker 0>and of course zero
+
+00:05:41.630 --> 00:05:43.070
+<v Speaker 0>and index two
+
+00:05:43.150 --> 00:05:46.350
+<v Speaker 0>because we have zero, one and two
+
+00:05:47.035 --> 00:05:50.315
+<v Speaker 0>properties or fields on this function signature.
+
+00:05:50.875 --> 00:05:54.395
+<v Speaker 0>Now, the type for the first property
+
+00:05:54.395 --> 00:05:55.035
+<v Speaker 0>is
+
+00:05:55.835 --> 00:05:57.275
+<v Speaker 0>int because
+
+00:05:57.595 --> 00:05:58.875
+<v Speaker 0>we have an int.
+
+00:05:59.354 --> 00:06:01.275
+<v Speaker 0>The type on the second
+
+00:06:04.530 --> 00:06:05.730
+<v Speaker 0>is charbuff.
+
+00:06:06.370 --> 00:06:08.770
+<v Speaker 0>Now the c programming language doesn't really have
+
+00:06:08.770 --> 00:06:12.050
+<v Speaker 0>any concept of strings. It has arrays of
+
+00:06:12.050 --> 00:06:13.490
+<v Speaker 0>bytes, characters.
+
+00:06:14.370 --> 00:06:16.005
+<v Speaker 0>When we see this, we do need to
+
+00:06:16.005 --> 00:06:18.165
+<v Speaker 0>provide a little bit of extra details so
+
+00:06:18.165 --> 00:06:21.605
+<v Speaker 0>that it understands the size of that property
+
+00:06:22.005 --> 00:06:24.405
+<v Speaker 0>which is where size args
+
+00:06:26.325 --> 00:06:27.605
+<v Speaker 0>index comes in.
+
+00:06:28.085 --> 00:06:29.765
+<v Speaker 0>This is the index
+
+00:06:30.005 --> 00:06:30.965
+<v Speaker 0>of
+
+00:06:32.370 --> 00:06:34.210
+<v Speaker 0>account, the size t.
+
+00:06:34.850 --> 00:06:37.890
+<v Speaker 0>And index two is of type size t
+
+00:06:37.890 --> 00:06:38.850
+<v Speaker 0>like so.
+
+00:06:39.970 --> 00:06:43.010
+<v Speaker 0>And now we have enough of a tracing
+
+00:06:43.010 --> 00:06:43.890
+<v Speaker 0>policy
+
+00:06:43.985 --> 00:06:45.825
+<v Speaker 0>which I don't know why I called trace
+
+00:06:45.825 --> 00:06:47.585
+<v Speaker 0>points. Let's call this this
+
+00:06:47.905 --> 00:06:50.225
+<v Speaker 0>right. In fact, it's not this right. Underscore
+
+00:06:50.225 --> 00:06:51.905
+<v Speaker 0>right. So let's fix that while we're at
+
+00:06:51.905 --> 00:06:54.225
+<v Speaker 0>it and we'll even rename the file just
+
+00:06:54.225 --> 00:06:56.145
+<v Speaker 0>because these things will bug me.
+
+00:06:58.544 --> 00:06:59.025
+<v Speaker 0>Like so.
+
+00:06:59.880 --> 00:07:02.680
+<v Speaker 0>Now we have a tracing policy that will
+
+00:07:02.680 --> 00:07:05.479
+<v Speaker 0>tell us every time the sys write, the
+
+00:07:05.479 --> 00:07:08.840
+<v Speaker 0>sys call called write is executed within our
+
+00:07:08.840 --> 00:07:09.560
+<v Speaker 0>kernel.
+
+00:07:09.880 --> 00:07:10.759
+<v Speaker 0>So let's check.
+
+00:07:12.135 --> 00:07:14.535
+<v Speaker 0>So we jump over to our terminal.
+
+00:07:14.855 --> 00:07:17.095
+<v Speaker 0>We're going to do apply on that sys
+
+00:07:17.095 --> 00:07:17.975
+<v Speaker 0>rate file
+
+00:07:18.855 --> 00:07:21.255
+<v Speaker 0>where I got a proper entry wrong.
+
+00:07:21.415 --> 00:07:24.375
+<v Speaker 0>Let's do the explain again, size, arg index,
+
+00:07:25.580 --> 00:07:26.860
+<v Speaker 0>extra s,
+
+00:07:27.580 --> 00:07:28.540
+<v Speaker 0>and apply.
+
+00:07:28.940 --> 00:07:32.380
+<v Speaker 0>And, of course, resource names DNS compatible.
+
+00:07:33.420 --> 00:07:34.220
+<v Speaker 0>Voila.
+
+00:07:34.860 --> 00:07:38.300
+<v Speaker 0>Alright. So now we have a tracing
+
+00:07:40.300 --> 00:07:40.860
+<v Speaker 0>policy.
+
+00:07:41.575 --> 00:07:42.375
+<v Speaker 0>Wonderful.
+
+00:07:43.335 --> 00:07:44.855
+<v Speaker 0>So the next thing we want to do
+
+00:07:44.855 --> 00:07:47.175
+<v Speaker 0>is start pulling out all of the logs
+
+00:07:47.655 --> 00:07:48.375
+<v Speaker 0>on
+
+00:07:48.695 --> 00:07:50.455
+<v Speaker 0>our Tetragon pods
+
+00:07:50.535 --> 00:07:52.855
+<v Speaker 0>so that we can see the feedback, observe
+
+00:07:52.855 --> 00:07:54.375
+<v Speaker 0>the syscalls within our cluster.
+
+00:07:55.410 --> 00:07:57.330
+<v Speaker 0>So if we do a cube control
+
+00:07:57.330 --> 00:08:00.130
+<v Speaker 0>cube system get pods, you'll see that this
+
+00:08:00.130 --> 00:08:01.490
+<v Speaker 0>is a three node cluster
+
+00:08:02.450 --> 00:08:05.250
+<v Speaker 0>because we have a daemon set
+
+00:08:05.570 --> 00:08:06.770
+<v Speaker 0>for Tetragon,
+
+00:08:06.770 --> 00:08:09.090
+<v Speaker 0>which has three different pods.
+
+00:08:09.650 --> 00:08:11.215
+<v Speaker 0>So we're gonna get the logs for everything
+
+00:08:11.215 --> 00:08:12.895
+<v Speaker 0>so that we don't have to chase the
+
+00:08:12.895 --> 00:08:14.495
+<v Speaker 0>logs that we're looking for.
+
+00:08:15.215 --> 00:08:16.815
+<v Speaker 0>And to do that, we'll just do a
+
+00:08:16.815 --> 00:08:18.415
+<v Speaker 0>kube system
+
+00:08:18.655 --> 00:08:19.695
+<v Speaker 0>logs
+
+00:08:20.414 --> 00:08:21.615
+<v Speaker 0>dash f
+
+00:08:22.414 --> 00:08:23.535
+<v Speaker 0>label
+
+00:08:24.360 --> 00:08:27.880
+<v Speaker 0>app dot Kubernetes IO instance equals
+
+00:08:28.200 --> 00:08:29.320
+<v Speaker 0>Tetragon.
+
+00:08:30.440 --> 00:08:32.600
+<v Speaker 0>Now if you remember from the first video,
+
+00:08:32.919 --> 00:08:34.600
+<v Speaker 0>by default, Tetragon will show you all the
+
+00:08:34.600 --> 00:08:36.280
+<v Speaker 0>process enter and exits.
+
+00:08:37.695 --> 00:08:39.855
+<v Speaker 0>So we're just gonna skip past that so
+
+00:08:39.855 --> 00:08:41.695
+<v Speaker 0>that we can start
+
+00:08:43.695 --> 00:08:45.615
+<v Speaker 0>to filter on the logs that we care
+
+00:08:45.615 --> 00:08:46.175
+<v Speaker 0>about.
+
+00:08:46.735 --> 00:08:48.654
+<v Speaker 0>So I'm gonna split this pane
+
+00:08:49.950 --> 00:08:52.750
+<v Speaker 0>and we're gonna apply my sleepy
+
+00:08:52.830 --> 00:08:53.710
+<v Speaker 0>YAML.
+
+00:08:54.750 --> 00:08:56.990
+<v Speaker 0>A sleepy YAML just runs Ubuntu with a
+
+00:08:56.990 --> 00:08:59.470
+<v Speaker 0>sleep infinity, but it does mean that we
+
+00:08:59.470 --> 00:09:00.350
+<v Speaker 0>can exec
+
+00:09:00.990 --> 00:09:02.350
+<v Speaker 0>into Ubuntu
+
+00:09:02.350 --> 00:09:03.230
+<v Speaker 0>and run bash.
+
+00:09:03.745 --> 00:09:05.584
+<v Speaker 0>So as you can see even by just
+
+00:09:06.305 --> 00:09:09.264
+<v Speaker 0>exec ing into this container, our logs are
+
+00:09:09.264 --> 00:09:11.105
+<v Speaker 0>already filling up again. So let's just clear
+
+00:09:11.105 --> 00:09:11.824
+<v Speaker 0>that up.
+
+00:09:12.704 --> 00:09:14.305
+<v Speaker 0>And now we're going to run echo.
+
+00:09:16.340 --> 00:09:17.220
+<v Speaker 0>Hello.
+
+00:09:17.860 --> 00:09:20.180
+<v Speaker 0>And let's write that to this file here.
+
+00:09:21.380 --> 00:09:23.620
+<v Speaker 0>And we can actually see already we're seeing
+
+00:09:23.620 --> 00:09:25.940
+<v Speaker 0>our process k probe here
+
+00:09:26.820 --> 00:09:28.740
+<v Speaker 0>for sys write events
+
+00:09:28.740 --> 00:09:29.220
+<v Speaker 0>already
+
+00:09:29.675 --> 00:09:32.714
+<v Speaker 0>because, of course, not all writes happen against
+
+00:09:32.714 --> 00:09:33.834
+<v Speaker 0>the file system.
+
+00:09:35.274 --> 00:09:36.795
+<v Speaker 0>So let's write that file.
+
+00:09:38.875 --> 00:09:41.514
+<v Speaker 0>Now we executed a write, but there's so
+
+00:09:41.514 --> 00:09:43.514
+<v Speaker 0>much going on. We're actually getting a lot
+
+00:09:43.514 --> 00:09:45.269
+<v Speaker 0>more writes than we can fully understand, and
+
+00:09:45.269 --> 00:09:47.430
+<v Speaker 0>it's actually gonna be rather difficult to find
+
+00:09:47.430 --> 00:09:49.589
+<v Speaker 0>and pinpoint the one event that we want
+
+00:09:49.589 --> 00:09:51.910
+<v Speaker 0>because let's jump back to here.
+
+00:09:53.670 --> 00:09:56.389
+<v Speaker 0>When the right syscall is called first,
+
+00:09:57.775 --> 00:09:59.535
+<v Speaker 0>it writes to a file descriptor
+
+00:09:59.535 --> 00:10:01.775
+<v Speaker 0>rather than a file name.
+
+00:10:01.775 --> 00:10:03.295
+<v Speaker 0>So we're not even gonna be able to
+
+00:10:03.295 --> 00:10:05.855
+<v Speaker 0>see that we wrote to something called DEF
+
+00:10:05.855 --> 00:10:06.655
+<v Speaker 0>because
+
+00:10:06.815 --> 00:10:09.375
+<v Speaker 0>at the syscall level there's no such thing.
+
+00:10:10.720 --> 00:10:12.960
+<v Speaker 0>What we can see and why don't we
+
+00:10:12.960 --> 00:10:13.920
+<v Speaker 0>just grab
+
+00:10:16.160 --> 00:10:17.280
+<v Speaker 0>one of these
+
+00:10:20.240 --> 00:10:22.000
+<v Speaker 0>and throw it into a buffer.
+
+00:10:22.960 --> 00:10:25.360
+<v Speaker 0>And we'll save this as
+
+00:10:26.625 --> 00:10:29.665
+<v Speaker 0>output dot JSON and let Versus Code do
+
+00:10:29.665 --> 00:10:30.865
+<v Speaker 0>some formatting.
+
+00:10:31.665 --> 00:10:33.105
+<v Speaker 0>So we can see here that we have
+
+00:10:33.105 --> 00:10:35.185
+<v Speaker 0>some sort of exec ID. Now this looks
+
+00:10:35.185 --> 00:10:37.185
+<v Speaker 0>like a base 64 encoded string.
+
+00:10:39.970 --> 00:10:41.650
+<v Speaker 0>Whenever you see one of these,
+
+00:10:42.610 --> 00:10:44.050
+<v Speaker 0>we can decode it and we see that
+
+00:10:44.050 --> 00:10:46.770
+<v Speaker 0>this happens on one of our nodes.
+
+00:10:47.010 --> 00:10:48.050
+<v Speaker 0>No surprise.
+
+00:10:48.450 --> 00:10:50.529
+<v Speaker 0>We have the path, the UID, the current
+
+00:10:50.529 --> 00:10:51.330
+<v Speaker 0>directory,
+
+00:10:51.330 --> 00:10:53.170
+<v Speaker 0>the binary that executed it,
+
+00:10:54.225 --> 00:10:57.665
+<v Speaker 0>and then we get our logs enriched
+
+00:10:57.665 --> 00:11:00.785
+<v Speaker 0>web container and Kubernetes information.
+
+00:11:01.185 --> 00:11:02.945
+<v Speaker 0>Actually, that is pretty sweet.
+
+00:11:03.745 --> 00:11:05.985
+<v Speaker 0>So we can actually see here from Tetragon
+
+00:11:05.840 --> 00:11:08.400
+<v Speaker 0>that this pod was the Ubuntu one in
+
+00:11:08.400 --> 00:11:10.720
+<v Speaker 0>the default namespace with this image that started
+
+00:11:10.720 --> 00:11:11.360
+<v Speaker 0>here,
+
+00:11:11.680 --> 00:11:14.160
+<v Speaker 0>its pet is here, it has these labels
+
+00:11:14.160 --> 00:11:15.280
+<v Speaker 0>and so forth.
+
+00:11:15.520 --> 00:11:17.600
+<v Speaker 0>So we're already getting a lot more information
+
+00:11:17.600 --> 00:11:19.280
+<v Speaker 0>from what actually happened in the system.
+
+00:11:20.345 --> 00:11:22.345
+<v Speaker 0>And if we scroll down, we can actually
+
+00:11:22.345 --> 00:11:24.185
+<v Speaker 0>see the parent process,
+
+00:11:24.185 --> 00:11:26.265
+<v Speaker 0>which in this case is run c and
+
+00:11:26.265 --> 00:11:29.065
+<v Speaker 0>container d that is responsible
+
+00:11:29.465 --> 00:11:31.145
+<v Speaker 0>for executing a workload.
+
+00:11:32.880 --> 00:11:35.200
+<v Speaker 0>Now down here, we have the information that
+
+00:11:35.200 --> 00:11:37.680
+<v Speaker 0>we matched again in our tracing policy.
+
+00:11:38.080 --> 00:11:40.400
+<v Speaker 0>We can see the syscall, which is sys
+
+00:11:40.400 --> 00:11:41.040
+<v Speaker 0>write.
+
+00:11:41.520 --> 00:11:44.000
+<v Speaker 0>Now because these are architecture dependent,
+
+00:11:44.000 --> 00:11:46.640
+<v Speaker 0>Tetragon has detected the architecture where the pod
+
+00:11:46.640 --> 00:11:48.895
+<v Speaker 0>is running and prefixed it to get us
+
+00:11:48.895 --> 00:11:50.255
+<v Speaker 0>the right Cisco.
+
+00:11:50.575 --> 00:11:51.935
+<v Speaker 0>Thank you, Tetragon.
+
+00:11:52.735 --> 00:11:54.335
+<v Speaker 0>We can see that we are writing to
+
+00:11:54.335 --> 00:11:55.695
+<v Speaker 0>fail descriptor two
+
+00:11:55.935 --> 00:11:57.455
+<v Speaker 0>and here's our bytes.
+
+00:11:57.855 --> 00:12:01.055
+<v Speaker 0>Again, we have a base 64 encoded string.
+
+00:12:02.175 --> 00:12:04.015
+<v Speaker 0>Whenever you see one of these, decrypt it.
+
+00:12:04.550 --> 00:12:06.149
+<v Speaker 0>And we can actually see that we didn't
+
+00:12:06.149 --> 00:12:08.550
+<v Speaker 0>catch the write that we did with the
+
+00:12:08.550 --> 00:12:11.190
+<v Speaker 0>echo instead we caught the prompt being written
+
+00:12:11.190 --> 00:12:13.269
+<v Speaker 0>to my terminal.
+
+00:12:15.110 --> 00:12:17.190
+<v Speaker 0>We then have the action and the policy
+
+00:12:17.190 --> 00:12:18.550
+<v Speaker 0>name. So
+
+00:12:19.014 --> 00:12:20.695
+<v Speaker 0>we need to add a little bit more
+
+00:12:20.695 --> 00:12:21.495
+<v Speaker 0>information
+
+00:12:21.574 --> 00:12:24.055
+<v Speaker 0>to our policy so that we're not getting
+
+00:12:24.055 --> 00:12:26.935
+<v Speaker 0>bombarded with all of this noise.
+
+00:12:27.255 --> 00:12:29.735
+<v Speaker 0>So let's dive in to selectors.
+
+00:12:30.214 --> 00:12:30.535
+<v Speaker 0>Okay.
+
+00:12:31.940 --> 00:12:33.860
+<v Speaker 0>Let's jump back to our terminal,
+
+00:12:37.620 --> 00:12:39.860
+<v Speaker 0>and we'll close down our Ubuntu for now,
+
+00:12:39.940 --> 00:12:41.380
+<v Speaker 0>pull up our explain,
+
+00:12:42.740 --> 00:12:44.019
+<v Speaker 0>and look at k probes.
+
+00:12:44.615 --> 00:12:46.855
+<v Speaker 0>We can add one more property, which has
+
+00:12:46.855 --> 00:12:48.055
+<v Speaker 0>our selectors.
+
+00:12:48.375 --> 00:12:50.454
+<v Speaker 0>And this allows us to add actions, our
+
+00:12:50.454 --> 00:12:53.334
+<v Speaker 0>explainer capabilities, capability changes, new space changes, new
+
+00:12:53.334 --> 00:12:55.334
+<v Speaker 0>space puts, and return arcs.
+
+00:12:55.495 --> 00:12:57.415
+<v Speaker 0>Now we're not gonna sit and dive through
+
+00:12:57.415 --> 00:13:00.450
+<v Speaker 0>lots more explain commands to understand this. The
+
+00:13:00.450 --> 00:13:01.730
+<v Speaker 0>Tetragon documentation
+
+00:13:01.730 --> 00:13:03.570
+<v Speaker 0>is rather good, so it would be a
+
+00:13:03.570 --> 00:13:04.850
+<v Speaker 0>shame not to use it.
+
+00:13:05.410 --> 00:13:07.170
+<v Speaker 0>Let's jump over here and we can see
+
+00:13:07.170 --> 00:13:09.090
+<v Speaker 0>that we have all of the documentation on
+
+00:13:09.090 --> 00:13:11.250
+<v Speaker 0>the selectors that we can apply to our
+
+00:13:11.250 --> 00:13:12.130
+<v Speaker 0>tracing policy.
+
+00:13:13.665 --> 00:13:15.824
+<v Speaker 0>So in order to look at match args,
+
+00:13:15.824 --> 00:13:19.665
+<v Speaker 0>I've decided to fetch a rather more complete
+
+00:13:19.745 --> 00:13:21.265
+<v Speaker 0>YAML from
+
+00:13:21.425 --> 00:13:22.704
+<v Speaker 0>the Tetragon
+
+00:13:22.865 --> 00:13:24.225
+<v Speaker 0>examples directory.
+
+00:13:24.305 --> 00:13:28.730
+<v Speaker 0>You can find us on github.com/psyllium/tetragon
+
+00:13:28.730 --> 00:13:30.970
+<v Speaker 0>and then find the examples folder.
+
+00:13:31.449 --> 00:13:34.010
+<v Speaker 0>Now this is a really cool example because
+
+00:13:34.329 --> 00:13:36.330
+<v Speaker 0>it has more k probes.
+
+00:13:36.889 --> 00:13:38.970
+<v Speaker 0>We're now using kernel functions rather than just
+
+00:13:38.970 --> 00:13:39.690
+<v Speaker 0>syscalls,
+
+00:13:40.285 --> 00:13:43.645
+<v Speaker 0>and it already has selectors across each of
+
+00:13:43.645 --> 00:13:45.405
+<v Speaker 0>these that it's matching against.
+
+00:13:45.805 --> 00:13:47.325
+<v Speaker 0>And we're gonna take a look at match
+
+00:13:47.325 --> 00:13:48.365
+<v Speaker 0>args first.
+
+00:13:48.925 --> 00:13:50.125
+<v Speaker 0>So here,
+
+00:13:50.605 --> 00:13:53.165
+<v Speaker 0>we're looking for the security path truncate
+
+00:13:53.245 --> 00:13:53.965
+<v Speaker 0>kernel function.
+
+00:13:55.120 --> 00:13:55.840
+<v Speaker 0>Now
+
+00:13:56.320 --> 00:13:59.360
+<v Speaker 0>this has one arg and a return arg,
+
+00:13:59.760 --> 00:14:02.000
+<v Speaker 0>but how do you get these? Right? There
+
+00:14:02.000 --> 00:14:04.240
+<v Speaker 0>won't be a man page for every kernel
+
+00:14:04.240 --> 00:14:04.880
+<v Speaker 0>function.
+
+00:14:05.920 --> 00:14:07.920
+<v Speaker 0>Well, that's where Sourcegraph comes in if you
+
+00:14:07.920 --> 00:14:09.520
+<v Speaker 0>wanna make this a bit easier in your
+
+00:14:09.520 --> 00:14:09.760
+<v Speaker 0>life.
+
+00:14:11.735 --> 00:14:13.655
+<v Speaker 0>You can use source graph to search the
+
+00:14:13.655 --> 00:14:15.495
+<v Speaker 0>entire Linux code base.
+
+00:14:15.975 --> 00:14:17.335
+<v Speaker 0>We can say type
+
+00:14:17.655 --> 00:14:18.615
+<v Speaker 0>symbol
+
+00:14:20.055 --> 00:14:22.615
+<v Speaker 0>and copy the function name.
+
+00:14:24.950 --> 00:14:26.710
+<v Speaker 0>Now we can see the header where this
+
+00:14:26.710 --> 00:14:29.350
+<v Speaker 0>is defined and the function itself.
+
+00:14:30.150 --> 00:14:32.070
+<v Speaker 0>In both counts, we see the return value
+
+00:14:32.070 --> 00:14:33.990
+<v Speaker 0>is an end and it takes some sort
+
+00:14:33.990 --> 00:14:34.870
+<v Speaker 0>of path
+
+00:14:35.190 --> 00:14:37.270
+<v Speaker 0>as its only argument.
+
+00:14:38.214 --> 00:14:41.255
+<v Speaker 0>As such, our is a path and the
+
+00:14:41.255 --> 00:14:42.935
+<v Speaker 0>return value is an int.
+
+00:14:44.535 --> 00:14:46.855
+<v Speaker 0>Now because this has taken a path, we
+
+00:14:46.855 --> 00:14:49.575
+<v Speaker 0>can filter using match args on the first
+
+00:14:49.575 --> 00:14:52.455
+<v Speaker 0>parameter, the only parameter, and say equals,
+
+00:14:52.455 --> 00:14:54.100
+<v Speaker 0>etcetera, password.
+
+00:14:56.180 --> 00:14:58.980
+<v Speaker 0>So let's apply this to our cluster
+
+00:15:01.779 --> 00:15:03.220
+<v Speaker 0>and pull up our logs.
+
+00:15:04.019 --> 00:15:05.459
+<v Speaker 0>Let's get rid of all this. And then
+
+00:15:05.459 --> 00:15:07.445
+<v Speaker 0>instead of splitting this vertically, let's just jump
+
+00:15:07.445 --> 00:15:09.205
+<v Speaker 0>over to the site where I also have
+
+00:15:09.205 --> 00:15:11.205
+<v Speaker 0>an Ubuntu bash in this cluster.
+
+00:15:13.605 --> 00:15:15.925
+<v Speaker 0>And let's check our path, etcetera, password.
+
+00:15:16.965 --> 00:15:18.485
+<v Speaker 0>Well, let's open them
+
+00:15:20.700 --> 00:15:22.780
+<v Speaker 0>and add bash one two three.
+
+00:15:24.060 --> 00:15:25.820
+<v Speaker 0>Now if we pop over here, let's grab
+
+00:15:25.820 --> 00:15:27.260
+<v Speaker 0>one of our key probes that we can
+
+00:15:27.260 --> 00:15:27.820
+<v Speaker 0>see
+
+00:15:29.020 --> 00:15:29.660
+<v Speaker 0>like so.
+
+00:15:32.945 --> 00:15:35.105
+<v Speaker 0>Let's put this into our output dot JSON
+
+00:15:35.105 --> 00:15:36.785
+<v Speaker 0>so that we can format it.
+
+00:15:38.384 --> 00:15:40.464
+<v Speaker 0>We can see here and if you scroll
+
+00:15:40.464 --> 00:15:43.185
+<v Speaker 0>to the bottom that our security file permission
+
+00:15:43.185 --> 00:15:46.144
+<v Speaker 0>function was a match for
+
+00:15:45.759 --> 00:15:47.519
+<v Speaker 0>our Etsy password
+
+00:15:47.519 --> 00:15:48.079
+<v Speaker 0>file.
+
+00:15:48.959 --> 00:15:52.720
+<v Speaker 0>So let's tweak our security file permission
+
+00:15:53.360 --> 00:15:54.639
+<v Speaker 0>selectors.
+
+00:15:55.600 --> 00:15:58.399
+<v Speaker 0>And instead of just filtering on Etsy password,
+
+00:15:58.399 --> 00:16:00.079
+<v Speaker 0>let's do a prefix
+
+00:16:00.444 --> 00:16:02.764
+<v Speaker 0>for everything and say that the Etsy
+
+00:16:02.925 --> 00:16:03.964
+<v Speaker 0>directory,
+
+00:16:04.925 --> 00:16:05.805
+<v Speaker 0>like so.
+
+00:16:09.404 --> 00:16:11.324
+<v Speaker 0>We can then come back across here,
+
+00:16:12.204 --> 00:16:13.165
+<v Speaker 0>apply,
+
+00:16:14.125 --> 00:16:15.004
+<v Speaker 0>get our log,
+
+00:16:17.270 --> 00:16:18.310
+<v Speaker 0>clear the screen
+
+00:16:19.270 --> 00:16:21.830
+<v Speaker 0>and this time we're right to
+
+00:16:22.470 --> 00:16:24.070
+<v Speaker 0>LSB release.
+
+00:16:24.630 --> 00:16:26.870
+<v Speaker 0>Pretend this is a Ubuntu 25.
+
+00:16:28.325 --> 00:16:30.085
+<v Speaker 0>Now we could pop over here and we'll
+
+00:16:30.085 --> 00:16:32.645
+<v Speaker 0>see that we still have a k probe
+
+00:16:34.405 --> 00:16:35.365
+<v Speaker 0>JSON,
+
+00:16:36.725 --> 00:16:37.525
+<v Speaker 0>like so.
+
+00:16:38.485 --> 00:16:40.920
+<v Speaker 0>And back to our JSON and paste.
+
+00:16:41.320 --> 00:16:43.320
+<v Speaker 0>And if we scroll down, it is our
+
+00:16:43.320 --> 00:16:46.680
+<v Speaker 0>security file permission this time against our Etsy
+
+00:16:46.680 --> 00:16:49.320
+<v Speaker 0>release. So our prefix is working.
+
+00:16:50.040 --> 00:16:52.520
+<v Speaker 0>Let's take this one step forward
+
+00:16:53.915 --> 00:16:54.555
+<v Speaker 0>and
+
+00:16:54.795 --> 00:16:55.755
+<v Speaker 0>block
+
+00:16:56.154 --> 00:16:57.675
+<v Speaker 0>any rate access
+
+00:16:58.154 --> 00:17:00.154
+<v Speaker 0>to this directory.
+
+00:17:02.714 --> 00:17:05.354
+<v Speaker 0>So back on the selector documentation,
+
+00:17:05.595 --> 00:17:07.755
+<v Speaker 0>let's go to match actions.
+
+00:17:09.520 --> 00:17:10.880
+<v Speaker 0>From here, we can do a whole bunch
+
+00:17:10.880 --> 00:17:12.720
+<v Speaker 0>of things, but the first thing I wanna
+
+00:17:12.720 --> 00:17:14.720
+<v Speaker 0>show you is sick kill.
+
+00:17:15.200 --> 00:17:17.679
+<v Speaker 0>This just means stop the process.
+
+00:17:18.480 --> 00:17:21.520
+<v Speaker 0>Now this example is fortunately exactly what we
+
+00:17:21.520 --> 00:17:23.755
+<v Speaker 0>want to do. So let's copy our match
+
+00:17:23.755 --> 00:17:24.714
+<v Speaker 0>action here
+
+00:17:25.675 --> 00:17:27.434
+<v Speaker 0>and go back to Versus Code.
+
+00:17:29.115 --> 00:17:30.555
+<v Speaker 0>We come down to the end of our
+
+00:17:30.555 --> 00:17:32.315
+<v Speaker 0>selectors
+
+00:17:36.530 --> 00:17:39.010
+<v Speaker 0>and add our match actions,
+
+00:17:39.890 --> 00:17:42.610
+<v Speaker 0>saying that we want to kill the process
+
+00:17:44.130 --> 00:17:46.050
+<v Speaker 0>rather than letting it succeed.
+
+00:17:51.295 --> 00:17:54.575
+<v Speaker 0>So let's apply this to our cluster,
+
+00:17:56.495 --> 00:17:58.575
+<v Speaker 0>assuming we format it correctly
+
+00:18:04.500 --> 00:18:05.940
+<v Speaker 0>and get our logs.
+
+00:18:09.059 --> 00:18:10.259
+<v Speaker 0>So let's open
+
+00:18:11.460 --> 00:18:12.419
+<v Speaker 0>password,
+
+00:18:12.820 --> 00:18:16.179
+<v Speaker 0>and it is killed before we even do
+
+00:18:16.179 --> 00:18:16.740
+<v Speaker 0>anything.
+
+00:18:17.965 --> 00:18:18.684
+<v Speaker 0>Perfect.
+
+00:18:20.205 --> 00:18:21.725
+<v Speaker 0>Okay. So the last thing I want to
+
+00:18:21.725 --> 00:18:22.445
+<v Speaker 0>show you
+
+00:18:22.765 --> 00:18:24.205
+<v Speaker 0>is one more action.
+
+00:18:25.325 --> 00:18:26.765
+<v Speaker 0>There's a bunch here that we could work
+
+00:18:26.765 --> 00:18:27.325
+<v Speaker 0>with,
+
+00:18:27.725 --> 00:18:28.924
+<v Speaker 0>but I wanna take a look at the
+
+00:18:28.924 --> 00:18:31.485
+<v Speaker 0>get URL because I think it's quite fun.
+
+00:18:32.280 --> 00:18:33.960
+<v Speaker 0>So let's copy this
+
+00:18:34.600 --> 00:18:35.960
+<v Speaker 0>and come back here.
+
+00:18:36.360 --> 00:18:38.280
+<v Speaker 0>Now instead of killing this,
+
+00:18:41.560 --> 00:18:43.880
+<v Speaker 0>let's use the get URL action and instead
+
+00:18:43.880 --> 00:18:45.800
+<v Speaker 0>of going to ebpf.io,
+
+00:18:48.355 --> 00:18:51.635
+<v Speaker 0>Let's create a box, a request box.
+
+00:18:52.275 --> 00:18:54.195
+<v Speaker 0>This gives me a URL
+
+00:18:54.435 --> 00:18:55.315
+<v Speaker 0>like so.
+
+00:18:56.755 --> 00:18:59.795
+<v Speaker 0>We'll paste this then, go to the terminal
+
+00:19:00.179 --> 00:19:01.859
+<v Speaker 0>and apply.
+
+00:19:02.340 --> 00:19:03.299
+<v Speaker 0>Alright.
+
+00:19:09.299 --> 00:19:10.980
+<v Speaker 0>Let's pull up our logs, not that we
+
+00:19:10.980 --> 00:19:12.500
+<v Speaker 0>need some really this time
+
+00:19:13.565 --> 00:19:15.805
+<v Speaker 0>and we delete our swap, and we get
+
+00:19:15.805 --> 00:19:18.045
+<v Speaker 0>access to the file because this time we
+
+00:19:18.045 --> 00:19:19.485
+<v Speaker 0>didn't do a kill.
+
+00:19:20.285 --> 00:19:21.965
+<v Speaker 0>So if we come back over to RBOX
+
+00:19:21.965 --> 00:19:23.245
+<v Speaker 0>and hit refresh,
+
+00:19:23.485 --> 00:19:25.165
+<v Speaker 0>you'll see that we got an issue to
+
+00:19:25.165 --> 00:19:26.125
+<v Speaker 0>be request,
+
+00:19:26.365 --> 00:19:27.485
+<v Speaker 0>multiple in fact,
+
+00:19:28.440 --> 00:19:31.159
+<v Speaker 0>letting us know that somebody tried to open
+
+00:19:31.159 --> 00:19:33.080
+<v Speaker 0>a prefix within that path.
+
+00:19:33.960 --> 00:19:36.279
+<v Speaker 0>Now a simple GET request in this fashion
+
+00:19:36.279 --> 00:19:38.440
+<v Speaker 0>is not that immediately
+
+00:19:38.600 --> 00:19:39.479
+<v Speaker 0>helpful,
+
+00:19:40.200 --> 00:19:42.255
+<v Speaker 0>but it would allow you to kick off
+
+00:19:42.255 --> 00:19:44.495
+<v Speaker 0>some sort of Slack driven workflow that post
+
+00:19:44.495 --> 00:19:46.734
+<v Speaker 0>a message saying that one of your security
+
+00:19:46.894 --> 00:19:49.375
+<v Speaker 0>profiles failed and maybe you want to start
+
+00:19:49.375 --> 00:19:51.135
+<v Speaker 0>looking at your logs. Now, of course, there's
+
+00:19:51.135 --> 00:19:53.455
+<v Speaker 0>other ways to do that, but it's still
+
+00:19:53.455 --> 00:19:56.090
+<v Speaker 0>fun to think about what ifs. And I
+
+00:19:56.090 --> 00:19:57.929
+<v Speaker 0>think the get URL is
+
+00:19:58.169 --> 00:19:58.970
+<v Speaker 0>what if.
+
+00:19:59.289 --> 00:20:02.010
+<v Speaker 0>So that is our look at file access
+
+00:20:02.010 --> 00:20:05.369
+<v Speaker 0>permissions with runtime enforcement using Tetragon.
+
+00:20:05.850 --> 00:20:07.529
+<v Speaker 0>I feel like we've barely scratched the surface.
+
+00:20:07.545 --> 00:20:09.385
+<v Speaker 0>There is so much awesome things that we
+
+00:20:09.385 --> 00:20:10.905
+<v Speaker 0>can do with Tetragon.
+
+00:20:11.225 --> 00:20:11.705
+<v Speaker 0>And
+
+00:20:12.105 --> 00:20:13.865
+<v Speaker 0>as much as this may inspire you to
+
+00:20:13.865 --> 00:20:15.305
+<v Speaker 0>go and play with it, and I definitely
+
+00:20:15.305 --> 00:20:17.545
+<v Speaker 0>encourage you to do so, please remember that
+
+00:20:17.545 --> 00:20:20.745
+<v Speaker 0>security is an onion. It has many layers.
+
+00:20:21.430 --> 00:20:23.190
+<v Speaker 0>You're not gonna be able to secure your
+
+00:20:23.190 --> 00:20:25.350
+<v Speaker 0>systems with 30 lines of YAML.
+
+00:20:25.590 --> 00:20:28.070
+<v Speaker 0>You need to layer on various syscalls and
+
+00:20:28.070 --> 00:20:28.950
+<v Speaker 0>functions
+
+00:20:28.950 --> 00:20:32.070
+<v Speaker 0>and remediation patterns in order to fully protect
+
+00:20:32.070 --> 00:20:34.470
+<v Speaker 0>and observe your system with a tool like
+
+00:20:34.470 --> 00:20:34.950
+<v Speaker 0>Tetragon.
+
+00:20:36.075 --> 00:20:38.634
+<v Speaker 0>But the best time to start is now.
+
+00:20:38.875 --> 00:20:40.235
+<v Speaker 0>So get it installed.
+
+00:20:41.355 --> 00:20:44.794
+<v Speaker 0>Start observing special paths within your cluster and
+
+00:20:44.794 --> 00:20:45.995
+<v Speaker 0>then decide how to act.
+
+00:20:47.018 --> 00:20:48.938
+<v Speaker 0>Best of luck. We'll be back for part
+
+00:20:48.938 --> 00:20:51.098
+<v Speaker 0>three of this course as we explore
+
+00:20:51.338 --> 00:20:52.138
+<v Speaker 0>process
+
+00:20:52.138 --> 00:20:53.098
+<v Speaker 0>life cycles.
+
+00:20:53.258 --> 00:20:54.058
+<v Speaker 0>I'll see you then.

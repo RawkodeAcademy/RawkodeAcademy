@@ -1,0 +1,1046 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: 8993b7ff-a2f5-40ed-bd13-565c81ee9e07
+Created: 2025-04-29T14:55:32.678Z
+Duration: 923.2667
+Channels: 1
+
+00:00:00.240 --> 00:00:02.639
+<v Speaker 0>Welcome back to Portainer in production.
+
+00:00:02.879 --> 00:00:04.720
+<v Speaker 0>In this episode, we're gonna take a look
+
+00:00:04.720 --> 00:00:07.359
+<v Speaker 0>at continuous deployment with Portainer
+
+00:00:07.359 --> 00:00:10.080
+<v Speaker 0>and the GitOps Parent. Let's have some fun.
+
+00:00:12.799 --> 00:00:13.519
+<v Speaker 0>Hello,
+
+00:00:13.679 --> 00:00:16.615
+<v Speaker 0>and welcome back to the Rawkode Academy. I'm
+
+00:00:16.615 --> 00:00:18.295
+<v Speaker 0>your host, David Flanagan,
+
+00:00:18.375 --> 00:00:20.215
+<v Speaker 0>although you probably know me from across the
+
+00:00:20.215 --> 00:00:21.575
+<v Speaker 0>Internet as Rawkode.
+
+00:00:23.175 --> 00:00:26.455
+<v Speaker 0>Today, we continue on with our Portainer in
+
+00:00:26.455 --> 00:00:27.575
+<v Speaker 0>production course.
+
+00:00:27.975 --> 00:00:30.215
+<v Speaker 0>Again, I'd kindly like to thank Neil and
+
+00:00:30.215 --> 00:00:32.560
+<v Speaker 0>the team at Portainer for sponsoring my time
+
+00:00:32.560 --> 00:00:34.320
+<v Speaker 0>to put this course together.
+
+00:00:35.040 --> 00:00:35.840
+<v Speaker 0>Thank you.
+
+00:00:38.640 --> 00:00:41.600
+<v Speaker 0>Today, we're gonna take a look at continuous
+
+00:00:41.600 --> 00:00:43.600
+<v Speaker 0>deployment with Portainer
+
+00:00:44.000 --> 00:00:45.360
+<v Speaker 0>using a git repository.
+
+00:00:48.145 --> 00:00:50.705
+<v Speaker 0>Coming from the Kubernetes ecosystem, we call this
+
+00:00:50.705 --> 00:00:51.585
+<v Speaker 0>GitOps,
+
+00:00:52.065 --> 00:00:54.705
+<v Speaker 0>where we store the deployment artifacts or manifest
+
+00:00:54.705 --> 00:00:56.225
+<v Speaker 0>in a Git repository
+
+00:00:56.465 --> 00:00:58.305
+<v Speaker 0>so that we can see how they evolve
+
+00:00:58.305 --> 00:00:59.105
+<v Speaker 0>over time
+
+00:00:59.490 --> 00:01:01.570
+<v Speaker 0>and that every change to our system is
+
+00:01:01.570 --> 00:01:02.450
+<v Speaker 0>versioned
+
+00:01:02.450 --> 00:01:03.730
+<v Speaker 0>and auditable.
+
+00:01:05.489 --> 00:01:07.650
+<v Speaker 0>If you're not deploying to Kubernetes,
+
+00:01:07.970 --> 00:01:10.210
+<v Speaker 0>GitOps has been a little bit more difficult.
+
+00:01:11.465 --> 00:01:13.385
+<v Speaker 0>It may be that you require
+
+00:01:13.385 --> 00:01:16.745
+<v Speaker 0>a configuration management tool, like SaltStack, to monitor
+
+00:01:16.745 --> 00:01:17.865
+<v Speaker 0>a Git repository
+
+00:01:17.865 --> 00:01:20.425
+<v Speaker 0>and run your deployment state.
+
+00:01:21.705 --> 00:01:23.705
+<v Speaker 0>But there actually is an easier way.
+
+00:01:23.945 --> 00:01:26.265
+<v Speaker 0>Portainer has a concept called stacks.
+
+00:01:27.150 --> 00:01:30.270
+<v Speaker 0>Now these stacks can just be YAML that
+
+00:01:30.270 --> 00:01:32.830
+<v Speaker 0>you write into the Portainer web interface,
+
+00:01:33.390 --> 00:01:34.990
+<v Speaker 0>and that will work just well.
+
+00:01:35.870 --> 00:01:38.110
+<v Speaker 0>But Portainer has another feature
+
+00:01:38.430 --> 00:01:39.790
+<v Speaker 0>where it can
+
+00:01:40.750 --> 00:01:42.510
+<v Speaker 0>clone a git repository
+
+00:01:42.885 --> 00:01:44.405
+<v Speaker 0>and keep it in sync
+
+00:01:44.805 --> 00:01:46.805
+<v Speaker 0>and deploy your stacks from there,
+
+00:01:47.445 --> 00:01:49.525
+<v Speaker 0>giving us git ops in environments that aren't
+
+00:01:49.525 --> 00:01:50.405
+<v Speaker 0>Kubernetes.
+
+00:01:51.445 --> 00:01:54.645
+<v Speaker 0>And as a recap, Portainer supports not just
+
+00:01:54.885 --> 00:01:55.765
+<v Speaker 0>Kubernetes
+
+00:01:55.765 --> 00:01:56.965
+<v Speaker 0>and not just Docker,
+
+00:01:58.420 --> 00:02:00.980
+<v Speaker 0>but Docker Swarm and Nobat too.
+
+00:02:02.100 --> 00:02:03.700
+<v Speaker 0>So let's take a look at how we
+
+00:02:03.700 --> 00:02:06.740
+<v Speaker 0>can use the get repository source for a
+
+00:02:06.740 --> 00:02:07.860
+<v Speaker 0>PortainerStack
+
+00:02:08.020 --> 00:02:10.900
+<v Speaker 0>to get continuous delivery in an environment that
+
+00:02:10.900 --> 00:02:11.860
+<v Speaker 0>isn't Kubernetes.
+
+00:02:12.985 --> 00:02:14.105
+<v Speaker 0>Let's have some fun.
+
+00:02:14.745 --> 00:02:17.065
+<v Speaker 0>Okay. So where are we starting from today?
+
+00:02:17.705 --> 00:02:19.385
+<v Speaker 0>Well, in our repository
+
+00:02:19.465 --> 00:02:25.385
+<v Speaker 0>available at github.com/rawcodeacademy/retainer-in-production,
+
+00:02:26.210 --> 00:02:27.730
+<v Speaker 0>there is a directory
+
+00:02:27.810 --> 00:02:29.170
+<v Speaker 0>called GitOps.
+
+00:02:30.050 --> 00:02:33.410
+<v Speaker 0>Inside this folder, we have a Docker Compose
+
+00:02:33.410 --> 00:02:34.050
+<v Speaker 0>file.
+
+00:02:34.370 --> 00:02:37.410
+<v Speaker 0>Docker Compose is still a fantastic tool.
+
+00:02:37.650 --> 00:02:39.795
+<v Speaker 0>When it comes to local development, working with
+
+00:02:39.795 --> 00:02:41.955
+<v Speaker 0>multiple services that need databases,
+
+00:02:42.035 --> 00:02:43.555
+<v Speaker 0>caches, queues,
+
+00:02:44.195 --> 00:02:47.235
+<v Speaker 0>there's no better way to develop than Compose.
+
+00:02:47.955 --> 00:02:50.515
+<v Speaker 0>So we're gonna use that format today. I'm
+
+00:02:50.515 --> 00:02:53.235
+<v Speaker 0>going to iterate locally on an EdgeDB deployment.
+
+00:02:54.060 --> 00:02:55.980
+<v Speaker 0>Well, I don't need to iterate. It's already
+
+00:02:55.980 --> 00:02:58.060
+<v Speaker 0>done. However, we'll make a change to show
+
+00:02:58.060 --> 00:02:59.420
+<v Speaker 0>the entire process.
+
+00:03:00.300 --> 00:03:02.940
+<v Speaker 0>So this composed file has EdgeDB configured as
+
+00:03:02.940 --> 00:03:05.180
+<v Speaker 0>a service with a little bit of configuration
+
+00:03:05.180 --> 00:03:07.285
+<v Speaker 0>that it needs to just work.
+
+00:03:08.165 --> 00:03:09.845
+<v Speaker 0>We're going to assume that we're working on
+
+00:03:09.845 --> 00:03:12.645
+<v Speaker 0>this. So we're going to run Docker Compose
+
+00:03:14.005 --> 00:03:14.725
+<v Speaker 0>up.
+
+00:03:17.765 --> 00:03:19.525
+<v Speaker 0>Now it takes just a few seconds,
+
+00:03:20.090 --> 00:03:22.330
+<v Speaker 0>but we will get a web interface
+
+00:03:22.810 --> 00:03:24.810
+<v Speaker 0>that allows us to interact
+
+00:03:24.810 --> 00:03:27.130
+<v Speaker 0>with our EdgeDB deployment.
+
+00:03:27.370 --> 00:03:29.129
+<v Speaker 0>Now it doesn't matter if you're not familiar
+
+00:03:29.129 --> 00:03:30.410
+<v Speaker 0>with EdgeDB.
+
+00:03:30.730 --> 00:03:33.370
+<v Speaker 0>It's just a relatively new database written in
+
+00:03:33.370 --> 00:03:33.849
+<v Speaker 0>Python
+
+00:03:34.185 --> 00:03:37.145
+<v Speaker 0>that is graph first with a rather interesting
+
+00:03:37.145 --> 00:03:39.945
+<v Speaker 0>query language that allows you to select data
+
+00:03:40.185 --> 00:03:41.065
+<v Speaker 0>across
+
+00:03:41.545 --> 00:03:43.785
+<v Speaker 0>all the different types within the system.
+
+00:03:46.905 --> 00:03:48.265
+<v Speaker 0>If we go to our web browser,
+
+00:03:48.710 --> 00:03:52.710
+<v Speaker 0>we can go to 5656,
+
+00:03:54.310 --> 00:03:56.230
+<v Speaker 0>where we can log in with
+
+00:03:56.950 --> 00:03:58.710
+<v Speaker 0>EdgeDB and Portainer.
+
+00:04:01.190 --> 00:04:03.030
+<v Speaker 0>It allows us to select the database.
+
+00:04:04.205 --> 00:04:06.925
+<v Speaker 0>We can open a REPL if we want.
+
+00:04:07.485 --> 00:04:09.485
+<v Speaker 0>We can browse the schema.
+
+00:04:09.485 --> 00:04:10.925
+<v Speaker 0>So you can see the language here for
+
+00:04:10.925 --> 00:04:13.565
+<v Speaker 0>defining our tables in EdgeDB
+
+00:04:14.125 --> 00:04:16.045
+<v Speaker 0>as a type system where we have a
+
+00:04:16.045 --> 00:04:17.964
+<v Speaker 0>type of a blog post with a required
+
+00:04:17.964 --> 00:04:18.445
+<v Speaker 0>property
+
+00:04:18.930 --> 00:04:20.050
+<v Speaker 0>of ID,
+
+00:04:20.130 --> 00:04:21.730
+<v Speaker 0>content, and title.
+
+00:04:23.330 --> 00:04:25.250
+<v Speaker 0>We can also browse the data where at
+
+00:04:25.250 --> 00:04:27.570
+<v Speaker 0>the moment we have nothing, but we could
+
+00:04:27.570 --> 00:04:30.050
+<v Speaker 0>say hello for the content
+
+00:04:30.210 --> 00:04:31.730
+<v Speaker 0>with the title being
+
+00:04:31.889 --> 00:04:32.770
+<v Speaker 0>title.
+
+00:04:33.410 --> 00:04:34.449
+<v Speaker 0>Very imaginative.
+
+00:04:35.525 --> 00:04:37.605
+<v Speaker 0>From here, we can review and commit our
+
+00:04:37.605 --> 00:04:38.325
+<v Speaker 0>changes,
+
+00:04:40.485 --> 00:04:42.325
+<v Speaker 0>and that's all you need to know about
+
+00:04:42.325 --> 00:04:43.525
+<v Speaker 0>this local stack.
+
+00:04:46.805 --> 00:04:49.210
+<v Speaker 0>So we're in a position where our Docker
+
+00:04:49.210 --> 00:04:51.130
+<v Speaker 0>Compose does what we want it to do.
+
+00:04:51.210 --> 00:04:53.050
+<v Speaker 0>We've tested the service does what we want
+
+00:04:53.050 --> 00:04:53.930
+<v Speaker 0>that to do.
+
+00:04:54.330 --> 00:04:56.650
+<v Speaker 0>How do we get this to production?
+
+00:04:56.810 --> 00:04:58.409
+<v Speaker 0>We don't just want to run it in
+
+00:04:58.409 --> 00:04:59.449
+<v Speaker 0>our local machine.
+
+00:05:00.250 --> 00:05:03.095
+<v Speaker 0>Now production doesn't always have to mean a
+
+00:05:03.095 --> 00:05:06.455
+<v Speaker 0>series of distributed topology aware Kubernetes clusters with
+
+00:05:06.455 --> 00:05:09.574
+<v Speaker 0>advanced scheduling and bin packing with remote secrets
+
+00:05:09.574 --> 00:05:11.655
+<v Speaker 0>management and blah blah blah blah blah blah
+
+00:05:11.655 --> 00:05:12.295
+<v Speaker 0>blah blah.
+
+00:05:13.175 --> 00:05:15.735
+<v Speaker 0>A lot of the time, we're all building
+
+00:05:15.735 --> 00:05:16.775
+<v Speaker 0>niche applications
+
+00:05:17.300 --> 00:05:19.220
+<v Speaker 0>for a small subset of users,
+
+00:05:19.460 --> 00:05:20.980
+<v Speaker 0>usually available internally,
+
+00:05:20.980 --> 00:05:22.100
+<v Speaker 0>sometimes publicly,
+
+00:05:22.580 --> 00:05:24.260
+<v Speaker 0>and we just need a container to run
+
+00:05:24.260 --> 00:05:25.140
+<v Speaker 0>on a machine.
+
+00:05:26.020 --> 00:05:28.660
+<v Speaker 0>So running Portainer with Docker on a machine
+
+00:05:29.725 --> 00:05:32.845
+<v Speaker 0>gives you an immediate value add. It simplifies
+
+00:05:32.845 --> 00:05:34.525
+<v Speaker 0>your life from Kubernetes.
+
+00:05:35.085 --> 00:05:37.165
+<v Speaker 0>Now, of course, Portainer works really well with
+
+00:05:37.165 --> 00:05:39.405
+<v Speaker 0>Kubernetes, and we're gonna do a couple more
+
+00:05:39.405 --> 00:05:41.885
+<v Speaker 0>videos on that in due course. But today,
+
+00:05:41.885 --> 00:05:44.205
+<v Speaker 0>we wanna take the use case that I
+
+00:05:44.205 --> 00:05:46.680
+<v Speaker 0>hope resonates with the majority of people watching
+
+00:05:46.680 --> 00:05:47.480
+<v Speaker 0>this video.
+
+00:05:48.280 --> 00:05:51.400
+<v Speaker 0>How do I run containers with continuous delivery
+
+00:05:51.400 --> 00:05:53.560
+<v Speaker 0>and get ups on one machine
+
+00:05:54.520 --> 00:05:55.400
+<v Speaker 0>with ease?
+
+00:05:55.880 --> 00:05:57.160
+<v Speaker 0>So let's take a look.
+
+00:05:57.560 --> 00:05:59.215
+<v Speaker 0>The first thing we do is go to
+
+00:05:59.215 --> 00:06:00.095
+<v Speaker 0>Portainer.
+
+00:06:00.735 --> 00:06:02.655
+<v Speaker 0>If you watched the first video, you'll know
+
+00:06:02.655 --> 00:06:06.655
+<v Speaker 0>that this is available for me on p.Rawkode.academy,
+
+00:06:07.375 --> 00:06:09.775
+<v Speaker 0>where I have a single EC two instance
+
+00:06:09.775 --> 00:06:12.175
+<v Speaker 0>running at a Docker engine with Portainer on
+
+00:06:12.175 --> 00:06:12.414
+<v Speaker 0>top.
+
+00:06:13.910 --> 00:06:15.750
+<v Speaker 0>We can click on that environment and go
+
+00:06:15.750 --> 00:06:16.710
+<v Speaker 0>to stacks.
+
+00:06:17.190 --> 00:06:18.630
+<v Speaker 0>As you'll see at the moment, we have
+
+00:06:18.630 --> 00:06:19.590
+<v Speaker 0>no stacks.
+
+00:06:19.990 --> 00:06:21.910
+<v Speaker 0>So let's click on add stack and add
+
+00:06:21.910 --> 00:06:22.790
+<v Speaker 0>our stack.
+
+00:06:23.350 --> 00:06:25.430
+<v Speaker 0>Now I'm going to call this stack EdgeDB.
+
+00:06:26.535 --> 00:06:28.215
+<v Speaker 0>Now we could use the web editor and
+
+00:06:28.215 --> 00:06:30.615
+<v Speaker 0>paste our compose YAML here. We could upload
+
+00:06:30.615 --> 00:06:32.695
+<v Speaker 0>it from our machine or even use a
+
+00:06:32.695 --> 00:06:33.735
+<v Speaker 0>custom template,
+
+00:06:33.895 --> 00:06:36.455
+<v Speaker 0>but today I wanna focus on the GitOps
+
+00:06:36.455 --> 00:06:38.295
+<v Speaker 0>model and continuous delivery.
+
+00:06:39.400 --> 00:06:41.880
+<v Speaker 0>From here, you can add your repository URL.
+
+00:06:41.960 --> 00:06:48.440
+<v Speaker 0>Mine is on GitHub at github.com/rockhodeacademy/containerinproduction.
+
+00:06:49.319 --> 00:06:51.560
+<v Speaker 0>My reference is ref head main
+
+00:06:53.065 --> 00:06:55.065
+<v Speaker 0>and my Docker Compose file is in the
+
+00:06:55.065 --> 00:06:55.865
+<v Speaker 0>GitOps
+
+00:06:56.825 --> 00:07:00.425
+<v Speaker 0>GitOps directory at DockerCompose.YAML.
+
+00:07:01.465 --> 00:07:03.544
+<v Speaker 0>Now we're going to turn on continuous delivery
+
+00:07:03.544 --> 00:07:05.785
+<v Speaker 0>by enabling the automatic update setting.
+
+00:07:06.900 --> 00:07:09.220
+<v Speaker 0>We're gonna start with the simplest solution, which
+
+00:07:09.220 --> 00:07:11.700
+<v Speaker 0>is to turn on polling at one minute.
+
+00:07:12.340 --> 00:07:14.100
+<v Speaker 0>We can force it to pull the latest
+
+00:07:14.100 --> 00:07:16.260
+<v Speaker 0>image and force a redeployment.
+
+00:07:16.740 --> 00:07:18.979
+<v Speaker 0>However, we won't need that last option today.
+
+00:07:20.295 --> 00:07:22.695
+<v Speaker 0>If we need to provide any environment variables,
+
+00:07:22.695 --> 00:07:25.415
+<v Speaker 0>perhaps to configure a new secret in production
+
+00:07:25.415 --> 00:07:27.255
+<v Speaker 0>as opposed to what we use in dev,
+
+00:07:27.255 --> 00:07:28.935
+<v Speaker 0>we can do so from here.
+
+00:07:30.695 --> 00:07:32.775
+<v Speaker 0>Now we click deploy the stack.
+
+00:07:39.280 --> 00:07:41.760
+<v Speaker 0>Sometimes it just feels too easy.
+
+00:07:44.480 --> 00:07:46.800
+<v Speaker 0>So let's click on our stack and scroll
+
+00:07:46.800 --> 00:07:47.120
+<v Speaker 0>down.
+
+00:07:48.145 --> 00:07:50.465
+<v Speaker 0>We're able to modify the fetch interval if
+
+00:07:50.465 --> 00:07:52.305
+<v Speaker 0>we're not deploying as frequently as we want,
+
+00:07:52.305 --> 00:07:53.745
+<v Speaker 0>although I am going to use one minute
+
+00:07:53.745 --> 00:07:55.825
+<v Speaker 0>today so we can actually make a change
+
+00:07:55.825 --> 00:07:57.105
+<v Speaker 0>to this repository.
+
+00:07:57.585 --> 00:07:59.025
+<v Speaker 0>It may make more sense for you to
+
+00:07:59.025 --> 00:08:01.630
+<v Speaker 0>use fifteen minutes or even an hour, or
+
+00:08:01.630 --> 00:08:03.710
+<v Speaker 0>perhaps you only deploy once per day.
+
+00:08:04.350 --> 00:08:06.190
+<v Speaker 0>That choice is up to you.
+
+00:08:09.150 --> 00:08:10.910
+<v Speaker 0>Now if we scroll down to the bottom,
+
+00:08:10.910 --> 00:08:12.910
+<v Speaker 0>we'll see our containers. We can see now
+
+00:08:12.910 --> 00:08:14.990
+<v Speaker 0>that our EdgeDB stack is spinning up.
+
+00:08:20.245 --> 00:08:22.325
+<v Speaker 0>And if we click on that, we get
+
+00:08:22.325 --> 00:08:24.805
+<v Speaker 0>all the benefits that Portainer brings, which is
+
+00:08:24.805 --> 00:08:25.845
+<v Speaker 0>the ability
+
+00:08:26.405 --> 00:08:29.125
+<v Speaker 0>to understand and visualize what is happening in
+
+00:08:29.125 --> 00:08:29.765
+<v Speaker 0>our environment.
+
+00:08:30.670 --> 00:08:32.669
+<v Speaker 0>Here, we have the ability to kill, restart,
+
+00:08:32.669 --> 00:08:34.350
+<v Speaker 0>pause, and remove the container.
+
+00:08:35.150 --> 00:08:36.590
+<v Speaker 0>We can see that our container has been
+
+00:08:36.590 --> 00:08:37.870
+<v Speaker 0>running for one minute,
+
+00:08:38.190 --> 00:08:39.950
+<v Speaker 0>and this little green heart means that things
+
+00:08:39.950 --> 00:08:40.590
+<v Speaker 0>are healthy.
+
+00:08:43.915 --> 00:08:45.675
+<v Speaker 0>If we scroll down a bit more,
+
+00:08:46.395 --> 00:08:48.635
+<v Speaker 0>we can see the output from the logs,
+
+00:08:52.795 --> 00:08:55.275
+<v Speaker 0>and then we see the configuration in more
+
+00:08:55.275 --> 00:08:55.675
+<v Speaker 0>detail.
+
+00:08:56.240 --> 00:08:57.920
+<v Speaker 0>From here, we can see that the ports
+
+00:08:57.920 --> 00:09:00.000
+<v Speaker 0>are configured as we expected to the same
+
+00:09:00.000 --> 00:09:02.800
+<v Speaker 0>as our development environment setup on ports five
+
+00:09:02.800 --> 00:09:04.320
+<v Speaker 0>six five six.
+
+00:09:05.600 --> 00:09:07.920
+<v Speaker 0>So scrolling through all of this, we have
+
+00:09:07.920 --> 00:09:09.680
+<v Speaker 0>a degree of confidence
+
+00:09:11.505 --> 00:09:13.825
+<v Speaker 0>that our application is running.
+
+00:09:14.945 --> 00:09:16.625
+<v Speaker 0>So we can confirm this works
+
+00:09:16.945 --> 00:09:18.705
+<v Speaker 0>by changing the URL
+
+00:09:18.785 --> 00:09:21.905
+<v Speaker 0>to port five six five six slash login.
+
+00:09:22.785 --> 00:09:24.945
+<v Speaker 0>From here, we get the Edge DB login
+
+00:09:24.945 --> 00:09:27.780
+<v Speaker 0>screen, which means our deployment was successful.
+
+00:09:28.660 --> 00:09:30.900
+<v Speaker 0>So let's make a change to our stack
+
+00:09:30.900 --> 00:09:32.340
+<v Speaker 0>and see it continuously
+
+00:09:32.340 --> 00:09:35.620
+<v Speaker 0>rolled out in a GetOps fashion by Portainer.
+
+00:09:37.060 --> 00:09:39.140
+<v Speaker 0>We can pop open our Docker Compose file,
+
+00:09:39.595 --> 00:09:41.915
+<v Speaker 0>and let's say we're going to add one
+
+00:09:41.915 --> 00:09:43.115
+<v Speaker 0>more service.
+
+00:09:43.995 --> 00:09:47.275
+<v Speaker 0>We'll add an image of NGINX latest,
+
+00:09:48.555 --> 00:09:50.635
+<v Speaker 0>and we'll map some ports.
+
+00:09:51.915 --> 00:09:53.595
+<v Speaker 0>Now we're not gonna make this available on
+
+00:09:53.595 --> 00:09:56.420
+<v Speaker 0>port 80 because we have some TLS stuff
+
+00:09:56.420 --> 00:09:58.180
+<v Speaker 0>running for cert bot,
+
+00:09:59.380 --> 00:10:01.860
+<v Speaker 0>but we can make it available on five
+
+00:10:01.860 --> 00:10:03.300
+<v Speaker 0>six five seven,
+
+00:10:03.779 --> 00:10:06.339
+<v Speaker 0>and we'll redirect it to port 80 within
+
+00:10:06.339 --> 00:10:07.779
+<v Speaker 0>the NGINX container.
+
+00:10:08.985 --> 00:10:11.305
+<v Speaker 0>Now this is a contrived change to our
+
+00:10:11.305 --> 00:10:14.185
+<v Speaker 0>Docker Compose file adding an arbitrary NGINX,
+
+00:10:14.265 --> 00:10:17.065
+<v Speaker 0>but your applications will be your services that
+
+00:10:17.065 --> 00:10:17.625
+<v Speaker 0>you change.
+
+00:10:21.630 --> 00:10:24.190
+<v Speaker 0>We can now go over to our terminal
+
+00:10:25.150 --> 00:10:26.350
+<v Speaker 0>where we add
+
+00:10:26.990 --> 00:10:29.390
+<v Speaker 0>our Docker Compose dot YAML change.
+
+00:10:30.190 --> 00:10:32.670
+<v Speaker 0>From here, we do a commit and say
+
+00:10:32.670 --> 00:10:35.150
+<v Speaker 0>feature add engine x.
+
+00:10:36.965 --> 00:10:38.805
+<v Speaker 0>We now do a git push,
+
+00:10:40.805 --> 00:10:43.045
+<v Speaker 0>and in one minute's time or less,
+
+00:10:43.925 --> 00:10:45.445
+<v Speaker 0>we should see Portainer
+
+00:10:45.445 --> 00:10:47.525
+<v Speaker 0>pick up the changes to our stack and
+
+00:10:47.525 --> 00:10:49.125
+<v Speaker 0>add the second container.
+
+00:10:51.280 --> 00:10:53.440
+<v Speaker 0>If we go back to our Portainer screen
+
+00:10:54.080 --> 00:10:55.520
+<v Speaker 0>and to our stack
+
+00:10:56.240 --> 00:10:58.160
+<v Speaker 0>and click in on EdgeDB,
+
+00:11:02.080 --> 00:11:03.120
+<v Speaker 0>and around,
+
+00:11:03.360 --> 00:11:04.080
+<v Speaker 0>hopefully,
+
+00:11:04.560 --> 00:11:06.915
+<v Speaker 0>thirty seconds time, we will see a new
+
+00:11:06.915 --> 00:11:09.155
+<v Speaker 0>container added to this list.
+
+00:11:11.075 --> 00:11:13.795
+<v Speaker 0>Voila. We have our second container.
+
+00:11:14.115 --> 00:11:16.035
+<v Speaker 0>And of course, we can confirm one more
+
+00:11:16.035 --> 00:11:18.195
+<v Speaker 0>time by changing 56
+
+00:11:18.195 --> 00:11:19.715
+<v Speaker 0>to 5657,
+
+00:11:20.900 --> 00:11:22.660
+<v Speaker 0>and we have our NGINX.
+
+00:11:23.860 --> 00:11:25.940
+<v Speaker 0>So Portainer makes it very easy
+
+00:11:26.580 --> 00:11:28.420
+<v Speaker 0>to pull the GET repository
+
+00:11:28.660 --> 00:11:31.700
+<v Speaker 0>for your Docker Compose dot YAML and make
+
+00:11:31.700 --> 00:11:32.980
+<v Speaker 0>all the changes
+
+00:11:33.220 --> 00:11:35.060
+<v Speaker 0>in a production like fashion,
+
+00:11:36.065 --> 00:11:37.425
+<v Speaker 0>which is pretty neat.
+
+00:11:39.105 --> 00:11:40.945
+<v Speaker 0>Okay. Let's take a look at one more
+
+00:11:40.945 --> 00:11:41.505
+<v Speaker 0>thing.
+
+00:11:41.985 --> 00:11:43.665
+<v Speaker 0>When we set up a stack, we set
+
+00:11:43.665 --> 00:11:45.665
+<v Speaker 0>the polling to be an interval.
+
+00:11:47.265 --> 00:11:48.785
+<v Speaker 0>Now I set it for one minute,
+
+00:11:49.610 --> 00:11:52.010
+<v Speaker 0>and I sat here awkwardly waiting for the
+
+00:11:52.010 --> 00:11:54.570
+<v Speaker 0>refresh to show you the NGINX container.
+
+00:11:56.170 --> 00:11:58.970
+<v Speaker 0>Now depending on your deployment velocity
+
+00:11:59.130 --> 00:12:01.450
+<v Speaker 0>and depending on what your project even is,
+
+00:12:01.450 --> 00:12:02.730
+<v Speaker 0>you could be deploying
+
+00:12:03.045 --> 00:12:05.285
+<v Speaker 0>four times an hour, four times a day,
+
+00:12:05.285 --> 00:12:06.565
+<v Speaker 0>or four times a year.
+
+00:12:07.445 --> 00:12:10.005
+<v Speaker 0>The polling may not be that effective,
+
+00:12:10.885 --> 00:12:13.445
+<v Speaker 0>and instead you may wish just to have
+
+00:12:13.445 --> 00:12:17.204
+<v Speaker 0>GitHub send a webhook to your Portainer instance
+
+00:12:16.670 --> 00:12:18.350
+<v Speaker 0>every time there's a change.
+
+00:12:19.470 --> 00:12:22.190
+<v Speaker 0>And Portainer makes this pretty pretty,
+
+00:12:22.510 --> 00:12:24.510
+<v Speaker 0>and Portainer makes this simple.
+
+00:12:25.230 --> 00:12:26.350
+<v Speaker 0>So let's make
+
+00:12:26.830 --> 00:12:28.430
+<v Speaker 0>a final adjustment,
+
+00:12:28.430 --> 00:12:30.750
+<v Speaker 0>a final final adjustment
+
+00:12:30.910 --> 00:12:31.710
+<v Speaker 0>to our stack.
+
+00:12:34.225 --> 00:12:35.825
+<v Speaker 0>We go into EdgeDB,
+
+00:12:37.745 --> 00:12:40.225
+<v Speaker 0>and we're going to switch to webhook.
+
+00:12:40.945 --> 00:12:43.105
+<v Speaker 0>We're going to copy this link
+
+00:12:45.130 --> 00:12:46.410
+<v Speaker 0>and click save.
+
+00:12:48.089 --> 00:12:50.570
+<v Speaker 0>So let's add the webhook to GitHub.
+
+00:12:51.370 --> 00:12:53.209
+<v Speaker 0>We go to our repository, which in this
+
+00:12:53.209 --> 00:12:56.010
+<v Speaker 0>case is Rawkode Academy slash Portainer in production.
+
+00:12:56.329 --> 00:12:58.250
+<v Speaker 0>We go to settings and webhooks.
+
+00:12:59.045 --> 00:13:00.725
+<v Speaker 0>From here, we can say add,
+
+00:13:00.885 --> 00:13:02.325
+<v Speaker 0>drop in the URL,
+
+00:13:03.045 --> 00:13:05.445
+<v Speaker 0>and say we only want the push event.
+
+00:13:06.805 --> 00:13:08.005
+<v Speaker 0>We click add,
+
+00:13:08.325 --> 00:13:10.644
+<v Speaker 0>GitHub sends a test ping, which if we
+
+00:13:10.644 --> 00:13:11.365
+<v Speaker 0>click on here,
+
+00:13:13.910 --> 00:13:16.230
+<v Speaker 0>we'll see it's a green tick. This means
+
+00:13:16.230 --> 00:13:19.030
+<v Speaker 0>our webhook was successfully configured.
+
+00:13:20.950 --> 00:13:23.350
+<v Speaker 0>We'll pop back over here and list the
+
+00:13:23.350 --> 00:13:24.950
+<v Speaker 0>containers for our stack.
+
+00:13:25.350 --> 00:13:27.875
+<v Speaker 0>So let's add one more service to our
+
+00:13:27.875 --> 00:13:28.595
+<v Speaker 0>stack.
+
+00:13:28.755 --> 00:13:30.515
+<v Speaker 0>We're going to copy nginx,
+
+00:13:35.315 --> 00:13:37.635
+<v Speaker 0>and we'll call it as HTTP T, and
+
+00:13:37.635 --> 00:13:39.075
+<v Speaker 0>we're going to run HTTP
+
+00:13:39.075 --> 00:13:39.555
+<v Speaker 0>T image.
+
+00:13:40.329 --> 00:13:42.250
+<v Speaker 0>And we won't bother exposing this to the
+
+00:13:42.250 --> 00:13:42.810
+<v Speaker 0>Internet.
+
+00:13:43.290 --> 00:13:45.050
+<v Speaker 0>Now we'll jump over to a terminal
+
+00:13:45.529 --> 00:13:47.770
+<v Speaker 0>where we can do an add, commit,
+
+00:13:48.089 --> 00:13:48.970
+<v Speaker 0>and a push.
+
+00:13:51.529 --> 00:13:53.529
+<v Speaker 0>Now if we pop back over to Portainer,
+
+00:13:56.345 --> 00:13:58.745
+<v Speaker 0>right before our eyes, we see one more
+
+00:13:58.745 --> 00:14:00.985
+<v Speaker 0>container added to our stack.
+
+00:14:02.585 --> 00:14:04.425
+<v Speaker 0>So that is get ups
+
+00:14:05.705 --> 00:14:09.065
+<v Speaker 0>with Docker engine and Portainer with Docker Compose.
+
+00:14:11.030 --> 00:14:12.870
+<v Speaker 0>It's a pretty impressive setup,
+
+00:14:13.270 --> 00:14:15.110
+<v Speaker 0>which will work well for the majority of
+
+00:14:15.110 --> 00:14:15.910
+<v Speaker 0>projects
+
+00:14:17.350 --> 00:14:19.910
+<v Speaker 0>where you just need a few containers running
+
+00:14:19.910 --> 00:14:21.270
+<v Speaker 0>on a Linux machine.
+
+00:14:22.710 --> 00:14:24.950
+<v Speaker 0>You can configure it to update your stacks
+
+00:14:24.950 --> 00:14:26.710
+<v Speaker 0>with pooling or via webhooks,
+
+00:14:26.885 --> 00:14:28.885
+<v Speaker 0>and you've seen just how easy both approaches
+
+00:14:28.885 --> 00:14:29.445
+<v Speaker 0>are.
+
+00:14:30.964 --> 00:14:34.245
+<v Speaker 0>So go check it out. Download Portainer. Remember,
+
+00:14:34.245 --> 00:14:36.325
+<v Speaker 0>the business edition is free for less than
+
+00:14:36.325 --> 00:14:38.404
+<v Speaker 0>five nodes. And if you've got less than
+
+00:14:38.404 --> 00:14:41.685
+<v Speaker 0>five nodes, this GitOps model with Docker Compose
+
+00:14:42.310 --> 00:14:44.630
+<v Speaker 0>is probably exactly what you need for production.
+
+00:14:46.630 --> 00:14:47.270
+<v Speaker 0>So
+
+00:14:48.070 --> 00:14:49.350
+<v Speaker 0>we'll have some fun.
+
+00:14:50.070 --> 00:14:50.870
+<v Speaker 0>See you next time.

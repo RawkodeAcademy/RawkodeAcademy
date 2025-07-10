@@ -1,0 +1,7412 @@
+WEBVTT
+
+NOTE
+Transcription provided by Deepgram
+Request Id: ee0773aa-8995-4379-910f-48c94c73e023
+Created: 2025-04-29T15:48:10.886Z
+Duration: 5673.64
+Channels: 1
+
+00:01:42.055 --> 00:01:45.415
+<v Speaker 0>Hello, and welcome back to the Rawkode Academy.
+
+00:01:45.575 --> 00:01:47.735
+<v Speaker 0>Today is an episode of Rawkode Live where
+
+00:01:47.735 --> 00:01:49.655
+<v Speaker 0>we're taking a look at a tool to
+
+00:01:49.655 --> 00:01:50.534
+<v Speaker 0>simplify
+
+00:01:50.534 --> 00:01:52.454
+<v Speaker 0>your Kubernetes experience.
+
+00:01:52.695 --> 00:01:54.615
+<v Speaker 0>That tool is called kpt.
+
+00:01:55.450 --> 00:01:57.130
+<v Speaker 0>Now, of course, I am not smart enough
+
+00:01:57.130 --> 00:01:58.490
+<v Speaker 0>to get us through learning all these new
+
+00:01:58.490 --> 00:02:00.170
+<v Speaker 0>tools. We're gonna reach out to people with
+
+00:02:00.170 --> 00:02:01.530
+<v Speaker 0>all of the knowledge, and I have the
+
+00:02:01.530 --> 00:02:03.290
+<v Speaker 0>pleasure today of being joined,
+
+00:02:04.090 --> 00:02:04.890
+<v Speaker 0>ta da,
+
+00:02:05.290 --> 00:02:08.490
+<v Speaker 0>by Brian and Justin, both engineers at Google
+
+00:02:08.490 --> 00:02:11.655
+<v Speaker 0>who work and drive the kpt project forward.
+
+00:02:11.655 --> 00:02:13.175
+<v Speaker 0>Hello. How is it going?
+
+00:02:14.295 --> 00:02:14.935
+<v Speaker 1>Hello.
+
+00:02:17.175 --> 00:02:19.335
+<v Speaker 0>Alright. So thank you both for joining me
+
+00:02:19.335 --> 00:02:22.055
+<v Speaker 0>today. And for anyone that's not, familiar with
+
+00:02:22.055 --> 00:02:24.410
+<v Speaker 0>you, doesn't follow you on Twitter or LinkedIn
+
+00:02:24.410 --> 00:02:25.850
+<v Speaker 0>or anything like that, can you both just
+
+00:02:25.850 --> 00:02:27.370
+<v Speaker 0>say hello and tell us a little bit
+
+00:02:27.370 --> 00:02:29.370
+<v Speaker 0>about yourselves? And, we'll just start with you
+
+00:02:29.370 --> 00:02:30.810
+<v Speaker 0>in the middle there, Justin.
+
+00:02:32.010 --> 00:02:34.250
+<v Speaker 2>Hi. I'm Justin Santa Barbara. I am a
+
+00:02:34.250 --> 00:02:36.330
+<v Speaker 2>software engineer at, Google.
+
+00:02:36.570 --> 00:02:39.530
+<v Speaker 2>I have been working on the Kubernetes project
+
+00:02:40.235 --> 00:02:41.755
+<v Speaker 2>more or less since the beginning, not quite
+
+00:02:41.755 --> 00:02:42.875
+<v Speaker 2>as long as Brian,
+
+00:02:43.115 --> 00:02:43.435
+<v Speaker 2>but,
+
+00:02:44.155 --> 00:02:45.995
+<v Speaker 2>for, like, since at least before one point
+
+00:02:45.995 --> 00:02:46.555
+<v Speaker 2>o.
+
+00:02:46.875 --> 00:02:47.515
+<v Speaker 2>And,
+
+00:02:48.075 --> 00:02:50.635
+<v Speaker 2>now work at Google on a team trying
+
+00:02:50.635 --> 00:02:51.755
+<v Speaker 2>to help users,
+
+00:02:52.395 --> 00:02:54.715
+<v Speaker 2>make more and better use of Kubernetes.
+
+00:02:55.730 --> 00:02:57.969
+<v Speaker 2>And part of that is the project we're
+
+00:02:57.969 --> 00:02:59.810
+<v Speaker 2>gonna be looking at today. And
+
+00:03:00.290 --> 00:03:02.609
+<v Speaker 2>the team I work on is also responsible
+
+00:03:02.609 --> 00:03:04.290
+<v Speaker 2>for customize
+
+00:03:04.290 --> 00:03:07.569
+<v Speaker 2>and config sync and config connector and config
+
+00:03:07.569 --> 00:03:09.090
+<v Speaker 2>controller, so a bunch of those sort of
+
+00:03:09.090 --> 00:03:11.595
+<v Speaker 2>tools around Kubernetes and expanding it to to
+
+00:03:11.595 --> 00:03:12.395
+<v Speaker 2>new areas.
+
+00:03:13.515 --> 00:03:14.715
+<v Speaker 0>Alright. Thank you.
+
+00:03:16.715 --> 00:03:18.715
+<v Speaker 1>Hi. I'm Brian Grant. I was part of
+
+00:03:18.715 --> 00:03:21.595
+<v Speaker 1>the original team that created Kubernetes at Google.
+
+00:03:21.595 --> 00:03:23.114
+<v Speaker 1>I was the API design lead and lead
+
+00:03:23.114 --> 00:03:23.595
+<v Speaker 1>architect.
+
+00:03:24.340 --> 00:03:26.020
+<v Speaker 1>Been working on configuration
+
+00:03:26.180 --> 00:03:28.900
+<v Speaker 1>for Kubernetes for a long time. Keep control
+
+00:03:28.900 --> 00:03:29.700
+<v Speaker 1>apply,
+
+00:03:29.780 --> 00:03:30.660
+<v Speaker 1>customize
+
+00:03:31.060 --> 00:03:31.860
+<v Speaker 1>our
+
+00:03:33.380 --> 00:03:35.780
+<v Speaker 1>tools I created and also kept as
+
+00:03:36.275 --> 00:03:37.475
+<v Speaker 1>kind of the latest
+
+00:03:37.875 --> 00:03:38.995
+<v Speaker 1>iteration on that.
+
+00:03:40.035 --> 00:03:41.955
+<v Speaker 1>A little bit of a twist on
+
+00:03:43.235 --> 00:03:44.595
+<v Speaker 1>customized approach.
+
+00:03:46.035 --> 00:03:47.875
+<v Speaker 0>Alright. Thank you both for sharing.
+
+00:03:48.275 --> 00:03:50.835
+<v Speaker 0>Before we talk about what kpt is then,
+
+00:03:50.835 --> 00:03:53.160
+<v Speaker 0>maybe we can just because you've both already
+
+00:03:53.160 --> 00:03:56.040
+<v Speaker 0>mentioned a couple of other Kubernetes tools. Like,
+
+00:03:56.040 --> 00:03:59.000
+<v Speaker 0>we're definitely in the Kubernetes ecosystem spoiled for
+
+00:03:59.000 --> 00:04:00.280
+<v Speaker 0>choice, and I don't know if that's a
+
+00:04:00.280 --> 00:04:02.040
+<v Speaker 0>good thing or a bad thing. But there
+
+00:04:02.040 --> 00:04:03.400
+<v Speaker 0>are a lot of tools
+
+00:04:03.560 --> 00:04:05.400
+<v Speaker 0>to help us deploy to Kubernetes.
+
+00:04:06.040 --> 00:04:07.080
+<v Speaker 0>Why do you think that is?
+
+00:04:08.175 --> 00:04:10.095
+<v Speaker 0>Why do we Spreadsheet
+
+00:04:10.095 --> 00:04:12.015
+<v Speaker 1>of more than a hundred tools.
+
+00:04:14.175 --> 00:04:15.375
+<v Speaker 1>Yeah. And configuration
+
+00:04:15.775 --> 00:04:16.575
+<v Speaker 1>is
+
+00:04:17.774 --> 00:04:19.135
+<v Speaker 1>is a hard problem.
+
+00:04:20.095 --> 00:04:22.415
+<v Speaker 1>It's a user interface surface.
+
+00:04:23.259 --> 00:04:23.820
+<v Speaker 1>So,
+
+00:04:25.500 --> 00:04:29.100
+<v Speaker 1>you know, it really dominates how people experience
+
+00:04:29.659 --> 00:04:31.100
+<v Speaker 1>using Kubernetes.
+
+00:04:31.419 --> 00:04:32.060
+<v Speaker 1>And
+
+00:04:32.379 --> 00:04:34.060
+<v Speaker 1>therefore, a lot of preferences
+
+00:04:34.300 --> 00:04:35.500
+<v Speaker 1>become involved
+
+00:04:35.740 --> 00:04:37.180
+<v Speaker 1>in how
+
+00:04:37.665 --> 00:04:40.545
+<v Speaker 1>configuration is actually authored and modified.
+
+00:04:41.505 --> 00:04:43.985
+<v Speaker 1>You know? So people may start simple with
+
+00:04:43.985 --> 00:04:45.505
+<v Speaker 1>just plain YAML.
+
+00:04:45.905 --> 00:04:47.905
+<v Speaker 1>And at some point when that becomes
+
+00:04:48.225 --> 00:04:50.865
+<v Speaker 1>too hard to maintain, they will switch to
+
+00:04:50.865 --> 00:04:52.305
+<v Speaker 1>a different tool. Some people will
+
+00:04:53.310 --> 00:04:55.230
+<v Speaker 1>build their own tool. You know, you could
+
+00:04:55.230 --> 00:04:57.630
+<v Speaker 1>just use m subs or sed, for example,
+
+00:04:57.630 --> 00:05:00.030
+<v Speaker 1>to replace some parts of the configuration.
+
+00:05:00.110 --> 00:05:03.150
+<v Speaker 1>That's pretty easy. This is one reason why
+
+00:05:03.310 --> 00:05:05.965
+<v Speaker 1>there are so many tools is because
+
+00:05:06.765 --> 00:05:09.565
+<v Speaker 1>with the way the Kubernetes API is designed
+
+00:05:09.565 --> 00:05:11.165
+<v Speaker 1>to be natively declarative,
+
+00:05:11.725 --> 00:05:13.485
+<v Speaker 1>all you need to do is create a
+
+00:05:13.485 --> 00:05:14.845
+<v Speaker 1>way to basically render
+
+00:05:15.165 --> 00:05:15.645
+<v Speaker 1>the
+
+00:05:16.729 --> 00:05:17.530
+<v Speaker 1>resource
+
+00:05:17.530 --> 00:05:18.490
+<v Speaker 1>definitions
+
+00:05:18.570 --> 00:05:20.330
+<v Speaker 1>for Kubernetes, and you can do that any
+
+00:05:20.330 --> 00:05:22.009
+<v Speaker 1>way you want. And then you can just
+
+00:05:22.009 --> 00:05:22.890
+<v Speaker 1>apply them,
+
+00:05:23.530 --> 00:05:25.770
+<v Speaker 1>and you're off to the races. Right? So
+
+00:05:25.770 --> 00:05:26.890
+<v Speaker 1>it's not nearly
+
+00:05:27.050 --> 00:05:29.370
+<v Speaker 1>as hard to build a tool as it
+
+00:05:29.370 --> 00:05:32.514
+<v Speaker 1>is, you know, for cloud configuration, for instance,
+
+00:05:32.514 --> 00:05:33.155
+<v Speaker 1>where,
+
+00:05:34.435 --> 00:05:35.555
+<v Speaker 1>a lot more,
+
+00:05:36.755 --> 00:05:38.275
+<v Speaker 1>orchestration and
+
+00:05:38.435 --> 00:05:42.195
+<v Speaker 1>API calls and trans transformation and those kinds
+
+00:05:42.195 --> 00:05:43.875
+<v Speaker 1>of things are are necessary.
+
+00:05:44.354 --> 00:05:45.155
+<v Speaker 1>For the most part,
+
+00:05:46.650 --> 00:05:47.370
+<v Speaker 1>just
+
+00:05:48.170 --> 00:05:50.090
+<v Speaker 1>rendering the configuration, applying it, and let the
+
+00:05:50.090 --> 00:05:52.410
+<v Speaker 1>controllers figure it out just works,
+
+00:05:53.210 --> 00:05:53.530
+<v Speaker 1>which is
+
+00:05:55.530 --> 00:05:57.930
+<v Speaker 1>opens up a lot of different
+
+00:05:58.824 --> 00:05:59.705
+<v Speaker 1>possibilities
+
+00:05:59.705 --> 00:06:02.025
+<v Speaker 1>for how that configuration is actually generated.
+
+00:06:03.224 --> 00:06:04.664
+<v Speaker 0>Yeah. It feels like a lot of the
+
+00:06:04.664 --> 00:06:06.425
+<v Speaker 0>the tooling that we have in this in
+
+00:06:06.425 --> 00:06:08.985
+<v Speaker 0>this space is they're they're all different versions
+
+00:06:08.985 --> 00:06:11.830
+<v Speaker 0>of of of templating tools because we have
+
+00:06:11.830 --> 00:06:14.070
+<v Speaker 0>to be able to build up a lot
+
+00:06:14.070 --> 00:06:15.590
+<v Speaker 0>of YAML when working
+
+00:06:15.750 --> 00:06:17.190
+<v Speaker 0>with Kubernetes.
+
+00:06:17.190 --> 00:06:18.150
+<v Speaker 0>And I think yeah.
+
+00:06:18.710 --> 00:06:20.229
+<v Speaker 0>What a hundred, I didn't quite think it
+
+00:06:20.229 --> 00:06:21.430
+<v Speaker 0>was as high as that, but I'm not
+
+00:06:21.430 --> 00:06:23.910
+<v Speaker 0>that surprised that there's that many tools. It
+
+00:06:23.910 --> 00:06:25.750
+<v Speaker 0>just seems to be that, you know, every
+
+00:06:25.750 --> 00:06:28.415
+<v Speaker 0>week, every other week on, you know, hacker
+
+00:06:28.415 --> 00:06:29.775
+<v Speaker 0>news or something like that, there's always this
+
+00:06:29.775 --> 00:06:32.015
+<v Speaker 0>new open source project that's gonna change the
+
+00:06:32.015 --> 00:06:33.855
+<v Speaker 0>way that we deploy to Kubernetes. It's gonna
+
+00:06:33.855 --> 00:06:34.415
+<v Speaker 0>simplify
+
+00:06:35.295 --> 00:06:37.935
+<v Speaker 0>something, which I it's already kinda simple, you
+
+00:06:37.935 --> 00:06:40.095
+<v Speaker 0>know, it's still templating. But for some reason,
+
+00:06:40.740 --> 00:06:42.740
+<v Speaker 0>we're deploying more and more things to Kubernetes.
+
+00:06:42.740 --> 00:06:43.940
+<v Speaker 0>Things are getting harder.
+
+00:06:44.100 --> 00:06:46.260
+<v Speaker 0>So I'm really curious to see and hoping
+
+00:06:46.260 --> 00:06:47.620
+<v Speaker 0>that when we take a look at kpt,
+
+00:06:47.620 --> 00:06:49.780
+<v Speaker 0>we can see something that's a bit different
+
+00:06:49.780 --> 00:06:52.740
+<v Speaker 0>because from my naive perspective here and what
+
+00:06:52.740 --> 00:06:54.260
+<v Speaker 0>I've seen on the documentation and what you
+
+00:06:54.260 --> 00:06:55.460
+<v Speaker 0>talked about on Twitter and what I've seen
+
+00:06:55.460 --> 00:06:57.995
+<v Speaker 0>on the GitHub is that kpt is different
+
+00:06:57.995 --> 00:07:00.155
+<v Speaker 0>to these other tools that we have, but
+
+00:07:00.155 --> 00:07:02.635
+<v Speaker 0>at least we've seen in this ecosystem. So
+
+00:07:02.635 --> 00:07:05.035
+<v Speaker 0>maybe now we could talk about what kpt
+
+00:07:05.035 --> 00:07:06.795
+<v Speaker 0>is and why it's different from these other
+
+00:07:06.795 --> 00:07:07.435
+<v Speaker 0>tools.
+
+00:07:07.995 --> 00:07:10.289
+<v Speaker 1>Yeah. I can talk. So the other tools
+
+00:07:10.289 --> 00:07:11.250
+<v Speaker 1>I consider,
+
+00:07:11.490 --> 00:07:12.930
+<v Speaker 1>what I call generators.
+
+00:07:13.009 --> 00:07:15.409
+<v Speaker 1>They generate configuration like you said. Right? So
+
+00:07:15.409 --> 00:07:19.250
+<v Speaker 1>templates is one category or configuration languages like
+
+00:07:19.729 --> 00:07:22.130
+<v Speaker 1>HCL or Q or
+
+00:07:22.210 --> 00:07:25.415
+<v Speaker 1>DAL or, you know, JSON or something like
+
+00:07:25.415 --> 00:07:25.895
+<v Speaker 1>that,
+
+00:07:26.535 --> 00:07:29.495
+<v Speaker 1>or general purpose languages like Hulumi or CDK.
+
+00:07:29.495 --> 00:07:29.895
+<v Speaker 1>But,
+
+00:07:30.935 --> 00:07:32.455
+<v Speaker 1>you know, in all of those cases, you
+
+00:07:32.455 --> 00:07:33.575
+<v Speaker 1>basically write
+
+00:07:33.895 --> 00:07:35.895
+<v Speaker 1>the entire configuration in
+
+00:07:36.055 --> 00:07:38.855
+<v Speaker 1>code or code like format or template format
+
+00:07:39.470 --> 00:07:42.350
+<v Speaker 1>and generate the entire thing. Now customize took
+
+00:07:42.350 --> 00:07:44.590
+<v Speaker 1>a different approach. It took a transformation based
+
+00:07:44.590 --> 00:07:45.630
+<v Speaker 1>approach where
+
+00:07:45.790 --> 00:07:49.310
+<v Speaker 1>it took some configuration as inputs and transformed
+
+00:07:49.310 --> 00:07:50.910
+<v Speaker 1>it in various ways through
+
+00:07:52.884 --> 00:07:54.165
+<v Speaker 1>built in transformers,
+
+00:07:54.165 --> 00:07:56.245
+<v Speaker 1>like to add labels or to add annotations
+
+00:07:56.965 --> 00:07:58.245
+<v Speaker 1>or to patch
+
+00:07:58.565 --> 00:08:01.045
+<v Speaker 1>the the resources, the so called overlay
+
+00:08:01.125 --> 00:08:03.525
+<v Speaker 1>approach. Now since then, a number of tools
+
+00:08:03.525 --> 00:08:06.324
+<v Speaker 1>have added support for overrides because overrides
+
+00:08:06.850 --> 00:08:08.370
+<v Speaker 1>are effectively,
+
+00:08:08.370 --> 00:08:09.970
+<v Speaker 1>you know, one of the most common patterns
+
+00:08:09.970 --> 00:08:12.050
+<v Speaker 1>that people need to do on top of
+
+00:08:12.050 --> 00:08:12.610
+<v Speaker 1>a
+
+00:08:12.930 --> 00:08:15.490
+<v Speaker 1>a base configuration or off the shelf configuration.
+
+00:08:17.490 --> 00:08:19.010
+<v Speaker 1>And that way, you don't have to template
+
+00:08:19.010 --> 00:08:21.410
+<v Speaker 1>the entire thing for every possible thing someone
+
+00:08:21.410 --> 00:08:23.915
+<v Speaker 1>might want to actually change. Instead, you can
+
+00:08:23.915 --> 00:08:26.315
+<v Speaker 1>just override it, so called last mile
+
+00:08:26.715 --> 00:08:27.675
+<v Speaker 1>configuration.
+
+00:08:28.155 --> 00:08:30.635
+<v Speaker 1>So other tools support that now too, but,
+
+00:08:30.635 --> 00:08:33.515
+<v Speaker 1>typically, they do generation first and then transformation
+
+00:08:33.515 --> 00:08:34.715
+<v Speaker 1>or override
+
+00:08:34.875 --> 00:08:36.955
+<v Speaker 1>in some way. So kpt's approach
+
+00:08:37.610 --> 00:08:40.250
+<v Speaker 1>is different in that it completely decouples
+
+00:08:40.250 --> 00:08:42.570
+<v Speaker 1>how the configuration is authored
+
+00:08:42.570 --> 00:08:44.010
+<v Speaker 1>from the transformations.
+
+00:08:44.730 --> 00:08:45.690
+<v Speaker 1>So since
+
+00:08:45.769 --> 00:08:46.570
+<v Speaker 1>Kubernetes
+
+00:08:46.570 --> 00:08:48.170
+<v Speaker 1>is natively declarative,
+
+00:08:49.815 --> 00:08:50.535
+<v Speaker 1>we're
+
+00:08:50.695 --> 00:08:53.415
+<v Speaker 1>leveraging that by saying, look. You can generate
+
+00:08:53.815 --> 00:08:55.975
+<v Speaker 1>the configuration however you want. You can write
+
+00:08:55.975 --> 00:08:57.975
+<v Speaker 1>it by hand using your favorite editor or
+
+00:08:57.975 --> 00:08:58.855
+<v Speaker 1>IDE,
+
+00:08:59.255 --> 00:09:00.935
+<v Speaker 1>or you can generate it with a tool,
+
+00:09:00.935 --> 00:09:02.295
+<v Speaker 1>or you can generate it with the UI.
+
+00:09:03.009 --> 00:09:05.410
+<v Speaker 1>It doesn't it shouldn't actually matter. And then
+
+00:09:05.410 --> 00:09:07.250
+<v Speaker 1>we can take that and transform it in
+
+00:09:07.250 --> 00:09:09.089
+<v Speaker 1>various ways, not just on the fly when
+
+00:09:09.089 --> 00:09:10.209
+<v Speaker 1>we're deploying it,
+
+00:09:10.769 --> 00:09:11.810
+<v Speaker 1>but in advance.
+
+00:09:12.290 --> 00:09:13.170
+<v Speaker 1>So
+
+00:09:13.569 --> 00:09:15.970
+<v Speaker 1>I think a lot of the toil and
+
+00:09:15.970 --> 00:09:18.370
+<v Speaker 1>and manual effort around configuration management
+
+00:09:19.685 --> 00:09:22.645
+<v Speaker 1>is overlooked. We're kind of desensitized to it.
+
+00:09:22.645 --> 00:09:23.925
+<v Speaker 1>We expect to have to
+
+00:09:24.325 --> 00:09:26.325
+<v Speaker 1>check out files from GET,
+
+00:09:26.805 --> 00:09:27.765
+<v Speaker 1>edit them,
+
+00:09:27.925 --> 00:09:29.605
+<v Speaker 1>commit, tag, push,
+
+00:09:30.405 --> 00:09:31.685
+<v Speaker 1>do a code review,
+
+00:09:32.165 --> 00:09:33.845
+<v Speaker 1>etcetera, before we can deploy anything.
+
+00:09:34.440 --> 00:09:35.560
+<v Speaker 1>And GitOps
+
+00:09:36.360 --> 00:09:39.720
+<v Speaker 1>makes that last deploy step more reliable and
+
+00:09:39.720 --> 00:09:40.840
+<v Speaker 1>and easier,
+
+00:09:41.000 --> 00:09:43.320
+<v Speaker 1>but it's really just that last step that
+
+00:09:43.320 --> 00:09:45.880
+<v Speaker 1>it's automating. And all that process before that
+
+00:09:45.880 --> 00:09:48.265
+<v Speaker 1>point, it's still a lot of work. And
+
+00:09:48.265 --> 00:09:49.385
+<v Speaker 1>with customize,
+
+00:09:49.545 --> 00:09:52.585
+<v Speaker 1>you know, customize can simplify the base configurations,
+
+00:09:52.905 --> 00:09:54.505
+<v Speaker 1>but the rest of the process is still
+
+00:09:54.505 --> 00:09:55.625
+<v Speaker 1>basically the same.
+
+00:09:56.985 --> 00:09:59.145
+<v Speaker 1>It's not any less work to,
+
+00:09:59.940 --> 00:10:02.980
+<v Speaker 1>you know, check out the files from gits,
+
+00:10:03.300 --> 00:10:04.900
+<v Speaker 1>edit them, commits,
+
+00:10:05.780 --> 00:10:07.220
+<v Speaker 1>push tag review,
+
+00:10:07.540 --> 00:10:08.340
+<v Speaker 1>render,
+
+00:10:08.340 --> 00:10:09.060
+<v Speaker 1>etcetera.
+
+00:10:09.860 --> 00:10:10.500
+<v Speaker 1>So
+
+00:10:11.300 --> 00:10:13.140
+<v Speaker 1>what we're doing with kpt is extending the
+
+00:10:13.140 --> 00:10:15.695
+<v Speaker 1>set of automation that we can apply to
+
+00:10:15.695 --> 00:10:16.335
+<v Speaker 1>that
+
+00:10:16.735 --> 00:10:17.775
+<v Speaker 1>whole space
+
+00:10:18.255 --> 00:10:21.055
+<v Speaker 1>to really cover the full life cycle of
+
+00:10:21.055 --> 00:10:22.175
+<v Speaker 1>the configuration.
+
+00:10:22.335 --> 00:10:22.735
+<v Speaker 1>And that
+
+00:10:23.695 --> 00:10:25.935
+<v Speaker 1>what we're doing is we're extracting the configuration
+
+00:10:25.935 --> 00:10:26.575
+<v Speaker 1>from storage,
+
+00:10:27.680 --> 00:10:29.839
+<v Speaker 1>transforming it, and writing it back.
+
+00:10:30.560 --> 00:10:31.200
+<v Speaker 1>And
+
+00:10:32.560 --> 00:10:35.839
+<v Speaker 1>I think the best way to really understand
+
+00:10:35.839 --> 00:10:37.920
+<v Speaker 1>this is to actually go through the process
+
+00:10:37.920 --> 00:10:38.880
+<v Speaker 1>and show it,
+
+00:10:39.920 --> 00:10:41.360
+<v Speaker 1>is what we found. So
+
+00:10:42.475 --> 00:10:44.235
+<v Speaker 1>so I'm actually looking forward to do that
+
+00:10:44.235 --> 00:10:46.395
+<v Speaker 1>to see what you think about it because
+
+00:10:46.395 --> 00:10:47.035
+<v Speaker 1>it's,
+
+00:10:48.715 --> 00:10:50.795
+<v Speaker 1>in some in some ways, very familiar
+
+00:10:51.035 --> 00:10:53.755
+<v Speaker 1>to things people are used to
+
+00:10:54.555 --> 00:10:56.875
+<v Speaker 1>and in other ways, radically different.
+
+00:10:59.000 --> 00:11:01.240
+<v Speaker 1>So different people have
+
+00:11:01.400 --> 00:11:03.000
+<v Speaker 1>different impressions about
+
+00:11:03.880 --> 00:11:05.720
+<v Speaker 1>what's actually going on and what the tool
+
+00:11:05.720 --> 00:11:07.560
+<v Speaker 1>can do and how it can change
+
+00:11:07.880 --> 00:11:09.240
+<v Speaker 1>how we manage configuration.
+
+00:11:11.204 --> 00:11:14.165
+<v Speaker 0>Alright. Yeah. I I'll start on go. Can
+
+00:11:14.725 --> 00:11:16.245
+<v Speaker 2>I, like, I also we like, we really
+
+00:11:16.245 --> 00:11:18.005
+<v Speaker 2>wanna hear what you think of it because,
+
+00:11:18.005 --> 00:11:19.204
+<v Speaker 2>I mean, I think you said something very
+
+00:11:19.204 --> 00:11:21.365
+<v Speaker 2>interesting, which is, you said,
+
+00:11:22.165 --> 00:11:24.245
+<v Speaker 2>like, there comes a point where you like,
+
+00:11:24.790 --> 00:11:26.870
+<v Speaker 2>where the complexity of YAML editing gets becomes
+
+00:11:26.870 --> 00:11:27.590
+<v Speaker 2>too much,
+
+00:11:27.910 --> 00:11:29.830
+<v Speaker 2>and you have to switch to generation or
+
+00:11:29.830 --> 00:11:31.590
+<v Speaker 2>templating or whatever it might be? And I
+
+00:11:31.590 --> 00:11:33.670
+<v Speaker 2>think what we're saying here is we are
+
+00:11:33.670 --> 00:11:34.950
+<v Speaker 2>producing something that
+
+00:11:35.270 --> 00:11:37.030
+<v Speaker 2>lets you take an alternate path. So we
+
+00:11:37.030 --> 00:11:39.270
+<v Speaker 2>can avoid all those, like, hundreds of different
+
+00:11:39.270 --> 00:11:42.385
+<v Speaker 2>templating solutions. Here's an alternate path. Hopefully, you
+
+00:11:42.385 --> 00:11:44.145
+<v Speaker 2>don't hit that decision point where you're like,
+
+00:11:44.145 --> 00:11:46.385
+<v Speaker 2>oh, I have to, like, abandon pure YAML.
+
+00:11:46.385 --> 00:11:48.705
+<v Speaker 2>Let's let's make the Kubernetes objects centric to
+
+00:11:48.705 --> 00:11:49.505
+<v Speaker 2>this and
+
+00:11:49.825 --> 00:11:52.065
+<v Speaker 2>give you what is going to be a
+
+00:11:52.065 --> 00:11:53.825
+<v Speaker 2>delightful experience, and your feedback as to how
+
+00:11:53.825 --> 00:11:55.345
+<v Speaker 2>delightful it is right now is gonna be
+
+00:11:55.345 --> 00:11:55.904
+<v Speaker 2>very interesting.
+
+00:11:56.680 --> 00:11:59.000
+<v Speaker 2>But, hopefully, you'll you'll see what we're what
+
+00:11:59.000 --> 00:12:00.600
+<v Speaker 2>we're trying to do even if it's even
+
+00:12:00.600 --> 00:12:01.800
+<v Speaker 2>if it could be more delightful in the
+
+00:12:01.800 --> 00:12:02.200
+<v Speaker 2>future.
+
+00:12:03.080 --> 00:12:05.320
+<v Speaker 0>Alright. Awesome. And we're we're gonna get to
+
+00:12:05.320 --> 00:12:07.080
+<v Speaker 0>the hands on component in just a moment,
+
+00:12:07.080 --> 00:12:08.120
+<v Speaker 0>but I I wanna
+
+00:12:08.935 --> 00:12:10.214
+<v Speaker 0>I always like to try and take what
+
+00:12:10.214 --> 00:12:11.334
+<v Speaker 0>people have told me and see if I
+
+00:12:11.334 --> 00:12:12.454
+<v Speaker 0>can spell it back in a way that
+
+00:12:12.454 --> 00:12:13.894
+<v Speaker 0>still could have makes sense, and we kinda
+
+00:12:13.894 --> 00:12:15.015
+<v Speaker 0>covered a lot there.
+
+00:12:15.815 --> 00:12:17.895
+<v Speaker 0>And I it's complete
+
+00:12:18.135 --> 00:12:20.535
+<v Speaker 0>transparency. I had never used kpt before. I
+
+00:12:20.535 --> 00:12:22.214
+<v Speaker 0>don't know what we're gonna see today. So
+
+00:12:22.214 --> 00:12:23.920
+<v Speaker 0>I'm I have we're coming into this with
+
+00:12:23.920 --> 00:12:26.480
+<v Speaker 0>open minds and looking to be excited. But
+
+00:12:26.480 --> 00:12:28.880
+<v Speaker 0>what you said was, as you
+
+00:12:29.200 --> 00:12:31.040
+<v Speaker 0>use whatever tools you want
+
+00:12:31.280 --> 00:12:33.440
+<v Speaker 0>to write your Kubernetes Java, like, kept is
+
+00:12:33.440 --> 00:12:35.360
+<v Speaker 0>not trying to hook in at that point
+
+00:12:35.360 --> 00:12:37.440
+<v Speaker 0>or replace that point. That's correct. Right?
+
+00:12:39.175 --> 00:12:41.255
+<v Speaker 1>It is. We we are gonna go
+
+00:12:41.575 --> 00:12:42.215
+<v Speaker 1>through
+
+00:12:43.015 --> 00:12:45.015
+<v Speaker 1>a process where kpt is providing a tool
+
+00:12:45.015 --> 00:12:47.335
+<v Speaker 1>to author the YAML. Alright. Okay. It doesn't
+
+00:12:47.335 --> 00:12:48.535
+<v Speaker 1>have to be it doesn't have to be
+
+00:12:48.535 --> 00:12:49.415
+<v Speaker 1>the only way.
+
+00:12:50.615 --> 00:12:52.375
+<v Speaker 1>The point of the
+
+00:12:53.690 --> 00:12:55.370
+<v Speaker 1>what we're gonna show with in through the
+
+00:12:55.370 --> 00:12:57.210
+<v Speaker 1>backstage UI plug in
+
+00:12:57.610 --> 00:12:59.290
+<v Speaker 1>is one possible
+
+00:12:59.530 --> 00:13:00.970
+<v Speaker 1>way that you
+
+00:13:01.290 --> 00:13:03.850
+<v Speaker 1>can author not just configuration, but actually configuration
+
+00:13:03.850 --> 00:13:04.650
+<v Speaker 1>blueprints
+
+00:13:05.305 --> 00:13:08.265
+<v Speaker 1>because that's a capability that's not really possible
+
+00:13:08.265 --> 00:13:10.105
+<v Speaker 1>with any of these hundred other tools.
+
+00:13:10.905 --> 00:13:14.105
+<v Speaker 0>Okay. You also said that kpt will pull
+
+00:13:14.105 --> 00:13:16.345
+<v Speaker 0>from storage, do transformations,
+
+00:13:16.585 --> 00:13:17.465
+<v Speaker 0>write back.
+
+00:13:17.949 --> 00:13:20.430
+<v Speaker 0>I'm curious. Does kpt apply to our cluster
+
+00:13:20.430 --> 00:13:22.430
+<v Speaker 0>or is it writing back to storage? And
+
+00:13:22.430 --> 00:13:24.589
+<v Speaker 0>is that storage could that be get or
+
+00:13:24.589 --> 00:13:26.990
+<v Speaker 0>are we talking about OCIR effects or something
+
+00:13:26.990 --> 00:13:29.470
+<v Speaker 0>else there? Like, maybe elaborate on that. So
+
+00:13:29.470 --> 00:13:32.095
+<v Speaker 1>both both actually. So what we have
+
+00:13:32.575 --> 00:13:35.214
+<v Speaker 1>in the tutorial right now, rights to git.
+
+00:13:35.935 --> 00:13:37.615
+<v Speaker 1>We're also have
+
+00:13:38.495 --> 00:13:40.415
+<v Speaker 1>OCI storage underway
+
+00:13:40.815 --> 00:13:41.774
+<v Speaker 1>being implemented.
+
+00:13:43.690 --> 00:13:44.730
+<v Speaker 1>Kept is
+
+00:13:45.050 --> 00:13:46.329
+<v Speaker 1>multiple components.
+
+00:13:46.730 --> 00:13:49.370
+<v Speaker 1>So one of those components is a GitOps
+
+00:13:50.170 --> 00:13:52.889
+<v Speaker 1>engine, a GitOps controller Okay. That can deploy
+
+00:13:52.889 --> 00:13:54.970
+<v Speaker 1>for you, but you can use RRBCD, Flex,
+
+00:13:54.970 --> 00:13:56.170
+<v Speaker 1>whatever your favorite
+
+00:13:56.410 --> 00:13:58.329
+<v Speaker 1>way of deploying to Kubernetes is.
+
+00:14:00.825 --> 00:14:01.465
+<v Speaker 0>Okay.
+
+00:14:01.945 --> 00:14:03.785
+<v Speaker 0>And the last question before we dive into
+
+00:14:03.785 --> 00:14:05.065
+<v Speaker 0>the thing. You mentioned
+
+00:14:05.305 --> 00:14:06.265
+<v Speaker 0>Backstage,
+
+00:14:06.265 --> 00:14:08.505
+<v Speaker 0>which I think is the UI component. The
+
+00:14:08.505 --> 00:14:10.185
+<v Speaker 0>homepage that we're gonna take a look at
+
+00:14:10.345 --> 00:14:12.185
+<v Speaker 0>let's take a look at. Like, the first
+
+00:14:12.185 --> 00:14:13.785
+<v Speaker 0>paragraph, it talks about WYSIWYG.
+
+00:14:14.180 --> 00:14:17.139
+<v Speaker 0>So is this something that you think is
+
+00:14:17.300 --> 00:14:19.060
+<v Speaker 0>the way we should be offering
+
+00:14:19.060 --> 00:14:20.660
+<v Speaker 0>manifest? Do you think, like, we should be
+
+00:14:20.660 --> 00:14:23.220
+<v Speaker 0>making this simpler and providing UIs and abstractions
+
+00:14:23.220 --> 00:14:25.459
+<v Speaker 0>to make this easier, or is that just,
+
+00:14:25.459 --> 00:14:27.139
+<v Speaker 0>like, a fun experiment? Like, what are your
+
+00:14:27.139 --> 00:14:29.235
+<v Speaker 0>thoughts around that? I mean, it is a
+
+00:14:29.235 --> 00:14:31.475
+<v Speaker 1>proof of concept, but I actually do think
+
+00:14:32.675 --> 00:14:33.475
+<v Speaker 1>UI
+
+00:14:33.555 --> 00:14:34.115
+<v Speaker 1>is
+
+00:14:34.675 --> 00:14:35.955
+<v Speaker 1>a way to
+
+00:14:37.075 --> 00:14:37.955
+<v Speaker 1>simplify
+
+00:14:37.955 --> 00:14:38.835
+<v Speaker 1>configuring
+
+00:14:38.835 --> 00:14:40.995
+<v Speaker 1>Kubernetes for a much broader audience
+
+00:14:41.390 --> 00:14:43.470
+<v Speaker 1>of folks. It doesn't just have to be,
+
+00:14:43.790 --> 00:14:46.430
+<v Speaker 1>you know, people who do hard code code
+
+00:14:46.590 --> 00:14:48.670
+<v Speaker 1>hardcore code development necessarily.
+
+00:14:50.350 --> 00:14:51.070
+<v Speaker 1>The
+
+00:14:51.390 --> 00:14:53.790
+<v Speaker 1>you know, I I heard that the GitOpsCon
+
+00:14:53.790 --> 00:14:54.910
+<v Speaker 1>North America last year,
+
+00:14:55.565 --> 00:14:57.964
+<v Speaker 1>you know, even folks using Argo CD who
+
+00:14:57.964 --> 00:15:00.445
+<v Speaker 1>are pretty familiar with it were say saying,
+
+00:15:00.445 --> 00:15:01.005
+<v Speaker 1>look,
+
+00:15:01.404 --> 00:15:02.925
+<v Speaker 1>we would really like to have
+
+00:15:03.325 --> 00:15:06.045
+<v Speaker 1>a UI on I mean, Argo CD has
+
+00:15:06.045 --> 00:15:07.245
+<v Speaker 1>a UI, but really
+
+00:15:07.640 --> 00:15:10.120
+<v Speaker 1>for deployment, if you configure an application,
+
+00:15:10.920 --> 00:15:13.160
+<v Speaker 1>through Argo CD, it doesn't write that back
+
+00:15:13.160 --> 00:15:13.880
+<v Speaker 1>to Git.
+
+00:15:14.200 --> 00:15:16.440
+<v Speaker 1>It just, you know, is a lot resource
+
+00:15:16.440 --> 00:15:18.680
+<v Speaker 1>in your cluster. Right? So how do you
+
+00:15:18.680 --> 00:15:21.160
+<v Speaker 1>actually take that experience and
+
+00:15:21.925 --> 00:15:23.605
+<v Speaker 1>enable writing that back to get?
+
+00:15:25.445 --> 00:15:26.085
+<v Speaker 1>The
+
+00:15:27.205 --> 00:15:27.845
+<v Speaker 1>most
+
+00:15:30.885 --> 00:15:32.805
+<v Speaker 1>automation tools, UIs,
+
+00:15:32.885 --> 00:15:34.085
+<v Speaker 1>command line tools,
+
+00:15:34.405 --> 00:15:36.325
+<v Speaker 1>etcetera, they operate against
+
+00:15:37.150 --> 00:15:38.110
+<v Speaker 1>APIs.
+
+00:15:38.670 --> 00:15:40.350
+<v Speaker 1>Right? That's how the that's how the tools
+
+00:15:40.350 --> 00:15:41.310
+<v Speaker 1>work. And
+
+00:15:41.630 --> 00:15:43.950
+<v Speaker 1>there's a long history of,
+
+00:15:44.910 --> 00:15:46.910
+<v Speaker 1>kind of a rich ecosystem of different kinds
+
+00:15:46.910 --> 00:15:49.070
+<v Speaker 1>of tools that can operate against APIs.
+
+00:15:49.310 --> 00:15:51.935
+<v Speaker 1>When we say, no. You can't actually call
+
+00:15:51.935 --> 00:15:54.255
+<v Speaker 1>those APIs. You have to write
+
+00:15:54.654 --> 00:15:55.535
+<v Speaker 1>code,
+
+00:15:55.695 --> 00:15:58.255
+<v Speaker 1>templates, text files, check them in to get
+
+00:15:58.415 --> 00:16:00.175
+<v Speaker 1>go through all these manual process
+
+00:16:00.735 --> 00:16:04.255
+<v Speaker 1>to then finally deploy them. What we've
+
+00:16:04.334 --> 00:16:05.214
+<v Speaker 1>walled off
+
+00:16:05.580 --> 00:16:08.700
+<v Speaker 1>those APIs from automation of all different kinds.
+
+00:16:09.260 --> 00:16:09.820
+<v Speaker 1>And,
+
+00:16:10.460 --> 00:16:13.420
+<v Speaker 1>you know, that's considered if you have, say,
+
+00:16:13.420 --> 00:16:14.300
+<v Speaker 1>a security
+
+00:16:14.300 --> 00:16:15.260
+<v Speaker 1>remediation
+
+00:16:15.260 --> 00:16:16.780
+<v Speaker 1>function that says,
+
+00:16:17.100 --> 00:16:18.860
+<v Speaker 1>you know, you can't have any pods that
+
+00:16:18.860 --> 00:16:20.300
+<v Speaker 1>run as privileged, for example.
+
+00:16:21.345 --> 00:16:23.425
+<v Speaker 1>You can do that on the fly using
+
+00:16:23.425 --> 00:16:25.345
+<v Speaker 1>an image controller in Kubernetes
+
+00:16:25.505 --> 00:16:26.785
+<v Speaker 1>to make that change.
+
+00:16:27.264 --> 00:16:29.584
+<v Speaker 1>But what if you don't want any of
+
+00:16:29.584 --> 00:16:31.425
+<v Speaker 1>your con configuration
+
+00:16:31.584 --> 00:16:33.824
+<v Speaker 1>your applications in the source of truth to
+
+00:16:33.824 --> 00:16:36.350
+<v Speaker 1>be configured to use privileged pods? How do
+
+00:16:36.350 --> 00:16:37.630
+<v Speaker 1>you check that? Like, what if you do
+
+00:16:37.630 --> 00:16:39.230
+<v Speaker 1>have a home chart, say,
+
+00:16:39.550 --> 00:16:41.950
+<v Speaker 1>that tries to deploy an application
+
+00:16:44.829 --> 00:16:47.630
+<v Speaker 1>that, you know, has privilege or something like
+
+00:16:47.630 --> 00:16:48.910
+<v Speaker 1>that? How do you actually go find that
+
+00:16:48.910 --> 00:16:51.025
+<v Speaker 1>and fix that? That's actually
+
+00:16:51.665 --> 00:16:53.185
+<v Speaker 1>really challenging. So
+
+00:16:55.825 --> 00:16:57.985
+<v Speaker 1>what we're what kpt can do is it
+
+00:16:57.985 --> 00:17:00.305
+<v Speaker 1>can actually make the configuration
+
+00:17:01.425 --> 00:17:02.785
+<v Speaker 1>modifiable
+
+00:17:02.785 --> 00:17:04.065
+<v Speaker 1>and readable
+
+00:17:04.065 --> 00:17:05.265
+<v Speaker 1>again through APIs.
+
+00:17:06.490 --> 00:17:08.490
+<v Speaker 1>You know, it basically can provide a control
+
+00:17:08.490 --> 00:17:10.650
+<v Speaker 1>plane and a data plane for manipulating
+
+00:17:10.650 --> 00:17:11.529
+<v Speaker 1>configuration.
+
+00:17:14.089 --> 00:17:14.650
+<v Speaker 1>So that
+
+00:17:15.289 --> 00:17:17.690
+<v Speaker 1>you know, in terms of the UI, the
+
+00:17:19.965 --> 00:17:22.525
+<v Speaker 1>UX there are lots of UX techniques for
+
+00:17:22.525 --> 00:17:25.325
+<v Speaker 1>mitigating domain complexity and simplifying things.
+
+00:17:25.805 --> 00:17:27.885
+<v Speaker 1>And we're just, you know, at the early
+
+00:17:27.885 --> 00:17:29.805
+<v Speaker 1>stages right now and definitely can be made
+
+00:17:29.805 --> 00:17:31.725
+<v Speaker 1>more delightful in the future, as Justin said.
+
+00:17:34.820 --> 00:17:35.460
+<v Speaker 1>But
+
+00:17:36.260 --> 00:17:38.020
+<v Speaker 1>I think we've only really just scratched the
+
+00:17:38.020 --> 00:17:39.620
+<v Speaker 1>surface of what we can do
+
+00:17:40.420 --> 00:17:42.100
+<v Speaker 1>with that kind of an approach
+
+00:17:42.580 --> 00:17:45.220
+<v Speaker 1>where we can simplify but not abstract.
+
+00:17:46.420 --> 00:17:47.140
+<v Speaker 0>Okay.
+
+00:17:47.700 --> 00:17:50.995
+<v Speaker 0>Alright. Well, I am ready to be deleted.
+
+00:17:51.555 --> 00:17:52.915
+<v Speaker 0>And the reason I brought up the UI
+
+00:17:52.915 --> 00:17:54.275
+<v Speaker 0>there is, you know,
+
+00:17:54.915 --> 00:17:56.515
+<v Speaker 0>it's really easy for developers to say, oh,
+
+00:17:56.515 --> 00:17:57.795
+<v Speaker 0>I just spend all my entire life in
+
+00:17:57.795 --> 00:17:59.155
+<v Speaker 0>the terminal, and I just type, you know,
+
+00:17:59.155 --> 00:18:00.675
+<v Speaker 0>white text on a black background or green
+
+00:18:00.675 --> 00:18:02.700
+<v Speaker 0>text on a black background. But I think
+
+00:18:02.700 --> 00:18:04.700
+<v Speaker 0>there's been a shift lately. And you mentioned
+
+00:18:04.700 --> 00:18:06.780
+<v Speaker 0>the Argo CD UI and Flux is building
+
+00:18:06.780 --> 00:18:08.460
+<v Speaker 0>the UI too. There's that when
+
+00:18:08.780 --> 00:18:10.780
+<v Speaker 0>we're working with these complicated systems, the UI
+
+00:18:10.780 --> 00:18:13.179
+<v Speaker 0>is actually a really strong value add because
+
+00:18:13.179 --> 00:18:13.980
+<v Speaker 0>it's nice
+
+00:18:14.315 --> 00:18:16.874
+<v Speaker 0>be able to step away from the YAML
+
+00:18:16.875 --> 00:18:19.275
+<v Speaker 0>for just even a minute. But I I
+
+00:18:19.275 --> 00:18:21.355
+<v Speaker 0>love that also we're seeing, you know, lens
+
+00:18:21.355 --> 00:18:23.275
+<v Speaker 0>and all these other I can't remember the
+
+00:18:23.275 --> 00:18:25.035
+<v Speaker 0>name of other GUIs. I feel really bad.
+
+00:18:25.035 --> 00:18:27.035
+<v Speaker 0>They're all awesome. But we're seeing a lot
+
+00:18:27.035 --> 00:18:28.715
+<v Speaker 0>of GUIs pop up for Kubernetes as well
+
+00:18:28.715 --> 00:18:30.470
+<v Speaker 0>where you don't even need to run control
+
+00:18:30.470 --> 00:18:32.950
+<v Speaker 0>commands anymore. Like, you just get this wonderful
+
+00:18:32.950 --> 00:18:34.790
+<v Speaker 0>interface that says here's all the pods, here's
+
+00:18:34.790 --> 00:18:35.990
+<v Speaker 0>the ones that are failing, here's all the
+
+00:18:35.990 --> 00:18:38.549
+<v Speaker 0>logs. Like, yeah, that simplification
+
+00:18:38.710 --> 00:18:41.110
+<v Speaker 0>that the UI can bring, I think, is
+
+00:18:41.110 --> 00:18:43.190
+<v Speaker 0>a really exciting thing. So I'm I'm Yeah.
+
+00:18:43.190 --> 00:18:44.950
+<v Speaker 1>A a UI can provide
+
+00:18:45.905 --> 00:18:47.985
+<v Speaker 1>discovery for people who are new. You know,
+
+00:18:47.985 --> 00:18:48.784
+<v Speaker 1>it can take
+
+00:18:49.105 --> 00:18:50.625
+<v Speaker 1>concerns away from you. Like, you don't have
+
+00:18:50.625 --> 00:18:52.465
+<v Speaker 1>to think about how to format the YAML,
+
+00:18:53.265 --> 00:18:55.265
+<v Speaker 1>how how many spaces you need to indent
+
+00:18:55.265 --> 00:18:56.945
+<v Speaker 1>certain fields, things like that.
+
+00:18:58.950 --> 00:19:01.349
+<v Speaker 1>It can help you navigate across related
+
+00:19:01.590 --> 00:19:03.029
+<v Speaker 1>resources or
+
+00:19:04.070 --> 00:19:06.070
+<v Speaker 1>auto completes when filling things out.
+
+00:19:06.470 --> 00:19:08.070
+<v Speaker 1>It can give you step by step guidance
+
+00:19:08.070 --> 00:19:09.590
+<v Speaker 1>and walk you through the process.
+
+00:19:09.909 --> 00:19:11.830
+<v Speaker 1>So there are really a lot of ways
+
+00:19:11.830 --> 00:19:12.549
+<v Speaker 1>that
+
+00:19:12.710 --> 00:19:13.750
+<v Speaker 1>a UI can help.
+
+00:19:14.625 --> 00:19:15.265
+<v Speaker 1>And,
+
+00:19:15.985 --> 00:19:17.985
+<v Speaker 1>you know, just because the tool is used
+
+00:19:17.985 --> 00:19:20.305
+<v Speaker 1>by developers doesn't mean that, you know, there
+
+00:19:20.305 --> 00:19:22.945
+<v Speaker 1>aren't cases where people could use that help.
+
+00:19:22.945 --> 00:19:25.825
+<v Speaker 1>Like, if you're using a configuration
+
+00:19:25.825 --> 00:19:28.945
+<v Speaker 1>generation tool, whether it's, you know, CDKed S
+
+00:19:28.945 --> 00:19:31.179
+<v Speaker 1>or Helm or whatnot.
+
+00:19:33.340 --> 00:19:35.340
+<v Speaker 1>You know, you can edit a few parameters
+
+00:19:35.340 --> 00:19:37.179
+<v Speaker 1>maybe in the ideal case
+
+00:19:37.500 --> 00:19:40.380
+<v Speaker 1>and run the tool to generate the configuration.
+
+00:19:40.380 --> 00:19:41.340
+<v Speaker 1>That part is
+
+00:19:41.835 --> 00:19:44.235
+<v Speaker 1>often straightforward. But how do you actually create
+
+00:19:44.235 --> 00:19:45.835
+<v Speaker 1>the template in the first place?
+
+00:19:46.554 --> 00:19:48.315
+<v Speaker 1>That is still all manual.
+
+00:19:48.875 --> 00:19:50.475
+<v Speaker 1>It's still all done from scratch, and you
+
+00:19:50.475 --> 00:19:53.034
+<v Speaker 1>have the problems not just with, you know,
+
+00:19:53.034 --> 00:19:54.554
+<v Speaker 1>how to indent the YAML, but
+
+00:19:55.100 --> 00:19:56.220
+<v Speaker 1>how to actually
+
+00:19:56.540 --> 00:19:58.380
+<v Speaker 1>cause the YAML to get generated in the
+
+00:19:58.380 --> 00:19:59.100
+<v Speaker 1>right way
+
+00:20:00.060 --> 00:20:01.660
+<v Speaker 1>such that it will be valid and so
+
+00:20:01.660 --> 00:20:03.020
+<v Speaker 1>on. So
+
+00:20:05.340 --> 00:20:08.380
+<v Speaker 1>yeah. So, anyway, I'm hoping that
+
+00:20:10.215 --> 00:20:11.894
+<v Speaker 1>the experience will be
+
+00:20:15.335 --> 00:20:17.495
+<v Speaker 1>a little bit of a a shift in
+
+00:20:17.495 --> 00:20:19.575
+<v Speaker 1>in how we can think about, you know,
+
+00:20:19.575 --> 00:20:21.014
+<v Speaker 1>what's possible in this space.
+
+00:20:21.655 --> 00:20:23.655
+<v Speaker 0>Alright. I think on that note, we are
+
+00:20:23.655 --> 00:20:25.770
+<v Speaker 0>ready to jump straight into this and start
+
+00:20:25.770 --> 00:20:28.010
+<v Speaker 0>playing then. Yeah. We should start installing stuff.
+
+00:20:28.010 --> 00:20:29.370
+<v Speaker 1>Otherwise, we'll run out of time.
+
+00:20:30.330 --> 00:20:32.170
+<v Speaker 0>Well, we don't want that. Alright. Let's get
+
+00:20:32.170 --> 00:20:34.250
+<v Speaker 0>my being shared. So we do have the
+
+00:20:34.250 --> 00:20:35.850
+<v Speaker 0>homepage here. If anyone wants to check it
+
+00:20:35.850 --> 00:20:37.210
+<v Speaker 0>out, it's kpt.dev.
+
+00:20:38.145 --> 00:20:39.985
+<v Speaker 0>Yep. Cool. Just make sure I didn't get
+
+00:20:39.985 --> 00:20:42.385
+<v Speaker 0>that wrong. I have a Kubernetes cluster. I
+
+00:20:42.385 --> 00:20:44.465
+<v Speaker 0>haven't prepared anything upfront today except for just
+
+00:20:44.465 --> 00:20:46.465
+<v Speaker 0>filling up a cluster that we can play
+
+00:20:46.465 --> 00:20:47.265
+<v Speaker 0>around with.
+
+00:20:47.585 --> 00:20:49.265
+<v Speaker 0>And if we come back to here and
+
+00:20:49.265 --> 00:20:51.585
+<v Speaker 0>skip over the video for now, we get
+
+00:20:51.585 --> 00:20:54.320
+<v Speaker 0>to the installation instructions instructions as well as
+
+00:20:54.320 --> 00:20:57.040
+<v Speaker 0>a book, an entire book, which is awesome.
+
+00:20:58.640 --> 00:21:00.800
+<v Speaker 0>It's always I don't know. I I play
+
+00:21:00.800 --> 00:21:03.360
+<v Speaker 0>with a lot of very new open source
+
+00:21:03.360 --> 00:21:05.840
+<v Speaker 0>projects and the documentation can sometimes be lacking.
+
+00:21:05.840 --> 00:21:07.120
+<v Speaker 0>So I love it when I find a
+
+00:21:07.120 --> 00:21:09.200
+<v Speaker 0>project and it's already started to put on
+
+00:21:09.015 --> 00:21:10.534
+<v Speaker 0>that path or purchase it more
+
+00:21:11.255 --> 00:21:14.774
+<v Speaker 0>longer form consumable content. I really appreciate that.
+
+00:21:15.895 --> 00:21:18.534
+<v Speaker 0>So let's get the CLI installed.
+
+00:21:18.695 --> 00:21:20.775
+<v Speaker 0>It says here on install, we've got the
+
+00:21:20.775 --> 00:21:22.855
+<v Speaker 0>CLI, the package orchestrator,
+
+00:21:22.855 --> 00:21:25.200
+<v Speaker 0>config sync, and the the UI. Are we
+
+00:21:25.200 --> 00:21:26.799
+<v Speaker 0>gonna install all of these today?
+
+00:21:27.200 --> 00:21:29.039
+<v Speaker 1>Yeah. Okay. Cool.
+
+00:21:29.520 --> 00:21:30.799
+<v Speaker 0>So
+
+00:21:32.480 --> 00:21:33.680
+<v Speaker 0>let me just click that.
+
+00:21:37.325 --> 00:21:38.845
+<v Speaker 0>Get the executable
+
+00:21:40.685 --> 00:21:43.005
+<v Speaker 0>and we'll move it to somewhere handy so
+
+00:21:43.005 --> 00:21:44.605
+<v Speaker 0>I don't need to type too much.
+
+00:21:49.645 --> 00:21:50.605
+<v Speaker 0>Permissions.
+
+00:21:53.000 --> 00:21:55.240
+<v Speaker 0>The last time I did this, my
+
+00:21:55.240 --> 00:21:56.840
+<v Speaker 0>sudo crashed, and I ended up typing my
+
+00:21:56.840 --> 00:21:58.679
+<v Speaker 0>password on the terminal. That was fun.
+
+00:22:01.799 --> 00:22:04.200
+<v Speaker 0>Okay. That's good enough. And no version of
+
+00:22:04.200 --> 00:22:05.320
+<v Speaker 0>like, but we do have we do have
+
+00:22:05.320 --> 00:22:07.000
+<v Speaker 0>kept. Just say kept version, I think.
+
+00:22:11.384 --> 00:22:12.184
+<v Speaker 0>There
+
+00:22:12.184 --> 00:22:14.104
+<v Speaker 0>we go. Yeah. There you go.
+
+00:22:14.904 --> 00:22:17.465
+<v Speaker 0>Alright. So let's jump back. I don't need
+
+00:22:17.465 --> 00:22:18.664
+<v Speaker 0>to see if there's anything else. Do we
+
+00:22:18.664 --> 00:22:19.384
+<v Speaker 0>need all complete?
+
+00:22:20.250 --> 00:22:22.650
+<v Speaker 0>Is that just Nah. Nah. Alright.
+
+00:22:23.450 --> 00:22:26.970
+<v Speaker 0>So we're gonna install the park package orchestrator,
+
+00:22:26.970 --> 00:22:28.570
+<v Speaker 0>which is called Porch.
+
+00:22:30.730 --> 00:22:31.450
+<v Speaker 0>Let's see.
+
+00:22:36.735 --> 00:22:38.895
+<v Speaker 0>I need to deploy something to Kubernetes for
+
+00:22:38.895 --> 00:22:40.575
+<v Speaker 0>this. Is that what it's saying?
+
+00:22:41.535 --> 00:22:42.815
+<v Speaker 2>Yeah. You do.
+
+00:22:44.095 --> 00:22:44.735
+<v Speaker 2>Go ahead, Brian.
+
+00:22:45.700 --> 00:22:47.620
+<v Speaker 1>Oh, no. Go ahead. You you were just
+
+00:22:47.620 --> 00:22:49.060
+<v Speaker 1>ran through this this morning to make sure
+
+00:22:49.060 --> 00:22:49.780
+<v Speaker 1>it works. So
+
+00:22:50.420 --> 00:22:52.180
+<v Speaker 2>Yes. It's a it's a
+
+00:22:52.420 --> 00:22:55.060
+<v Speaker 2>it's a Port is actually a both CRDs
+
+00:22:55.060 --> 00:22:57.780
+<v Speaker 2>and, an aggregate API server. So it's sort
+
+00:22:57.780 --> 00:22:59.380
+<v Speaker 2>of technically very interesting, and it will be
+
+00:22:59.380 --> 00:23:01.215
+<v Speaker 2>very interesting to see. I have not tried
+
+00:23:01.215 --> 00:23:01.934
+<v Speaker 2>it on
+
+00:23:02.575 --> 00:23:03.934
+<v Speaker 2>Civo or Kivo,
+
+00:23:04.895 --> 00:23:07.375
+<v Speaker 2>so it will be a a scary moment
+
+00:23:07.375 --> 00:23:08.254
+<v Speaker 2>in a second.
+
+00:23:08.495 --> 00:23:09.215
+<v Speaker 2>But yes.
+
+00:23:10.975 --> 00:23:13.774
+<v Speaker 0>Alright. I just need to download
+
+00:23:14.175 --> 00:23:14.655
+<v Speaker 0>this.
+
+00:23:25.590 --> 00:23:26.710
+<v Speaker 0>That should be alright.
+
+00:23:29.035 --> 00:23:30.635
+<v Speaker 0>Forgetting her to computer.
+
+00:23:34.315 --> 00:23:36.235
+<v Speaker 0>Oh, it didn't download. Right.
+
+00:23:37.915 --> 00:23:39.195
+<v Speaker 0>I do I probably need to
+
+00:23:40.715 --> 00:23:43.035
+<v Speaker 0>I'm gonna just make sure this path works
+
+00:23:42.510 --> 00:23:44.269
+<v Speaker 0>because that's what my command says.
+
+00:23:48.350 --> 00:23:50.269
+<v Speaker 0>And of course I missed the layer.
+
+00:23:52.670 --> 00:23:53.470
+<v Speaker 1>Alright.
+
+00:23:55.470 --> 00:23:55.710
+<v Speaker 0>Cool.
+
+00:23:56.655 --> 00:23:58.575
+<v Speaker 0>I never thought downloading a file would be
+
+00:23:58.575 --> 00:24:01.695
+<v Speaker 0>my downfall today. We'll get there.
+
+00:24:03.055 --> 00:24:04.815
+<v Speaker 2>GitHub does not make it the easiest, at
+
+00:24:04.815 --> 00:24:06.655
+<v Speaker 2>least when I release this. It's
+
+00:24:06.655 --> 00:24:07.934
+<v Speaker 2>could be improved.
+
+00:24:08.415 --> 00:24:10.735
+<v Speaker 2>I should try some of the other ways
+
+00:24:10.735 --> 00:24:11.295
+<v Speaker 2>of distribution.
+
+00:24:12.510 --> 00:24:15.150
+<v Speaker 0>Alright. Well, we have a bunch of Kubernetes
+
+00:24:15.150 --> 00:24:16.110
+<v Speaker 0>YAML.
+
+00:24:17.230 --> 00:24:19.230
+<v Speaker 0>We're just gonna apply that all to the
+
+00:24:19.230 --> 00:24:22.110
+<v Speaker 0>cluster, and we're gonna wait until our porch
+
+00:24:22.110 --> 00:24:23.710
+<v Speaker 0>server is available.
+
+00:24:24.430 --> 00:24:26.915
+<v Speaker 0>Maybe while we wait for that, can someone
+
+00:24:26.915 --> 00:24:28.915
+<v Speaker 0>tell me what parch is? What what part
+
+00:24:28.915 --> 00:24:29.715
+<v Speaker 0>of the
+
+00:24:30.275 --> 00:24:32.035
+<v Speaker 0>kpt does this provide? What does it do?
+
+00:24:32.035 --> 00:24:33.235
+<v Speaker 0>What's its responsibility?
+
+00:24:35.315 --> 00:24:38.515
+<v Speaker 2>Porch is is short for a package orchestrator
+
+00:24:38.515 --> 00:24:39.554
+<v Speaker 2>or package orchestration.
+
+00:24:40.460 --> 00:24:42.700
+<v Speaker 2>And the idea is that it basically puts
+
+00:24:42.860 --> 00:24:44.620
+<v Speaker 2>the kept functionality
+
+00:24:44.620 --> 00:24:45.900
+<v Speaker 2>onto a server
+
+00:24:46.220 --> 00:24:47.419
+<v Speaker 2>so that you can
+
+00:24:47.820 --> 00:24:50.940
+<v Speaker 2>embed what would otherwise be CLI functionality into
+
+00:24:50.940 --> 00:24:52.059
+<v Speaker 2>other components.
+
+00:24:52.060 --> 00:24:54.174
+<v Speaker 2>So, for example, when you wanna build a
+
+00:24:54.174 --> 00:24:56.495
+<v Speaker 2>UI, it can be hard to have a
+
+00:24:56.495 --> 00:24:57.934
+<v Speaker 2>CLI as a back end for a web
+
+00:24:57.934 --> 00:25:00.414
+<v Speaker 2>server. And so porch is that,
+
+00:25:00.894 --> 00:25:01.774
+<v Speaker 2>back end,
+
+00:25:02.174 --> 00:25:04.735
+<v Speaker 2>but the intent is that it is, sort
+
+00:25:04.735 --> 00:25:07.669
+<v Speaker 2>of the same functionality as we're building in
+
+00:25:07.669 --> 00:25:09.109
+<v Speaker 2>the command line kept,
+
+00:25:09.590 --> 00:25:11.669
+<v Speaker 2>and you can choose to use the command
+
+00:25:11.669 --> 00:25:14.309
+<v Speaker 2>line or the server as appropriate. So probably,
+
+00:25:14.309 --> 00:25:15.830
+<v Speaker 2>you know, a lot of people will get
+
+00:25:15.830 --> 00:25:18.229
+<v Speaker 2>started using the command line. And,
+
+00:25:18.950 --> 00:25:21.145
+<v Speaker 2>when they want teams
+
+00:25:21.225 --> 00:25:23.385
+<v Speaker 2>or collaboration or things like that, they will
+
+00:25:23.385 --> 00:25:26.184
+<v Speaker 2>likely start using Torch as well.
+
+00:25:29.945 --> 00:25:32.345
+<v Speaker 0>Alright. Yeah. I mean, again, I think people
+
+00:25:32.345 --> 00:25:34.185
+<v Speaker 1>are desensitized to how much work it is
+
+00:25:34.185 --> 00:25:34.905
+<v Speaker 1>to
+
+00:25:35.340 --> 00:25:36.940
+<v Speaker 1>create a package from scratch.
+
+00:25:38.299 --> 00:25:40.059
+<v Speaker 1>Just as one example thing that porch can
+
+00:25:40.059 --> 00:25:42.540
+<v Speaker 1>do, you can create a package from scratch,
+
+00:25:42.540 --> 00:25:44.860
+<v Speaker 1>you can add resources to it,
+
+00:25:46.059 --> 00:25:48.460
+<v Speaker 1>you can modify packages and create new revisions
+
+00:25:48.460 --> 00:25:49.020
+<v Speaker 1>of them
+
+00:25:49.565 --> 00:25:51.004
+<v Speaker 1>all through the API.
+
+00:25:53.405 --> 00:25:55.485
+<v Speaker 0>Okay. Have I broken something there?
+
+00:25:59.085 --> 00:26:00.125
+<v Speaker 0>Unexpected
+
+00:26:00.125 --> 00:26:01.325
+<v Speaker 0>r kptrl
+
+00:26:01.325 --> 00:26:03.565
+<v Speaker 0>apply. Have I forgotten how to kptrl?
+
+00:26:05.030 --> 00:26:05.669
+<v Speaker 2>Yeah.
+
+00:26:07.590 --> 00:26:10.230
+<v Speaker 1>Dash f is not glob friendly in Kubernetes
+
+00:26:10.230 --> 00:26:11.190
+<v Speaker 1>in KubeCon.
+
+00:26:13.270 --> 00:26:15.350
+<v Speaker 0>Oh, but Michelle can expand that for me.
+
+00:26:16.310 --> 00:26:16.790
+<v Speaker 0>Oh, no.
+
+00:26:18.365 --> 00:26:19.565
+<v Speaker 2>And this is why we can turn them
+
+00:26:19.565 --> 00:26:21.405
+<v Speaker 2>into a No. I'm just being I'm being
+
+00:26:21.405 --> 00:26:23.805
+<v Speaker 0>really silly. Really, really silly. Just
+
+00:26:23.805 --> 00:26:25.245
+<v Speaker 1>do the directory. Yeah.
+
+00:26:26.845 --> 00:26:27.885
+<v Speaker 0>It's been a while.
+
+00:26:28.685 --> 00:26:31.565
+<v Speaker 0>Skill holidays. Bridge ride. That's driving me crazy.
+
+00:26:32.220 --> 00:26:34.460
+<v Speaker 0>So That kube control issue is probably still
+
+00:26:34.460 --> 00:26:35.100
+<v Speaker 1>open.
+
+00:26:36.220 --> 00:26:36.620
+<v Speaker 1>And it
+
+00:26:37.260 --> 00:26:39.259
+<v Speaker 1>because it's probably a four digit issue.
+
+00:26:40.460 --> 00:26:42.059
+<v Speaker 2>I suppose you don't know the number, Brian.
+
+00:26:42.059 --> 00:26:43.419
+<v Speaker 2>You normally know all the numbers.
+
+00:26:43.820 --> 00:26:45.419
+<v Speaker 1>Yeah. I gave up on that one. So
+
+00:26:47.205 --> 00:26:49.365
+<v Speaker 0>Alright. Well, we've deployed
+
+00:26:49.765 --> 00:26:50.725
+<v Speaker 0>porch.
+
+00:26:50.965 --> 00:26:53.205
+<v Speaker 0>We've deployed config sync, which I assume is
+
+00:26:53.205 --> 00:26:54.244
+<v Speaker 0>the the GetUp
+
+00:26:54.485 --> 00:26:56.085
+<v Speaker 0>operator sales thing.
+
+00:26:56.325 --> 00:26:57.684
+<v Speaker 0>And the last thing we're going to do
+
+00:26:57.684 --> 00:26:59.845
+<v Speaker 0>now is deploy the UI. So it wants
+
+00:26:59.845 --> 00:27:01.365
+<v Speaker 0>me to create a namespace,
+
+00:27:01.365 --> 00:27:03.169
+<v Speaker 0>which I'm happy to do.
+
+00:27:03.570 --> 00:27:06.130
+<v Speaker 1>The the original the number for the original
+
+00:27:06.130 --> 00:27:08.690
+<v Speaker 1>kptrol issue is 17 o two.
+
+00:27:09.410 --> 00:27:10.450
+<v Speaker 1>I'm pretty sure. Yeah.
+
+00:27:11.170 --> 00:27:11.570
+<v Speaker 1>So
+
+00:27:14.690 --> 00:27:15.410
+<v Speaker 0>Alright.
+
+00:27:20.025 --> 00:27:21.625
+<v Speaker 0>I guess you two have been working just
+
+00:27:21.625 --> 00:27:23.865
+<v Speaker 0>while that's deployed, working on Kubernetes long enough.
+
+00:27:23.945 --> 00:27:25.065
+<v Speaker 0>Who which one do you want to take
+
+00:27:25.065 --> 00:27:27.545
+<v Speaker 0>responsibility for it being kubectl
+
+00:27:27.625 --> 00:27:30.850
+<v Speaker 0>get deployments and not kubectl deployments get? Like,
+
+00:27:30.850 --> 00:27:31.809
+<v Speaker 0>was there was there a bit of a
+
+00:27:31.809 --> 00:27:33.330
+<v Speaker 0>fight over that at the time, or are
+
+00:27:33.330 --> 00:27:35.249
+<v Speaker 0>you or was that just an easy decision?
+
+00:27:36.929 --> 00:27:39.090
+<v Speaker 1>It was pretty easy. Mean, did start with
+
+00:27:39.090 --> 00:27:41.649
+<v Speaker 1>we did start with the other approach because
+
+00:27:41.730 --> 00:27:44.049
+<v Speaker 1>the g cloud command line tool uses that
+
+00:27:44.049 --> 00:27:45.010
+<v Speaker 1>pattern, for example.
+
+00:27:47.195 --> 00:27:49.835
+<v Speaker 1>When when we were you know, initially, we
+
+00:27:49.915 --> 00:27:52.075
+<v Speaker 1>had a tool called Cloud Config, and then
+
+00:27:52.075 --> 00:27:53.835
+<v Speaker 1>that was changed to KubeConfig.
+
+00:27:54.315 --> 00:27:55.675
+<v Speaker 1>And then when we're
+
+00:27:57.435 --> 00:27:59.595
+<v Speaker 1>hitting, you know, problems with the design of
+
+00:27:59.595 --> 00:28:00.635
+<v Speaker 1>that initial tool
+
+00:28:01.080 --> 00:28:03.799
+<v Speaker 1>and redoing it, actually, Sam Goads from Box
+
+00:28:03.799 --> 00:28:04.679
+<v Speaker 1>at the time
+
+00:28:06.760 --> 00:28:09.239
+<v Speaker 1>stepped in to help us develop kube control.
+
+00:28:09.240 --> 00:28:09.799
+<v Speaker 1>And,
+
+00:28:12.440 --> 00:28:15.115
+<v Speaker 1>you know, we compared the two different approaches.
+
+00:28:15.115 --> 00:28:16.794
+<v Speaker 1>And one big advantage of
+
+00:28:17.515 --> 00:28:19.434
+<v Speaker 1>kubectl get pods
+
+00:28:19.515 --> 00:28:21.755
+<v Speaker 1>or actually, you know, kubectl
+
+00:28:21.755 --> 00:28:23.755
+<v Speaker 1>apply for for instance is,
+
+00:28:25.195 --> 00:28:26.075
+<v Speaker 1>you can
+
+00:28:27.140 --> 00:28:27.859
+<v Speaker 1>actually,
+
+00:28:28.500 --> 00:28:31.140
+<v Speaker 1>apply these commands to multiple different resources and
+
+00:28:31.140 --> 00:28:33.220
+<v Speaker 1>multiple different resource types more easily if the
+
+00:28:33.220 --> 00:28:34.340
+<v Speaker 1>verb is first.
+
+00:28:34.820 --> 00:28:36.820
+<v Speaker 1>Right? So, like, kubectl apply that we just
+
+00:28:36.820 --> 00:28:37.299
+<v Speaker 1>did there,
+
+00:28:38.794 --> 00:28:41.115
+<v Speaker 1>you know, operates on arbitrary resource types, and
+
+00:28:41.115 --> 00:28:42.794
+<v Speaker 1>that's something that we wanted to enable is
+
+00:28:42.794 --> 00:28:43.994
+<v Speaker 1>these bulk operations.
+
+00:28:44.554 --> 00:28:47.755
+<v Speaker 1>So the verb first felt more natural and
+
+00:28:47.755 --> 00:28:49.835
+<v Speaker 1>reinforced the common patterns
+
+00:28:49.995 --> 00:28:51.434
+<v Speaker 1>across different resource types.
+
+00:28:52.780 --> 00:28:53.740
+<v Speaker 1>One reason
+
+00:28:54.140 --> 00:28:56.060
+<v Speaker 1>for the other approach is so people can
+
+00:28:56.060 --> 00:28:56.300
+<v Speaker 1>use
+
+00:28:57.020 --> 00:29:00.460
+<v Speaker 1>more easily create unique commands for each different
+
+00:29:00.620 --> 00:29:01.820
+<v Speaker 1>type of entity,
+
+00:29:01.980 --> 00:29:02.940
+<v Speaker 1>and we actually
+
+00:29:03.420 --> 00:29:05.420
+<v Speaker 1>didn't want that. We wanted
+
+00:29:05.995 --> 00:29:08.315
+<v Speaker 1>the system to be uniform across all different
+
+00:29:08.315 --> 00:29:09.114
+<v Speaker 1>resources.
+
+00:29:09.515 --> 00:29:11.514
+<v Speaker 1>And now we, you know, have that
+
+00:29:13.515 --> 00:29:14.234
+<v Speaker 1>even
+
+00:29:16.235 --> 00:29:19.755
+<v Speaker 1>more generally with custom resource definitions. But
+
+00:29:19.480 --> 00:29:21.799
+<v Speaker 1>even with the initial set of we just
+
+00:29:21.799 --> 00:29:23.559
+<v Speaker 1>had four types originally.
+
+00:29:23.720 --> 00:29:25.960
+<v Speaker 1>Even with those original four types, you know,
+
+00:29:25.960 --> 00:29:27.960
+<v Speaker 1>we pretty much wanted the operations to work
+
+00:29:27.960 --> 00:29:28.679
+<v Speaker 1>the same.
+
+00:29:29.399 --> 00:29:30.200
+<v Speaker 0>Nice.
+
+00:29:31.640 --> 00:29:34.120
+<v Speaker 0>Alright. Well, I think we have everything
+
+00:29:34.725 --> 00:29:35.764
+<v Speaker 0>deployed.
+
+00:29:37.044 --> 00:29:38.725
+<v Speaker 0>So I'm just gonna go back
+
+00:29:41.205 --> 00:29:42.565
+<v Speaker 0>here. Maybe
+
+00:29:42.565 --> 00:29:44.164
+<v Speaker 0>I guess the book because that's the tutorials
+
+00:29:44.164 --> 00:29:45.765
+<v Speaker 0>we're running through or is there another part
+
+00:29:45.765 --> 00:29:47.765
+<v Speaker 0>of the guide? Go to the the guides.
+
+00:29:47.765 --> 00:29:47.924
+<v Speaker 1>Yeah.
+
+00:29:49.159 --> 00:29:50.759
+<v Speaker 0>So is there anything sorry.
+
+00:29:51.720 --> 00:29:52.599
+<v Speaker 0>Please, on your call.
+
+00:29:53.799 --> 00:29:55.240
+<v Speaker 1>Oh, I was just gonna say the the
+
+00:29:55.240 --> 00:29:57.720
+<v Speaker 1>guide that I was gonna recommend was the
+
+00:29:57.720 --> 00:29:59.559
+<v Speaker 1>namespace provisioning UI guide.
+
+00:30:01.435 --> 00:30:04.155
+<v Speaker 0>Alright. Before we kick start that then, I'm
+
+00:30:04.155 --> 00:30:05.755
+<v Speaker 0>just curious. Like, we have
+
+00:30:06.235 --> 00:30:08.075
+<v Speaker 0>deployed a whole bunch of stuff to our
+
+00:30:08.075 --> 00:30:10.635
+<v Speaker 0>cluster. Is there something there's something already there
+
+00:30:10.635 --> 00:30:12.235
+<v Speaker 0>we can look at, we can play with,
+
+00:30:12.235 --> 00:30:14.555
+<v Speaker 0>like, play with? What's what's their what's their
+
+00:30:18.880 --> 00:30:21.840
+<v Speaker 1>There's not a lot interesting there until you
+
+00:30:22.240 --> 00:30:23.840
+<v Speaker 1>register some repos
+
+00:30:23.920 --> 00:30:24.480
+<v Speaker 1>and
+
+00:30:25.280 --> 00:30:28.080
+<v Speaker 1>start developing some packages or importing some packages.
+
+00:30:28.815 --> 00:30:30.495
+<v Speaker 1>Okay. Well, I mean, one of the things
+
+00:30:30.495 --> 00:30:32.174
+<v Speaker 2>we can do is we can we can
+
+00:30:32.174 --> 00:30:34.735
+<v Speaker 2>run kubectl API. I'm getting an echo. Getting
+
+00:30:34.735 --> 00:30:36.014
+<v Speaker 2>an echo. Yeah. I do
+
+00:30:39.294 --> 00:30:40.414
+<v Speaker 2>not. I do not.
+
+00:30:42.610 --> 00:30:46.609
+<v Speaker 2>Right? No. Anyway, kptl
+
+00:30:46.850 --> 00:30:48.929
+<v Speaker 2>space a p I dash resources, which lists
+
+00:30:48.929 --> 00:30:51.490
+<v Speaker 2>all the resources registered on any Kubernetes API
+
+00:30:51.490 --> 00:30:53.570
+<v Speaker 2>server. There should be some with ports. So
+
+00:30:53.570 --> 00:30:55.330
+<v Speaker 2>if we pipe that to grep porch, I
+
+00:30:55.330 --> 00:30:57.575
+<v Speaker 2>think that's in the guide for installation as
+
+00:30:57.575 --> 00:30:58.935
+<v Speaker 2>well. But that shows you some of the
+
+00:30:58.935 --> 00:31:00.855
+<v Speaker 2>resources that we've we've registered
+
+00:31:00.935 --> 00:31:02.215
+<v Speaker 2>by setting this up.
+
+00:31:06.055 --> 00:31:06.934
+<v Speaker 1>Alright.
+
+00:31:07.015 --> 00:31:08.294
+<v Speaker 1>Alright. Yeah.
+
+00:31:08.695 --> 00:31:10.215
+<v Speaker 0>I'm getting an echo. I'm getting an echo
+
+00:31:10.230 --> 00:31:12.070
+<v Speaker 0>from Brian. I'm just gonna mute you for
+
+00:31:12.070 --> 00:31:14.470
+<v Speaker 0>a moment. I'm not sure what's going on.
+
+00:31:14.790 --> 00:31:15.669
+<v Speaker 0>Alright.
+
+00:31:18.710 --> 00:31:21.750
+<v Speaker 0>We have repositories, resource script functions, package revisions,
+
+00:31:21.750 --> 00:31:23.270
+<v Speaker 0>and package revision resources.
+
+00:31:25.115 --> 00:31:27.355
+<v Speaker 0>Okay. Let's take a look at this UI.
+
+00:31:27.355 --> 00:31:28.635
+<v Speaker 0>So this
+
+00:31:29.115 --> 00:31:30.315
+<v Speaker 0>guide. Sorry.
+
+00:31:31.035 --> 00:31:32.475
+<v Speaker 0>So in this guide, we will be using
+
+00:31:32.475 --> 00:31:36.315
+<v Speaker 0>config as data UI to register a blueprint
+
+00:31:36.315 --> 00:31:36.955
+<v Speaker 0>and
+
+00:31:37.639 --> 00:31:39.079
+<v Speaker 0>deployment repositories,
+
+00:31:39.559 --> 00:31:41.879
+<v Speaker 0>create a blueprint from scratch,
+
+00:31:42.360 --> 00:31:44.919
+<v Speaker 0>and create deployable instance of a kpt package
+
+00:31:45.000 --> 00:31:47.080
+<v Speaker 0>and to the deploy the package to Kubernetes
+
+00:31:47.080 --> 00:31:47.879
+<v Speaker 0>cluster.
+
+00:31:48.279 --> 00:31:49.880
+<v Speaker 0>I mean, is it fair to say we're
+
+00:31:49.880 --> 00:31:50.919
+<v Speaker 0>going to be using kpt
+
+00:31:51.165 --> 00:31:53.085
+<v Speaker 0>to deploy a namespace? Is is is that
+
+00:31:53.085 --> 00:31:55.245
+<v Speaker 0>the the example that we're running through?
+
+00:31:56.925 --> 00:31:57.725
+<v Speaker 2>Yes.
+
+00:31:57.725 --> 00:32:00.045
+<v Speaker 2>We're gonna do it using the UI and
+
+00:32:00.045 --> 00:32:01.645
+<v Speaker 2>porch, but we are you know, this is
+
+00:32:01.645 --> 00:32:03.725
+<v Speaker 2>the kpt technology. And and together, we call,
+
+00:32:03.725 --> 00:32:04.445
+<v Speaker 2>I think, the technology
+
+00:32:05.000 --> 00:32:07.880
+<v Speaker 2>configures data, and kpt is the CLI tool,
+
+00:32:07.880 --> 00:32:09.960
+<v Speaker 2>which is the server version. So that's why
+
+00:32:09.960 --> 00:32:11.720
+<v Speaker 2>we have all these different words flying around.
+
+00:32:11.720 --> 00:32:13.000
+<v Speaker 2>There is one step, by the way, that
+
+00:32:13.000 --> 00:32:15.160
+<v Speaker 2>we probably need to do, which is to
+
+00:32:15.160 --> 00:32:16.440
+<v Speaker 2>get that backstage
+
+00:32:16.440 --> 00:32:18.625
+<v Speaker 2>base URL at the bottom of the ports
+
+00:32:18.625 --> 00:32:20.465
+<v Speaker 2>UI installation guide. It should tell you how
+
+00:32:20.465 --> 00:32:22.225
+<v Speaker 2>to do a kubectl port forward
+
+00:32:22.785 --> 00:32:24.145
+<v Speaker 2>because I assume you don't wanna put it
+
+00:32:24.145 --> 00:32:25.585
+<v Speaker 2>on the public Internet right now.
+
+00:32:26.065 --> 00:32:26.625
+<v Speaker 2>So,
+
+00:32:29.265 --> 00:32:30.690
+<v Speaker 2>I think we did we do this? I
+
+00:32:30.690 --> 00:32:32.289
+<v Speaker 2>can't remember. But, I mean, we we can
+
+00:32:32.289 --> 00:32:33.809
+<v Speaker 0>work it out. Right? I mean, I'm assuming
+
+00:32:33.809 --> 00:32:35.409
+<v Speaker 0>this is like this. And
+
+00:32:35.890 --> 00:32:37.890
+<v Speaker 0>we can port forward to the service, and
+
+00:32:37.890 --> 00:32:39.169
+<v Speaker 0>it's just gonna be
+
+00:32:40.210 --> 00:32:41.970
+<v Speaker 2>The backstage namespace.
+
+00:32:48.665 --> 00:32:49.544
+<v Speaker 0>Let's see.
+
+00:32:49.785 --> 00:32:51.785
+<v Speaker 0>Backstage 7007.
+
+00:33:01.150 --> 00:33:02.590
+<v Speaker 0>Easy. There we go.
+
+00:33:02.990 --> 00:33:03.790
+<v Speaker 2>Nice.
+
+00:33:03.790 --> 00:33:05.230
+<v Speaker 2>I was just pulling up the guys to
+
+00:33:05.230 --> 00:33:06.590
+<v Speaker 2>try to cheat in case it didn't work,
+
+00:33:06.590 --> 00:33:07.790
+<v Speaker 2>but, yes, you got it right.
+
+00:33:08.405 --> 00:33:10.005
+<v Speaker 0>Well, see, I like it when we can
+
+00:33:10.005 --> 00:33:12.085
+<v Speaker 0>take existing knowledge and it just works. But
+
+00:33:12.085 --> 00:33:14.005
+<v Speaker 0>I'm glad that there was no other steps
+
+00:33:14.005 --> 00:33:16.484
+<v Speaker 0>required to get to the UI. That's Yeah.
+
+00:33:16.645 --> 00:33:18.804
+<v Speaker 1>The command for that is in the installation
+
+00:33:18.804 --> 00:33:21.044
+<v Speaker 1>guide, which we kind of skipped over quickly.
+
+00:33:21.649 --> 00:33:23.090
+<v Speaker 0>Yeah. I can be quite bad for that.
+
+00:33:23.090 --> 00:33:24.690
+<v Speaker 0>Feel free just to tell me to stop.
+
+00:33:24.690 --> 00:33:25.570
+<v Speaker 1>Yeah. There it is.
+
+00:33:26.929 --> 00:33:28.450
+<v Speaker 0>There we go. Alright.
+
+00:33:30.210 --> 00:33:32.610
+<v Speaker 0>Let's go back to our namespace
+
+00:33:32.610 --> 00:33:34.690
+<v Speaker 0>guide. So we have access to the UI.
+
+00:33:34.690 --> 00:33:36.049
+<v Speaker 0>That's our prerequisite.
+
+00:33:36.049 --> 00:33:38.115
+<v Speaker 0>We can move on from here. So
+
+00:33:38.755 --> 00:33:40.035
+<v Speaker 0>the first thing we need to do is
+
+00:33:40.035 --> 00:33:41.395
+<v Speaker 0>register a blueprint.
+
+00:33:41.555 --> 00:33:43.155
+<v Speaker 0>What Register
+
+00:33:43.155 --> 00:33:45.235
+<v Speaker 1>a repo. So you we'll we're gonna need
+
+00:33:45.235 --> 00:33:45.875
+<v Speaker 1>two
+
+00:33:46.195 --> 00:33:48.835
+<v Speaker 1>GitHub repos, one for blueprints and one for
+
+00:33:48.835 --> 00:33:49.395
+<v Speaker 1>deployments.
+
+00:33:50.340 --> 00:33:52.419
+<v Speaker 1>And you'll need a token
+
+00:33:53.460 --> 00:33:54.820
+<v Speaker 1>with repo scope.
+
+00:33:55.620 --> 00:33:56.340
+<v Speaker 0>Okay.
+
+00:33:57.460 --> 00:33:59.779
+<v Speaker 0>So we need one for blueprints
+
+00:34:01.220 --> 00:34:02.179
+<v Speaker 0>public.
+
+00:34:04.260 --> 00:34:05.845
+<v Speaker 0>What was the other one you said? Sorry.
+
+00:34:06.965 --> 00:34:08.085
+<v Speaker 1>One for deployments.
+
+00:34:08.165 --> 00:34:08.645
+<v Speaker 1>So
+
+00:34:11.364 --> 00:34:13.605
+<v Speaker 1>the WYSIWYG aspect is that we fully render
+
+00:34:13.605 --> 00:34:16.645
+<v Speaker 1>the configuration that we're gonna deploy with GitOps,
+
+00:34:17.844 --> 00:34:18.725
+<v Speaker 1>back into Git.
+
+00:34:21.179 --> 00:34:22.300
+<v Speaker 0>Okay. Cool.
+
+00:34:23.020 --> 00:34:25.179
+<v Speaker 1>And that enables us to just edit it.
+
+00:34:25.179 --> 00:34:26.780
+<v Speaker 1>We don't always have to regenerate it. We
+
+00:34:26.780 --> 00:34:28.780
+<v Speaker 1>can just edit it once it's there.
+
+00:34:30.380 --> 00:34:31.580
+<v Speaker 0>Alright. Okay.
+
+00:34:31.739 --> 00:34:33.659
+<v Speaker 0>So can we what what is the blueprint
+
+00:34:33.659 --> 00:34:35.659
+<v Speaker 0>in this context before we go any further?
+
+00:34:36.614 --> 00:34:38.055
+<v Speaker 0>What do we mean by that?
+
+00:34:39.175 --> 00:34:40.455
+<v Speaker 1>So the blueprints,
+
+00:34:40.455 --> 00:34:41.735
+<v Speaker 1>you can think of it as kind of
+
+00:34:41.735 --> 00:34:44.135
+<v Speaker 1>like a template except that it doesn't have
+
+00:34:44.135 --> 00:34:45.815
+<v Speaker 1>any markup or
+
+00:34:45.975 --> 00:34:49.014
+<v Speaker 1>code in it. It's just configuration data. That's
+
+00:34:49.014 --> 00:34:50.534
+<v Speaker 1>the configuration as data aspect.
+
+00:34:51.060 --> 00:34:52.260
+<v Speaker 1>It's effectively
+
+00:34:52.260 --> 00:34:54.740
+<v Speaker 1>kind of a prototype or a model of
+
+00:34:55.219 --> 00:34:56.900
+<v Speaker 1>the configuration that you
+
+00:34:57.460 --> 00:34:58.580
+<v Speaker 1>would want to
+
+00:34:59.220 --> 00:35:00.100
+<v Speaker 1>transform,
+
+00:35:00.100 --> 00:35:00.820
+<v Speaker 1>customize,
+
+00:35:01.540 --> 00:35:02.580
+<v Speaker 1>and then deploy.
+
+00:35:03.060 --> 00:35:04.820
+<v Speaker 1>So it's it's kind of like a customized
+
+00:35:04.820 --> 00:35:07.255
+<v Speaker 1>base configuration in that respect. Okay. It's
+
+00:35:08.055 --> 00:35:09.415
+<v Speaker 1>you you can also just think of it
+
+00:35:09.415 --> 00:35:10.375
+<v Speaker 1>as an example,
+
+00:35:10.935 --> 00:35:11.975
+<v Speaker 1>but it's just
+
+00:35:12.295 --> 00:35:13.095
+<v Speaker 1>literal
+
+00:35:13.095 --> 00:35:14.935
+<v Speaker 1>valid Kubernetes YAML.
+
+00:35:16.855 --> 00:35:17.255
+<v Speaker 0>Okay.
+
+00:35:19.000 --> 00:35:21.640
+<v Speaker 0>So to register our repository,
+
+00:35:21.880 --> 00:35:23.560
+<v Speaker 0>do we do this from the UI?
+
+00:35:24.680 --> 00:35:25.720
+<v Speaker 1>Should be able to do it from the
+
+00:35:25.720 --> 00:35:26.360
+<v Speaker 1>UI.
+
+00:35:27.560 --> 00:35:29.320
+<v Speaker 0>Alright. Let's bring back that for forward.
+
+00:35:35.795 --> 00:35:37.635
+<v Speaker 1>Go to the config data.
+
+00:35:38.194 --> 00:35:38.835
+<v Speaker 2>Yeah.
+
+00:35:40.275 --> 00:35:41.954
+<v Speaker 2>So Backstage is a is a sort of
+
+00:35:41.954 --> 00:35:44.035
+<v Speaker 2>open source project, I think, initially started by
+
+00:35:44.035 --> 00:35:45.234
+<v Speaker 2>Spotify, and there's a bunch of
+
+00:35:46.340 --> 00:35:48.260
+<v Speaker 2>has a bunch of functionality, and it supports
+
+00:35:48.260 --> 00:35:50.180
+<v Speaker 2>plug ins and and config config as data
+
+00:35:50.180 --> 00:35:51.780
+<v Speaker 2>is a plug in into it.
+
+00:35:52.820 --> 00:35:55.380
+<v Speaker 0>Oh, you know what? I'm aware of Backstage,
+
+00:35:55.380 --> 00:35:56.900
+<v Speaker 0>and I didn't tie the dots when we
+
+00:35:56.900 --> 00:35:59.140
+<v Speaker 0>called it Backstage earlier. But okay. So you're
+
+00:35:59.300 --> 00:36:01.220
+<v Speaker 0>this is a plug in for the Spotify
+
+00:36:01.220 --> 00:36:01.940
+<v Speaker 0>Backstage. Okay.
+
+00:36:02.615 --> 00:36:04.934
+<v Speaker 1>Yeah. So if you have Backstage already, you
+
+00:36:04.934 --> 00:36:07.415
+<v Speaker 1>can add this plugin to your own Backstage
+
+00:36:07.415 --> 00:36:10.135
+<v Speaker 1>instance. This is an image that we created,
+
+00:36:10.135 --> 00:36:11.415
+<v Speaker 1>you know, just to make it easier to
+
+00:36:11.415 --> 00:36:12.135
+<v Speaker 1>try out.
+
+00:36:12.535 --> 00:36:13.734
+<v Speaker 0>Okay. And do I have to log in
+
+00:36:13.734 --> 00:36:14.775
+<v Speaker 0>with Google? Is that
+
+00:36:16.800 --> 00:36:19.840
+<v Speaker 1>Yeah. This is a log in, and it's
+
+00:36:19.840 --> 00:36:21.920
+<v Speaker 1>gonna act as you on the cluster.
+
+00:36:30.045 --> 00:36:32.045
+<v Speaker 0>Maybe I'll pick a different Google account.
+
+00:36:35.325 --> 00:36:36.925
+<v Speaker 0>Do I need to set something up?
+
+00:36:38.605 --> 00:36:40.205
+<v Speaker 2>Sorry. Can you hear what it says?
+
+00:36:41.484 --> 00:36:43.140
+<v Speaker 2>Can you It says
+
+00:36:44.260 --> 00:36:45.780
+<v Speaker 1>I need to get full screen.
+
+00:36:46.980 --> 00:36:49.619
+<v Speaker 0>Or is the org internal client restricted to
+
+00:36:49.619 --> 00:36:51.300
+<v Speaker 0>users within the organization?
+
+00:36:51.300 --> 00:36:52.980
+<v Speaker 0>It's the it seems like the
+
+00:36:54.020 --> 00:36:57.140
+<v Speaker 0>whatever OAuth application this is used in is
+
+00:36:56.705 --> 00:36:59.425
+<v Speaker 0>restricted to Restricted to Google. Yeah.
+
+00:37:00.465 --> 00:37:03.025
+<v Speaker 1>Oh, well, that's a bummer. Okay.
+
+00:37:04.465 --> 00:37:07.105
+<v Speaker 2>We can create a new OAuth
+
+00:37:07.105 --> 00:37:09.745
+<v Speaker 2>client ID
+
+00:37:11.540 --> 00:37:13.300
+<v Speaker 2>because I'm guessing that the so we ship
+
+00:37:13.300 --> 00:37:13.940
+<v Speaker 2>with one that's
+
+00:37:14.660 --> 00:37:16.180
+<v Speaker 2>it's a bit of a pain to to
+
+00:37:16.180 --> 00:37:17.540
+<v Speaker 2>go through this process, but,
+
+00:37:18.180 --> 00:37:19.940
+<v Speaker 2>if you wanna create a you know, if
+
+00:37:19.940 --> 00:37:21.300
+<v Speaker 2>you wanna log in with Google, you have
+
+00:37:21.300 --> 00:37:22.820
+<v Speaker 2>to go through and create a client ID.
+
+00:37:22.820 --> 00:37:25.060
+<v Speaker 2>And we have, bundled one in, but I
+
+00:37:25.060 --> 00:37:27.835
+<v Speaker 2>guess we have accidentally restricted it to our
+
+00:37:27.835 --> 00:37:28.635
+<v Speaker 2>organization,
+
+00:37:28.635 --> 00:37:29.675
+<v Speaker 2>I. E, Google,
+
+00:37:30.075 --> 00:37:31.275
+<v Speaker 2>which is a bit of a mess up.
+
+00:37:31.275 --> 00:37:33.035
+<v Speaker 2>And I apologize for create me a Google
+
+00:37:33.035 --> 00:37:33.915
+<v Speaker 0>account. Right?
+
+00:37:34.875 --> 00:37:36.635
+<v Speaker 0>I would love Rawkode@Google.com.
+
+00:37:36.635 --> 00:37:37.355
+<v Speaker 0>I mean, that'd
+
+00:37:38.475 --> 00:37:39.035
+<v Speaker 0>I'll wait.
+
+00:37:40.510 --> 00:37:42.430
+<v Speaker 0>Okay. So we could either set up our
+
+00:37:42.430 --> 00:37:43.869
+<v Speaker 0>own OAuth application
+
+00:37:46.029 --> 00:37:46.750
+<v Speaker 0>or
+
+00:37:47.069 --> 00:37:48.109
+<v Speaker 0>is there an alternative?
+
+00:37:55.135 --> 00:37:57.535
+<v Speaker 2>I'm also worried about whether the authentication is
+
+00:37:57.535 --> 00:37:58.335
+<v Speaker 2>gonna work to the
+
+00:37:58.975 --> 00:38:00.735
+<v Speaker 2>if we're not using GKE,
+
+00:38:00.895 --> 00:38:02.335
+<v Speaker 2>is it going to accept
+
+00:38:04.495 --> 00:38:06.175
+<v Speaker 2>the ID the credentials?
+
+00:38:09.299 --> 00:38:10.500
+<v Speaker 2>Brian, what do you think?
+
+00:38:12.819 --> 00:38:13.940
+<v Speaker 1>Clearly, nobody
+
+00:38:14.180 --> 00:38:15.780
+<v Speaker 1>no non Googler is driving.
+
+00:38:19.140 --> 00:38:20.579
+<v Speaker 2>I think that is fine. We can try
+
+00:38:20.579 --> 00:38:21.859
+<v Speaker 2>the
+
+00:38:23.005 --> 00:38:25.485
+<v Speaker 2>can try the CLI form of this, which
+
+00:38:25.485 --> 00:38:26.125
+<v Speaker 2>will be
+
+00:38:26.685 --> 00:38:29.485
+<v Speaker 2>less good. And maybe we could share the
+
+00:38:29.645 --> 00:38:31.165
+<v Speaker 2>UI walkthrough, and we can
+
+00:38:32.045 --> 00:38:33.325
+<v Speaker 2>do it that way. I don't know if
+
+00:38:33.325 --> 00:38:35.085
+<v Speaker 2>that would work. If you want to share
+
+00:38:35.085 --> 00:38:37.109
+<v Speaker 0>your screen, I'm happy to do that if
+
+00:38:37.109 --> 00:38:38.309
+<v Speaker 0>you wanna run through it. But if there's
+
+00:38:38.309 --> 00:38:39.589
+<v Speaker 0>a way that we can proceed
+
+00:38:40.150 --> 00:38:42.069
+<v Speaker 0>from the CLI here, we should definitely do
+
+00:38:42.069 --> 00:38:42.790
+<v Speaker 0>that too.
+
+00:38:43.829 --> 00:38:44.710
+<v Speaker 0>I'll
+
+00:38:44.710 --> 00:38:46.470
+<v Speaker 0>I'll let you make the judgment call. You
+
+00:38:46.470 --> 00:38:48.710
+<v Speaker 0>know what's going Why don't we Brian, what
+
+00:38:48.710 --> 00:38:50.869
+<v Speaker 2>do think? Should we should we do the
+
+00:38:51.924 --> 00:38:54.005
+<v Speaker 2>should we go through the CLI instructions, which
+
+00:38:54.005 --> 00:38:55.605
+<v Speaker 2>I don't think rely on
+
+00:38:56.164 --> 00:38:57.445
+<v Speaker 2>or they should just work.
+
+00:38:58.085 --> 00:39:00.085
+<v Speaker 2>There's there's a guide. Let's
+
+00:39:00.085 --> 00:39:01.125
+<v Speaker 1>do the CLI.
+
+00:39:01.285 --> 00:39:02.565
+<v Speaker 0>Okay. Then we can do it. If you
+
+00:39:02.565 --> 00:39:04.244
+<v Speaker 0>wanna share your screen, we can do the
+
+00:39:04.244 --> 00:39:05.125
+<v Speaker 0>UI demo
+
+00:39:05.730 --> 00:39:07.490
+<v Speaker 0>afterwards. Exactly. Okay.
+
+00:39:08.370 --> 00:39:10.690
+<v Speaker 0>So we have this CLI.
+
+00:39:10.690 --> 00:39:12.450
+<v Speaker 0>What? I'll do without that.
+
+00:39:12.690 --> 00:39:14.210
+<v Speaker 0>I can type help now.
+
+00:39:14.610 --> 00:39:14.930
+<v Speaker 0>Okay.
+
+00:39:17.585 --> 00:39:19.184
+<v Speaker 0>But what we were trying to do is
+
+00:39:19.184 --> 00:39:21.825
+<v Speaker 0>register a blueprint repository.
+
+00:39:21.904 --> 00:39:23.744
+<v Speaker 0>So how do we what's the starting point
+
+00:39:23.744 --> 00:39:24.305
+<v Speaker 0>here?
+
+00:39:24.944 --> 00:39:27.425
+<v Speaker 1>This is gonna be the alpha commands.
+
+00:39:29.265 --> 00:39:30.625
+<v Speaker 2>Yeah. And there is there is a guide
+
+00:39:30.625 --> 00:39:31.585
+<v Speaker 2>which we can
+
+00:39:32.680 --> 00:39:35.000
+<v Speaker 2>go through if that's easier. I don't know.
+
+00:39:36.600 --> 00:39:38.920
+<v Speaker 0>Oh, yes. The the name switch version is
+
+00:39:38.920 --> 00:39:40.200
+<v Speaker 0>CLI. Okay. Cool.
+
+00:39:42.280 --> 00:39:45.080
+<v Speaker 0>So I've already logged in there. Oh, I
+
+00:39:45.080 --> 00:39:46.475
+<v Speaker 0>did that too. I love the g h
+
+00:39:46.475 --> 00:39:48.955
+<v Speaker 0>command line. It just simplifies my life now.
+
+00:39:48.955 --> 00:39:50.555
+<v Speaker 2>That's great. Although, I I guess you had
+
+00:39:50.555 --> 00:39:52.155
+<v Speaker 2>to specify public or private, so I'm guessing
+
+00:39:52.155 --> 00:39:52.715
+<v Speaker 2>we
+
+00:39:53.275 --> 00:39:54.715
+<v Speaker 2>I'm guessing that's either a new or an
+
+00:39:54.715 --> 00:39:55.995
+<v Speaker 2>old version of the g h command line
+
+00:39:55.995 --> 00:39:57.755
+<v Speaker 2>that now requires it. I think it gets
+
+00:39:57.755 --> 00:39:58.795
+<v Speaker 0>the default to public,
+
+00:39:59.680 --> 00:40:02.080
+<v Speaker 0>and that's just something that started recently.
+
+00:40:02.080 --> 00:40:03.520
+<v Speaker 0>Okay. So
+
+00:40:04.000 --> 00:40:05.440
+<v Speaker 0>we need to
+
+00:40:06.080 --> 00:40:08.000
+<v Speaker 0>have my user
+
+00:40:08.560 --> 00:40:09.920
+<v Speaker 0>as Rawkode
+
+00:40:09.920 --> 00:40:10.720
+<v Speaker 0>and
+
+00:40:10.720 --> 00:40:11.760
+<v Speaker 0>then
+
+00:40:14.515 --> 00:40:16.675
+<v Speaker 0>oh, I don't call them blueprint, so let's
+
+00:40:16.675 --> 00:40:19.235
+<v Speaker 0>fix that. I call it kpt
+
+00:40:19.555 --> 00:40:21.555
+<v Speaker 0>dash blueprint and
+
+00:40:23.475 --> 00:40:24.995
+<v Speaker 0>deploy a kpt deployment.
+
+00:40:33.010 --> 00:40:34.210
+<v Speaker 0>And then
+
+00:40:34.290 --> 00:40:35.810
+<v Speaker 0>we're gonna clone
+
+00:40:35.890 --> 00:40:37.170
+<v Speaker 0>both. Okay.
+
+00:40:39.570 --> 00:40:41.010
+<v Speaker 2>Yeah. So this is a a slightly different
+
+00:40:41.010 --> 00:40:42.210
+<v Speaker 2>flow from what we were
+
+00:40:42.815 --> 00:40:44.815
+<v Speaker 2>planning on doing, but it will give you
+
+00:40:44.815 --> 00:40:46.174
+<v Speaker 2>a better idea of what's going on under
+
+00:40:46.174 --> 00:40:48.095
+<v Speaker 2>the covers. This is the CLI experience. So
+
+00:40:48.095 --> 00:40:50.175
+<v Speaker 2>this is the role experience as it were.
+
+00:40:50.255 --> 00:40:52.414
+<v Speaker 2>And then when, I guess, I screen share
+
+00:40:52.414 --> 00:40:54.494
+<v Speaker 2>the the UI, we can see better,
+
+00:40:54.654 --> 00:40:57.070
+<v Speaker 2>like, how we can combine that into a
+
+00:40:57.230 --> 00:40:58.750
+<v Speaker 2>or build that up into a
+
+00:40:59.950 --> 00:41:02.750
+<v Speaker 2>nicer user experience that is sort of easier
+
+00:41:02.750 --> 00:41:05.550
+<v Speaker 2>to just click through and, like, easier to
+
+00:41:05.550 --> 00:41:06.110
+<v Speaker 2>use.
+
+00:41:07.150 --> 00:41:07.470
+<v Speaker 0>Cool.
+
+00:41:08.244 --> 00:41:10.725
+<v Speaker 0>Then we have this cube gen script,
+
+00:41:10.885 --> 00:41:13.445
+<v Speaker 0>which is taking some parameter.
+
+00:41:15.605 --> 00:41:17.365
+<v Speaker 1>Yeah. So this this is
+
+00:41:17.765 --> 00:41:18.485
+<v Speaker 1>just
+
+00:41:18.724 --> 00:41:21.285
+<v Speaker 1>fixing some words in cube control create,
+
+00:41:21.940 --> 00:41:22.660
+<v Speaker 1>basically.
+
+00:41:23.060 --> 00:41:24.980
+<v Speaker 1>We can like I said, you can create
+
+00:41:24.980 --> 00:41:25.620
+<v Speaker 1>the
+
+00:41:26.500 --> 00:41:29.060
+<v Speaker 1>or write the resources however you want. We
+
+00:41:29.060 --> 00:41:31.940
+<v Speaker 1>are just leveraging kubectl create to generate them
+
+00:41:32.340 --> 00:41:33.780
+<v Speaker 1>in this tutorial.
+
+00:41:34.420 --> 00:41:36.500
+<v Speaker 0>So what resources do we need to create?
+
+00:41:37.974 --> 00:41:40.135
+<v Speaker 1>Well, like, you know, namespace
+
+00:41:40.135 --> 00:41:40.855
+<v Speaker 1>and
+
+00:41:42.935 --> 00:41:44.375
+<v Speaker 1>RBAC role binding
+
+00:41:44.535 --> 00:41:45.655
+<v Speaker 1>service account,
+
+00:41:46.135 --> 00:41:47.095
+<v Speaker 1>things like that.
+
+00:41:47.415 --> 00:41:49.415
+<v Speaker 0>Okay. I do not have They're pretty pretty
+
+00:41:49.415 --> 00:41:51.095
+<v Speaker 1>straightforward of these resources.
+
+00:41:51.480 --> 00:41:52.360
+<v Speaker 0>So
+
+00:41:52.360 --> 00:41:54.360
+<v Speaker 0>we'll we'll go with the kpten. They have
+
+00:41:54.360 --> 00:41:55.720
+<v Speaker 0>snippets for a lot of things, but it
+
+00:41:55.720 --> 00:41:57.320
+<v Speaker 0>looks like I have the RBAC stuff.
+
+00:41:57.800 --> 00:42:00.440
+<v Speaker 0>So we'll make this executable.
+
+00:42:01.960 --> 00:42:03.400
+<v Speaker 0>We'll stick it in my path.
+
+00:42:05.835 --> 00:42:07.435
+<v Speaker 0>That would test that again.
+
+00:42:11.515 --> 00:42:13.515
+<v Speaker 0>You know, I read a story about hackers
+
+00:42:13.515 --> 00:42:14.875
+<v Speaker 0>who can listen to your key tape and
+
+00:42:14.875 --> 00:42:16.315
+<v Speaker 0>when you have a mechanical keyboard, don't work
+
+00:42:16.315 --> 00:42:18.155
+<v Speaker 0>at what letters you're pressing based on that.
+
+00:42:19.950 --> 00:42:21.310
+<v Speaker 0>Hello. The noise yeah.
+
+00:42:22.590 --> 00:42:24.110
+<v Speaker 2>I thought my password is just one two
+
+00:42:24.110 --> 00:42:25.950
+<v Speaker 2>three four. It's just much safer. Okay? That
+
+00:42:25.950 --> 00:42:27.070
+<v Speaker 2>way everyone knows it.
+
+00:42:27.870 --> 00:42:29.390
+<v Speaker 0>Well, that's a good method.
+
+00:42:30.110 --> 00:42:30.990
+<v Speaker 0>Alright.
+
+00:42:30.990 --> 00:42:33.155
+<v Speaker 0>Let's create a directory. So this is us
+
+00:42:33.155 --> 00:42:34.915
+<v Speaker 0>creating our package there. So this is our
+
+00:42:34.915 --> 00:42:35.555
+<v Speaker 0>base
+
+00:42:35.795 --> 00:42:36.915
+<v Speaker 0>namespace
+
+00:42:36.915 --> 00:42:37.715
+<v Speaker 0>package.
+
+00:42:37.715 --> 00:42:40.515
+<v Speaker 0>And we're gonna use kpt package in it,
+
+00:42:40.995 --> 00:42:43.395
+<v Speaker 0>and it's gonna write us
+
+00:42:43.990 --> 00:42:46.710
+<v Speaker 0>files. I'm gonna jump in there and pop
+
+00:42:46.710 --> 00:42:47.590
+<v Speaker 0>that open.
+
+00:42:54.150 --> 00:42:56.150
+<v Speaker 0>Maybe we'll change that font size too.
+
+00:42:58.150 --> 00:43:00.605
+<v Speaker 0>Okay for you? Wanna go a bigger? Yep.
+
+00:43:00.605 --> 00:43:01.885
+<v Speaker 0>Yep. Okay. That's good.
+
+00:43:02.925 --> 00:43:05.405
+<v Speaker 0>Alright. Okay. Where's my thing? Okay. So we
+
+00:43:05.405 --> 00:43:07.325
+<v Speaker 0>have a kept file. We have a read
+
+00:43:07.325 --> 00:43:09.485
+<v Speaker 0>me, and we have a package context.
+
+00:43:09.805 --> 00:43:11.405
+<v Speaker 0>We have a tree command.
+
+00:43:12.845 --> 00:43:13.805
+<v Speaker 0>We'll run that too.
+
+00:43:14.619 --> 00:43:15.260
+<v Speaker 0>Oh,
+
+00:43:15.820 --> 00:43:17.980
+<v Speaker 0>it's because I ran into the directory. Yeah.
+
+00:43:17.980 --> 00:43:18.700
+<v Speaker 0>Cool.
+
+00:43:19.820 --> 00:43:22.380
+<v Speaker 0>See, I say k for just not following
+
+00:43:22.380 --> 00:43:23.820
+<v Speaker 0>the gates directly.
+
+00:43:23.820 --> 00:43:25.420
+<v Speaker 0>I'm sure every time I change something, I'm
+
+00:43:25.420 --> 00:43:26.620
+<v Speaker 0>like, no. Don't do that.
+
+00:43:26.940 --> 00:43:28.700
+<v Speaker 0>But okay. So we have a a nice
+
+00:43:28.700 --> 00:43:29.180
+<v Speaker 0>tree command.
+
+00:43:31.065 --> 00:43:33.225
+<v Speaker 0>So let's see. Yeah. So the kept file
+
+00:43:33.225 --> 00:43:36.345
+<v Speaker 1>is contains the metadata for the package. If
+
+00:43:36.345 --> 00:43:38.665
+<v Speaker 1>you notice, it's in the same format as
+
+00:43:38.665 --> 00:43:39.865
+<v Speaker 1>Kubernetes resources.
+
+00:43:39.865 --> 00:43:43.180
+<v Speaker 1>I call that the Kubernetes resource model format.
+
+00:43:45.180 --> 00:43:47.020
+<v Speaker 1>You know, so right now, it just has
+
+00:43:47.340 --> 00:43:48.060
+<v Speaker 1>the
+
+00:43:48.780 --> 00:43:50.300
+<v Speaker 1>minimal amount of metadata.
+
+00:43:50.860 --> 00:43:53.180
+<v Speaker 0>Yeah. I'm seeing so many tools adopt this
+
+00:43:53.180 --> 00:43:55.340
+<v Speaker 0>format now that don't even touch Kubernetes or
+
+00:43:55.340 --> 00:43:57.205
+<v Speaker 0>even deploy to Kubernetes. It seems to just
+
+00:43:57.205 --> 00:43:59.365
+<v Speaker 0>have become a little bit of a a
+
+00:43:59.365 --> 00:44:00.325
+<v Speaker 0>standard.
+
+00:44:01.045 --> 00:44:03.045
+<v Speaker 1>Well, we used it for things like
+
+00:44:03.685 --> 00:44:06.565
+<v Speaker 1>kube config and the scheduler config and some
+
+00:44:06.565 --> 00:44:09.445
+<v Speaker 1>other on disk config formats from the beginning.
+
+00:44:11.300 --> 00:44:12.660
+<v Speaker 1>It makes the tooling
+
+00:44:13.060 --> 00:44:15.620
+<v Speaker 1>a little bit more homogenous and and easier
+
+00:44:15.620 --> 00:44:16.420
+<v Speaker 1>to build.
+
+00:44:16.900 --> 00:44:17.540
+<v Speaker 0>Yep.
+
+00:44:17.940 --> 00:44:20.820
+<v Speaker 0>And what's this package context dot YAML?
+
+00:44:22.180 --> 00:44:23.925
+<v Speaker 1>So I don't know that we'll keep this
+
+00:44:23.925 --> 00:44:26.165
+<v Speaker 1>long term, but what this is doing is
+
+00:44:26.165 --> 00:44:27.285
+<v Speaker 1>it's actually
+
+00:44:27.445 --> 00:44:28.645
+<v Speaker 1>just copying
+
+00:44:28.725 --> 00:44:30.485
+<v Speaker 1>information about the package
+
+00:44:30.885 --> 00:44:32.965
+<v Speaker 1>into a config map that can be used
+
+00:44:32.965 --> 00:44:34.565
+<v Speaker 1>as an input to functions,
+
+00:44:35.125 --> 00:44:36.005
+<v Speaker 1>which we can
+
+00:44:36.900 --> 00:44:38.740
+<v Speaker 1>talk about more when we're actually getting to
+
+00:44:38.740 --> 00:44:40.660
+<v Speaker 1>using the functions. But the functions are what
+
+00:44:40.660 --> 00:44:42.580
+<v Speaker 1>can generate, transform, and validate
+
+00:44:42.819 --> 00:44:45.140
+<v Speaker 1>the Kubernetes resources that are in the package.
+
+00:44:46.420 --> 00:44:49.140
+<v Speaker 0>K. And we have some Ruby stuff, but
+
+00:44:49.140 --> 00:44:50.980
+<v Speaker 0>I think we will stick to the guide.
+
+00:44:50.980 --> 00:44:51.380
+<v Speaker 0>So
+
+00:44:51.845 --> 00:44:53.605
+<v Speaker 0>our next thing to do is we're gonna
+
+00:44:53.605 --> 00:44:55.924
+<v Speaker 0>generate the names of these resources in our
+
+00:44:55.924 --> 00:44:56.885
+<v Speaker 0>new scripts.
+
+00:44:57.924 --> 00:44:59.765
+<v Speaker 1>Yeah. So this is basically just doing a
+
+00:44:59.765 --> 00:45:02.005
+<v Speaker 1>kpt control create and splatting out the YAML
+
+00:45:02.005 --> 00:45:03.845
+<v Speaker 1>instead of deploying it to the cluster.
+
+00:45:04.565 --> 00:45:06.005
+<v Speaker 1>And this is just an example of how
+
+00:45:06.005 --> 00:45:06.484
+<v Speaker 1>you can use
+
+00:45:07.539 --> 00:45:11.140
+<v Speaker 1>automation tools, command line tools, UIs, whatever,
+
+00:45:11.380 --> 00:45:12.980
+<v Speaker 1>to generate the YAML. You don't need to
+
+00:45:12.980 --> 00:45:13.940
+<v Speaker 1>write it by hand.
+
+00:45:14.740 --> 00:45:16.500
+<v Speaker 1>And because you don't need to
+
+00:45:17.299 --> 00:45:19.140
+<v Speaker 1>mark it up with, you know, templates or
+
+00:45:19.140 --> 00:45:20.260
+<v Speaker 1>code or anything,
+
+00:45:20.500 --> 00:45:22.260
+<v Speaker 1>the tools can also
+
+00:45:22.855 --> 00:45:25.015
+<v Speaker 1>modify it, edit it after. And that's really
+
+00:45:25.015 --> 00:45:26.855
+<v Speaker 1>kind of the kept one of the kept
+
+00:45:26.855 --> 00:45:28.535
+<v Speaker 1>superpowers, I would say, is,
+
+00:45:29.495 --> 00:45:31.335
+<v Speaker 1>you know, keeping the configuration
+
+00:45:31.575 --> 00:45:33.255
+<v Speaker 1>in a data format
+
+00:45:34.135 --> 00:45:36.135
+<v Speaker 1>makes it possible to manipulate it as if
+
+00:45:36.135 --> 00:45:36.615
+<v Speaker 1>it were,
+
+00:45:38.019 --> 00:45:40.019
+<v Speaker 1>you know, a live resource, you know, in
+
+00:45:40.019 --> 00:45:41.619
+<v Speaker 1>the API server, for example.
+
+00:45:42.260 --> 00:45:44.180
+<v Speaker 0>So if I really wanted to, I could
+
+00:45:44.180 --> 00:45:47.140
+<v Speaker 0>use Pulumi to render out Kubernetes YAML and
+
+00:45:47.140 --> 00:45:49.700
+<v Speaker 0>break that in. You you totally could. In
+
+00:45:49.700 --> 00:45:52.905
+<v Speaker 1>fact, you could probably wrap Pulumi in a
+
+00:45:52.905 --> 00:45:55.385
+<v Speaker 1>karen function and and both of you can.
+
+00:45:56.185 --> 00:45:56.905
+<v Speaker 0>Alright.
+
+00:45:56.985 --> 00:45:58.345
+<v Speaker 0>Well, I think we're gonna save for that
+
+00:45:58.345 --> 00:45:59.785
+<v Speaker 0>today, but that was something for me to
+
+00:45:59.785 --> 00:46:02.105
+<v Speaker 0>experiment with over the next couple of days.
+
+00:46:02.265 --> 00:46:04.265
+<v Speaker 0>That was pretty cool. And one thing I
+
+00:46:04.265 --> 00:46:06.460
+<v Speaker 1>was actually wondering about is whether we could
+
+00:46:06.460 --> 00:46:08.700
+<v Speaker 1>use Pulumi in a similar way with the
+
+00:46:08.700 --> 00:46:09.900
+<v Speaker 1>new YAML support
+
+00:46:10.460 --> 00:46:13.180
+<v Speaker 1>to generate the YAML with the UI or
+
+00:46:13.180 --> 00:46:14.940
+<v Speaker 1>however we want and
+
+00:46:15.260 --> 00:46:16.860
+<v Speaker 1>just deploy it with Pulumi.
+
+00:46:18.155 --> 00:46:19.675
+<v Speaker 1>We would need to be able to store
+
+00:46:19.675 --> 00:46:21.995
+<v Speaker 1>the YAML and retrieve the YAML automatically.
+
+00:46:22.555 --> 00:46:24.474
+<v Speaker 1>I don't know if Pulumi can help with
+
+00:46:24.474 --> 00:46:26.234
+<v Speaker 1>that or we'd need to build a new
+
+00:46:26.234 --> 00:46:27.035
+<v Speaker 1>thing for that.
+
+00:46:27.515 --> 00:46:28.155
+<v Speaker 0>Yeah.
+
+00:46:28.395 --> 00:46:29.595
+<v Speaker 0>Something for us to
+
+00:46:30.090 --> 00:46:32.410
+<v Speaker 0>to throw in some ideas for later. There
+
+00:46:32.410 --> 00:46:33.450
+<v Speaker 0>isn't a way to
+
+00:46:33.850 --> 00:46:35.530
+<v Speaker 0>get the ABO back, but
+
+00:46:35.930 --> 00:46:37.130
+<v Speaker 0>maybe in time.
+
+00:46:37.850 --> 00:46:38.490
+<v Speaker 0>So
+
+00:46:39.050 --> 00:46:41.610
+<v Speaker 0>we have our namespace.
+
+00:46:41.945 --> 00:46:45.145
+<v Speaker 0>So this kept package tree, this is this
+
+00:46:45.145 --> 00:46:46.905
+<v Speaker 0>isn't just like an alias, is it? Is
+
+00:46:46.905 --> 00:46:48.905
+<v Speaker 0>it a bit more sophisticated, I guess?
+
+00:46:49.225 --> 00:46:51.945
+<v Speaker 1>It extracts information from the files.
+
+00:46:52.825 --> 00:46:54.825
+<v Speaker 0>Okay. So we get, like, the description of
+
+00:46:54.825 --> 00:46:56.190
+<v Speaker 0>what the thing is?
+
+00:46:56.670 --> 00:46:58.990
+<v Speaker 1>Yeah. It gets the kind and the name.
+
+00:47:01.070 --> 00:47:03.470
+<v Speaker 1>Okay. That's a simple example c l s.
+
+00:47:03.470 --> 00:47:04.190
+<v Speaker 1>Of how you can
+
+00:47:05.070 --> 00:47:07.550
+<v Speaker 1>with with the configuration again just being represented
+
+00:47:07.550 --> 00:47:10.705
+<v Speaker 1>as YAML or data format, it can extract
+
+00:47:10.705 --> 00:47:12.545
+<v Speaker 1>information from it. We just started with this
+
+00:47:12.545 --> 00:47:13.825
+<v Speaker 1>because it seemed useful,
+
+00:47:15.505 --> 00:47:17.665
+<v Speaker 1>but you could add other information here or
+
+00:47:17.665 --> 00:47:19.265
+<v Speaker 1>build other kinds of analyses.
+
+00:47:21.025 --> 00:47:21.985
+<v Speaker 0>Alright.
+
+00:47:22.225 --> 00:47:23.345
+<v Speaker 0>So next.
+
+00:47:24.450 --> 00:47:26.930
+<v Speaker 0>Oh, because some scary stuff coming. So we're
+
+00:47:26.930 --> 00:47:29.090
+<v Speaker 0>gonna run kept functions.
+
+00:47:32.450 --> 00:47:34.530
+<v Speaker 0>Yeah. I'm not entirely sure what this is
+
+00:47:34.530 --> 00:47:36.210
+<v Speaker 0>doing. Should I just run it or do
+
+00:47:36.210 --> 00:47:37.970
+<v Speaker 0>you wanna give me a better context?
+
+00:47:40.845 --> 00:47:43.405
+<v Speaker 1>So instead of templates
+
+00:47:43.805 --> 00:47:45.565
+<v Speaker 1>or some other kind of
+
+00:47:46.045 --> 00:47:48.205
+<v Speaker 1>generator, the kpt model
+
+00:47:51.080 --> 00:47:51.880
+<v Speaker 1>is
+
+00:47:52.120 --> 00:47:53.800
+<v Speaker 1>like I said earlier, it's sort of a
+
+00:47:53.800 --> 00:47:55.480
+<v Speaker 1>twist on the customized approach.
+
+00:47:55.800 --> 00:47:57.480
+<v Speaker 1>It takes
+
+00:47:57.880 --> 00:48:00.440
+<v Speaker 1>the the resources from the files,
+
+00:48:01.320 --> 00:48:03.000
+<v Speaker 1>serializes them into
+
+00:48:04.785 --> 00:48:06.065
+<v Speaker 1>resource list,
+
+00:48:06.944 --> 00:48:09.265
+<v Speaker 1>feeds that as inputs to
+
+00:48:10.065 --> 00:48:12.065
+<v Speaker 1>a sequence of functions
+
+00:48:12.224 --> 00:48:14.385
+<v Speaker 1>that can operate on the list, and then
+
+00:48:14.865 --> 00:48:15.585
+<v Speaker 1>writes
+
+00:48:15.744 --> 00:48:17.425
+<v Speaker 1>the files back to the disk.
+
+00:48:18.480 --> 00:48:19.200
+<v Speaker 1>So
+
+00:48:19.600 --> 00:48:21.280
+<v Speaker 1>those functions can
+
+00:48:21.760 --> 00:48:25.440
+<v Speaker 1>generate resources. They can transform or modify resources.
+
+00:48:25.600 --> 00:48:27.120
+<v Speaker 1>They can validate resources.
+
+00:48:28.720 --> 00:48:30.960
+<v Speaker 1>So it's we're using the
+
+00:48:31.715 --> 00:48:35.155
+<v Speaker 1>YAML representation as kind of a intermediate representation
+
+00:48:35.155 --> 00:48:37.075
+<v Speaker 1>for operating on it.
+
+00:48:37.955 --> 00:48:39.555
+<v Speaker 1>When we do this through
+
+00:48:40.675 --> 00:48:43.235
+<v Speaker 1>Porch, when we can show show the UI,
+
+00:48:44.195 --> 00:48:45.875
+<v Speaker 1>what it's doing is
+
+00:48:48.119 --> 00:48:50.120
+<v Speaker 1>extracting that actually out of git,
+
+00:48:50.760 --> 00:48:53.080
+<v Speaker 1>transforming it, and putting it back into git.
+
+00:48:53.160 --> 00:48:55.400
+<v Speaker 1>So actually one it's not in the guide,
+
+00:48:55.400 --> 00:48:56.839
+<v Speaker 1>one thing you can do here is just
+
+00:48:56.839 --> 00:48:57.800
+<v Speaker 1>kpt function source,
+
+00:48:59.335 --> 00:49:01.575
+<v Speaker 1>function abbreviated source all spelled out.
+
+00:49:04.695 --> 00:49:05.335
+<v Speaker 1>Yeah.
+
+00:49:05.815 --> 00:49:07.975
+<v Speaker 1>So this is the format that it's feeding
+
+00:49:07.975 --> 00:49:09.015
+<v Speaker 1>to the functions.
+
+00:49:09.895 --> 00:49:11.655
+<v Speaker 1>And, you know, it is a list of
+
+00:49:13.020 --> 00:49:15.740
+<v Speaker 1>the resources including the kpt file that are
+
+00:49:15.740 --> 00:49:16.620
+<v Speaker 1>in the package
+
+00:49:18.060 --> 00:49:20.140
+<v Speaker 1>with some additional metadata so that it can
+
+00:49:20.140 --> 00:49:22.540
+<v Speaker 1>write them back into the same place, like,
+
+00:49:22.540 --> 00:49:23.900
+<v Speaker 1>you know, keeping track of the file path
+
+00:49:23.900 --> 00:49:25.020
+<v Speaker 1>names, for example.
+
+00:49:26.184 --> 00:49:26.744
+<v Speaker 0>Okay.
+
+00:49:27.464 --> 00:49:29.305
+<v Speaker 0>So but I just so I'm I make
+
+00:49:29.305 --> 00:49:30.905
+<v Speaker 0>sure I understand this. Right? So we're running
+
+00:49:30.905 --> 00:49:32.025
+<v Speaker 0>a kept function,
+
+00:49:32.345 --> 00:49:34.505
+<v Speaker 0>and we're gonna evaluate this as a mutate
+
+00:49:34.505 --> 00:49:36.664
+<v Speaker 0>or that makes sense. I'm gonna scuff over
+
+00:49:36.664 --> 00:49:39.080
+<v Speaker 0>keywords. I'm not sure right now. But the
+
+00:49:39.080 --> 00:49:41.000
+<v Speaker 0>image is really you're setting the function. Right?
+
+00:49:41.000 --> 00:49:43.160
+<v Speaker 0>So the all these functions are container images
+
+00:49:43.160 --> 00:49:44.840
+<v Speaker 0>that have that they can put and give
+
+00:49:44.840 --> 00:49:45.560
+<v Speaker 0>us output,
+
+00:49:45.960 --> 00:49:47.720
+<v Speaker 0>and then we provide the config.
+
+00:49:47.720 --> 00:49:49.880
+<v Speaker 0>So this is called set namespace. So I'm
+
+00:49:49.880 --> 00:49:51.400
+<v Speaker 0>assuming if I run this on, like, a
+
+00:49:51.400 --> 00:49:53.795
+<v Speaker 0>deployment, it would add the namespace from our
+
+00:49:53.795 --> 00:49:55.555
+<v Speaker 0>kept context. Is that
+
+00:49:55.875 --> 00:49:56.675
+<v Speaker 0>close?
+
+00:49:58.115 --> 00:49:59.714
+<v Speaker 0>I see a little bit of a nod.
+
+00:50:01.234 --> 00:50:03.795
+<v Speaker 1>It's actually take it's taking the
+
+00:50:04.115 --> 00:50:06.595
+<v Speaker 1>name of the namespace from that config map.
+
+00:50:07.119 --> 00:50:09.120
+<v Speaker 1>So if you scroll to the right,
+
+00:50:10.720 --> 00:50:12.720
+<v Speaker 1>that package context dot yaml is that config
+
+00:50:12.720 --> 00:50:15.119
+<v Speaker 1>map you were asking about earlier Mhmm. That
+
+00:50:15.119 --> 00:50:16.080
+<v Speaker 1>had
+
+00:50:16.320 --> 00:50:18.080
+<v Speaker 1>a field that said name
+
+00:50:19.040 --> 00:50:20.800
+<v Speaker 1>example right there is yeah.
+
+00:50:22.355 --> 00:50:24.275
+<v Speaker 1>So it's taking that value and using that
+
+00:50:24.275 --> 00:50:25.875
+<v Speaker 1>as the name of the namespace. So what
+
+00:50:25.875 --> 00:50:27.155
+<v Speaker 1>we're doing right now is we're creating a
+
+00:50:27.155 --> 00:50:29.714
+<v Speaker 1>blueprint. So a blueprint is just a package
+
+00:50:29.714 --> 00:50:32.035
+<v Speaker 1>that is intended to be used as a
+
+00:50:32.035 --> 00:50:32.675
+<v Speaker 1>base,
+
+00:50:32.835 --> 00:50:34.275
+<v Speaker 1>not to be deployed directly.
+
+00:50:35.660 --> 00:50:37.580
+<v Speaker 1>The reason we're running this function
+
+00:50:37.980 --> 00:50:39.500
+<v Speaker 1>is as a test
+
+00:50:39.580 --> 00:50:41.740
+<v Speaker 1>of the function effectively.
+
+00:50:42.620 --> 00:50:43.180
+<v Speaker 1>Because
+
+00:50:43.500 --> 00:50:47.100
+<v Speaker 1>when we like, customize generates variance from bases.
+
+00:50:48.395 --> 00:50:50.234
+<v Speaker 1>When we create the deployment, we will do
+
+00:50:50.234 --> 00:50:52.395
+<v Speaker 1>that similarly using this function.
+
+00:50:52.955 --> 00:50:53.435
+<v Speaker 1>So
+
+00:50:53.915 --> 00:50:55.595
+<v Speaker 1>this the purpose of this command is just
+
+00:50:55.595 --> 00:50:57.275
+<v Speaker 1>to test that the function does what we
+
+00:50:57.275 --> 00:50:57.835
+<v Speaker 1>expect.
+
+00:50:58.635 --> 00:51:01.515
+<v Speaker 0>Okay. What's the dash dash keywords namespace?
+
+00:51:01.515 --> 00:51:03.195
+<v Speaker 0>I'm not sure how this applies in this
+
+00:51:03.195 --> 00:51:03.595
+<v Speaker 0>context.
+
+00:51:04.930 --> 00:51:07.730
+<v Speaker 1>I don't think we actually need that. Alright.
+
+00:51:08.290 --> 00:51:09.890
+<v Speaker 0>Cool. Yeah. I I think it's I think
+
+00:51:09.890 --> 00:51:11.330
+<v Speaker 2>it's for autocomplete.
+
+00:51:11.330 --> 00:51:12.770
+<v Speaker 2>Oh, it says that up right above.
+
+00:51:13.170 --> 00:51:14.850
+<v Speaker 2>If you were using autocomplete,
+
+00:51:15.490 --> 00:51:17.250
+<v Speaker 2>it could help you discover
+
+00:51:17.330 --> 00:51:18.130
+<v Speaker 2>the image
+
+00:51:18.775 --> 00:51:21.415
+<v Speaker 2>if you pass that. Ah, alright. Okay. So
+
+00:51:21.415 --> 00:51:23.975
+<v Speaker 0>this kinda narrows down the scoping. Yeah.
+
+00:51:25.095 --> 00:51:26.695
+<v Speaker 1>The set namespace is
+
+00:51:26.855 --> 00:51:29.495
+<v Speaker 1>in our function catalog, and it has metadata
+
+00:51:29.495 --> 00:51:31.655
+<v Speaker 1>attached. We don't have that many functions right
+
+00:51:31.655 --> 00:51:33.095
+<v Speaker 1>now, so you can browse them all.
+
+00:51:33.770 --> 00:51:35.050
+<v Speaker 1>If in the UI,
+
+00:51:35.210 --> 00:51:36.890
+<v Speaker 1>we do string matching. So if you start
+
+00:51:36.890 --> 00:51:37.850
+<v Speaker 1>typing name,
+
+00:51:38.010 --> 00:51:39.290
+<v Speaker 1>this function will come up.
+
+00:51:39.930 --> 00:51:41.130
+<v Speaker 1>Through the CLI,
+
+00:51:41.450 --> 00:51:44.089
+<v Speaker 1>yeah, we rely on auto completion and need
+
+00:51:44.089 --> 00:51:46.010
+<v Speaker 1>a different way to provide the hint.
+
+00:51:46.775 --> 00:51:50.215
+<v Speaker 0>Okay. Got it. So I So yeah.
+
+00:51:53.735 --> 00:51:55.735
+<v Speaker 0>Let's pull in a container image.
+
+00:51:57.015 --> 00:51:59.495
+<v Speaker 0>I'll assume they're pretty small. No values have
+
+00:51:59.495 --> 00:51:59.895
+<v Speaker 0>changed.
+
+00:52:04.099 --> 00:52:06.579
+<v Speaker 0>Are we m one Mac issue, or can
+
+00:52:06.579 --> 00:52:07.700
+<v Speaker 0>we just ignore that?
+
+00:52:09.940 --> 00:52:12.099
+<v Speaker 2>We are definitely having an m one Mac
+
+00:52:12.339 --> 00:52:15.700
+<v Speaker 2>issue. I'm not entirely sure why it's a
+
+00:52:15.700 --> 00:52:16.019
+<v Speaker 2>warning.
+
+00:52:16.605 --> 00:52:18.125
+<v Speaker 2>Let's see if it actually did it. Whether
+
+00:52:18.125 --> 00:52:19.645
+<v Speaker 2>that's just a warning or that's an error
+
+00:52:19.645 --> 00:52:21.405
+<v Speaker 2>error. I mean, it I'm a little confused.
+
+00:52:21.565 --> 00:52:22.285
+<v Speaker 1>Ran.
+
+00:52:23.085 --> 00:52:25.565
+<v Speaker 2>Did it? It ran. Yeah. It it says
+
+00:52:25.565 --> 00:52:28.045
+<v Speaker 1>all these pieces are already the sample. Yeah.
+
+00:52:29.490 --> 00:52:32.530
+<v Speaker 0>So Alright. Moving on. So the next function
+
+00:52:32.530 --> 00:52:33.170
+<v Speaker 0>is
+
+00:52:33.490 --> 00:52:35.250
+<v Speaker 1>So this is just repeating the same thing,
+
+00:52:35.250 --> 00:52:37.250
+<v Speaker 1>but what it's gonna do is append this
+
+00:52:37.250 --> 00:52:38.690
+<v Speaker 1>function to the kept file.
+
+00:52:39.170 --> 00:52:40.210
+<v Speaker 1>So whenever
+
+00:52:41.115 --> 00:52:42.955
+<v Speaker 1>people wanna create a variant,
+
+00:52:43.435 --> 00:52:45.115
+<v Speaker 1>we can set this up to run the
+
+00:52:45.115 --> 00:52:46.235
+<v Speaker 1>function automatically.
+
+00:52:48.635 --> 00:52:51.195
+<v Speaker 0>Okay. And now we have our mutators listed.
+
+00:52:51.515 --> 00:52:53.755
+<v Speaker 0>Okay. Things are starting to click my head
+
+00:52:53.755 --> 00:52:55.195
+<v Speaker 0>now. I'm starting to Yeah. So I'll just
+
+00:52:55.195 --> 00:52:57.550
+<v Speaker 1>point out that that automatically modified the kpt
+
+00:52:57.550 --> 00:52:58.110
+<v Speaker 1>file.
+
+00:52:58.589 --> 00:53:01.390
+<v Speaker 1>So that's a general pattern in kpt as
+
+00:53:01.390 --> 00:53:02.110
+<v Speaker 1>it functions,
+
+00:53:03.150 --> 00:53:03.790
+<v Speaker 1>tools,
+
+00:53:05.070 --> 00:53:06.030
+<v Speaker 1>interfaces
+
+00:53:06.030 --> 00:53:08.829
+<v Speaker 1>can actually just modify
+
+00:53:08.045 --> 00:53:10.525
+<v Speaker 1>all the resources including the kpt file in
+
+00:53:10.525 --> 00:53:12.525
+<v Speaker 1>order to automate things and make it simpler.
+
+00:53:14.045 --> 00:53:15.405
+<v Speaker 0>Okay. Got it.
+
+00:53:15.965 --> 00:53:18.285
+<v Speaker 0>So that's now showing us that, and then
+
+00:53:18.285 --> 00:53:19.645
+<v Speaker 0>we can do a function
+
+00:53:19.885 --> 00:53:20.525
+<v Speaker 0>render.
+
+00:53:21.410 --> 00:53:23.090
+<v Speaker 1>So what the function render does is it
+
+00:53:23.090 --> 00:53:24.610
+<v Speaker 1>runs the functions that are in the kpt
+
+00:53:24.610 --> 00:53:25.250
+<v Speaker 1>file.
+
+00:53:25.730 --> 00:53:27.410
+<v Speaker 1>So we just added that function to the
+
+00:53:27.410 --> 00:53:29.010
+<v Speaker 1>kpt file. So this is basically just testing
+
+00:53:29.010 --> 00:53:29.890
+<v Speaker 1>that it worked.
+
+00:53:33.330 --> 00:53:33.650
+<v Speaker 2>Okay.
+
+00:53:35.465 --> 00:53:38.185
+<v Speaker 1>And the general pattern that we're using, you
+
+00:53:38.185 --> 00:53:39.465
+<v Speaker 1>can think of those functions
+
+00:53:40.825 --> 00:53:41.705
+<v Speaker 1>in
+
+00:53:41.705 --> 00:53:43.545
+<v Speaker 1>one way kind of like Kubernetes and Mesh
+
+00:53:43.545 --> 00:53:44.185
+<v Speaker 1>control,
+
+00:53:44.585 --> 00:53:46.265
+<v Speaker 1>but applied to your package.
+
+00:53:46.745 --> 00:53:48.745
+<v Speaker 1>So after we make any change, we probably
+
+00:53:48.745 --> 00:53:49.945
+<v Speaker 1>just wanna rerun
+
+00:53:50.220 --> 00:53:52.140
+<v Speaker 1>those functions. For example, if we added a
+
+00:53:52.140 --> 00:53:53.420
+<v Speaker 1>resource to the package,
+
+00:53:53.740 --> 00:53:55.420
+<v Speaker 1>we would wanna set the namespace.
+
+00:53:56.140 --> 00:53:58.380
+<v Speaker 1>So we would just rerun kpt function render.
+
+00:53:59.099 --> 00:54:01.500
+<v Speaker 0>Okay. So kpt function render runs everything that's
+
+00:54:01.500 --> 00:54:03.020
+<v Speaker 0>at the bottom of the kpt file as
+
+00:54:03.020 --> 00:54:03.580
+<v Speaker 0>the pipeline?
+
+00:54:04.535 --> 00:54:07.655
+<v Speaker 1>Yeah. Exactly. Okay. And we're modifying the resources
+
+00:54:07.655 --> 00:54:10.135
+<v Speaker 1>in place. So this is one big difference
+
+00:54:10.695 --> 00:54:14.215
+<v Speaker 1>with kpt compared to kustomize is kustomize will
+
+00:54:14.295 --> 00:54:16.855
+<v Speaker 1>take the base configuration, apply some transformations and
+
+00:54:16.855 --> 00:54:19.810
+<v Speaker 1>patches, and splat out the configuration to somewhere
+
+00:54:19.810 --> 00:54:21.570
+<v Speaker 1>else, like the standard out,
+
+00:54:22.130 --> 00:54:23.410
+<v Speaker 1>for example, so you can pipe it to
+
+00:54:23.410 --> 00:54:25.730
+<v Speaker 1>kptrl apply or apply it with a GitOps
+
+00:54:25.730 --> 00:54:26.290
+<v Speaker 1>tool.
+
+00:54:27.170 --> 00:54:29.890
+<v Speaker 1>Here, we are actually modifying the resources in
+
+00:54:29.890 --> 00:54:30.130
+<v Speaker 1>place.
+
+00:54:31.035 --> 00:54:33.835
+<v Speaker 1>And what that enables is we can decouple
+
+00:54:33.835 --> 00:54:36.875
+<v Speaker 1>the the generation and the transformation in time.
+
+00:54:37.115 --> 00:54:38.395
+<v Speaker 1>So, you know, we can
+
+00:54:38.875 --> 00:54:41.115
+<v Speaker 1>we just generated a namespace,
+
+00:54:42.234 --> 00:54:44.555
+<v Speaker 1>and we transformed the kpt file by adding
+
+00:54:44.555 --> 00:54:46.075
+<v Speaker 1>the set namespace function to it.
+
+00:54:47.010 --> 00:54:48.530
+<v Speaker 1>We don't have to do that every time
+
+00:54:48.530 --> 00:54:50.610
+<v Speaker 1>we wanna use this blueprint in the future.
+
+00:54:50.610 --> 00:54:53.010
+<v Speaker 1>It's gonna be there. It's gonna be stored
+
+00:54:53.890 --> 00:54:55.650
+<v Speaker 1>there in GETs, and we can do additional
+
+00:54:55.650 --> 00:54:58.610
+<v Speaker 1>transformations later. We don't have to, like, write
+
+00:54:58.944 --> 00:55:02.145
+<v Speaker 1>a thousand step pipeline to do all the
+
+00:55:02.145 --> 00:55:03.984
+<v Speaker 1>changes that we've ever done in the history
+
+00:55:03.984 --> 00:55:05.185
+<v Speaker 1>of making changes.
+
+00:55:07.905 --> 00:55:09.744
+<v Speaker 1>Okay. It's taking advantage of the fact that
+
+00:55:09.744 --> 00:55:11.345
+<v Speaker 1>the contents are declarative.
+
+00:55:11.790 --> 00:55:14.110
+<v Speaker 1>Just saying, like, it doesn't matter how
+
+00:55:15.950 --> 00:55:17.310
+<v Speaker 1>you got to this point.
+
+00:55:17.710 --> 00:55:19.230
+<v Speaker 1>This is the
+
+00:55:21.790 --> 00:55:22.590
+<v Speaker 1>desired
+
+00:55:22.590 --> 00:55:24.270
+<v Speaker 1>state of of what you want it to
+
+00:55:24.270 --> 00:55:24.750
+<v Speaker 1>be.
+
+00:55:25.870 --> 00:55:28.565
+<v Speaker 0>Yeah. Yeah. I definitely I get that. That
+
+00:55:28.565 --> 00:55:29.685
+<v Speaker 0>makes sense to me.
+
+00:55:30.724 --> 00:55:32.644
+<v Speaker 0>So it looks like we got another resource
+
+00:55:32.644 --> 00:55:34.325
+<v Speaker 0>to Jen next. So that's the Yeah. So
+
+00:55:34.325 --> 00:55:36.005
+<v Speaker 1>this one's a little bit more interesting than
+
+00:55:36.005 --> 00:55:38.085
+<v Speaker 1>namespace. Namespace is pretty short. It's not that
+
+00:55:38.085 --> 00:55:39.845
+<v Speaker 1>hard to write from scratch.
+
+00:55:40.565 --> 00:55:42.244
+<v Speaker 1>Row binding is a little bit longer.
+
+00:55:48.789 --> 00:55:49.990
+<v Speaker 0>Yep. There we go.
+
+00:55:50.630 --> 00:55:52.390
+<v Speaker 0>Oh, we are giving away,
+
+00:55:53.910 --> 00:55:57.425
+<v Speaker 0>an app admin role to the group here.
+
+00:55:57.425 --> 00:55:57.985
+<v Speaker 0>Okay.
+
+00:55:59.585 --> 00:56:01.185
+<v Speaker 0>We've already catered it.
+
+00:56:02.065 --> 00:56:03.185
+<v Speaker 0>We're going to
+
+00:56:04.065 --> 00:56:05.025
+<v Speaker 0>okay. So this is
+
+00:56:06.865 --> 00:56:08.065
+<v Speaker 2>Yeah. I mean, these are just these are
+
+00:56:08.065 --> 00:56:09.585
+<v Speaker 2>just examples. And what we're trying to do
+
+00:56:09.585 --> 00:56:10.305
+<v Speaker 2>is, essentially,
+
+00:56:11.780 --> 00:56:13.300
+<v Speaker 2>if you look at the email address, I
+
+00:56:13.300 --> 00:56:16.500
+<v Speaker 2>think it was, like, example.admin@bigco.com.
+
+00:56:16.500 --> 00:56:18.500
+<v Speaker 2>And the point is that we would imagine
+
+00:56:18.500 --> 00:56:20.980
+<v Speaker 2>that we're doing a scenario where each group
+
+00:56:21.140 --> 00:56:22.820
+<v Speaker 2>each namespace would be owned by a different
+
+00:56:22.820 --> 00:56:24.420
+<v Speaker 2>group. And so we wanna replace in particular
+
+00:56:24.420 --> 00:56:28.214
+<v Speaker 2>that example bit before the dot admin. And
+
+00:56:28.214 --> 00:56:29.335
+<v Speaker 2>so the idea is, you know, you would
+
+00:56:29.335 --> 00:56:31.095
+<v Speaker 2>you would create a group of administrator. When
+
+00:56:31.095 --> 00:56:33.095
+<v Speaker 2>you're creating a namespace, you wanna create a
+
+00:56:33.095 --> 00:56:34.375
+<v Speaker 2>a group of people that are able to
+
+00:56:34.375 --> 00:56:36.055
+<v Speaker 2>administer it, and each one of those gets
+
+00:56:36.055 --> 00:56:37.734
+<v Speaker 2>their own group. But now the problem is
+
+00:56:37.734 --> 00:56:39.095
+<v Speaker 2>if we don't have templating,
+
+00:56:39.410 --> 00:56:41.970
+<v Speaker 2>how are we going to replace that example
+
+00:56:42.210 --> 00:56:44.050
+<v Speaker 2>in the very bottom line there, the example
+
+00:56:44.050 --> 00:56:45.650
+<v Speaker 2>dot admin? Because it's not that it's not
+
+00:56:45.650 --> 00:56:47.890
+<v Speaker 2>a simple value substitution anymore. It's, like, just
+
+00:56:47.890 --> 00:56:49.570
+<v Speaker 2>a bit before the dot. So
+
+00:56:49.810 --> 00:56:51.570
+<v Speaker 2>that's the challenge that we're gonna solve with
+
+00:56:51.570 --> 00:56:51.890
+<v Speaker 2>functions.
+
+00:56:52.525 --> 00:56:54.845
+<v Speaker 0>Yeah. As you started talking, I I realized
+
+00:56:54.845 --> 00:56:56.605
+<v Speaker 0>that some of this is also covered in
+
+00:56:56.605 --> 00:56:58.285
+<v Speaker 0>your blurb that I've just been skipping by
+
+00:56:58.285 --> 00:57:00.765
+<v Speaker 0>and scrolling through. Kinda just blah blah blah.
+
+00:57:00.765 --> 00:57:02.765
+<v Speaker 0>It's fine. Copy the command. So thank you
+
+00:57:02.765 --> 00:57:04.845
+<v Speaker 0>for providing that extra context.
+
+00:57:06.150 --> 00:57:08.390
+<v Speaker 1>Yeah. So you could write a function to
+
+00:57:08.390 --> 00:57:10.390
+<v Speaker 1>this specific thing. If it's gonna be common,
+
+00:57:10.390 --> 00:57:12.470
+<v Speaker 1>that may be a better way that would
+
+00:57:12.470 --> 00:57:14.310
+<v Speaker 1>involve less configuration.
+
+00:57:14.950 --> 00:57:18.309
+<v Speaker 1>This is the apply replacements transform from customize
+
+00:57:19.975 --> 00:57:21.895
+<v Speaker 1>packaged in a function that we can use
+
+00:57:21.895 --> 00:57:22.695
+<v Speaker 1>and kept.
+
+00:57:24.055 --> 00:57:24.855
+<v Speaker 1>Okay.
+
+00:57:24.855 --> 00:57:27.494
+<v Speaker 1>And it's it's basically doing a patch where
+
+00:57:27.494 --> 00:57:30.135
+<v Speaker 1>the the it can take the input
+
+00:57:31.335 --> 00:57:33.175
+<v Speaker 1>of the patch from a specified
+
+00:57:33.175 --> 00:57:33.575
+<v Speaker 1>location.
+
+00:57:36.730 --> 00:57:38.570
+<v Speaker 0>Okay. That makes sense.
+
+00:57:39.289 --> 00:57:41.130
+<v Speaker 0>Yeah. Okay. Got it.
+
+00:57:43.210 --> 00:57:45.770
+<v Speaker 0>So now we can run
+
+00:57:47.154 --> 00:57:49.875
+<v Speaker 0>this. So this is, yes, gonna add this
+
+00:57:49.875 --> 00:57:51.474
+<v Speaker 1>function to the kpt file.
+
+00:57:51.795 --> 00:57:53.555
+<v Speaker 0>And from that point, whenever we need to
+
+00:57:53.555 --> 00:57:55.234
+<v Speaker 0>run all of these transformations, it's just the
+
+00:57:55.234 --> 00:57:57.315
+<v Speaker 0>kpt function render.
+
+00:57:57.394 --> 00:57:58.355
+<v Speaker 1>Exactly.
+
+00:57:59.520 --> 00:58:01.200
+<v Speaker 0>Okay. I can see the workflow here. I
+
+00:58:01.200 --> 00:58:02.560
+<v Speaker 0>can see how you you kind of you
+
+00:58:02.560 --> 00:58:04.400
+<v Speaker 0>make the change. It gets persisted to the
+
+00:58:04.400 --> 00:58:05.360
+<v Speaker 0>kpt file.
+
+00:58:05.600 --> 00:58:07.440
+<v Speaker 0>And then when someone else checks us out,
+
+00:58:07.440 --> 00:58:10.000
+<v Speaker 0>they're just running the render function. I'm assuming
+
+00:58:11.040 --> 00:58:13.280
+<v Speaker 0>people can reuse these packages and provide their
+
+00:58:13.280 --> 00:58:15.215
+<v Speaker 0>own context. Is that kinda where we're moving
+
+00:58:15.215 --> 00:58:16.575
+<v Speaker 0>forward to here?
+
+00:58:16.735 --> 00:58:19.055
+<v Speaker 1>Yeah. Exactly. Okay. Cool.
+
+00:58:19.855 --> 00:58:23.055
+<v Speaker 1>Yeah. We actually need to check-in this blueprint
+
+00:58:23.375 --> 00:58:24.735
+<v Speaker 1>in order to make it,
+
+00:58:25.455 --> 00:58:27.375
+<v Speaker 1>you know, usable as a deployment.
+
+00:58:28.690 --> 00:58:30.930
+<v Speaker 1>But that that'll be coming up in the
+
+00:58:30.930 --> 00:58:32.210
+<v Speaker 1>tutorial, presumably.
+
+00:58:33.250 --> 00:58:33.970
+<v Speaker 0>Alright.
+
+00:58:34.290 --> 00:58:35.890
+<v Speaker 0>Will we skip the quota that you wanna
+
+00:58:35.890 --> 00:58:38.450
+<v Speaker 0>run through? Sorry. You can skip the quota.
+
+00:58:41.905 --> 00:58:42.625
+<v Speaker 0>K.
+
+00:58:45.585 --> 00:58:47.425
+<v Speaker 0>So cut up a directory,
+
+00:58:47.585 --> 00:58:48.785
+<v Speaker 0>add the directory.
+
+00:58:50.305 --> 00:58:51.505
+<v Speaker 0>I don't think I'm in
+
+00:58:52.145 --> 00:58:54.305
+<v Speaker 0>should I move this to the right location?
+
+00:58:54.305 --> 00:58:56.385
+<v Speaker 0>Was this supposed to be inside my blueprints?
+
+00:58:57.320 --> 00:58:58.840
+<v Speaker 2>Yeah. That'd be good. Yes.
+
+00:59:01.560 --> 00:59:04.040
+<v Speaker 0>Alright. So now if I oh, I don't
+
+00:59:04.040 --> 00:59:04.920
+<v Speaker 0>need to do it.
+
+00:59:05.560 --> 00:59:08.040
+<v Speaker 0>Take that off. So we can do add
+
+00:59:09.095 --> 00:59:12.215
+<v Speaker 0>and just over tagging it to alright. Okay.
+
+00:59:12.694 --> 00:59:14.375
+<v Speaker 1>So the the purpose of the tag is
+
+00:59:14.375 --> 00:59:16.295
+<v Speaker 1>to mark it as a particular version or
+
+00:59:16.295 --> 00:59:16.775
+<v Speaker 1>revision.
+
+00:59:22.320 --> 00:59:23.120
+<v Speaker 0>Alright.
+
+00:59:23.520 --> 00:59:25.440
+<v Speaker 1>And that that enables us to do things
+
+00:59:25.440 --> 00:59:28.000
+<v Speaker 1>like discover that there's a new version and
+
+00:59:29.440 --> 00:59:31.920
+<v Speaker 1>suggest an upgrade, things like that. Yeah. So
+
+00:59:31.920 --> 00:59:34.495
+<v Speaker 0>now our our package is in this blueprints
+
+00:59:34.495 --> 00:59:36.495
+<v Speaker 0>repository that we created. I'm assuming as we
+
+00:59:36.495 --> 00:59:38.495
+<v Speaker 0>move over to this deployment repository, we're gonna
+
+00:59:38.495 --> 00:59:39.615
+<v Speaker 0>consume this package
+
+00:59:40.495 --> 00:59:41.855
+<v Speaker 0>in some way and
+
+00:59:42.095 --> 00:59:43.295
+<v Speaker 0>alright. K.
+
+00:59:43.935 --> 00:59:46.815
+<v Speaker 0>So we're gonna go to kpt deployments.
+
+00:59:47.940 --> 00:59:50.180
+<v Speaker 0>And from here, we're gonna run a kept
+
+00:59:50.180 --> 00:59:51.460
+<v Speaker 0>package get.
+
+00:59:52.339 --> 00:59:53.940
+<v Speaker 0>And I'm pretty sure I still have that
+
+00:59:53.940 --> 00:59:56.020
+<v Speaker 0>environment variable kicking around.
+
+00:59:56.260 --> 00:59:56.820
+<v Speaker 0>Yeah.
+
+01:00:00.900 --> 01:00:03.300
+<v Speaker 0>And that's close it. So I'm assuming
+
+01:00:06.645 --> 01:00:08.165
+<v Speaker 0>yeah. That's our directory.
+
+01:00:08.405 --> 01:00:09.045
+<v Speaker 0>Cool.
+
+01:00:11.605 --> 01:00:13.125
+<v Speaker 0>But does that mean that I can met
+
+01:00:13.125 --> 01:00:15.045
+<v Speaker 0>my blueprints with my deployments?
+
+01:00:16.089 --> 01:00:18.010
+<v Speaker 0>Are those set up as sub modules or
+
+01:00:18.010 --> 01:00:20.010
+<v Speaker 0>something like that? Like, how does that work?
+
+01:00:23.930 --> 01:00:24.570
+<v Speaker 2>You
+
+01:00:26.089 --> 01:00:27.290
+<v Speaker 2>do commit your blueprints.
+
+01:00:28.215 --> 01:00:29.255
+<v Speaker 2>You also,
+
+01:00:29.495 --> 01:00:30.855
+<v Speaker 2>like, I think one of the ideas here
+
+01:00:30.855 --> 01:00:32.135
+<v Speaker 2>is that, yes, you do,
+
+01:00:32.935 --> 01:00:35.655
+<v Speaker 2>commit your deployments as well. Brian can get
+
+01:00:35.655 --> 01:00:38.055
+<v Speaker 2>into the the logic there, but the,
+
+01:00:38.535 --> 01:00:40.295
+<v Speaker 2>what the the theory there, there's a strong
+
+01:00:40.295 --> 01:00:41.815
+<v Speaker 2>theory behind it. Mean, it's essentially, it means
+
+01:00:41.815 --> 01:00:43.415
+<v Speaker 2>you can really understand what's gonna happen at
+
+01:00:43.415 --> 01:00:45.470
+<v Speaker 2>all times when it actually gets to your
+
+01:00:45.470 --> 01:00:46.110
+<v Speaker 2>cluster.
+
+01:00:46.829 --> 01:00:48.110
+<v Speaker 1>It also means
+
+01:00:48.430 --> 01:00:49.550
+<v Speaker 1>that you can just
+
+01:00:50.829 --> 01:00:52.910
+<v Speaker 1>we you have base configuration
+
+01:00:53.230 --> 01:00:54.510
+<v Speaker 1>from the blueprint.
+
+01:00:56.030 --> 01:00:57.310
+<v Speaker 1>You don't have to
+
+01:00:58.745 --> 01:01:01.785
+<v Speaker 1>modify the blueprint or transform the blueprint with
+
+01:01:01.785 --> 01:01:04.185
+<v Speaker 1>functions with kpt function render. You can also
+
+01:01:04.185 --> 01:01:05.065
+<v Speaker 1>just edit
+
+01:01:05.385 --> 01:01:06.425
+<v Speaker 1>the deployment
+
+01:01:06.425 --> 01:01:07.225
+<v Speaker 1>directly.
+
+01:01:07.705 --> 01:01:09.545
+<v Speaker 1>And that's effectively
+
+01:01:10.310 --> 01:01:12.310
+<v Speaker 1>auto generates a
+
+01:01:12.790 --> 01:01:13.430
+<v Speaker 1>patch
+
+01:01:13.830 --> 01:01:15.910
+<v Speaker 1>on top of the blueprint is one way
+
+01:01:15.910 --> 01:01:16.870
+<v Speaker 1>to think about it,
+
+01:01:17.590 --> 01:01:19.350
+<v Speaker 1>except that you can just edit. You don't
+
+01:01:19.350 --> 01:01:21.270
+<v Speaker 1>have to actually think about how to express
+
+01:01:21.270 --> 01:01:22.150
+<v Speaker 1>the patch.
+
+01:01:22.950 --> 01:01:24.070
+<v Speaker 1>You can just edit.
+
+01:01:24.310 --> 01:01:24.710
+<v Speaker 1>Okay.
+
+01:01:25.835 --> 01:01:26.474
+<v Speaker 1>So
+
+01:01:27.755 --> 01:01:29.914
+<v Speaker 0>Alright. Let's see what's going on here then.
+
+01:01:29.914 --> 01:01:30.474
+<v Speaker 0>So
+
+01:01:31.275 --> 01:01:32.474
+<v Speaker 0>we took that.
+
+01:01:32.875 --> 01:01:34.075
+<v Speaker 1>Then So just so you do a kept
+
+01:01:34.075 --> 01:01:35.115
+<v Speaker 1>function render.
+
+01:01:36.555 --> 01:01:36.714
+<v Speaker 1>Your
+
+01:01:40.980 --> 01:01:44.020
+<v Speaker 0>It was updated now, our namespace example.
+
+01:01:44.020 --> 01:01:44.820
+<v Speaker 0>So I'm assuming
+
+01:01:46.500 --> 01:01:48.260
+<v Speaker 2>Yeah. I think the the important thing to
+
+01:01:48.260 --> 01:01:50.500
+<v Speaker 2>remember is when you created your blueprint,
+
+01:01:50.580 --> 01:01:51.060
+<v Speaker 2>your
+
+01:01:51.540 --> 01:01:55.015
+<v Speaker 2>base package, your namespace name was example. Here
+
+01:01:55.015 --> 01:01:56.615
+<v Speaker 2>you have, instantiated
+
+01:01:56.615 --> 01:01:59.575
+<v Speaker 2>an instance of that package into a directory
+
+01:01:59.575 --> 01:02:01.655
+<v Speaker 2>called back end. That was the name you
+
+01:02:01.655 --> 01:02:02.295
+<v Speaker 2>gave it.
+
+01:02:02.615 --> 01:02:03.175
+<v Speaker 2>And,
+
+01:02:03.494 --> 01:02:06.295
+<v Speaker 2>the name here is an important concept that,
+
+01:02:06.615 --> 01:02:09.970
+<v Speaker 2>with those functions you copied into or assigned
+
+01:02:09.970 --> 01:02:11.250
+<v Speaker 2>to the name of the namespace, which is
+
+01:02:11.250 --> 01:02:12.930
+<v Speaker 2>why the name of the namespace is now
+
+01:02:12.930 --> 01:02:14.130
+<v Speaker 2>back end. If you were to create another
+
+01:02:14.130 --> 01:02:15.809
+<v Speaker 2>one called back end two and hit function
+
+01:02:15.809 --> 01:02:17.250
+<v Speaker 2>render, it would be called back end two.
+
+01:02:17.250 --> 01:02:18.609
+<v Speaker 2>So you can create as many instances you
+
+01:02:18.609 --> 01:02:19.170
+<v Speaker 2>want,
+
+01:02:19.569 --> 01:02:21.970
+<v Speaker 2>and the the functions run and they
+
+01:02:22.289 --> 01:02:25.465
+<v Speaker 2>enforce the invariants that you as the author
+
+01:02:25.465 --> 01:02:28.025
+<v Speaker 2>of that package blueprint defined. So the invariants
+
+01:02:28.025 --> 01:02:30.265
+<v Speaker 2>you've defined are that the namespace should be
+
+01:02:30.265 --> 01:02:32.185
+<v Speaker 2>called the same as the package name and
+
+01:02:32.185 --> 01:02:34.345
+<v Speaker 2>that the group should be
+
+01:02:34.585 --> 01:02:35.305
+<v Speaker 2>the
+
+01:02:36.585 --> 01:02:38.585
+<v Speaker 2>packagename.admin@bigco.com.
+
+01:02:38.585 --> 01:02:39.785
+<v Speaker 2>So if we have a look at the
+
+01:02:39.840 --> 01:02:42.080
+<v Speaker 2>role binding, it should hopefully have back end
+
+01:02:42.080 --> 01:02:42.960
+<v Speaker 2>dot admin.
+
+01:02:45.440 --> 01:02:46.720
+<v Speaker 0>Doesn't it? Yeah.
+
+01:02:48.480 --> 01:02:50.880
+<v Speaker 1>So this is a simple example illustrating what
+
+01:02:50.880 --> 01:02:53.920
+<v Speaker 1>I call the variant constructor pattern where, you
+
+01:02:53.715 --> 01:02:55.395
+<v Speaker 1>know, a common thing is you just wanna
+
+01:02:55.395 --> 01:02:56.435
+<v Speaker 1>create multiple
+
+01:02:56.835 --> 01:02:58.995
+<v Speaker 1>different variants of the same blueprint.
+
+01:02:59.635 --> 01:03:01.795
+<v Speaker 1>You might want in this case, you know,
+
+01:03:01.795 --> 01:03:04.275
+<v Speaker 1>we're creating multiple namespaces for multiple teams or
+
+01:03:04.275 --> 01:03:05.235
+<v Speaker 1>something, but,
+
+01:03:06.115 --> 01:03:07.715
+<v Speaker 1>you know, you could also have dev and
+
+01:03:07.715 --> 01:03:09.075
+<v Speaker 1>prod environments, things like that.
+
+01:03:10.390 --> 01:03:13.670
+<v Speaker 1>So other inputs may be needed to fully
+
+01:03:13.670 --> 01:03:14.710
+<v Speaker 1>specialize
+
+01:03:15.510 --> 01:03:18.070
+<v Speaker 1>the blueprint for your particular scenario.
+
+01:03:18.470 --> 01:03:20.310
+<v Speaker 1>In this case, no other inputs are needed
+
+01:03:20.310 --> 01:03:22.310
+<v Speaker 1>other than just the back conditioning. We're just
+
+01:03:22.310 --> 01:03:24.965
+<v Speaker 1>leveraging that to generate an identity for each
+
+01:03:24.965 --> 01:03:25.685
+<v Speaker 1>variant.
+
+01:03:28.485 --> 01:03:30.965
+<v Speaker 1>Additional hand editing or
+
+01:03:31.685 --> 01:03:33.205
+<v Speaker 1>automated transformations
+
+01:03:34.085 --> 01:03:35.845
+<v Speaker 1>could also be done to the deployment.
+
+01:03:36.260 --> 01:03:38.420
+<v Speaker 1>But here, they're not really necessary. So this
+
+01:03:38.420 --> 01:03:40.819
+<v Speaker 1>is, like, the simplest possible case where all
+
+01:03:40.819 --> 01:03:42.260
+<v Speaker 1>you have to just do is say what
+
+01:03:42.260 --> 01:03:43.540
+<v Speaker 1>you want the name and the namespace to
+
+01:03:43.540 --> 01:03:44.740
+<v Speaker 1>be and everything is
+
+01:03:45.460 --> 01:03:47.380
+<v Speaker 1>generated automatically for you. You don't have to
+
+01:03:47.380 --> 01:03:47.940
+<v Speaker 1>touch anything.
+
+01:03:49.215 --> 01:03:52.415
+<v Speaker 0>Okay. I'm I'm curious. Are these kept merge
+
+01:03:52.415 --> 01:03:53.135
+<v Speaker 0>comments?
+
+01:03:53.695 --> 01:03:55.855
+<v Speaker 0>How the patches work? Are these important? Or
+
+01:03:55.855 --> 01:03:56.495
+<v Speaker 0>are these
+
+01:03:57.135 --> 01:03:57.855
+<v Speaker 1>Yeah.
+
+01:03:58.015 --> 01:04:03.535
+<v Speaker 1>So if we change the blueprints
+
+01:04:01.930 --> 01:04:04.090
+<v Speaker 1>after do after doing this, after creating the
+
+01:04:04.090 --> 01:04:04.810
+<v Speaker 1>deployment,
+
+01:04:05.210 --> 01:04:06.490
+<v Speaker 1>and we wanted to pick
+
+01:04:06.890 --> 01:04:08.970
+<v Speaker 1>up that change in the deployment,
+
+01:04:09.610 --> 01:04:12.250
+<v Speaker 1>then we would do a kept package updates
+
+01:04:12.250 --> 01:04:13.690
+<v Speaker 1>to pull in the changes
+
+01:04:14.090 --> 01:04:15.210
+<v Speaker 1>from the blueprint.
+
+01:04:15.770 --> 01:04:16.570
+<v Speaker 1>And that
+
+01:04:17.145 --> 01:04:18.425
+<v Speaker 1>kept merge
+
+01:04:18.505 --> 01:04:19.385
+<v Speaker 1>comment
+
+01:04:20.265 --> 01:04:21.705
+<v Speaker 1>keeps track of the mapping
+
+01:04:22.425 --> 01:04:26.105
+<v Speaker 1>between the customized deployment and the original blueprint.
+
+01:04:26.185 --> 01:04:28.025
+<v Speaker 0>Okay. So if I update in
+
+01:04:29.640 --> 01:04:30.280
+<v Speaker 0>the
+
+01:04:30.440 --> 01:04:33.160
+<v Speaker 0>kept blueprint and change the email address in
+
+01:04:33.160 --> 01:04:34.760
+<v Speaker 0>big code dot com to
+
+01:04:35.240 --> 01:04:38.119
+<v Speaker 0>extra large code dot com and tag that
+
+01:04:38.119 --> 01:04:39.880
+<v Speaker 0>again, we would be able to pull through
+
+01:04:39.880 --> 01:04:42.279
+<v Speaker 0>and update that even though we've already done
+
+01:04:42.279 --> 01:04:42.839
+<v Speaker 0>some
+
+01:04:43.115 --> 01:04:46.234
+<v Speaker 0>changes? We would. We probably wouldn't
+
+01:04:46.795 --> 01:04:48.714
+<v Speaker 1>want that to necessarily stomp
+
+01:04:48.714 --> 01:04:50.635
+<v Speaker 1>what was in here. So
+
+01:04:51.835 --> 01:04:54.635
+<v Speaker 1>in different scenarios, might want different merge
+
+01:04:54.795 --> 01:04:55.595
+<v Speaker 1>strategies.
+
+01:04:55.595 --> 01:04:57.434
+<v Speaker 1>That's something we're working on right now.
+
+01:04:59.579 --> 01:05:01.180
+<v Speaker 1>But I the way I think of the
+
+01:05:01.180 --> 01:05:03.500
+<v Speaker 1>blueprint is that it provides defaults.
+
+01:05:04.059 --> 01:05:04.619
+<v Speaker 1>Oh,
+
+01:05:05.099 --> 01:05:07.660
+<v Speaker 1>so, you know, if we didn't actually change
+
+01:05:08.220 --> 01:05:10.460
+<v Speaker 1>from the defaults in the deployment, we probably
+
+01:05:10.460 --> 01:05:11.980
+<v Speaker 1>would wanna pick up the change. On the
+
+01:05:11.980 --> 01:05:14.385
+<v Speaker 1>other hand, if we didn't edit and overwrote
+
+01:05:14.385 --> 01:05:16.145
+<v Speaker 1>it, we probably wouldn't wanna pick it up.
+
+01:05:16.145 --> 01:05:18.225
+<v Speaker 1>Right? Like, that's how customize would work.
+
+01:05:21.185 --> 01:05:22.705
+<v Speaker 1>Looking I look at a bunch of helm
+
+01:05:22.705 --> 01:05:24.865
+<v Speaker 1>charts and when people add new
+
+01:05:25.345 --> 01:05:26.865
+<v Speaker 1>fields or change things,
+
+01:05:27.789 --> 01:05:30.670
+<v Speaker 1>they conditionalize them so that existing
+
+01:05:30.670 --> 01:05:32.750
+<v Speaker 1>deployments of the chart don't actually pick up
+
+01:05:32.750 --> 01:05:33.630
+<v Speaker 1>those changes.
+
+01:05:33.869 --> 01:05:35.390
+<v Speaker 1>So clearly, a lot of people
+
+01:05:35.869 --> 01:05:36.990
+<v Speaker 1>don't want
+
+01:05:38.829 --> 01:05:42.269
+<v Speaker 1>new behaviors picked up necessarily from a base
+
+01:05:43.255 --> 01:05:44.055
+<v Speaker 1>deployment.
+
+01:05:44.055 --> 01:05:44.615
+<v Speaker 1>So
+
+01:05:45.974 --> 01:05:47.815
+<v Speaker 1>that's something that we're still
+
+01:05:48.215 --> 01:05:50.775
+<v Speaker 1>working out as to what behaviors, you know,
+
+01:05:50.775 --> 01:05:51.415
+<v Speaker 1>people
+
+01:05:51.575 --> 01:05:53.815
+<v Speaker 1>would expect or would want for different scenarios.
+
+01:05:55.110 --> 01:05:57.030
+<v Speaker 2>Cool. But but I but I wouldn't like,
+
+01:05:57.030 --> 01:05:58.470
+<v Speaker 2>the workflow you described is is the workflow
+
+01:05:58.470 --> 01:06:00.390
+<v Speaker 2>that that we enable. Right? You create the
+
+01:06:00.390 --> 01:06:02.550
+<v Speaker 2>instance of the package. You can edit it
+
+01:06:02.550 --> 01:06:04.550
+<v Speaker 2>manually, and you can still take in changes
+
+01:06:04.550 --> 01:06:06.790
+<v Speaker 2>from upstream as that upstream package evolves. So
+
+01:06:06.790 --> 01:06:07.910
+<v Speaker 2>if there's a new version of
+
+01:06:08.395 --> 01:06:09.195
+<v Speaker 2>MySQL,
+
+01:06:09.195 --> 01:06:10.875
+<v Speaker 2>you can go and get that new package,
+
+01:06:10.875 --> 01:06:12.395
+<v Speaker 2>and and it will merge in.
+
+01:06:12.955 --> 01:06:16.155
+<v Speaker 2>The the undefined or the under defined behavior
+
+01:06:16.155 --> 01:06:17.275
+<v Speaker 2>that we're trying to
+
+01:06:17.915 --> 01:06:20.235
+<v Speaker 2>define better is what happens when you change
+
+01:06:20.235 --> 01:06:22.190
+<v Speaker 2>a field, when you've both changed a field,
+
+01:06:22.190 --> 01:06:23.869
+<v Speaker 2>there's an overlap, a git conflict, or what
+
+01:06:24.030 --> 01:06:26.430
+<v Speaker 2>you know, a conflict in editing, and that's,
+
+01:06:26.430 --> 01:06:28.589
+<v Speaker 2>I think, where we are working through still.
+
+01:06:28.589 --> 01:06:30.829
+<v Speaker 2>But when you make the majority of changes,
+
+01:06:30.829 --> 01:06:32.829
+<v Speaker 2>you can just make your local changes and
+
+01:06:32.829 --> 01:06:34.110
+<v Speaker 2>pull in upstream changes
+
+01:06:34.190 --> 01:06:35.790
+<v Speaker 2>as you as you want or do expect
+
+01:06:35.790 --> 01:06:35.950
+<v Speaker 2>to.
+
+01:06:36.875 --> 01:06:37.595
+<v Speaker 0>Alright.
+
+01:06:37.675 --> 01:06:39.194
+<v Speaker 0>I was about to ask a question there,
+
+01:06:39.194 --> 01:06:40.875
+<v Speaker 0>but I see it's the next heading. So
+
+01:06:40.875 --> 01:06:44.075
+<v Speaker 0>I'm gonna go ahead and just commit
+
+01:06:45.035 --> 01:06:46.954
+<v Speaker 0>and push this. Because I was like, okay.
+
+01:06:46.954 --> 01:06:49.434
+<v Speaker 0>Do we just give control, apply this now,
+
+01:06:49.434 --> 01:06:51.835
+<v Speaker 0>or do we use config sync? I think
+
+01:06:51.835 --> 01:06:54.000
+<v Speaker 0>that's what I had in school. Right? So
+
+01:06:54.480 --> 01:06:56.400
+<v Speaker 0>that's yeah. That's pushed.
+
+01:06:56.960 --> 01:06:58.960
+<v Speaker 2>If I recall, we're gonna use kept live,
+
+01:06:58.960 --> 01:07:00.320
+<v Speaker 2>which is more like a
+
+01:07:01.280 --> 01:07:02.960
+<v Speaker 2>a more advanced version of kubectl
+
+01:07:04.400 --> 01:07:04.960
+<v Speaker 2>apply,
+
+01:07:05.280 --> 01:07:05.520
+<v Speaker 2>but
+
+01:07:06.954 --> 01:07:08.635
+<v Speaker 2>you can also do it using config sync.
+
+01:07:08.635 --> 01:07:09.994
+<v Speaker 2>I think in the UI, we go through
+
+01:07:09.994 --> 01:07:10.635
+<v Speaker 2>it using,
+
+01:07:11.275 --> 01:07:13.994
+<v Speaker 2>like, a GitOps tool and config sync in
+
+01:07:13.994 --> 01:07:16.315
+<v Speaker 2>that case. I think in the CLI demonstration,
+
+01:07:16.315 --> 01:07:18.234
+<v Speaker 2>we're directly applying it. It's sort of the
+
+01:07:19.160 --> 01:07:21.080
+<v Speaker 2>easier way to get going and doesn't require
+
+01:07:21.080 --> 01:07:23.000
+<v Speaker 2>config sync. We've already installed config sync, so
+
+01:07:23.000 --> 01:07:24.280
+<v Speaker 2>you could also do it that way. But
+
+01:07:24.600 --> 01:07:25.320
+<v Speaker 0>Alright.
+
+01:07:26.360 --> 01:07:27.880
+<v Speaker 0>Well, it looks like we have some sort
+
+01:07:27.880 --> 01:07:29.720
+<v Speaker 0>of resource script thing created
+
+01:07:31.080 --> 01:07:33.000
+<v Speaker 0>with the namespace for the project,
+
+01:07:33.525 --> 01:07:35.685
+<v Speaker 0>and then we just do a
+
+01:07:36.405 --> 01:07:38.005
+<v Speaker 0>kpt live apply
+
+01:07:38.484 --> 01:07:39.445
+<v Speaker 0>back end.
+
+01:07:42.405 --> 01:07:44.565
+<v Speaker 0>It worked. That's it. Right? One of the
+
+01:07:44.805 --> 01:07:46.085
+<v Speaker 2>yeah. One of the cool things about kpt
+
+01:07:46.085 --> 01:07:47.924
+<v Speaker 2>live apply is it, it checks the I
+
+01:07:47.924 --> 01:07:49.500
+<v Speaker 2>believe it checks the status of this. So
+
+01:07:49.500 --> 01:07:51.820
+<v Speaker 2>you can see, you know, pending and successful.
+
+01:07:51.820 --> 01:07:52.300
+<v Speaker 2>There's a,
+
+01:07:53.020 --> 01:07:54.860
+<v Speaker 2>so it can do things like tell you
+
+01:07:54.860 --> 01:07:57.500
+<v Speaker 2>if your deployment actually apply actually
+
+01:07:58.140 --> 01:08:00.140
+<v Speaker 2>reached a stable state at the you know,
+
+01:08:00.140 --> 01:08:02.940
+<v Speaker 2>when ready as it were. Like, kubectl, we
+
+01:08:02.940 --> 01:08:04.140
+<v Speaker 2>have to explicitly wait.
+
+01:08:06.935 --> 01:08:07.655
+<v Speaker 0>Alright.
+
+01:08:07.895 --> 01:08:09.895
+<v Speaker 0>So I wanna make sure that I understand
+
+01:08:09.895 --> 01:08:12.295
+<v Speaker 0>this right. Kptlive is different from config sync.
+
+01:08:12.295 --> 01:08:14.615
+<v Speaker 0>These are two different ways of applying the
+
+01:08:14.615 --> 01:08:15.655
+<v Speaker 0>configuration to the cluster.
+
+01:08:16.970 --> 01:08:19.290
+<v Speaker 2>They are. They they share code, they're actually,
+
+01:08:19.930 --> 01:08:22.569
+<v Speaker 2>they're they're similar in in logic.
+
+01:08:23.050 --> 01:08:25.610
+<v Speaker 2>But, yes, kept live is the CLI form.
+
+01:08:25.610 --> 01:08:27.850
+<v Speaker 2>Config Sync is the server form.
+
+01:08:28.410 --> 01:08:28.729
+<v Speaker 2>Regardless,
+
+01:08:29.485 --> 01:08:32.205
+<v Speaker 2>what we're doing is we're reading from files,
+
+01:08:32.925 --> 01:08:35.245
+<v Speaker 2>fully hydrated, like, ready to apply files and
+
+01:08:35.245 --> 01:08:36.524
+<v Speaker 2>applying them to the cluster.
+
+01:08:36.925 --> 01:08:38.925
+<v Speaker 2>So you could use kpt live. You can
+
+01:08:38.925 --> 01:08:40.925
+<v Speaker 2>use kptly apply. You can use config sync.
+
+01:08:40.925 --> 01:08:42.285
+<v Speaker 2>You can use any
+
+01:08:42.285 --> 01:08:44.285
+<v Speaker 2>GitOps style tool that you
+
+01:08:44.460 --> 01:08:46.939
+<v Speaker 2>want to use or or or are already
+
+01:08:46.939 --> 01:08:47.659
+<v Speaker 2>using
+
+01:08:48.060 --> 01:08:51.580
+<v Speaker 2>Okay. Or already using. So I would suggest
+
+01:08:51.580 --> 01:08:52.300
+<v Speaker 1>that we
+
+01:08:53.899 --> 01:08:56.220
+<v Speaker 1>actually run through the UI if Justin can
+
+01:08:56.220 --> 01:08:56.779
+<v Speaker 1>share
+
+01:08:57.435 --> 01:08:59.274
+<v Speaker 1>that, just so can do that before we
+
+01:08:59.274 --> 01:09:00.234
+<v Speaker 1>run out of time.
+
+01:09:00.715 --> 01:09:02.154
+<v Speaker 2>Yeah. Push the scary button.
+
+01:09:02.795 --> 01:09:04.074
+<v Speaker 2>Let's see.
+
+01:09:04.635 --> 01:09:06.874
+<v Speaker 2>I'm gonna get let's see. Let me move
+
+01:09:07.114 --> 01:09:09.034
+<v Speaker 2>I will apologies if I look to the
+
+01:09:09.034 --> 01:09:10.875
+<v Speaker 2>side, but otherwise, we'll get the, you know,
+
+01:09:10.875 --> 01:09:11.514
+<v Speaker 2>never ending.
+
+01:09:13.439 --> 01:09:15.040
+<v Speaker 2>I think I am sharing
+
+01:09:15.680 --> 01:09:16.399
+<v Speaker 2>the
+
+01:09:17.920 --> 01:09:18.560
+<v Speaker 0>configuration.
+
+01:09:18.720 --> 01:09:20.960
+<v Speaker 0>Very professional setting up a quick
+
+01:09:21.520 --> 01:09:22.639
+<v Speaker 2>Oh, here we are.
+
+01:09:24.000 --> 01:09:25.200
+<v Speaker 2>It even looks a little bit like me
+
+01:09:25.200 --> 01:09:26.319
+<v Speaker 2>in in silhouette.
+
+01:09:26.479 --> 01:09:27.040
+<v Speaker 2>There we go.
+
+01:09:28.554 --> 01:09:29.354
+<v Speaker 2>Alright.
+
+01:09:29.994 --> 01:09:32.474
+<v Speaker 2>Okay. So this is the configuration as data,
+
+01:09:32.635 --> 01:09:33.914
+<v Speaker 2>UI. I have,
+
+01:09:35.034 --> 01:09:37.274
+<v Speaker 2>logged in, and let me just check that
+
+01:09:37.274 --> 01:09:39.114
+<v Speaker 2>it's yeah. Okay. Good. So my port forward
+
+01:09:39.114 --> 01:09:40.314
+<v Speaker 2>is still working. I was a little worried.
+
+01:09:40.314 --> 01:09:41.915
+<v Speaker 2>I might have timed out. So we've basically
+
+01:09:41.915 --> 01:09:44.010
+<v Speaker 2>gone through the first couple of steps here
+
+01:09:44.250 --> 01:09:45.689
+<v Speaker 2>of of the
+
+01:09:45.850 --> 01:09:46.810
+<v Speaker 2>configuration
+
+01:09:46.810 --> 01:09:47.369
+<v Speaker 2>and,
+
+01:09:47.930 --> 01:09:50.330
+<v Speaker 2>very similar we we've done very similar things
+
+01:09:50.330 --> 01:09:52.649
+<v Speaker 2>to what you've done in the CLI. So
+
+01:09:52.649 --> 01:09:53.369
+<v Speaker 2>I have
+
+01:09:54.170 --> 01:09:55.929
+<v Speaker 2>defined my own kept deployment
+
+01:09:56.010 --> 01:10:00.010
+<v Speaker 2>repo and my own kept blueprints repo. They're
+
+01:09:59.265 --> 01:10:01.345
+<v Speaker 2>They're actually linked to my GitHub, not yours.
+
+01:10:01.345 --> 01:10:02.865
+<v Speaker 2>We could try registering yours in a minute,
+
+01:10:02.865 --> 01:10:03.905
+<v Speaker 2>but I
+
+01:10:05.105 --> 01:10:06.865
+<v Speaker 2>don't know how we wanna drive this, whether
+
+01:10:06.865 --> 01:10:07.105
+<v Speaker 2>it's
+
+01:10:08.545 --> 01:10:09.905
+<v Speaker 2>shall I go through
+
+01:10:10.545 --> 01:10:12.065
+<v Speaker 2>I mean, I've gone through this or there's
+
+01:10:12.065 --> 01:10:13.665
+<v Speaker 2>already a blueprint or a couple of blueprints
+
+01:10:13.665 --> 01:10:15.330
+<v Speaker 2>that I've created, but we can create another
+
+01:10:15.330 --> 01:10:16.930
+<v Speaker 2>one from scratch. That's that's what the guide
+
+01:10:16.850 --> 01:10:17.410
+<v Speaker 2>Why
+
+01:10:18.450 --> 01:10:21.330
+<v Speaker 1>don't you browse the base in s blueprint?
+
+01:10:21.730 --> 01:10:23.250
+<v Speaker 2>Okay. Perfect. So this is one that I've
+
+01:10:23.250 --> 01:10:25.810
+<v Speaker 2>created from scratch following the guide
+
+01:10:26.370 --> 01:10:27.250
+<v Speaker 2>using
+
+01:10:27.410 --> 01:10:29.170
+<v Speaker 2>the using the UI here.
+
+01:10:30.315 --> 01:10:30.955
+<v Speaker 2>And
+
+01:10:31.195 --> 01:10:33.035
+<v Speaker 2>we have a very similar set of files
+
+01:10:33.035 --> 01:10:34.795
+<v Speaker 2>to the files that you created using the
+
+01:10:34.795 --> 01:10:36.795
+<v Speaker 2>CLI. So we have the kpt file,
+
+01:10:37.035 --> 01:10:38.075
+<v Speaker 2>a namespace.
+
+01:10:38.635 --> 01:10:40.155
+<v Speaker 2>We have the config map that was created
+
+01:10:40.155 --> 01:10:42.475
+<v Speaker 2>using init. We have the apply replacements that
+
+01:10:42.475 --> 01:10:45.370
+<v Speaker 2>you also created, which updates the role binding,
+
+01:10:45.370 --> 01:10:47.449
+<v Speaker 2>and you can see that that there.
+
+01:10:48.330 --> 01:10:50.090
+<v Speaker 2>We did we did create the resource quota
+
+01:10:50.090 --> 01:10:51.930
+<v Speaker 2>that we skipped over, and here's, like, a
+
+01:10:51.930 --> 01:10:53.210
+<v Speaker 2>role binding. And,
+
+01:10:54.730 --> 01:10:55.849
+<v Speaker 2>why don't I try
+
+01:10:56.845 --> 01:10:58.605
+<v Speaker 2>I wanted to start creating a new one
+
+01:10:58.605 --> 01:10:59.885
+<v Speaker 2>so we can see some of the UI
+
+01:10:59.885 --> 01:11:01.645
+<v Speaker 2>that that is able to be done here.
+
+01:11:02.285 --> 01:11:03.965
+<v Speaker 2>I'm gonna create it from scratch. We'll call
+
+01:11:03.965 --> 01:11:05.405
+<v Speaker 2>it Justin two.
+
+01:11:06.365 --> 01:11:08.685
+<v Speaker 2>We're adjusting one earlier. So this is the
+
+01:11:08.685 --> 01:11:09.965
+<v Speaker 2>equivalent of kpt
+
+01:11:10.525 --> 01:11:12.285
+<v Speaker 2>package in it. I can create it,
+
+01:11:12.970 --> 01:11:14.810
+<v Speaker 2>And then write the kept file and config
+
+01:11:14.810 --> 01:11:16.330
+<v Speaker 2>map. And if I want to
+
+01:11:17.930 --> 01:11:20.010
+<v Speaker 2>start adding resources, then I can do that.
+
+01:11:20.010 --> 01:11:21.610
+<v Speaker 2>So I think first thing we added was
+
+01:11:21.610 --> 01:11:24.010
+<v Speaker 2>a a namespace and,
+
+01:11:25.370 --> 01:11:27.610
+<v Speaker 1>I don't know, x and s. This is
+
+01:11:27.555 --> 01:11:29.795
+<v Speaker 1>this is the blueprints. Right? So I think
+
+01:11:29.795 --> 01:11:31.235
+<v Speaker 1>you do want example there.
+
+01:11:32.115 --> 01:11:32.995
+<v Speaker 2>Okay.
+
+01:11:38.355 --> 01:11:39.555
+<v Speaker 2>And
+
+01:11:40.659 --> 01:11:41.619
+<v Speaker 2>let's see.
+
+01:11:42.659 --> 01:11:43.780
+<v Speaker 2>I mean, we can go through and we
+
+01:11:43.780 --> 01:11:45.139
+<v Speaker 2>can add some more. So let's add a,
+
+01:11:45.139 --> 01:11:46.659
+<v Speaker 2>like, let's add a role binding,
+
+01:11:46.820 --> 01:11:47.860
+<v Speaker 2>and you can see that we get a
+
+01:11:47.860 --> 01:11:49.459
+<v Speaker 2>a a very sophisticated,
+
+01:11:49.699 --> 01:11:52.659
+<v Speaker 2>or a purpose built UI for role bindings.
+
+01:11:53.205 --> 01:11:56.485
+<v Speaker 2>So, like, we call it app admin,
+
+01:11:57.365 --> 01:11:57.925
+<v Speaker 2>and,
+
+01:11:58.645 --> 01:12:00.885
+<v Speaker 2>we had a role reference
+
+01:12:00.885 --> 01:12:03.925
+<v Speaker 2>to a cluster role named, I assume, app
+
+01:12:03.925 --> 01:12:04.725
+<v Speaker 2>admin.
+
+01:12:05.205 --> 01:12:07.045
+<v Speaker 2>And we had a subject
+
+01:12:07.250 --> 01:12:08.850
+<v Speaker 2>binding to a group
+
+01:12:09.010 --> 01:12:09.970
+<v Speaker 2>named,
+
+01:12:10.050 --> 01:12:14.930
+<v Speaker 2>if I recall, example.admin@bigco.com.
+
+01:12:15.170 --> 01:12:16.130
+<v Speaker 2>And so I can
+
+01:12:19.010 --> 01:12:20.605
+<v Speaker 2>show show the YAML view, which is what
+
+01:12:20.605 --> 01:12:22.925
+<v Speaker 2>we did before, and save it and
+
+01:12:23.245 --> 01:12:24.925
+<v Speaker 2>through the UI I'm editing.
+
+01:12:25.085 --> 01:12:26.844
+<v Speaker 2>Is this a bit small? I apologize. So
+
+01:12:26.844 --> 01:12:29.565
+<v Speaker 0>is this pushing us to get repository or
+
+01:12:29.565 --> 01:12:31.644
+<v Speaker 0>somewhere else at the moment, or is it
+
+01:12:31.965 --> 01:12:33.324
+<v Speaker 0>like, where does the state live?
+
+01:12:35.650 --> 01:12:38.929
+<v Speaker 2>We are working through Porch in this instance.
+
+01:12:38.929 --> 01:12:41.409
+<v Speaker 2>The configuration as data UI is talking to
+
+01:12:41.409 --> 01:12:42.050
+<v Speaker 2>Porch,
+
+01:12:42.210 --> 01:12:44.130
+<v Speaker 2>and it is, in fact, backed by a
+
+01:12:44.130 --> 01:12:47.170
+<v Speaker 2>Git repository. And this particular Git repository is
+
+01:12:47.605 --> 01:12:49.604
+<v Speaker 2>the kpt Blueprints repository,
+
+01:12:49.605 --> 01:12:55.764
+<v Speaker 2>which is backed by github.com/bitmsb/blueprints.
+
+01:12:56.565 --> 01:12:58.005
+<v Speaker 2>What did I do wrong? Oh, I'm not
+
+01:12:58.005 --> 01:12:59.124
+<v Speaker 2>logged into GitHub.
+
+01:13:00.565 --> 01:13:01.045
+<v Speaker 2>Scary.
+
+01:13:01.880 --> 01:13:02.760
+<v Speaker 2>Alright.
+
+01:13:02.760 --> 01:13:05.400
+<v Speaker 2>Let me I think I'm sharing my screen.
+
+01:13:05.400 --> 01:13:06.600
+<v Speaker 2>I don't think that
+
+01:13:07.960 --> 01:13:09.560
+<v Speaker 2>which is right here. And so,
+
+01:13:10.040 --> 01:13:12.120
+<v Speaker 2>there is somewhere a draft where we're working
+
+01:13:12.120 --> 01:13:13.480
+<v Speaker 2>on it. You can see that we're pushing
+
+01:13:13.480 --> 01:13:14.995
+<v Speaker 2>to it recently.
+
+01:13:15.875 --> 01:13:18.195
+<v Speaker 2>But as we go through, we we are
+
+01:13:18.195 --> 01:13:20.755
+<v Speaker 2>working with the git repository here.
+
+01:13:21.155 --> 01:13:22.835
+<v Speaker 0>K. Porch makes a bit more sense in
+
+01:13:22.835 --> 01:13:24.675
+<v Speaker 0>my head now. I understand what it's actually
+
+01:13:24.675 --> 01:13:27.315
+<v Speaker 0>doing. It's a server side component that's backing
+
+01:13:27.315 --> 01:13:30.150
+<v Speaker 0>this UI that is handling. But right now,
+
+01:13:30.150 --> 01:13:31.510
+<v Speaker 0>we just didn't get but you mentioned earlier
+
+01:13:31.510 --> 01:13:33.350
+<v Speaker 0>that that could be an OCIR effect at
+
+01:13:33.350 --> 01:13:35.030
+<v Speaker 0>some point as well. It it can be
+
+01:13:35.030 --> 01:13:35.750
+<v Speaker 2>OCI,
+
+01:13:36.150 --> 01:13:39.350
+<v Speaker 2>registries as repositories as well. And, yeah, that
+
+01:13:39.350 --> 01:13:41.910
+<v Speaker 2>that support is ongoing, but, yes, it it
+
+01:13:41.910 --> 01:13:43.270
+<v Speaker 2>works as well today.
+
+01:13:43.750 --> 01:13:45.030
+<v Speaker 2>It's a little easier for some people.
+
+01:13:46.335 --> 01:13:48.735
+<v Speaker 2>It's easier for others, and so we support
+
+01:13:48.735 --> 01:13:50.494
+<v Speaker 2>both. Awesome. Got it.
+
+01:13:51.935 --> 01:13:54.255
+<v Speaker 2>And we're we're defining exactly the same resources
+
+01:13:54.255 --> 01:13:56.335
+<v Speaker 2>that you were defining on the command line,
+
+01:13:56.575 --> 01:13:58.895
+<v Speaker 2>just in a sort of slightly easier to
+
+01:13:58.895 --> 01:13:59.775
+<v Speaker 2>use
+
+01:14:01.060 --> 01:14:02.340
+<v Speaker 2>user interface.
+
+01:14:02.420 --> 01:14:05.220
+<v Speaker 2>It's particularly easier to use when you're, like,
+
+01:14:05.220 --> 01:14:07.860
+<v Speaker 2>instantiating packages. So I don't know if should
+
+01:14:07.860 --> 01:14:10.020
+<v Speaker 2>I just save this and we can continue?
+
+01:14:10.020 --> 01:14:12.340
+<v Speaker 2>Is that I have one I made earlier,
+
+01:14:12.340 --> 01:14:13.300
+<v Speaker 2>or do wanna keep going through, Brian?
+
+01:14:15.554 --> 01:14:17.315
+<v Speaker 1>Well, just pull up the kpt file and
+
+01:14:17.315 --> 01:14:19.954
+<v Speaker 1>show adding a function, I guess. Oh, perfect.
+
+01:14:19.954 --> 01:14:20.675
+<v Speaker 2>Yeah. Great.
+
+01:14:21.155 --> 01:14:21.874
+<v Speaker 2>So
+
+01:14:22.275 --> 01:14:24.994
+<v Speaker 2>if I wanted to add a mutator, let's
+
+01:14:24.994 --> 01:14:26.914
+<v Speaker 2>add the replacements.
+
+01:14:27.315 --> 01:14:29.155
+<v Speaker 2>So, like, before we added apply replacements,
+
+01:14:29.580 --> 01:14:31.260
+<v Speaker 2>here, we can see all the versions that
+
+01:14:31.260 --> 01:14:32.620
+<v Speaker 2>are available. There's only one.
+
+01:14:33.100 --> 01:14:33.659
+<v Speaker 2>And
+
+01:14:35.180 --> 01:14:37.580
+<v Speaker 2>I'm gonna need to create the apply replacements
+
+01:14:37.580 --> 01:14:40.460
+<v Speaker 1>resource yet. You're right. I will do that.
+
+01:14:40.540 --> 01:14:42.620
+<v Speaker 2>I need to create an apply replacements resource
+
+01:14:42.620 --> 01:14:43.580
+<v Speaker 2>to define
+
+01:14:44.140 --> 01:14:44.380
+<v Speaker 2>the
+
+01:14:46.895 --> 01:14:48.655
+<v Speaker 2>the the configuration.
+
+01:14:48.655 --> 01:14:49.935
+<v Speaker 2>Update role
+
+01:14:50.255 --> 01:14:53.614
+<v Speaker 2>update role finding. Typing under pressure is hard.
+
+01:14:54.575 --> 01:14:56.175
+<v Speaker 2>I have empathy for you for doing this
+
+01:14:56.175 --> 01:14:57.695
+<v Speaker 2>earlier. Thank you for driving it earlier.
+
+01:14:58.800 --> 01:14:59.760
+<v Speaker 2>ConfigMap,
+
+01:14:59.840 --> 01:15:01.679
+<v Speaker 2>the sources. You see you see it's actually
+
+01:15:01.840 --> 01:15:03.599
+<v Speaker 2>it's listed all the objects in the
+
+01:15:03.920 --> 01:15:05.039
+<v Speaker 2>in the package.
+
+01:15:05.599 --> 01:15:07.360
+<v Speaker 2>And once I pick one, it actually shows
+
+01:15:07.360 --> 01:15:10.000
+<v Speaker 2>me the various paths available with the actual
+
+01:15:10.000 --> 01:15:12.239
+<v Speaker 2>values from the package right now. So it's
+
+01:15:12.239 --> 01:15:13.360
+<v Speaker 2>it's
+
+01:15:13.775 --> 01:15:15.615
+<v Speaker 2>a purpose built UI
+
+01:15:15.615 --> 01:15:17.295
+<v Speaker 2>per component
+
+01:15:17.375 --> 01:15:19.535
+<v Speaker 2>or per kind that enables us to give,
+
+01:15:19.535 --> 01:15:21.695
+<v Speaker 2>like, a really great user experience or at
+
+01:15:21.695 --> 01:15:23.054
+<v Speaker 2>least a better user experience.
+
+01:15:24.255 --> 01:15:26.270
+<v Speaker 1>Yeah. So this shows, you know, just kind
+
+01:15:26.270 --> 01:15:27.790
+<v Speaker 1>of a proof of concept of something you
+
+01:15:27.790 --> 01:15:29.870
+<v Speaker 1>can do when you have the UIs.
+
+01:15:30.270 --> 01:15:32.110
+<v Speaker 1>You know, it provides that it's kind of
+
+01:15:32.110 --> 01:15:34.190
+<v Speaker 1>like auto completion, but it provides, you know,
+
+01:15:34.190 --> 01:15:37.230
+<v Speaker 1>assistance in picking the right values. Yep.
+
+01:15:40.255 --> 01:15:41.775
+<v Speaker 1>I've gone through this process a bunch of
+
+01:15:41.775 --> 01:15:42.815
+<v Speaker 1>times, and I do have to say it's
+
+01:15:42.815 --> 01:15:44.655
+<v Speaker 1>less error prone than doing it by hand.
+
+01:15:45.135 --> 01:15:45.695
+<v Speaker 1>So
+
+01:15:46.735 --> 01:15:47.934
+<v Speaker 2>Challenge accepted, Brian.
+
+01:15:51.040 --> 01:15:52.400
+<v Speaker 1>So there we go. So I I've I've
+
+01:15:52.400 --> 01:15:54.479
+<v Speaker 2>gone back into the kpt file and done
+
+01:15:55.199 --> 01:15:58.320
+<v Speaker 2>up I've now bound to the apply replacements
+
+01:15:58.560 --> 01:16:01.120
+<v Speaker 2>function to the configuration for it. I can
+
+01:16:01.120 --> 01:16:02.960
+<v Speaker 2>add another mutator, I guess, to
+
+01:16:03.925 --> 01:16:05.124
+<v Speaker 1>Set namespace.
+
+01:16:05.284 --> 01:16:07.764
+<v Speaker 2>Yeah. Let's do that. I think add
+
+01:16:08.085 --> 01:16:08.644
+<v Speaker 2>so
+
+01:16:08.965 --> 01:16:12.085
+<v Speaker 2>namespace, and it will find set namespace. There's
+
+01:16:12.085 --> 01:16:13.364
+<v Speaker 2>the latest version, which I think we knew
+
+01:16:13.364 --> 01:16:15.205
+<v Speaker 2>before. And I think for this one, I
+
+01:16:15.205 --> 01:16:17.925
+<v Speaker 2>need the config map. So now I can
+
+01:16:17.925 --> 01:16:18.405
+<v Speaker 2>save it.
+
+01:16:20.030 --> 01:16:21.870
+<v Speaker 2>I think that's enough. Right?
+
+01:16:22.350 --> 01:16:24.270
+<v Speaker 2>Yep. We could do a resource quota quickly.
+
+01:16:24.270 --> 01:16:25.630
+<v Speaker 2>Should we do the resource quota thing as
+
+01:16:25.630 --> 01:16:28.030
+<v Speaker 2>we skipped that last time? No? We should
+
+01:16:28.030 --> 01:16:29.950
+<v Speaker 1>just we're almost out of time.
+
+01:16:30.190 --> 01:16:32.910
+<v Speaker 2>Oh, sorry. Okay. I will save the package.
+
+01:16:33.995 --> 01:16:35.995
+<v Speaker 2>I will propose the package, which is the
+
+01:16:35.995 --> 01:16:38.074
+<v Speaker 2>equivalent of doing a pull request.
+
+01:16:40.395 --> 01:16:42.235
+<v Speaker 2>Someone else comes in because I never approve
+
+01:16:42.235 --> 01:16:43.514
+<v Speaker 2>my own pull requests,
+
+01:16:43.995 --> 01:16:44.795
+<v Speaker 2>and
+
+01:16:45.435 --> 01:16:46.715
+<v Speaker 2>approves the package.
+
+01:16:47.515 --> 01:16:47.835
+<v Speaker 2>And
+
+01:16:48.760 --> 01:16:49.320
+<v Speaker 2>then
+
+01:16:49.560 --> 01:16:51.320
+<v Speaker 2>you can see And so one thing we
+
+01:16:51.320 --> 01:16:53.159
+<v Speaker 1>didn't we didn't really show is that hide
+
+01:16:53.159 --> 01:16:55.479
+<v Speaker 1>comparison. You can actually diff with
+
+01:16:56.840 --> 01:16:58.600
+<v Speaker 1>I we're creating a blueprint there, so there's
+
+01:16:58.600 --> 01:16:59.880
+<v Speaker 1>nothing to diff with. But
+
+01:17:01.695 --> 01:17:03.455
+<v Speaker 1>you can actually review this
+
+01:17:04.095 --> 01:17:06.735
+<v Speaker 1>and view the resources without looking at YAML,
+
+01:17:06.735 --> 01:17:07.295
+<v Speaker 1>without
+
+01:17:08.175 --> 01:17:09.695
+<v Speaker 1>dealing with the Git provider.
+
+01:17:11.455 --> 01:17:12.495
+<v Speaker 1>You can do it all in the context
+
+01:17:12.495 --> 01:17:13.775
+<v Speaker 1>of the UI if you want.
+
+01:17:14.335 --> 01:17:14.735
+<v Speaker 0>Nice.
+
+01:17:17.679 --> 01:17:19.119
+<v Speaker 2>And I I I just showed that, like,
+
+01:17:19.119 --> 01:17:20.800
+<v Speaker 2>on GitHub, you've you can see that that
+
+01:17:20.800 --> 01:17:22.719
+<v Speaker 2>package Justin two was just approved
+
+01:17:23.119 --> 01:17:25.440
+<v Speaker 2>mere seconds ago and is now on the
+
+01:17:25.440 --> 01:17:26.559
+<v Speaker 2>main branch.
+
+01:17:27.119 --> 01:17:29.119
+<v Speaker 2>So it's it's there and ready to go.
+
+01:17:29.199 --> 01:17:29.440
+<v Speaker 2>And
+
+01:17:31.065 --> 01:17:31.865
+<v Speaker 2>there are
+
+01:17:32.105 --> 01:17:34.905
+<v Speaker 2>two types of repositories. There are blueprint repositories
+
+01:17:34.905 --> 01:17:37.305
+<v Speaker 2>where, you know, this package now exists in
+
+01:17:37.305 --> 01:17:38.425
+<v Speaker 2>the published state
+
+01:17:38.665 --> 01:17:40.745
+<v Speaker 2>version one. So, you know, it's done all
+
+01:17:40.745 --> 01:17:42.185
+<v Speaker 2>the tagging and all that for you.
+
+01:17:42.505 --> 01:17:44.185
+<v Speaker 2>And there are deployment repositories.
+
+01:17:44.710 --> 01:17:45.350
+<v Speaker 2>And,
+
+01:17:46.470 --> 01:17:48.630
+<v Speaker 2>here, we have the deployment repository that I
+
+01:17:48.630 --> 01:17:49.429
+<v Speaker 2>registered
+
+01:17:49.510 --> 01:17:51.350
+<v Speaker 2>in the configures data UI.
+
+01:17:52.310 --> 01:17:54.710
+<v Speaker 2>I have previously created some some packages, but
+
+01:17:54.710 --> 01:17:56.150
+<v Speaker 2>I can also instantiate
+
+01:17:58.565 --> 01:18:00.804
+<v Speaker 2>instantiate the blueprints just as you did,
+
+01:18:01.205 --> 01:18:02.804
+<v Speaker 2>from here. And we can actually drive it
+
+01:18:02.804 --> 01:18:04.965
+<v Speaker 2>from here. So if I do this, I
+
+01:18:04.965 --> 01:18:06.005
+<v Speaker 2>can say deploy.
+
+01:18:06.324 --> 01:18:08.165
+<v Speaker 2>I wanna go to the deployment. I will
+
+01:18:08.165 --> 01:18:08.885
+<v Speaker 2>call it
+
+01:18:10.245 --> 01:18:11.525
+<v Speaker 2>Rawkode
+
+01:18:12.800 --> 01:18:13.760
+<v Speaker 2>B.
+
+01:18:14.800 --> 01:18:15.520
+<v Speaker 2>Okay.
+
+01:18:15.760 --> 01:18:16.480
+<v Speaker 2>Yep.
+
+01:18:19.040 --> 01:18:19.840
+<v Speaker 1>And
+
+01:18:21.760 --> 01:18:22.719
+<v Speaker 2>so
+
+01:18:23.120 --> 01:18:24.400
+<v Speaker 2>we're now creating
+
+01:18:24.560 --> 01:18:25.680
+<v Speaker 2>an instance of
+
+01:18:26.925 --> 01:18:28.205
+<v Speaker 2>that package
+
+01:18:28.365 --> 01:18:31.565
+<v Speaker 2>or that blueprint in the deployment repository.
+
+01:18:31.645 --> 01:18:33.645
+<v Speaker 2>We've called it Rawkode Justin SB.
+
+01:18:33.805 --> 01:18:35.965
+<v Speaker 2>I will it's still under draft form of
+
+01:18:35.965 --> 01:18:38.765
+<v Speaker 1>Rawkode seven. Look look at the, like, role
+
+01:18:38.765 --> 01:18:39.565
+<v Speaker 1>binding, for example.
+
+01:18:40.170 --> 01:18:42.410
+<v Speaker 2>Ah, thank you. What you expect.
+
+01:18:43.290 --> 01:18:43.930
+<v Speaker 2>And
+
+01:18:44.250 --> 01:18:46.010
+<v Speaker 2>so it did create
+
+01:18:46.010 --> 01:18:46.490
+<v Speaker 2>the,
+
+01:18:46.890 --> 01:18:48.410
+<v Speaker 2>rule code just in SP just to sort
+
+01:18:48.410 --> 01:18:49.850
+<v Speaker 2>of kept it on the command line. It
+
+01:18:49.850 --> 01:18:52.010
+<v Speaker 2>it put that in. It changed the namespace,
+
+01:18:52.010 --> 01:18:53.370
+<v Speaker 2>of course, to rule code just in SP,
+
+01:18:53.370 --> 01:18:54.410
+<v Speaker 2>the name of the package.
+
+01:18:55.130 --> 01:18:55.690
+<v Speaker 2>So
+
+01:18:55.985 --> 01:18:57.584
+<v Speaker 2>I can now propose
+
+01:18:57.664 --> 01:18:58.385
+<v Speaker 2>this.
+
+01:18:59.025 --> 01:19:01.425
+<v Speaker 2>I can approve it, and I think it
+
+01:19:01.425 --> 01:19:02.224
+<v Speaker 2>will actually
+
+01:19:02.784 --> 01:19:04.784
+<v Speaker 2>so I've approved it. So now if I
+
+01:19:04.784 --> 01:19:07.184
+<v Speaker 2>go and look at github at kept
+
+01:19:07.344 --> 01:19:08.224
+<v Speaker 2>deployments,
+
+01:19:08.784 --> 01:19:09.984
+<v Speaker 2>it will now be,
+
+01:19:10.304 --> 01:19:11.184
+<v Speaker 2>what did I do wrong?
+
+01:19:12.949 --> 01:19:14.550
+<v Speaker 1>Do you call it just deployments? Is it
+
+01:19:14.550 --> 01:19:16.870
+<v Speaker 1>kept deployment? Deployments. I just yeah. Just to
+
+01:19:16.870 --> 01:19:19.429
+<v Speaker 2>confuse myself, I did not. Thank you. And
+
+01:19:19.429 --> 01:19:21.910
+<v Speaker 2>so there it is. Again, seventeen seconds ago,
+
+01:19:21.910 --> 01:19:23.190
+<v Speaker 2>I guess it takes me seventeen seconds to
+
+01:19:23.190 --> 01:19:24.070
+<v Speaker 2>get to GitHub.
+
+01:19:24.310 --> 01:19:25.429
+<v Speaker 2>And then
+
+01:19:26.325 --> 01:19:28.565
+<v Speaker 2>if I create sync, it will actually, like,
+
+01:19:28.645 --> 01:19:30.485
+<v Speaker 2>do it straight. It will create the config
+
+01:19:30.485 --> 01:19:33.844
+<v Speaker 2>sync, from here as well. So, you know,
+
+01:19:33.844 --> 01:19:35.605
+<v Speaker 2>this is what you do with kpt, live
+
+01:19:35.605 --> 01:19:37.844
+<v Speaker 2>apply from the command line. Here, we have
+
+01:19:37.844 --> 01:19:40.485
+<v Speaker 2>a config sync integration. There could be other
+
+01:19:40.485 --> 01:19:42.860
+<v Speaker 2>integrations, but is a config sync integration, and
+
+01:19:42.860 --> 01:19:44.940
+<v Speaker 2>it will go and apply it to the
+
+01:19:44.940 --> 01:19:45.579
+<v Speaker 2>cluster.
+
+01:19:46.300 --> 01:19:48.139
+<v Speaker 2>So that'll take a couple of seconds, and
+
+01:19:48.139 --> 01:19:50.940
+<v Speaker 2>it will shortly appear on the I think
+
+01:19:50.940 --> 01:19:52.699
+<v Speaker 2>on the same cluster it's it's bound to.
+
+01:19:52.699 --> 01:19:53.260
+<v Speaker 2>So
+
+01:19:53.659 --> 01:19:55.795
+<v Speaker 2>there we are. Yeah. So that way in
+
+01:19:55.795 --> 01:19:56.514
+<v Speaker 1>the future,
+
+01:19:57.235 --> 01:20:00.434
+<v Speaker 1>when any change is approved, it will automatically
+
+01:20:00.594 --> 01:20:01.314
+<v Speaker 1>get,
+
+01:20:01.554 --> 01:20:02.994
+<v Speaker 1>synced to the cluster.
+
+01:20:04.355 --> 01:20:05.074
+<v Speaker 0>Alright.
+
+01:20:05.795 --> 01:20:07.074
+<v Speaker 0>Anything else you want to show in the
+
+01:20:07.074 --> 01:20:08.514
+<v Speaker 0>UI before I
+
+01:20:10.730 --> 01:20:12.170
+<v Speaker 2>If we wanna try to break one more
+
+01:20:12.170 --> 01:20:13.930
+<v Speaker 2>thing, I was gonna think it might be
+
+01:20:13.930 --> 01:20:16.090
+<v Speaker 2>fun to let me show the registration of
+
+01:20:16.090 --> 01:20:18.170
+<v Speaker 2>of repository. So let's try to register the
+
+01:20:18.170 --> 01:20:20.410
+<v Speaker 2>one that you created earlier,
+
+01:20:20.970 --> 01:20:23.690
+<v Speaker 2>which I think is public. So It is?
+
+01:20:23.690 --> 01:20:23.850
+<v Speaker 0>Yep.
+
+01:20:24.975 --> 01:20:27.614
+<v Speaker 1>But does do read only repos actually work?
+
+01:20:29.455 --> 01:20:31.054
+<v Speaker 2>Well, I was thinking it would be fun
+
+01:20:31.054 --> 01:20:33.054
+<v Speaker 2>to demonstrate how we can
+
+01:20:33.534 --> 01:20:34.974
+<v Speaker 2>even if a third party,
+
+01:20:35.855 --> 01:20:39.215
+<v Speaker 2>like David, created the, the blueprint, I can
+
+01:20:39.215 --> 01:20:40.175
+<v Speaker 2>consume them
+
+01:20:41.110 --> 01:20:42.150
+<v Speaker 2>myself. So
+
+01:20:42.550 --> 01:20:44.150
+<v Speaker 2>oh, well, I can call it the same
+
+01:20:44.150 --> 01:20:44.710
+<v Speaker 2>thing. Alright.
+
+01:20:46.630 --> 01:20:48.710
+<v Speaker 2>Let's try that again. But, yes,
+
+01:20:49.590 --> 01:20:50.310
+<v Speaker 2>see.
+
+01:20:50.470 --> 01:20:51.990
+<v Speaker 2>I didn't see where I could specify a
+
+01:20:51.990 --> 01:20:54.545
+<v Speaker 2>name. Well, perhaps that's a slight bummer. Okay.
+
+01:20:54.545 --> 01:20:55.025
+<v Speaker 2>We
+
+01:20:56.065 --> 01:20:57.265
+<v Speaker 2>need to be able to specify that oh,
+
+01:20:57.265 --> 01:20:59.185
+<v Speaker 2>there it is. Kpt. There you go. Roll
+
+01:20:59.185 --> 01:20:59.824
+<v Speaker 2>code.
+
+01:21:01.025 --> 01:21:01.664
+<v Speaker 2>Thanks.
+
+01:21:01.985 --> 01:21:03.665
+<v Speaker 2>Thank you. Blueprint.
+
+01:21:06.030 --> 01:21:08.110
+<v Speaker 0>The wonders of an ad hoc demo.
+
+01:21:08.430 --> 01:21:09.950
+<v Speaker 2>Exactly. Now it's a real one. I mess
+
+01:21:09.950 --> 01:21:11.390
+<v Speaker 2>it up. I mess up everything.
+
+01:21:11.710 --> 01:21:14.830
+<v Speaker 2>And so now we have another Blueprint repository
+
+01:21:14.830 --> 01:21:15.790
+<v Speaker 2>registered.
+
+01:21:16.110 --> 01:21:18.510
+<v Speaker 2>So, you know, I'm consuming from an upstream
+
+01:21:18.830 --> 01:21:21.295
+<v Speaker 2>expert that has created a base namespace package
+
+01:21:21.295 --> 01:21:22.655
+<v Speaker 2>for me. And so now I can just
+
+01:21:22.655 --> 01:21:24.415
+<v Speaker 2>go and instantiate this blueprint,
+
+01:21:24.975 --> 01:21:26.975
+<v Speaker 2>myself if I wanted to or deploy this
+
+01:21:26.975 --> 01:21:28.975
+<v Speaker 2>namespace myself if I wanted to.
+
+01:21:30.415 --> 01:21:31.935
+<v Speaker 2>So I'll go to deployments,
+
+01:21:32.610 --> 01:21:34.849
+<v Speaker 2>Click in. Add a deployment
+
+01:21:35.250 --> 01:21:35.889
+<v Speaker 2>of
+
+01:21:37.330 --> 01:21:39.330
+<v Speaker 1>I think you have your own repo as
+
+01:21:39.330 --> 01:21:40.289
+<v Speaker 1>the registered
+
+01:21:40.850 --> 01:21:42.130
+<v Speaker 2>upstream. Upstream.
+
+01:21:42.210 --> 01:21:43.489
+<v Speaker 2>Yes. Okay. So
+
+01:21:43.810 --> 01:21:45.250
+<v Speaker 2>there might be some tweaking to be done
+
+01:21:45.250 --> 01:21:46.770
+<v Speaker 2>there, but I can, create,
+
+01:21:47.535 --> 01:21:49.614
+<v Speaker 2>in theory, I can create one from your
+
+01:21:49.695 --> 01:21:51.375
+<v Speaker 2>blueprints also, and we'll make that a little
+
+01:21:51.375 --> 01:21:53.055
+<v Speaker 2>bit easier, a little bit smoother. I think
+
+01:21:53.055 --> 01:21:54.975
+<v Speaker 2>the UI is bound to that particular one
+
+01:21:54.975 --> 01:21:56.735
+<v Speaker 2>right now. But, yeah, so here we can,
+
+01:21:56.735 --> 01:21:59.535
+<v Speaker 1>you know, create packages, edit them,
+
+01:21:59.935 --> 01:22:00.735
+<v Speaker 1>push changes,
+
+01:22:01.290 --> 01:22:03.690
+<v Speaker 1>create deployments from those, store those in gits
+
+01:22:03.690 --> 01:22:04.969
+<v Speaker 1>and version them as well.
+
+01:22:05.449 --> 01:22:06.329
+<v Speaker 1>So we actually
+
+01:22:08.010 --> 01:22:09.369
+<v Speaker 1>I don't know if you can show the
+
+01:22:09.369 --> 01:22:11.050
+<v Speaker 1>revisions on one of the package.
+
+01:22:11.290 --> 01:22:12.090
+<v Speaker 1>You can
+
+01:22:12.570 --> 01:22:14.409
+<v Speaker 1>undo by restoring a previous revision.
+
+01:22:16.114 --> 01:22:17.875
+<v Speaker 1>So that's something that you can't
+
+01:22:18.594 --> 01:22:20.034
+<v Speaker 1>as easily do
+
+01:22:23.315 --> 01:22:24.994
+<v Speaker 1>revisions. The revisions tab.
+
+01:22:25.875 --> 01:22:27.475
+<v Speaker 2>I I don't have I I only have
+
+01:22:27.475 --> 01:22:29.670
+<v Speaker 2>one revision of everything. So I'm just creating
+
+01:22:29.670 --> 01:22:31.110
+<v Speaker 2>a second. That's fine.
+
+01:22:33.270 --> 01:22:36.150
+<v Speaker 1>But, yeah, you can you know, this UI
+
+01:22:36.150 --> 01:22:38.150
+<v Speaker 1>is pretty nascent. It's it's basically a proof
+
+01:22:38.150 --> 01:22:39.430
+<v Speaker 1>of concept, but
+
+01:22:40.630 --> 01:22:41.910
+<v Speaker 1>you can interact
+
+01:22:42.625 --> 01:22:46.225
+<v Speaker 1>with the configuration all through the UI without
+
+01:22:46.305 --> 01:22:48.625
+<v Speaker 1>necessarily touching YAML or touching git or the
+
+01:22:48.625 --> 01:22:50.305
+<v Speaker 1>git provider pull requests,
+
+01:22:51.025 --> 01:22:53.105
+<v Speaker 1>all that. So it actually saves
+
+01:22:53.345 --> 01:22:55.825
+<v Speaker 1>dozens of steps for common operations.
+
+01:22:58.030 --> 01:22:59.550
+<v Speaker 1>So I think it's pretty
+
+01:23:03.070 --> 01:23:05.230
+<v Speaker 1>promising. And, like, especially for people who aren't
+
+01:23:05.230 --> 01:23:06.349
+<v Speaker 1>as familiar with,
+
+01:23:07.710 --> 01:23:09.870
+<v Speaker 1>you know, say, Git push mechanics or,
+
+01:23:11.855 --> 01:23:14.335
+<v Speaker 1>you know, the exact formatting of Kubernetes deployment
+
+01:23:14.335 --> 01:23:15.775
+<v Speaker 1>YAML, things like that.
+
+01:23:16.655 --> 01:23:17.695
+<v Speaker 0>Yeah. Definitely.
+
+01:23:18.575 --> 01:23:20.015
+<v Speaker 0>Alright. I'm gonna sorry.
+
+01:23:20.975 --> 01:23:22.095
+<v Speaker 0>Anything else there?
+
+01:23:22.415 --> 01:23:23.695
+<v Speaker 2>I was just gonna say, like, we were
+
+01:23:23.695 --> 01:23:26.255
+<v Speaker 2>able to, like, create that
+
+01:23:25.910 --> 01:23:28.150
+<v Speaker 2>that instance of the of the package and
+
+01:23:28.150 --> 01:23:29.990
+<v Speaker 2>deploy it without, you know, touching the command
+
+01:23:29.990 --> 01:23:31.990
+<v Speaker 2>line. So it is certainly easier if you
+
+01:23:32.390 --> 01:23:33.750
+<v Speaker 2>if I hadn't had if I hadn't showed
+
+01:23:33.750 --> 01:23:35.430
+<v Speaker 2>you editing the package or creating the package
+
+01:23:35.430 --> 01:23:37.270
+<v Speaker 2>first, that would have been a very simple
+
+01:23:37.270 --> 01:23:38.790
+<v Speaker 2>experience of just adding the deployment.
+
+01:23:39.995 --> 01:23:40.715
+<v Speaker 0>Nice.
+
+01:23:41.755 --> 01:23:43.595
+<v Speaker 0>Alright. I'm gonna pop this back over to
+
+01:23:43.595 --> 01:23:45.995
+<v Speaker 0>our, like, facie mode. There we go.
+
+01:23:46.635 --> 01:23:49.355
+<v Speaker 0>So that was really cool. I really like
+
+01:23:49.355 --> 01:23:51.035
+<v Speaker 0>a lot of what I'm seeing here. I'm
+
+01:23:51.035 --> 01:23:51.755
+<v Speaker 0>curious. Like
+
+01:23:53.100 --> 01:23:54.860
+<v Speaker 0>I mean, I don't wanna say anything bad
+
+01:23:54.860 --> 01:23:57.179
+<v Speaker 0>about Helm. Right? But I I don't find
+
+01:23:57.179 --> 01:24:00.300
+<v Speaker 0>it personally an enjoyable experience for consuming third
+
+01:24:00.300 --> 01:24:03.900
+<v Speaker 0>party software and applications. Like, install in MariaDB
+
+01:24:03.900 --> 01:24:06.380
+<v Speaker 0>and Postgres, MongoDB, all these other tools.
+
+01:24:06.985 --> 01:24:09.705
+<v Speaker 0>And I'm sitting here going, why don't we
+
+01:24:09.705 --> 01:24:11.864
+<v Speaker 0>have blueprints for all of this and consume
+
+01:24:11.864 --> 01:24:13.945
+<v Speaker 0>them for kpt? Like, this model,
+
+01:24:14.265 --> 01:24:16.105
+<v Speaker 0>I've been able to have the base that
+
+01:24:16.105 --> 01:24:18.825
+<v Speaker 0>the experts produce and then me tailoring it
+
+01:24:18.825 --> 01:24:21.469
+<v Speaker 0>to the with I need through defining pipelines
+
+01:24:21.469 --> 01:24:23.310
+<v Speaker 0>of functions in a kpt file. And we
+
+01:24:23.310 --> 01:24:24.670
+<v Speaker 0>don't do it today, but I'm assuming I
+
+01:24:24.670 --> 01:24:27.070
+<v Speaker 0>really easily write and publish my own function
+
+01:24:27.070 --> 01:24:28.349
+<v Speaker 0>to make any random
+
+01:24:29.150 --> 01:24:31.230
+<v Speaker 0>changes that weren't already covered by the the
+
+01:24:31.230 --> 01:24:33.385
+<v Speaker 0>kpt library. So it feels like we have
+
+01:24:33.385 --> 01:24:35.625
+<v Speaker 0>a really good end to end flow for
+
+01:24:35.625 --> 01:24:37.224
+<v Speaker 0>tweaking and tailoring
+
+01:24:37.625 --> 01:24:40.425
+<v Speaker 0>base manifest for software and deployment to our
+
+01:24:40.425 --> 01:24:43.065
+<v Speaker 0>clusters that doesn't require help. Like, I'm not
+
+01:24:43.065 --> 01:24:44.745
+<v Speaker 0>a fan of of Go templates. I never
+
+01:24:44.745 --> 01:24:47.160
+<v Speaker 0>remember the syntax. I always have to Google
+
+01:24:47.160 --> 01:24:48.920
+<v Speaker 0>how to do loops and ranges and all
+
+01:24:48.920 --> 01:24:51.160
+<v Speaker 0>these other things. Like, this just feels like
+
+01:24:51.160 --> 01:24:54.280
+<v Speaker 0>a nicer approach and I'd like to think
+
+01:24:54.360 --> 01:24:56.200
+<v Speaker 0>and hope that we can get to a
+
+01:24:56.200 --> 01:24:57.720
+<v Speaker 0>point where we have something better than hell.
+
+01:24:57.720 --> 01:24:59.080
+<v Speaker 0>But I think kpt is a pretty good
+
+01:24:59.080 --> 01:25:01.000
+<v Speaker 0>and strong contender based on what I've seen.
+
+01:25:01.000 --> 01:25:01.160
+<v Speaker 0>Like,
+
+01:25:01.915 --> 01:25:03.355
+<v Speaker 0>now I'll throw that back at you. I
+
+01:25:03.355 --> 01:25:05.355
+<v Speaker 0>mean, is that do you see a world,
+
+01:25:05.355 --> 01:25:06.795
+<v Speaker 0>and is this why you're working on kpt?
+
+01:25:06.795 --> 01:25:08.715
+<v Speaker 0>Like, do you feel it can replace helm
+
+01:25:08.715 --> 01:25:10.235
+<v Speaker 0>to a certain degree and provide us a
+
+01:25:10.235 --> 01:25:12.874
+<v Speaker 0>better ecosystem for shipping third party software?
+
+01:25:13.355 --> 01:25:14.554
+<v Speaker 0>And then we can always pull it back
+
+01:25:14.554 --> 01:25:16.200
+<v Speaker 0>and talk about first party software. But right
+
+01:25:16.200 --> 01:25:17.720
+<v Speaker 0>now, I see a big market for third
+
+01:25:17.720 --> 01:25:19.640
+<v Speaker 0>party, and I'm curious if you agree.
+
+01:25:19.960 --> 01:25:20.600
+<v Speaker 1>I
+
+01:25:21.080 --> 01:25:22.760
+<v Speaker 1>think first party is
+
+01:25:24.280 --> 01:25:26.040
+<v Speaker 1>kept as a lot more ready for. I
+
+01:25:26.040 --> 01:25:28.280
+<v Speaker 1>think third party is an obvious target because
+
+01:25:28.280 --> 01:25:30.200
+<v Speaker 1>those templates tend to be more complex.
+
+01:25:30.864 --> 01:25:32.304
+<v Speaker 1>You know, they basically
+
+01:25:32.385 --> 01:25:34.625
+<v Speaker 1>use what I call the construct constructor pattern.
+
+01:25:34.625 --> 01:25:36.864
+<v Speaker 1>They parameterize every possible attributes
+
+01:25:36.945 --> 01:25:39.264
+<v Speaker 1>of the resources that they contain. Yeah. And
+
+01:25:39.264 --> 01:25:41.505
+<v Speaker 1>kpt enables a model where that's not necessary.
+
+01:25:41.505 --> 01:25:42.064
+<v Speaker 1>Like,
+
+01:25:42.465 --> 01:25:44.065
+<v Speaker 1>you know, just because somebody might want to
+
+01:25:44.065 --> 01:25:44.304
+<v Speaker 1>change
+
+01:25:45.060 --> 01:25:47.860
+<v Speaker 1>node selector or tolerations or some, you know,
+
+01:25:47.860 --> 01:25:49.459
+<v Speaker 1>obscure field of the
+
+01:25:49.780 --> 01:25:51.380
+<v Speaker 1>Kubernetes deployment API,
+
+01:25:52.020 --> 01:25:53.540
+<v Speaker 1>doesn't mean it has to be in the
+
+01:25:53.540 --> 01:25:54.579
+<v Speaker 1>base configuration.
+
+01:25:56.179 --> 01:25:59.060
+<v Speaker 1>The way kpt can scale across multiple packages
+
+01:25:59.060 --> 01:26:00.099
+<v Speaker 1>is by
+
+01:26:00.965 --> 01:26:04.245
+<v Speaker 1>creating logic that's reusable across all packages containing
+
+01:26:04.245 --> 01:26:05.685
+<v Speaker 1>the same resource types.
+
+01:26:06.165 --> 01:26:08.565
+<v Speaker 1>So for for example, the backstage UI, if
+
+01:26:08.565 --> 01:26:09.284
+<v Speaker 1>we add,
+
+01:26:10.405 --> 01:26:13.445
+<v Speaker 1>the deployment resource, the service resource, ingress gateway,
+
+01:26:13.740 --> 01:26:15.820
+<v Speaker 1>you know, application oriented resources,
+
+01:26:15.900 --> 01:26:18.380
+<v Speaker 1>then we can use that to author
+
+01:26:18.940 --> 01:26:19.980
+<v Speaker 1>blueprints
+
+01:26:19.980 --> 01:26:21.660
+<v Speaker 1>that contain those resources
+
+01:26:22.860 --> 01:26:25.020
+<v Speaker 1>pretty easily. And then, you know, we will
+
+01:26:25.020 --> 01:26:27.100
+<v Speaker 1>need a complimentary set of functions that perform
+
+01:26:27.465 --> 01:26:29.704
+<v Speaker 1>common transformations to those resources.
+
+01:26:30.105 --> 01:26:31.705
+<v Speaker 1>And once we have that in the catalog,
+
+01:26:31.705 --> 01:26:32.905
+<v Speaker 1>then we can create this kind of low
+
+01:26:32.905 --> 01:26:34.344
+<v Speaker 1>code experience where,
+
+01:26:34.665 --> 01:26:36.505
+<v Speaker 1>you know, over time, people will have to
+
+01:26:36.505 --> 01:26:38.905
+<v Speaker 1>write fewer and fewer functions from scratch,
+
+01:26:39.705 --> 01:26:41.705
+<v Speaker 1>to do these things. You know, you can
+
+01:26:42.350 --> 01:26:43.389
+<v Speaker 1>automatically
+
+01:26:47.630 --> 01:26:49.950
+<v Speaker 1>update images, for example, is a super common
+
+01:26:49.950 --> 01:26:51.470
+<v Speaker 1>one. So we do actually have a function
+
+01:26:51.470 --> 01:26:52.270
+<v Speaker 1>for that
+
+01:26:52.670 --> 01:26:55.150
+<v Speaker 1>because it's something people commonly wanna do in
+
+01:26:55.365 --> 01:26:56.805
+<v Speaker 1>in CICD,
+
+01:26:57.125 --> 01:26:57.925
+<v Speaker 1>for instance.
+
+01:26:58.325 --> 01:27:00.805
+<v Speaker 1>And we can actually write that change back
+
+01:27:00.805 --> 01:27:01.205
+<v Speaker 1>to get
+
+01:27:02.405 --> 01:27:04.645
+<v Speaker 1>and there are some image updaters that can
+
+01:27:04.645 --> 01:27:06.805
+<v Speaker 1>do that already for flux and ArgoCD. Mhmm.
+
+01:27:06.805 --> 01:27:09.110
+<v Speaker 1>But we can change arbitrary fields in those
+
+01:27:09.110 --> 01:27:11.590
+<v Speaker 1>resources with a similar level of automation.
+
+01:27:11.990 --> 01:27:14.230
+<v Speaker 0>Yeah. This is a common frustration I see.
+
+01:27:14.230 --> 01:27:15.990
+<v Speaker 0>I mean, especially talking to people that are
+
+01:27:15.990 --> 01:27:17.030
+<v Speaker 0>adopting GitOps,
+
+01:27:17.190 --> 01:27:19.830
+<v Speaker 0>you know, is that ingress is a a
+
+01:27:19.830 --> 01:27:22.070
+<v Speaker 0>example and and horizontal pod autoscalers. These are
+
+01:27:22.070 --> 01:27:24.790
+<v Speaker 0>things that need to be significantly tweaked
+
+01:27:24.355 --> 01:27:26.355
+<v Speaker 0>from one environment to another. Like, the domain
+
+01:27:26.355 --> 01:27:27.875
+<v Speaker 0>name you use for your ingress is very
+
+01:27:27.875 --> 01:27:29.395
+<v Speaker 0>different in staging as it goes from prod,
+
+01:27:29.395 --> 01:27:31.795
+<v Speaker 0>I would hope. Your HPA rules are not
+
+01:27:31.795 --> 01:27:33.554
+<v Speaker 0>as aggressive in staging as they might be
+
+01:27:33.554 --> 01:27:34.434
+<v Speaker 0>in prod.
+
+01:27:34.675 --> 01:27:36.755
+<v Speaker 0>And, yeah, right now, it's a lot of
+
+01:27:36.940 --> 01:27:39.340
+<v Speaker 0>value files and helms and template to do
+
+01:27:39.340 --> 01:27:40.459
+<v Speaker 0>that. But actually,
+
+01:27:41.179 --> 01:27:44.380
+<v Speaker 0>this feels nicer. This feels like something that
+
+01:27:44.380 --> 01:27:45.419
+<v Speaker 0>also happens
+
+01:27:45.739 --> 01:27:47.739
+<v Speaker 0>because here's the other way. If people aren't
+
+01:27:47.739 --> 01:27:49.659
+<v Speaker 0>doing this through templating, they're doing it through
+
+01:27:49.659 --> 01:27:52.315
+<v Speaker 0>mutating admission. And the problem with mutating admission
+
+01:27:52.315 --> 01:27:53.915
+<v Speaker 0>is you don't know what's broken until you
+
+01:27:53.915 --> 01:27:55.195
+<v Speaker 0>apply it to the cluster.
+
+01:27:55.995 --> 01:27:58.235
+<v Speaker 0>And that's Yeah. Here we can do predeployment
+
+01:27:58.235 --> 01:28:00.074
+<v Speaker 1>validation, review, and approval,
+
+01:28:01.675 --> 01:28:03.195
+<v Speaker 1>any of those types
+
+01:28:03.195 --> 01:28:03.835
+<v Speaker 1>of
+
+01:28:05.115 --> 01:28:06.155
+<v Speaker 1>kind of change control
+
+01:28:06.980 --> 01:28:09.860
+<v Speaker 1>processes that you wanna apply before you deploy.
+
+01:28:10.020 --> 01:28:11.940
+<v Speaker 1>Like I said, after deployment, you can also
+
+01:28:11.940 --> 01:28:12.579
+<v Speaker 1>do
+
+01:28:12.900 --> 01:28:15.780
+<v Speaker 1>undo by reverting to a previous revision if
+
+01:28:15.780 --> 01:28:17.060
+<v Speaker 1>you need to, but you can still get
+
+01:28:17.060 --> 01:28:17.380
+<v Speaker 1>that
+
+01:28:18.915 --> 01:28:21.315
+<v Speaker 1>WYSIWYG experience if you want it or, you
+
+01:28:21.315 --> 01:28:22.995
+<v Speaker 1>know, automate it as much as you want.
+
+01:28:22.995 --> 01:28:24.034
+<v Speaker 1>So we barely
+
+01:28:24.435 --> 01:28:25.955
+<v Speaker 1>start to scratch the surface on this, but
+
+01:28:25.955 --> 01:28:28.195
+<v Speaker 1>since we make all the packages available through
+
+01:28:28.195 --> 01:28:29.155
+<v Speaker 1>an API,
+
+01:28:29.395 --> 01:28:32.355
+<v Speaker 1>we can actually write automation to bulk update
+
+01:28:32.590 --> 01:28:34.830
+<v Speaker 1>packages, for example. Yeah.
+
+01:28:37.550 --> 01:28:40.750
+<v Speaker 1>So that's something that I'm personally pretty excited
+
+01:28:40.750 --> 01:28:41.310
+<v Speaker 1>about.
+
+01:28:42.590 --> 01:28:44.190
+<v Speaker 1>You know, there's lots of work to do,
+
+01:28:44.190 --> 01:28:45.550
+<v Speaker 1>but
+
+01:28:45.065 --> 01:28:46.985
+<v Speaker 1>also a lot of things that weren't possible
+
+01:28:46.985 --> 01:28:48.664
+<v Speaker 1>before where you'd have to manually,
+
+01:28:48.905 --> 01:28:50.665
+<v Speaker 1>you know, check out and update a hundred
+
+01:28:50.665 --> 01:28:51.864
+<v Speaker 1>packages to,
+
+01:28:52.425 --> 01:28:53.465
+<v Speaker 1>you know, go
+
+01:28:54.105 --> 01:28:55.945
+<v Speaker 1>make some change across all of them. Like,
+
+01:28:55.945 --> 01:28:57.145
+<v Speaker 1>what if you wanna change the
+
+01:28:57.570 --> 01:29:00.050
+<v Speaker 1>API version of some objects in all your
+
+01:29:00.050 --> 01:29:03.090
+<v Speaker 1>packages? That's just super painful right now.
+
+01:29:03.490 --> 01:29:04.690
+<v Speaker 1>But we can actually,
+
+01:29:04.930 --> 01:29:06.690
+<v Speaker 1>you know, just write
+
+01:29:07.730 --> 01:29:10.210
+<v Speaker 1>a simple script to do it with kpt
+
+01:29:10.945 --> 01:29:13.265
+<v Speaker 1>and just extract the package contents,
+
+01:29:14.385 --> 01:29:15.825
+<v Speaker 1>make the change. You can even run set
+
+01:29:15.825 --> 01:29:18.385
+<v Speaker 1>on it and and write it back, and
+
+01:29:18.385 --> 01:29:19.985
+<v Speaker 1>it takes care of all the get mechanics
+
+01:29:19.985 --> 01:29:22.065
+<v Speaker 1>for you. You mean I I don't have
+
+01:29:22.065 --> 01:29:23.825
+<v Speaker 0>to have four f conditions to check for
+
+01:29:23.825 --> 01:29:26.050
+<v Speaker 0>the last 17 major versions of Kubernetes and
+
+01:29:26.050 --> 01:29:27.890
+<v Speaker 0>inject n v one v one alpha one
+
+01:29:27.890 --> 01:29:28.849
+<v Speaker 0>or know?
+
+01:29:29.890 --> 01:29:31.250
+<v Speaker 0>It's it's this has to get to be
+
+01:29:31.250 --> 01:29:33.250
+<v Speaker 0>true. But as I say, I really like
+
+01:29:33.250 --> 01:29:35.250
+<v Speaker 0>what I'm seeing, and I don't wanna keep
+
+01:29:35.250 --> 01:29:38.145
+<v Speaker 0>this too much more because this is roughly
+
+01:29:38.145 --> 01:29:39.585
+<v Speaker 0>where we said we would end in 10.
+
+01:29:39.585 --> 01:29:41.505
+<v Speaker 0>So I'll just say, is there anything else
+
+01:29:41.585 --> 01:29:43.105
+<v Speaker 0>that you you wanna share with the audience
+
+01:29:43.105 --> 01:29:45.505
+<v Speaker 0>before we finish? If you wanna maybe give
+
+01:29:46.145 --> 01:29:48.625
+<v Speaker 0>thirty second or a minute overview on what's
+
+01:29:48.625 --> 01:29:50.065
+<v Speaker 0>coming next, like, are you just working on
+
+01:29:50.065 --> 01:29:50.865
+<v Speaker 0>what your priorities,
+
+01:29:51.710 --> 01:29:53.710
+<v Speaker 0>And then we'll we'll finish up with today.
+
+01:29:54.350 --> 01:29:56.590
+<v Speaker 1>Well, we are working you know, this example
+
+01:29:56.590 --> 01:29:57.869
+<v Speaker 1>was a namespace
+
+01:29:58.030 --> 01:30:00.989
+<v Speaker 1>provisioning example. That's something I often see UIs
+
+01:30:00.989 --> 01:30:03.870
+<v Speaker 1>used for. Most Kubernetes platforms have some kind
+
+01:30:03.870 --> 01:30:06.385
+<v Speaker 1>of UI for, you know, creating namespaces or
+
+01:30:06.385 --> 01:30:08.624
+<v Speaker 1>projects or workspaces or whatever they call them.
+
+01:30:09.745 --> 01:30:11.505
+<v Speaker 1>So we wanted to show that you could
+
+01:30:11.585 --> 01:30:13.824
+<v Speaker 1>do that through UI and also get all
+
+01:30:13.824 --> 01:30:15.264
+<v Speaker 1>the same benefits of
+
+01:30:15.905 --> 01:30:17.425
+<v Speaker 1>GitOps and
+
+01:30:18.699 --> 01:30:20.540
+<v Speaker 1>kind of configuration as code but without the
+
+01:30:20.540 --> 01:30:21.019
+<v Speaker 1>code,
+
+01:30:21.659 --> 01:30:22.940
+<v Speaker 1>really. I mean, there is code that's in
+
+01:30:22.940 --> 01:30:24.940
+<v Speaker 1>the functions, but hopefully, you know, someone else
+
+01:30:24.940 --> 01:30:26.780
+<v Speaker 1>wrote those functions and you don't have to,
+
+01:30:27.340 --> 01:30:29.500
+<v Speaker 1>for every single package you have. So but
+
+01:30:29.500 --> 01:30:31.554
+<v Speaker 1>we are focused on, you know, you mentioned
+
+01:30:31.554 --> 01:30:33.235
+<v Speaker 1>home charts. Definitely,
+
+01:30:33.554 --> 01:30:34.994
+<v Speaker 1>the first thing people
+
+01:30:35.235 --> 01:30:38.034
+<v Speaker 1>wanna do with Kubernetes is deploy applications. So
+
+01:30:38.034 --> 01:30:40.114
+<v Speaker 1>we're we're working on making the application,
+
+01:30:41.395 --> 01:30:44.594
+<v Speaker 1>configuration experience easier. That's, I'd say, the next
+
+01:30:44.594 --> 01:30:46.890
+<v Speaker 1>big priority that we're working on. So adding
+
+01:30:46.890 --> 01:30:49.050
+<v Speaker 1>those resources to the backstage UI,
+
+01:30:49.290 --> 01:30:50.010
+<v Speaker 1>creating
+
+01:30:50.970 --> 01:30:53.530
+<v Speaker 1>bigger portfolio of functions that people will commonly
+
+01:30:53.530 --> 01:30:54.090
+<v Speaker 1>need,
+
+01:30:54.970 --> 01:30:57.450
+<v Speaker 1>creating some examples so people can see, you
+
+01:30:57.450 --> 01:30:59.690
+<v Speaker 1>know, how to actually express blueprints in kept
+
+01:30:59.690 --> 01:31:00.730
+<v Speaker 1>for applications.
+
+01:31:01.050 --> 01:31:01.930
+<v Speaker 1>There are some
+
+01:31:02.465 --> 01:31:04.545
+<v Speaker 1>tricky problems that we need to figure out.
+
+01:31:04.545 --> 01:31:06.385
+<v Speaker 1>You know, it's a very novel approach,
+
+01:31:06.465 --> 01:31:08.465
+<v Speaker 1>so, you know, not everything is is figured
+
+01:31:08.465 --> 01:31:09.425
+<v Speaker 1>out. But,
+
+01:31:11.585 --> 01:31:13.985
+<v Speaker 1>you know, the if you're interested in contributing,
+
+01:31:13.985 --> 01:31:14.704
+<v Speaker 1>there's
+
+01:31:15.105 --> 01:31:16.464
+<v Speaker 1>lots of interesting
+
+01:31:16.465 --> 01:31:19.480
+<v Speaker 1>things to do. So, you know, definitely contributors
+
+01:31:19.480 --> 01:31:20.360
+<v Speaker 1>are welcome.
+
+01:31:22.119 --> 01:31:23.719
+<v Speaker 2>Yeah. I just I just wanna I just
+
+01:31:23.719 --> 01:31:26.199
+<v Speaker 2>wanna add, like, this is early. Sorry. I'm
+
+01:31:26.280 --> 01:31:28.119
+<v Speaker 2>like, this is early and, like, we want
+
+01:31:28.280 --> 01:31:30.119
+<v Speaker 2>the we is, like, all of us. Like,
+
+01:31:30.119 --> 01:31:32.280
+<v Speaker 2>if you're interested in this space, like, we
+
+01:31:32.600 --> 01:31:34.360
+<v Speaker 2>don't intend to build this and sort of
+
+01:31:34.575 --> 01:31:36.495
+<v Speaker 2>build it ourselves. Like, we need to hear
+
+01:31:36.495 --> 01:31:38.495
+<v Speaker 2>what problems you are experiencing when you try
+
+01:31:38.495 --> 01:31:40.094
+<v Speaker 2>to use these things or why
+
+01:31:40.895 --> 01:31:42.495
+<v Speaker 2>do you find Helm annoying and why do
+
+01:31:42.495 --> 01:31:44.255
+<v Speaker 2>you find Helm great and what should we
+
+01:31:44.255 --> 01:31:46.335
+<v Speaker 2>copy and what should we try to improve,
+
+01:31:46.335 --> 01:31:47.695
+<v Speaker 2>you know, all these sorts of things. And
+
+01:31:47.695 --> 01:31:49.920
+<v Speaker 2>so please join us on the kpt channel
+
+01:31:49.920 --> 01:31:51.679
+<v Speaker 2>on the Kubernetes Slack and
+
+01:31:51.840 --> 01:31:54.719
+<v Speaker 2>github.com/googlecontainertools/kpt,
+
+01:31:54.719 --> 01:31:55.199
+<v Speaker 2>and
+
+01:31:55.840 --> 01:31:58.480
+<v Speaker 2>we look forward to discussing this and and
+
+01:31:58.480 --> 01:31:59.840
+<v Speaker 2>hopefully building it with you.
+
+01:32:00.160 --> 01:32:01.840
+<v Speaker 0>And is that true that anyone that can
+
+01:32:01.840 --> 01:32:03.920
+<v Speaker 0>contribute to PR gets the Google email address
+
+01:32:03.920 --> 01:32:04.960
+<v Speaker 0>so they can use the UI?
+
+01:32:08.375 --> 01:32:09.575
+<v Speaker 2>That's up to Brian. We will go off
+
+01:32:09.575 --> 01:32:10.534
+<v Speaker 1>and fix that.
+
+01:32:11.175 --> 01:32:13.735
+<v Speaker 1>But but actually, you know, I am interested
+
+01:32:13.735 --> 01:32:15.655
+<v Speaker 1>also in hearing, you know, whether
+
+01:32:16.055 --> 01:32:17.735
+<v Speaker 1>this makes sense, how do you think about
+
+01:32:17.735 --> 01:32:18.215
+<v Speaker 1>it,
+
+01:32:18.695 --> 01:32:19.735
+<v Speaker 1>because it's
+
+01:32:20.360 --> 01:32:22.199
+<v Speaker 1>like I said, on one hand, it's familiar.
+
+01:32:22.199 --> 01:32:25.000
+<v Speaker 1>It works has the same kind of experience
+
+01:32:25.000 --> 01:32:26.760
+<v Speaker 1>as imperative tools,
+
+01:32:27.400 --> 01:32:29.559
+<v Speaker 1>imperative UIs, ELIs,
+
+01:32:30.280 --> 01:32:32.679
+<v Speaker 1>that kind of thing, except it is actually
+
+01:32:32.679 --> 01:32:33.559
+<v Speaker 1>declarative,
+
+01:32:33.800 --> 01:32:35.400
+<v Speaker 1>and automated under the hood.
+
+01:32:36.105 --> 01:32:36.665
+<v Speaker 1>So
+
+01:32:40.345 --> 01:32:41.945
+<v Speaker 1>we're still kind of
+
+01:32:42.425 --> 01:32:43.704
+<v Speaker 1>trying to figure out
+
+01:32:44.585 --> 01:32:47.865
+<v Speaker 1>the best way of explaining it. So
+
+01:32:48.930 --> 01:32:49.330
+<v Speaker 1>the
+
+01:32:51.650 --> 01:32:53.330
+<v Speaker 1>you know, to kinda communicate the power of
+
+01:32:53.330 --> 01:32:55.650
+<v Speaker 1>what it can do, but hopefully, will also
+
+01:32:55.650 --> 01:32:57.250
+<v Speaker 1>just become more obvious over time as we
+
+01:32:57.250 --> 01:32:59.890
+<v Speaker 1>build out the the functionality to demonstrate the
+
+01:32:59.890 --> 01:33:00.290
+<v Speaker 1>potential.
+
+01:33:01.705 --> 01:33:04.265
+<v Speaker 0>Awesome. Well, I encourage people to start playing
+
+01:33:04.265 --> 01:33:06.745
+<v Speaker 0>with it, jump into GitHub, start looking for
+
+01:33:06.745 --> 01:33:10.185
+<v Speaker 0>issues, PRs, get involved. It's a really interesting,
+
+01:33:10.185 --> 01:33:12.824
+<v Speaker 0>exciting, early stage project, and I think those
+
+01:33:12.824 --> 01:33:14.745
+<v Speaker 0>are the best ones because people can bring
+
+01:33:14.745 --> 01:33:17.020
+<v Speaker 0>their knowledge, their expertise, and share that with
+
+01:33:17.020 --> 01:33:18.380
+<v Speaker 0>you and hopefully shape
+
+01:33:18.380 --> 01:33:20.860
+<v Speaker 0>what is the the future of Kubernetes deployment.
+
+01:33:20.860 --> 01:33:23.420
+<v Speaker 0>Very exciting thing. Yeah. Yeah. We definitely need
+
+01:33:23.420 --> 01:33:26.300
+<v Speaker 1>that. You know, people who have all the
+
+01:33:27.100 --> 01:33:29.180
+<v Speaker 1>paper cuts from doing it all the other
+
+01:33:29.260 --> 01:33:30.140
+<v Speaker 1>a hundred different ways.
+
+01:33:32.515 --> 01:33:34.115
+<v Speaker 0>Alright. Well, thank you so much for your
+
+01:33:34.115 --> 01:33:35.235
+<v Speaker 0>time, both of you.
+
+01:33:35.715 --> 01:33:38.995
+<v Speaker 0>It's been a really interesting look, and thank
+
+01:33:38.995 --> 01:33:40.755
+<v Speaker 0>you for driving a very ad hoc demo
+
+01:33:40.755 --> 01:33:42.515
+<v Speaker 0>as well, Justin. I really appreciate you just
+
+01:33:42.515 --> 01:33:44.195
+<v Speaker 0>kind of walking us through that as well.
+
+01:33:45.555 --> 01:33:47.159
+<v Speaker 2>And Thank you so much. This was fun.
+
+01:33:47.560 --> 01:33:49.000
+<v Speaker 0>I'll let you both get back to your
+
+01:33:49.000 --> 01:33:50.840
+<v Speaker 0>day. Have a good one. I'll speak to
+
+01:33:50.840 --> 01:33:52.280
+<v Speaker 0>you both soon, Anna.
+
+01:33:52.760 --> 01:33:55.160
+<v Speaker 1>Thanks for having us on. Cheers. Bye. Thank
+
+01:33:55.160 --> 01:33:56.280
+<v Speaker 0>you. Bye.
