@@ -170,15 +170,14 @@ describe("Structured Data Validation", () => {
 			},
 		];
 
-		// Note: mockAuthors would be used if we were testing author-related JSON-LD
-		// const mockAuthors = [
-		// 	{
-		// 		data: {
-		// 			name: "Test Author",
-		// 			handle: "testauthor",
-		// 		},
-		// 	},
-		// ];
+		const mockAuthors = [
+			{
+				data: {
+					name: "Test Author",
+					handle: "testauthor",
+				},
+			},
+		];
 
 		// Simulate the courseJsonLd creation logic
 		const courseJsonLd = {
@@ -202,6 +201,11 @@ describe("Structured Data Validation", () => {
 				courseMode: "online",
 				courseWorkload: "PT30M",
 			})),
+			creator: mockAuthors.map((author) => ({
+				"@type": "Person",
+				name: author.data.name,
+				url: `https://github.com/${author.data.handle}`,
+			})),
 			offers: {
 				"@type": "Offer",
 				price: "0",
@@ -211,6 +215,7 @@ describe("Structured Data Validation", () => {
 				itemOffered: {
 					"@type": "Course",
 					name: mockCourse.data.title,
+					url: `https://rawkode.academy/courses/${mockCourse.id}`,
 				},
 			},
 			isAccessibleForFree: true,
@@ -230,8 +235,20 @@ describe("Structured Data Validation", () => {
 		expect(courseJsonLd.offers.price).toBe("0");
 		expect(courseJsonLd.offers.priceCurrency).toBe("USD");
 		expect(courseJsonLd.offers.availability).toBe("https://schema.org/InStock");
+		expect(courseJsonLd.offers.category).toBe("Educational");
 		expect(courseJsonLd.offers.itemOffered).toBeDefined();
 		expect(courseJsonLd.offers.itemOffered["@type"]).toBe("Course");
+		expect(courseJsonLd.offers.itemOffered.url).toBeDefined();
+		
+		// Validate isAccessibleForFree field
+		expect(courseJsonLd.isAccessibleForFree).toBe(true);
+		
+		// Validate creator field
+		expect(courseJsonLd.creator).toBeDefined();
+		expect(Array.isArray(courseJsonLd.creator)).toBe(true);
+		expect(courseJsonLd.creator.length).toBeGreaterThan(0);
+		expect(courseJsonLd.creator[0].name).toBe("Test Author");
+		expect(courseJsonLd.creator[0].url).toBe("https://github.com/testauthor");
 
 		// Validate JSON structure can be serialized
 		expect(() => JSON.stringify(courseJsonLd)).not.toThrow();
