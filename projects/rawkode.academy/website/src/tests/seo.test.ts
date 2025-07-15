@@ -247,8 +247,9 @@ describe("Structured Data Validation", () => {
 		expect(courseJsonLd.creator).toBeDefined();
 		expect(Array.isArray(courseJsonLd.creator)).toBe(true);
 		expect(courseJsonLd.creator.length).toBeGreaterThan(0);
-		expect(courseJsonLd.creator[0].name).toBe("Test Author");
-		expect(courseJsonLd.creator[0].url).toBe("https://github.com/testauthor");
+		expect(courseJsonLd.creator[0]).toBeDefined();
+		expect(courseJsonLd.creator[0]?.name).toBe("Test Author");
+		expect(courseJsonLd.creator[0]?.url).toBe("https://github.com/testauthor");
 
 		// Validate JSON structure can be serialized
 		expect(() => JSON.stringify(courseJsonLd)).not.toThrow();
