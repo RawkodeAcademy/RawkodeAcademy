@@ -132,51 +132,52 @@ const people = defineCollection({
 
 const articles = defineCollection({
 	loader: glob({
-		pattern: ["**/*.mdx", "**/*.md"],
+		pattern: ["**/*.mdx"],
 		base: "./content/articles",
 	}),
 	schema: ({ image }) =>
 		z.object({
 			title: z.string(),
+			publishedAt: z.coerce.date(),
+			updatedAt: z.coerce.date().optional(),
+			// canonicalUrl: z.string().url().optional(),
+			subtitle: z.string().optional(),
 			description: z.string(),
-			type: z
-				.enum([
-					"tutorial", // Step-by-step implementation guides
-					"architecture", // System design and patterns
-					"tools", // Tool reviews and introductions
-					"practices", // Best practices and advice
-					"features", // Deep dives into specific features
-					"news", // News and announcements
-					"case-study", // Real-world implementations
-					"editorial", // Opinion pieces and editorials
-				])
-				.default("tutorial"),
-			openGraph: z.object({
-				title: z.string(),
-				subtitle: z.string(),
-			}),
+			authors: z.array(reference("people")).default(["rawkode"]),
+			categories: z.array(z.string()).default([]),
+			draft: z.boolean().default(false),
 			cover: z
 				.object({
 					image: image(),
 					alt: z.string(),
 				})
 				.optional(),
-			series: reference("series").optional(),
-			publishedAt: z.coerce.date(),
-			updatedAt: z.coerce.date().optional(),
-			updates: z
-				.array(
-					z.object({
-						date: z.coerce.date(),
-						reason: z.string(),
-					}),
-				)
-				.optional(),
-			isDraft: z.boolean().default(true),
-			authors: z.array(reference("people")).default(["rawkode"]),
-			technologies: z.array(z.string()).optional(),
-			tags: z.array(z.string()).optional(),
 		}),
+});
+
+const technologies = defineCollection({
+	loader: glob({
+		pattern: ["**/*.json"],
+		base: "./content/technologies",
+	}),
+	schema: z.object({
+		name: z.string(),
+		description: z.string(),
+		icon: z.string(),
+		website: z.string().url(),
+		source: z.string().url(),
+		documentation: z.string().url(),
+		categories: z.array(z.string()),
+		aliases: z.array(z.string()).optional(),
+		relatedTechnologies: z.array(z.string()).optional(),
+		useCases: z.array(z.string()).optional(),
+		features: z.array(z.string()).optional(),
+		learningResources: z.object({
+			official: z.array(z.string().url()).optional(),
+			community: z.array(z.string().url()).optional(),
+			tutorials: z.array(z.string().url()).optional(),
+		}),
+	}),
 });
 
 const series = defineCollection({
@@ -275,6 +276,7 @@ const courseModules = defineCollection({
 					thumbnailUrl: z.string().optional(),
 				})
 				.optional(),
+			duration: z.number().optional(), // Duration in minutes
 			cover: z
 				.object({
 					image: image(),
@@ -296,19 +298,21 @@ const changelog = defineCollection({
 	}),
 	schema: z.object({
 		title: z.string(),
-		description: z.string(),
-		type: z.enum(["feature", "fix", "chore", "docs", "breaking"]),
 		date: z.coerce.date(),
-		author: z.string(),
+		type: z.enum(["feature", "fix", "improvement", "breaking"]),
+		description: z.string(),
+		pullRequest: z.number().optional(),
+		author: reference("people"),
 	}),
 });
 
 export const collections = {
-	adrs,
-	articles,
-	series,
 	videos,
 	people,
+	articles,
+	technologies,
+	series,
+	adrs,
 	testimonials,
 	courses,
 	courseModules,
