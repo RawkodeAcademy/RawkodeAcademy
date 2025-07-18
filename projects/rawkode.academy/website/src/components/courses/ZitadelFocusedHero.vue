@@ -158,9 +158,11 @@
             <div class="mt-8 pt-6 border-t border-gray-700">
               <p class="text-gray-400 text-sm mb-2">Taught by</p>
               <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
-                  DF
-                </div>
+                <img 
+                  src="https://github.com/rawkode.png" 
+                  alt="David Flanagan"
+                  class="w-12 h-12 rounded-full"
+                />
                 <div>
                   <div class="text-white font-semibold">David Flanagan</div>
                   <div class="text-gray-500 text-sm">Cloud Native Expert</div>
