@@ -22,10 +22,10 @@
         </h1>
       </div>
       
-      <!-- Content split -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <!-- Left content - 65% width -->
-        <div class="lg:col-span-8">
+      <!-- Content split 50/50 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <!-- Left content -->
+        <div>
           <!-- Description -->
           <p class="text-xl text-gray-300 mb-8 leading-relaxed">
             {{ description }}
@@ -91,15 +91,15 @@
           </div>
         </div>
         
-        <!-- Right content - Signup form - 35% width -->
-        <div class="lg:col-span-4 relative">
+        <!-- Right content - Signup form -->
+        <div class="relative">
           <!-- Decorative element -->
-          <div class="absolute -top-4 -right-4 w-48 h-48 bg-yellow-500 rounded-full opacity-5 blur-3xl"></div>
+          <div class="absolute -top-4 -right-4 w-72 h-72 bg-yellow-500 rounded-full opacity-5 blur-3xl"></div>
           
           <!-- Signup card -->
-          <div class="relative bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+          <div class="relative bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 border border-gray-700">
             <div class="text-center mb-6">
-              <h3 class="text-xl font-bold text-white mb-2">Get Course Updates</h3>
+              <h3 class="text-2xl font-bold text-white mb-2">Get Course Updates</h3>
               <p class="text-gray-400 text-sm">
                 Be the first to know when new modules are released
               </p>
@@ -110,28 +110,28 @@
             
             <!-- Benefits -->
             <div class="mt-6 pt-6 border-t border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-300 mb-3">What you'll get:</h4>
-              <ul class="space-y-2 text-sm text-gray-400">
+              <h4 class="text-sm font-semibold text-gray-300 mb-4">What you'll get:</h4>
+              <ul class="space-y-3 text-sm text-gray-400">
                 <li class="flex items-start gap-2">
-                  <svg class="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                   <span>Instant notifications for new modules</span>
                 </li>
                 <li class="flex items-start gap-2">
-                  <svg class="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                   <span>Access to course source code</span>
                 </li>
                 <li class="flex items-start gap-2">
-                  <svg class="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                   <span>Exclusive tips and best practices</span>
                 </li>
                 <li class="flex items-start gap-2">
-                  <svg class="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                   <span>Community support and Q&A</span>
