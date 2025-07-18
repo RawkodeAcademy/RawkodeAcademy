@@ -1,9 +1,9 @@
 ---
 import { getCollection } from "astro:content";
-import Button from "@/components/common/Button.vue";
 import GridLayout from "@/components/common/GridLayout.vue";
-import PageHero from "@/components/common/PageHero.vue";
 import CourseCard from "@/components/courses/CourseCard.astro";
+import CompactCoursesHero from "@/components/courses/CompactCoursesHero.vue";
+import CourseFilters from "@/components/courses/CourseFilters.vue";
 import Page from "@/wrappers/page.astro";
 
 export const prerender = true;
@@ -13,36 +13,72 @@ const allCourses = (await getCollection("courses")).sort(
 	(a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
 
+// Get course modules for each course
+const coursesWithMetadata = await Promise.all(
+	allCourses.map(async (course) => {
+		const courseModules = (await getCollection("courseModules")).filter(
+			(module) => module.data.course.id === course.id,
+		);
+		return {
+			...course,
+			moduleCount: courseModules.length,
+			estimatedHours: Math.ceil(courseModules.length * 1.5), // Rough estimate
+		};
+	}),
+);
+
+// Get featured courses (top 3 most recent)
+const featuredCourses = coursesWithMetadata.slice(0, 3);
+
+// Extract unique technologies from all courses
+const allTechnologies = new Set<string>();
+allCourses.forEach((course) => {
+	if (course.data.technologies) {
+		course.data.technologies.forEach((tech) => allTechnologies.add(tech));
+	}
+});
+const availableTechnologies = Array.from(allTechnologies).sort();
+
+// Technology logos (you can expand this list)
+const technologyLogos = [
+	{ name: "Kubernetes", logo: "/images/tech/kubernetes.svg" },
+	{ name: "Docker", logo: "/images/tech/docker.svg" },
+	{ name: "Go", logo: "/images/tech/go.svg" },
+	{ name: "TypeScript", logo: "/images/tech/typescript.svg" },
+	{ name: "React", logo: "/images/tech/react.svg" },
+];
+
 const pageTitle = "Cloud Native Courses | Rawkode Academy";
 const pageDescription =
 	"Explore our comprehensive courses on cloud-native technologies, DevOps, and modern software development.";
 ---
 
 <Page title={pageTitle} description={pageDescription}>
-  <!-- Hero Section -->
-  <PageHero
-    title="Professional Cloud Native Courses"
-    subtitle="Master cloud-native technologies with our comprehensive, hands-on courses. From beginner to advanced, we've got you covered with practical skills you can apply immediately."
-    badge="100% Free"
-    stats={[
-      { label: `${allCourses.length} Courses` },
-      { label: 'Hands-on Labs' },
-      { label: 'Certificate Ready' }
-    ]}
-  >
-    <Fragment slot="actions">
-      <Button href="#courses" variant="primary" size="lg">Browse Courses</Button>
-    </Fragment>
-    
-    <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800 max-w-2xl mx-auto">
-      <p class="text-sm text-blue-800 dark:text-blue-200">
-        All courses are <strong class="text-blue-900 dark:text-blue-100">completely free</strong> to access! Sign in to download source code and additional resources.
-      </p>
-    </div>
-  </PageHero>
+  <!-- Compact Hero Section with Featured Courses -->
+  <CompactCoursesHero
+    featuredCourses={featuredCourses}
+    courseCount={allCourses.length}
+    technologies={technologyLogos}
+    client:load
+  />
 
+  <!-- Course Filters -->
+  <CourseFilters
+    availableTechnologies={availableTechnologies}
+    client:load
+  />
+
+  <!-- All Courses Section -->
   <div class="bg-white dark:bg-gray-900">
-    <div id="courses" class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+    <div id="all-courses" class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+      <div class="mb-8 text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
+          All Courses
+        </h2>
+        <p class="text-lg text-gray-500 dark:text-gray-400">
+          Browse our complete catalog of cloud-native courses
+        </p>
+      </div>
 
       <!-- Courses Grid -->
       {allCourses.length === 0 ? (
@@ -55,13 +91,29 @@ const pageDescription =
           </p>
         </div>
       ) : (
-        <GridLayout cols={{ default: 1, lg: 2 }} gap={8}>
-          {allCourses.map((course) => (
-            <CourseCard course={course} />
-          ))}
-        </GridLayout>
+        <div id="courses-grid">
+          <GridLayout cols={{ default: 1, md: 2, lg: 3 }} gap={6}>
+            {allCourses.map((course) => (
+              <CourseCard course={course} />
+            ))}
+          </GridLayout>
+        </div>
       )}
-
     </div>
   </div>
+
+  <!-- Client-side filtering script -->
+  <script>
+    // This will be enhanced with Vue components for filtering
+    document.addEventListener('DOMContentLoaded', () => {
+      // Smooth scroll to courses when clicking hero CTA
+      const browseButton = document.querySelector('a[href="#all-courses"]');
+      if (browseButton) {
+        browseButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.getElementById('all-courses')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+    });
+  </script>
 </Page>
