@@ -22,7 +22,7 @@
       </div>
       <h4 class="text-lg font-semibold text-white mb-2">Thank You!</h4>
       <p class="text-gray-400 text-sm">
-        Check your email to confirm your subscription.
+        {{ successMessage || 'Check your email to confirm your subscription.' }}
       </p>
     </div>
 
@@ -79,6 +79,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { actions } from "astro:actions";
 
 interface Props {
   courseId: string;
@@ -98,37 +99,32 @@ const sponsorConsent = ref(false);
 const loading = ref(false);
 const submitted = ref(false);
 const error = ref('');
+const successMessage = ref('');
 
 async function submitForm() {
   error.value = '';
   loading.value = true;
 
   try {
-    const response = await fetch('/api/course-signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email.value || props.userEmail,
-        courseId: props.courseId,
-        courseTitle: props.courseTitle,
-        audienceId: props.audienceId,
-        sponsorConsent: sponsorConsent.value,
-        sponsor: props.sponsor,
-        sponsorAudienceId: props.sponsorAudienceId,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to subscribe');
+    // Create FormData object since the action expects FormData
+    const formData = new FormData();
+    formData.append("audienceId", props.audienceId);
+    formData.append("email", email.value || props.userEmail || "");
+    formData.append("allowSponsorContact", sponsorConsent.value.toString());
+    if (props.sponsorAudienceId) {
+      formData.append("sponsorAudienceId", props.sponsorAudienceId);
     }
 
-    submitted.value = true;
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+    const result = await actions.signupForCourseUpdates(formData);
+
+    if (result.error) {
+      error.value = result.error.message || "An error occurred";
+    } else if (result.data) {
+      submitted.value = true;
+      successMessage.value = result.data.message;
+    }
+  } catch (err: any) {
+    error.value = err.message || 'An error occurred. Please try again.';
   } finally {
     loading.value = false;
   }
