@@ -44,7 +44,7 @@
         />
       </div>
 
-      <div v-if="sponsor && allowSponsorContact" class="flex items-start gap-3">
+      <div v-if="signupConfig.sponsor && signupConfig.allowSponsorContact" class="flex items-start gap-3">
         <input
           v-model="sponsorConsent"
           type="checkbox"
@@ -53,7 +53,7 @@
           :disabled="loading"
         />
         <label for="sponsor-consent" class="text-sm text-gray-400">
-          I agree to share my email with {{ sponsor }} for course-related updates
+          I agree to share my email with {{ signupConfig.sponsor }} for course-related updates
         </label>
       </div>
 
@@ -78,55 +78,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 import { actions } from "astro:actions";
 
 interface Props {
-  courseId: string;
-  courseTitle: string;
-  audienceId: string;
-  sponsor?: string;
-  sponsorAudienceId?: string;
-  allowSponsorContact: boolean;
-  userEmail?: string;
-  isAlreadySubscribed: boolean;
+	courseId: string;
+	courseTitle: string;
+	signupConfig: {
+		audienceId: string;
+		sponsor?: string;
+		sponsorAudienceId?: string;
+		allowSponsorContact: boolean;
+	};
+	userEmail?: string | undefined;
+	isAlreadySubscribed: boolean;
 }
 
 const props = defineProps<Props>();
 
-const email = ref(props.userEmail || '');
+const email = ref(props.userEmail || "");
 const sponsorConsent = ref(false);
 const loading = ref(false);
 const submitted = ref(false);
-const error = ref('');
-const successMessage = ref('');
+const error = ref("");
+const successMessage = ref("");
 
 async function submitForm() {
-  error.value = '';
-  loading.value = true;
+	error.value = "";
+	loading.value = true;
 
-  try {
-    // Create FormData object since the action expects FormData
-    const formData = new FormData();
-    formData.append("audienceId", props.audienceId);
-    formData.append("email", email.value || props.userEmail || "");
-    formData.append("allowSponsorContact", sponsorConsent.value.toString());
-    if (props.sponsorAudienceId) {
-      formData.append("sponsorAudienceId", props.sponsorAudienceId);
-    }
+	try {
+		// Create FormData object since the action expects FormData
+		const formData = new FormData();
+		formData.append("audienceId", props.signupConfig.audienceId);
+		formData.append("email", email.value || props.userEmail || "");
+		formData.append("allowSponsorContact", sponsorConsent.value.toString());
+		if (props.signupConfig.sponsorAudienceId) {
+			formData.append(
+				"sponsorAudienceId",
+				props.signupConfig.sponsorAudienceId,
+			);
+		}
 
-    const result = await actions.signupForCourseUpdates(formData);
+		const result = await actions.signupForCourseUpdates(formData);
 
-    if (result.error) {
-      error.value = result.error.message || "An error occurred";
-    } else if (result.data) {
-      submitted.value = true;
-      successMessage.value = result.data.message;
-    }
-  } catch (err: any) {
-    error.value = err.message || 'An error occurred. Please try again.';
-  } finally {
-    loading.value = false;
-  }
+		if (result.error) {
+			error.value = result.error.message || "An error occurred";
+		} else if (result.data) {
+			submitted.value = true;
+			successMessage.value = result.data.message;
+		}
+	} catch (err: any) {
+		error.value = err.message || "An error occurred. Please try again.";
+	} finally {
+		loading.value = false;
+	}
 }
 </script>

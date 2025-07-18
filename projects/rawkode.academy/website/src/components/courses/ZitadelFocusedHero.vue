@@ -179,10 +179,9 @@
 import Button from "../common/Button.vue";
 
 interface Props {
-  courseId: string;
-  moduleCount: number;
-  estimatedHours: number;
-  difficulty: string;
+	courseId: string;
+	moduleCount: number;
+	difficulty: string;
 }
 
 defineProps<Props>();

@@ -6,8 +6,6 @@ import {
 	getEntries,
 	render,
 } from "astro:content";
-import Breadcrumb from "@/components/breadcrumb/Breadcrumb.astro";
-import Badge from "@/components/common/Badge.vue";
 import CourseModules from "@/components/courses/CourseModules.astro";
 import CourseSignupFormCompact from "@/components/courses/CourseSignupFormCompact.astro";
 import CourseDetailHero from "@/components/courses/CourseDetailHero.vue";
@@ -57,11 +55,14 @@ const authors = await getEntries(course.data.authors);
 // Get all modules for this course
 const allCourseModules = (await getCollection("courseModules"))
 	.filter((module) => module.data.course.id === course.id)
-	.filter((module) => !module.data.isDraft)
+	.filter((module) => !module.data.draft)
 	.sort((a, b) => a.data.order - b.data.order);
 
 const totalModules = allCourseModules.length;
-const totalDuration = allCourseModules.reduce((acc, module) => acc + (module.data.duration || 0), 0);
+const totalDuration = allCourseModules.reduce(
+	(acc, module) => acc + (module.data.duration || 0),
+	0,
+);
 
 // Format duration
 function formatDuration(minutes: number): string {
@@ -74,46 +75,14 @@ function formatDuration(minutes: number): string {
 }
 
 // Utility function to get difficulty variant
-function getDifficultyVariant(difficulty: string): "success" | "warning" | "error" {
-	switch (difficulty) {
-		case "beginner":
-			return "success";
-		case "intermediate":
-			return "warning";
-		case "advanced":
-			return "error";
-		default:
-			return "success";
-	}
-}
 
 const imageUrl = await computeImageUrl(course);
 
-// Group modules by section
-const modulesBySectionMap = allCourseModules.reduce((acc, module) => {
-	const section = module.data.section || "Course Content";
-	if (!acc[section]) {
-		acc[section] = [];
-	}
-	acc[section].push(module);
-	return acc;
-}, {} as Record<string, typeof allCourseModules>);
-
-const modulesBySectionArray = Object.entries(modulesBySectionMap).map(
-	([title, modules]) => ({ title, modules }),
-);
-
 // Format authors for the hero component
-const formattedAuthors = authors.map(author => ({
+const formattedAuthors = authors.map((author) => ({
 	name: author.data.name,
-	handle: author.data.handle
+	handle: author.data.handle,
 }));
-
-const breadcrumbElements = [
-	{ title: "Home", link: "/" },
-	{ title: "Courses", link: "/courses" },
-	{ title: course.data.title, link: `/courses/${course.id}` },
-];
 ---
 
 <Page
@@ -155,6 +124,7 @@ const breadcrumbElements = [
 					courseId={course.id}
 					courseTitle={course.data.title}
 					signupConfig={course.data.signupConfig}
+					isAlreadySubscribed={false}
 					server:defer 
 				/>
 			)}

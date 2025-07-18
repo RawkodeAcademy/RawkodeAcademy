@@ -1,19 +1,14 @@
 ---
 import { getImage } from "astro:assets";
-import {
-	type CollectionEntry,
-	getCollection,
-	getEntries,
-	render,
-} from "astro:content";
-import { join, dirname } from 'node:path';
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import { join, dirname } from "node:path";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb.astro";
 import CourseSignupForm from "@/components/courses/CourseSignupForm.astro";
 import ResourceList from "@/components/courses/ResourceList.vue";
 import VideoPlayer from "@/components/video/player.vue";
 import Page from "@/wrappers/page.astro";
-import { loadWebContainerFiles } from '@/utils/webcontainer-loader';
-import type { GetStaticPaths, GetStaticPathsResult } from "astro";
+import { loadWebContainerFiles } from "@/utils/webcontainer-loader";
+import type { GetStaticPaths } from "astro";
 
 export const prerender = true;
 
@@ -22,17 +17,7 @@ type Props = {
 	course: CollectionEntry<"courses">;
 };
 
-type CourseModulePathItem = {
-	params: {
-		course: string;
-		slug: string;
-	};
-	props: Props;
-};
-
-export const getStaticPaths: GetStaticPaths = async (): Promise<
-	GetStaticPathsResult<CourseModulePathItem>
-> => {
+export const getStaticPaths: GetStaticPaths = async () => {
 	const courses = await getCollection("courses");
 	const modules = await getCollection("courseModules");
 
@@ -56,6 +41,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<
 };
 
 const computeImageUrl = async (module: CollectionEntry<"courseModules">) => {
+	if (!module.data.cover) return null;
 	return (
 		await getImage({
 			src: module.data.cover.image,
@@ -67,12 +53,11 @@ const computeImageUrl = async (module: CollectionEntry<"courseModules">) => {
 const { module, course } = Astro.props;
 
 // Prevent viewing draft modules
-if (module.data.isDraft) {
+if (module.data.draft) {
 	return Astro.redirect("/404");
 }
 
 const { Content } = await render(module);
-const authors = await getEntries(module.data.authors);
 
 // Process resources to load WebContainer files
 // Process both course and module resources
@@ -83,20 +68,29 @@ const allResources = [
 
 const processedResources = await Promise.all(
 	allResources.map(async (resource) => {
-		if (resource.type === 'embed' && resource.embedConfig?.container === 'webcontainer' && resource.embedConfig.import?.localDir) {
+		if (
+			resource.type === "embed" &&
+			resource.embedConfig?.container === "webcontainer" &&
+			resource.embedConfig.import?.localDir
+		) {
 			// Get the module file path
-			const moduleFilePath = join(process.cwd(), 'content', 'courses', module.id + '.mdx');
+			const moduleFilePath = join(
+				process.cwd(),
+				"content",
+				"courses",
+				module.id + ".mdx",
+			);
 			const moduleDir = dirname(moduleFilePath);
 			const importPath = join(moduleDir, resource.embedConfig.import.localDir);
-			
+
 			try {
 				const importedFiles = await loadWebContainerFiles(importPath);
 				return {
 					...resource,
 					embedConfig: {
 						...resource.embedConfig,
-						files: { ...importedFiles, ...(resource.embedConfig.files || {}) }
-					}
+						files: { ...importedFiles, ...(resource.embedConfig.files || {}) },
+					},
 				};
 			} catch (error) {
 				console.error(`Failed to load files for ${resource.title}:`, error);
@@ -104,7 +98,7 @@ const processedResources = await Promise.all(
 			}
 		}
 		return resource;
-	})
+	}),
 );
 
 const imageUrl = await computeImageUrl(module);
@@ -122,7 +116,7 @@ const breadcrumbElements = [
 // Get all course modules for navigation
 const allCourseModules = (await getCollection("courseModules"))
 	.filter((m) => m.data.course.id === course.id)
-	.filter((m) => !m.data.isDraft)
+	.filter((m) => !m.data.draft)
 	.sort((a, b) => a.data.order - b.data.order);
 
 const currentIndex = allCourseModules.findIndex((m) => m.id === module.id);
@@ -137,11 +131,11 @@ const nextModule =
 <Page
 	title={`${module.data.title} - ${course.data.title}`}
 	description={module.data.description}
-	image={imageUrl}
+	image={imageUrl ? { image: imageUrl.startsWith('http') ? new URL(imageUrl) : new URL(imageUrl, Astro.site || "https://rawkode.academy"), text: module.data.title, format: "png" as const } : undefined}
 >
 	<section id="article" class="pt-4 sm:pt-8">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-			<Breadcrumb breadcrumbElements={breadcrumbElements} />
+			<Breadcrumb elements={breadcrumbElements} />
 
 			<!-- Module Header -->
 			<div class="mb-8 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
@@ -204,13 +198,8 @@ const nextModule =
 				module.data.video && (
 					<div class="mb-8">
 						<VideoPlayer
-							courseId={course.id}
-							moduleId={module.id}
-							videoSource={{
-								youtube: module.data.video.youtube,
-								rawkode: module.data.video.rawkode,
-							}}
-							poster={module.data.video.poster}
+							video={module.data.video.id}
+							thumbnailUrl={module.data.video.thumbnailUrl || module.data.video.poster || ""}
 							client:load
 						/>
 					</div>
@@ -284,12 +273,15 @@ const nextModule =
 			</div>
 
 			<!-- Course Signup -->
-			<div class="mt-12">
-				<CourseSignupForm
-					courseId={course.id}
-					courseTitle={course.data.title}
-				/>
-			</div>
+			{course.data.signupConfig && (
+				<div class="mt-12">
+					<CourseSignupForm
+						courseId={course.id}
+						courseTitle={course.data.title}
+						signupConfig={course.data.signupConfig}
+					/>
+				</div>
+			)}
 		</div>
 	</section>
 </Page>

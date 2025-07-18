@@ -147,28 +147,32 @@ import Button from "../common/Button.vue";
 import Heading from "../common/Heading.vue";
 
 interface Props {
-  featuredCourses: Array<CollectionEntry<"courses"> & { moduleCount: number; estimatedHours: number }>;
-  courseCount: number;
-  technologies?: Array<{ name: string; logo: string }>;
+	featuredCourses: Array<
+		CollectionEntry<"courses"> & { moduleCount: number; estimatedHours: number }
+	>;
+	courseCount: number;
+	technologies?: Array<{ name: string; logo: string }>;
 }
 
 defineProps<Props>();
 
 defineEmits<{
-  navigate: [path: string];
+	navigate: [path: string];
 }>();
 
-function getDifficultyVariant(difficulty: string): "success" | "warning" | "danger" | "default" {
-  switch (difficulty) {
-    case "beginner":
-      return "success";
-    case "intermediate":
-      return "warning";
-    case "advanced":
-      return "danger";
-    default:
-      return "default";
-  }
+function getDifficultyVariant(
+	difficulty: string,
+): "success" | "warning" | "danger" | "default" {
+	switch (difficulty) {
+		case "beginner":
+			return "success";
+		case "intermediate":
+			return "warning";
+		case "advanced":
+			return "danger";
+		default:
+			return "default";
+	}
 }
 </script>
 

@@ -166,101 +166,109 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import Badge from '../common/Badge.vue';
+import { ref, computed } from "vue";
+import Badge from "../common/Badge.vue";
 
 interface Props {
-  availableTechnologies: string[];
+	availableTechnologies: string[];
 }
 
 const props = defineProps<Props>();
 
-const searchQuery = ref('');
-const selectedDifficulty = ref('');
+const searchQuery = ref("");
+const selectedDifficulty = ref("");
 const selectedTechnologies = ref<string[]>([]);
-const selectedSort = ref('newest');
+const selectedSort = ref("newest");
 
 const showDifficultyMenu = ref(false);
 const showTechMenu = ref(false);
 const showSortMenu = ref(false);
 
 const sortOptions = [
-  { value: 'newest', label: 'Newest First' },
-  { value: 'oldest', label: 'Oldest First' },
-  { value: 'title', label: 'Title (A-Z)' },
-  { value: 'difficulty', label: 'Difficulty' },
+	{ value: "newest", label: "Newest First" },
+	{ value: "oldest", label: "Oldest First" },
+	{ value: "title", label: "Title (A-Z)" },
+	{ value: "difficulty", label: "Difficulty" },
 ];
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value || selectedDifficulty.value || selectedTechnologies.value.length > 0;
+	return (
+		searchQuery.value ||
+		selectedDifficulty.value ||
+		selectedTechnologies.value.length > 0
+	);
 });
 
 const emit = defineEmits<{
-  search: [query: string];
-  filterChange: [filters: { difficulty: string; technologies: string[]; sort: string }];
+	search: [query: string];
+	filterChange: [
+		filters: { difficulty: string; technologies: string[]; sort: string },
+	];
 }>();
 
-function getDifficultyVariant(difficulty: string): "success" | "warning" | "danger" | "default" {
-  switch (difficulty) {
-    case "beginner":
-      return "success";
-    case "intermediate":
-      return "warning";
-    case "advanced":
-      return "danger";
-    default:
-      return "default";
-  }
+function getDifficultyVariant(
+	difficulty: string,
+): "success" | "warning" | "danger" | "default" {
+	switch (difficulty) {
+		case "beginner":
+			return "success";
+		case "intermediate":
+			return "warning";
+		case "advanced":
+			return "danger";
+		default:
+			return "default";
+	}
 }
 
 function selectDifficulty(difficulty: string) {
-  selectedDifficulty.value = difficulty === 'all' ? '' : difficulty;
-  showDifficultyMenu.value = false;
-  emitFilterChange();
+	selectedDifficulty.value = difficulty === "all" ? "" : difficulty;
+	showDifficultyMenu.value = false;
+	emitFilterChange();
 }
 
 function toggleTechnology(tech: string) {
-  const index = selectedTechnologies.value.indexOf(tech);
-  if (index > -1) {
-    selectedTechnologies.value.splice(index, 1);
-  } else {
-    selectedTechnologies.value.push(tech);
-  }
-  emitFilterChange();
+	const index = selectedTechnologies.value.indexOf(tech);
+	if (index > -1) {
+		selectedTechnologies.value.splice(index, 1);
+	} else {
+		selectedTechnologies.value.push(tech);
+	}
+	emitFilterChange();
 }
 
 function selectSort(sort: string) {
-  selectedSort.value = sort;
-  showSortMenu.value = false;
-  emitFilterChange();
+	selectedSort.value = sort;
+	showSortMenu.value = false;
+	emitFilterChange();
 }
 
 function clearFilters() {
-  searchQuery.value = '';
-  selectedDifficulty.value = '';
-  selectedTechnologies.value = [];
-  selectedSort.value = 'newest';
-  emit('search', '');
-  emitFilterChange();
+	searchQuery.value = "";
+	selectedDifficulty.value = "";
+	selectedTechnologies.value = [];
+	selectedSort.value = "newest";
+	emit("search", "");
+	emitFilterChange();
 }
 
 function emitFilterChange() {
-  emit('filterChange', {
-    difficulty: selectedDifficulty.value,
-    technologies: selectedTechnologies.value,
-    sort: selectedSort.value,
-  });
+	emit("filterChange", {
+		difficulty: selectedDifficulty.value,
+		technologies: selectedTechnologies.value,
+		sort: selectedSort.value,
+	});
 }
 
 // Close dropdowns when clicking outside
-if (typeof window !== 'undefined') {
-  window.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    if (!target.closest('.relative')) {
-      showDifficultyMenu.value = false;
-      showTechMenu.value = false;
-      showSortMenu.value = false;
-    }
-  });
+if (typeof window !== "undefined") {
+	window.addEventListener("click", (e) => {
+		const target = e.target as HTMLElement;
+		if (!target.closest(".relative")) {
+			showDifficultyMenu.value = false;
+			showTechMenu.value = false;
+			showSortMenu.value = false;
+		}
+	});
 }
 </script>

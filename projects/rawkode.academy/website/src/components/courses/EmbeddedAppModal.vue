@@ -40,39 +40,9 @@
               </div>
             </div>
 
-            <!-- StackBlitz -->
-            <iframe
-              v-if="resource.embedConfig.container === 'stackblitz'"
-              :src="getStackBlitzUrl()"
-              :style="{ width: '100%', height: '100%' }"
-              frameborder="0"
-              @load="loading = false"
-            ></iframe>
-
-            <!-- CodeSandbox -->
-            <iframe
-              v-else-if="resource.embedConfig.container === 'codesandbox'"
-              :src="getCodeSandboxUrl()"
-              :style="{ width: '100%', height: '100%' }"
-              sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-              frameborder="0"
-              @load="loading = false"
-            ></iframe>
-
-            <!-- CodePen -->
-            <iframe
-              v-else-if="resource.embedConfig.container === 'codepen'"
-              :src="getCodePenUrl()"
-              :style="{ width: '100%', height: '100%' }"
-              frameborder="0"
-              scrolling="no"
-              allowfullscreen
-              @load="loading = false"
-            ></iframe>
-
             <!-- WebContainer -->
             <WebContainerEmbed
-              v-else-if="resource.embedConfig.container === 'webcontainer'"
+              v-if="resource.embedConfig.container === 'webcontainer'"
               :title="resource.title"
               :files="resource.embedConfig.files || {}"
               :start-command="resource.embedConfig.startCommand"
@@ -125,12 +95,7 @@ interface EmbedResource {
 	description?: string;
 	type: "embed";
 	embedConfig: {
-		container:
-			| "stackblitz"
-			| "codesandbox"
-			| "codepen"
-			| "iframe"
-			| "webcontainer";
+		container: "webcontainer" | "iframe";
 		src: string;
 		height?: string;
 		width?: string;
@@ -166,71 +131,9 @@ const close = () => {
 	isOpen.value = false;
 };
 
-const getStackBlitzUrl = () => {
-	const src = props.resource.embedConfig.src;
-	try {
-		const url = new URL(src);
-		if (url.hostname !== "stackblitz.com") {
-			throw new Error("Invalid hostname");
-		}
-		return src.replace("/edit/", "/embed/");
-	} catch {
-		// If not a valid URL or wrong hostname, treat as project ID
-		return `https://stackblitz.com/embed/${src}?embed=1`;
-	}
-};
-
-const getCodeSandboxUrl = () => {
-	const src = props.resource.embedConfig.src;
-	try {
-		const url = new URL(src);
-		if (url.hostname !== "codesandbox.io") {
-			throw new Error("Invalid hostname");
-		}
-		return src.replace("/s/", "/embed/");
-	} catch {
-		// If not a valid URL or wrong hostname, treat as sandbox ID
-		return `https://codesandbox.io/embed/${src}`;
-	}
-};
-
-const getCodePenUrl = () => {
-	const src = props.resource.embedConfig.src;
-	try {
-		const url = new URL(src);
-		if (url.hostname !== "codepen.io") {
-			throw new Error("Invalid hostname");
-		}
-		return src.replace("/pen/", "/embed/");
-	} catch {
-		// If not a valid URL, return as-is (CodePen doesn't have a predictable embed pattern)
-		return src;
-	}
-};
-
 const getExternalUrl = () => {
 	const config = props.resource.embedConfig;
 	switch (config.container) {
-		case "stackblitz":
-			try {
-				const url = new URL(config.src);
-				return url.hostname === "stackblitz.com"
-					? config.src
-					: `https://stackblitz.com/edit/${config.src}`;
-			} catch {
-				return `https://stackblitz.com/edit/${config.src}`;
-			}
-		case "codesandbox":
-			try {
-				const url = new URL(config.src);
-				return url.hostname === "codesandbox.io"
-					? config.src
-					: `https://codesandbox.io/s/${config.src}`;
-			} catch {
-				return `https://codesandbox.io/s/${config.src}`;
-			}
-		case "codepen":
-			return config.src;
 		case "webcontainer":
 			return "#"; // WebContainers don't have external URLs
 		default:

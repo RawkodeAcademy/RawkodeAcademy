@@ -1,5 +1,5 @@
 ---
-import CourseSignupFormCompact from "./CourseSignupFormCompact.vue";
+import CourseSignupFormCompactVue from "./CourseSignupFormCompact.vue";
 
 export const partial = true;
 
@@ -12,16 +12,24 @@ type Props = {
 		sponsorAudienceId?: string | undefined;
 		allowSponsorContact: boolean;
 	};
+	userEmail?: string | undefined;
+	isAlreadySubscribed: boolean;
 };
 
-const { courseId, courseTitle, signupConfig } = Astro.props;
+const {
+	courseId,
+	courseTitle,
+	signupConfig,
+	userEmail,
+	isAlreadySubscribed: propsIsAlreadySubscribed,
+} = Astro.props;
 const user = Astro.locals?.user;
 
 const { audienceId, sponsor, sponsorAudienceId, allowSponsorContact } =
 	signupConfig;
 
 // Check if user is already subscribed
-let isAlreadySubscribed = false;
+let isAlreadySubscribed = propsIsAlreadySubscribed;
 
 // Check session for anonymous users who have already signed up
 let sessionEmail: string | undefined;
@@ -59,14 +67,11 @@ if (sessionEmail && !user) {
 }
 ---
 
-<CourseSignupFormCompact
+<CourseSignupFormCompactVue
 	courseId={courseId}
 	courseTitle={courseTitle}
-	audienceId={audienceId}
-	sponsor={sponsor}
-	sponsorAudienceId={sponsorAudienceId}
-	allowSponsorContact={allowSponsorContact}
-	userEmail={user?.email}
+	signupConfig={{ audienceId, allowSponsorContact, ...(sponsor && { sponsor }), ...(sponsorAudienceId && { sponsorAudienceId }) }}
+	userEmail={userEmail || user?.email}
 	isAlreadySubscribed={isAlreadySubscribed}
 	client:load
 />

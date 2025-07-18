@@ -314,7 +314,7 @@ const initWebContainer = async () => {
 		writeTerminal("Files mounted successfully!", "success");
 
 		// Only install if package.json exists
-		if (props.files['package.json']) {
+		if (props.files["package.json"]) {
 			await installDependencies();
 		}
 
@@ -340,7 +340,7 @@ onUnmounted(async () => {
 		try {
 			await webcontainerInstance.value.teardown();
 		} catch (error) {
-			writeTerminal(`Error during teardown: ${error}`, 'error');
+			writeTerminal(`Error during teardown: ${error}`, "error");
 		}
 	}
 });

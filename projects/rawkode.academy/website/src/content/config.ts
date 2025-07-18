@@ -95,13 +95,7 @@ const resourceSchema = z.object({
 	filePath: z.string().optional(),
 	embedConfig: z
 		.object({
-			container: z.enum([
-				"stackblitz",
-				"codesandbox",
-				"codepen",
-				"iframe",
-				"webcontainer",
-			]),
+			container: z.enum(["webcontainer", "iframe"]),
 			src: z.string(),
 			height: z.string().default("600px"),
 			width: z.string().default("100%"),
@@ -151,6 +145,26 @@ const articles = defineCollection({
 					image: image(),
 					alt: z.string(),
 				})
+				.optional(),
+			// Additional properties that are used in components
+			type: z
+				.enum(["tutorial", "article", "guide", "news"])
+				.default("tutorial"),
+			series: reference("series").optional(),
+			technologies: z.array(z.string()).optional(),
+			openGraph: z
+				.object({
+					title: z.string(),
+					subtitle: z.string().optional(),
+				})
+				.optional(),
+			updates: z
+				.array(
+					z.object({
+						date: z.coerce.date(),
+						description: z.string(),
+					}),
+				)
 				.optional(),
 		}),
 });
@@ -274,6 +288,9 @@ const courseModules = defineCollection({
 				.object({
 					id: z.string(),
 					thumbnailUrl: z.string().optional(),
+					youtube: z.string().optional(),
+					rawkode: z.string().optional(),
+					poster: z.string().optional(),
 				})
 				.optional(),
 			duration: z.number().optional(), // Duration in minutes
@@ -285,7 +302,8 @@ const courseModules = defineCollection({
 				.optional(),
 			publishedAt: z.coerce.date(),
 			updatedAt: z.coerce.date().optional(),
-			isDraft: z.boolean().default(true),
+			draft: z.boolean().default(true),
+			difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
 			authors: z.array(reference("people")).default(["rawkode"]),
 			resources: z.array(resourceSchema).optional(),
 		}),

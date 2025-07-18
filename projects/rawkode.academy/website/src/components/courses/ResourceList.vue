@@ -84,23 +84,27 @@ import { ref, computed } from "vue";
 import EmbeddedAppModal from "./EmbeddedAppModal.vue";
 
 interface Resource {
-  title: string;
-  description?: string;
-  type: "url" | "file" | "embed";
-  url?: string;
-  filePath?: string;
-  embedConfig?: {
-    container: "webcontainer" | "iframe";
-    src: string;
-    height?: string;
-    width?: string;
-    startCommand?: string;
-    files?: Record<string, string>;
-    import?: {
-      localDir: string;
-    };
-  };
-  category: "slides" | "code" | "documentation" | "demos" | "other";
+	title: string;
+	description?: string | undefined;
+	type: "url" | "file" | "embed";
+	url?: string | undefined;
+	filePath?: string | undefined;
+	embedConfig?:
+		| {
+				container: "webcontainer" | "iframe";
+				src: string;
+				height: string;
+				width: string;
+				startCommand?: string | undefined;
+				files?: Record<string, string> | undefined;
+				import?:
+					| {
+							localDir: string;
+					  }
+					| undefined;
+		  }
+		| undefined;
+	category: "slides" | "code" | "documentation" | "demos" | "other";
 }
 
 const props = defineProps<{
