@@ -30,41 +30,17 @@
             From basics to advanced patterns, learn everything you need to build production-ready auth systems.
           </p>
           
-          <!-- Key features -->
-          <div class="grid grid-cols-2 gap-4 mb-8">
+          <!-- Key info - only showing real data -->
+          <div class="flex flex-wrap items-center gap-6 mb-8 text-gray-300">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
               </div>
               <div>
                 <div class="text-white font-semibold">{{ moduleCount }} Modules</div>
-                <div class="text-gray-500 text-sm">Step-by-step learning</div>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div>
-                <div class="text-white font-semibold">{{ estimatedHours }} Hours</div>
-                <div class="text-gray-500 text-sm">Of content</div>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div>
-                <div class="text-white font-semibold">Hands-on Labs</div>
-                <div class="text-gray-500 text-sm">Real-world projects</div>
+                <div class="text-gray-500 text-sm">Comprehensive content</div>
               </div>
             </div>
             
@@ -75,14 +51,14 @@
                 </svg>
               </div>
               <div>
-                <div class="text-white font-semibold">{{ difficulty }}</div>
-                <div class="text-gray-500 text-sm">Difficulty level</div>
+                <div class="text-white font-semibold capitalize">{{ difficulty }}</div>
+                <div class="text-gray-500 text-sm">Level</div>
               </div>
             </div>
           </div>
           
-          <!-- CTAs -->
-          <div class="flex flex-wrap gap-4">
+          <!-- CTA -->
+          <div>
             <Button 
               :href="`/courses/${courseId}`" 
               variant="primary" 
@@ -93,14 +69,6 @@
               <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
               </svg>
-            </Button>
-            <Button 
-              href="#course-outline" 
-              variant="ghost" 
-              size="lg"
-              class="text-white border-gray-700 hover:bg-gray-800 font-semibold"
-            >
-              View Course Outline
             </Button>
           </div>
         </div>
