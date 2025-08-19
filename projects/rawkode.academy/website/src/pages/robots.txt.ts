@@ -20,8 +20,8 @@ Sitemap: ${videoSitemapURL.href}
 `;
 
 export const GET: APIRoute = ({ site }) => {
-	const sitemapURL = new URL("sitemap-index.xml", site);
-	const videoSitemapURL = new URL("video-sitemap.xml", site);
+  const sitemapURL = new URL("sitemap-index.xml", site);
+  const videoSitemapURL = new URL("video-sitemap.xml", site);
 
-	return new Response(getRobotsTxt(sitemapURL, videoSitemapURL));
+  return new Response(getRobotsTxt(sitemapURL, videoSitemapURL));
 };

@@ -4,45 +4,45 @@ import Button from "./Button.vue";
 import FeatureCard from "./FeatureCard.vue";
 
 const meta = {
-	title: "Components/Common/FeatureCard",
-	component: VueInReact,
-	parameters: {
-		layout: "padded",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/FeatureCard",
+  component: VueInReact,
+  parameters: {
+    layout: "padded",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	args: {
-		component: FeatureCard,
-		props: {
-			title: "Feature Title",
-			description:
-				"This is a description of an amazing feature that provides value to users.",
-		},
-	},
+  args: {
+    component: FeatureCard,
+    props: {
+      title: "Feature Title",
+      description:
+        "This is a description of an amazing feature that provides value to users.",
+    },
+  },
 };
 
 export const WithIcon: Story = {
-	args: {
-		component: FeatureCard,
-		props: {
-			title: "Cloud Native",
-			description: "Learn modern cloud native technologies and best practices.",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FeatureCard,
+    props: {
+      title: "Cloud Native",
+      description: "Learn modern cloud native technologies and best practices.",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <FeatureCard v-bind="props">
             <template #icon>
               <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,28 +51,28 @@ export const WithIcon: Story = {
             </template>
           </FeatureCard>
         `,
-				components: { FeatureCard },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { FeatureCard },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const WithCustomIconBackground: Story = {
-	args: {
-		component: FeatureCard,
-		props: {
-			title: "Security First",
-			description: "Built with security best practices from the ground up.",
-			iconBgColor: "bg-red-100 dark:bg-red-900/20",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FeatureCard,
+    props: {
+      title: "Security First",
+      description: "Built with security best practices from the ground up.",
+      iconBgColor: "bg-red-100 dark:bg-red-900/20",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <FeatureCard v-bind="props">
             <template #icon>
               <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,28 +81,28 @@ export const WithCustomIconBackground: Story = {
             </template>
           </FeatureCard>
         `,
-				components: { FeatureCard },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { FeatureCard },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const WithFooter: Story = {
-	args: {
-		component: FeatureCard,
-		props: {
-			title: "Get Started",
-			description:
-				"Ready to begin your learning journey? Start with our beginner-friendly courses.",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FeatureCard,
+    props: {
+      title: "Get Started",
+      description:
+        "Ready to begin your learning journey? Start with our beginner-friendly courses.",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <FeatureCard v-bind="props">
             <template #icon>
               <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,23 +114,23 @@ export const WithFooter: Story = {
             </template>
           </FeatureCard>
         `,
-				components: { FeatureCard, Button },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { FeatureCard, Button },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const FeatureGrid: Story = {
-	args: {
-		component: FeatureCard,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FeatureCard,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               title="Interactive Learning"
@@ -205,8 +205,8 @@ export const FeatureGrid: Story = {
             </FeatureCard>
           </div>
         `,
-				components: { FeatureCard },
-			}}
-		/>
-	),
+        components: { FeatureCard },
+      }}
+    />
+  ),
 };

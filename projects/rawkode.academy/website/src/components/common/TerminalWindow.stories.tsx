@@ -3,34 +3,34 @@ import { VueInReact } from "../vue-wrapper";
 import TerminalWindow from "./TerminalWindow.vue";
 
 const meta = {
-	title: "Components/Common/TerminalWindow",
-	component: VueInReact,
-	parameters: {
-		layout: "padded",
-		backgrounds: {
-			default: "dark",
-		},
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/TerminalWindow",
+  component: VueInReact,
+  parameters: {
+    layout: "padded",
+    backgrounds: {
+      default: "dark",
+    },
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	args: {
-		component: TerminalWindow,
-		props: {},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: TerminalWindow,
+    props: {},
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <TerminalWindow v-bind="props">
             $ npm install @rawkode/academy
             + @rawkode/academy@1.0.0
@@ -41,26 +41,26 @@ export const Default: Story = {
             Server running at http://localhost:3000
           </TerminalWindow>
         `,
-				components: { TerminalWindow },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { TerminalWindow },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const CustomTitle: Story = {
-	args: {
-		component: TerminalWindow,
-		props: {
-			title: "zsh - ~/projects/my-app",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: TerminalWindow,
+    props: {
+      title: "zsh - ~/projects/my-app",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <TerminalWindow v-bind="props">
             ~/projects/my-app $ git status
             On branch main
@@ -69,26 +69,26 @@ export const CustomTitle: Story = {
             nothing to commit, working tree clean
           </TerminalWindow>
         `,
-				components: { TerminalWindow },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { TerminalWindow },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const KubernetesExample: Story = {
-	args: {
-		component: TerminalWindow,
-		props: {
-			title: "kubectl",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: TerminalWindow,
+    props: {
+      title: "kubectl",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <TerminalWindow v-bind="props">
             $ kubectl get pods
             NAME                          READY   STATUS    RESTARTS   AGE
@@ -104,26 +104,26 @@ export const KubernetesExample: Story = {
             database     ClusterIP      10.96.100.12    &lt;none&gt;          5432/TCP       10m
           </TerminalWindow>
         `,
-				components: { TerminalWindow },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { TerminalWindow },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const DockerExample: Story = {
-	args: {
-		component: TerminalWindow,
-		props: {
-			title: "Docker",
-		},
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: TerminalWindow,
+    props: {
+      title: "Docker",
+    },
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <TerminalWindow title="Docker">
             $ docker build -t myapp:latest .
             [+] Building 45.2s (12/12) FINISHED
@@ -145,23 +145,23 @@ export const DockerExample: Story = {
             Server started on port 3000
           </TerminalWindow>
         `,
-				components: { TerminalWindow },
-			}}
-		/>
-	),
+        components: { TerminalWindow },
+      }}
+    />
+  ),
 };
 
 export const ErrorOutput: Story = {
-	args: {
-		component: TerminalWindow,
-		props: {
-			title: "npm - error",
-		},
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: TerminalWindow,
+    props: {
+      title: "npm - error",
+    },
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <TerminalWindow title="npm - error">
             $ npm run build
             
@@ -178,20 +178,20 @@ export const ErrorOutput: Story = {
             <span class="text-red-400">ERROR: "build" exited with 1.</span>
           </TerminalWindow>
         `,
-				components: { TerminalWindow },
-			}}
-		/>
-	),
+        components: { TerminalWindow },
+      }}
+    />
+  ),
 };
 
 export const MultipleCommands: Story = {
-	args: {
-		component: TerminalWindow,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: TerminalWindow,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="space-y-6">
             <TerminalWindow title="Installation">
               $ curl -fsSL https://raw.githubusercontent.com/rawkode/installer/main/install.sh | bash
@@ -228,8 +228,8 @@ export const MultipleCommands: Story = {
             </TerminalWindow>
           </div>
         `,
-				components: { TerminalWindow },
-			}}
-		/>
-	),
+        components: { TerminalWindow },
+      }}
+    />
+  ),
 };

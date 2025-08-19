@@ -4,47 +4,47 @@ import Heading from "./Heading.vue";
 import Section from "./Section.vue";
 
 const meta = {
-	title: "Components/Common/Section",
-	component: VueInReact,
-	parameters: {
-		layout: "fullscreen",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/Section",
+  component: VueInReact,
+  parameters: {
+    layout: "fullscreen",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	args: {
-		component: Section,
-		props: {},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default:
-					"This is the default section content with standard padding and container width.",
-			}}
-		/>
-	),
+  args: {
+    component: Section,
+    props: {},
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default:
+          "This is the default section content with standard padding and container width.",
+      }}
+    />
+  ),
 };
 
 export const AllPaddingSizes: Story = {
-	args: {
-		component: Section,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Section,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div>
             <Section padding="none" background="gray" class="border-b">
               <Heading size="lg">No Padding</Heading>
@@ -72,20 +72,20 @@ export const AllPaddingSizes: Story = {
             </Section>
           </div>
         `,
-				components: { Section, Heading },
-			}}
-		/>
-	),
+        components: { Section, Heading },
+      }}
+    />
+  ),
 };
 
 export const AllContainerSizes: Story = {
-	args: {
-		component: Section,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Section,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div>
             <Section container="sm" background="gray">
               <Heading size="lg">Small Container</Heading>
@@ -113,20 +113,20 @@ export const AllContainerSizes: Story = {
             </Section>
           </div>
         `,
-				components: { Section, Heading },
-			}}
-		/>
-	),
+        components: { Section, Heading },
+      }}
+    />
+  ),
 };
 
 export const BackgroundVariants: Story = {
-	args: {
-		component: Section,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Section,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div>
             <Section background="none">
               <Heading size="lg">No Background</Heading>
@@ -144,20 +144,20 @@ export const BackgroundVariants: Story = {
             </Section>
           </div>
         `,
-				components: { Section, Heading },
-			}}
-		/>
-	),
+        components: { Section, Heading },
+      }}
+    />
+  ),
 };
 
 export const RealWorldExample: Story = {
-	args: {
-		component: Section,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Section,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div>
             <Section padding="xl" background="gradient">
               <div class="text-center mb-12">
@@ -202,8 +202,8 @@ export const RealWorldExample: Story = {
             </Section>
           </div>
         `,
-				components: { Section, Heading },
-			}}
-		/>
-	),
+        components: { Section, Heading },
+      }}
+    />
+  ),
 };

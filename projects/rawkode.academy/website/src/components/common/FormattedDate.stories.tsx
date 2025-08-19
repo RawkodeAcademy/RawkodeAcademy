@@ -3,17 +3,17 @@ import { VueInReact } from "../vue-wrapper";
 import FormattedDate from "./FormattedDate.vue";
 
 const meta = {
-	title: "Components/Common/FormattedDate",
-	component: VueInReact,
-	parameters: {
-		layout: "centered",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/FormattedDate",
+  component: VueInReact,
+  parameters: {
+    layout: "centered",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
@@ -22,62 +22,62 @@ type Story = StoryObj<typeof meta>;
 const testDate = new Date("2024-03-15T10:30:00");
 
 export const Default: Story = {
-	args: {
-		component: FormattedDate,
-		props: {
-			date: testDate,
-		},
-	},
+  args: {
+    component: FormattedDate,
+    props: {
+      date: testDate,
+    },
+  },
 };
 
 export const ShortFormat: Story = {
-	args: {
-		component: FormattedDate,
-		props: {
-			date: testDate,
-			format: "short",
-		},
-	},
+  args: {
+    component: FormattedDate,
+    props: {
+      date: testDate,
+      format: "short",
+    },
+  },
 };
 
 export const LongFormat: Story = {
-	args: {
-		component: FormattedDate,
-		props: {
-			date: testDate,
-			format: "long",
-		},
-	},
+  args: {
+    component: FormattedDate,
+    props: {
+      date: testDate,
+      format: "long",
+    },
+  },
 };
 
 export const FullFormat: Story = {
-	args: {
-		component: FormattedDate,
-		props: {
-			date: testDate,
-			format: "full",
-		},
-	},
+  args: {
+    component: FormattedDate,
+    props: {
+      date: testDate,
+      format: "full",
+    },
+  },
 };
 
 export const WithIcon: Story = {
-	args: {
-		component: FormattedDate,
-		props: {
-			date: testDate,
-			showIcon: true,
-		},
-	},
+  args: {
+    component: FormattedDate,
+    props: {
+      date: testDate,
+      showIcon: true,
+    },
+  },
 };
 
 export const AllVariants: Story = {
-	args: {
-		component: FormattedDate,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FormattedDate,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="space-y-4">
             <div>
               <h3 class="text-sm font-medium text-gray-700 mb-2">Short Format</h3>
@@ -105,25 +105,25 @@ export const AllVariants: Story = {
             </div>
           </div>
         `,
-				components: { FormattedDate },
-				setup() {
-					return {
-						date: new Date("2024-03-15T10:30:00"),
-					};
-				},
-			}}
-		/>
-	),
+        components: { FormattedDate },
+        setup() {
+          return {
+            date: new Date("2024-03-15T10:30:00"),
+          };
+        },
+      }}
+    />
+  ),
 };
 
 export const DifferentDates: Story = {
-	args: {
-		component: FormattedDate,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FormattedDate,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="space-y-2">
             <FormattedDate :date="today" showIcon />
             <FormattedDate :date="yesterday" showIcon />
@@ -132,39 +132,39 @@ export const DifferentDates: Story = {
             <FormattedDate :date="lastYear" showIcon />
           </div>
         `,
-				components: { FormattedDate },
-				setup() {
-					const today = new Date();
-					const yesterday = new Date();
-					yesterday.setDate(yesterday.getDate() - 1);
-					const lastWeek = new Date();
-					lastWeek.setDate(lastWeek.getDate() - 7);
-					const lastMonth = new Date();
-					lastMonth.setMonth(lastMonth.getMonth() - 1);
-					const lastYear = new Date();
-					lastYear.setFullYear(lastYear.getFullYear() - 1);
+        components: { FormattedDate },
+        setup() {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const lastWeek = new Date();
+          lastWeek.setDate(lastWeek.getDate() - 7);
+          const lastMonth = new Date();
+          lastMonth.setMonth(lastMonth.getMonth() - 1);
+          const lastYear = new Date();
+          lastYear.setFullYear(lastYear.getFullYear() - 1);
 
-					return {
-						today,
-						yesterday,
-						lastWeek,
-						lastMonth,
-						lastYear,
-					};
-				},
-			}}
-		/>
-	),
+          return {
+            today,
+            yesterday,
+            lastWeek,
+            lastMonth,
+            lastYear,
+          };
+        },
+      }}
+    />
+  ),
 };
 
 export const InContext: Story = {
-	args: {
-		component: FormattedDate,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: FormattedDate,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <article class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
             <h2 class="text-xl font-bold mb-2">Understanding Kubernetes Deployments</h2>
             <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
@@ -179,13 +179,13 @@ export const InContext: Story = {
             </p>
           </article>
         `,
-				components: { FormattedDate },
-				setup() {
-					return {
-						publishDate: new Date("2024-03-10"),
-					};
-				},
-			}}
-		/>
-	),
+        components: { FormattedDate },
+        setup() {
+          return {
+            publishDate: new Date("2024-03-10"),
+          };
+        },
+      }}
+    />
+  ),
 };

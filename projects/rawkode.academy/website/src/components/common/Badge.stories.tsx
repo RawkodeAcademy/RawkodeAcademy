@@ -3,48 +3,48 @@ import { VueInReact } from "../vue-wrapper";
 import Badge from "./Badge.vue";
 
 const meta = {
-	title: "Components/Common/Badge",
-	component: VueInReact,
-	parameters: {
-		layout: "centered",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/Badge",
+  component: VueInReact,
+  parameters: {
+    layout: "centered",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	args: {
-		component: Badge,
-		props: {
-			variant: "default",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Default Badge",
-			}}
-		/>
-	),
+  args: {
+    component: Badge,
+    props: {
+      variant: "default",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Default Badge",
+      }}
+    />
+  ),
 };
 
 export const AllVariants: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex flex-wrap gap-4">
             <Badge variant="default">Default</Badge>
             <Badge variant="primary">Primary</Badge>
@@ -56,20 +56,20 @@ export const AllVariants: Story = {
             <Badge variant="info">Info</Badge>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const AllSizes: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex items-center gap-4">
             <Badge size="xs" variant="primary">Extra Small</Badge>
             <Badge size="sm" variant="primary">Small</Badge>
@@ -77,20 +77,20 @@ export const AllSizes: Story = {
             <Badge size="lg" variant="primary">Large</Badge>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const OutlineVariants: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex flex-wrap gap-4">
             <Badge variant="default" :outline="true">Default</Badge>
             <Badge variant="primary" :outline="true">Primary</Badge>
@@ -102,20 +102,20 @@ export const OutlineVariants: Story = {
             <Badge variant="info" :outline="true">Info</Badge>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const RoundedVariants: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex flex-wrap gap-4">
             <Badge rounded="none" variant="primary">None</Badge>
             <Badge rounded="sm" variant="primary">Small</Badge>
@@ -124,20 +124,20 @@ export const RoundedVariants: Story = {
             <Badge rounded="full" variant="primary">Full</Badge>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const StatusBadges: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="space-y-4">
             <div class="flex items-center gap-4">
               <span class="text-gray-700 dark:text-gray-300">Status:</span>
@@ -153,40 +153,40 @@ export const StatusBadges: Story = {
             </div>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const DifficultyBadges: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex gap-4">
             <Badge variant="success" size="sm">Beginner</Badge>
             <Badge variant="warning" size="sm">Intermediate</Badge>
             <Badge variant="danger" size="sm">Advanced</Badge>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const CourseBadges: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="space-y-4">
             <div class="flex flex-wrap gap-2">
               <Badge variant="primary" size="xs">Article</Badge>
@@ -202,20 +202,20 @@ export const CourseBadges: Story = {
             </div>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };
 
 export const CountBadges: Story = {
-	args: {
-		component: Badge,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Badge,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
               <span class="text-gray-700 dark:text-gray-300">Notifications</span>
@@ -231,8 +231,8 @@ export const CountBadges: Story = {
             </div>
           </div>
         `,
-				components: { Badge },
-			}}
-		/>
-	),
+        components: { Badge },
+      }}
+    />
+  ),
 };

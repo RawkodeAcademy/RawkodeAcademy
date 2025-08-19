@@ -9,22 +9,22 @@ process.env.ZITADEL_CLIENT_ID = "293097955970320066";
 
 // Use type assertion to work around the UserConfig type issue
 export default getViteConfig({
-	test: {
-		include: ["src/**/*.{spec,test}.{ts,tsx}"],
-		mockReset: true,
-		environment: "happy-dom",
-		globals: true,
-		coverage: {
-			reporter: ["text", "json", "html"],
-			exclude: [
-				"node_modules/**",
-				"dist/**",
-				"**/*.d.ts",
-				"**/*.config.*",
-				"**/*.spec.ts",
-				"**/*.test.ts",
-			],
-		},
-		setupFiles: ["./src/tests/setup.ts"],
-	},
+  test: {
+    include: ["src/**/*.{spec,test}.{ts,tsx}"],
+    mockReset: true,
+    environment: "happy-dom",
+    globals: true,
+    coverage: {
+      reporter: ["text", "json", "html"],
+      exclude: [
+        "node_modules/**",
+        "dist/**",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/*.spec.ts",
+        "**/*.test.ts",
+      ],
+    },
+    setupFiles: ["./src/tests/setup.ts"],
+  },
 } as ViteUserConfig);

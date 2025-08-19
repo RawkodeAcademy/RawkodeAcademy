@@ -1,32 +1,32 @@
-import { useEffect, useRef, type ReactElement } from "react";
+import { type ReactElement, useEffect, useRef } from "react";
 import { type Component, createApp, h } from "vue";
 
 interface VueInReactProps {
-	component: Component;
-	props?: Record<string, unknown>;
+  component: Component;
+  props?: Record<string, unknown>;
 }
 
 export const VueInReact = ({
-	component,
-	props = {},
+  component,
+  props = {},
 }: VueInReactProps): ReactElement => {
-	const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-		const app = createApp({
-			render() {
-				return h(component, props);
-			},
-		});
+    const app = createApp({
+      render() {
+        return h(component, props);
+      },
+    });
 
-		app.mount(containerRef.current);
+    app.mount(containerRef.current);
 
-		return () => {
-			app.unmount();
-		};
-	}, [component, JSON.stringify(props)]);
+    return () => {
+      app.unmount();
+    };
+  }, [component, JSON.stringify(props)]);
 
-	return <div ref={containerRef} />;
+  return <div ref={containerRef} />;
 };

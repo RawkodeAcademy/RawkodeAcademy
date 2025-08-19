@@ -1,9 +1,9 @@
 interface Window {
-	GrafanaFaroWebSdk?: {
-		faro: {
-			api: {
-				pushError: (error: Error, context?: Record<string, any>) => void;
-			};
-		};
-	};
+  GrafanaFaroWebSdk?: {
+    faro: {
+      api: {
+        pushError: (error: Error, context?: Record<string, any>) => void;
+      };
+    };
+  };
 }

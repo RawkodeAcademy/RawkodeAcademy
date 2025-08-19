@@ -3,122 +3,122 @@ import { VueInReact } from "../vue-wrapper";
 import Button from "./Button.vue";
 
 const meta = {
-	title: "Components/Common/Button",
-	component: VueInReact,
-	parameters: {
-		layout: "centered",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/Button",
+  component: VueInReact,
+  parameters: {
+    layout: "centered",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-	args: {
-		component: Button,
-		props: {
-			variant: "primary",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Primary Button",
-			}}
-		/>
-	),
+  args: {
+    component: Button,
+    props: {
+      variant: "primary",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Primary Button",
+      }}
+    />
+  ),
 };
 
 export const Secondary: Story = {
-	args: {
-		component: Button,
-		props: {
-			variant: "secondary",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Secondary Button",
-			}}
-		/>
-	),
+  args: {
+    component: Button,
+    props: {
+      variant: "secondary",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Secondary Button",
+      }}
+    />
+  ),
 };
 
 export const Ghost: Story = {
-	args: {
-		component: Button,
-		props: {
-			variant: "ghost",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Ghost Button",
-			}}
-		/>
-	),
+  args: {
+    component: Button,
+    props: {
+      variant: "ghost",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Ghost Button",
+      }}
+    />
+  ),
 };
 
 export const Danger: Story = {
-	args: {
-		component: Button,
-		props: {
-			variant: "danger",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Danger Button",
-			}}
-		/>
-	),
+  args: {
+    component: Button,
+    props: {
+      variant: "danger",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Danger Button",
+      }}
+    />
+  ),
 };
 
 export const Sizes: Story = {
-	args: {
-		component: Button,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Button,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex items-center gap-4">
             <Button size="sm">Small</Button>
             <Button size="md">Medium</Button>
             <Button size="lg">Large</Button>
           </div>
         `,
-				components: { Button },
-			}}
-		/>
-	),
+        components: { Button },
+      }}
+    />
+  ),
 };
 
 export const WithIcons: Story = {
-	args: {
-		component: Button,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: Button,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="flex flex-col gap-4">
             <Button>
               <template #icon-left>
@@ -138,70 +138,70 @@ export const WithIcons: Story = {
             </Button>
           </div>
         `,
-				components: { Button },
-			}}
-		/>
-	),
+        components: { Button },
+      }}
+    />
+  ),
 };
 
 export const AsLink: Story = {
-	args: {
-		component: Button,
-		props: {
-			href: "#",
-			variant: "primary",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Link Button",
-			}}
-		/>
-	),
+  args: {
+    component: Button,
+    props: {
+      href: "#",
+      variant: "primary",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Link Button",
+      }}
+    />
+  ),
 };
 
 export const Disabled: Story = {
-	args: {
-		component: Button,
-		props: {
-			disabled: true,
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Disabled Button",
-			}}
-		/>
-	),
+  args: {
+    component: Button,
+    props: {
+      disabled: true,
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Disabled Button",
+      }}
+    />
+  ),
 };
 
 export const FullWidth: Story = {
-	args: {
-		component: Button,
-		props: {
-			fullWidth: true,
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={args.component}
-			props={{
-				...args.props,
-				default: "Full Width Button",
-			}}
-		/>
-	),
-	decorators: [
-		(Story) => (
-			<div style={{ width: "400px" }}>
-				<Story />
-			</div>
-		),
-	],
+  args: {
+    component: Button,
+    props: {
+      fullWidth: true,
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={args.component}
+      props={{
+        ...args.props,
+        default: "Full Width Button",
+      }}
+    />
+  ),
+  decorators: [
+    (Story) => (
+      <div style={{ width: "400px" }}>
+        <Story />
+      </div>
+    ),
+  ],
 };

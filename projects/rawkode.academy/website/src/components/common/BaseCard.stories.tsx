@@ -6,33 +6,33 @@ import FormattedDate from "./FormattedDate.vue";
 import Heading from "./Heading.vue";
 
 const meta = {
-	title: "Components/Common/BaseCard",
-	component: VueInReact,
-	parameters: {
-		layout: "padded",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/BaseCard",
+  component: VueInReact,
+  parameters: {
+    layout: "padded",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	args: {
-		component: BaseCard,
-		props: {
-			href: "/example",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: BaseCard,
+    props: {
+      href: "/example",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <div class="max-w-md">
             <BaseCard :href="href">
               <template #content>
@@ -44,26 +44,26 @@ export const Default: Story = {
             </BaseCard>
           </div>
         `,
-				components: { BaseCard },
-				setup() {
-					return { href: args.props?.href || "/example" };
-				},
-			}}
-		/>
-	),
+        components: { BaseCard },
+        setup() {
+          return { href: args.props?.href || "/example" };
+        },
+      }}
+    />
+  ),
 };
 
 export const WithCover: Story = {
-	args: {
-		component: BaseCard,
-		props: {
-			href: "/article/example",
-		},
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: BaseCard,
+    props: {
+      href: "/article/example",
+    },
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="max-w-md">
             <BaseCard href="/article/example">
               <template #cover>
@@ -82,20 +82,20 @@ export const WithCover: Story = {
             </BaseCard>
           </div>
         `,
-				components: { BaseCard },
-			}}
-		/>
-	),
+        components: { BaseCard },
+      }}
+    />
+  ),
 };
 
 export const WithBadge: Story = {
-	args: {
-		component: BaseCard,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: BaseCard,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="max-w-md">
             <BaseCard href="/course/kubernetes">
               <template #cover>
@@ -117,20 +117,20 @@ export const WithBadge: Story = {
             </BaseCard>
           </div>
         `,
-				components: { BaseCard, Badge },
-			}}
-		/>
-	),
+        components: { BaseCard, Badge },
+      }}
+    />
+  ),
 };
 
 export const WithFooter: Story = {
-	args: {
-		component: BaseCard,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: BaseCard,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="max-w-md">
             <BaseCard href="/blog/post">
               <template #content>
@@ -148,25 +148,25 @@ export const WithFooter: Story = {
             </BaseCard>
           </div>
         `,
-				components: { BaseCard, FormattedDate },
-				setup() {
-					return {
-						publishDate: new Date("2024-03-10"),
-					};
-				},
-			}}
-		/>
-	),
+        components: { BaseCard, FormattedDate },
+        setup() {
+          return {
+            publishDate: new Date("2024-03-10"),
+          };
+        },
+      }}
+    />
+  ),
 };
 
 export const CompleteExample: Story = {
-	args: {
-		component: BaseCard,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: BaseCard,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="max-w-md">
             <BaseCard href="/course/advanced-kubernetes">
               <template #cover>
@@ -212,25 +212,25 @@ export const CompleteExample: Story = {
             </BaseCard>
           </div>
         `,
-				components: { BaseCard, Badge, Heading, FormattedDate },
-				setup() {
-					return {
-						updateDate: new Date("2024-03-01"),
-					};
-				},
-			}}
-		/>
-	),
+        components: { BaseCard, Badge, Heading, FormattedDate },
+        setup() {
+          return {
+            updateDate: new Date("2024-03-01"),
+          };
+        },
+      }}
+    />
+  ),
 };
 
 export const CardGrid: Story = {
-	args: {
-		component: BaseCard,
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: BaseCard,
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <BaseCard v-for="item in items" :key="item.id" :href="item.href">
               <template #cover>
@@ -253,44 +253,44 @@ export const CardGrid: Story = {
             </BaseCard>
           </div>
         `,
-				components: { BaseCard, Badge, FormattedDate },
-				setup() {
-					const items = [
-						{
-							id: 1,
-							href: "/item/1",
-							title: "Getting Started with Docker",
-							description:
-								"Learn the fundamentals of containerization with Docker.",
-							image: "https://via.placeholder.com/400x200",
-							badge: "Beginner",
-							badgeVariant: "success",
-							date: new Date("2024-03-10"),
-						},
-						{
-							id: 2,
-							href: "/item/2",
-							title: "Kubernetes Security Best Practices",
-							description:
-								"Secure your Kubernetes clusters with these essential practices.",
-							image: "https://via.placeholder.com/400x200",
-							badge: "Advanced",
-							badgeVariant: "warning",
-							date: new Date("2024-03-08"),
-						},
-						{
-							id: 3,
-							href: "/item/3",
-							title: "CI/CD with GitOps",
-							description:
-								"Implement continuous deployment using GitOps principles.",
-							image: "https://via.placeholder.com/400x200",
-							date: new Date("2024-03-05"),
-						},
-					];
-					return { items };
-				},
-			}}
-		/>
-	),
+        components: { BaseCard, Badge, FormattedDate },
+        setup() {
+          const items = [
+            {
+              id: 1,
+              href: "/item/1",
+              title: "Getting Started with Docker",
+              description:
+                "Learn the fundamentals of containerization with Docker.",
+              image: "https://via.placeholder.com/400x200",
+              badge: "Beginner",
+              badgeVariant: "success",
+              date: new Date("2024-03-10"),
+            },
+            {
+              id: 2,
+              href: "/item/2",
+              title: "Kubernetes Security Best Practices",
+              description:
+                "Secure your Kubernetes clusters with these essential practices.",
+              image: "https://via.placeholder.com/400x200",
+              badge: "Advanced",
+              badgeVariant: "warning",
+              date: new Date("2024-03-08"),
+            },
+            {
+              id: 3,
+              href: "/item/3",
+              title: "CI/CD with GitOps",
+              description:
+                "Implement continuous deployment using GitOps principles.",
+              image: "https://via.placeholder.com/400x200",
+              date: new Date("2024-03-05"),
+            },
+          ];
+          return { items };
+        },
+      }}
+    />
+  ),
 };

@@ -5,31 +5,31 @@ import Heading from "./Heading.vue";
 import HeroSection from "./HeroSection.vue";
 
 const meta = {
-	title: "Components/Common/HeroSection",
-	component: VueInReact,
-	parameters: {
-		layout: "fullscreen",
-	},
-	tags: ["autodocs"],
-	argTypes: {
-		component: {
-			table: { disable: true },
-		},
-	},
+  title: "Components/Common/HeroSection",
+  component: VueInReact,
+  parameters: {
+    layout: "fullscreen",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    component: {
+      table: { disable: true },
+    },
+  },
 } satisfies Meta<typeof VueInReact>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	args: {
-		component: HeroSection,
-		props: {},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: HeroSection,
+    props: {},
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <HeroSection v-bind="props">
             <div class="text-center max-w-3xl mx-auto">
               <Heading as="h1" size="4xl" align="center" class="mb-6">
@@ -45,28 +45,28 @@ export const Default: Story = {
             </div>
           </HeroSection>
         `,
-				components: { HeroSection, Heading, Button },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { HeroSection, Heading, Button },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const CustomGradient: Story = {
-	args: {
-		component: HeroSection,
-		props: {
-			gradientFrom: "from-blue-100",
-			gradientVia: "via-purple-50",
-			gradientTo: "to-pink-100",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: HeroSection,
+    props: {
+      gradientFrom: "from-blue-100",
+      gradientVia: "via-purple-50",
+      gradientTo: "to-pink-100",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <HeroSection v-bind="props">
             <div class="text-center max-w-3xl mx-auto">
               <Heading as="h1" size="4xl" align="center" class="mb-6">
@@ -78,24 +78,24 @@ export const CustomGradient: Story = {
             </div>
           </HeroSection>
         `,
-				components: { HeroSection, Heading },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { HeroSection, Heading },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const WithBackgroundPattern: Story = {
-	args: {
-		component: HeroSection,
-		props: {},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: HeroSection,
+    props: {},
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <HeroSection v-bind="props">
             <template #background>
               <div class="absolute inset-0 opacity-10">
@@ -117,24 +117,24 @@ export const WithBackgroundPattern: Story = {
             </div>
           </HeroSection>
         `,
-				components: { HeroSection, Heading },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { HeroSection, Heading },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
 
 export const LeftAligned: Story = {
-	args: {
-		component: HeroSection,
-		props: {},
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: HeroSection,
+    props: {},
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <HeroSection>
             <div class="max-w-4xl">
               <Heading as="h1" size="4xl" class="mb-6">
@@ -151,21 +151,21 @@ export const LeftAligned: Story = {
             </div>
           </HeroSection>
         `,
-				components: { HeroSection, Heading, Button },
-			}}
-		/>
-	),
+        components: { HeroSection, Heading, Button },
+      }}
+    />
+  ),
 };
 
 export const WithStats: Story = {
-	args: {
-		component: HeroSection,
-		props: {},
-	},
-	render: () => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: HeroSection,
+    props: {},
+  },
+  render: () => (
+    <VueInReact
+      component={{
+        template: `
           <HeroSection>
             <div class="text-center max-w-4xl mx-auto">
               <Heading as="h1" size="4xl" align="center" class="mb-6">
@@ -192,23 +192,23 @@ export const WithStats: Story = {
             </div>
           </HeroSection>
         `,
-				components: { HeroSection, Heading, Button },
-			}}
-		/>
-	),
+        components: { HeroSection, Heading, Button },
+      }}
+    />
+  ),
 };
 
 export const WithImage: Story = {
-	args: {
-		component: HeroSection,
-		props: {
-			class: "py-24",
-		},
-	},
-	render: (args) => (
-		<VueInReact
-			component={{
-				template: `
+  args: {
+    component: HeroSection,
+    props: {
+      class: "py-24",
+    },
+  },
+  render: (args) => (
+    <VueInReact
+      component={{
+        template: `
           <HeroSection v-bind="props">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
@@ -232,11 +232,11 @@ export const WithImage: Story = {
             </div>
           </HeroSection>
         `,
-				components: { HeroSection, Heading, Button },
-				setup() {
-					return { props: args.props };
-				},
-			}}
-		/>
-	),
+        components: { HeroSection, Heading, Button },
+        setup() {
+          return { props: args.props };
+        },
+      }}
+    />
+  ),
 };
