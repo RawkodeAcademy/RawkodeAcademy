@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "storybook/react";
 import { VueInReact } from "../vue-wrapper";
 import ArticleCard from "./ArticleCard.vue";
 

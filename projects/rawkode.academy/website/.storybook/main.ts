@@ -22,9 +22,6 @@ const config: StorybookConfig = {
 		name: "@storybook/react-vite",
 		options: {},
 	},
-	core: {
-		builder: "@storybook/builder-vite",
-	},
 	viteFinal: async (config, { configType }) => {
 		// Add Tailwind CSS support
 		const { default: tailwindcss } = await import("@tailwindcss/vite");

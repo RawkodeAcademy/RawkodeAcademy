@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "storybook/react";
 import { VueInReact } from "../vue-wrapper";
 import Heading from "./Heading.vue";
 import Section from "./Section.vue";
