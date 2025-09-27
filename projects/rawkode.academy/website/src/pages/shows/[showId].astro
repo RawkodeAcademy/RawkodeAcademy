@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import { getCollection } from "astro:content";
 import { GRAPHQL_ENDPOINT } from "astro:env/server";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb.astro";
 import VideoMetadata from "@/components/html/video-metadata.astro";
@@ -39,46 +40,95 @@ interface ShowResponse {
 
 const { showId } = Astro.params;
 
-if (!showId || !GRAPHQL_ENDPOINT) {
-        console.error("Missing showId parameter or GraphQL endpoint configuration for show page.");
+if (!showId) {
+        console.error("Missing showId parameter for show page.");
         return new Response(null, { status: 404 });
 }
 
-const client = new GraphQLClient(GRAPHQL_ENDPOINT);
+const videos = await getCollection("videos");
 
-const query = gql`
-        query GetShowById($id: String!) {
-                showById(id: $id) {
-                        id
-                        name
-                        description
-                        hosts {
-                                forename
-                                surname
-                        }
-                        episodes {
-                                code
-                                video {
-                                        slug
-                                        title
-                                        description
-                                        thumbnailUrl
-                                        duration
-                                        publishedAt
-                                }
-                        }
+const videosForShow = videos.filter((video) => video.data.show?.id === showId);
+
+const fallbackHosts = videosForShow
+        .flatMap((video) => video.data.show?.hosts ?? [])
+        .reduce<ShowHost[]>((unique, host) => {
+                if (!host) {
+                        return unique;
                 }
-        }
-`;
+
+                const fullName = [host.forename, host.surname].filter(Boolean).join(" ");
+
+                if (!fullName) {
+                        return unique;
+                }
+
+                if (unique.some((existing) => [existing?.forename, existing?.surname].filter(Boolean).join(" ") === fullName)) {
+                        return unique;
+                }
+
+                return [...unique, host];
+        }, []);
+
+const fallbackShow: ShowResponse["showById"] | null = videosForShow.length
+        ? {
+                  id: showId,
+                  name: videosForShow[0]?.data.show?.name ?? showId,
+                  description: null,
+                  hosts: fallbackHosts,
+                  episodes: videosForShow.map((video) => ({
+                          code: null,
+                          video: {
+                                  slug: video.data.slug,
+                                  title: video.data.title,
+                                  description: video.data.description,
+                                  thumbnailUrl: video.data.thumbnailUrl,
+                                  duration: video.data.duration,
+                                  publishedAt: video.data.publishedAt,
+                          },
+                  })),
+          }
+        : null;
 
 let show: ShowResponse["showById"] | null = null;
 
-try {
-        const data = await client.request<ShowResponse>(query, { id: showId });
-        show = data.showById ?? null;
-} catch (error) {
-        console.error(`Failed to fetch show ${showId}:`, error);
-        show = null;
+if (GRAPHQL_ENDPOINT) {
+        const client = new GraphQLClient(GRAPHQL_ENDPOINT);
+
+        const query = gql`
+                query GetShowById($id: String!) {
+                        showById(id: $id) {
+                                id
+                                name
+                                description
+                                hosts {
+                                        forename
+                                        surname
+                                }
+                                episodes {
+                                        code
+                                        video {
+                                                slug
+                                                title
+                                                description
+                                                thumbnailUrl
+                                                duration
+                                                publishedAt
+                                        }
+                                }
+                        }
+                }
+        `;
+
+        try {
+                const data = await client.request<ShowResponse>(query, { id: showId });
+                show = data.showById ?? null;
+        } catch (error) {
+                console.error(`Failed to fetch show ${showId}:`, error);
+        }
+}
+
+if (!show) {
+        show = fallbackShow;
 }
 
 if (!show) {
