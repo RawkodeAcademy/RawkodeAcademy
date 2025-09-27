@@ -11,6 +11,12 @@ interface AllShowsResponse {
         allShows?: (ShowSummary | null)[] | null;
 }
 
+type ShowsState =
+        | { kind: "loading" }
+        | { kind: "success"; shows: ShowSummary[] }
+        | { kind: "empty" }
+        | { kind: "error"; message: string };
+
 const showsQuery = /* GraphQL */ `
         query AllShows {
                 allShows {
@@ -32,27 +38,37 @@ Astro.response.headers.set("CDN-Cache-Control", "public, max-age=3600");
 Astro.response.headers.set("Cache-Tag", "shows-page, shows-list");
 Astro.response.headers.set("X-Build-Time", new Date().toISOString());
 
-let shows: ShowSummary[] = [];
-let status: "loading" | "success" | "empty" | "error" = "loading";
-let errorMessage = "";
+let state: ShowsState = { kind: "loading" };
 
-try {
-        const data = await request<AllShowsResponse>(GRAPHQL_ENDPOINT, showsQuery);
-        shows = (data.allShows ?? []).filter((show): show is ShowSummary => Boolean(show?.id && show?.name));
-        status = shows.length > 0 ? "success" : "empty";
-} catch (error) {
-        console.error("Failed to fetch shows for /shows:", error);
-        if (error instanceof ClientError && error.response.errors?.[0]?.message) {
-                errorMessage = error.response.errors[0].message;
-        } else if (error instanceof Error) {
-                errorMessage = error.message;
-        } else if (typeof error === "string") {
-                errorMessage = error;
-        } else {
-                errorMessage = "Unable to load shows.";
+if (!GRAPHQL_ENDPOINT) {
+        state = {
+                kind: "error",
+                message: "GraphQL endpoint is not configured.",
+        };
+} else {
+        try {
+                const data = await request<AllShowsResponse>(GRAPHQL_ENDPOINT, showsQuery);
+                const shows = (data.allShows ?? []).filter((show): show is ShowSummary => Boolean(show?.id && show?.name));
+                state = shows.length > 0 ? { kind: "success", shows } : { kind: "empty" };
+        } catch (error) {
+                console.error("Failed to fetch shows for /shows:", error);
+
+                let message = "Unable to load shows.";
+
+                if (error instanceof ClientError && error.response.errors?.[0]?.message) {
+                        message = error.response.errors[0].message;
+                } else if (error instanceof Error) {
+                        message = error.message;
+                } else if (typeof error === "string") {
+                        message = error;
+                }
+
+                state = { kind: "error", message };
         }
-        status = "error";
 }
+
+const shows = state.kind === "success" ? state.shows : [];
+const placeholderTiles = Array.from({ length: 6 }, (_, index) => index);
 ---
 
 <Page title="Shows">
@@ -68,11 +84,11 @@ try {
                         </div>
 
                         <div class="mt-12">
-                                {status === "loading" && (
+                                {state.kind === "loading" && (
                                         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                                {Array.from({ length: 6 }).map((_, index) => (
+                                                {placeholderTiles.map((placeholder) => (
                                                         <div
-                                                                key={`shows-loading-${index}`}
+                                                                data-placeholder-index={placeholder}
                                                                 class="h-36 animate-pulse rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800"
                                                                 aria-hidden="true"
                                                         />
@@ -80,18 +96,18 @@ try {
                                         </div>
                                 )}
 
-                                {status === "error" && (
+                                {state.kind === "error" && (
                                         <div class="rounded-xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900/60 dark:bg-red-900/30">
                                                 <p class="text-base font-semibold text-red-700 dark:text-red-300">
                                                         We couldn&apos;t load the shows right now.
                                                 </p>
                                                 <p class="mt-2 text-sm text-red-600 dark:text-red-200">
-                                                        {errorMessage}
+                                                        {state.message}
                                                 </p>
                                         </div>
                                 )}
 
-                                {status === "empty" && (
+                                {state.kind === "empty" && (
                                         <div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-800 dark:bg-gray-900/40">
                                                 <p class="text-base text-gray-600 dark:text-gray-300">
                                                         No shows available just yet. Please check back soon!
@@ -99,10 +115,10 @@ try {
                                         </div>
                                 )}
 
-                                {status === "success" && (
+                                {state.kind === "success" && (
                                         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                                                 {shows.map((show) => (
-                                                        <ShowCard key={show.id} show={show} />
+                                                        <ShowCard show={show} />
                                                 ))}
                                         </div>
                                 )}
