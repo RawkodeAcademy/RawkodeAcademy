@@ -2,31 +2,26 @@
 export const prerender = false;
 
 import { GRAPHQL_ENDPOINT } from "astro:env/server";
+import { ClientError, request } from "graphql-request";
 import ShowCard from "@/components/show/ShowCard.astro";
 import Page from "@/wrappers/page.astro";
+import type { ShowSummary } from "@/types/show";
 
-interface Host {
-        forename?: string | null;
-        surname?: string | null;
+interface AllShowsResponse {
+        allShows?: (ShowSummary | null)[] | null;
 }
 
-interface Show {
-        id: string;
-        name: string;
-        hosts?: Host[] | null;
-}
-
-const showsQuery = `
-  query AllShows {
-    allShows {
-      id
-      name
-      hosts {
-        forename
-        surname
-      }
-    }
-  }
+const showsQuery = /* GraphQL */ `
+        query AllShows {
+                allShows {
+                        id
+                        name
+                        hosts {
+                                forename
+                                surname
+                        }
+                }
+        }
 `;
 
 Astro.response.headers.set(
@@ -37,41 +32,26 @@ Astro.response.headers.set("CDN-Cache-Control", "public, max-age=3600");
 Astro.response.headers.set("Cache-Tag", "shows-page, shows-list");
 Astro.response.headers.set("X-Build-Time", new Date().toISOString());
 
-let shows: Show[] = [];
+let shows: ShowSummary[] = [];
 let status: "loading" | "success" | "empty" | "error" = "loading";
 let errorMessage = "";
 
 try {
-        const response = await fetch(GRAPHQL_ENDPOINT, {
-                method: "POST",
-                headers: {
-                        "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                        query: showsQuery,
-                }),
-        });
-
-        if (!response.ok) {
-                throw new Error(`Failed to load shows: ${response.status} ${response.statusText}`);
-        }
-
-        const body: { data?: { allShows?: Show[] | null }; errors?: Array<{ message?: string }> } =
-                await response.json();
-
-        if (body.errors?.length) {
-                const firstError = body.errors[0]?.message || "Unknown error";
-                throw new Error(firstError);
-        }
-
-        shows = Array.isArray(body.data?.allShows)
-                ? body.data?.allShows.filter((show): show is Show => Boolean(show?.id && show?.name))
-                : [];
-
+        const data = await request<AllShowsResponse>(GRAPHQL_ENDPOINT, showsQuery);
+        shows = (data.allShows ?? []).filter((show): show is ShowSummary => Boolean(show?.id && show?.name));
         status = shows.length > 0 ? "success" : "empty";
 } catch (error) {
+        console.error("Failed to fetch shows for /shows:", error);
+        if (error instanceof ClientError && error.response.errors?.[0]?.message) {
+                errorMessage = error.response.errors[0].message;
+        } else if (error instanceof Error) {
+                errorMessage = error.message;
+        } else if (typeof error === "string") {
+                errorMessage = error;
+        } else {
+                errorMessage = "Unable to load shows.";
+        }
         status = "error";
-        errorMessage = error instanceof Error ? error.message : "Unable to load shows.";
 }
 ---
 
@@ -90,8 +70,9 @@ try {
                         <div class="mt-12">
                                 {status === "loading" && (
                                         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                                {Array.from({ length: 6 }).map(() => (
+                                                {Array.from({ length: 6 }).map((_, index) => (
                                                         <div
+                                                                key={`shows-loading-${index}`}
                                                                 class="h-36 animate-pulse rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800"
                                                                 aria-hidden="true"
                                                         />
@@ -121,7 +102,7 @@ try {
                                 {status === "success" && (
                                         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                                                 {shows.map((show) => (
-                                                        <ShowCard show={show} />
+                                                        <ShowCard key={show.id} show={show} />
                                                 ))}
                                         </div>
                                 )}
