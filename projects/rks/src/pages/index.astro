@@ -1,16 +1,54 @@
 ---
+import { resolveServices } from '../server/container';
 
+const services = resolveServices();
+const shows = await services.shows.list();
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Rawkode Studio Control Plane</title>
+  </head>
+  <body>
+    <main>
+      <h1>Rawkode Studio Control Plane</h1>
+      <p>
+        This Astro-native prototype exposes REST endpoints that simulate the full
+        milestone scope for shows, polls, raise-hand coordination, and ISO recording.
+      </p>
+      <section>
+        <h2>Shows</h2>
+        {shows.length === 0 ? (
+          <p>No shows scheduled yet. Use <code>POST /api/shows</code> to create one.</p>
+        ) : (
+          <ul>
+            {shows.map((show) => (
+              <li>
+                <strong>{show.title}</strong> — {show.status} — starts at {show.startsAt.toISOString()}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <section>
+        <h2>Key API Endpoints</h2>
+        <ul>
+          <li><code>GET/POST /api/shows</code> — list and create shows.</li>
+          <li><code>GET /api/shows/[id]</code> — fetch individual show details.</li>
+          <li><code>GET/POST /api/shows/[id]/raise-hand</code> — manage raise-hand requests.</li>
+          <li><code>POST /api/polls</code> — create polls.</li>
+          <li><code>POST /api/polls/[id]</code> — open/close polls.</li>
+          <li><code>POST /api/polls/[id]/vote</code> — cast votes.</li>
+          <li><code>POST /api/uploads/iso/init</code> — initialise ISO upload manifests.</li>
+          <li><code>PUT /api/uploads/iso/[id]/part</code> — append ISO upload parts.</li>
+          <li><code>POST /api/uploads/iso/[id]/complete</code> — finalise ISO uploads.</li>
+          <li><code>POST /api/uploads/iso/[id]/abort</code> — abort ISO uploads.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
 </html>

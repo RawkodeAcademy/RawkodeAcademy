@@ -14,11 +14,11 @@ Docs seed (completed)
 - [x] BDD features added — docs/features/ — Assignee: system — PR: n/a — Done: 2025-10-09
 
 ## M0 — Foundations
-- [ ] RKS-M0-INF-01 — Bootstrap workspace config — Assignee: — PR: — Done:
-- [ ] RKS-M0-INF-02 — Define runtime secrets and env contracts — Assignee: — PR: — Done:
-- [ ] RKS-M0-INF-03 — D1 schema v1 — Assignee: — PR: — Done:
-- [ ] RKS-M0-INF-04 — Buckets and paths — Assignee: — PR: — Done:
-- [ ] RKS-M0-DOC-01 — Protocol and message schemas — Assignee: — PR: — Done:
+- [x] RKS-M0-INF-01 — Bootstrap workspace config — Assignee: gpt-5-codex — PR: (this PR) — Done: 2025-10-10
+- [x] RKS-M0-INF-02 — Define runtime secrets and env contracts — Assignee: gpt-5-codex — PR: (this PR) — Done: 2025-10-10
+- [x] RKS-M0-INF-03 — D1 schema v1 — Assignee: gpt-5-codex — PR: (this PR) — Done: 2025-10-10
+- [x] RKS-M0-INF-04 — Buckets and paths — Assignee: gpt-5-codex — PR: (this PR) — Done: 2025-10-10
+- [x] RKS-M0-DOC-01 — Protocol and message schemas — Assignee: gpt-5-codex — PR: (this PR) — Done: 2025-10-10
 - [ ] RKS-M0-CP-01 — Worker/DO bootstrap — Assignee: — PR: — Done:
 - [ ] RKS-M0-CP-02 — Signed upload URLs (R2) — Assignee: — PR: — Done:
 
