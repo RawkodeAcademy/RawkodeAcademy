@@ -16,7 +16,7 @@ Rawkode Studio v1 uses Cloudflare Realtime (RTK) as the SFU/data plane, Cloudfla
 - Viewer App (desktop/mobile): WebRTC subscriber with Auto/1080/720/360 manual selector; DataChannel consumer.
 - Control Plane (Workers + DO): Auth, presence, show/session lifecycle, permissions, track routing, manifests, signed URLs, resumable tokens.
 - RTK: SFU for media tracks and DataChannels; optional STUN/TURN.
-- R2: `program-recordings/` and `iso-uploads/` buckets; multipart uploads.
+- R2: Single bucket with session-scoped prefixes under `sessions/{sessionId}/…`; multipart uploads.
 - D1: Users, shows, scenes, schedules, sessions, participants, track refs, manifests.
 - Cloud Program Recorder (Container): Pion WebRTC client that subscribes to program track, remux/encode to MP4 H.264/AAC, uploads to R2.
 
@@ -59,4 +59,3 @@ Phase M1–M3 per PRD milestones; feature flags for whiteboard/polls.
 
 ## Unresolved Questions
 - Exact DO sharding for very large audiences (out of scope for v1).
-

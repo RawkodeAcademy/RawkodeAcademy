@@ -13,7 +13,7 @@ Run a per‑show Cloudflare Container that subscribes to the program track via R
 ## Design
 - The container boots with show ID; fetches program track ID and ICE servers from DO; creates RTK session; pulls program video+audio.
 - Implement WebRTC with Pion (Go) or webrtc‑rs (Rust). Remux H.264 Annex‑B to MP4 (length‑prefixed) and transcode Opus→AAC @ 256 kbps (FFmpeg/libav or GStreamer bindings).
-- Segment‑roll MP4 (e.g., 5–10 min) to tolerate restarts; upload to `program-recordings/SHOW_ID/` and write a playlist/manifest.
+- Segment‑roll MP4 (e.g., 5–10 min) to tolerate restarts; upload to `sessions/{sessionId}/program/` and write a playlist/manifest in the single media bucket.
 
 ## Resilience
 - On container restart or network churn, rejoin RTK and continue recording; segments are idempotent by timestamp.

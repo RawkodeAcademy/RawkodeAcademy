@@ -16,7 +16,7 @@ References
 
 Repo Structure (target)
 - `src/` — Astro web app (producer, guest, viewer)
-- `workers/` — Cloudflare Workers + Durable Objects
+- `control-plane/` — Cloudflare Workers + Durable Objects (Hono)
 - `packages/` — Shared libraries (protocol, player, media utils)
 - `containers/program-recorder/` — Cloud Program Recorder
 - `scripts/` — Dev & CI helper scripts
@@ -55,7 +55,7 @@ RKS-M0-INF-02 — Define runtime secrets and env contracts
      - RTK: `RTK_APP_ID`, `RTK_APP_SECRET`
      - TURN (optional for guests): `TURN_KEY_ID`, `TURN_KEY_API_TOKEN`
      - Cloudflare: `ACCOUNT_ID`, `API_TOKEN`
-     - R2: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_RECORDINGS`, `R2_BUCKET_ISO`
+     - R2: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_MEDIA`
      - D1: `D1_DB_NAME`, `D1_BINDING`
      - OAuth: `ATPROTO_CLIENT_ID`, `ATPROTO_CLIENT_SECRET`, `OAUTH_REDIRECT_URI`
      - WS: `COMMENTS_WS_URL`
@@ -67,7 +67,7 @@ RKS-M0-INF-03 — D1 schema v1
 - Objective: Create initial SQL schema for shows/sessions/users/manifests.
 - Prereqs: None
 - Steps:
-  1) Create `workers/schema.sql` with tables:
+  1) Create `control-plane/schema.sql` with tables:
      - `users(id, atproto_did, role, created_at)`
      - `shows(id, title, starts_at, description, created_by, status)`
      - `scenes(id, show_id, name, config_json)`
@@ -81,15 +81,15 @@ RKS-M0-INF-03 — D1 schema v1
      - `polls(id, show_id, question, options_json, status, created_at)`
      - `poll_votes(id, poll_id, voter_key, option_idx, created_at)`
   2) Add minimal indexes and foreign keys.
-- Deliverables: `workers/schema.sql`
+- Deliverables: `control-plane/schema.sql`
 - Verify: D1 migrations apply locally.
 
-RKS-M0-INF-04 — Buckets and paths
-- Objective: Define R2 bucket names and key structure.
+RKS-M0-INF-04 — Media bucket and paths
+- Objective: Define a single R2 bucket and session-scoped key structure.
 - Steps:
   1) Create `docs/storage-layout.md` describing keys:
-     - Program: `program-recordings/{showId}/program-{timestamp}-{seq}.mp4`
-     - ISO: `iso-uploads/{showId}/{userId}/{kind}/part-{partNo}` and `manifest.json`
+     - Program: `sessions/{sessionId}/program/program-{timestamp}-{seq}.mp4`
+     - ISO: `sessions/{sessionId}/iso/{userId}/{kind}/parts/part-{partNo}` and `manifest.json`
   2) Note manual retention (per PRD).
 - Deliverables: `docs/storage-layout.md`
 - Verify: Matches PRD §11 and REC RFC.
@@ -106,11 +106,11 @@ RKS-M0-DOC-01 — Protocol and message schemas
 RKS-M0-CP-01 — Worker/DO bootstrap
 - Objective: Scaffold a Worker with a DO for show state.
 - Steps:
-  1) Create `workers/wrangler.toml` with D1 and R2 bindings, DO class `ShowDO`.
-  2) Implement `workers/src/index.ts` routes:
+  1) Create `control-plane/wrangler.toml` with D1 and R2 bindings, DO classes `Shows` and `Sessions`.
+  2) Implement `control-plane/src/index.ts` routes (Hono):
      - `POST /shows` (create), `GET /shows/:id`, `GET /shows/:id/state/snapshot`, `POST /shows/:id/raise-hand`, `POST /polls`, `POST /polls/:id/vote`.
   3) Implement `ShowDO` with in‑memory state + D1 persistence hooks.
-- Deliverables: `workers/src/index.ts`, `workers/src/do.ts`, config
+- Deliverables: `control-plane/src/index.ts`, `control-plane/src/do.ts`, config
 - Verify: `wrangler dev` runs; unit tests compile.
 
 RKS-M0-CP-02 — Signed upload URLs (R2)
@@ -129,10 +129,11 @@ RKS-M1-MED-01 — Producer simulcast publisher
 - Prereqs: M0-CP-01
 - Steps:
   1) Create `src/lib/media/publisher.ts` to build `RTCPeerConnection` with `sendEncodings` (RIDs f/h/q).
-  2) Use RTK HTTPS API: `sessions/new`, `tracks/new`, `renegotiate` per RFC‑0002.
+  2) Use RTK HTTPS API: `v1/apps/{appId}/sessions/new`, `v1/apps/{appId}/sessions/{id}/tracks/new`.
   3) Configure 2s keyframe, target bitrates per ladder.
 - Deliverables: `src/lib/media/publisher.ts`
 - Verify: RTK shows 3 layers; viewer can subscribe.
+  Status: in progress — implemented sendEncodings at transceiver add; negotiates via Worker. Validating on live RTK.
 
 RKS-M1-FE-01 — Viewer WebRTC player (Auto)
 - Objective: Minimal viewer that autoselects quality.
@@ -142,6 +143,7 @@ RKS-M1-FE-01 — Viewer WebRTC player (Auto)
   3) Render `<video>` with low latency settings.
 - Deliverables: routes + player lib
 - Verify: First frame ≤ 2s p50.
+  Status: in progress — used by Green Room; quality selector integration pending.
 
 RKS-M1-FE-02 — Manual quality selector
 - Objective: Auto/1080/720/360 menu.
@@ -158,6 +160,7 @@ RKS-M1-FE-03 — Producer UI shell
   2) Connect to DO snapshot via REST; subscribe to DataChannel for outbound state.
 - Deliverables: page + state wiring
 - Verify: Scene state persists.
+  Status: in progress — Ark UI Device Setup, mic badge, fallback preview, “Open/Close Session”; scenes/grid pending.
 
 RKS-M1-FE-04 — Dynamic grid layer
 - Objective: Add/remove participants to grid.
@@ -192,6 +195,15 @@ RKS-M1-MED-02 — JIT media assets via Mediabunny
 - Verify: Holding video triggers scene change reliably.
 
 ----------------------------------------
+- RKS-M1-CP-04 — RTK HTTP proxy endpoints (added)
+- Objective: Worker endpoints that proxy RTK HTTPS API and expose program track lookup.
+- Steps:
+  1) `POST /rtk/create-session` → RTK `v1/apps/{appId}/sessions/new` (publisher/viewer).
+  2) `POST /rtk/sessions/:id/tracks/new` → RTK `v1/apps/{appId}/sessions/{id}/tracks/new` (publisher: location=local; viewer: location=remote + subscribe).
+  3) `GET /rtk/program/:sessionId` → returns latest PROGRAM track id from D1 (fallback fetch session if absent).
+- Deliverables: Worker handlers, D1 persistence; CORS.
+- Verify: Sessions appear on RTK dashboard; Green Room receives real program track.
+
 ## M2 — Auth + Interactivity
 
 RKS-M2-INF-01 — atproto OAuth integration
@@ -205,10 +217,11 @@ RKS-M2-INF-01 — atproto OAuth integration
 RKS-M2-MED-01 — Guest publish + return
 - Objective: Guests publish cam/mic; receive program video + SFU audio.
 - Steps:
-  1) Guest page `src/pages/guest/[showId].astro`.
-  2) Publish tracks to RTK; subscribe to others’ audio (no program audio); subscribe to program video muted.
+  1) Guest page `src/pages/guest/[sessionId].astro`.
+  2) Subscribe to Program Mix (muted by default; monitor toggle in UI). Publish cam/mic UI wiring follows.
 - Deliverables: guest page + media code
 - Verify: Meet‑like FX; no echo.
+  Status: in progress — Program Mix viewer + device setup landed; guest publish next.
 
 RKS-M2-CP-01 — Raise‑hand flow
 - Objective: Auth viewers request promotion; producer approves.
@@ -253,6 +266,7 @@ RKS-M3-REC-01 — Local ISO capture
   3) Start on join; stop on leave; optional segmenting.
 - Deliverables: recording lib
 - Verify: Files accumulate locally.
+  Status: complete — MediaRecorder-based AV/Audio recorders with previews.
 
 RKS-M3-REC-02 — Progressive multipart upload to R2
 - Objective: Upload chunks during session.
@@ -261,6 +275,7 @@ RKS-M3-REC-02 — Progressive multipart upload to R2
   2) Call Worker endpoints to init/put/complete; store part numbers in D1.
 - Deliverables: uploader lib `src/lib/recording/upload.ts`
 - Verify: Parts visible in R2; manifest row written.
+  Status: complete — Aggregator + IndexedDB manifest + Worker API; integrated in Podcast page.
 
 RKS-M3-REC-03 — Resume after crash/close (≤ 7 days)
 - Objective: Robust resume logic.
@@ -275,7 +290,7 @@ RKS-M3-CONT-01 — Cloud Program Recorder container
 - Steps:
  1) Create `containers/program-recorder/` in Go (Pion) or Rust (webrtc-rs). These are the preferred implementations.
   2) Implement: fetch program track ID + ICE servers from DO; join RTK; remux H.264 Annex‑B to MP4; transcode Opus→AAC 256 kbps (FFmpeg/libav or GStreamer bindings appropriate to the language).
-  3) Segment every 5–10 min; upload to `program-recordings/{showId}/`.
+  3) Segment every 5–10 min; upload to `sessions/{sessionId}/program/`.
 - Deliverables: container code + `Dockerfile`
 - Verify: MP4 appears in R2 during show; final file ready ≤ 5 min after end.
 

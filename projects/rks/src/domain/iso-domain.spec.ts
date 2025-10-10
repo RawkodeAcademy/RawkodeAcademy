@@ -40,6 +40,6 @@ describe('iso domain', () => {
   });
 
   it('builds part keys with padded part number', () => {
-    expect(buildPartKey('manifest-1', 2)).toBe('iso-uploads/manifest-1/part-0002');
+    expect(buildPartKey('manifest-1', 2)).toBe('sessions/manifest-1/iso/parts/part-000002');
   });
 });

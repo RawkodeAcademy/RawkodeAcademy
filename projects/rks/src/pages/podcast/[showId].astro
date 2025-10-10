@@ -1,0 +1,189 @@
+---
+const { showId } = Astro.params
+const workerUrl = import.meta.env.PUBLIC_RKS_WORKER_URL as string | undefined
+const progressive = (import.meta.env.PUBLIC_RKS_PROGRESSIVE_UPLOAD as string | undefined) === 'true'
+export const prerender = false;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Podcast Recorder — {showId}</title>
+    <style>
+      main { max-width: 720px; margin: 1.5rem auto; font-family: system-ui, sans-serif; }
+      .row { display: flex; gap: .75rem; align-items: center; }
+      .log { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9rem; color: #444; }
+      select, button { font: inherit; padding: .4rem .6rem; }
+      progress { width: 100%; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Podcast Recorder</h1>
+      <p>Show: <strong>{showId}</strong></p>
+      <div class="row">
+        <label>
+          <span>Microphone</span>
+          <select id="mic"><option value="">Loading…</option></select>
+        </label>
+        <label>
+          <span>Camera</span>
+          <select id="cam"><option value="">Loading…</option></select>
+        </label>
+        <label class="row" style="gap:.25rem">
+          <input type="checkbox" id="videoEnabled" checked />
+          <span>Record video</span>
+        </label>
+      </div>
+      <div class="row" style="margin:.5rem 0">
+        <video id="preview" style="width:100%;max-width:680px;aspect-ratio:16/9;background:#000;border-radius:8px" playsinline muted></video>
+      </div>
+      <div class="row">
+        <button id="start">Start</button>
+        <button id="stop" disabled>Stop</button>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        {progressive ? (
+          <span class="log">Progressive upload enabled</span>
+        ) : (
+          <span class="log">Dev mode: Upload disabled. Recording stays local.</span>
+        )}
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <a id="download" href="#" download style="display:none">Download recording</a>
+      </div>
+      <div class="row" style="margin-top:.75rem">
+        <progress id="prog" max="100" value="0"></progress>
+        <span id="status" class="log">Idle</span>
+      </div>
+      <div id="cfg" data-worker={workerUrl ?? ''} data-progressive={progressive ? '1' : ''} data-show={showId}></div>
+      <script is:inline>
+        const cfg = document.getElementById('cfg');
+        const workerBase = (cfg && cfg.dataset.worker) ? cfg.dataset.worker : null;
+        const progressive = !!(cfg && cfg.dataset.progressive);
+        const showId = (cfg && cfg.dataset.show) ? cfg.dataset.show : '';
+        const userId = 'podcaster-local';
+        const micSel = document.getElementById('mic');
+        const btnStart = document.getElementById('start');
+        const btnStop = document.getElementById('stop');
+        const prog = document.getElementById('prog');
+        const statusEl = document.getElementById('status');
+
+        let recorder = null;
+        let uploader = null;
+        let uploadedBytes = 0;
+        let localChunks = [];
+
+        function setStatus(msg) { statusEl.textContent = msg; }
+
+        async function populateDevices() {
+          try {
+            await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+          } catch {}
+          const devices = await navigator.mediaDevices.enumerateDevices()
+          const audios = devices.filter(d => d.kind === 'audioinput')
+          const videos = devices.filter(d => d.kind === 'videoinput')
+          const mic = document.getElementById('mic')
+          const cam = document.getElementById('cam')
+          mic.innerHTML = '<option value="">System Default</option>' + audios.map(d => `<option value="${d.deviceId}">${d.label || d.deviceId}</option>`).join('')
+          cam.innerHTML = '<option value="">System Default</option>' + videos.map(d => `<option value="${d.deviceId}">${d.label || d.deviceId}</option>`).join('')
+        }
+
+        populateDevices()
+
+        btnStart.addEventListener('click', async () => {
+          if (!workerBase) { alert('Worker URL not configured'); return; }
+          const { AudioRecorder } = await import('/src/lib/recording/local.ts');
+          const { AvRecorder } = await import('/src/lib/recording/av.ts');
+          if (progressive && workerBase) {
+            const { ProgressiveIsoUploader } = await import('/src/lib/recording/progressive.ts');
+            uploader = new ProgressiveIsoUploader(workerBase, { targetBytes: 16 * 1024 * 1024 });
+          }
+          let sessionId = null;
+          if (uploader) {
+            const res = await fetch(workerBase + '/sessions', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ title: 'Podcast AV', userId }) })
+            if (!res.ok) { alert('Failed to create session'); return }
+            const json = await res.json(); sessionId = json.session.id;
+          }
+          const videoEnabled = (document.getElementById('videoEnabled') as HTMLInputElement).checked
+          if (videoEnabled) {
+            if (uploader) {
+              const manifestId = await uploader.init({ sessionId, userId, kind: 'VIDEO' });
+              setStatus('Recording video… (manifest ' + manifestId + ')');
+            } else {
+              setStatus('Recording video locally…');
+            }
+            const previewEl = document.getElementById('preview')
+            recorder = new AvRecorder({
+              audioDeviceId: micSel.value || undefined,
+              videoDeviceId: (document.getElementById('cam')).value || undefined,
+              width: 1920, height: 1080, frameRate: 30, timesliceMs: 1000,
+              previewEl,
+            }, {
+              onChunk: async (blob) => {
+                try {
+                  if (uploader) {
+                    await uploader.append(blob);
+                    uploadedBytes += blob.size;
+                    prog.value = Math.min(100, (uploadedBytes % (32*1024*1024)) / (32*1024*1024) * 100);
+                  } else {
+                    localChunks.push(blob);
+                  }
+                } catch (e) {
+                  console.error(e);
+                  setStatus('Upload error: ' + e);
+                }
+              },
+              onError: (e) => setStatus('Recorder error: ' + e),
+              onStop: () => setStatus('Stopped')
+            })
+          } else {
+            if (uploader) {
+              const manifestId = await uploader.init({ sessionId, userId, kind: 'AUDIO' });
+              setStatus('Recording audio… (manifest ' + manifestId + ')');
+            } else {
+              setStatus('Recording audio locally…');
+            }
+            recorder = new AudioRecorder({ deviceId: micSel.value || undefined, timesliceMs: 1000 }, {
+              onChunk: async (blob) => {
+                try {
+                  if (uploader) {
+                    await uploader.append(blob);
+                    uploadedBytes += blob.size;
+                    prog.value = Math.min(100, (uploadedBytes % (32*1024*1024)) / (32*1024*1024) * 100);
+                  } else {
+                    localChunks.push(blob);
+                  }
+                } catch (e) {
+                  console.error(e);
+                  setStatus('Upload error: ' + e);
+                }
+              },
+              onError: (e) => setStatus('Recorder error: ' + e),
+              onStop: () => setStatus('Stopped')
+            });
+          }
+
+          await recorder.start();
+          btnStart.disabled = true; btnStop.disabled = false;
+        });
+
+        btnStop.addEventListener('click', async () => {
+          try { recorder?.stop(); } catch {}
+          if (uploader) {
+            try { await uploader.complete(null); } catch (e) { console.warn('complete failed', e); }
+          } else if (localChunks.length) {
+            const blob = new Blob(localChunks, { type: localChunks[0]?.type || 'application/octet-stream' })
+            const url = URL.createObjectURL(blob)
+            const a = document.getElementById('download')
+            a.href = url
+            a.download = `podcast-${showId}-${Date.now()}.webm`
+            a.style.display = ''
+          }
+          btnStart.disabled = false; btnStop.disabled = true;
+          setStatus('Completed');
+        });
+      </script>
+    </main>
+  </body>
+  </html>

@@ -1,0 +1,70 @@
+---
+const workerUrl = import.meta.env.PUBLIC_RKS_WORKER_URL as string | undefined
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Instant Studio</title>
+    <style>
+      main { max-width: 720px; margin: 1.5rem auto; font-family: system-ui, sans-serif; }
+      button, input { font: inherit; padding: .5rem .75rem; }
+      .row { display:flex; gap:.5rem; align-items:center }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Instant Studio</h1>
+      <p>Start an ad‑hoc recording session now.</p>
+      <div class="row">
+        <input id="title" placeholder="Title (optional)" />
+        <button id="start" type="button">Start Studio</button>
+      </div>
+      <p id="hint" class="row" style="color:#666;margin:.5rem 0 0"></p>
+      <div id="cfg" data-worker={workerUrl ?? ''}></div>
+      <script is:inline>
+        (function(){
+          const cfg = document.getElementById('cfg');
+          const workerBase = (cfg && cfg.dataset.worker) ? cfg.dataset.worker : null;
+          const btn = document.getElementById('start');
+          const titleEl = document.getElementById('title');
+          const hint = document.getElementById('hint');
+          if (!btn) return;
+          if (!workerBase) {
+            hint.textContent = 'Worker URL not configured. Set PUBLIC_RKS_WORKER_URL in .env and restart dev server.';
+          } else {
+            hint.textContent = `Using Worker: ${workerBase}`;
+          }
+          btn.addEventListener('click', async () => {
+            try {
+              if (!workerBase) { alert('Worker URL not configured'); return }
+              btn.disabled = true; btn.textContent = 'Starting…';
+              const title = titleEl && titleEl.value ? titleEl.value : '';
+              const res = await fetch(workerBase + '/sessions', {
+                method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ title })
+              });
+              if (!res.ok) {
+                const msg = await res.text().catch(()=> '');
+                console.error('Start Studio failed', res.status, msg);
+                alert('Failed to start studio: ' + res.status);
+                return;
+              }
+              const json = await res.json();
+              if (!json || !json.session || !json.session.id) {
+                console.error('Unexpected response', json);
+                alert('Unexpected response from server');
+                return;
+              }
+              location.href = `/producer/session/${json.session.id}`;
+            } catch (e) {
+              console.error('Start Studio error', e);
+              alert('Error starting studio: ' + e);
+            } finally {
+              btn.disabled = false; btn.textContent = 'Start Studio';
+            }
+          });
+        })();
+      </script>
+    </main>
+  </body>
+  </html>

@@ -50,11 +50,13 @@ export const finalizeIsoManifest = (manifest: IsoManifest, status: RecordingStat
 };
 
 export const buildManifestKey = (showId: string, userId: string, kind: IsoKind): string => {
-  return `iso-uploads/${showId}/${userId}/${kind}/manifest.json`;
+  // showId parameter is sessionId in the new model
+  return `sessions/${showId}/iso/${userId}/${kind}/manifest.json`;
 };
 
 export const buildPartKey = (manifestId: string, partNo: number): string => {
-  return `iso-uploads/${manifestId}/part-${partNo.toString().padStart(4, '0')}`;
+  // derive a generic manifest-relative location; registry determines exact parent path
+  return `sessions/${manifestId}/iso/parts/part-${partNo.toString().padStart(6, '0')}`;
 };
 
 export const createIsoPart = (manifest: IsoManifest, partNo: number, bytes: number, hash: string): IsoPart => {

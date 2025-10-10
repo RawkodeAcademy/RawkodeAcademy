@@ -1,0 +1,47 @@
+name = "studio-control-plane"
+main = "./src/index.ts"
+compatibility_date = "2025-10-10"
+
+[durable_objects]
+bindings = [
+  { name = "SHOWS", class_name = "Shows" }
+  , { name = "SESSIONS", class_name = "Sessions" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ShowDO"]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["SessionDO"]
+
+[[migrations]]
+tag = "v3"
+renamed_classes = [
+  { from = "ShowDO", to = "Shows" },
+  { from = "SessionDO", to = "Sessions" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "studio"
+# For local dev, Wrangler will create a temp DB. Set a real ID in production.
+database_id = "db49dec7-e7e1-4e68-ac32-ec5d2e4533a7"
+
+[[r2_buckets]]
+binding = "R2_MEDIA"
+bucket_name = "studio-recordings"
+
+secrets_store_secrets = [
+  { binding = "STUDIO_REALTIME_TOKEN", store_id = "492e5e40b9d64ebeac7e7a77db91ff6e", secret_name = "STUDIO_REALTIME_TOKEN" }
+]
+
+[vars]
+# Non-secret runtime vars can go here if needed later.
+RTK_APP_ID = "6b1a591c-4317-4f86-95bd-9fd37b04b379"
+RTK_BASE_URL = "https://rtc.live.cloudflare.com"
+
+# Cloudflare Secrets Store binding (prod/staging)
+# Binds the secret named STUDIO_REALTIME_TOKEN from the secret store (id below)
+# and exposes it to the Worker as `env.STUDIO_REALTIME_TOKEN` with an async `.get()` API.

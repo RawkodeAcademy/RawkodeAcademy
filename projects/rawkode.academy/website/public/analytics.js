@@ -68,17 +68,7 @@
 		}
 	};
 
-	// Track page view
-	const trackPageView = () => {
-		const data = {
-			action: "pageview", // Changed to match server-side convention
-			path: globalThis.location.pathname,
-			title: document.title || globalThis.location.pathname, // Include page title
-			referrer: document.referrer || "",
-		};
-
-		sendAnalytics(data);
-	};
+    // Page views are now handled by PostHog client; do not emit from this script to avoid duplicates
 
 	// Track page exit (using beforeunload)
 	const setupExitTracking = () => {
@@ -114,7 +104,7 @@
 	};
 
 	const init = () => {
-		trackPageView();
+		// Only track exit/time-on-page via sendBeacon
 		setupExitTracking();
 	};
 
