@@ -1,0 +1,89 @@
+---
+import { resolveServices } from '../../server/container';
+const services = resolveServices();
+const shows = await services.shows.list();
+const workerUrl = import.meta.env.PUBLIC_RKS_WORKER_URL as string | undefined;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Shows — Rawkode Studio</title>
+    <style>
+      main { max-width: 960px; margin: 2rem auto; font-family: system-ui, sans-serif; }
+      form { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 1rem; margin-bottom: 2rem; }
+      form > label { display: contents; }
+      input, textarea, button { font: inherit; padding: .5rem; }
+      ul { padding-left: 1rem; }
+      .meta { color: #666; font-size: .9rem; }
+      code { background: #f5f5f5; padding: .1rem .3rem; border-radius: .25rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Shows</h1>
+      <p class="meta">
+        API: <code>{workerUrl ? 'Control Plane ' + workerUrl : 'Not configured — set PUBLIC_RKS_WORKER_URL'}</code>
+      </p>
+
+      <h2>Create Show</h2>
+      <form id="create-show">
+        <label>
+          <span>Title</span>
+          <input name="title" placeholder="My Livestream" required />
+        </label>
+        <label>
+          <span>Starts At (ISO)</span>
+          <input name="startsAt" type="datetime-local" />
+        </label>
+        <label style="grid-column: 1 / -1;">
+          <span>Description</span>
+          <textarea name="description" rows="3"></textarea>
+        </label>
+        <div style="grid-column: 1 / -1;">
+          <button type="submit">Create</button>
+        </div>
+      </form>
+
+      <h2>Scheduled</h2>
+      {shows.length === 0 ? (
+        <p>No shows yet.</p>
+      ) : (
+        <ul>
+          {shows.map((s) => (
+            <li>
+              <strong>{s.title}</strong>
+              <span class="meta"> — {s.status} — {s.startsAt.toISOString()}</span>
+              {' '}
+              <a href={`/producer/${s.id}`}>Producer</a>
+              {' | '}
+              <a href={`/show/${s.id}/view`}>Viewer</a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div id="cfg" data-worker={workerUrl ?? ''}></div>
+      <script is:inline>
+        const cfg = document.getElementById('cfg');
+        const workerBase = (cfg && cfg.dataset.worker) ? cfg.dataset.worker : null;
+        async function createShow(payload) {
+          if (!workerBase) throw new Error('Worker URL not configured');
+          const res = await fetch(workerBase + '/shows', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (!res.ok) throw new Error(await res.text());
+          location.reload();
+        }
+        document.getElementById('create-show')?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fd = new FormData(e.target);
+          const title = fd.get('title')?.toString() ?? '';
+          const startsAtRaw = fd.get('startsAt')?.toString();
+          const startsAt = startsAtRaw ? new Date(startsAtRaw).toISOString() : new Date().toISOString();
+          const description = fd.get('description')?.toString() ?? '';
+          const payload = { title, startsAt, description, createdBy: 'producer-ui' };
+          try { await createShow(payload); } catch (err) { alert('Failed: ' + err); }
+        });
+      </script>
+    </main>
+  </body>
+  </html>

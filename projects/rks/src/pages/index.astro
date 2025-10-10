@@ -1,16 +1,49 @@
 ---
+import { resolveServices } from '../server/container';
 
+const services = resolveServices();
+const shows = await services.shows.list();
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Rawkode Studio Control Plane</title>
+  </head>
+  <body>
+    <main>
+      <h1>Rawkode Studio Control Plane</h1>
+      <p>
+        This Astro-native prototype exposes REST endpoints that simulate the full
+        milestone scope for shows, polls, raise-hand coordination, and ISO recording.
+      </p>
+      <section>
+        <h2>Shows</h2>
+        {shows.length === 0 ? (
+          <p>No shows scheduled yet. Create one from the Shows page, or POST to the control plane <code>/shows</code> endpoint.</p>
+        ) : (
+          <ul>
+            {shows.map((show) => (
+              <li>
+                <strong>{show.title}</strong> — {show.status} — starts at {show.startsAt.toISOString()}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <section>
+        <h2>Key Control Plane Endpoints</h2>
+        <p>All endpoints are served by the Control Plane Worker (set PUBLIC_RKS_WORKER_URL).</p>
+        <ul>
+          <li><code>POST /shows</code> — create show; <code>GET /shows/[id]</code> — fetch.</li>
+          <li><code>GET /shows/[id]/state/snapshot</code>, <code>POST /shows/[id]/raise-hand</code>.</li>
+          <li><code>POST /polls</code>, <code>POST /polls/[id]</code> — vote.</li>
+          <li><code>POST /uploads/iso/init</code>, <code>PUT /uploads/iso/[id]/part</code>, <code>POST /uploads/iso/[id]/complete</code>, <code>POST /uploads/iso/[id]/abort</code>.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
 </html>

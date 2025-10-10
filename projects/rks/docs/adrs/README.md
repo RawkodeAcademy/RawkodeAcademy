@@ -25,3 +25,6 @@ ADRs capture significant, long‑lived technical decisions. Keep each ADR immuta
 - 0013 — Supported environments for v1
 - 0014 — Messaging split: RTK DataChannel outbound, WebSocket inbound
 - 0015 — Adopt Mediabunny for client-side media I/O
+- 0016 — Adopt Vue for interactive islands (prefer Vue over React)
+- 0017 — Adopt Drizzle ORM for Cloudflare D1
+- 0018 — Model split: Show (static), Session (sched/adhoc), Instant Studio

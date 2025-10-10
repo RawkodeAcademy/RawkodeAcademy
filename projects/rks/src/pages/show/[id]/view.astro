@@ -1,0 +1,42 @@
+---
+import QualitySelector from '../../../components/ui/QualitySelector.vue'
+const { id } = Astro.params
+const workerUrl = import.meta.env.PUBLIC_RKS_WORKER_URL as string | undefined
+export const prerender = false;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Viewer — {id}</title>
+    <style>
+      main { max-width: 960px; margin: 1.5rem auto; font-family: system-ui, sans-serif; }
+      .video { aspect-ratio: 16/9; background: #000; border-radius: 8px; margin-bottom: .75rem; }
+      .row { display: flex; gap: .75rem; align-items: center; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Viewer — {id}</h1>
+      <video class="video" id="player" playsinline autoplay muted></video>
+      <div class="row">
+        <QualitySelector client:load modelValue="auto" />
+      </div>
+      <div id="cfg" data-worker={workerUrl ?? ''}></div>
+      <script is:inline>
+        const cfg = document.getElementById('cfg');
+        const workerBase = (cfg && cfg.dataset.worker) ? cfg.dataset.worker : null;
+        (async () => {
+          const el = document.getElementById('player');
+          if (!el) return;
+          const mod = await import('/src/lib/player/client.ts');
+          const client = new mod.createViewerClient({ workerBase, videoEl: el });
+          if (workerBase) {
+            try { await client.start(); } catch (e) { console.warn('viewer start failed', e); }
+          }
+          window.rksViewer = client;
+        })();
+      </script>
+    </main>
+  </body>
+  </html>

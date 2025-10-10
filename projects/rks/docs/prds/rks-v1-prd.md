@@ -75,7 +75,7 @@ Build a production‑grade, browser‑based live streaming and podcast recording
 - Latency: Meets targets in §7 on baseline networks.
 
 ## 11. Data & Storage
-- R2: Buckets for `program-recordings/` and `iso-uploads/` with multipart uploads; manual retention.
+- R2: Single media bucket with `sessions/{sessionId}/program/*` and `sessions/{sessionId}/iso/*`; multipart uploads, manual retention.
 - D1: Shows, scenes, schedules, users, roles, sessions, track refs, asset manifests, recording manifests, upload parts, resumable tokens.
 - KV (optional): Ephemeral presence cache, viewer counters.
 
@@ -100,4 +100,3 @@ Build a production‑grade, browser‑based live streaming and podcast recording
 - M2: Auth + guests; comments/polls; whiteboard rendering; raise‑hand.
 - M3: Local ISO progressive upload + resume; cloud backup recorder to R2.
 - Launch: v1 complete per acceptance criteria and SLOs.
-

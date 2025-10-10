@@ -30,6 +30,7 @@ export const trackShareEvent = defineAction({
 			const success = await analytics.trackShare(
 				`${event.content_type}/${event.content_id}`,
 				event.platform,
+				event.success,
 			);
 
 			return {
