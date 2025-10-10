@@ -106,6 +106,8 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+<script setup lang="ts">
+// Computed helpers for header chip
 const statusLabel = computed(() => {
   switch (status.value) {
     case 'joining': return 'Connecting'
@@ -125,3 +127,4 @@ const statusStyle = computed(() => {
     default: return base + '#4b5563;background:#e5e7eb;color:#111827'
   }
 })
+</script>

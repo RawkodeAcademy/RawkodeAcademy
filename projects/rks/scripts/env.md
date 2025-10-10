@@ -24,6 +24,7 @@ This document enumerates every environment variable required by the Rawkode Stud
 | `COMMENTS_WS_URL` | WebSocket endpoint providing live comments feed to the frontend. |
 | `RTK_FAKE` | When set to `true` in Worker environment, the RTK proxy endpoints operate in stub mode (dev only). |
 | `PUBLIC_RKS_PROGRESSIVE_UPLOAD` | Feature flag (string `true`/`false`). When `true`, the client performs progressive ISO uploads during recording. When `false`, recording stays local-only and exposes a download link. Default: `false` for local dev. |
+| `PUBLIC_RKS_WORKER_URL` | Base URL of the Control Plane Worker (e.g., `https://studio-control-plane.rawkodeacademy.workers.dev`). The web app uses this to call API routes like `/sessions`, `/uploads/iso/*`, and `/rtk/*`. |
 
 Local dev (direnv + 1Password)
 - Add to `.envrc` (resolves via 1Password):
@@ -36,3 +37,8 @@ Production/staging (Cloudflare Secret Store)
 - The Worker automatically prefers `RTK_APP_SECRET` and falls back to `STUDIO_REALTIME_TOKEN` if unset.
 
 > **Security**: Never bundle these secrets in client-side code. Keep all RTK credentials only in Workers/DOs.
+
+Frontend → Control Plane wiring
+- Set `PUBLIC_RKS_WORKER_URL` to your deployed Control Plane domain.
+- Example: `export PUBLIC_RKS_WORKER_URL="https://studio-control-plane.rawkodeacademy.workers.dev"`.
+- CORS: The Control Plane reflects the `Origin` header and allows `GET,POST,PUT,OPTIONS` with `content-type`, `x-part-no`, and `x-content-sha256` headers.

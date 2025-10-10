@@ -29,7 +29,7 @@ Docs seed (completed)
   Notes: minimal viewer + Green Room subscriber; quality auto for now.
 - [ ] RKS-M1-FE-02 — Manual quality selector — Assignee: gpt-5-codex — PR: (this PR) — Done:
 - [ ] RKS-M1-FE-03 — Producer UI shell — Assignee: gpt-5-codex — PR: (this PR) — Done:  
-  Notes: Ark UI Device Setup, live mic badge, fallback preview, “Open Session/Close Session” controls; scenes/grid pending.
+  Notes: Ark UI Device Setup, live mic badge, fallback preview, “Open Session/Close Session” controls; Program Mix preview + local program recording added; scenes/grid pending.
 - [ ] RKS-M1-FE-04 — Dynamic grid layer — Assignee: — PR: — Done:
 - [ ] RKS-M1-FE-05 — Transitions (blur/crossfade/wipe) — Assignee: — PR: — Done:
 - [ ] RKS-M1-CP-03 — DataChannel broadcaster — Assignee: gpt-5-codex — PR: (this PR) — Done:

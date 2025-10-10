@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, watch } from 'vue'
 import { Select, createListCollection } from '@ark-ui/vue/select'
 
 type QualityValue = 'auto' | 'f' | 'h' | 'q'

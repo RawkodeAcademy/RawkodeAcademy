@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { Tabs } from '@ark-ui/vue/tabs'
 import DeviceSetup from './DeviceSetup.vue'
+import ProgramPreview from './ProgramPreview.vue'
 import { createPublisher, type Publisher } from '../../lib/media/publisher'
 
 type RaiseHand = { id: string; userId: string; status: 'OPEN' | 'ACCEPTED' | 'REJECTED'; createdAt: string }
@@ -158,6 +159,12 @@ function stopFallbackPreview() {
             @preview-stream="onPreviewStream"
             @screen-stream="onScreenStream"
           />
+          <ProgramPreview
+            :show-id="props.showId"
+            :worker-base="props.workerBase"
+            :camera-stream="previewStream"
+            :screen-stream="screenStream"
+          />
           <div v-if="!previewStream" style="display:grid; gap:.5rem; border:1px dashed #374151; border-radius:8px; padding:8px">
             <div style="display:flex; justify-content:space-between; align-items:center">
               <strong>Fallback Preview</strong>
@@ -213,22 +220,3 @@ function stopFallbackPreview() {
   </div>
   
 </template>
-const statusLabel = computed(() => {
-  switch (pubStatus.value) {
-    case 'starting': return 'Connecting'
-    case 'live': return 'Live'
-    case 'stopped': return 'Stopped'
-    case 'error': return 'Error'
-    default: return 'Idle'
-  }
-})
-const statusStyle = computed(() => {
-  const base = 'padding:2px 8px;border-radius:9999px;font-size:.8rem;border:1px solid '
-  switch (pubStatus.value) {
-    case 'starting': return base + '#a16207;background:#fde68a;color:#1f2937'
-    case 'live': return base + '#16a34a;background:#bbf7d0;color:#064e3b'
-    case 'error': return base + '#b91c1c;background:#fecaca;color:#7f1d1d'
-    case 'stopped': return base + '#4b5563;background:#e5e7eb;color:#111827'
-    default: return base + '#4b5563;background:#e5e7eb;color:#111827'
-  }
-})
