@@ -1,4 +1,6 @@
 import { getCollection, getEntries } from "astro:content";
+import { GRAPHQL_ENDPOINT } from "astro:env/server";
+import { request, gql } from "graphql-request";
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
@@ -15,10 +17,13 @@ interface FeedItem {
 }
 
 export async function GET(context: APIContext) {
-	const [articles, videos] = await Promise.all([
+	const [articles, videos, technologies] = await Promise.all([
 		getCollection("articles", ({ data }) => !data.draft),
 		getCollection("videos"),
+		getCollection("technologies"),
 	]);
+
+	const techName = new Map(technologies.map((t) => [t.id, t.data.name] as const));
 
 	// Render all articles in parallel for better performance
 	const renderedContent = await renderAndSanitizeArticles(articles);
@@ -43,6 +48,14 @@ export async function GET(context: APIContext) {
 		}),
 	);
 
+	// Fetch durations for videos
+	let durationMap = new Map<string, number>();
+	try {
+		const q = gql`query GetMany($limit:Int!){ getLatestVideos(limit:$limit){ slug duration } }`;
+		const r: { getLatestVideos: { slug: string; duration: number }[] } = await request(GRAPHQL_ENDPOINT, q, { limit: Math.max(videos.length, 100) });
+		durationMap = new Map(r.getLatestVideos.map((x) => [x.slug, x.duration] as const));
+	} catch {}
+
 	// Add videos (no content rendering needed for videos)
 	videos.forEach((video) => {
 		items.push({
@@ -51,19 +64,19 @@ export async function GET(context: APIContext) {
 			pubDate: new Date(video.data.publishedAt),
 			link: `/watch/${video.data.slug}/`,
 			customData: `
-				<enclosure url="${video.data.thumbnailUrl}" type="image/jpeg" />
+				<enclosure url="${`https://content.rawkode.academy/videos/${video.data.videoId}/thumbnail.jpg`}" type="image/jpeg" />
 				${
-					video.data.duration
-						? `<itunes:duration>${Math.floor(video.data.duration / 60)}:${(
-								video.data.duration % 60
+					(durationMap.get(video.data.slug) ?? 0)
+						? `<itunes:duration>${Math.floor(((durationMap.get(video.data.slug) ?? 0) as number) / 60)}:${(
+								(durationMap.get(video.data.slug) ?? 0) % 60
 							)
 								.toString()
 								.padStart(2, "0")}</itunes:duration>`
 						: ""
 				}
-				<itunes:image href="${video.data.thumbnailUrl}" />
+				<itunes:image href="${`https://content.rawkode.academy/videos/${video.data.videoId}/thumbnail.jpg`}" />
 			`,
-			categories: video.data.technologies.map((tech) => tech.name),
+			categories: (video.data.technologies as string[]).map((id) => techName.get(id) || id),
 		});
 	});
 

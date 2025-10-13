@@ -1,4 +1,6 @@
 import { getCollection, getEntries } from "astro:content";
+import { GRAPHQL_ENDPOINT } from "astro:env/server";
+import { request, gql } from "graphql-request";
 import type { APIContext } from "astro";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
@@ -17,10 +19,13 @@ interface AtomEntry {
 }
 
 export async function GET(context: APIContext) {
-	const [articles, videos] = await Promise.all([
+	const [articles, videos, technologies] = await Promise.all([
 		getCollection("articles", ({ data }) => !data.draft),
 		getCollection("videos"),
+		getCollection("technologies"),
 	]);
+
+	const techName = new Map(technologies.map((t) => [t.id, t.data.name] as const));
 
 	const site = context.site?.toString() || "https://rawkode.academy";
 	const feedUrl = `${site}/api/feeds/all.atom`;
@@ -52,20 +57,28 @@ export async function GET(context: APIContext) {
 		}),
 	);
 
-	// Add videos
-	videos.forEach((video) => {
-		entries.push({
-			title: video.data.title,
-			description: video.data.description,
-			url: `${site}/watch/${video.data.slug}/`,
-			published: new Date(video.data.publishedAt).toISOString(),
-			updated: new Date(video.data.publishedAt).toISOString(),
-			categories: video.data.technologies.map((tech) => tech.name),
-			thumbnail: video.data.thumbnailUrl,
-			duration: video.data.duration,
-			type: "video",
-		});
-	});
+// durations via GraphQL
+let durationMap = new Map<string, number>();
+try {
+  const q = gql`query GetMany($limit:Int!){ getLatestVideos(limit:$limit){ slug duration } }`;
+  const r: { getLatestVideos: { slug: string; duration: number }[] } = await request(GRAPHQL_ENDPOINT, q, { limit: Math.max(videos.length, 100) });
+  durationMap = new Map(r.getLatestVideos.map((x) => [x.slug, x.duration] as const));
+} catch {}
+
+// Add videos
+videos.forEach((video) => {
+  entries.push({
+    title: video.data.title,
+    description: video.data.description,
+    url: `${site}/watch/${video.data.slug}/`,
+    published: new Date(video.data.publishedAt).toISOString(),
+    updated: new Date(video.data.publishedAt).toISOString(),
+    categories: (video.data.technologies as string[]).map((id) => techName.get(id) || id),
+    thumbnail: `https://content.rawkode.academy/videos/${video.data.videoId}/thumbnail.jpg`,
+    duration: durationMap.get(video.data.slug) ?? 0,
+    type: "video",
+  });
+});
 
 	// Sort all entries by published date desc
 	entries.sort(

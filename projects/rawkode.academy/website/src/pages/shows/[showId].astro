@@ -1,13 +1,11 @@
 ---
 export const prerender = false;
 
-import { getCollection } from "astro:content";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
+import { getCollection, getEntries } from "astro:content";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb.astro";
 import VideoMetadata from "@/components/html/video-metadata.astro";
 import VideoFeed from "@/components/video/video-feed.astro";
 import Page from "@/wrappers/page.astro";
-import { GraphQLClient, gql } from "graphql-request";
 
 interface ShowHost {
         forename?: string | null;
@@ -46,33 +44,19 @@ if (!showId) {
 }
 
 const videos = await getCollection("videos");
-
-const videosForShow = videos.filter((video) => video.data.show?.id === showId);
-
-const fallbackHosts = videosForShow
-        .flatMap((video) => video.data.show?.hosts ?? [])
-        .reduce<ShowHost[]>((unique, host) => {
-                if (!host) {
-                        return unique;
-                }
-
-                const fullName = [host.forename, host.surname].filter(Boolean).join(" ");
-
-                if (!fullName) {
-                        return unique;
-                }
-
-                if (unique.some((existing) => [existing?.forename, existing?.surname].filter(Boolean).join(" ") === fullName)) {
-                        return unique;
-                }
-
-                return [...unique, host];
-        }, []);
+const videosForShow = videos.filter((video) => (video.data.show as string | undefined) === showId);
+const showContent = (await getCollection("shows")).find((s) => s.data.id === showId);
+const fallbackHosts: ShowHost[] = showContent
+  ? (await getEntries(showContent.data.hosts)).map((p) => {
+      const parts = String(p.data.name).trim().split(/\s+/);
+      return { forename: parts[0] || "", surname: parts.slice(1).join(" ") || "" };
+    })
+  : [];
 
 const fallbackShow: ShowResponse["showById"] | null = videosForShow.length
         ? {
                   id: showId,
-                  name: videosForShow[0]?.data.show?.name ?? showId,
+                  name: showContent?.data.name ?? showId,
                   description: null,
                   hosts: fallbackHosts,
                   episodes: videosForShow.map((video) => ({
@@ -81,55 +65,21 @@ const fallbackShow: ShowResponse["showById"] | null = videosForShow.length
                                   slug: video.data.slug,
                                   title: video.data.title,
                                   description: video.data.description,
-                                  thumbnailUrl: video.data.thumbnailUrl,
+                                  thumbnailUrl: `https://content.rawkode.academy/videos/${video.data.videoId}/thumbnail.jpg`,
                                   duration: video.data.duration,
-                                  publishedAt: video.data.publishedAt,
+                                  publishedAt:
+                                          video.data.publishedAt instanceof Date
+                                                  ? video.data.publishedAt.toISOString()
+                                                  : String(video.data.publishedAt),
                           },
                   })),
           }
         : null;
 
-let show: ShowResponse["showById"] | null = null;
-
-if (GRAPHQL_ENDPOINT) {
-        const client = new GraphQLClient(GRAPHQL_ENDPOINT);
-
-        const query = gql`
-                query GetShowById($id: String!) {
-                        showById(id: $id) {
-                                id
-                                name
-                                hosts {
-                                        forename
-                                        surname
-                                }
-                                episodes {
-                                        code
-                                        video {
-                                                slug
-                                                title
-                                                description
-                                                thumbnailUrl
-                                                duration
-                                                publishedAt
-                                        }
-                                }
-                        }
-                }
-        `;
-
-        try {
-                const data = await client.request<ShowResponse>(query, { id: showId });
-                show = data.showById ?? null;
-        } catch (error) {
-                console.error(`Failed to fetch show ${showId}:`, error);
-        }
-}
-
-// Only use fallback if GraphQL didn't return a show
-if (!show) {
-        show = fallbackShow;
-}
+// First, try to load show from content
+let show: ShowResponse["showById"] | null = showContent
+  ? { id: showContent.data.id, name: showContent.data.name, description: showContent.data.description, hosts: showContent.data.hosts, episodes: fallbackShow?.episodes }
+  : fallbackShow;
 
 // Return 404 only if the show truly doesn't exist
 if (!show) {
@@ -144,9 +94,9 @@ Astro.response.headers.set("CDN-Cache-Control", "public, max-age=7200");
 Astro.response.headers.set("Cache-Tag", `show-${show.id}, shows-page, show-detail`);
 Astro.response.headers.set("X-Build-Time", new Date().toISOString());
 
-const hostNames = (show.hosts ?? [])
-        .map((host) => [host?.forename, host?.surname].filter(Boolean).join(" "))
-        .filter((name): name is string => Boolean(name && name.trim().length > 0));
+const hostNames = fallbackHosts
+  .map((host) => [host?.forename, host?.surname].filter(Boolean).join(" "))
+  .filter((name): name is string => Boolean(name && name.trim().length > 0));
 
 const showDescription = show.description?.trim() || "Episode guide coming soon.";
 

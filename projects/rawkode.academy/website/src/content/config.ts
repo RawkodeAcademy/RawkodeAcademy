@@ -1,137 +1,40 @@
 import { defineCollection, reference, z } from "astro:content";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { glob } from "astro/loaders";
 
-import { gql, GraphQLClient } from "graphql-request";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-
-const graphQLClient = new GraphQLClient(GRAPHQL_ENDPOINT);
-
-// We'll get the latest 400, which should be all or almost all
-// Anything else can be fetched dynamically
-const graphQLQuery = gql`
-  query {
-    videos: getLatestVideos(limit: 400) {
-      id
-      slug
-      title
-      subtitle
-      description
-      publishedAt
-      streamUrl
-      thumbnailUrl
-      duration
-
-      technologies {
-        id
-        name
-        logo
-      }
-
-      episode {
-        show {
-          id
-          name
-          hosts {
-            forename
-            surname
-          }
-        }
-      }
-    }
-  }
-`;
-
-interface GraphQLVideoShowHost {
-        forename: string;
-        surname: string;
-}
-
-interface GraphQLVideoShow {
-        id: string;
-        name: string;
-        hosts?: GraphQLVideoShowHost[] | null;
-}
-
-interface GraphQLVideo {
-        id: string;
-        slug: string;
-        title: string;
-        subtitle?: string;
-        description: string;
-	publishedAt: string;
-	streamUrl: string;
-	thumbnailUrl: string;
-	duration: number;
-        technologies: Array<{
-                id: string;
-                name: string;
-                logo: string;
-        }>;
-        episode?: {
-                show?: GraphQLVideoShow | null;
-        } | null;
-}
-
-interface GraphQLResponse {
-        videos: GraphQLVideo[];
-}
+// Local, file-based content collections for videos, shows, and technologies.
+// These are populated by scripts/sync-graphql-content.ts during build or on demand.
 
 const videos = defineCollection({
-        loader: async () => {
-                try {
-                        const { videos }: GraphQLResponse =
-                                await graphQLClient.request(graphQLQuery);
+  loader: glob({ pattern: ["**/*.{md,mdx}"], base: "./content/videos" }),
+  schema: z.object({
+    id: z.string(), // canonical slug identifier
+    slug: z.string(), // kept for compatibility; equals id
+    videoId: z.string(), // source/asset id for streams, captions, etc.
+    title: z.string(),
+    subtitle: z.string().optional(),
+    description: z.string(),
+    publishedAt: z.coerce.date(),
+    // streamUrl/thumbnailUrl/duration are derived at runtime
+    // Technologies: accept plain ids (e.g., "docker") or full entry ids ("docker/index"),
+    // normalize to "<id>/index" for internal use, and verify existence.
+    technologies: z
+      .array(reference("technologies")).or(z.array(z.string()))
+      .transform((arr) => arr.map((v: any) => (typeof v === 'string' ? (v.endsWith('/index') ? v : `${v}/index`) : v)))
+      .default([]),
+    show: reference("shows").optional(),
+  }),
+});
 
-                        return videos.map(({ episode, ...video }) => ({
-                                ...video,
-                                show: episode?.show
-                                        ? {
-                                                  id: episode.show.id,
-                                                  name: episode.show.name,
-                                                  hosts:
-                                                          episode.show.hosts?.map((host) => ({
-                                                                  forename: host.forename,
-                                                                  surname: host.surname,
-                                                          })) ?? [],
-                                          }
-                                        : undefined,
-                        }));
-                } catch (error) {
-                        console.warn("Failed to fetch videos from GraphQL API:", error);
-                        // Return empty array when GraphQL API is not accessible (e.g., during CI builds)
-                        return [];
-                }
-	},
-	schema: z.object({
-		id: z.string(),
-		slug: z.string(),
-		title: z.string(),
-		subtitle: z.string().optional(),
-		description: z.string(),
-                streamUrl: z.string(),
-                publishedAt: z.string(),
-                thumbnailUrl: z.string(),
-                duration: z.number(),
-                technologies: z.array(
-                        z.object({
-                                id: z.string(),
-                                name: z.string(),
-                                logo: z.string(),
-                        }),
-                ),
-                show: z
-                        .object({
-                                id: z.string(),
-                                name: z.string(),
-                                hosts: z.array(
-                                        z.object({
-                                                forename: z.string(),
-                                                surname: z.string(),
-                                        }),
-                                ),
-                        })
-                        .optional(),
-        }),
+const shows = defineCollection({
+  loader: glob({ pattern: ["**/*.{md,mdx}"], base: "./content/shows" }),
+  schema: z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string().optional(),
+    hosts: z.array(reference("people")).default([]),
+  }),
 });
 
 // HINT: image() is described here -> https://docs.astro.build/en/guides/images/#images-in-content-collections
@@ -222,28 +125,32 @@ const articles = defineCollection({
 });
 
 const technologies = defineCollection({
-	loader: glob({
-		pattern: ["**/*.json"],
-		base: "./content/technologies",
-	}),
-	schema: z.object({
-		name: z.string(),
-		description: z.string(),
-		icon: z.string(),
-		website: z.string().url(),
-		source: z.string().url(),
-		documentation: z.string().url(),
-		categories: z.array(z.string()),
-		aliases: z.array(z.string()).optional(),
-		relatedTechnologies: z.array(z.string()).optional(),
-		useCases: z.array(z.string()).optional(),
-		features: z.array(z.string()).optional(),
-		learningResources: z.object({
-			official: z.array(z.string().url()).optional(),
-			community: z.array(z.string().url()).optional(),
-			tutorials: z.array(z.string().url()).optional(),
-		}),
-	}),
+  loader: glob({
+    pattern: ["**/*.{md,mdx,json}"],
+    base: "./content/technologies",
+  }),
+  schema: z.object({
+    name: z.string(),
+    description: z.string(),
+    // Allow either `logo` or `icon` in content; normalize by requiring at least one.
+    logo: z.string().optional(),
+    icon: z.string().optional(),
+    website: z.string().url().optional(),
+    source: z.string().url().optional(),
+    documentation: z.string().url().optional(),
+    categories: z.array(z.string()).default([]),
+    aliases: z.array(z.string()).optional(),
+    relatedTechnologies: z.array(z.string()).optional(),
+    useCases: z.array(z.string()).optional(),
+    features: z.array(z.string()).optional(),
+    learningResources: z
+      .object({
+        official: z.array(z.string().url()).optional(),
+        community: z.array(z.string().url()).optional(),
+        tutorials: z.array(z.string().url()).optional(),
+      })
+      .optional(),
+  }),
 });
 
 const series = defineCollection({
@@ -395,6 +302,7 @@ const learningPaths = defineCollection({
 
 export const collections = {
 	videos,
+	shows,
 	people,
 	articles,
 	technologies,

@@ -5,111 +5,50 @@ import TopicHub from "@/components/technology/TopicHub.astro";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb.astro";
 import Page from "@/wrappers/page.astro";
 import type { GetStaticPaths } from "astro";
-import { request } from "graphql-request";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
+import { getCollection } from "astro:content";
 
 // Define the Technology data type explicitly
 export interface Technology {
-	id: string;
-	name: string;
-	description: string;
-	documentation?: string;
-	website?: string;
-	logo?: string;
-	videos?: {
-		id: string;
-		title: string;
-		thumbnailUrl: string;
-		slug: string;
-	}[];
+  id: string;
+  name: string;
+  description: string;
+  documentation?: string;
+  website?: string;
+  logo?: string;
+  videos?: {
+    id: string;
+    title: string;
+    thumbnailUrl: string;
+    slug: string;
+  }[];
 }
 
-interface GetTechnologiesResponse {
-	getTechnologies: Technology[];
-}
-
-// Fetch all technologies to generate static paths
+// Build static paths from local content
 export const getStaticPaths = (async () => {
-	const endpoint = GRAPHQL_ENDPOINT;
+  const techEntries = await getCollection("technologies");
+  const videos = await getCollection("videos");
 
-	try {
-		console.log("Fetching technologies from GraphQL API...");
+  return techEntries.map((t) => {
+    const techId = t.id; // collection id
+    const routeId = techId.replace(/\/index$/, "");
+    const techName = t.data.name;
+    const logo = `/technologies/${routeId}/logo.svg`;
+    const videosForTech = videos
+      .filter((v) => (v.data.technologies as string[] | undefined)?.includes(techId))
+      .map((v) => ({ id: v.data.videoId, title: v.data.title, slug: v.data.slug, thumbnailUrl: `https://content.rawkode.academy/videos/${v.data.videoId}/thumbnail.jpg` }));
 
-		// First, try to get a smaller batch to see if the API is working
-		const testData = await request<GetTechnologiesResponse>(
-			endpoint,
-			`query GetTechnologies($limit: Int) {
-			getTechnologies(limit: $limit) {
-				id
-				name
-				description
+    const technology: Technology = {
+      id: routeId,
+      name: techName,
+      description: t.data.description,
+      documentation: (t.data as any).documentation,
+      website: (t.data as any).website,
+      logo,
+      videos: videosForTech,
+    };
 
-				website
-				documentation
-
-				logo
-	      videos {
-	        id
-	        title
-					slug
-	        thumbnailUrl
-	      }
-			}
-		}`,
-			{ limit: 10 },
-		);
-
-		console.log(
-			`Test query successful, fetched ${testData.getTechnologies.length} technologies`,
-		);
-
-		// Now try the full query
-		const data = await request<GetTechnologiesResponse>(
-			endpoint,
-			`query GetTechnologies($limit: Int) {
-			getTechnologies(limit: $limit) {
-				id
-				name
-				description
-
-				website
-				documentation
-
-				logo
-	      videos {
-	        id
-	        title
-					slug
-	        thumbnailUrl
-	      }
-			}
-		}`,
-			{ limit: 700 },
-		);
-
-		console.log(
-			`Successfully fetched ${data.getTechnologies.length} technologies`,
-		);
-
-		return data.getTechnologies.map((tech) => ({
-			params: { id: tech.id },
-			props: { technology: tech },
-		}));
-	} catch (error) {
-		console.error("Failed to fetch technologies:", error);
-		if (error && typeof error === "object" && "response" in error) {
-			console.error(
-				"GraphQL Response:",
-				JSON.stringify((error as any).response, null, 2),
-			);
-		}
-		// Return empty array when API is not accessible (e.g., during CI builds)
-		// This prevents technology pages from being generated but allows the build to succeed
-		console.warn(
-			"Technology pages will not be generated due to API unavailability",
-		);
-		return [];
-	}
+    return { params: { id: routeId }, props: { technology } };
+  });
 }) satisfies GetStaticPaths;
 
 const { technology } = Astro.props as { technology: Technology };
