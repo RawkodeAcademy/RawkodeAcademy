@@ -2,9 +2,10 @@
 import { GRAPHQL_ENDPOINT } from "astro:env/server";
 
 interface Video {
+	id?: string;
 	title: string;
-	thumbnailUrl: string;
-	duration: number;
+	thumbnailUrl?: string;
+	duration?: number;
 	slug: string;
 	publishedAt: string;
 	streamUrl?: string;
@@ -55,6 +56,35 @@ if (passedVideos) {
 	videos = [];
 }
 
+// Derive thumbnail/stream URL if missing and id present
+videos = videos.map((v) => ({
+	...v,
+	thumbnailUrl: v.thumbnailUrl || (v.id ? `https://content.rawkode.academy/videos/${v.id}/thumbnail.jpg` : undefined),
+	streamUrl: v.streamUrl || (v.id ? `https://content.rawkode.academy/videos/${v.id}/stream.m3u8` : undefined),
+}));
+
+// If any durations are missing, fetch them via GraphQL by slug
+if (videos.some((v) => typeof v.duration !== "number")) {
+	const slugsToFetch = videos.filter((v) => typeof v.duration !== "number").map((v) => v.slug);
+	const query = `
+	  query GetVideoBySlug($slug: String!) { getVideoBySlug(slug: $slug) { duration } }
+	`;
+	for (const slug of slugsToFetch) {
+		try {
+			const res = await fetch(GRAPHQL_ENDPOINT, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ query, variables: { slug } }),
+			});
+			const json: { data?: { getVideoBySlug?: { duration?: number | null } } } = await res.json();
+			const dur = json.data?.getVideoBySlug?.duration;
+			if (typeof dur === "number") {
+				videos = videos.map((v) => (v.slug === slug ? { ...v, duration: dur } : v));
+			}
+		} catch {}
+	}
+}
+
 function formatDuration(seconds: number) {
 	const hours = Math.floor(seconds / 3600);
 	const minutes = Math.floor((seconds % 3600) / 60);
@@ -86,13 +116,13 @@ function formatDate(dateString: string) {
         <a href={`/watch/${video.slug}`} class="group">
           <div class="relative aspect-video">
             <img
-              src={video.thumbnailUrl}
+              src={video.thumbnailUrl!}
               alt={video.title}
               class="w-full h-full object-cover rounded-lg shadow-md transition-transform group-hover:scale-105"
               loading="lazy"
             />
             <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-              {formatDuration(video.duration)}
+              {formatDuration((video.duration as number) || 0)}
             </div>
           </div>
           <div class="mt-4">
