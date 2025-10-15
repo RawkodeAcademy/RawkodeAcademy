@@ -2,9 +2,11 @@
 // We derive types directly from the technologies collection schema
 // to ensure compile-time safety with zero drift.
 import type { CollectionEntry } from "astro:content";
+import type { TechnologyData as ContentTechnologyData } from "@rawkodeacademy/content-technologies";
 
 export type TechnologyEntry = CollectionEntry<"technologies">;
-export type TechnologyData = TechnologyEntry["data"];
+// Match content package definition exactly for compile-time safety
+export type TechnologyData = TechnologyEntry["data"] & ContentTechnologyData;
 export type LearningResources = NonNullable<TechnologyData["learningResources"]>;
 export type TechnologyItem = TechnologyData & { id: string; logo?: string };
 

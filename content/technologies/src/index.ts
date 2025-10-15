@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { stat } from "node:fs/promises";
 import { statSync } from "node:fs";
+import { z as zod } from "zod";
 
 // Minimal Zod surface expected from Astro's content config `z`
 type Z = {
@@ -16,6 +17,42 @@ type Z = {
 };
 
 export type TechnologyStatus = "active" | "preview" | "deprecated";
+
+// Pure Zod schema for cross-environment validation & type inference
+export const technologyZod = zod.object({
+  // Core identity
+  name: zod.string(),
+  description: zod.string(),
+
+  // Presentation
+  icon: zod.string(),
+
+  // Links
+  website: zod.string(),
+  source: zod.string().optional(),
+  documentation: zod.string().optional(),
+
+  // Taxonomy / relationships
+  categories: zod.array(zod.string()).default([]),
+  aliases: zod.array(zod.string()).optional(),
+  relatedTechnologies: zod.array(zod.string()).optional(),
+
+  // Content hints
+  useCases: zod.array(zod.string()).optional(),
+  features: zod.array(zod.string()).optional(),
+  learningResources: zod
+    .object({
+      official: zod.array(zod.string()).optional(),
+      community: zod.array(zod.string()).optional(),
+      tutorials: zod.array(zod.string()).optional(),
+    })
+    .optional(),
+
+  // Lifecycle
+  status: zod.enum(["active", "preview", "deprecated"]).default("active"),
+});
+
+export type TechnologyData = zod.infer<typeof technologyZod>;
 
 // Export a schema factory colocated with the content package.
 // Consumers (e.g., the website's content config) will call this with their `z`.
