@@ -1,5 +1,6 @@
 import type SchemaBuilder from "@pothos/core";
-import type { TechnologyItem, TechnologyData } from "../loaders/technologies";
+import type { TechnologyItem } from "../loaders/technologies";
+import type { TechnologyData } from "@rawkodeacademy/content-technologies";
 import { listTechnologies, getTechnologyById } from "../loaders/technologies";
 
 export function registerTechnologies(builder: SchemaBuilder<{}>) {

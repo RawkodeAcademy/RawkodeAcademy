@@ -2,7 +2,7 @@
 // We derive types directly from the technologies collection schema
 // to ensure compile-time safety with zero drift.
 import type { CollectionEntry } from "astro:content";
-import type { TechnologyData as ContentTechnologyData } from "@rawkodeacademy/content-technologies";
+import { technologyZod, type TechnologyData as ContentTechnologyData } from "@rawkodeacademy/content-technologies";
 
 export type TechnologyEntry = CollectionEntry<"technologies">;
 // Match content package definition exactly for compile-time safety
@@ -16,14 +16,15 @@ export async function listTechnologies(): Promise<TechnologyItem[]> {
 
   const items = await getCollection("technologies");
   return items.map((e: TechnologyEntry) => {
+    const data = technologyZod.parse((e as any).data);
     const iconValue = resolveTechnologyIconUrl(e.id, (e as any).data.icon);
     return {
       id: e.id,
-      ...e.data,
+      ...data,
       icon: iconValue,
       logo: iconValue,
-      categories: e.data.categories ?? [],
-      learningResources: (e.data.learningResources as TechnologyData["learningResources"]) ?? null,
+      categories: data.categories ?? [],
+      learningResources: data.learningResources ?? null,
     } satisfies TechnologyItem;
   });
 }
