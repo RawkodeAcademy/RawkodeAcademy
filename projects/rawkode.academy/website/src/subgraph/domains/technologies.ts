@@ -1,9 +1,10 @@
 import type SchemaBuilder from "@pothos/core";
-import type { TechnologyItem, LearningResources } from "../loaders/technologies";
+import type { TechnologyItem, TechnologyData } from "../loaders/technologies";
 import { listTechnologies, getTechnologyById } from "../loaders/technologies";
 
 export function registerTechnologies(builder: SchemaBuilder<{}>) {
-  // LearningResources type
+  // LearningResources type derived from content schema
+  type LearningResources = NonNullable<TechnologyData["learningResources"]>;
   const LearningResourcesRef = builder.objectRef<LearningResources>("LearningResources");
   builder.objectType(LearningResourcesRef, {
     fields: (t) => ({
