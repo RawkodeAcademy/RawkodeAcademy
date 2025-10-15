@@ -69,7 +69,14 @@ async function main() {
     const name = t.name || t.id;
     const description = (t.description || "").trim() || name;
     const website = t.website || "https://rawkode.academy";
-    const icon = t.logo || "";
+    // Sanitize icon input (remove wrapping quotes, accidental ./ on remote)
+    let icon = (t.logo || "").trim();
+    if ((icon.startsWith('"') && icon.endsWith('"')) || (icon.startsWith("'") && icon.endsWith("'"))) {
+      icon = icon.slice(1, -1);
+    }
+    if (/^\.\/["']?https?:\/\//i.test(icon)) {
+      icon = icon.replace(/^\.\/["']?/i, "");
+    }
     const documentation = t.documentation || "";
 
     function q(v: string): string {
