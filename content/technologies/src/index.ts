@@ -4,19 +4,25 @@ import { stat } from "node:fs/promises";
 import { statSync } from "node:fs";
 import { z as zod } from "zod";
 
-// Minimal Zod surface expected from Astro's content config `z`
-type Z = {
-  object: any;
-  string: any;
-  array: any;
-  enum: any;
-  boolean: any;
-  number: any;
-  record: any;
-  union?: any;
-};
+export const TECHNOLOGY_STATUS_VALUES = [
+  "alpha",
+  "beta",
+  "stable",
+  "preview",
+  "superseded",
+  "deprecated",
+  "abandoned",
+] as const;
 
-export type TechnologyStatus = "active" | "preview" | "deprecated";
+const technologyStatusEnumValues = [...TECHNOLOGY_STATUS_VALUES] as [
+  (typeof TECHNOLOGY_STATUS_VALUES)[number],
+  ...(typeof TECHNOLOGY_STATUS_VALUES)[number][]
+];
+
+export const DEFAULT_TECHNOLOGY_STATUS: (typeof TECHNOLOGY_STATUS_VALUES)[number] = "stable";
+
+export type TechnologyStatus = (typeof TECHNOLOGY_STATUS_VALUES)[number];
+export const technologyStatusEnum = zod.enum(technologyStatusEnumValues);
 
 // Pure Zod schema for cross-environment validation & type inference
 export const technologyZod = zod.object({
@@ -49,14 +55,14 @@ export const technologyZod = zod.object({
     .optional(),
 
   // Lifecycle
-  status: zod.enum(["active", "preview", "deprecated"]).default("active"),
+  status: technologyStatusEnum.default(DEFAULT_TECHNOLOGY_STATUS),
 });
 
 export type TechnologyData = zod.infer<typeof technologyZod>;
 
 // Export a schema factory colocated with the content package.
 // Consumers (e.g., the website's content config) will call this with their `z`.
-export function createSchema(z: Z, _helpers?: { image?: (opts?: any) => any }) {
+export function createSchema(z: typeof zod, _helpers?: { image?: (opts?: any) => any }) {
   return z.object({
     // Core identity
     name: z.string(),
@@ -88,7 +94,7 @@ export function createSchema(z: Z, _helpers?: { image?: (opts?: any) => any }) {
       .optional(),
 
     // Lifecycle
-    status: (z.enum as any)(["active", "preview", "deprecated"]).default("active"),
+    status: z.enum(technologyStatusEnumValues).default(DEFAULT_TECHNOLOGY_STATUS),
   });
 }
 
