@@ -139,7 +139,7 @@ async function buildLastmodIndex() {
       const patterns = ["**/*.{md,mdx}"];
       const dirs = [withData, base];
       for (const d of dirs) {
-        const matches = await glob(patterns[0], { cwd: d, absolute: true });
+        const matches = await glob(patterns[0]!, { cwd: d, absolute: true });
         if (matches.length > 0) {
           techFiles.push(...matches);
           if (!techBaseDir) techBaseDir = d;

@@ -69,7 +69,7 @@ const Typewriter = (props: Props) => {
 					<a
 						href={props.primaryButton.link}
 						target={props.primaryButton.newWindow ? "_blank" : "_self"}
-						className="inline-flex items-center justify-center px-5 py-3 mr-3 text-base font-medium text-center rounded-lg text-white bg-linear-to-br from-primary to-secondary hover:from-secondary hover:to-primary"
+						className="inline-flex items-center justify-center px-5 py-3 mr-3 text-base font-medium text-center rounded-xl text-white bg-linear-to-br from-primary/90 to-secondary/90 hover:from-primary hover:to-secondary backdrop-blur-md shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 border border-primary/30"
 					>
 						{props.primaryButton.text}
 						<svg
@@ -89,7 +89,7 @@ const Typewriter = (props: Props) => {
 					<a
 						href={props.secondaryButton.link}
 						target={props.secondaryButton.newWindow ? "_blank" : "_self"}
-						className="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+						className="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-gray-900 dark:text-white bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-white/50 dark:border-gray-600/50 rounded-xl hover:bg-white/70 dark:hover:bg-gray-700/70 focus:ring-4 focus:ring-gray-100/50 dark:focus:ring-gray-700/50 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
 					>
 						{props.secondaryButton.text}
 					</a>

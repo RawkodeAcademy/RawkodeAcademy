@@ -23,7 +23,7 @@ defineProps<Props>();
 <template>
   <a :href="`/read/${id}`" class="h-full">
     <article
-      class="p-0 bg-white rounded-xl overflow-hidden shadow-lg dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col transition-all duration-300 border border-gray-100 dark:border-gray-700"
+      class="p-0 bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl rounded-xl overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] h-full flex flex-col transition-all duration-300 border border-white/40 dark:border-gray-700/40 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.18)] dark:hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5)] hover:scale-[1.02]"
     >
       <div class="relative">
         <div class="absolute inset-0 bg-linear-to-tr from-purple-600/30 to-indigo-600/30 mix-blend-multiply z-10"></div>
@@ -43,7 +43,7 @@ defineProps<Props>();
         />
         <div class="absolute top-3 left-3 z-20">
           <span
-            class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded-full dark:bg-purple-200 dark:text-purple-900 backdrop-blur-sm shadow-md"
+            class="bg-purple-500/30 dark:bg-purple-600/30 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md border border-purple-300/40 dark:border-purple-500/40"
           >
             Article
           </span>
@@ -58,7 +58,7 @@ defineProps<Props>();
         <p v-if="subtitle" class="mb-4 font-light text-gray-500 dark:text-gray-400 line-clamp-3">
           {{ subtitle }}
         </p>
-        <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div class="mt-auto pt-4 border-t border-white/20 dark:border-gray-700/40">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <div class="flex -space-x-3">

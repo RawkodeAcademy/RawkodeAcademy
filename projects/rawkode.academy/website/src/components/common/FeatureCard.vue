@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700',
+      'bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl p-6 rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] border border-white/40 dark:border-gray-700/40 transition-all duration-300 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.18)] dark:hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5)] hover:scale-[1.02]',
       className
     ]"
   >
