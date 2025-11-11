@@ -37,10 +37,18 @@ onMounted(() => {
 		communityExpanded.value = true;
 	}
 
-	// Check localStorage for collapse state and mode
-	const savedState = localStorage.getItem("sidebar-collapsed");
-	if (savedState === "true") {
+	// Check if we're on mobile (window width < 768px which is md breakpoint)
+	const isMobile = window.innerWidth < 768;
+
+	// On mobile, always start collapsed (hidden)
+	// On desktop, check localStorage for collapse state
+	if (isMobile) {
 		isCollapsed.value = true;
+	} else {
+		const savedState = localStorage.getItem("sidebar-collapsed");
+		if (savedState === "true") {
+			isCollapsed.value = true;
+		}
 	}
 
 	const savedMode = localStorage.getItem("sidebar-mode");
@@ -51,7 +59,10 @@ onMounted(() => {
 	// Listen for toggle events from mobile menu button
 	window.addEventListener("toggle-sidebar", () => {
 		isCollapsed.value = !isCollapsed.value;
-		localStorage.setItem("sidebar-collapsed", String(isCollapsed.value));
+		// Only save state on desktop
+		if (!isMobile) {
+			localStorage.setItem("sidebar-collapsed", String(isCollapsed.value));
+		}
 	});
 });
 
@@ -146,8 +157,9 @@ const currentNavItems = computed(() => {
 			'shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]',
 			'before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none before:rounded-2xl',
 			'rounded-2xl',
-			'hidden md:block',
-			isCollapsed ? 'w-16' : 'w-64',
+			// Desktop: always visible, toggles between collapsed/expanded
+			// Mobile: hidden by default (collapsed), shows when expanded (!isCollapsed)
+			isCollapsed ? 'hidden md:block md:w-16' : 'block w-64',
 		]"
 		aria-label="Sidebar navigation"
 	>
@@ -360,5 +372,6 @@ const currentNavItems = computed(() => {
 		v-show="!isCollapsed"
 		class="fixed inset-0 bg-black/30 backdrop-blur-sm z-20 md:hidden"
 		@click="toggleCollapse"
+		aria-label="Close sidebar"
 	></div>
 </template>
