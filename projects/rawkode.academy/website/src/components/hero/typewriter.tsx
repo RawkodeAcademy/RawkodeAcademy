@@ -21,8 +21,9 @@ const shuffle = (array: string[]): string[] => {
 
 const Typewriter = (props: Props) => {
 	return (
-		<section className="bg-white dark:bg-black">
-			<div className="grid px-4 py-12 mx-auto lg:gap-8 xl:gap-0 lg:py-24 lg:grid-cols-12 max-w-7xl">
+		<section className="relative my-4 md:my-6 rounded-3xl border border-white/30 dark:border-gray-700/30 bg-white/70 dark:bg-gray-900/60 backdrop-blur-2xl shadow-[0_25px_80px_rgba(15,23,42,0.2)] overflow-hidden">
+			<div className="absolute inset-0 bg-gradient-to-br from-white/60 via-primary/10 to-transparent dark:from-gray-900/60 dark:via-primary/20 opacity-70 pointer-events-none" />
+			<div className="relative grid px-4 py-12 mx-auto lg:gap-8 xl:gap-0 lg:py-24 lg:grid-cols-12 max-w-7xl">
 				<div className="mr-auto place-self-center lg:col-span-7">
 					<h1 className="mb-6 text-4xl font-bold tracking-tight leading-none md:text-5xl xl:text-6xl text-black dark:text-white">
 						<TypeAnimation

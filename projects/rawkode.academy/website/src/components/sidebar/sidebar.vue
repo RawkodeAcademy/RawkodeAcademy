@@ -12,7 +12,7 @@ import {
 	VideoCameraIcon,
 	WrenchScrewdriverIcon,
 	BuildingOfficeIcon,
-	AcademicCapIcon as LearnIcon,
+	BookOpenIcon,
 } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
 
@@ -120,13 +120,6 @@ const communityItems = computed(() => [
 		icon: CalendarIcon,
 		current: isCurrentPath("/community-day"),
 	},
-	{
-		name: "Zulip Chat",
-		href: "https://chat.rawkode.academy",
-		icon: ChatBubbleLeftEllipsisIcon,
-		target: "_blank",
-		current: false,
-	},
 ]);
 
 const toggleCollapse = () => {
@@ -150,16 +143,13 @@ const currentNavItems = computed(() => {
 
 <template>
 	<aside
+		class="sidebar-glassmorphism"
 		:class="[
 			'fixed top-28 left-4 md:left-8 bottom-4 z-30 transition-all duration-300 ease-in-out',
-			'bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl',
-			'border border-white/40 dark:border-gray-700/40',
-			'shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]',
-			'before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none before:rounded-2xl',
 			'rounded-2xl',
 			// Desktop: always visible, toggles between collapsed/expanded
 			// Mobile: hidden by default (collapsed), shows when expanded (!isCollapsed)
-			isCollapsed ? 'hidden md:block md:w-16' : 'block w-64',
+			isCollapsed ? 'hidden md:block md:w-[4.5rem]' : 'block w-64',
 		]"
 		aria-label="Sidebar navigation"
 	>
@@ -179,7 +169,7 @@ const currentNavItems = computed(() => {
 								: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-gray-700/40',
 						]"
 					>
-						<LearnIcon class="w-5 h-5 flex-shrink-0" />
+						<BookOpenIcon class="w-5 h-5 flex-shrink-0" />
 						<span>Learn</span>
 					</button>
 					<button
@@ -192,7 +182,7 @@ const currentNavItems = computed(() => {
 						]"
 					>
 						<BuildingOfficeIcon class="w-5 h-5 flex-shrink-0" />
-						<span>Work</span>
+						<span>Collab</span>
 					</button>
 				</div>
 			</div>
@@ -212,32 +202,30 @@ const currentNavItems = computed(() => {
 					]"
 					:title="mode === 'learn' ? 'Switch to Collaborate Mode' : 'Switch to Learn Mode'"
 				>
-					<LearnIcon v-if="mode === 'learn'" class="w-6 h-6" />
+					<BookOpenIcon v-if="mode === 'learn'" class="w-6 h-6" />
 					<BuildingOfficeIcon v-else class="w-6 h-6" />
 				</button>
 
-				<!-- Tooltip -->
-				<div
-					class="absolute left-full ml-2 px-3 py-2 bg-gray-900/80 dark:bg-gray-700/80 backdrop-blur-xl text-white text-sm rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity duration-200 z-50 top-2 shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-white/10"
-				>
-					{{ mode === 'learn' ? 'Switch to Collaborate' : 'Switch to Learn' }}
-				</div>
 			</div>
 
 			<!-- Navigation -->
 			<nav class="flex-1 overflow-y-auto py-6 px-3">
 				<!-- Main Navigation -->
-				<ul class="space-y-1">
+				<ul :class="['space-y-1', isCollapsed ? 'space-y-0.5 pr-1' : '']">
 					<li v-for="item in currentNavItems" :key="item.href">
 						<a
 							:href="item.href"
 							:class="[
-								'flex items-center text-sm font-medium rounded-xl transition-all duration-200',
-								'group relative',
-								isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5',
+								'flex items-center text-sm font-medium rounded-xl transition-[background,scale,colors,border] duration-200',
+								'group relative will-change-transform border border-transparent w-full',
+								isCollapsed
+									? 'flex-col items-center justify-center text-center gap-0.5 p-2 text-[0.65rem]'
+									: 'px-3 py-2.5',
 								item.current
-									? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] backdrop-blur-md border border-primary/30'
-									: 'text-gray-700 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:backdrop-blur-md hover:text-primary hover:shadow-lg hover:scale-[1.02] hover:border hover:border-white/30 dark:hover:border-gray-600/30',
+									? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] backdrop-blur-md border-primary/30'
+									: isCollapsed
+										? 'text-gray-700 dark:text-gray-300 hover:text-primary'
+										: 'text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:text-primary hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30',
 							]"
 							:aria-current="item.current ? 'page' : undefined"
 							:title="isCollapsed ? item.name : undefined"
@@ -251,20 +239,16 @@ const currentNavItems = computed(() => {
 								]"
 							/>
 							<span
-								v-show="!isCollapsed"
-								class="transition-opacity duration-200"
+								:class="[
+									'transition-opacity duration-200',
+									isCollapsed
+										? 'block leading-[1.05] text-center text-[0.6rem] tracking-tight max-w-[3.5rem]'
+										: '',
+								]"
 							>
 								{{ item.name }}
 							</span>
-
-							<!-- Tooltip for collapsed state -->
-							<div
-								v-if="isCollapsed"
-								class="absolute left-full ml-2 px-3 py-2 bg-gray-900/80 dark:bg-gray-700/80 backdrop-blur-xl text-white text-sm rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity duration-200 z-50 shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-white/10"
-							>
-								{{ item.name }}
-							</div>
-						</a>
+							</a>
 					</li>
 				</ul>
 
@@ -297,18 +281,25 @@ const currentNavItems = computed(() => {
 						leave-from-class="transform translate-y-0 opacity-100 max-h-32"
 						leave-to-class="transform -translate-y-2 opacity-0 max-h-0"
 					>
-						<ul v-show="communityExpanded || isCollapsed" class="space-y-1 mt-2">
+						<ul
+							v-show="communityExpanded || isCollapsed"
+							:class="['mt-2 space-y-1', isCollapsed ? 'space-y-0.5' : '']"
+						>
 							<li v-for="item in communityItems" :key="item.href">
 								<a
 									:href="item.href"
 									:target="item.target"
 									:class="[
-										'flex items-center text-sm font-medium rounded-xl transition-all duration-200',
-										'group relative',
-										isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5',
+										'flex items-center text-sm font-medium rounded-xl transition-[background,scale,colors,border] duration-200',
+										'group relative will-change-transform border border-transparent',
+										isCollapsed
+											? 'flex-col items-center justify-center text-center gap-0.5 p-2.5 text-[0.65rem]'
+											: 'px-3 py-2.5',
 										item.current
-											? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] backdrop-blur-md border border-primary/30'
-											: 'text-gray-700 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-800/60 hover:backdrop-blur-md hover:text-primary hover:shadow-lg hover:scale-[1.02] hover:border hover:border-white/30 dark:hover:border-gray-600/30',
+											? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] backdrop-blur-md border-primary/30'
+											: isCollapsed
+												? 'text-gray-700 dark:text-gray-300 hover:text-primary'
+												: 'text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:text-primary hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30',
 									]"
 									:title="isCollapsed ? item.name : undefined"
 								>
@@ -323,20 +314,15 @@ const currentNavItems = computed(() => {
 										]"
 									/>
 									<span
-										v-show="!isCollapsed"
-										class="transition-opacity duration-200"
+										:class="[
+											'transition-opacity duration-200',
+											isCollapsed
+												? 'block leading-[1.05] text-center text-[0.6rem] tracking-tight max-w-[3.5rem]'
+												: '',
+										]"
 									>
 										{{ item.name }}
 									</span>
-
-									<!-- Tooltip for collapsed state -->
-									<div
-										v-if="isCollapsed"
-										class="absolute left-full ml-2 px-3 py-2 bg-gray-900/80 dark:bg-gray-700/80 backdrop-blur-xl text-white text-sm rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity duration-200 z-50 shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-white/10"
-									>
-										{{ item.name }}
-										<span v-if="item.target === '_blank'" class="ml-1">→</span>
-									</div>
 								</a>
 							</li>
 						</ul>
@@ -352,13 +338,13 @@ const currentNavItems = computed(() => {
 				<div class="space-y-1">
 					<a
 						href="/about"
-						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-xl hover:bg-white/60 dark:hover:bg-gray-800/60 hover:backdrop-blur-md hover:shadow-md hover:scale-[1.02] hover:border hover:border-white/30 dark:hover:border-gray-600/30 transition-all duration-200"
+						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-xl border border-transparent hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30 transition-[background,scale,colors,border] duration-200 will-change-transform"
 					>
 						About
 					</a>
 					<a
 						href="/changelog"
-						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-xl hover:bg-white/60 dark:hover:bg-gray-800/60 hover:backdrop-blur-md hover:shadow-md hover:scale-[1.02] hover:border hover:border-white/30 dark:hover:border-gray-600/30 transition-all duration-200"
+						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-xl border border-transparent hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30 transition-[background,scale,colors,border] duration-200 will-change-transform"
 					>
 						Changelog
 					</a>
@@ -375,3 +361,57 @@ const currentNavItems = computed(() => {
 		aria-label="Close sidebar"
 	></div>
 </template>
+
+<style scoped>
+.sidebar-glassmorphism {
+	background: rgba(255, 255, 255, 0.25) !important;
+	backdrop-filter: blur(40px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+	border: 2px solid rgba(255, 255, 255, 0.6) !important;
+	box-shadow:
+		0 8px 32px 0 rgba(0, 0, 0, 0.12),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+.sidebar-glassmorphism::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05) 50%, transparent);
+	border-radius: inherit;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.sidebar-glassmorphism::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
+	border-radius: inherit;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.sidebar-glassmorphism > * {
+	position: relative;
+	z-index: 2;
+}
+
+/* Dark mode support */
+:global(.dark) .sidebar-glassmorphism {
+	background: rgba(17, 24, 39, 0.25) !important;
+	border-color: rgba(75, 85, 99, 0.6) !important;
+	box-shadow:
+		0 8px 32px 0 rgba(0, 0, 0, 0.4),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+:global(.dark) .sidebar-glassmorphism::before {
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 50%, transparent);
+}
+
+:global(.dark) .sidebar-glassmorphism::after {
+	background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.05) 100%);
+}
+</style>
