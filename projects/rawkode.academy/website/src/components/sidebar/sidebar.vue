@@ -159,14 +159,14 @@ const currentNavItems = computed(() => {
 				v-if="!isCollapsed"
 				class="px-3 py-4 border-b border-white/20 dark:border-gray-700/40"
 			>
-				<div class="flex items-center gap-1 bg-white/30 dark:bg-gray-800/30 backdrop-blur-md rounded-xl p-1 border border-white/30 dark:border-gray-600/30 shadow-inner">
+				<div class="flex items-center gap-1 bg-white/30 dark:bg-gray-700/40 backdrop-blur-md rounded-xl p-1 border border-white/30 dark:border-gray-500/50 shadow-inner">
 					<button
 						@click="mode = 'learn'; localStorage.setItem('sidebar-mode', 'learn')"
 						:class="[
 							'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
 							mode === 'learn'
-								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-700/90 dark:to-gray-700/70 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] backdrop-blur-md'
-								: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-gray-700/40',
+								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-600/95 dark:to-gray-600/80 text-primary dark:text-white shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.5)] backdrop-blur-md border dark:border-gray-400/50'
+								: 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-gray-600/50',
 						]"
 					>
 						<BookOpenIcon class="w-5 h-5 flex-shrink-0" />
@@ -177,8 +177,8 @@ const currentNavItems = computed(() => {
 						:class="[
 							'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
 							mode === 'business'
-								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-700/90 dark:to-gray-700/70 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] backdrop-blur-md'
-								: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-gray-700/40',
+								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-600/95 dark:to-gray-600/80 text-primary dark:text-white shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.5)] backdrop-blur-md border dark:border-gray-400/50'
+								: 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-gray-600/50',
 						]"
 					>
 						<BuildingOfficeIcon class="w-5 h-5 flex-shrink-0" />
@@ -224,8 +224,8 @@ const currentNavItems = computed(() => {
 								item.current
 									? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] backdrop-blur-md border-primary/30'
 									: isCollapsed
-										? 'text-gray-700 dark:text-gray-300 hover:text-primary'
-										: 'text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:text-primary hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30',
+										? 'text-gray-700 dark:text-gray-100 hover:text-primary dark:hover:text-primary'
+										: 'text-gray-700 dark:text-gray-100 hover:bg-white/80 dark:hover:bg-gray-700/80 hover:text-primary hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-500/50',
 							]"
 							:aria-current="item.current ? 'page' : undefined"
 							:title="isCollapsed ? item.name : undefined"
@@ -235,7 +235,7 @@ const currentNavItems = computed(() => {
 								:class="[
 									'flex-shrink-0 transition-colors',
 									isCollapsed ? 'w-5 h-5' : 'w-5 h-5 mr-3',
-									item.current ? 'text-primary' : 'text-gray-500 dark:text-gray-400 group-hover:text-primary',
+									item.current ? 'text-primary' : 'text-gray-500 dark:text-gray-200 group-hover:text-primary',
 								]"
 							/>
 							<span
@@ -257,7 +257,7 @@ const currentNavItems = computed(() => {
 					<button
 						v-if="!isCollapsed"
 						@click="toggleCommunity"
-						class="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+						class="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
 					>
 						<span>Community</span>
 						<ChevronDownIcon
@@ -298,8 +298,8 @@ const currentNavItems = computed(() => {
 										item.current
 											? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary shadow-[0_2px_12px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] backdrop-blur-md border-primary/30'
 											: isCollapsed
-												? 'text-gray-700 dark:text-gray-300 hover:text-primary'
-												: 'text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:text-primary hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30',
+												? 'text-gray-700 dark:text-gray-100 hover:text-primary dark:hover:text-primary'
+												: 'text-gray-700 dark:text-gray-100 hover:bg-white/80 dark:hover:bg-gray-700/80 hover:text-primary hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-500/50',
 									]"
 									:title="isCollapsed ? item.name : undefined"
 								>
@@ -310,7 +310,7 @@ const currentNavItems = computed(() => {
 											isCollapsed ? 'w-5 h-5' : 'w-5 h-5 mr-3',
 											item.current
 												? 'text-primary'
-												: 'text-gray-500 dark:text-gray-400 group-hover:text-primary',
+												: 'text-gray-500 dark:text-gray-200 group-hover:text-primary',
 										]"
 									/>
 									<span
@@ -338,13 +338,13 @@ const currentNavItems = computed(() => {
 				<div class="space-y-1">
 					<a
 						href="/about"
-						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-xl border border-transparent hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30 transition-[background,scale,colors,border] duration-200 will-change-transform"
+						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white rounded-xl border border-transparent hover:bg-white/80 dark:hover:bg-gray-700/80 hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-500/50 transition-[background,scale,colors,border] duration-200 will-change-transform"
 					>
 						About
 					</a>
 					<a
 						href="/changelog"
-						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-xl border border-transparent hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-600/30 transition-[background,scale,colors,border] duration-200 will-change-transform"
+						class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white rounded-xl border border-transparent hover:bg-white/80 dark:hover:bg-gray-700/80 hover:scale-[1.02] hover:border-white/30 dark:hover:border-gray-500/50 transition-[background,scale,colors,border] duration-200 will-change-transform"
 					>
 						Changelog
 					</a>
@@ -400,18 +400,18 @@ const currentNavItems = computed(() => {
 
 /* Dark mode support */
 :global(.dark) .sidebar-glassmorphism {
-	background: rgba(17, 24, 39, 0.25) !important;
-	border-color: rgba(75, 85, 99, 0.6) !important;
+	background: rgba(31, 41, 55, 0.5) !important;
+	border-color: rgba(107, 114, 128, 0.8) !important;
 	box-shadow:
-		0 8px 32px 0 rgba(0, 0, 0, 0.4),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+		0 8px 32px 0 rgba(0, 0, 0, 0.6),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
 }
 
 :global(.dark) .sidebar-glassmorphism::before {
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 50%, transparent);
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05) 50%, transparent);
 }
 
 :global(.dark) .sidebar-glassmorphism::after {
-	background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.05) 100%);
+	background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
 }
 </style>
