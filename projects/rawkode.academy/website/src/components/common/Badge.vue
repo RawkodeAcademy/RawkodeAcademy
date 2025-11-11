@@ -34,29 +34,29 @@ const baseClasses = "inline-flex items-center font-semibold transition-all durat
 
 const variantClasses = {
 	default: props.outline
-		? "border border-gray-300/50 text-gray-700 dark:border-gray-600/50 dark:text-gray-300 bg-white/30 dark:bg-gray-800/30"
-		: "bg-gray-500/20 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300 border border-gray-400/30 dark:border-gray-600/30",
+		? "border border-gray-300/50 text-gray-700 dark:border-gray-500/60 dark:text-gray-100 bg-white/30 dark:bg-gray-700/40"
+		: "bg-gray-500/20 text-gray-800 dark:bg-gray-600/40 dark:text-gray-100 border border-gray-400/30 dark:border-gray-500/50",
 	primary: props.outline
-		? "border border-primary/50 text-primary bg-white/30 dark:bg-gray-900/30"
-		: "bg-primary/20 text-primary dark:bg-primary/30 border border-primary/30",
+		? "border border-primary/50 text-primary dark:text-white bg-white/30 dark:bg-primary/40"
+		: "bg-primary/20 text-primary dark:bg-primary/40 dark:text-white border border-primary/30 dark:border-primary/50",
 	secondary: props.outline
-		? "border border-secondary/50 text-secondary bg-white/30 dark:bg-gray-900/30"
-		: "bg-secondary/20 text-secondary dark:bg-secondary/30 border border-secondary/30",
+		? "border border-secondary/50 text-secondary dark:text-white bg-white/30 dark:bg-secondary/40"
+		: "bg-secondary/20 text-secondary dark:bg-secondary/40 dark:text-white border border-secondary/30 dark:border-secondary/50",
 	tertiary: props.outline
-		? "border border-tertiary/50 text-tertiary bg-white/30 dark:bg-gray-900/30"
-		: "bg-tertiary/20 text-tertiary dark:bg-tertiary/30 border border-tertiary/30",
+		? "border border-tertiary/50 text-tertiary dark:text-white bg-white/30 dark:bg-tertiary/40"
+		: "bg-tertiary/20 text-tertiary dark:bg-tertiary/40 dark:text-white border border-tertiary/30 dark:border-tertiary/50",
 	success: props.outline
-		? "border border-green-600/50 text-green-600 dark:border-green-400/50 dark:text-green-400 bg-white/30 dark:bg-gray-900/30"
-		: "bg-green-500/20 text-green-700 dark:bg-green-700/30 dark:text-green-300 border border-green-500/30 dark:border-green-600/30",
+		? "border border-green-600/50 text-green-600 dark:border-green-400/60 dark:text-green-300 bg-white/30 dark:bg-green-700/40"
+		: "bg-green-500/20 text-green-700 dark:bg-green-600/40 dark:text-green-200 border border-green-500/30 dark:border-green-500/50",
 	warning: props.outline
-		? "border border-yellow-600/50 text-yellow-600 dark:border-yellow-400/50 dark:text-yellow-400 bg-white/30 dark:bg-gray-900/30"
-		: "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-700/30 dark:text-yellow-300 border border-yellow-500/30 dark:border-yellow-600/30",
+		? "border border-yellow-600/50 text-yellow-600 dark:border-yellow-400/60 dark:text-yellow-300 bg-white/30 dark:bg-yellow-700/40"
+		: "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-600/40 dark:text-yellow-200 border border-yellow-500/30 dark:border-yellow-500/50",
 	danger: props.outline
-		? "border border-red-600/50 text-red-600 dark:border-red-400/50 dark:text-red-400 bg-white/30 dark:bg-gray-900/30"
-		: "bg-red-500/20 text-red-700 dark:bg-red-700/30 dark:text-red-300 border border-red-500/30 dark:border-red-600/30",
+		? "border border-red-600/50 text-red-600 dark:border-red-400/60 dark:text-red-300 bg-white/30 dark:bg-red-700/40"
+		: "bg-red-500/20 text-red-700 dark:bg-red-600/40 dark:text-red-200 border border-red-500/30 dark:border-red-500/50",
 	info: props.outline
-		? "border border-blue-600/50 text-blue-600 dark:border-blue-400/50 dark:text-blue-400 bg-white/30 dark:bg-gray-900/30"
-		: "bg-blue-500/20 text-blue-700 dark:bg-blue-700/30 dark:text-blue-300 border border-blue-500/30 dark:border-blue-600/30",
+		? "border border-blue-600/50 text-blue-600 dark:border-blue-400/60 dark:text-blue-300 bg-white/30 dark:bg-blue-700/40"
+		: "bg-blue-500/20 text-blue-700 dark:bg-blue-600/40 dark:text-blue-200 border border-blue-500/30 dark:border-blue-500/50",
 };
 
 const sizeClasses = {

@@ -40,13 +40,13 @@ const baseClasses =
 
 const variantClasses = {
 	primary:
-		"text-white bg-gradient-to-r from-blue-600/90 to-blue-700/90 hover:from-blue-700/95 hover:to-blue-800/95 focus:ring-blue-300/50 border border-blue-500/30 dark:from-blue-600/80 dark:to-blue-700/80 dark:hover:from-blue-700/90 dark:hover:to-blue-800/90 dark:focus:ring-blue-800/50 dark:border-blue-400/30",
+		"text-white bg-gradient-to-r from-blue-600/90 to-blue-700/90 hover:from-blue-700/95 hover:to-blue-800/95 focus:ring-blue-300/50 border border-blue-500/30 dark:from-blue-500/90 dark:to-blue-600/90 dark:hover:from-blue-600/95 dark:hover:to-blue-700/95 dark:focus:ring-blue-400/50 dark:border-blue-400/50",
 	secondary:
-		"text-gray-900 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-white/50 dark:border-gray-600/50 hover:bg-white/70 dark:hover:bg-gray-700/70 focus:ring-gray-200/50 dark:text-white dark:focus:ring-gray-700/50",
+		"text-gray-900 bg-white/50 dark:bg-gray-700/60 backdrop-blur-lg border border-white/50 dark:border-gray-500/60 hover:bg-white/70 dark:hover:bg-gray-600/70 focus:ring-gray-200/50 dark:text-white dark:focus:ring-gray-500/50",
 	ghost:
-		"text-gray-700 hover:text-gray-900 hover:bg-white/60 dark:hover:bg-gray-700/60 focus:ring-gray-200/50 dark:text-gray-300 dark:hover:text-white dark:focus:ring-gray-700/50 border border-transparent hover:border-white/30 dark:hover:border-gray-600/30",
+		"text-gray-700 hover:text-gray-900 hover:bg-white/60 dark:hover:bg-gray-600/60 focus:ring-gray-200/50 dark:text-gray-200 dark:hover:text-white dark:focus:ring-gray-600/50 border border-transparent hover:border-white/30 dark:hover:border-gray-500/40",
 	danger:
-		"text-white bg-gradient-to-r from-red-600/90 to-red-700/90 hover:from-red-700/95 hover:to-red-800/95 focus:ring-red-300/50 border border-red-500/30 dark:from-red-500/80 dark:to-red-600/80 dark:hover:from-red-600/90 dark:hover:to-red-700/90 dark:focus:ring-red-800/50 dark:border-red-400/30",
+		"text-white bg-gradient-to-r from-red-600/90 to-red-700/90 hover:from-red-700/95 hover:to-red-800/95 focus:ring-red-300/50 border border-red-500/30 dark:from-red-500/90 dark:to-red-600/90 dark:hover:from-red-600/95 dark:hover:to-red-700/95 dark:focus:ring-red-400/50 dark:border-red-400/50",
 };
 
 const sizeClasses = {
