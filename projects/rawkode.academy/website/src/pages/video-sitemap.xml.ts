@@ -1,6 +1,4 @@
 import { getCollection } from "astro:content";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-import { request, gql } from "graphql-request";
 import type { APIRoute } from "astro";
 
 // Format duration from seconds to ISO 8601
@@ -54,14 +52,6 @@ export const GET: APIRoute = async ({ site }) => {
 		return dateB.getTime() - dateA.getTime();
 	});
 
-	// Fetch durations for sitemap
-	let durationMap = new Map<string, number>();
-	try {
-		const q = gql`query GetMany($limit:Int!){ getLatestVideos(limit:$limit){ slug duration } }`;
-		const r: { getLatestVideos: { slug: string; duration: number }[] } = await request(GRAPHQL_ENDPOINT, q, { limit: Math.max(sortedVideos.length, 100) });
-		durationMap = new Map(r.getLatestVideos.map((x) => [x.slug, x.duration] as const));
-	} catch {}
-
 	const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
@@ -70,7 +60,11 @@ ${sortedVideos
 		const videoUrl = `${site}watch/${video.data.slug}/`;
 		const thumbnailUrl = `https://content.rawkode.academy/videos/${video.data.videoId}/thumbnail.jpg`;
 		const contentUrl = `https://content.rawkode.academy/videos/${video.data.videoId}/stream.m3u8`;
-		const duration = formatDuration(durationMap.get(video.data.slug) ?? 0);
+		const durationSeconds =
+			typeof video.data.duration === "number"
+				? video.data.duration
+				: 0;
+		const duration = formatDuration(durationSeconds);
 		const publishedDate = new Date(video.data.publishedAt).toISOString();
 
 		// Create tags from technologies

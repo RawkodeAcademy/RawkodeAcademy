@@ -1,6 +1,4 @@
 import { defineCollection, reference, z } from "astro:content";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { glob } from "astro/loaders";
 
 // Local, file-based content collections for videos, shows, and technologies.
@@ -16,6 +14,7 @@ const videos = defineCollection({
     subtitle: z.string().optional(),
     description: z.string(),
     publishedAt: z.coerce.date(),
+    duration: z.number().nonnegative().optional(),
     // streamUrl/thumbnailUrl/duration are derived at runtime
     // Technologies: accept plain ids (e.g., "docker") or full entry ids ("docker/index"),
     // normalize to "<id>/index" for internal use, and verify existence.
@@ -24,6 +23,14 @@ const videos = defineCollection({
       .transform((arr) => arr.map((v: any) => (typeof v === 'string' ? (v.endsWith('/index') ? v : `${v}/index`) : v)))
       .default([]),
     show: reference("shows").optional(),
+    chapters: z
+      .array(
+        z.object({
+          startTime: z.number().nonnegative(),
+          title: z.string(),
+        }),
+      )
+      .default([]),
   }),
 });
 

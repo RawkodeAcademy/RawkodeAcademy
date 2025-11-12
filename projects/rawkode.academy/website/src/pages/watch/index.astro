@@ -2,8 +2,6 @@
 export const prerender = false;
 
 import { getCollection } from "astro:content";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-import { request, gql } from "graphql-request";
 import FeaturedContent from "@/components/common/FeaturedContent.astro";
 import VideoMetadata from "@/components/html/video-metadata.astro";
 import VideoFeed from "@/components/video/video-feed.astro";
@@ -37,23 +35,21 @@ allVideos.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishe
 
 // Featured: first item on page 1
 const featuredVideo = page === 1 ? allVideos[0] ?? null : null;
-let featuredDuration: number | null = null;
-if (featuredVideo) {
-  try {
-    const q = gql`query GetVideoBySlug($slug: String!){ getVideoBySlug(slug:$slug){ duration } }`;
-    const r: { getVideoBySlug?: { duration?: number | null } } = await request(GRAPHQL_ENDPOINT, q, { slug: featuredVideo.slug });
-    featuredDuration = r.getVideoBySlug?.duration ?? null;
-  } catch {}
-}
+const featuredDuration = featuredVideo && typeof featuredVideo.duration === "number"
+  ? featuredVideo.duration
+  : null;
 
 // Pagination
 const start = page === 1 ? 1 : (page - 1) * videosPerPage;
 const end = start + videosPerPage;
 const feedVideos = allVideos.slice(start, end).map((v) => ({
-  id: v.id,
+  id: v.videoId,
   title: v.title,
   description: v.description,
   slug: v.slug,
+  thumbnailUrl: `https://content.rawkode.academy/videos/${v.videoId}/thumbnail.jpg`,
+  streamUrl: `https://content.rawkode.academy/videos/${v.videoId}/stream.m3u8`,
+  duration: typeof v.duration === "number" ? v.duration : 0,
   publishedAt: (v.publishedAt instanceof Date ? v.publishedAt.toISOString() : String(v.publishedAt)),
 }));
 const hasNextPage = end < allVideos.length;
@@ -78,7 +74,7 @@ const hasNextPage = end < allVideos.length;
 			type="video"
 			title={featuredVideo.title}
 			description={featuredVideo.description}
-			thumbnailUrl={`https://content.rawkode.academy/videos/${featuredVideo.id}/thumbnail.jpg`}
+			thumbnailUrl={`https://content.rawkode.academy/videos/${featuredVideo.videoId}/thumbnail.jpg`}
 			thumbnailAlt={`Thumbnail for ${featuredVideo.title}`}
 			date={(featuredVideo.publishedAt instanceof Date ? featuredVideo.publishedAt.toISOString() : String(featuredVideo.publishedAt))}
 			duration={featuredDuration !== null ? String(featuredDuration) : undefined}
