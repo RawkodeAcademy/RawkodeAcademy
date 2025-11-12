@@ -6,7 +6,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 
 // Users table - core user identity
-export const usersTable = sqliteTable("users", {
+export const user = sqliteTable("user", {
 	id: text("id").primaryKey(),
 	email: text("email").notNull().unique(),
 	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
@@ -17,57 +17,59 @@ export const usersTable = sqliteTable("users", {
 });
 
 // Sessions table - user sessions
-export const sessionsTable = sqliteTable("sessions", {
+export const session = sqliteTable("session", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.notNull()
-		.references(() => usersTable.id, { onDelete: "cascade" }),
+		.references(() => user.id, { onDelete: "cascade" }),
 	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
 	ipAddress: text("ip_address"),
 	userAgent: text("user_agent"),
+	activeOrganizationId: text("active_organization_id"),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// Accounts table - authentication providers (email/password, OAuth, etc.)
-export const accountsTable = sqliteTable(
-	"accounts",
-	{
-		id: text("id").primaryKey(),
-		userId: text("user_id")
-			.notNull()
-			.references(() => usersTable.id, { onDelete: "cascade" }),
-		provider: text("provider").notNull(), // "email", "google", "github", etc.
-		providerAccountId: text("provider_account_id").notNull(),
-		accessToken: text("access_token"),
-		refreshToken: text("refresh_token"),
-		expiresAt: integer("expires_at", { mode: "timestamp" }),
-		tokenType: text("token_type"),
-		scope: text("scope"),
-		idToken: text("id_token"),
-		passwordHash: text("password_hash"), // for email/password provider
-		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-		updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-	},
-	(table) => ({
-		providerKey: primaryKey({
-			columns: [table.provider, table.providerAccountId],
-		}),
-	}),
-);
+// Account table - OAuth providers (GitHub, etc.)
+export const account = sqliteTable("account", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	accountId: text("account_id").notNull(), // Provider's user ID
+	providerId: text("provider_id").notNull(), // "github", etc.
+	accessToken: text("access_token"),
+	refreshToken: text("refresh_token"),
+	idToken: text("id_token"),
+	accessTokenExpiresAt: integer("access_token_expires_at", { mode: "timestamp" }),
+	refreshTokenExpiresAt: integer("refresh_token_expires_at", { mode: "timestamp" }),
+	scope: text("scope"),
+	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
 
-// Verification tokens table - for email verification and password reset
-export const verificationTokensTable = sqliteTable(
-	"verification_tokens",
-	{
-		identifier: text("identifier").notNull(), // email or user id
-		token: text("token").notNull().unique(),
-		expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-		type: text("type").notNull(), // "email_verification", "password_reset"
-		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-	},
-	(table) => ({
-		identifierTokenKey: primaryKey({
-			columns: [table.identifier, table.token],
-		}),
-	}),
-);
+// Verification tokens table - for email verification
+export const verification = sqliteTable("verification", {
+	id: text("id").primaryKey(),
+	identifier: text("identifier").notNull(), // email address
+	value: text("value").notNull(), // verification token
+	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+	createdAt: integer("created_at", { mode: "timestamp" }),
+	updatedAt: integer("updated_at", { mode: "timestamp" }),
+});
+
+// Passkey/WebAuthn credentials table
+export const passkey = sqliteTable("passkey", {
+	id: text("id").primaryKey(),
+	name: text("name"),
+	publicKey: text("public_key").notNull(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	webauthnUserID: text("webauthn_user_id").notNull(),
+	counter: integer("counter").notNull(),
+	deviceType: text("device_type").notNull(),
+	backedUp: integer("backed_up", { mode: "boolean" }).notNull(),
+	transports: text("transports"),
+	createdAt: integer("created_at", { mode: "timestamp" }),
+});

@@ -1,135 +1,147 @@
 # Authentication Service
 
-A Cloudflare Workers-based authentication service using Better Auth for Rawkode Academy.
+Self-hosted authentication service for Rawkode Academy using Better Auth with Passkeys and GitHub OAuth.
 
 ## Overview
 
-This service provides authentication and user management for the Rawkode Academy platform. It replaces the previous Zitadel integration with a self-hosted Better Auth solution.
-
-### Features
-
-- **Email/Password Authentication**: Secure sign-up and sign-in with email verification
-- **Session Management**: Cookie-based sessions with configurable expiration
-- **Password Reset**: Secure password reset flow with email tokens
-- **GraphQL API**: Read-only GraphQL API for user data queries
-- **Federation Ready**: GraphQL schema supports Apollo Federation
+This service replaces Zitadel with a modern authentication solution supporting:
+- **Passkeys/WebAuthn** - Passwordless authentication
+- **GitHub OAuth** - Social login
+- **Session management** - Secure cookie-based sessions
+- **GraphQL API** - User data queries
 
 ## Architecture
 
-The service follows the platform's standard architecture pattern:
+**Write Model** (Better Auth REST API)
+- Handles authentication flows
+- Manages passkeys and OAuth
+- Session management
+- Runs on Cloudflare Workers
 
-- **Data Model**: Drizzle ORM schema with SQLite (D1) tables
-- **Read Model**: GraphQL API for querying user data
-- **Write Model**: Better Auth REST API for authentication operations
+**Read Model** (GraphQL API)
+- User data queries
+- Federation support
+- Runs on Cloudflare Workers
 
-### Database Schema
+**Database** (D1/SQLite)
+- Users, sessions, accounts
+- Passkey credentials
+- Verification tokens
 
-- `users`: Core user identity (id, email, name, image)
-- `sessions`: Active user sessions
-- `accounts`: Authentication providers and credentials
-- `verification_tokens`: Email verification and password reset tokens
-
-## Local Development
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 20+ or Bun
-- Wrangler CLI
-- Cloudflare account with D1 access
+- Wrangler CLI (`npm install -g wrangler`)
+- Cloudflare account
+- GitHub OAuth App credentials
 
 ### Setup
 
-1. Install dependencies:
+1. **Install dependencies**:
 ```bash
 npm install
 ```
 
-2. Create D1 database:
+2. **Create D1 database**:
 ```bash
 wrangler d1 create authentication-db
 ```
 
-3. Update `wrangler.jsonc` files with the database ID
+Update `database_id` in both `wrangler.jsonc` files with the ID from output.
 
-4. Run migrations:
+3. **Configure GitHub OAuth**:
+- Go to GitHub Settings → Developer settings → OAuth Apps → New OAuth App
+- Application name: `Rawkode Academy (Dev)`
+- Homepage URL: `http://localhost:8788`
+- Authorization callback URL: `http://localhost:8788/sign-in/github/callback`
+- Copy Client ID and generate a Client Secret
+
+4. **Create `.dev.vars`**:
 ```bash
-wrangler d1 migrations apply authentication-db --local
+AUTH_SECRET=<generate-with-openssl-rand-base64-32>
+GITHUB_CLIENT_ID=<your-github-client-id>
+GITHUB_CLIENT_SECRET=<your-github-client-secret>
 ```
 
-5. Create `.dev.vars` file:
+5. **Generate migrations**:
 ```bash
-AUTH_SECRET=your-secret-key-min-32-chars
+npm run db:generate
 ```
 
-### Running Locally
-
-Start the read model (GraphQL):
+6. **Apply migrations**:
 ```bash
-cd read-model
-wrangler dev --local --persist-to=../.wrangler
+npm run db:migrate
 ```
 
-Start the write model (Better Auth):
+7. **Start services**:
+
+Terminal 1 - Write Model (Auth):
 ```bash
-cd write-model
-wrangler dev --local --persist-to=../.wrangler --port 8788
+npm run dev:write
 ```
+
+Terminal 2 - Read Model (GraphQL):
+```bash
+npm run dev:read
+```
+
+## Authentication Flows
+
+### Passkey Registration
+
+1. User signs in with GitHub first (to create account)
+2. User navigates to account settings
+3. Click "Add Passkey"
+4. Browser prompts for biometric/security key
+5. Passkey is registered and saved
+
+### Passkey Login
+
+1. User visits sign-in page
+2. Clicks "Sign in with Passkey"
+3. Browser prompts for biometric/security key
+4. User is authenticated
+
+### GitHub OAuth
+
+1. User clicks "Sign in with GitHub"
+2. Redirected to GitHub for authorization
+3. User approves access
+4. Redirected back with access token
+5. Session created, user signed in
 
 ## API Endpoints
 
-### Write Model (Better Auth)
+### Write Model (Authentication)
 
-Base URL: `https://authentication-write-model.rawkode.academy` (or `http://localhost:8788` locally)
+Base URL: `http://localhost:8788` (dev) or `https://authentication-write-model.rawkode.academy` (prod)
 
-- `POST /sign-up` - Create new account
+**GitHub OAuth:**
+- `GET /sign-in/github` - Initiate GitHub OAuth flow
+- `GET /sign-in/github/callback` - GitHub callback handler
+
+**Passkeys:**
+- `POST /passkey/register` - Register new passkey
   ```json
   {
-    "email": "user@example.com",
-    "password": "securepassword",
-    "name": "John Doe"
+    "name": "My MacBook Touch ID"
   }
   ```
+- `POST /passkey/authenticate` - Authenticate with passkey
+- `GET /passkey/list` - List user's registered passkeys
+- `DELETE /passkey/:id` - Remove a passkey
 
-- `POST /sign-in` - Sign in
-  ```json
-  {
-    "email": "user@example.com",
-    "password": "securepassword"
-  }
-  ```
-
-- `POST /sign-out` - Sign out (requires cookie)
-
-- `GET /session` - Get current session (requires cookie)
-
-- `POST /verify-email` - Verify email
-  ```json
-  {
-    "token": "verification-token"
-  }
-  ```
-
-- `POST /forgot-password` - Request password reset
-  ```json
-  {
-    "email": "user@example.com"
-  }
-  ```
-
-- `POST /reset-password` - Reset password
-  ```json
-  {
-    "token": "reset-token",
-    "password": "newsecurepassword"
-  }
-  ```
+**Session:**
+- `GET /session` - Get current session
+- `POST /sign-out` - Sign out
 
 ### Read Model (GraphQL)
 
-Base URL: `https://authentication-read-model.rawkode.academy` (or `http://localhost:8787` locally)
+Base URL: `http://localhost:8787` (dev) or `https://authentication-read-model.rawkode.academy` (prod)
 
-Example queries:
-
+**Queries:**
 ```graphql
 # Get user by ID
 query GetUser($id: String!) {
@@ -137,6 +149,7 @@ query GetUser($id: String!) {
     id
     email
     name
+    image
     emailVerified
     createdAt
   }
@@ -162,132 +175,222 @@ query ListUsers($limit: Int, $offset: Int) {
 }
 ```
 
-## Integration Guide
-
-### Website Integration
-
-To integrate with the Rawkode Academy website:
-
-1. **Install the Better Auth client**:
-```bash
-npm install better-auth
-```
-
-2. **Create auth client**:
-```typescript
-import { createAuthClient } from "better-auth/client";
-
-export const authClient = createAuthClient({
-  baseURL: "https://authentication-write-model.rawkode.academy",
-});
-```
-
-3. **Sign in**:
-```typescript
-const { data, error } = await authClient.signIn.email({
-  email: "user@example.com",
-  password: "password",
-});
-```
-
-4. **Get session**:
-```typescript
-const { data: session } = await authClient.getSession();
-```
-
-5. **Sign out**:
-```typescript
-await authClient.signOut();
-```
-
-### Middleware Example
-
-Replace the existing Zitadel middleware with Better Auth:
-
-```typescript
-import { defineMiddleware } from "astro:middleware";
-import { authClient } from "@/lib/auth/client";
-
-export const authMiddleware = defineMiddleware(async (context, next) => {
-  if (context.isPrerendered) {
-    return next();
-  }
-
-  const session = await authClient.getSession();
-  
-  if (session.data?.user) {
-    context.locals.user = session.data.user;
-  }
-  
-  return next();
-});
-```
-
-## Deployment
-
-The service is automatically deployed via CI/CD when changes are merged to main.
-
-### Manual Deployment
-
-Deploy read model:
-```bash
-cd read-model
-wrangler deploy
-```
-
-Deploy write model:
-```bash
-cd write-model
-wrangler deploy
-```
-
-### Environment Variables
-
-Required secrets (set via `wrangler secret put`):
-
-- `AUTH_SECRET`: Random secret key (min 32 characters) for session signing
-
-## Migration from Zitadel
-
-See [MIGRATION.md](./MIGRATION.md) for detailed migration guide from Zitadel to Better Auth.
-
-Key steps:
-1. Deploy authentication service
-2. Create user migration script
-3. Update website to use Better Auth client
-4. Remove Zitadel configuration
-5. Test authentication flows
-6. Deprecate Zitadel
-
-## Security Considerations
-
-- All passwords are hashed using industry-standard algorithms (handled by Better Auth)
-- Sessions use httpOnly cookies to prevent XSS attacks
-- CSRF protection is built-in
-- Email verification is required for new accounts
-- Rate limiting should be implemented at the edge (Cloudflare)
-
 ## Testing
 
-Run tests:
+### Manual Testing
+
+**Test GitHub OAuth:**
+```bash
+# Open in browser
+open http://localhost:8788/sign-in/github
+```
+
+**Test Session:**
+```bash
+curl http://localhost:8788/session \
+  -b cookies.txt
+```
+
+**Test GraphQL:**
+```bash
+curl http://localhost:8787 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ users(limit: 5) { id email name } }"}'
+```
+
+### Automated Tests
+
 ```bash
 npm test
 ```
 
-Run tests in watch mode:
+## Deployment
+
+### Prerequisites
+
+1. Create production D1 database
+2. Update `database_id` in both `wrangler.jsonc` files
+3. Configure production GitHub OAuth app with prod callback URL
+
+### Set Secrets
+
 ```bash
-npm test -- --watch
+# Generate secure secret
+openssl rand -base64 32
+
+# Set secrets
+wrangler secret put AUTH_SECRET --name authentication-write-model
+wrangler secret put GITHUB_CLIENT_ID --name authentication-write-model
+wrangler secret put GITHUB_CLIENT_SECRET --name authentication-write-model
+```
+
+### Deploy
+
+```bash
+# Apply migrations to production
+npm run db:migrate:remote
+
+# Deploy services
+npm run deploy:write
+npm run deploy:read
+```
+
+## Website Integration
+
+See [INTEGRATION.md](./INTEGRATION.md) for complete integration guide.
+
+### Quick Example
+
+**Install client:**
+```bash
+npm install better-auth
+```
+
+**Create client:**
+```typescript
+import { createAuthClient } from "better-auth/client";
+import { passkeyClient } from "better-auth/client/plugins";
+
+export const authClient = createAuthClient({
+  baseURL: "https://authentication-write-model.rawkode.academy",
+  plugins: [passkeyClient()],
+});
+```
+
+**Sign in with GitHub:**
+```typescript
+await authClient.signIn.social({
+  provider: "github",
+  callbackURL: "/dashboard",
+});
+```
+
+**Register passkey:**
+```typescript
+await authClient.passkey.register({
+  name: "My Device",
+});
+```
+
+**Authenticate with passkey:**
+```typescript
+await authClient.passkey.authenticate();
+```
+
+## Security
+
+- **Passkeys**: FIDO2/WebAuthn standard
+- **OAuth**: GitHub's official OAuth 2.0
+- **Sessions**: httpOnly cookies, 7-day expiration
+- **CSRF**: Built-in protection
+- **Secrets**: Managed via Wrangler secrets
+
+## Database Schema
+
+```sql
+-- Users
+CREATE TABLE user (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  email_verified INTEGER NOT NULL DEFAULT 0,
+  name TEXT,
+  image TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- Sessions
+CREATE TABLE session (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  expires_at INTEGER NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- OAuth Accounts (GitHub)
+CREATE TABLE account (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  account_id TEXT NOT NULL,
+  provider_id TEXT NOT NULL,
+  access_token TEXT,
+  refresh_token TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- Passkeys/WebAuthn
+CREATE TABLE passkey (
+  id TEXT PRIMARY KEY,
+  name TEXT,
+  public_key TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  webauthn_user_id TEXT NOT NULL,
+  counter INTEGER NOT NULL,
+  device_type TEXT NOT NULL,
+  backed_up INTEGER NOT NULL,
+  transports TEXT,
+  created_at INTEGER
+);
+
+-- Email Verification
+CREATE TABLE verification (
+  id TEXT PRIMARY KEY,
+  identifier TEXT NOT NULL,
+  value TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER,
+  updated_at INTEGER
+);
 ```
 
 ## Monitoring
 
-The service has observability enabled with:
-- Request logging
-- Error tracking
-- Performance metrics
+- Cloudflare Workers logs and metrics
+- OpenTelemetry trace propagation
+- Auth success/failure events
+- Session creation metrics
 
-Access logs and metrics via the Cloudflare dashboard.
+Access via Cloudflare dashboard.
+
+## Development
+
+```bash
+# Run tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Format code
+npm run format
+
+# Lint
+npm run lint
+
+# Database studio (GUI)
+npm run db:studio
+```
+
+## Migration from Zitadel
+
+See [MIGRATION.md](./MIGRATION.md) for complete migration guide.
+
+Key changes:
+- Remove Zitadel OAuth config
+- Update middleware to use Better Auth
+- Replace sign-in flow with GitHub/Passkey
+- Update UI components
 
 ## Support
 
-For issues or questions, please contact the platform team or open an issue in the repository.
+- Check Cloudflare Workers logs
+- Review Better Auth docs: https://better-auth.com
+- Contact platform team
+
+## License
+
+MIT

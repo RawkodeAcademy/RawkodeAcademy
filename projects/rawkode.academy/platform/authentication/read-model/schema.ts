@@ -1,8 +1,18 @@
 import { createPothosBuilder } from "./builder";
-import { usersTable } from "../data-model/schema";
+import { user } from "../data-model/schema";
 
 export const buildSchema = () => {
 	const builder = createPothosBuilder();
+
+	// DateTime scalar
+	builder.scalarType("DateTime", {
+		serialize: (value) => (value instanceof Date ? value.toISOString() : value),
+		parseValue: (value) => {
+			if (typeof value === "string") return new Date(value);
+			if (typeof value === "number") return new Date(value);
+			throw new Error("Invalid DateTime value");
+		},
+	});
 
 	// User type
 	const UserRef = builder.drizzleObject("User", {
@@ -29,20 +39,6 @@ export const buildSchema = () => {
 		}),
 	});
 
-	// Add DateTime scalar
-	builder.scalarType("DateTime", {
-		serialize: (value) => (value instanceof Date ? value.toISOString() : value),
-		parseValue: (value) => {
-			if (typeof value === "string") {
-				return new Date(value);
-			}
-			if (typeof value === "number") {
-				return new Date(value);
-			}
-			throw new Error("Invalid DateTime value");
-		},
-	});
-
 	// Query type
 	builder.queryType({
 		fields: (t) => ({
@@ -55,12 +51,12 @@ export const buildSchema = () => {
 				},
 				resolve: async (_root, args, ctx) => {
 					if (args.id) {
-						return await ctx.db.query.usersTable.findFirst({
+						return await ctx.db.query.user.findFirst({
 							where: (users, { eq }) => eq(users.id, args.id!),
 						});
 					}
 					if (args.email) {
-						return await ctx.db.query.usersTable.findFirst({
+						return await ctx.db.query.user.findFirst({
 							where: (users, { eq }) => eq(users.email, args.email!),
 						});
 					}
@@ -74,7 +70,7 @@ export const buildSchema = () => {
 					offset: t.arg.int({ required: false }),
 				},
 				resolve: async (_root, args, ctx) => {
-					return await ctx.db.query.usersTable.findMany({
+					return await ctx.db.query.user.findMany({
 						limit: args.limit ?? 15,
 						offset: args.offset ?? 0,
 					});

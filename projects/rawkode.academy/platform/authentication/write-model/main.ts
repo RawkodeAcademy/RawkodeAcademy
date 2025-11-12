@@ -4,16 +4,15 @@ export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const auth = createAuth(env);
 		
-		// Better Auth handles all authentication routes
-		// This includes:
-		// - POST /sign-up - Create new account
-		// - POST /sign-in - Sign in with email/password
+		// Better Auth handles all authentication routes:
+		// - GET/POST /sign-in/github - GitHub OAuth
+		// - GET /sign-in/github/callback - GitHub callback
 		// - POST /sign-out - Sign out
-		// - POST /verify-email - Verify email with token
-		// - POST /forgot-password - Request password reset
-		// - POST /reset-password - Reset password with token
 		// - GET /session - Get current session
-		// - POST /refresh - Refresh session
+		// - POST /passkey/register - Register passkey
+		// - POST /passkey/authenticate - Authenticate with passkey
+		// - GET /passkey/list - List user's passkeys
+		// - DELETE /passkey/:id - Delete a passkey
 		
 		return auth.handler(request);
 	},
