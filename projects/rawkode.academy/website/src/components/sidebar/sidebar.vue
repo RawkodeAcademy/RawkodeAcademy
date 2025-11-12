@@ -364,20 +364,18 @@ const currentNavItems = computed(() => {
 
 <style scoped>
 .sidebar-glassmorphism {
-	background: rgba(255, 255, 255, 0.25) !important;
-	backdrop-filter: blur(40px) saturate(180%) !important;
-	-webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-	border: 2px solid rgba(255, 255, 255, 0.6) !important;
-	box-shadow:
-		0 8px 32px 0 rgba(0, 0, 0, 0.12),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
+	background: var(--surface-card);
+	backdrop-filter: blur(32px) saturate(170%);
+	-webkit-backdrop-filter: blur(32px) saturate(170%);
+	border: 1px solid var(--surface-border);
+	box-shadow: var(--surface-shadow);
 }
 
 .sidebar-glassmorphism::before {
 	content: '';
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05) 50%, transparent);
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08) 60%, transparent);
 	border-radius: inherit;
 	pointer-events: none;
 	z-index: 1;
@@ -396,22 +394,5 @@ const currentNavItems = computed(() => {
 .sidebar-glassmorphism > * {
 	position: relative;
 	z-index: 2;
-}
-
-/* Dark mode support */
-:global(.dark) .sidebar-glassmorphism {
-	background: rgba(31, 41, 55, 0.5) !important;
-	border-color: rgba(107, 114, 128, 0.8) !important;
-	box-shadow:
-		0 8px 32px 0 rgba(0, 0, 0, 0.6),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
-}
-
-:global(.dark) .sidebar-glassmorphism::before {
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05) 50%, transparent);
-}
-
-:global(.dark) .sidebar-glassmorphism::after {
-	background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
 }
 </style>
