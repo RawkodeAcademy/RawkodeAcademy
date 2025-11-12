@@ -1,5 +1,5 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb.astro";
 // ShareButton is now internal to VideoReactions
 import VideoMetadata from "@/components/html/video-metadata.astro";
@@ -9,9 +9,6 @@ import VideoReactions from "@/components/video/VideoReactions.astro";
 import VideoContentTabs from "@/components/video/video-content-tabs.vue";
 import Page from "@/wrappers/page.astro";
 import { Marked } from "marked";
-import { GraphQLClient, gql } from "graphql-request";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-import { getEntry, getCollection } from "astro:content";
 
 export const prerender = false;
 
@@ -24,92 +21,6 @@ let video: (typeof videos)[0] | undefined = videos.find(
 	(v) => v.data.slug === slug,
 );
 
-// GraphQL client (used for fallback fetches and chapters)
-const graphQLClient = new GraphQLClient(GRAPHQL_ENDPOINT);
-
-// If not found in collection, try fetching from GraphQL
-if (!video) {
-
-
-        const query = gql`
-                query GetVideoBySlug($slug: String!) {
-                        getVideoBySlug(slug: $slug) {
-                                id
-                                slug
-                                title
-                                subtitle
-                                description
-                                publishedAt
-                                streamUrl
-                                thumbnailUrl
-                                duration
-                                technologies {
-                                        id
-                                        name
-                                        logo
-                                }
-                                episode {
-                                        show {
-                                                id
-                                                name
-                                                hosts {
-                                                        forename
-                                                        surname
-                                                }
-                                        }
-                                }
-                        }
-                }
-        `;
-
-	try {
-                const response = await graphQLClient.request<{
-                        getVideoBySlug: {
-                                id: string;
-                                slug: string;
-                                title: string;
-                                subtitle?: string;
-                                description: string;
-                                publishedAt: string;
-                                streamUrl: string;
-                                thumbnailUrl: string;
-                                duration: number;
-                                technologies: Array<{
-                                        id: string;
-                                        name: string;
-                                        logo: string;
-                                }>;
-                                episode?: {
-                                        show?: {
-                                                id: string;
-                                                name: string;
-                                                hosts?: Array<{
-                                                        forename: string;
-                                                        surname: string;
-                                                }> | null;
-                                        } | null;
-                                } | null;
-                        } | null;
-                }>(query, { slug });
-
-                if (response.getVideoBySlug) {
-                        // Transform the GraphQL response to match the collection format
-                        const { episode, ...rawVideo } = response.getVideoBySlug;
-                        const show = episode?.show ? episode.show.id : undefined;
-                        video = {
-                                id: rawVideo.slug,
-                                collection: "videos",
-                                data: {
-                                        ...rawVideo,
-                                        show,
-                                        technologies: rawVideo.technologies.map((t) => t.id),
-                                },
-                        } as (typeof videos)[0];
-                }
-        } catch (error) {
-                console.error("Error fetching video from GraphQL:", error);
-        }
-}
 
 // Handle 404 case if still not found
 if (!video) {
@@ -144,43 +55,35 @@ const marked = new Marked({
 const processedDescription = video.data.description.replace(/\\n/g, "\n");
 const renderedDescriptionHtml = marked.parse(processedDescription);
 
-// Fetch chapters for key moments (clips) JSON-LD and duration
+// Fetch chapters for key moments (clips) JSON-LD
 type Chapter = { startTime: number; title: string };
 let clips: Array<{ name: string; startOffset: number; endOffset?: number }> = [];
-let durationSec: number | null = null;
-try {
-    if (video?.data?.id) {
-        const chaptersQuery = gql`
-            query GetVideoChapters($id: String!) {
-                videoByID(id: $id) {
-                    duration
-                    chapters { startTime title }
-                }
-            }
-        `;
-        const chaptersResp: { videoByID?: { duration?: number | null; chapters?: Chapter[] | null } | null } = await graphQLClient.request(chaptersQuery, { id: video.data.videoId });
-        const ch = chaptersResp.videoByID?.chapters || [];
-        durationSec = typeof chaptersResp.videoByID?.duration === 'number' ? chaptersResp.videoByID?.duration ?? null : null;
-        if (ch.length > 0) {
-            ch.sort((a, b) => a.startTime - b.startTime);
-            clips = ch.map((c, i) => {
-                const next = ch[i + 1];
-                return {
-                    name: c.title,
-                    startOffset: Math.max(0, Math.floor(c.startTime || 0)),
-                    ...(next ? { endOffset: Math.max(0, Math.floor(next.startTime || 0)) } : {}),
-                };
-            });
-        }
-    }
-} catch (e) {
-    console.error("Error fetching chapters for clips:", e);
+const durationSec: number | null =
+	typeof video.data.duration === "number" ? video.data.duration : null;
+
+const chapterSource: Chapter[] = Array.isArray(video.data.chapters)
+	? (video.data.chapters as Chapter[]).map((c) => ({
+			title: c.title,
+			startTime: Math.max(0, Math.floor(c?.startTime ?? 0)),
+	  }))
+	: [];
+
+if (chapterSource.length > 0) {
+	chapterSource.sort((a, b) => a.startTime - b.startTime);
+	clips = chapterSource.map((c, i) => {
+		const next = chapterSource[i + 1];
+		return {
+			name: c.title,
+			startOffset: c.startTime,
+			...(next ? { endOffset: next.startTime } : {}),
+		};
+	});
 }
 
 // Format date to readable format
-const formatDate = (dateString: string) => {
-	const date = new Date(dateString);
-	return date.toLocaleDateString("en-US", {
+const formatDate = (date: Date | string) => {
+	const d = typeof date === "string" ? new Date(date) : date;
+	return d.toLocaleDateString("en-US", {
 		year: "numeric",
 		month: "long",
 		day: "numeric",
@@ -188,7 +91,9 @@ const formatDate = (dateString: string) => {
 };
 
 // Resolve referenced show and technologies
-const showEntry = video.data.show ? await getEntry("shows", video.data.show as string) : null;
+const showRef = video.data.show;
+const showId = typeof showRef === "string" ? showRef : (showRef && typeof showRef === "object" && "id" in showRef ? (showRef as {id: string}).id : null);
+const showEntry = showId ? await getEntry("shows", showId) : null;
 const techEntries = Array.isArray(video.data.technologies)
   ? (await Promise.all(
       (video.data.technologies as string[]).map(async (id) => {
@@ -241,7 +146,7 @@ const streamUrl = `https://content.rawkode.academy/videos/${video.data.videoId}/
 			<div class="mb-8">
 				<h1 class="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">{video.data.title}</h1>
 				<div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-					<time datetime={video.data.publishedAt} class="flex items-center gap-2">
+					<time datetime={video.data.publishedAt instanceof Date ? video.data.publishedAt.toISOString() : String(video.data.publishedAt)} class="flex items-center gap-2">
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
 						</svg>

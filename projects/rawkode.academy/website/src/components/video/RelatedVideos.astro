@@ -1,7 +1,5 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-import { request, gql } from "graphql-request";
 
 interface Props {
 	currentVideo: CollectionEntry<"videos">;
@@ -70,19 +68,14 @@ if (relatedVideos.length < limit) {
 // Limit to requested number
 const finalRelatedVideos = relatedVideos.slice(0, limit);
 
-// Fetch durations for related videos
-let durationMap = new Map<string, number>();
-try {
-  const q = gql`query GetMany($limit:Int!){ getLatestVideos(limit:$limit){ slug duration } }`;
-  const r: { getLatestVideos: { slug: string; duration: number }[] } = await request(GRAPHQL_ENDPOINT, q, { limit: Math.max(finalRelatedVideos.length, 20) });
-  durationMap = new Map(r.getLatestVideos.map((x) => [x.slug, x.duration] as const));
-} catch {}
-
 // Format duration
-const formatDuration = (seconds: number) => {
-	const hours = Math.floor(seconds / 3600);
-	const minutes = Math.floor((seconds % 3600) / 60);
-	const secs = seconds % 60;
+const formatDuration = (seconds?: number | null) => {
+  if (typeof seconds !== "number" || seconds <= 0 || Number.isNaN(seconds)) {
+    return "--:--";
+  }
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
 
 	if (hours > 0) {
 		return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
@@ -113,9 +106,9 @@ const formatDuration = (seconds: number) => {
 							loading="lazy"
 						/>
 						<!-- Duration badge -->
-						<div class="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-							{formatDuration(durationMap.get(video.data.slug) ?? 0)}
-						</div>
+            <div class="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+			{formatDuration(typeof video.data.duration === "number" ? video.data.duration : undefined)}
+		</div>
 					</div>
 					
 					<!-- Content -->

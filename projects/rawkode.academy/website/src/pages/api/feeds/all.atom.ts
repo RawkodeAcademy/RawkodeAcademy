@@ -1,6 +1,4 @@
 import { getCollection, getEntries } from "astro:content";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-import { request, gql } from "graphql-request";
 import type { APIContext } from "astro";
 import { renderAndSanitizeArticles } from "../../../lib/feed-utils";
 
@@ -57,17 +55,9 @@ export async function GET(context: APIContext) {
 		}),
 	);
 
-// durations via GraphQL
-let durationMap = new Map<string, number>();
-try {
-  const q = gql`query GetMany($limit:Int!){ getLatestVideos(limit:$limit){ slug duration } }`;
-  const r: { getLatestVideos: { slug: string; duration: number }[] } = await request(GRAPHQL_ENDPOINT, q, { limit: Math.max(videos.length, 100) });
-  durationMap = new Map(r.getLatestVideos.map((x) => [x.slug, x.duration] as const));
-} catch {}
-
 // Add videos
 videos.forEach((video) => {
-  entries.push({
+  const entry: AtomEntry = {
     title: video.data.title,
     description: video.data.description,
     url: `${site}/watch/${video.data.slug}/`,
@@ -75,9 +65,12 @@ videos.forEach((video) => {
     updated: new Date(video.data.publishedAt).toISOString(),
     categories: (video.data.technologies as string[]).map((id) => techName.get(id) || id),
     thumbnail: `https://content.rawkode.academy/videos/${video.data.videoId}/thumbnail.jpg`,
-    duration: durationMap.get(video.data.slug) ?? 0,
     type: "video",
-  });
+  };
+  if (typeof video.data.duration === "number") {
+    entry.duration = video.data.duration;
+  }
+  entries.push(entry);
 });
 
 	// Sort all entries by published date desc

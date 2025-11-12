@@ -1,7 +1,5 @@
 import { getCollection } from "astro:content";
 import type { APIContext } from "astro";
-import { GRAPHQL_ENDPOINT } from "astro:env/server";
-import { request, gql } from "graphql-request";
 
 export async function GET(context: APIContext) {
   const videos = await getCollection("videos");
@@ -24,13 +22,6 @@ export async function GET(context: APIContext) {
       ? new Date(sortedVideos[0]?.data.publishedAt || new Date()).toISOString()
       : new Date().toISOString();
 
-  let durationMap = new Map<string, number>();
-try {
-  const q = gql`query GetMany($limit:Int!){ getLatestVideos(limit:$limit){ slug duration } }`;
-  const r: { getLatestVideos: { slug: string; duration: number }[] } = await request(GRAPHQL_ENDPOINT, q, { limit: Math.max(sortedVideos.length, 100) });
-  durationMap = new Map(r.getLatestVideos.map((x) => [x.slug, x.duration] as const));
-} catch {}
-
 const atomFeed = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Rawkode Academy - Videos</title>
@@ -44,7 +35,7 @@ ${sortedVideos
   .map((video) => {
     const videoUrl = `${site}/watch/${video.data.slug}/`;
     const published = new Date(video.data.publishedAt).toISOString();
-    const dur = durationMap.get(video.data.slug) ?? 0;
+    const dur = typeof video.data.duration === "number" ? video.data.duration : 0;
     const durationMinutes = Math.floor(dur / 60);
     const durationSeconds = dur % 60;
     const formattedDuration = `${durationMinutes}:${durationSeconds
@@ -84,4 +75,3 @@ ${sortedVideos
     },
   });
 }
-
