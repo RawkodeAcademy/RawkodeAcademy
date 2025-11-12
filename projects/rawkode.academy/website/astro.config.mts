@@ -13,8 +13,8 @@ import { readFile, stat } from "node:fs/promises";
 import { glob } from "glob";
 import rehypeExternalLinks from "rehype-external-links";
 import { vite as vidstackPlugin } from "vidstack/plugins";
-// (duplicates removed)
 import { webcontainerDemosPlugin } from "./src/utils/vite-plugin-webcontainer-demos";
+import { deriveSlugFromFile } from "./src/utils/content-slug";
 
 // Check if D2 is available (used for diagram rendering)
 let d2Available = false;
@@ -124,7 +124,7 @@ async function buildLastmodIndex() {
     try {
       const raw = await readFile(file, "utf8");
       const fm = matter(raw).data as Record<string, any>;
-      const slug = fm.slug || file.replace(/^content\/videos\//, "").replace(/\/index\.(md|mdx)$/i, "").replace(/\.(md|mdx)$/i, "");
+      const slug = deriveSlugFromFile(file, fm, "content/videos/");
       const published = fm.publishedAt ? new Date(fm.publishedAt) : undefined;
       const last = published && !isNaN(published.getTime()) ? published : undefined;
       if (last) index.set(`/watch/${slug}`, last);
@@ -163,7 +163,7 @@ export default defineConfig({
           try {
             const raw = await readFile(file, "utf8");
             const fm = matter(raw).data as Record<string, any>;
-            const slug = fm.slug || file.replace(/^content\/videos\//, "").replace(/\/index\.(md|mdx)$/i, "").replace(/\.(md|mdx)$/i, "");
+            const slug = deriveSlugFromFile(file, fm, "content/videos/");
             if (slug) slugs.push(slug);
           } catch {}
         }
