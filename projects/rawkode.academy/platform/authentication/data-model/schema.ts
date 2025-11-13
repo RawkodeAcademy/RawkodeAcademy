@@ -91,3 +91,18 @@ export const passkey = sqliteTable("passkey", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }),
   aaguid: text("aaguid"),
 });
+
+export const legacyIdentity = sqliteTable("legacy_identity", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  legacyProvider: text("legacy_provider").notNull(), // e.g., "zitadel"
+  legacySubject: text("legacy_subject").notNull(), // e.g., Zitadel's sub ID
+  migratedAt: integer("migrated_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+});

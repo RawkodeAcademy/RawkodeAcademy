@@ -13,7 +13,9 @@ export interface AuthServiceBinding {
 /**
  * Create an authentication client from a service binding
  */
-export function createAuthClient(service: AuthServiceBinding): RpcPromise<AuthRpcService> {
+export function createAuthClient(
+	service: AuthServiceBinding,
+): RpcPromise<AuthRpcService> {
 	return newServiceBindingRpcSession<AuthRpcService>(service);
 }
 

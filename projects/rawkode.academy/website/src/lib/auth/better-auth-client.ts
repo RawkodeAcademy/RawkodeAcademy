@@ -116,7 +116,7 @@ export interface BetterAuthClientOptions {
 
 export function createBetterAuthClient(
 	authService: ServiceBindingLike,
-	options?: BetterAuthClientOptions
+	options?: BetterAuthClientOptions,
 ) {
 	return createAuthClient({
 		// Use a placeholder base URL - actual routing happens via service binding
