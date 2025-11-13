@@ -32,7 +32,7 @@ The authentication service is bound to the website as `AUTH_SERVICE` in `wrangle
   "services": [
     {
       "binding": "AUTH_SERVICE",
-      "service": "authentication-write-model"
+      "service": "platform-authentication-rpc"
     }
   ]
 }
@@ -228,7 +228,7 @@ Capnweb service bindings provide:
 
 ```bash
 # Start auth service
-npm run dev:write
+npm run dev:rpc
 
 # Test capnweb RPC endpoint
 curl http://localhost:8788/rpc \
@@ -307,7 +307,7 @@ const result = await authService.verifySession(sessionToken);
 
 Monitor RPC calls via:
 - Cloudflare Workers Analytics
-- Custom metrics in write-model observability
+- Custom metrics in RPC service observability
 - Capnweb's built-in trace IDs
 - Error rates and latencies in dashboard
 

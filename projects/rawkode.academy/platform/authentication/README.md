@@ -4,20 +4,33 @@
 
 ## Overview
 
-This is a GraphQL microservice that provides authentication functionality for the Rawkode Academy platform. It uses:
+This is an RPC-based authentication service for the Rawkode Academy platform. It uses:
 
-- **GraphQL Federation**: Apollo Federation v2 for schema composition
+- **Authentication**: Better Auth for passkeys + GitHub OAuth
+- **RPC**: Capnweb for efficient service-to-service communication
 - **Database**: Cloudflare D1 (SQLite) with Drizzle ORM
 - **Runtime**: Cloudflare Workers
 - **Language**: TypeScript with strict mode
+
+## Architecture
+
+The service provides:
+- **Better Auth Routes**: Sign-in, sign-out, passkey registration, OAuth callbacks
+- **RPC Interface**: Type-safe RPC methods for internal service communication via Capnweb
 
 ## Service Structure
 
 ```
 authentication/
 ├── data-model/          # Database schema and migrations
-├── read-model/          # GraphQL read API
-├── write-model/         # Write operations via Cloudflare Workflows
+│   ├── better-auth.ts   # Better Auth configuration
+│   ├── schema.ts        # Drizzle schema
+│   └── migrations/      # SQL migrations
+├── rpc/                 # RPC service
+│   ├── main.ts          # Worker entry point
+│   ├── rpc-service.ts   # Capnweb RPC methods
+│   ├── auth-config.ts   # Better Auth factory
+│   └── wrangler.jsonc   # Worker configuration
 └── package.json
 ```
 
@@ -44,12 +57,13 @@ authentication/
 ### Local Development
 
 ```bash
-# Start the read model locally
-cd read-model && bun run wrangler dev --local --persist-to=.wrangler
-
-# Start the write model locally (in another terminal)
-cd write-model && bun run wrangler dev --local --persist-to=.wrangler
+# Start the RPC service locally
+cd rpc && bun run wrangler dev --local --persist-to=.wrangler
 ```
+
+The service will be available at `http://localhost:8788`:
+- Better Auth routes: `/sign-in/github`, `/sign-out`, `/session`, `/passkey/*`
+- RPC endpoint: `/rpc` (for service bindings only)
 
 ### Schema Changes
 
@@ -62,7 +76,14 @@ cd write-model && bun run wrangler dev --local --persist-to=.wrangler
    ```bash
    bun run wrangler d1 migrations apply platform-authentication
    ```
-4. Update GraphQL schema in `read-model/schema.ts`
+
+### Using the Service
+
+See [SERVICE_BINDING.md](./SERVICE_BINDING.md) for detailed documentation on:
+- RPC interface and methods
+- Capnweb integration
+- Service binding configuration
+- Client usage examples
 
 ## Deployment
 

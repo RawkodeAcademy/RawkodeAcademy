@@ -1,5 +1,5 @@
 import { newServiceBindingRpcSession, type RpcPromise } from "capnweb";
-import type { AuthRpcService } from "../../../platform/authentication/write-model/rpc-service";
+import type { AuthRpcService } from "../../../platform/authentication/rpc/rpc-service";
 
 /**
  * Authentication Service Client using capnweb
