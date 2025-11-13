@@ -10,6 +10,7 @@ declare namespace Cloudflare {
 		ZITADEL_URL: "https://zitadel.rawkode.academy";
 		EMOJI_REACTIONS: Fetcher /* platform-emoji-reactions-write-model */;
 		ANALYTICS: Fetcher /* analytics-event-collector */;
+		AUTH_SERVICE: Fetcher /* authentication-write-model */;
 		ASSETS: Fetcher;
 	}
 }

@@ -7,6 +7,7 @@ const project = new PlatformService({
 	includeWriteModel: true,
 	additionalDependencies: {
 		"better-auth": "^1.0.7",
+		"capnp-ts": "^0.7.0",
 	},
 });
 
