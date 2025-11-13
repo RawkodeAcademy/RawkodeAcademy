@@ -1,127 +1,72 @@
+import { newServiceBindingRpcSession, type RpcPromise } from "capnweb";
+import type { AuthRpcService } from "../../../platform/authentication/write-model/rpc-service";
+
 /**
- * Authentication Service Client
- * Uses Cloudflare Service Binding for RPC communication
+ * Authentication Service Client using capnweb
+ * Uses Cloudflare Service Binding for efficient RPC communication
  */
-
-export interface User {
-	id: string;
-	email: string;
-	name: string | null;
-	image: string | null;
-	emailVerified: boolean;
-	createdAt: Date;
-	updatedAt: Date;
-}
-
-export interface Session {
-	id: string;
-	userId: string;
-	expiresAt: Date;
-	ipAddress: string | null;
-	userAgent: string | null;
-}
-
-export interface AuthResponse {
-	success: boolean;
-	user?: User;
-	session?: Session;
-	error?: string;
-}
 
 export interface AuthServiceBinding {
 	fetch(request: Request): Promise<Response>;
 }
 
+/**
+ * Create an authentication client from a service binding
+ */
+export function createAuthClient(service: AuthServiceBinding): RpcPromise<AuthRpcService> {
+	return newServiceBindingRpcSession<AuthRpcService>(service);
+}
+
+/**
+ * Helper class for backward compatibility
+ * @deprecated Use createAuthClient() directly with the service binding
+ */
 export class AuthClient {
-	private service: AuthServiceBinding;
+	private rpcSession: RpcPromise<AuthRpcService>;
 
 	constructor(service: AuthServiceBinding) {
-		this.service = service;
+		this.rpcSession = newServiceBindingRpcSession<AuthRpcService>(service);
 	}
 
 	/**
 	 * Verify a session token and return user info
 	 */
-	async verifySession(sessionToken: string): Promise<AuthResponse> {
-		const response = await this.service.fetch(
-			new Request("http://auth-service/rpc/verifySession", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ sessionToken }),
-			})
-		);
-		return await response.json();
+	async verifySession(sessionToken: string) {
+		return await this.rpcSession.verifySession(sessionToken);
 	}
 
 	/**
 	 * Get user by ID
 	 */
-	async getUser(userId: string): Promise<User | null> {
-		const response = await this.service.fetch(
-			new Request("http://auth-service/rpc/getUser", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId }),
-			})
-		);
-		return await response.json();
+	async getUser(userId: string) {
+		return await this.rpcSession.getUser(userId);
 	}
 
 	/**
 	 * Get user by email
 	 */
-	async getUserByEmail(email: string): Promise<User | null> {
-		const response = await this.service.fetch(
-			new Request("http://auth-service/rpc/getUserByEmail", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email }),
-			})
-		);
-		return await response.json();
+	async getUserByEmail(email: string) {
+		return await this.rpcSession.getUserByEmail(email);
 	}
 
 	/**
 	 * List sessions for a user
 	 */
-	async listUserSessions(userId: string): Promise<Session[]> {
-		const response = await this.service.fetch(
-			new Request("http://auth-service/rpc/listUserSessions", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId }),
-			})
-		);
-		return await response.json();
+	async listUserSessions(userId: string) {
+		return await this.rpcSession.listUserSessions(userId);
 	}
 
 	/**
 	 * Revoke a session
 	 */
-	async revokeSession(sessionId: string): Promise<boolean> {
-		const response = await this.service.fetch(
-			new Request("http://auth-service/rpc/revokeSession", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ sessionId }),
-			})
-		);
-		const result = await response.json();
-		return result.success;
+	async revokeSession(sessionId: string) {
+		return await this.rpcSession.revokeSession(sessionId);
 	}
 
 	/**
 	 * Validate passkey credential
 	 */
-	async validatePasskey(userId: string, credentialId: string): Promise<boolean> {
-		const response = await this.service.fetch(
-			new Request("http://auth-service/rpc/validatePasskey", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId, credentialId }),
-			})
-		);
-		const result = await response.json();
-		return result.valid;
+	async validatePasskey(userId: string, credentialId: string) {
+		return await this.rpcSession.validatePasskey(userId, credentialId);
 	}
 }

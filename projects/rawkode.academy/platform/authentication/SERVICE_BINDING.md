@@ -1,16 +1,27 @@
-# Service Binding & RPC Integration
+# Service Binding & Capnweb RPC Integration
 
-The authentication service is designed to be consumed by the website using Cloudflare Service Bindings for efficient service-to-service RPC communication.
+The authentication service uses [capnweb](https://github.com/cloudflare/capnweb), a JavaScript-native RPC system with promise pipelining, for efficient service-to-service communication via Cloudflare Service Bindings.
 
 ## Architecture
 
 ```
-┌─────────────┐         Service Binding (RPC)        ┌──────────────────┐
+┌─────────────┐     Capnweb RPC (Service Binding)     ┌──────────────────┐
 │             │────────────────────────────────────────▶│                  │
 │   Website   │                                        │  Authentication  │
 │             │◀────────────────────────────────────────│     Service      │
 └─────────────┘                                        └──────────────────┘
 ```
+
+## Why Capnweb?
+
+Capnweb provides:
+- **Object-capability RPC** - Pass functions and objects by reference
+- **Promise pipelining** - Chain dependent calls in a single round trip
+- **Bidirectional calling** - Server can call client callbacks
+- **Type-safe** - Full TypeScript support
+- **Schema-less** - No IDL files needed, just TypeScript interfaces
+- **Human-readable** - JSON-based serialization
+- **Tiny** - Under 10kB minified+gzipped
 
 ## Service Binding Configuration
 
@@ -29,94 +40,129 @@ The authentication service is bound to the website as `AUTH_SERVICE` in `wrangle
 
 ## RPC Interface
 
-The service exposes an RPC interface defined in Cap'n Proto schema (`schema/auth.capnp`) for service-to-service communication.
+The service exposes an RPC interface via capnweb's `RpcTarget` class:
 
-### Available RPC Methods
+```typescript
+import { RpcTarget } from "capnweb";
 
-All RPC methods are accessible via `/rpc/{method}` endpoints:
-
-1. **verifySession** - Verify a session token and return user info
-   ```typescript
-   POST /rpc/verifySession
-   { "sessionToken": "session_abc123" }
-   ```
-
-2. **getUser** - Get user by ID
-   ```typescript
-   POST /rpc/getUser
-   { "userId": "user_123" }
-   ```
-
-3. **getUserByEmail** - Get user by email
-   ```typescript
-   POST /rpc/getUserByEmail
-   { "email": "user@example.com" }
-   ```
-
-4. **listUserSessions** - List all sessions for a user
-   ```typescript
-   POST /rpc/listUserSessions
-   { "userId": "user_123" }
-   ```
-
-5. **revokeSession** - Revoke a specific session
-   ```typescript
-   POST /rpc/revokeSession
-   { "sessionId": "session_abc123" }
-   ```
-
-6. **validatePasskey** - Validate if a passkey belongs to a user
-   ```typescript
-   POST /rpc/validatePasskey
-   { "userId": "user_123", "credentialId": "cred_xyz" }
-   ```
+export class AuthRpcService extends RpcTarget {
+  async verifySession(sessionToken: string): Promise<AuthResponse> { ... }
+  async getUser(userId: string): Promise<User | null> { ... }
+  async getUserByEmail(email: string): Promise<User | null> { ... }
+  async listUserSessions(userId: string): Promise<Session[]> { ... }
+  async revokeSession(sessionId: string): Promise<boolean> { ... }
+  async validatePasskey(userId: string, credentialId: string): Promise<boolean> { ... }
+}
+```
 
 ## Using the Client
 
 ### Import the Client
 
 ```typescript
-import { AuthClient } from "@/lib/auth/client";
+import { createAuthClient } from "@/lib/auth/client";
+// or
+import { AuthClient } from "@/lib/auth/client"; // backward compatible wrapper
 ```
 
-### Initialize with Service Binding
+### Basic Usage
 
 ```typescript
 // In middleware or API route
-const authClient = new AuthClient(context.locals.runtime.env.AUTH_SERVICE);
-```
+const authService = createAuthClient(context.locals.runtime.env.AUTH_SERVICE);
 
-### Example Usage
-
-```typescript
-// Verify a session
-const result = await authClient.verifySession(sessionToken);
+// Call methods directly - capnweb handles the RPC
+const result = await authService.verifySession(sessionToken);
 if (result.success) {
   console.log("User:", result.user);
-  console.log("Session:", result.session);
 }
 
 // Get user by email
-const user = await authClient.getUserByEmail("user@example.com");
+const user = await authService.getUserByEmail("user@example.com");
+```
 
-// Revoke a session
-const revoked = await authClient.revokeSession(sessionId);
+### Promise Pipelining
+
+Capnweb's killer feature - chain dependent calls without waiting:
+
+```typescript
+const authService = createAuthClient(env.AUTH_SERVICE);
+
+// Don't await! Make pipelined calls
+const userPromise = authService.getUser(userId);
+const sessionsPromise = authService.listUserSessions(userId);
+
+// Both calls happen in parallel, single round trip
+const [user, sessions] = await Promise.all([userPromise, sessionsPromise]);
+```
+
+### Using the Wrapper Class
+
+For backward compatibility, you can use the wrapper class:
+
+```typescript
+const authClient = new AuthClient(env.AUTH_SERVICE);
+const result = await authClient.verifySession(sessionToken);
+```
+
+## Server Implementation
+
+### Capnweb Endpoint
+
+The service exposes a capnweb RPC endpoint at `/rpc`:
+
+```typescript
+import { newWorkersRpcResponse, RpcTarget } from "capnweb";
+import { AuthRpcService } from "./rpc-service";
+
+export default {
+  async fetch(request: Request, env: Env) {
+    const url = new URL(request.url);
+    
+    // Capnweb RPC endpoint
+    if (url.pathname === "/rpc") {
+      return newWorkersRpcResponse(request, new AuthRpcService(env));
+    }
+    
+    // Other endpoints...
+  }
+}
+```
+
+### RpcTarget Implementation
+
+```typescript
+import { RpcTarget } from "capnweb";
+
+export class AuthRpcService extends RpcTarget {
+  private db;
+
+  constructor(env: Env) {
+    super(); // Important: call RpcTarget constructor
+    this.db = drizzle(env.DB, { schema: dataSchema });
+  }
+
+  // All public async methods are automatically exposed via RPC
+  async verifySession(sessionToken: string): Promise<AuthResponse> {
+    // Implementation...
+  }
+}
 ```
 
 ## Middleware Example
 
 ```typescript
 import { defineMiddleware } from "astro:middleware";
-import { AuthClient } from "@/lib/auth/client";
+import { createAuthClient } from "@/lib/auth/client";
 
 export const authMiddleware = defineMiddleware(async (context, next) => {
-  const authClient = new AuthClient(context.locals.runtime.env.AUTH_SERVICE);
+  const authService = createAuthClient(context.locals.runtime.env.AUTH_SERVICE);
   
   // Get session token from cookie
   const sessionToken = context.cookies.get("session")?.value;
   
   if (sessionToken) {
-    const result = await authClient.verifySession(sessionToken);
+    const result = await authService.verifySession(sessionToken);
     
     if (result.success && result.user) {
       context.locals.user = result.user;
@@ -127,31 +173,54 @@ export const authMiddleware = defineMiddleware(async (context, next) => {
 });
 ```
 
-## Benefits of Service Bindings
+## Advanced Features
 
-1. **Low Latency** - Direct Worker-to-Worker communication without network overhead
-2. **Type Safety** - TypeScript types ensure correct usage
-3. **No Authentication** - Internal service calls don't require external auth
-4. **Cost Effective** - No egress charges for internal communication
-5. **Scalability** - Automatic scaling handled by Cloudflare
+### Passing Callbacks
 
-## Cap'n Proto Schema
+Capnweb supports passing functions by reference:
 
-The service interface is formally defined in `schema/auth.capnp` using Cap'n Proto IDL. This provides:
+```typescript
+// Server can call client callbacks
+const authService = createAuthClient(env.AUTH_SERVICE);
 
-- **Schema validation** - Ensures data contracts are maintained
-- **Efficient serialization** - Binary protocol for fast communication
-- **Cross-language support** - Can generate clients in multiple languages
-- **Version compatibility** - Schema evolution without breaking changes
+await authService.watchSession(sessionId, (event) => {
+  console.log("Session event:", event);
+});
+```
 
-## Capnweb Integration
+### Bidirectional RPC
 
-The service is designed to work with [capnweb](https://github.com/cloudflare/capnweb), Cloudflare's implementation of Cap'n Proto for Workers, enabling efficient RPC between services.
+Server can call client methods:
 
-Future enhancements may include:
-- Binary Cap'n Proto encoding for even faster communication
-- Streaming RPC for large result sets
-- Bidirectional communication for real-time updates
+```typescript
+// Client exposes an RpcTarget
+class ClientHandler extends RpcTarget {
+  async onSessionExpired() {
+    // Handle session expiration
+  }
+}
+
+const authService = createAuthClient(env.AUTH_SERVICE);
+await authService.registerClient(new ClientHandler());
+```
+
+## Benefits of Capnweb
+
+1. **Ultra-Low Latency** - Direct Worker-to-Worker communication
+2. **Promise Pipelining** - Multiple dependent calls in one round trip
+3. **Type Safety** - Full TypeScript support without schemas
+4. **No Boilerplate** - No IDL files or code generation needed
+5. **Cost Effective** - No egress charges for internal communication
+6. **Auto Scaling** - Cloudflare handles scaling automatically
+7. **Capability-Based Security** - Fine-grained access control
+
+## Performance
+
+Capnweb service bindings provide:
+- **Sub-millisecond** latency for most operations
+- **Zero cold starts** between bound services
+- **Automatic load balancing** across Worker instances
+- **Efficient serialization** with JSON
 
 ## Development
 
@@ -161,41 +230,90 @@ Future enhancements may include:
 # Start auth service
 npm run dev:write
 
-# Test RPC endpoint
-curl http://localhost:8788/rpc/getUser \
+# Test capnweb RPC endpoint
+curl http://localhost:8788/rpc \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '{"userId": "user_123"}'
+  -d '{
+    "op": "call",
+    "target": 0,
+    "method": "verifySession",
+    "args": ["session_abc123"]
+  }'
 ```
 
 ### Adding New RPC Methods
 
-1. Define method in `schema/auth.capnp`
-2. Implement in `write-model/rpc-service.ts`
-3. Add route handler in `write-model/main.ts`
-4. Update `AuthClient` in `website/src/lib/auth/client.ts`
-5. Update TypeScript types
+1. Add method to `AuthRpcService` class
+2. That's it! Capnweb automatically exposes it
+
+```typescript
+export class AuthRpcService extends RpcTarget {
+  // Just add the method - no registration needed
+  async getSessionStats(userId: string) {
+    return await this.db.query.session.count({
+      where: (sessions, { eq }) => eq(sessions.userId, userId),
+    });
+  }
+}
+```
+
+3. Use it from the client:
+
+```typescript
+const stats = await authService.getSessionStats(userId);
+```
 
 ## Security Considerations
 
 - Service bindings are **internal only** - not exposed to the internet
-- RPC endpoints should **validate** all inputs
+- Capnweb validates all method calls and parameters
 - Session tokens should be **short-lived** and **rotated**
 - Always check session expiration before trusting user data
 - Use **HTTPS** for any external-facing endpoints
 
-## Performance
+## Comparison: Capnweb vs Manual RPC
 
-Service bindings provide:
-- **Sub-millisecond** latency for most operations
-- **No cold starts** between bound services
-- **Automatic load balancing** across Worker instances
-- **Efficient memory usage** through shared context
+**Before (Manual RPC):**
+```typescript
+// Server: Manual routing
+switch (method) {
+  case "verifySession":
+    return Response.json(await service.verifySession(body.sessionToken));
+  case "getUser":
+    return Response.json(await service.getUser(body.userId));
+  // ... many more cases
+}
+
+// Client: Manual fetch calls
+const response = await service.fetch(
+  new Request("http://auth-service/rpc/verifySession", {
+    method: "POST",
+    body: JSON.stringify({ sessionToken }),
+  })
+);
+```
+
+**After (Capnweb):**
+```typescript
+// Server: One line
+return newWorkersRpcResponse(request, new AuthRpcService(env));
+
+// Client: Direct method calls
+const result = await authService.verifySession(sessionToken);
+```
 
 ## Monitoring
 
 Monitor RPC calls via:
 - Cloudflare Workers Analytics
 - Custom metrics in write-model observability
-- Trace IDs for request correlation
+- Capnweb's built-in trace IDs
 - Error rates and latencies in dashboard
+
+## Resources
+
+- [Capnweb GitHub](https://github.com/cloudflare/capnweb)
+- [Capnweb npm package](https://www.npmjs.com/package/capnweb)
+- [Cloudflare Workers RPC Blog](https://blog.cloudflare.com/javascript-native-rpc/)
+- [Cap'n Proto](https://capnproto.org) - Spiritual sibling project
