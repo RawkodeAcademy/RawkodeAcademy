@@ -1,8 +1,10 @@
 export * from "./reactToContent";
+import { createBetterAuthClient } from "./better-auth-client";
+import type { D1Database, Fetcher } from "@cloudflare/workers-types";
 
 interface Env {
 	reactToContent: Workflow;
-	AUTH_DB: D1Database;
+	AUTH_SERVICE: Fetcher;
 }
 
 export default {
@@ -65,43 +67,24 @@ export default {
 					);
 				}
 
-				const token = authHeader.substring(7);
+				const authClient = createBetterAuthClient(env.AUTH_SERVICE, {
+					getHeaders: () => req.headers,
+				});
 
-				try {
-					const userinfoResponse = await fetch(
-						"https://zitadel.rawkode.academy/oidc/v1/userinfo",
-						{
-							method: "GET",
-							headers: {
-								"Authorization": `Bearer ${token}`,
-							},
-						},
-					);
+				const { data, error } = await authClient.getSession();
 
-					if (!userinfoResponse.ok) {
-						console.error(
-							"Token validation failed:",
-							userinfoResponse.status,
-						);
-						return Response.json(
-							{ error: "Invalid or expired token" },
-							{ status: 401, headers: corsHeaders },
-						);
-					}
-
-					const userinfo = await userinfoResponse.json();
-
-					if (body.personId !== userinfo.sub) {
-						return Response.json(
-							{ error: "PersonId does not match authenticated user" },
-							{ status: 403, headers: corsHeaders },
-						);
-					}
-				} catch (error) {
-					console.error("Token verification failed:", error);
+				if (error || !data?.user) {
+					console.error("Token validation failed:", error);
 					return Response.json(
-						{ error: "Token validation failed" },
+						{ error: "Invalid or expired token" },
 						{ status: 401, headers: corsHeaders },
+					);
+				}
+
+				if (body.personId !== data.user.id) {
+					return Response.json(
+						{ error: "PersonId does not match authenticated user" },
+						{ status: 403, headers: corsHeaders },
 					);
 				}
 			}

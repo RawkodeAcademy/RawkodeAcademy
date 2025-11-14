@@ -74,7 +74,7 @@ export interface BetterAuthAccount {
  * Creates a Better Auth client configured to communicate with the authentication
  * platform via the AUTH_SERVICE service binding.
  *
- * @param authService - The AUTH_SERVICE binding (or compatible) from the Cloudflare runtime environment
+ * @param authService - The AUTH_SERVICE service binding (or compatible) from the Cloudflare runtime environment
  * @param options - Optional configuration such as per-request header injection
  * @returns Configured Better Auth client instance with passkey and GitHub OAuth support
  *
@@ -129,13 +129,7 @@ export function createBetterAuthClient(
 		fetchOptions: {
 			customFetchImpl: async (url, init) => {
 				// Extract the pathname + search from the Better Auth request URL
-				const resolvedUrl =
-					typeof url === "string"
-						? url
-						: url instanceof URL
-							? url.toString()
-							: url.url;
-				const urlObj = new URL(resolvedUrl);
+				const urlObj = new URL(url);
 				const pathWithSearch = `${urlObj.pathname}${urlObj.search}`;
 				const proxiedUrl = new URL(pathWithSearch, "https://auth.internal");
 

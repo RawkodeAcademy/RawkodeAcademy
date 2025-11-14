@@ -2,6 +2,16 @@ import { defineMiddleware } from "astro:middleware";
 import { createBetterAuthClient } from "@/lib/auth/better-auth-client.ts";
 
 export const authMiddleware = defineMiddleware(async (context, next) => {
+	const { pathname } = context.url;
+	if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-out")) {
+		const authService = context.locals.runtime?.env?.AUTH_SERVICE;
+		if (!authService) {
+			console.error("AUTH_SERVICE not available");
+			return new Response("Auth service not configured", { status: 500 });
+		}
+		return authService.fetch(context.request);
+	}
+
 	if (context.isPrerendered) {
 		// The runtime isn't available for pre-rendered pages and we
 		// only want this middleware to run for SSR.

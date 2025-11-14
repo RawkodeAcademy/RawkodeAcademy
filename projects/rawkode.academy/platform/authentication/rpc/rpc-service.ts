@@ -1,5 +1,6 @@
 import { RpcTarget } from "capnweb";
 import { drizzle } from "drizzle-orm/d1";
+import { eq } from "drizzle-orm";
 import * as dataSchema from "../data-model/schema";
 import type { D1Database } from "@cloudflare/workers-types";
 
@@ -50,7 +51,7 @@ export class AuthRpcService extends RpcTarget {
 	async verifySession(sessionToken: string): Promise<AuthResponse> {
 		try {
 			const session = await this.db.query.session.findFirst({
-				where: (sessions, { eq }) => eq(sessions.id, sessionToken),
+				where: (sessions, { eq }) => eq(sessions.token, sessionToken),
 				with: {
 					user: true,
 				},
@@ -122,9 +123,9 @@ export class AuthRpcService extends RpcTarget {
 	 */
 	async revokeSession(sessionId: string): Promise<boolean> {
 		try {
-			await this.db.delete(dataSchema.session).where(
-				(session) => session.id === sessionId,
-			);
+			await this.db
+				.delete(dataSchema.session)
+				.where(eq(dataSchema.session.id, sessionId));
 			return true;
 		} catch {
 			return false;
@@ -136,10 +137,10 @@ export class AuthRpcService extends RpcTarget {
 	 */
 	async validatePasskey(userId: string, credentialId: string): Promise<boolean> {
 		const passkey = await this.db.query.passkey.findFirst({
-			where: (passkeys, { and, eq }) => 
+			where: (passkeys, { and, eq }) =>
 				and(
 					eq(passkeys.userId, userId),
-					eq(passkeys.id, credentialId)
+					eq(passkeys.credentialID, credentialId),
 				),
 		});
 		return !!passkey;

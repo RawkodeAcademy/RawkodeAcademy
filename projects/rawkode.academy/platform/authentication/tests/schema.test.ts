@@ -35,7 +35,7 @@ describe("Authentication Schema", () => {
 		expect(passkey.id).toBeDefined();
 		expect(passkey.userId).toBeDefined();
 		expect(passkey.publicKey).toBeDefined();
-		expect(passkey.webauthnUserID).toBeDefined();
+		expect(passkey.credentialID).toBeDefined();
 		expect(passkey.counter).toBeDefined();
 		expect(passkey.deviceType).toBeDefined();
 	});

@@ -21,6 +21,15 @@ import { vite as vidstackPlugin } from "vidstack/plugins";
 import { webcontainerDemosPlugin } from "./src/utils/vite-plugin-webcontainer-demos";
 import { deriveSlugFromFile } from "./src/utils/content-slug";
 
+type AstroUserConfig = Parameters<typeof defineConfig>[0];
+type AstroVitePlugins = NonNullable<
+	NonNullable<AstroUserConfig["vite"]>["plugins"]
+>;
+
+const asAstroVitePlugins = (
+	plugins: import("vite").PluginOption[],
+): AstroVitePlugins => plugins as unknown as AstroVitePlugins;
+
 // Check if D2 is available (used for diagram rendering)
 let d2Available = false;
 try {
@@ -275,7 +284,7 @@ export default defineConfig({
 		}),
 	],
 	vite: {
-		plugins: [
+		plugins: asAstroVitePlugins([
 			webcontainerDemosPlugin(),
 			vidstackPlugin({ include: /components\/video\// }),
 			vue({
@@ -286,7 +295,7 @@ export default defineConfig({
 				},
 			}),
 			tailwindcss(),
-		],
+		]),
 		server: {
 			fs: {
 				// Keep Vite's default workspace root allow-list and add our external content dir.
