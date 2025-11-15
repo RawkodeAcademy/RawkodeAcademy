@@ -1,5 +1,11 @@
 import { Command } from "cmdk";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import {
+	type ReactElement,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { SkeletonList } from "@/components/common/SkeletonList";
 import { getCategoryIcon, GitHubIcon } from "./icons";
 import {
@@ -34,7 +40,6 @@ export default function CommandPalette({
 	const [search, setSearch] = useState("");
 	const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
 	const [articleItems, setArticleItems] = useState<NavigationItem[]>([]);
-	const [themeItems, setThemeItems] = useState<NavigationItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSearchingArticles, setIsSearchingArticles] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +55,23 @@ export default function CommandPalette({
 		// Check if all search terms are found in the value
 		return searchTerms.every((term) => valueLower.includes(term)) ? 1 : 0;
 	};
+
+	const themeItems = useMemo(
+		() =>
+			ALL_THEMES.map((theme) => ({
+				id: `theme-${theme}`,
+				title: getThemeDisplayName(theme),
+				description: `Switch to ${getThemeDisplayName(theme)} theme`,
+				category: "Themes",
+				keywords: ["theme", "color", "appearance", theme],
+				theme,
+				action: () => {
+					setTheme(theme);
+					setCurrentTheme(theme);
+				},
+			})),
+		[],
+	);
 
 	useEffect(() => {
 		const fetchNavigationItems = async () => {
@@ -72,21 +94,6 @@ export default function CommandPalette({
 
 		fetchNavigationItems();
 
-		// Initialize theme items
-		const themes: NavigationItem[] = ALL_THEMES.map((theme) => ({
-			id: `theme-${theme}`,
-			title: getThemeDisplayName(theme),
-			description: `Switch to ${getThemeDisplayName(theme)} theme`,
-			category: "Themes",
-			keywords: ["theme", "color", "appearance", theme],
-			theme,
-			action: () => {
-				setTheme(theme);
-				setCurrentTheme(theme);
-			},
-		}));
-		setThemeItems(themes);
-
 		// Get current theme
 		setCurrentTheme(getTheme());
 
@@ -98,7 +105,9 @@ export default function CommandPalette({
 		window.addEventListener("theme-change", handleThemeChange);
 
 		return () => {
-			window.removeEventListener("theme-change", handleThemeChange);
+			if (typeof window !== "undefined") {
+				window.removeEventListener("theme-change", handleThemeChange);
+			}
 		};
 	}, []);
 

@@ -2,7 +2,7 @@
 	<button
 		@click="handleToggle"
 		:class="buttonClasses"
-		:aria-label="`Switch theme (current: ${themeDisplayName})`"
+		:aria-label="`Change theme (current: ${themeDisplayName})`"
 		type="button"
 	>
 		<!-- Icon for theme -->

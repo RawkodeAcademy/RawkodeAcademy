@@ -85,6 +85,57 @@ export function initTheme(): void {
 	}
 }
 
+const THEME_COLORS: Record<
+	Theme,
+	{ primary: string; secondary: string; accent: string }
+> = {
+	"rawkode-green": {
+		primary: "#04B59C",
+		secondary: "#85FF95",
+		accent: "#23282D",
+	},
+	"rawkode-blue": {
+		primary: "#5F5ED7",
+		secondary: "#00CEFF",
+		accent: "#111827",
+	},
+	catppuccin: {
+		primary: "#CBA6F7",
+		secondary: "#F5C2E7",
+		accent: "#1E1E2E",
+	},
+	dracula: {
+		primary: "#BD93F9",
+		secondary: "#FF79C6",
+		accent: "#282A36",
+	},
+	solarized: {
+		primary: "#268BD2",
+		secondary: "#2AA198",
+		accent: "#002B36",
+	},
+	pride: {
+		primary: "#FF0018",
+		secondary: "#FFA52C",
+		accent: "#0000F9",
+	},
+	lgbtq: {
+		primary: "#078D70",
+		secondary: "#98E8C1",
+		accent: "#7BADE2",
+	},
+};
+
+const THEME_DISPLAY_NAMES: Record<Theme, string> = {
+	"rawkode-green": "Rawkode Green",
+	"rawkode-blue": "Rawkode Blue",
+	catppuccin: "Catppuccin",
+	dracula: "Dracula",
+	solarized: "Solarized",
+	pride: "Pride",
+	lgbtq: "LGBTQ+",
+};
+
 /**
  * Get theme colors for current theme
  */
@@ -102,63 +153,12 @@ export function getThemeColors(): {
 	}
 
 	const theme = getTheme();
-
-	const themeColors: Record<
-		Theme,
-		{ primary: string; secondary: string; accent: string }
-	> = {
-		"rawkode-green": {
-			primary: "#04B59C",
-			secondary: "#85FF95",
-			accent: "#23282D",
-		},
-		"rawkode-blue": {
-			primary: "#5F5ED7",
-			secondary: "#00CEFF",
-			accent: "#111827",
-		},
-		catppuccin: {
-			primary: "#CBA6F7",
-			secondary: "#F5C2E7",
-			accent: "#1E1E2E",
-		},
-		dracula: {
-			primary: "#BD93F9",
-			secondary: "#FF79C6",
-			accent: "#282A36",
-		},
-		solarized: {
-			primary: "#268BD2",
-			secondary: "#2AA198",
-			accent: "#002B36",
-		},
-		pride: {
-			primary: "#FF0018",
-			secondary: "#FFA52C",
-			accent: "#0000F9",
-		},
-		lgbtq: {
-			primary: "#078D70",
-			secondary: "#98E8C1",
-			accent: "#7BADE2",
-		},
-	};
-
-	return themeColors[theme];
+	return THEME_COLORS[theme];
 }
 
 /**
  * Get theme display name
  */
 export function getThemeDisplayName(theme: Theme): string {
-	const displayNames: Record<Theme, string> = {
-		"rawkode-green": "Rawkode Green",
-		"rawkode-blue": "Rawkode Blue",
-		catppuccin: "Catppuccin",
-		dracula: "Dracula",
-		solarized: "Solarized",
-		pride: "Pride",
-		lgbtq: "LGBTQ+",
-	};
-	return displayNames[theme];
+	return THEME_DISPLAY_NAMES[theme];
 }
