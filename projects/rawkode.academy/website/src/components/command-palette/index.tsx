@@ -2,15 +2,24 @@ import { Command } from "cmdk";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { SkeletonList } from "@/components/common/SkeletonList";
 import { getCategoryIcon, GitHubIcon } from "./icons";
+import {
+	setTheme,
+	getTheme,
+	getThemeDisplayName,
+	ALL_THEMES,
+	type Theme,
+} from "@/lib/theme";
 import "./styles.css";
 
 interface NavigationItem {
 	id: string;
 	title: string;
 	description?: string;
-	href: string;
+	href?: string;
 	category: string;
 	keywords?: string[];
+	action?: () => void;
+	theme?: Theme;
 }
 
 interface CommandPaletteProps {
@@ -25,10 +34,12 @@ export default function CommandPalette({
 	const [search, setSearch] = useState("");
 	const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
 	const [articleItems, setArticleItems] = useState<NavigationItem[]>([]);
+	const [themeItems, setThemeItems] = useState<NavigationItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSearchingArticles, setIsSearchingArticles] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const [currentTheme, setCurrentTheme] = useState<Theme>("rawkode-green");
 
 	const customFilter = (value: string, search: string): number => {
 		if (!search.trim()) return 1; // Show all items when search is empty
@@ -60,6 +71,35 @@ export default function CommandPalette({
 		};
 
 		fetchNavigationItems();
+
+		// Initialize theme items
+		const themes: NavigationItem[] = ALL_THEMES.map((theme) => ({
+			id: `theme-${theme}`,
+			title: getThemeDisplayName(theme),
+			description: `Switch to ${getThemeDisplayName(theme)} theme`,
+			category: "Themes",
+			keywords: ["theme", "color", "appearance", theme],
+			theme,
+			action: () => {
+				setTheme(theme);
+				setCurrentTheme(theme);
+			},
+		}));
+		setThemeItems(themes);
+
+		// Get current theme
+		setCurrentTheme(getTheme());
+
+		// Listen for theme changes
+		const handleThemeChange = (event: Event) => {
+			const customEvent = event as CustomEvent<{ theme: Theme }>;
+			setCurrentTheme(customEvent.detail.theme);
+		};
+		window.addEventListener("theme-change", handleThemeChange);
+
+		return () => {
+			window.removeEventListener("theme-change", handleThemeChange);
+		};
 	}, []);
 
 	// Search for articles when user types
@@ -119,12 +159,20 @@ export default function CommandPalette({
 		};
 	}, [isOpen, onClose]);
 
-	const handleSelect = (href: string) => {
-		if (href.startsWith("http")) {
-			window.open(href, "_blank");
+	const handleSelect = (item: NavigationItem) => {
+		if (item.action) {
+			item.action();
+			onClose();
+			return;
+		}
+
+		if (!item.href) return;
+
+		if (item.href.startsWith("http")) {
+			window.open(item.href, "_blank");
 		} else {
 			// Ensure absolute path navigation
-			const absolutePath = href.startsWith("/") ? href : `/${href}`;
+			const absolutePath = item.href.startsWith("/") ? item.href : `/${item.href}`;
 			window.location.assign(absolutePath);
 		}
 		onClose();
@@ -144,8 +192,8 @@ export default function CommandPalette({
 
 	if (!isOpen) return null;
 
-	// Combine navigation items and article items
-	const allItems = [...navigationItems, ...articleItems];
+	// Combine navigation items, article items, and theme items
+	const allItems = [...themeItems, ...navigationItems, ...articleItems];
 
 	const groupedItems = allItems.reduce(
 		(acc, item) => {
@@ -268,20 +316,31 @@ export default function CommandPalette({
 								>
 									{items.map((item) => {
 										const ItemIcon = getItemIcon(item);
+										const isCurrentTheme = item.theme === currentTheme;
 										return (
 											<Command.Item
 												key={item.id}
-												value={`${item.title} ${item.description || ""}`}
-												onSelect={() => handleSelect(item.href)}
+												value={`${item.title} ${item.description || ""} ${item.keywords?.join(" ") || ""}`}
+												onSelect={() => handleSelect(item)}
 												className="command-palette-item"
 											>
 												<ItemIcon className="command-palette-item-icon" />
 												<div className="command-palette-item-content">
 													<div className="command-palette-item-title">
 														{item.title}
+														{isCurrentTheme && (
+															<span className="ml-2 text-xs text-primary">
+																(active)
+															</span>
+														)}
 													</div>
+													{item.description && (
+														<div className="command-palette-item-description">
+															{item.description}
+														</div>
+													)}
 												</div>
-												{item.href.startsWith("http") && (
+												{item.href && item.href.startsWith("http") && (
 													<svg
 														className="command-palette-external-icon"
 														fill="none"
