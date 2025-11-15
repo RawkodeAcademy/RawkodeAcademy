@@ -29,11 +29,11 @@ The website supports multiple color themes that can be switched by users.
 - **Secondary Color**: `#2AA198` (Cyan)
 - **Accent Color**: `#002B36` (Base03)
 
-### 6. Pride (Rainbow Pride Flag)
-- **Primary Color**: `#E40303` (Red)
-- **Secondary Color**: `#FF8C00` (Orange)
-- **Accent Color**: `#732982` (Purple)
-- Based on the iconic 6-stripe rainbow pride flag
+### 6. Pride (Cotton Candy Palette)
+- **Primary Color**: `#FF595E` (Red)
+- **Secondary Color**: `#FFCA3A` (Yellow)
+- **Accent Color**: `#6A4C93` (Purple)
+- Vibrant Cotton Candy color palette with 5 colors: Red, Yellow, Green, Blue, Purple
 
 ### 7. LGBTQ+ (Transgender Pride Flag)
 - **Primary Color**: `#5BCEFA` (Light Blue)

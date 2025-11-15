@@ -190,9 +190,9 @@ describe("Theme Management", () => {
 		it("should return correct colors for pride", () => {
 			setTheme("pride");
 			const colors = getThemeColors();
-			expect(colors.primary).toBe("#E40303");
-			expect(colors.secondary).toBe("#FF8C00");
-			expect(colors.accent).toBe("#732982");
+			expect(colors.primary).toBe("#FF595E");
+			expect(colors.secondary).toBe("#FFCA3A");
+			expect(colors.accent).toBe("#6A4C93");
 		});
 
 		it("should return correct colors for lgbtq", () => {
