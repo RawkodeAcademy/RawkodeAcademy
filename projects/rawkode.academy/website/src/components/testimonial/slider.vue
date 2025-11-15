@@ -1,162 +1,204 @@
 <script setup lang="ts">
-import { Carousel, Navigation, Pagination, Slide } from "vue3-carousel";
-import "vue3-carousel/dist/carousel.css";
+import { computed } from "vue";
 
-// Use a more permissive type definition by using a Record type
-interface Props {
-	testimonials: {
-		quote: string;
-		author: Record<string, any>;
-	}[];
+interface TestimonialAuthor {
+        name: string;
+        title?: string;
+        image?: string;
+        link?: string;
 }
 
-defineProps<Props>();
+interface Props {
+        testimonials: {
+                quote: string;
+                author: TestimonialAuthor;
+        }[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+        testimonials: () => [],
+});
+
+const highlight = computed(() => props.testimonials[0]);
+const supporting = computed(() => props.testimonials.slice(1));
+
+const getInitials = (name?: string) => {
+        if (!name) return "";
+        return name
+                .split(" ")
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+};
 </script>
 
 <template>
-	<Carousel :autoplay="5000" :wrap-around="true" :items-to-show="1" :pause-autoplay-on-hover="true"
-		class="testimonial-carousel">
-		<Slide v-for="(testimonial, index) in testimonials" :key="index">
-			<div class="py-4 px-4 md:py-4 md:px-4 text-gray-900 dark:text-gray-100">
-				<div
-					class="relative max-w-3xl mx-auto p-8 md:p-10 rounded-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] border border-white/40 dark:border-gray-700/40 overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none before:rounded-2xl transition-all duration-300">
-					<blockquote>
-						<p
-							class="relative text-xl font-medium leading-relaxed text-gray-800 dark:text-gray-100 mb-6 text-center px-6 z-10">
-							{{ testimonial.quote }}
-						</p>
-					</blockquote>
-					<div class="flex items-center justify-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-						<div class="shrink-0 mr-4">
-							<img :src="testimonial.author.image" :alt="`${testimonial.author.name} profile picture`"
-								class="w-12 h-12 rounded-full object-cover border-2 border-primary dark:border-primary shadow-sm ring-2 ring-white dark:ring-gray-800" loading="lazy" />
-						</div>
-						<div class="flex flex-col">
-							<a v-if="testimonial.author.link" target="_blank" :href="testimonial.author.link"
-								class="no-underline transition-opacity hover:opacity-80">
-								<div class="font-semibold text-gray-900 dark:text-white mb-1">{{ testimonial.author.name }}</div>
-								<div class="text-sm text-gray-500 dark:text-gray-400">{{ testimonial.author.title }}</div>
-							</a>
-							<div v-else>
-								<div class="font-semibold text-gray-900 dark:text-white mb-1">{{ testimonial.author.name }}</div>
-								<div class="text-sm text-gray-500 dark:text-gray-400">{{ testimonial.author.title }}</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</Slide>
+        <div class="mt-10">
+                <div
+                        class="flex gap-4 overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory lg:mx-0 lg:px-0 lg:grid lg:grid-cols-12 lg:gap-6 lg:overflow-visible lg:snap-none"
+                >
+                        <article
+                                v-if="highlight"
+                                class="testimonial-card featured min-w-[280px] snap-start lg:col-span-5 lg:min-w-0"
+                        >
+                                <div class="flex h-full flex-col gap-6">
+                                        <svg
+                                                aria-hidden="true"
+                                                class="h-10 w-10 text-primary/60"
+                                                viewBox="0 0 48 48"
+                                                fill="currentColor"
+                                        >
+                                                <path
+                                                        d="M17.76 7C10.42 7 5 12.84 5 20.3c0 4.93 2.65 8.12 5.8 10.14l-4.48 10.9c-.17.42.25.86.68.7l6.8-2.44c.17-.06.3-.2.36-.37l1.16-3.36c.05-.15.18-.26.34-.29l1.98-.34c5.97-1.02 10.38-6.58 10.38-12.94C27.82 12.84 23.09 7 17.76 7Zm20.22 0C30.64 7 25.22 12.84 25.22 20.3c0 4.93 2.65 8.12 5.8 10.14l-4.48 10.9c-.17.42.25.86.68.7l6.8-2.44c.17-.06.3-.2.36-.37l1.16-3.36c.05-.15.18-.26.34-.29l1.98-.34c5.97-1.02 10.38-6.58 10.38-12.94C47.04 12.84 42.31 7 37.98 7Z"
+                                                />
+                                        </svg>
+                                        <p class="text-xl leading-relaxed text-gray-800 dark:text-gray-100 lg:text-2xl">
+                                                {{ highlight.quote }}
+                                        </p>
+                                        <div class="mt-auto flex items-center gap-4 pt-2">
+                                                <template v-if="highlight.author.image">
+                                                        <img
+                                                                :src="highlight.author.image"
+                                                                :alt="`${highlight.author.name} profile picture`"
+                                                                class="h-16 w-16 rounded-full object-cover border-2 border-primary/60 shadow-lg"
+                                                                loading="lazy"
+                                                        />
+                                                </template>
+                                                <template v-else>
+                                                        <div
+                                                                class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-xl font-semibold text-white"
+                                                        >
+                                                                {{ getInitials(highlight.author.name) }}
+                                                        </div>
+                                                </template>
+                                                <div>
+                                                        <a
+                                                                v-if="highlight.author.link"
+                                                                class="no-underline text-lg font-semibold text-gray-900 transition hover:text-primary dark:text-white"
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                :href="highlight.author.link"
+                                                        >
+                                                                {{ highlight.author.name }}
+                                                        </a>
+                                                        <p v-else class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                {{ highlight.author.name }}
+                                                        </p>
+                                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                                {{ highlight.author.title }}
+                                                        </p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </article>
 
-		<template #addons>
-			<Navigation />
-			<Pagination />
-		</template>
-	</Carousel>
+                        <article
+                                v-for="(testimonial, index) in supporting"
+                                :key="`support-${index}`"
+                                class="testimonial-card min-w-[240px] snap-start lg:col-span-3 lg:min-w-0"
+                        >
+                                <p class="supporting-quote text-base leading-relaxed text-gray-700 dark:text-gray-200">
+                                        {{ testimonial.quote }}
+                                </p>
+                                <div class="mt-6 flex items-center gap-4">
+                                        <template v-if="testimonial.author.image">
+                                                <img
+                                                        :src="testimonial.author.image"
+                                                        :alt="`${testimonial.author.name} profile picture`"
+                                                        class="h-12 w-12 rounded-full object-cover border border-primary/40"
+                                                        loading="lazy"
+                                                />
+                                        </template>
+                                        <template v-else>
+                                                <div
+                                                        class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-secondary/80 text-sm font-semibold text-white"
+                                                >
+                                                        {{ getInitials(testimonial.author.name) }}
+                                                </div>
+                                        </template>
+                                        <div>
+                                                <a
+                                                        v-if="testimonial.author.link"
+                                                        class="no-underline text-base font-semibold text-gray-900 transition hover:text-primary dark:text-white"
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        :href="testimonial.author.link"
+                                                >
+                                                        {{ testimonial.author.name }}
+                                                </a>
+                                                <p v-else class="text-base font-semibold text-gray-900 dark:text-white">
+                                                        {{ testimonial.author.name }}
+                                                </p>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ testimonial.author.title }}
+                                                </p>
+                                        </div>
+                                </div>
+                        </article>
+                </div>
+        </div>
 </template>
 
-<style>
-/* Customize carousel navigation */
-.carousel__prev,
-.carousel__next {
-  background: linear-gradient(
-      to bottom right,
-      rgba(var(--brand-primary), 0.9),
-      rgba(var(--brand-secondary), 0.9)
-    ) !important;
-  backdrop-filter: blur(12px) !important;
-  border-radius: 9999px !important;
-  width: 3rem !important;
-  height: 3rem !important;
-  margin: 0 1rem !important;
-  transition: all 0.2s ease !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12) !important;
-  border: 1px solid rgba(var(--brand-primary), 0.3) !important;
+<style scoped>
+.testimonial-card {
+  background: radial-gradient(
+        circle at top left,
+        rgba(var(--brand-secondary), 0.12),
+        transparent 55%
+      ),
+    rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 28px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.dark .carousel__prev,
-.dark .carousel__next {
-  background: linear-gradient(
-      to bottom right,
-      rgba(var(--brand-primary), 0.9),
-      rgba(var(--brand-secondary), 0.9)
-    ) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(var(--brand-primary), 0.3) !important;
+.dark .testimonial-card {
+  background: radial-gradient(
+        circle at top left,
+        rgba(var(--brand-primary), 0.18),
+        transparent 55%
+      ),
+    rgba(15, 23, 42, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
 }
 
-.carousel__prev:hover,
-.carousel__next:hover {
-  background: linear-gradient(
-      to bottom right,
-      rgba(var(--brand-primary), 1),
-      rgba(var(--brand-secondary), 1)
-    ) !important;
-  transform: scale(1.05) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.18) !important;
+.testimonial-card.featured {
+  padding: 2rem;
+  position: relative;
 }
 
-.dark .carousel__prev:hover,
-.dark .carousel__next:hover {
-  background: linear-gradient(
-      to bottom right,
-      rgba(var(--brand-primary), 1),
-      rgba(var(--brand-secondary), 1)
-    ) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5) !important;
+.testimonial-card.featured::after {
+  content: "";
+  position: absolute;
+  inset: 1.5rem;
+  border-radius: 24px;
+  border: 1px dashed rgba(var(--brand-primary), 0.25);
+  pointer-events: none;
 }
 
-.carousel__icon {
-  filter: brightness(10) !important;
+.supporting-quote {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Customize pagination */
-.carousel__pagination {
-  margin-top: 2rem !important;
-}
-
-.carousel__pagination-button {
-  width: 0.75rem !important;
-  height: 0.75rem !important;
-  border-radius: 50% !important;
-  background-color: rgba(209, 213, 219, 0.5) !important; /* gray-300 with opacity */
-  backdrop-filter: blur(8px) !important;
-  margin: 0 0.25rem !important;
-  transition: all 0.2s ease !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-}
-
-.carousel__pagination-button--active {
-  background: linear-gradient(to bottom right, rgba(var(--brand-primary), 0.9), rgba(var(--brand-secondary), 0.9)) !important;
-  transform: scale(1.2) !important;
-  box-shadow: 0 4px 16px 0 rgba(var(--brand-primary), 0.4) !important;
-  border: 1px solid rgba(var(--brand-primary), 0.3) !important;
-}
-
-.dark .carousel__pagination-button {
-  background-color: rgba(75, 85, 99, 0.5) !important; /* gray-600 with opacity */
-  border: 1px solid rgba(107, 114, 128, 0.3) !important;
-}
-
-.dark .carousel__pagination-button--active {
-  background: linear-gradient(to bottom right, rgba(var(--brand-primary), 0.9), rgba(var(--brand-secondary), 0.9)) !important;
-  box-shadow: 0 4px 16px 0 rgba(var(--brand-primary), 0.4) !important;
-  border: 1px solid rgba(var(--brand-primary), 0.3) !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .carousel__prev,
-  .carousel__next {
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    margin: 0 0.5rem !important;
+@media (max-width: 1023px) {
+  .testimonial-card.featured::after {
+    inset: 1rem;
   }
 }
 
 @media (max-width: 640px) {
-  .carousel__prev,
-  .carousel__next {
-    display: none !important;
+  .testimonial-card {
+    min-height: 220px;
   }
 }
 </style>
