@@ -29,15 +29,17 @@ The website supports multiple color themes that can be switched by users.
 - **Secondary Color**: `#2AA198` (Cyan)
 - **Accent Color**: `#002B36` (Base03)
 
-### 6. Pride
-- **Primary Color**: `#FF0018` (Red)
-- **Secondary Color**: `#FFA52C` (Orange)
-- **Accent Color**: `#0000F9` (Blue)
+### 6. Pride (Rainbow Pride Flag)
+- **Primary Color**: `#E40303` (Red)
+- **Secondary Color**: `#FF8C00` (Orange)
+- **Accent Color**: `#732982` (Purple)
+- Based on the iconic 6-stripe rainbow pride flag
 
-### 7. LGBTQ+
-- **Primary Color**: `#078D70` (Teal)
-- **Secondary Color**: `#98E8C1` (Mint)
-- **Accent Color**: `#7BADE2` (Light Blue)
+### 7. LGBTQ+ (Transgender Pride Flag)
+- **Primary Color**: `#5BCEFA` (Light Blue)
+- **Secondary Color**: `#F5A9B8` (Pink)
+- **Accent Color**: `#FFFFFF` (White)
+- Based on the transgender pride flag colors
 
 ## How to Switch Themes
 

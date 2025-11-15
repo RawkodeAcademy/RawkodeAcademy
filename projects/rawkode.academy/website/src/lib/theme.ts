@@ -115,14 +115,14 @@ const THEME_COLORS: Record<
 		accent: "#002B36",
 	},
 	pride: {
-		primary: "#FF0018",
-		secondary: "#FFA52C",
-		accent: "#0000F9",
+		primary: "#E40303",
+		secondary: "#FF8C00",
+		accent: "#732982",
 	},
 	lgbtq: {
-		primary: "#078D70",
-		secondary: "#98E8C1",
-		accent: "#7BADE2",
+		primary: "#5BCEFA",
+		secondary: "#F5A9B8",
+		accent: "#FFFFFF",
 	},
 };
 

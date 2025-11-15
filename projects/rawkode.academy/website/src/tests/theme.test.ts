@@ -190,17 +190,17 @@ describe("Theme Management", () => {
 		it("should return correct colors for pride", () => {
 			setTheme("pride");
 			const colors = getThemeColors();
-			expect(colors.primary).toBe("#FF0018");
-			expect(colors.secondary).toBe("#FFA52C");
-			expect(colors.accent).toBe("#0000F9");
+			expect(colors.primary).toBe("#E40303");
+			expect(colors.secondary).toBe("#FF8C00");
+			expect(colors.accent).toBe("#732982");
 		});
 
 		it("should return correct colors for lgbtq", () => {
 			setTheme("lgbtq");
 			const colors = getThemeColors();
-			expect(colors.primary).toBe("#078D70");
-			expect(colors.secondary).toBe("#98E8C1");
-			expect(colors.accent).toBe("#7BADE2");
+			expect(colors.primary).toBe("#5BCEFA");
+			expect(colors.secondary).toBe("#F5A9B8");
+			expect(colors.accent).toBe("#FFFFFF");
 		});
 	});
 });
