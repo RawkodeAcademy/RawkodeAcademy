@@ -21,10 +21,10 @@ const shuffle = (array: string[]): string[] => {
 
 const Typewriter = (props: Props) => {
         return (
-                <section className="glass-panel relative mt-3 md:mt-6 mb-6 rounded-3xl overflow-hidden">
+                <section className="glass-panel relative mt-8 md:mt-12 mb-6 rounded-3xl overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-primary/10 to-transparent dark:from-gray-900/60 dark:via-primary/20 opacity-70 pointer-events-none" />
                         <div className="relative grid max-w-6xl px-6 py-10 mx-auto gap-8 lg:gap-10 lg:py-20 lg:grid-cols-12">
-                                <div className="mr-auto place-self-center space-y-4 lg:col-span-7">
+                                <div className="mr-auto place-self-center space-y-2 lg:col-span-7">
                                         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary/90 dark:text-primary-light">
                                                 Cloud Native Education
                                         </p>
