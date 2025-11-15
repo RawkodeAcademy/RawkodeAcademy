@@ -67,7 +67,7 @@ export function toggleTheme(): Theme {
 	const current = getTheme();
 	const currentIndex = ALL_THEMES.indexOf(current);
 	const nextIndex = (currentIndex + 1) % ALL_THEMES.length;
-	const next = ALL_THEMES[nextIndex];
+	const next = ALL_THEMES[nextIndex] || DEFAULT_THEME;
 	setTheme(next);
 	return next;
 }

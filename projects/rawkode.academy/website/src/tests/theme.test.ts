@@ -6,7 +6,6 @@ import {
 	getThemeDisplayName,
 	getThemeColors,
 	ALL_THEMES,
-	type Theme,
 } from "../lib/theme";
 
 describe("Theme Management", () => {

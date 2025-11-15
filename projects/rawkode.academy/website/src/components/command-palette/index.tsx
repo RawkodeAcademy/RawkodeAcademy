@@ -188,13 +188,15 @@ export default function CommandPalette({
 	};
 
 	const getItemIcon = (item: NavigationItem) => {
-		try {
-			const url = new URL(item.href, window.location.origin);
-			if (url.hostname === "github.com" || url.hostname === "www.github.com") {
-				return GitHubIcon;
+		if (item.href) {
+			try {
+				const url = new URL(item.href, window.location.origin);
+				if (url.hostname === "github.com" || url.hostname === "www.github.com") {
+					return GitHubIcon;
+				}
+			} catch {
+				// Invalid URL or relative path, fall through to default
 			}
-		} catch {
-			// Invalid URL or relative path, fall through to default
 		}
 		return getCategoryIcon(item.category);
 	};
