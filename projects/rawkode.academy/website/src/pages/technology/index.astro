@@ -2,7 +2,6 @@
 export const prerender = true;
 
 import Button from "@/components/common/Button.vue";
-import PageHero from "@/components/common/PageHero.vue";
 import SectionHeader from "@/components/common/SectionHeader.vue";
 import Page from "@/wrappers/page.astro";
 import { getCollection } from "astro:content";
@@ -19,270 +18,369 @@ type Technology = {
 
 let technologies: Technology[] = [];
 try {
-	const items = await getCollection("technologies");
-	technologies = items.map((e) => {
-		const icon = (e as any).data.icon;
-		const logo = resolveTechnologyIconUrl(e.id, icon);
-		const tech: Technology = {
-			id: e.id,
-			name: e.data.name,
-			description: e.data.description,
-			...(logo && { logo }),
-			...(e.data.website && { website: e.data.website }),
-			...(e.data.documentation && { documentation: e.data.documentation }),
-		};
-		return tech;
-	});
+        const items = await getCollection("technologies");
+        technologies = items.map((e) => {
+                const icon = (e as any).data.icon;
+                const logo = resolveTechnologyIconUrl(e.id, icon);
+                const tech: Technology = {
+                        id: e.id,
+                        name: e.data.name,
+                        description: e.data.description,
+                        ...(logo && { logo }),
+                        ...(e.data.website && { website: e.data.website }),
+                        ...(e.data.documentation && { documentation: e.data.documentation }),
+                };
+                return tech;
+        });
 } catch (error) {
-	console.error("Failed to load technologies from content collection:", error);
+        console.error("Failed to load technologies from content collection:", error);
 }
+
+const focusAreas = [
+        "Cloud native infrastructure",
+        "Developer experience & tooling",
+        "Security, policy, and compliance",
+        "Observability and reliability",
+];
+
+const highlights = [
+        {
+                title: "Curated guidance",
+                description: "Every technology is paired with walkthroughs, workshops, and office-hours recordings.",
+        },
+        {
+                title: "Practical coverage",
+                description: "Content favors real-world architectures, demos, and production-ready patterns.",
+        },
+        {
+                title: "Open community",
+                description: "Join discussions, AMAs, and build clubs dedicated to the tools you rely on.",
+        },
+];
+
+const stats = [
+        { value: `${technologies.length}`, label: "Technologies catalogued" },
+        { value: "Weekly", label: "New additions" },
+        { value: "Live", label: "Community sessions" },
+];
 ---
 
 <Page
-	title="Technologies"
-	description="Explore the various technologies covered on Rawkode Academy."
+        title="Technologies"
+        description="Explore the various technologies covered on Rawkode Academy."
 >
-	<div class="flex flex-col gap-12 technology-feeds">
-		<style>
-			@reference "@/styles/global.css";
+        <div class="technology-page">
+                <style>
+                        @reference "@/styles/global.css";
 
-			:root {
-				--primary: #5f5ed7;
-				--secondary: #00ceff;
-			}
+                        .technology-page {
+                                display: flex;
+                                flex-direction: column;
+                                gap: 4rem;
+                                padding-inline: 1rem;
+                        }
 
-			.technology-feeds {
-				display: flex;
-				flex-direction: column;
-				gap: 3rem;
-			}
+                        .section-shell {
+                                width: 100%;
+                        }
 
-			.technology-feeds > *:not(:last-child) {
-				position: relative;
-				padding-bottom: 3rem;
-			}
+                        .section-shell__inner {
+                                width: min(1200px, 100%);
+                                margin-inline: auto;
+                        }
 
-			@keyframes expandFromCenter {
-				0% {
-					transform: scaleX(0);
-					opacity: 0;
-				}
-				100% {
-					transform: scaleX(1);
-					opacity: 1;
-				}
-			}
+                        .technology-intro {
+                                padding-top: 1rem;
+                        }
 
-			@keyframes separatorScroll {
-				0% {
-					transform: scaleX(0);
-					opacity: 0;
-				}
-				25%,
-				75% {
-					transform: scaleX(1);
-					opacity: 1;
-				}
-				100% {
-					transform: scaleX(0);
-					opacity: 0;
-				}
-			}
+                        .intro-grid {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                                gap: clamp(1.5rem, 3vw, 3rem);
+                                align-items: stretch;
+                        }
 
-			.technology-feeds > *:not(:last-child)::after {
-				content: "";
-				position: absolute;
-				bottom: 0;
-				left: 0;
-				width: 100%;
-				height: 4px;
-				background: linear-gradient(
-					to right,
-					var(--primary),
-					var(--secondary),
-					var(--primary)
-				);
-				transform-origin: center;
+                        .intro-primary {
+                                background: linear-gradient(135deg, rgba(95, 94, 215, 0.12), rgba(0, 206, 255, 0.08));
+                                border-radius: 1.5rem;
+                                padding: clamp(1.5rem, 4vw, 2.5rem);
+                                border: 1px solid rgba(255, 255, 255, 0.1);
+                                backdrop-filter: blur(8px);
+                        }
 
-				/* Fallback animation */
-				animation: expandFromCenter 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                        .intro-eyebrow {
+                                font-size: 0.85rem;
+                                text-transform: uppercase;
+                                letter-spacing: 0.08em;
+                                color: rgb(14 165 233);
+                                font-weight: 600;
+                                margin-bottom: 0.5rem;
+                        }
 
-				/* Scroll-linked animation */
-				animation-timeline: view();
-				animation-name: separatorScroll;
-				animation-range: entry-crossing exit-crossing; /* More fluid range */
-				animation-timing-function: ease; /* Smooth easing */
-			}
+                        .intro-title {
+                                font-size: clamp(1.75rem, 4vw, 2.75rem);
+                                line-height: 1.2;
+                                font-weight: 700;
+                                margin-bottom: 0.75rem;
+                        }
 
-			.tech-card {
-				@apply block rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800;
-				transform: translateY(0);
-				transition:
-					transform 0.3s ease,
-					box-shadow 0.3s ease;
-			}
+                        .intro-lede {
+                                color: rgb(75 85 99);
+                                font-size: 1rem;
+                                line-height: 1.6;
+                                margin-bottom: 1.5rem;
+                        }
 
-			.tech-card:hover {
-				transform: translateY(-5px);
-			}
+                        :global(.dark) .intro-lede {
+                                color: rgb(209 213 219);
+                        }
 
-			.tech-card .logo-container {
-				@apply relative w-full h-32 p-4 rounded-t-lg overflow-hidden;
-				/* Checkered background pattern for contrast with any logo color */
-				background:
-					linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
-					linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
-					linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
-					linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
-				background-size: 20px 20px;
-				background-position:
-					0 0,
-					0 10px,
-					10px -10px,
-					-10px 0px;
-				background-color: #f3f4f6;
-				border-bottom: 1px solid rgba(95, 94, 215, 0.1);
-				position: relative;
-			}
+                        .focus-areas {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 0.75rem;
+                                margin-bottom: 1.5rem;
+                        }
 
-			.tech-card .logo-container::before {
-				content: "";
-				position: absolute;
-				inset: 0;
-				background: radial-gradient(
-					circle at center,
-					rgba(95, 94, 215, 0.03) 0%,
-					transparent 70%
-				);
-				z-index: 1;
-			}
+                        .focus-areas li {
+                                list-style: none;
+                                border-radius: 9999px;
+                                padding: 0.35rem 0.95rem;
+                                font-size: 0.9rem;
+                                background: rgba(255, 255, 255, 0.8);
+                                color: rgb(31 41 55);
+                                border: 1px solid rgba(99, 102, 241, 0.3);
+                        }
 
-			/* Create a duplicate layer for contrast */
-			.tech-card .logo-container::after {
-				content: "";
-				position: absolute;
-				inset: 0;
-				background: linear-gradient(
-					135deg,
-					rgba(0, 0, 0, 0.03) 0%,
-					rgba(0, 0, 0, 0.06) 100%
-				);
-				z-index: 2;
-				mix-blend-mode: multiply;
-			}
+                        :global(.dark) .focus-areas li {
+                                background: rgba(15, 23, 42, 0.6);
+                                color: rgb(226 232 240);
+                        }
 
-			.dark .tech-card .logo-container {
-				background:
-					linear-gradient(45deg, #374151 25%, transparent 25%),
-					linear-gradient(-45deg, #374151 25%, transparent 25%),
-					linear-gradient(45deg, transparent 75%, #374151 75%),
-					linear-gradient(-45deg, transparent 75%, #374151 75%);
-				background-size: 20px 20px;
-				background-position:
-					0 0,
-					0 10px,
-					10px -10px,
-					-10px 0px;
-				background-color: #4b5563;
-			}
+                        .intro-actions {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 0.75rem;
+                        }
 
-			.dark .tech-card .logo-container::after {
-				background: linear-gradient(
-					135deg,
-					rgba(255, 255, 255, 0.03) 0%,
-					rgba(255, 255, 255, 0.06) 100%
-				);
-				mix-blend-mode: screen;
-			}
+                        .intro-panel {
+                                background: rgba(15, 23, 42, 0.85);
+                                color: white;
+                                border-radius: 1.5rem;
+                                padding: clamp(1.5rem, 4vw, 2.5rem);
+                                position: relative;
+                                overflow: hidden;
+                                isolation: isolate;
+                        }
 
-			.tech-card img {
-				@apply w-full h-full object-contain relative;
-				z-index: 10;
-				/* Multiple filters for better visibility */
-				filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5))
-					drop-shadow(0 0 1px rgba(255, 255, 255, 0.5))
-					drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) contrast(1.1);
-				mix-blend-mode: normal;
-				transition: all 0.3s ease;
-			}
+                        .intro-panel::after {
+                                content: "";
+                                position: absolute;
+                                inset: 0;
+                                background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.25), transparent 55%);
+                                z-index: -1;
+                        }
 
-			.dark .tech-card img {
-				filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5))
-					drop-shadow(0 0 1px rgba(0, 0, 0, 0.5))
-					drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) contrast(1.1)
-					brightness(1.1);
-			}
+                        .panel-title {
+                                font-size: 1.125rem;
+                                font-weight: 600;
+                                margin-bottom: 1rem;
+                                color: rgb(248 250 252);
+                        }
 
-			.tech-card:hover img {
-				transform: scale(1.05);
-				filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))
-					drop-shadow(0 0 2px rgba(255, 255, 255, 0.5))
-					drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) contrast(1.2);
-			}
+                        .stat-list {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                                gap: 1rem;
+                        }
 
-			.dark .tech-card:hover img {
-				filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5))
-					drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))
-					drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) contrast(1.2)
-					brightness(1.15);
-			}
+                        .stat-card {
+                                border-radius: 1rem;
+                                padding: 1rem;
+                                background: rgba(15, 23, 42, 0.75);
+                                border: 1px solid rgba(148, 163, 184, 0.3);
+                        }
 
-			.tech-card .content {
-				@apply p-4;
-			}
+                        .stat-value {
+                                font-size: 1.75rem;
+                                font-weight: 700;
+                                margin-bottom: 0.25rem;
+                        }
 
-			.tech-card h3 {
-				@apply text-lg font-semibold mb-2 text-gray-900 dark:text-white;
-			}
+                        .stat-label {
+                                font-size: 0.9rem;
+                                color: rgba(226, 232, 240, 0.9);
+                        }
 
-			.tech-card p {
-				@apply text-gray-600 dark:text-gray-300 text-sm line-clamp-2;
-			}
-		</style>
+                        .panel-footer {
+                                margin-top: 1.5rem;
+                                font-size: 0.95rem;
+                                color: rgba(226, 232, 240, 0.9);
+                        }
 
-		<!-- Hero Section -->
-		<PageHero
-			title="Explore the World of Technologies"
-			subtitle="Discover the latest technologies and expand your knowledge with Rawkode Academy."
-			badge="Technology Hub"
-			stats={[
-				{ label: `${technologies.length} Technologies` },
-				{ label: 'Expert Guides' },
-				{ label: 'Best Practices' }
-			]}
-		>
-			<Fragment slot="actions">
-				<Button href="#technologies" variant="primary" size="lg">Browse Technologies</Button>
-				<Button href="/courses" variant="secondary" size="lg">View Courses</Button>
-			</Fragment>
-		</PageHero>
+                        .panel-footer a {
+                                color: rgb(56, 189, 248);
+                        }
 
-		<!-- Technologies Section -->
-		<section class="w-full px-4">
-			<div class="max-w-7xl mx-auto">
-				<SectionHeader title="Technologies" showSeparator={false} class="mb-6" />
-				<div
-					class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-				>
-					{
-						technologies.map((tech) => (
-							<a href={`/technology/${tech.id}`} class="tech-card">
-								<div class="logo-container">
-									<img
-										src={tech.logo}
-										alt={`${tech.name} Logo`}
-										onerror={`this.onerror=null; this.src='/apple-touch-icon.png';`}
-									/>
-								</div>
-								<div class="content">
-									<h3>{tech.name}</h3>
-									<p>{tech.description}</p>
-								</div>
-							</a>
-						))
-					}
-				</div>
-			</div>
-		</section>
-	</div>
+                        .technology-highlights .highlight-grid {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                                gap: 1rem;
+                        }
+
+                        .highlight-card {
+                                border-radius: 1rem;
+                                padding: 1.5rem;
+                                border: 1px solid rgba(15, 23, 42, 0.08);
+                                background: rgba(255, 255, 255, 0.8);
+                                box-shadow: 0 15px 35px rgba(15, 23, 42, 0.05);
+                                height: 100%;
+                        }
+
+                        :global(.dark) .highlight-card {
+                                background: rgba(15, 23, 42, 0.7);
+                                border-color: rgba(148, 163, 184, 0.2);
+                        }
+
+                        .highlight-card h3 {
+                                font-size: 1.05rem;
+                                font-weight: 600;
+                                margin-bottom: 0.5rem;
+                        }
+
+                        .highlight-card p {
+                                font-size: 0.95rem;
+                                color: rgb(75 85 99);
+                                line-height: 1.5;
+                        }
+
+                        :global(.dark) .highlight-card p {
+                                color: rgb(209 213 219);
+                        }
+
+                        .technology-library {
+                                padding-bottom: 4rem;
+                        }
+
+                        .tech-card {
+                                @apply block rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm transition-all duration-200;
+                        }
+
+                        .tech-card:hover {
+                                transform: translateY(-4px);
+                                box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15);
+                        }
+
+                        .tech-card .logo-container {
+                                @apply relative w-full h-32 p-4 rounded-t-xl overflow-hidden;
+                                background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15), transparent 60%),
+                                        rgba(241, 245, 249, 1);
+                                border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+                        }
+
+                        :global(.dark) .tech-card .logo-container {
+                                background: radial-gradient(circle at top, rgba(99, 102, 241, 0.35), transparent 60%),
+                                        rgba(15, 23, 42, 0.95);
+                                border-bottom-color: rgba(99, 102, 241, 0.2);
+                        }
+
+                        .tech-card img {
+                                @apply w-full h-full object-contain;
+                                filter: drop-shadow(0px 6px 12px rgba(15, 23, 42, 0.2));
+                                transition: transform 200ms ease;
+                        }
+
+                        .tech-card:hover img {
+                                transform: scale(1.04);
+                        }
+
+                        .tech-card .content {
+                                @apply p-4;
+                        }
+
+                        .tech-card h3 {
+                                @apply text-lg font-semibold text-slate-900 dark:text-white mb-1;
+                        }
+
+                        .tech-card p {
+                                @apply text-sm text-slate-600 dark:text-slate-300 line-clamp-2;
+                        }
+                </style>
+
+                <section class="section-shell technology-intro">
+                        <div class="section-shell__inner intro-grid">
+                                <div class="intro-primary">
+                                        <p class="intro-eyebrow">Technology hub</p>
+                                        <h1 class="intro-title">Stay aligned with the tools shaping modern cloud native teams.</h1>
+                                        <p class="intro-lede">
+                                                Rawkode Academy curates research-backed explainers, live workshops, and platform
+                                                walkthroughs so you can make confident technology choices without sifting through
+                                                endless feeds.
+                                        </p>
+                                        <ul class="focus-areas">
+                                                {focusAreas.map((area) => (
+                                                        <li>{area}</li>
+                                                ))}
+                                        </ul>
+                                        <div class="intro-actions">
+                                                <Button href="#technologies" variant="primary" size="lg">Browse technologies</Button>
+                                                <Button href="/learning-paths" variant="secondary" size="lg">View learning paths</Button>
+                                        </div>
+                                </div>
+                                <div class="intro-panel">
+                                        <p class="panel-title">What you can expect</p>
+                                        <div class="stat-list">
+                                                {stats.map((stat) => (
+                                                        <div class="stat-card">
+                                                                <div class="stat-value">{stat.value}</div>
+                                                                <div class="stat-label">{stat.label}</div>
+                                                        </div>
+                                                ))}
+                                        </div>
+                                        <p class="panel-footer">
+                                                New deep dives are published alongside <a href="/shows">Rawkode Academy shows</a>,
+                                                events, and community sessions so you always have a companion resource while you watch.
+                                        </p>
+                                </div>
+                        </div>
+                </section>
+
+                <section class="section-shell technology-highlights">
+                        <div class="section-shell__inner">
+                                <SectionHeader title="How we cover technologies" showSeparator={false} class="mb-6" />
+                                <div class="highlight-grid">
+                                        {highlights.map((item) => (
+                                                <article class="highlight-card">
+                                                        <h3>{item.title}</h3>
+                                                        <p>{item.description}</p>
+                                                </article>
+                                        ))}
+                                </div>
+                        </div>
+                </section>
+
+                <section class="section-shell technology-library" id="technologies">
+                        <div class="section-shell__inner">
+                                <SectionHeader title="Technology library" showSeparator={false} class="mb-6" />
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                        {technologies.map((tech) => (
+                                                <a href={`/technology/${tech.id}`} class="tech-card">
+                                                        <div class="logo-container">
+                                                                <img
+                                                                        src={tech.logo}
+                                                                        alt={`${tech.name} Logo`}
+                                                                        loading="lazy"
+                                                                        onerror={`this.onerror=null; this.src='/apple-touch-icon.png';`}
+                                                                />
+                                                        </div>
+                                                        <div class="content">
+                                                                <h3>{tech.name}</h3>
+                                                                <p>{tech.description}</p>
+                                                        </div>
+                                                </a>
+                                        ))}
+                                </div>
+                        </div>
+                </section>
+        </div>
 </Page>
