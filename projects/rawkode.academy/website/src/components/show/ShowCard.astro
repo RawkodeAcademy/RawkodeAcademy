@@ -12,16 +12,21 @@ const hostNames = (show.hosts ?? [])
 	.filter(Boolean);
 
 const episodes = (show.episodes ?? []).filter(
-	(ep): ep is NonNullable<typeof ep> => ep !== null && ep.video !== null,
+        (ep): ep is NonNullable<typeof ep> => ep !== null && ep.video !== null,
 );
 
-const latestEpisode = episodes
-	.filter((ep) => ep.video?.thumbnailUrl && ep.video?.publishedAt)
-	.sort((a, b) => {
-		const aTime = new Date(a.video!.publishedAt!).getTime();
-		const bTime = new Date(b.video!.publishedAt!).getTime();
-		return bTime - aTime;
-	})[0];
+const fallbackEpisodes = episodes
+        .filter((ep) => ep.video?.thumbnailUrl && ep.video?.publishedAt)
+        .sort((a, b) => {
+                const aTime = new Date(a.video!.publishedAt!).getTime();
+                const bTime = new Date(b.video!.publishedAt!).getTime();
+                return bTime - aTime;
+        });
+
+const latestEpisode =
+        show.latestEpisode?.video?.thumbnailUrl && show.latestEpisode?.video?.publishedAt
+                ? show.latestEpisode
+                : fallbackEpisodes[0];
 
 const thumbnailUrl = latestEpisode?.video?.thumbnailUrl;
 const latestEpisodeTitle = latestEpisode?.video?.title;

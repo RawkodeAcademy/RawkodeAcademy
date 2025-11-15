@@ -19,31 +19,55 @@ const showEntries = await getCollection("shows");
 const videos = await getCollection("videos");
 
 const showsToRender: ShowSummary[] = await (async () => {
-	const list: ShowSummary[] = [];
-	for (const s of showEntries) {
-		const people = await getEntries(s.data.hosts);
-		const hosts = people.map((p) => {
-			const parts = String(p.data.name).trim().split(/\s+/);
+        const list: ShowSummary[] = [];
+        for (const s of showEntries) {
+                const people = await getEntries(s.data.hosts);
+                const hosts = people.map((p) => {
+                        const parts = String(p.data.name).trim().split(/\s+/);
 			return {
 				forename: parts[0] || "",
 				surname: parts.slice(1).join(" ") || "",
 			};
 		});
-		const eps = videos
-			.filter((v) => (v.data.show as string | undefined) === s.data.id)
-			.map((v) => ({
-				video: {
-					title: v.data.title,
-					thumbnailUrl: `https://content.rawkode.academy/videos/${v.data.videoId}/thumbnail.jpg`,
-					publishedAt:
-						v.data.publishedAt instanceof Date
-							? v.data.publishedAt.toISOString()
-							: String(v.data.publishedAt),
-				},
-			}));
-		list.push({ id: s.data.id, name: s.data.name, hosts, episodes: eps });
-	}
-	return list;
+                const eps = videos
+                        .filter((v) => (v.data.show as string | undefined) === s.data.id)
+                        .map((v) => ({
+                                video: {
+                                        title: v.data.title,
+                                        thumbnailUrl: `https://content.rawkode.academy/videos/${v.data.videoId}/thumbnail.jpg`,
+                                        publishedAt:
+                                                v.data.publishedAt instanceof Date
+                                                        ? v.data.publishedAt.toISOString()
+                                                        : String(v.data.publishedAt),
+                                },
+                        }));
+                const latestEpisode = eps.reduce<ShowSummary["latestEpisode"]>((latest, episode) => {
+                        const episodeHasThumbnail = Boolean(
+                                episode?.video?.thumbnailUrl && episode.video?.publishedAt,
+                        );
+                        if (!episodeHasThumbnail) {
+                                return latest;
+                        }
+
+                        if (!latest?.video?.publishedAt) {
+                                return episode;
+                        }
+
+                        const latestTime = new Date(latest.video.publishedAt).getTime();
+                        const episodeTime = new Date(episode.video!.publishedAt!).getTime();
+
+                        return episodeTime > latestTime ? episode : latest;
+                }, null);
+
+                list.push({
+                        id: s.data.id,
+                        name: s.data.name,
+                        hosts,
+                        episodes: eps,
+                        latestEpisode: latestEpisode ?? null,
+                });
+        }
+        return list;
 })();
 
 const hasShows = showsToRender.length > 0;

@@ -12,8 +12,9 @@ export interface ShowEpisode {
 }
 
 export interface ShowSummary {
-	id: string;
-	name: string;
-	hosts?: ShowHost[] | null;
-	episodes?: (ShowEpisode | null)[] | null;
+        id: string;
+        name: string;
+        hosts?: ShowHost[] | null;
+        episodes?: (ShowEpisode | null)[] | null;
+        latestEpisode?: ShowEpisode | null;
 }
