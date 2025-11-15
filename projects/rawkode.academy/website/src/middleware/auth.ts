@@ -4,12 +4,57 @@ import { createBetterAuthClient } from "@/lib/auth/better-auth-client.ts";
 export const authMiddleware = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
 	if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-out")) {
+		console.log(`[AUTH] Intercepting: ${pathname}`);
+
 		const authService = context.locals.runtime?.env?.AUTH_SERVICE;
 		if (!authService) {
-			console.error("AUTH_SERVICE not available");
-			return new Response("Auth service not configured", { status: 500 });
+			console.error("[AUTH] AUTH_SERVICE not available");
+			return new Response(
+				JSON.stringify({
+					error: "Authentication service not configured",
+					message: "Please ensure AUTH_SERVICE binding is configured in wrangler.jsonc",
+					hint: "In local development, you may need to run the authentication service or use a deployed instance"
+				}),
+				{
+					status: 503,
+					headers: { "Content-Type": "application/json" }
+				}
+			);
 		}
-		return authService.fetch(context.request);
+
+		console.log("[AUTH] AUTH_SERVICE available, proxying request");
+
+		try {
+			// Create a new Request with the proper URL for the service binding
+			const proxyUrl = new URL(context.url.pathname + context.url.search, "https://auth.internal");
+			console.log(`[AUTH] Proxy URL: ${proxyUrl.toString()}`);
+
+			const proxyRequest = new Request(proxyUrl.toString(), {
+				method: context.request.method,
+				headers: context.request.headers,
+				body: context.request.method !== "GET" && context.request.method !== "HEAD"
+					? context.request.body
+					: undefined,
+			});
+
+			const response = await authService.fetch(proxyRequest);
+			console.log(`[AUTH] Response status: ${response.status}`);
+
+			return response;
+		} catch (error) {
+			console.error("[AUTH] Failed to proxy auth request:", error);
+			return new Response(
+				JSON.stringify({
+					error: "Authentication service unavailable",
+					message: error instanceof Error ? error.message : String(error),
+					hint: "Remote service bindings may not be available in local development"
+				}),
+				{
+					status: 503,
+					headers: { "Content-Type": "application/json" }
+				}
+			);
+		}
 	}
 
 	if (context.isPrerendered) {

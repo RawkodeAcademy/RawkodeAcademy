@@ -21,9 +21,12 @@ export const canonicalMiddleware: MiddlewareHandler = async (context, next) => {
 	const desiredHost = "rawkode.academy";
 	const prodHosts = new Set([desiredHost, `www.${desiredHost}`]);
 
+	console.log(`[CANONICAL] Host: ${originalHost}, Protocol: ${url.protocol}`);
+
 	// Skip canonicalization for non-production hosts (local dev, preview domains)
 	// Examples: localhost, 127.0.0.1, *.pages.dev, *.workers.dev, any host not our prod apex or www
 	if (!prodHosts.has(originalHost)) {
+		console.log(`[CANONICAL] Skipping canonical for non-prod host: ${originalHost}`);
 		return next();
 	}
 
