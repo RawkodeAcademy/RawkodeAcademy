@@ -170,12 +170,6 @@ const currentNavItems = computed(() => {
 	if (mode.value === "connect") return connectNavItems.value;
 	return collaborateNavItems.value;
 });
-
-const modeDescription = computed(() => {
-	if (mode.value === "learn") return "Browse educational content";
-	if (mode.value === "connect") return "Join our community";
-	return "Work with us";
-});
 </script>
 
 <template>
@@ -196,48 +190,53 @@ const modeDescription = computed(() => {
 				v-if="!isCollapsed"
 				class="px-3 py-4 border-b border-white/20 dark:border-gray-700/40"
 			>
-				<div class="flex items-center gap-1 bg-white/30 dark:bg-gray-700/40 backdrop-blur-md rounded-xl p-1 border border-white/30 dark:border-gray-500/50 shadow-inner">
+				<div class="flex flex-col gap-2">
 					<button
 						@click="mode = 'learn'; localStorage.setItem('sidebar-mode', 'learn')"
 						:class="[
-							'flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
+							'flex items-start gap-3 px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200',
 							mode === 'learn'
 								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-600/95 dark:to-gray-600/80 text-primary dark:text-white shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.5)] backdrop-blur-md border dark:border-gray-400/50'
-								: 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-gray-600/50',
+								: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-gray-700/60 border border-transparent',
 						]"
 					>
-						<BookOpenIcon class="w-4 h-4 flex-shrink-0" />
-						<span class="hidden sm:inline">Learn</span>
+						<BookOpenIcon class="w-5 h-5 flex-shrink-0 mt-0.5" />
+						<div class="flex-1 text-left">
+							<div class="font-semibold">Learn</div>
+							<div class="text-xs opacity-80 mt-0.5">Browse educational content</div>
+						</div>
 					</button>
 					<button
 						@click="mode = 'connect'; localStorage.setItem('sidebar-mode', 'connect')"
 						:class="[
-							'flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
+							'flex items-start gap-3 px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200',
 							mode === 'connect'
 								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-600/95 dark:to-gray-600/80 text-primary dark:text-white shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.5)] backdrop-blur-md border dark:border-gray-400/50'
-								: 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-gray-600/50',
+								: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-gray-700/60 border border-transparent',
 						]"
 					>
-						<UsersIcon class="w-4 h-4 flex-shrink-0" />
-						<span class="hidden sm:inline">Connect</span>
+						<UsersIcon class="w-5 h-5 flex-shrink-0 mt-0.5" />
+						<div class="flex-1 text-left">
+							<div class="font-semibold">Connect</div>
+							<div class="text-xs opacity-80 mt-0.5">Join our community</div>
+						</div>
 					</button>
 					<button
 						@click="mode = 'collaborate'; localStorage.setItem('sidebar-mode', 'collaborate')"
 						:class="[
-							'flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
+							'flex items-start gap-3 px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200',
 							mode === 'collaborate'
 								? 'bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-600/95 dark:to-gray-600/80 text-primary dark:text-white shadow-[0_2px_12px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.5)] backdrop-blur-md border dark:border-gray-400/50'
-								: 'text-gray-600 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-gray-600/50',
+								: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-gray-700/60 border border-transparent',
 						]"
 					>
-						<BuildingOfficeIcon class="w-4 h-4 flex-shrink-0" />
-						<span class="hidden sm:inline">Collab</span>
+						<BuildingOfficeIcon class="w-5 h-5 flex-shrink-0 mt-0.5" />
+						<div class="flex-1 text-left">
+							<div class="font-semibold">Collaborate</div>
+							<div class="text-xs opacity-80 mt-0.5">Work with us</div>
+						</div>
 					</button>
 				</div>
-				<!-- Mode Description -->
-				<p class="mt-3 text-xs text-gray-600 dark:text-gray-300 text-center">
-					{{ modeDescription }}
-				</p>
 			</div>
 
 			<!-- Mode Toggle (Collapsed) -->
