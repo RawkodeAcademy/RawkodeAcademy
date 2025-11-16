@@ -170,6 +170,12 @@ const currentNavItems = computed(() => {
 	if (mode.value === "connect") return connectNavItems.value;
 	return collaborateNavItems.value;
 });
+
+const modeDescription = computed(() => {
+	if (mode.value === "learn") return "Browse educational content";
+	if (mode.value === "connect") return "Join our community";
+	return "Work with us";
+});
 </script>
 
 <template>
@@ -228,6 +234,10 @@ const currentNavItems = computed(() => {
 						<span class="hidden sm:inline">Collab</span>
 					</button>
 				</div>
+				<!-- Mode Description -->
+				<p class="mt-3 text-xs text-gray-600 dark:text-gray-300 text-center">
+					{{ modeDescription }}
+				</p>
 			</div>
 
 			<!-- Mode Toggle (Collapsed) -->
@@ -248,6 +258,13 @@ const currentNavItems = computed(() => {
 
 			<!-- Navigation -->
 			<nav class="flex-1 overflow-y-auto py-6 px-3">
+				<!-- Mode Header -->
+				<div v-if="!isCollapsed" class="mb-4 px-3">
+					<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+						{{ mode === 'learn' ? 'Learning Resources' : mode === 'connect' ? 'Get Involved' : 'Partner With Us' }}
+					</h2>
+				</div>
+
 				<!-- Main Navigation -->
 				<ul :class="['space-y-1', isCollapsed ? 'space-y-0.5 pr-1' : '']">
 					<li v-for="item in currentNavItems" :key="item.href">
