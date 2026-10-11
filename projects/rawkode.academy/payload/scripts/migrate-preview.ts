@@ -34,9 +34,11 @@ try {
 
 if (pullRequest) {
   // Seed only this isolated PR target with public repository content and its
-  // static assets. The importer validates the resource identity again.
+  // static assets. The importer validates the resource identity again. A retry
+  // of this same PR/SHA may resume its watermark; stale or changed source data
+  // and editorial conflicts still fail the importer's per-record guards.
   const manifest = JSON.parse(readFileSync('.runtime/pr-preview-resources.json', 'utf8')) as { sha: string }
   if (manifest.sha !== pullRequestIdentity().sha) throw new Error('PR preview manifest does not match the pull request head SHA.')
-  execFileSync('bun', ['run', 'import:static', '--', '--target=pr-preview'], { stdio: 'inherit', env: process.env })
+  execFileSync('bun', ['run', 'import:static', '--', '--target=pr-preview', '--resume'], { stdio: 'inherit', env: process.env })
 }
 console.log('Preview D1 migrations applied')

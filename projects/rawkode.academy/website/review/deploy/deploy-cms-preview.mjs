@@ -15,7 +15,10 @@ if (resources.pullRequestNumber !== identity.pullRequestNumber || resources.sha 
 }
 
 const names = namesForPullRequest(identity.pullRequestNumber, identity.sha)
-const waitSeconds = Number(process.env.PR_PREVIEW_WAIT_SECONDS ?? '1500')
+// A fresh isolated Payload target seeds the full catalogue, including more
+// than 9,000 chapters, before its check succeeds. Keep waiting for that exact
+// SHA rather than timing out while the matching import is still progressing.
+const waitSeconds = Number(process.env.PR_PREVIEW_WAIT_SECONDS ?? '7200')
 if (!Number.isSafeInteger(waitSeconds) || waitSeconds < 1 || waitSeconds > 7200) {
 	throw new Error('PR_PREVIEW_WAIT_SECONDS must be between 1 and 7200.')
 }
