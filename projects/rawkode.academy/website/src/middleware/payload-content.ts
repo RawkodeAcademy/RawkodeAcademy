@@ -111,7 +111,7 @@ function requestCanUseResponseCache(request: Request): boolean {
 	if (
 		pathname.startsWith("/cms-assets/") ||
 		pathname.startsWith("/cms-diagrams/") ||
-		pathname === "/__cms-preview-check"
+		pathname === "/api/cms-preview-check"
 	) {
 		return false;
 	}

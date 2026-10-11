@@ -7,7 +7,7 @@ import ts from "typescript";
 let currentEnv;
 const context = vm.createContext({ Response, Request, URL, console });
 const module = new vm.SourceTextModule(ts.transpileModule(
-	readFileSync(new URL("../pages/__cms-preview-check.ts", import.meta.url), "utf8"),
+	readFileSync(new URL("../pages/api/cms-preview-check.ts", import.meta.url), "utf8"),
 	{ compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } },
 ).outputText, { context });
 await module.link(specifier => {

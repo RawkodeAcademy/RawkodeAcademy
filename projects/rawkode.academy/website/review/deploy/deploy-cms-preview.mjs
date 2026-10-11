@@ -287,7 +287,7 @@ try {
 	// This preview-only POST proves the paired bridge is reachable and returns a
 	// future publication fixture. It also exercises the CMS D2 save hook when
 	// the isolated preview has a D2_RENDERER binding.
-	const diagnosticUrl = new URL('/__cms-preview-check', previewUrl)
+	const diagnosticUrl = new URL('/api/cms-preview-check', previewUrl)
 	const diagnosticDeadline = Date.now() + Math.min(waitSeconds, 120) * 1000
 	let sentinel
 	let scheduledVideo
