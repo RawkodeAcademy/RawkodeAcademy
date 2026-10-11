@@ -29,10 +29,10 @@ const applicationBody = [
 	"Name:",
 	"Company and product:",
 	"Target developers or platform teams:",
-	"Technical buyer:",
-	"Current adoption challenge:",
+	"Who decides whether to use your product:",
+	"What is difficult for developers using your product:",
 	"Working demo, docs, or repository:",
-	"Budget and preferred quarter:",
+	"Budget and preferred start date:",
 	"Links worth a look:",
 ].join("\n");
 
@@ -43,57 +43,56 @@ const applicationBody = [
  */
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
-	name: "Adoption Advisory",
-	label: "Rawkode Partner Programme",
+	name: "90-day partnership",
+	label: "Work with Rawkode Academy",
 	price: "£4,000 / month",
 	priceShort: "£4k/mo",
 	cadence:
-		"Initial 90-day cycle: £12,000 total, billed monthly. Renewal: further 90-day cycles, agreed together.",
+		"First 90 days: £12,000 in total, billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Ongoing access to David's practitioner perspective and technical advice for infrastructure companies. Use Slack and monthly working sessions to improve your technical proof, with a joint webinar and one practical takeaway each quarter.",
+		"Ask David technical questions in Slack and meet for an hour each month. You also get one joint webinar with David and your technical expert every 90 days, plus one short PDF guide or a code example developers can run.",
 	included: [
-		"Slack Connect for technical questions, reviews and decisions about the agreed workflow",
-		"One 60-minute working session each month, with decisions and next actions shared in Slack",
-		"One quarterly joint webinar, co-hosted by David and your technical expert",
-		"One practical takeaway chosen for the topic: a short PDF guide or a runnable example code repository",
-		"A short recap in Slack with decisions and next steps",
+		"Slack Connect to ask David questions and get feedback on the agreed use case",
+		"One 60-minute session with David each month to review questions and decide what to do next",
+		"One webinar every 90 days, co-hosted by David and your technical expert",
+		"One resource to go with the webinar: a short PDF guide or a code repository with an example developers can run",
+		"A short written recap in Slack with decisions and next steps",
 	],
 	excluded: [
-		"On-call support, incident response, outsourced DevRel and campaign management are outside the programme.",
-		"The work is paid for; the technical judgement stays independent. There is no guarantee of praise, leads or separate editorial coverage.",
-		"Additional webinars, new integrations and ongoing repository maintenance are outside the programme.",
+		"On-call support, incident response, running your developer relations team and managing campaigns are outside the partnership.",
+		"David gives honest feedback. Praise, leads and separate coverage are not guaranteed.",
+		"Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
 	],
 	notes: [
 		"Together, we'll choose a useful technical topic and turn it into a webinar and a practical resource developers can use.",
 	],
-	mailto: buildMailto("Adoption Advisory application", applicationBody),
+	mailto: buildMailto("90-day partnership application", applicationBody),
 };
 
 /** Optional paid qualification route. It is not required for every partner. */
 export const fitProofReview: PartnershipOffer = {
 	id: "fit-proof-review",
-	name: "Fit & Proof Review",
-	label: "Optional qualification",
+	name: "Product demo review",
+	label: "Optional starting point",
 	price: "£2,500",
 	priceShort: "£2.5k",
-	cadence: "One fixed-scope review",
+	cadence: "One agreed use case",
 	summary:
-		"Find the gaps in one important technical evaluation journey. David reviews the agreed demonstration and supporting materials, identifies the three most important proof gaps and recommends what to fix or demonstrate next.",
+		"David tries one agreed use case using your demo and documentation. You get a written list of what's confusing, what's missing and what to fix first. We spend an hour going through the findings and your questions.",
 	included: [
-		"One named technical workflow and its current proof gaps",
-		"An agreed set of demo, documentation and adoption materials, reviewed asynchronously",
-		"A written scorecard and prioritised next-step plan",
-		"One 60-minute readout",
+		"David tries one agreed use case using your demo and documentation",
+		"A written list of what is confusing, what is missing and what to fix first",
+		"A one-hour call with David to go through the findings and your questions",
 	],
 	excluded: [
-		"Open-ended Slack access or implementation work",
-		"Coverage, mentions, lead generation, or audience rental",
+		"Ongoing Slack access or building and fixing your product",
+		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"We agree the materials and delivery date before the review begins. The findings and next-step plan are yours to use whether or not you continue with Adoption Advisory.",
-		"The full £2,500 is credited against your first Adoption Advisory invoice when the partnership starts within 30 days of the readout. If you continue with the same workflow, the review becomes your onboarding, so we can start from its findings rather than repeat discovery.",
+		"We agree the use case, demo, documentation and delivery date before starting. You can use the written findings whether or not you continue with the partnership.",
+		"The full £2,500 comes off your first partnership invoice if you start within 30 days of our call. For the same use case, the review is our starting point, so we do not repeat it when the partnership begins.",
 	],
-	mailto: buildMailto("Fit & Proof Review application", applicationBody),
+	mailto: buildMailto("Product demo review request", applicationBody),
 };
 
 /** Compatibility shape for components that render the primary offer. */
@@ -108,14 +107,21 @@ export const applicationPaths = [
 ] as const;
 export type ApplicationPath = (typeof applicationPaths)[number];
 
+/** Plain labels for existing form values and preselection links. */
+export const applicationPathLabels: Record<ApplicationPath, string> = {
+	"Adoption Advisory": partnershipOffer.name,
+	"Fit & Proof Review": fitProofReview.name,
+	"Not sure yet": "Not sure yet",
+};
+
 /** Boundaries for the full partnership programme. */
 export const partnershipBoundaries = [
-	"Your team supplies and maintains the working demo, environment, code and integrations. Product fixes and implementation stay with your team.",
-	"David provides ongoing technical advice, reviews the working example, shapes the webinar and co-hosts with your technical expert.",
-	"The work is paid for; the technical judgement stays independent. There is no guarantee of praise, leads or separate editorial coverage.",
-	"On-call support, incident response, outsourced DevRel and campaign management are outside the programme.",
-	"Each 90-day cycle includes one joint webinar and one practical takeaway for the agreed workflow. Additional webinars, new integrations and ongoing repository maintenance are outside the programme.",
-	"Exclusivity is considered only for a specifically agreed scope and price.",
+	"Your team supplies and maintains the demo, environment, code and integrations. Your team builds the product and fixes problems.",
+	"David answers technical questions, reviews the demo, helps plan the webinar and co-hosts it with your technical expert.",
+	"David gives honest feedback. Praise, leads and separate coverage are not guaranteed.",
+	"On-call support, incident response, running your developer relations team and managing campaigns are outside the partnership.",
+	"Each 90 days covers one agreed use case, one joint webinar and one PDF guide or runnable code example. Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
+	"Exclusivity needs a separate agreement on the work and price.",
 ] as const;
 
 /** General partnership application mailto used as a fallback. */

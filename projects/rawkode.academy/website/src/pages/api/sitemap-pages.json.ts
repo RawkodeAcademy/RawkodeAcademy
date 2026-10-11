@@ -141,7 +141,7 @@ async function generateNavigationItems(
 			title: "For Organizations",
 			category: "Organizations",
 			description:
-				"Partnerships for cloud-native and DevTool teams reviewing technical buyer proof, docs, demos, launches, and sales enablement",
+				"Work with David on your product demo and documentation, ask questions in Slack, and co-host a webinar",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -161,7 +161,7 @@ async function generateNavigationItems(
 			title: "Partner application",
 			category: "Organizations",
 			description:
-				"Apply for the Rawkode Academy partner programme or a Fit & Proof Review",
+				"Apply for a Rawkode Academy partnership or a product demo review",
 			keywords: [
 				"fit check",
 				"adoption",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Partnerships for cloud-native and DevTool teams with evaluation risk in docs, demos, launches, technical proof, and sales enablement",
+				"Ask David technical questions, review your demo and documentation, and co-host a webinar, or start with a product demo review",
 			keywords: [
 				"partnerships",
 				"practitioner proof",

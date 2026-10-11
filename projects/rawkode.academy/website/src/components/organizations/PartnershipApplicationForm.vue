@@ -46,10 +46,10 @@
 						<Field.ErrorText v-if="fieldErrors.company" :class="s.fieldError">{{ fieldErrors.company }}</Field.ErrorText>
 					</Field.Root>
 					<Field.Root :class="s.field" :disabled="loading">
-						<Field.Label :class="s.label">Preferred route</Field.Label>
+						<Field.Label :class="s.label">What would you like help with?</Field.Label>
 						<Field.Select v-model="path" name="path" :class="s.input">
 							<option v-for="option in applicationPaths" :key="option" :value="option">
-								{{ option }}
+								{{ applicationPathLabels[option] }}
 							</option>
 						</Field.Select>
 					</Field.Root>
@@ -67,7 +67,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.technicalBuyer)" :disabled="loading">
-					<Field.Label :class="s.label">Technical buyer <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Who decides whether to use your product? <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="technicalBuyer"
 						type="text"
@@ -77,7 +77,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.challenge)" :disabled="loading">
-					<Field.Label :class="s.label">Your current adoption challenge</Field.Label>
+					<Field.Label :class="s.label">What is difficult for developers using your product?</Field.Label>
 					<Field.Textarea :class="[s.input, s.textarea]"
 						v-model="challenge"
 						name="challenge"
@@ -98,7 +98,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.budgetQuarter)" :disabled="loading">
-					<Field.Label :class="s.label">Budget and preferred quarter <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Budget and preferred start date <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="budgetQuarter"
 						type="text"
@@ -129,7 +129,11 @@ import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
 import { academyForms } from "@rawkodeacademy/design-system";
 
 import { actions, isInputError } from "astro:actions";
-import { applicationPaths, type ApplicationPath } from "@/lib/partnerships";
+import {
+	applicationPathLabels,
+	applicationPaths,
+	type ApplicationPath,
+} from "@/lib/partnerships";
 
 const s = academyForms();
 const errorId = `${useId()}-error`;
@@ -155,7 +159,8 @@ const error = ref("");
 const fieldErrors = ref<Record<string, string>>({});
 const statusMessage = computed(() => {
 	if (!ready.value) return "Loading application form...";
-	if (submitted.value) return "Application received. David reads every application and replies either way.";
+	if (submitted.value)
+		return "Application received. David reads every application and replies either way.";
 	return loading.value ? "Sending application..." : "";
 });
 
@@ -200,10 +205,14 @@ async function submit() {
 			company: company.value,
 			path: path.value,
 			targetDevelopers: targetDevelopers.value,
-			...(technicalBuyer.value.trim() ? { technicalBuyer: technicalBuyer.value } : {}),
+			...(technicalBuyer.value.trim()
+				? { technicalBuyer: technicalBuyer.value }
+				: {}),
 			challenge: challenge.value,
 			...(proofAssets.value.trim() ? { proofAssets: proofAssets.value } : {}),
-			...(budgetQuarter.value.trim() ? { budgetQuarter: budgetQuarter.value } : {}),
+			...(budgetQuarter.value.trim()
+				? { budgetQuarter: budgetQuarter.value }
+				: {}),
 			...(links.value.trim() ? { links: links.value } : {}),
 		});
 

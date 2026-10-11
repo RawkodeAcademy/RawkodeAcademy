@@ -2,7 +2,7 @@ import { defineAction } from "astro:actions";
 import { z } from "astro/zod";
 import { EmailMessage } from "cloudflare:email";
 import { env } from "cloudflare:workers";
-import { applicationPaths } from "@/lib/partnerships";
+import { applicationPathLabels, applicationPaths } from "@/lib/partnerships";
 
 // Sender must be on a domain onboarded to Cloudflare Email Routing.
 // rawkode.academy's MX points at Google Workspace, so we send from
@@ -48,7 +48,10 @@ export const partnership = {
 			challenge: z
 				.string()
 				.trim()
-				.min(1, "Please describe your current adoption challenge")
+				.min(
+					1,
+					"Please describe what is difficult for developers using your product",
+				)
 				.max(5000),
 			proofAssets: z.string().trim().max(2000).optional(),
 			budgetQuarter: z.string().trim().max(500).optional(),
@@ -56,7 +59,7 @@ export const partnership = {
 		}),
 		handler: async (input) => {
 			const subject = encodeHeader(
-				`Partnership application: ${input.path} - ${input.company}`.slice(
+				`Partnership application: ${applicationPathLabels[input.path]} - ${input.company}`.slice(
 					0,
 					180,
 				),
@@ -65,7 +68,7 @@ export const partnership = {
 			const body = [
 				`Name: ${input.name}`,
 				`Email: ${input.email}`,
-				`Preferred path: ${input.path}`,
+				`Help requested: ${applicationPathLabels[input.path]}`,
 				"",
 				"Company and product:",
 				input.company,
@@ -73,16 +76,20 @@ export const partnership = {
 				"Target developers or platform teams:",
 				input.targetDevelopers,
 				...(input.technicalBuyer
-					? ["", "Technical buyer:", input.technicalBuyer]
+					? [
+							"",
+							"Who decides whether to use your product:",
+							input.technicalBuyer,
+						]
 					: []),
 				"",
-				"Current adoption challenge:",
+				"What is difficult for developers using your product:",
 				input.challenge,
 				...(input.proofAssets
 					? ["", "Working demo, docs, or repository:", input.proofAssets]
 					: []),
 				...(input.budgetQuarter
-					? ["", "Budget and preferred quarter:", input.budgetQuarter]
+					? ["", "Budget and preferred start date:", input.budgetQuarter]
 					: []),
 				...(input.links ? ["", "Links worth a look:", input.links] : []),
 				"",
