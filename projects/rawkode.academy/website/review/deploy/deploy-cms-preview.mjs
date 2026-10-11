@@ -299,6 +299,7 @@ try {
 					!Object.prototype.hasOwnProperty.call(body, 'd2Save')
 			if (
 				response.ok &&
+				body?.demoProjectionPrivate === true &&
 				typeof body?.video?.id === 'string' &&
 				typeof body?.video?.slug === 'string' && body.video.slug.trim() &&
 				typeof body?.video?.title === 'string' && body.video.title.trim() &&
@@ -427,6 +428,7 @@ try {
 	if (!webContainerReady) {
 		throw new Error(`The Payload-backed WebContainer SSR check failed at ${webContainerUrl}: ${webContainerState}`)
 	}
+	console.log('Ordinary summary/full content projections omit demo source files and local import paths.');
 	console.log(`WebContainer SSR check passed: ${webContainerPath} rendered the imported demo title and file content with COOP same-origin and COEP require-corp.`)
 
 	// Verify the scheduled fixture is hidden while its explicit publishedAt
@@ -581,12 +583,16 @@ try {
 			const returnedSourceHash = response.headers.get('x-source-checksum')
 			const returnedSvgChecksum = response.headers.get('x-content-checksum')
 			const etag = response.headers.get('etag')?.replace(/^W\//, '').replace(/^"|"$/g, '')
+			const svg = response.ok && contentType === 'image/svg+xml' ? await response.text() : ''
+			const actualChecksum = svg ? createHash('sha256').update(svg.trim()).digest('hex') : ''
 			if (
 				response.ok &&
 				contentType === 'image/svg+xml' &&
 				returnedSourceHash === sourceHash &&
 				/^[a-f0-9]{64}$/i.test(returnedSvgChecksum ?? '') &&
-				etag === returnedSvgChecksum
+				etag === returnedSvgChecksum &&
+				actualChecksum === returnedSvgChecksum &&
+				svg.trim().startsWith('<svg') && svg.trim().endsWith('</svg>')
 			) {
 				await response.body?.cancel().catch(() => {})
 				const cacheProbe = await fetch(diagramUrl, {

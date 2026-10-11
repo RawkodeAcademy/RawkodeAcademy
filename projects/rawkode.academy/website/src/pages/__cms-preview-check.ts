@@ -140,10 +140,37 @@ export const POST: APIRoute = async ({ locals }) => {
 			};
 		}
 
+		// Probe the raw bridge projection, before the website maps its fields.
+		// Only the dedicated demo endpoint may return inline files/import paths.
+		for (const view of ["summary", "full"]) {
+			const projectionUrl = new URL("https://payload.internal/v1/collections/course-modules");
+			projectionUrl.searchParams.set("slug", "complete-guide-zitadel/01-introduction");
+			projectionUrl.searchParams.set("view", view);
+			const projectionResponse = await env.PAYLOAD_CONTENT.fetch(new Request(projectionUrl));
+			const projection: unknown = await projectionResponse.json();
+			if (!projectionResponse.ok || !isRecord(projection) || !isRecord(projection.doc) || projection.doc.slug !== "complete-guide-zitadel/01-introduction") {
+				throw new Error("The ordinary module projection is missing its source fixture.");
+			}
+			const forbidden = new Set(["files", "import", "localDir", "sourcePath", "sourceAssets"]);
+			const inspect = (value: unknown): void => {
+				if (Array.isArray(value)) { value.forEach(inspect); return; }
+				if (!isRecord(value)) return;
+				for (const [key, child] of Object.entries(value)) {
+					if (forbidden.has(key)) throw new Error(`Ordinary content exposed private demo field: ${key}`);
+					inspect(child);
+				}
+			};
+			inspect(projection.doc);
+			if (view === "full" && (!Array.isArray(projection.doc.contentResources) || !projection.doc.contentResources.some(resource => isRecord(resource) && isRecord(resource.embedConfig) && resource.embedConfig.container === "webcontainer"))) {
+				throw new Error("The full module projection is missing its sanitized demo metadata.");
+			}
+		}
+
 		return new Response(
 			JSON.stringify({
 				video: { id: video.id, slug: video.slug, title: video.data.title },
 				scheduledVideo,
+				demoProjectionPrivate: true,
 				d2SaveCapability,
 				...(d2SaveEvidence ? { d2Save: d2SaveEvidence } : {}),
 			}),
