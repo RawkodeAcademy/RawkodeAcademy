@@ -1,6 +1,27 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { isTransientD1Error, retryTransientD1 } from '../src/d1-retry'
+import { errorLogReplacer } from '../src/error-log'
+
+test('D1 diagnostics retain nested causes without custom query or credential properties', () => {
+  const cause = Object.assign(new Error('D1_ERROR: Network connection lost.'), { token: 'not-for-logs' })
+  const error = Object.assign(new Error('Failed query: CREATE INDEX', { cause }), { params: ['private-value'] })
+  assert.deepEqual(JSON.parse(JSON.stringify({ level: 'error', err: error }, errorLogReplacer)), {
+    level: 'error', err: { name: 'Error', message: 'Failed query: CREATE INDEX', cause: { name: 'Error', message: 'D1_ERROR: Network connection lost.' } },
+  })
+  assert.deepEqual(errorLogReplacer('', new Error('query', { cause: { token: 'not-for-logs' } })), { name: 'Error', message: 'query' })
+})
+
+test('D1 diagnostics bound cyclic and deeply nested cause chains', () => {
+  const cycle = new Error('cycle')
+  cycle.cause = cycle
+  assert.deepEqual(errorLogReplacer('', cycle), { name: 'Error', message: 'cycle', causeTruncated: true })
+  let nested = new Error('root')
+  for (let index = 0; index < 10; index += 1) nested = new Error(`wrapper ${index}`, { cause: nested })
+  const serialized = JSON.stringify(nested, errorLogReplacer)
+  assert.equal((serialized.match(/"name"/g) ?? []).length, 5)
+  assert.match(serialized, /"causeTruncated":true/)
+})
 
 test('only explicit D1 network loss is retryable, including nested causes', () => {
   assert.ok(isTransientD1Error(new Error('query', { cause: new Error('D1_ERROR: Network connection lost.') })))

@@ -9,6 +9,7 @@ import {authConfig} from './src/auth/config'
 import {adminConfig} from './src/admin/config'
 import {parseDeveloperSubjects,type AdminAccess} from './src/admin/access'
 import {assertCuid2DocumentSchema} from './src/id-schema'
+import {errorLogReplacer} from './src/error-log'
 
 const secret = cloudflare.env.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET
 if (!secret) throw new Error('Run bun run setup to generate isolated local secrets first')
@@ -24,7 +25,7 @@ const adminAccess: AdminAccess = {
   developerSubjects: parseDeveloperSubjects((cloudflare.env as {DEVELOPER_SUBJECTS?: string}).DEVELOPER_SUBJECTS, auth.staffSubjects),
   localAuth: auth.localAuth,
 }
-const log = (level:string) => (value:unknown, message?:string) => console.log(JSON.stringify({level, message, value},(_key,item)=>item instanceof Error?{name:item.name,message:item.message}:item))
+const log = (level:string) => (value:unknown, message?:string) => console.log(JSON.stringify({level, message, value},errorLogReplacer))
 export default buildConfig({
   admin: { user:'users', importMap:{baseDir:path.resolve(process.cwd())}, ...adminConfig },
   csrf:auth.origins,
