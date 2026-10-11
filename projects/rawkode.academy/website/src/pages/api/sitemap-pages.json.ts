@@ -141,7 +141,7 @@ async function generateNavigationItems(
 			title: "For Organizations",
 			category: "Organizations",
 			description:
-				"Work with David on your product demo and documentation, ask questions in Slack, and co-host a webinar",
+				"Get guidance on developer adoption with a product review, or ongoing advice and support with developer relations, marketing, backlog priorities and ideal customers",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -161,7 +161,7 @@ async function generateNavigationItems(
 			title: "Partner application",
 			category: "Organizations",
 			description:
-				"Apply for a Rawkode Academy partnership or a product demo review",
+				"Apply for a Rawkode Academy partnership or a product review",
 			keywords: [
 				"fit check",
 				"adoption",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Ask David technical questions, review your demo and documentation, and co-host a webinar, or start with a product demo review",
+				"Start with a £2,500 product review for guidance on developer adoption. Continue with agreed advice and support at £4,000 a month for 90 days.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",
@@ -249,16 +249,18 @@ async function generateNavigationItems(
 				.map((article) => article.data.series?.id)
 				.filter((id): id is string => Boolean(id)),
 		);
-		series.filter((s) => publishedSeriesIds.has(s.id)).forEach((s) => {
-			navigationItems.push({
-				id: `/series/${s.id}`,
-				title: s.data.title,
-				description: "Read this series",
-				href: `/series/${s.id}`,
-				category: "Series",
-				keywords: [s.data.title.toLowerCase(), "series", "read", "articles"],
+		series
+			.filter((s) => publishedSeriesIds.has(s.id))
+			.forEach((s) => {
+				navigationItems.push({
+					id: `/series/${s.id}`,
+					title: s.data.title,
+					description: "Read this series",
+					href: `/series/${s.id}`,
+					category: "Series",
+					keywords: [s.data.title.toLowerCase(), "series", "read", "articles"],
+				});
 			});
-		});
 
 		// Add courses
 		const courses = await getCollection("courses");
