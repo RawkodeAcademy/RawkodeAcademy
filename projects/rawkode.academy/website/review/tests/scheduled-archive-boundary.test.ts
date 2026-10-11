@@ -13,6 +13,11 @@ function timeoutError() {
 	return error;
 }
 
+function requestTimeout(init?: RequestInit): number {
+	if (!init?.signal) throw new Error("Expected a bounded request signal");
+	return (init.signal as AbortSignal & { timeoutMs: number }).timeoutMs;
+}
+
 function archiveResponse(cacheStatus: "MISS" | "HIT", html: string, ttlSeconds = 10) {
 	return new Response(html, {
 		status: 200,
@@ -39,7 +44,7 @@ function verifyOptions(
 		sleep: async (milliseconds: number) => {
 			currentTime += milliseconds;
 		},
-		timeoutSignal: (milliseconds: number) => ({ timeoutMs: milliseconds }) as AbortSignal,
+		timeoutSignal: (milliseconds: number) => Object.assign(new AbortController().signal, { timeoutMs: milliseconds }),
 		responseCacheAges: (response: Response) => [Number(response.headers.get("x-test-ttl"))],
 	};
 }
@@ -55,7 +60,7 @@ test("retries a timed out warm before release, then proves the same URL is a hid
 	const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
 		requestUrls.push(String(input));
 		attempts += 1;
-		const timeoutMs = (init?.signal as AbortSignal & { timeoutMs: number }).timeoutMs;
+		const timeoutMs = requestTimeout(init);
 		timeoutBounds.push({
 			timeout: timeoutMs,
 			available: releaseAt - currentTime - PRE_RELEASE_SAFETY_MARGIN_MS,
@@ -87,7 +92,7 @@ test("caps a near-boundary timeout and fails before the release instead of cross
 	let timeoutMs = 0;
 	const fetchImpl = (async (_input: RequestInfo | URL, init?: RequestInit) => {
 		attempts += 1;
-		timeoutMs = (init?.signal as AbortSignal & { timeoutMs: number }).timeoutMs;
+		timeoutMs = requestTimeout(init);
 		currentTime += timeoutMs;
 		throw timeoutError();
 	}) as typeof fetch;
@@ -130,7 +135,7 @@ test("stops after bounded timeout retries with a clear failure", async () => {
 	let attempts = 0;
 	const fetchImpl = (async (_input: RequestInfo | URL, init?: RequestInit) => {
 		attempts += 1;
-		currentTime += (init?.signal as AbortSignal & { timeoutMs: number }).timeoutMs;
+		currentTime += requestTimeout(init);
 		throw timeoutError();
 	}) as typeof fetch;
 
