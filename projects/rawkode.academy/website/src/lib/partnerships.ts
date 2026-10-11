@@ -42,18 +42,18 @@ const applicationBody = [
  * partnership remains valuable without becoming an open-ended consultancy.
  */
 export const partnershipStartingPoint =
-	"Your product, developers and industry keep changing. We help your marketing, product and engineering teams keep deciding what to build, fix and explain for the developers you want to reach. As priorities shift, we connect your product story, developer experience and education so your teams can make those decisions together.";
+	"Work with your marketing, product and engineering teams for 90 days to decide what to build, fix and explain for the developers you want to reach. As your product and industry change, we help keep priorities, developer experience and technical thought leadership moving together.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
 	name: "90-day partnership",
 	label: "Work with Rawkode Academy",
-	price: "£4,000 / month",
-	priceShort: "£4k/mo",
+	price: "£12,000",
+	priceShort: "£12k/90 days",
 	cadence:
-		"First 90 days: £12,000 in total. Direct partnerships are billed monthly. We agree together whether to continue for another 90 days.",
+		"For the first 90 days. Direct partnerships are billed at £4,000/month. We agree together whether to continue for another 90 days.",
 	summary:
-		"Keep making informed decisions as your product and industry change. We help your marketing, product and engineering teams identify useful features and fixes, respond to industry changes and develop credible technical thought leadership for the developers you intend to reach. We agree the work and responsibilities across developer relations, developer marketing, backlog priorities and defining ideal customers before starting.",
+		"Identify the features and fixes that matter to your intended developers, respond to industry changes, and shape credible technical thought leadership. We bring outside technical judgement to priorities across developer relations, developer marketing, your backlog and ideal customers. We agree the work and responsibilities before starting.",
 	included: [
 		"Slack Connect for questions and feedback on the work we agree",
 		"One 60-minute session each month to review progress and decide what to prioritise next",
@@ -67,7 +67,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
 	],
 	notes: [
-		"If ongoing help is already appropriate, we can start with the partnership.",
+		"Your team builds the product and handles fixes. We help turn developer problems into practical priorities.",
 	],
 	mailto: buildMailto("90-day partnership application", applicationBody),
 };
@@ -76,7 +76,7 @@ export const partnershipOffer: PartnershipOffer = {
 export const fitProofReview: PartnershipOffer = {
 	id: "fit-proof-review",
 	name: "Product review",
-	label: "Start with a review",
+	label: "Not ready to commit to 90 days?",
 	price: "£5,000",
 	priceShort: "£5k",
 	cadence: "Work agreed before starting",

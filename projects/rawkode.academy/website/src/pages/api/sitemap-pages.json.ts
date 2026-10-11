@@ -141,7 +141,7 @@ async function generateNavigationItems(
 			title: "For Organizations",
 			category: "Organizations",
 			description:
-				"Ongoing technical judgement for marketing, product and engineering: features, fixes and credible developer education as your product and industry change.",
+				"A £12,000, 90-day partnership for developer-product teams, backed by practical Academy education and product experience. Optional £5,000 review.",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Ongoing technical judgement for marketing, product and engineering as your product and industry change. £5,000 review or £4,000/month for 90 days.",
+				"A £12,000, 90-day partnership for developer-product teams: ongoing judgement across marketing, product and engineering. Optional £5,000 product review.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",
