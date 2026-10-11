@@ -73,7 +73,9 @@ try {
   if (!dryRun) {
     for (const record of snapshot.records) diagrams += await precomputeD2Artifacts(String(record.data.body ?? ''), cloudflare.env.R2)
   }
-  const result = await importCatalogue(payload, user, snapshot, { dryRun })
+  // Only disposable, SHA-isolated PR seeds overlap independent document writes.
+  // Production/rehearsal imports retain the default sequential execution.
+  const result = await importCatalogue(payload, user, snapshot, { dryRun, concurrency: target === 'pr-preview' ? 8 : 1 })
   const report = { target, resources: prepared.expected ?? null, watermark, source: contentRoot, records: snapshot.records.length, assetFiles: snapshot.assetFiles.length, assets, diagrams, elapsedMs: Date.now() - startedAt, ...result }
   const reportPath = path.join(projectDir, '.runtime', `import-${target}-${watermark.gitSha.slice(0, 12)}${dryRun ? '-dry-run' : ''}.json`)
   await mkdir(path.dirname(reportPath), { recursive: true })
@@ -82,7 +84,8 @@ try {
   console.error(`Import report written to ${reportPath}`)
   if (result.conflicts.length || result.unresolved.length) process.exitCode = 2
 } catch (error) {
-  console.error(error instanceof Error ? error.stack ?? error.message : error)
+  // Preserve nested D1 causes and Payload field-validation details in CI logs.
+  console.error(error)
   process.exitCode = 1
 } finally {
   try { await payload.destroy() } catch (error) {

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import type { CollectionConfig, Field, Tab } from 'payload'
+import { textarea } from 'payload/shared'
 import { type AdminAccess, hiddenUnlessDeveloper, isDeveloper, parseDeveloperSubjects } from '../src/admin/access'
 import { NAV_ORDER, adminPresets } from '../src/admin/collection-admin'
 import { dashboard } from '../src/admin/config'
@@ -15,6 +16,24 @@ const developer = 'developer-subject'
 const access: AdminAccess = { developerSubjects: [developer], localAuth: false }
 const collections = createCollections({ localAuth: false } as never, {} as never, access)
 const bySlug = new Map(collections.map(collection => [collection.slug, collection]))
+
+test('CMS body validation accepts existing long articles and retains an explicit bound', async () => {
+  const findBody = (fields: Field[]): Field | undefined => {
+    for (const field of fields) {
+      if ('name' in field && field.name === 'body') return field
+      const nested = field.type === 'tabs' ? field.tabs.flatMap(tab => tab.fields) : 'fields' in field ? field.fields : []
+      const found = findBody(nested)
+      if (found) return found
+    }
+    return undefined
+  }
+  const body = findBody(bySlug.get('articles')?.fields ?? [])
+  assert.ok(body?.type === 'textarea')
+  const options = { ...body, req: { payload: { config: { defaultMaxTextLength: 40_000 } }, t: () => 'length rejected' } } as never
+  // The existing cgroups article exceeds Payload's default 40,000 characters.
+  assert.equal(await textarea('a'.repeat(40_485), options), true)
+  assert.notEqual(await textarea('a'.repeat(100_001), options), true)
+})
 
 test('CUID2 document IDs are explicit custom text fields without changing the legacy migration schema', () => {
 	for (const collection of collections) {

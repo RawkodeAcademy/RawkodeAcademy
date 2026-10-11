@@ -105,12 +105,24 @@ function validate(snapshot: ImportSnapshot): void {
   }
 }
 
+async function processBatches<T>(items: readonly T[], concurrency: number, visit: (item: T) => Promise<void>): Promise<void> {
+  for (let offset = 0; offset < items.length; offset += concurrency) {
+    // Drain every in-flight write before propagating a failure. The caller can
+    // then safely dispose its D1 connection, and pending nodes remain resumable.
+    const settled = await Promise.allSettled(items.slice(offset, offset + concurrency).map(visit))
+    const failed = settled.find(result => result.status === 'rejected')
+    if (failed?.status === 'rejected') throw failed.reason
+  }
+}
+
 /** Server-only trusted entrypoint. The HTTP route authenticates an administrator first.
  * D1 does not give this importer an atomic compare-and-swap across editorial writes:
  * use an exclusive import window, and never run multiple imports concurrently.
  */
-export async function importCatalogue(payload: Payload, user: NonNullable<Parameters<Payload['find']>[0]['user']>, snapshot: ImportSnapshot, options: { dryRun?: boolean } = {}): Promise<ImportResult> {
+export async function importCatalogue(payload: Payload, user: NonNullable<Parameters<Payload['find']>[0]['user']>, snapshot: ImportSnapshot, options: { dryRun?: boolean; concurrency?: number } = {}): Promise<ImportResult> {
   validate(snapshot)
+  const concurrency = options.concurrency ?? 1
+  if (!Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 8) throw new Error('Import concurrency must be between 1 and 8')
   const result: ImportResult = { dryRun: options.dryRun ?? false, counts: { created: 0, updated: 0, unchanged: 0, tombstoned: 0, conflicts: 0, pending: 0 }, actions: [], conflicts: [], unresolved: [] }
   const documents = new Map<string, Document>()
   const pending: { record: ImportRecord; hash: string; created: boolean }[] = []
@@ -118,7 +130,7 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
   const sourceRecords = new Map(snapshot.records.map(record => [key(record), record]))
   const lookup = async (ref: ContentReference): Promise<Document | undefined> => {
     const field = sourceIdentityField(ref.collection)
-    const found = await payload.find({ collection: ref.collection as CollectionSlug, where: { [field]: { equals: ref.legacyId } }, limit: 1, depth: 0, draft: true, overrideAccess: false, user })
+    const found = await payload.find({ collection: ref.collection as CollectionSlug, where: { [field]: { equals: ref.legacyId } }, limit: 1, pagination: false, depth: 0, draft: true, overrideAccess: false, user })
     return found.docs[0] as unknown as Document | undefined
   }
   const conflict = (record: ImportRecord, reason: string): void => {
@@ -128,44 +140,44 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
   }
   // Phase 1 creates stable nodes, durably marked pending. A failed run is resumed
   // by seeing pending even when the source hash already matches.
-  for (const [index, input] of snapshot.records.entries()) {
+  await processBatches([...snapshot.records.entries()], concurrency, async ([index, input]) => {
     const record = { ...input, data: { sourceOrder: index, ...input.data } }
     // sourceOrder is an importer-owned presentation hint. Keep it out of the
     // source hash so optional sensitive exports cannot renumber unrelated rows.
     const hash = await sourceHash(input, snapshot.mappingVersion)
-    const markers = await payload.find({ collection: 'deletion-markers' as CollectionSlug, where: { key: { equals: key(record) } }, limit: 1, depth: 0, overrideAccess: false, user })
+    const markers = await payload.find({ collection: 'deletion-markers' as CollectionSlug, where: { key: { equals: key(record) } }, limit: 1, pagination: false, depth: 0, overrideAccess: false, user })
     if (markers.docs.length) {
       conflict(record, 'An editor deleted this legacy ID; explicit reconciliation is required before resurrection.')
-      continue
+      return
     }
     const existing = await lookup(record)
     if (existing) documents.set(key(record), existing)
     if (existing?.locallyEdited || (existing && existing.sourceSystem !== snapshot.sourceSystem)) {
       conflict(record, existing.locallyEdited ? 'Local editorial changes require an explicit merge; no fields overwritten.' : 'Existing legacy ID belongs to another source.')
-      continue
+      return
     }
     if (existing && (Number(existing.sourceSequence) > snapshot.sequence || (Number(existing.sourceSequence) === snapshot.sequence && existing.sourceHash !== hash))) {
       conflict(record, 'Stale or inconsistent snapshot sequence; changed source data requires a higher sequence.')
-      continue
+      return
     }
     const sourceFields = [...Object.keys(record.data), ...Object.keys(record.relationships ?? {})].sort()
     if (existing && !record.tombstone && Array.isArray(existing.sourceFields) && existing.sourceFields.some(field => !sourceFields.includes(String(field)))) {
       conflict(record, 'Snapshot omitted a previously supplied field; use explicit null or [] to clear it.')
-      continue
+      return
     }
     if (existing?.sourceHash === hash && existing.importState === 'complete' && Number(existing.sourceSequence) === snapshot.sequence) {
       result.counts.unchanged += 1
       result.actions.push({ collection: record.collection, legacyId: record.legacyId, action: 'unchanged' })
-      continue
+      return
     }
     pending.push({ record, hash, created: !existing })
     eligibleSourceNodes.add(key(record))
-    if (result.dryRun) continue
+    if (result.dryRun) return
     const data = { ...record.data, ...sourceMetadata(record), id: importedDocumentID(record.collection, record.legacyId, existing?.id), ...sourceIdentityData(record.collection, record.legacyId), slug: record.slug, sourceSystem: snapshot.sourceSystem, sourceRevision: record.sourceRevision, sourceHash: hash, sourceSequence: snapshot.sequence, sourceFields, mappingVersion: snapshot.mappingVersion, importedAt: new Date().toISOString(), locallyEdited: false, importState: 'pending', tombstone: record.tombstone ?? false, _status: 'draft' as const }
     const shared = { collection: record.collection as CollectionSlug, data, draft: true, depth: 0, overrideAccess: false, user, context: { importing: true, pipelineMachine: true } }
     const saved = existing ? await payload.update({ ...shared, id: existing.id }) : await payload.create(shared)
     documents.set(key(record), saved as unknown as Document)
-  }
+  })
   // Propagate missing dependencies through the graph before publishing any pending node.
   // Valid cycles are allowed; one unresolved edge blocks its dependent source nodes.
   const blocked = new Set<string>()
@@ -189,7 +201,7 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
   }
   // Phase 2 resolves relationships after all nodes exist. Cycles and source order
   // are preserved; unresolved nodes remain drafts and pending for the next run.
-  for (const { record, hash, created } of pending) {
+  await processBatches(pending, concurrency, async ({ record, hash, created }) => {
     const relationshipData: Record<string, unknown> = {}
     let unresolved = false
     for (const [field, value] of Object.entries(record.tombstone ? {} : record.relationships ?? {})) {
@@ -207,13 +219,13 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
     if (unresolved) {
       result.counts.pending += 1
       result.actions.push({ collection: record.collection, legacyId: record.legacyId, action: 'pending' })
-      continue
+      return
     }
     if (!result.dryRun) {
       const latest = await lookup(record)
       if (!latest || latest.locallyEdited) {
         conflict(record, 'Record changed during import; relationship/publication step refused.')
-        continue
+        return
       }
       // Explicitly materialize the staged fields: publishing a relationship-only
       // patch must not depend on Payload merging the latest draft into the row.
@@ -224,6 +236,6 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
     else if (created) result.counts.created += 1
     else result.counts.updated += 1
     result.actions.push({ collection: record.collection, legacyId: record.legacyId, action })
-  }
+  })
   return result
 }

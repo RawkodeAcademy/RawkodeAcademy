@@ -104,7 +104,7 @@ function content(slug: string, fields: Field[], layout: LayoutOptions = {}): Bui
     slug,
     access: { read: readable, create: staff, update: staff, delete: staff, readVersions: staff },
     versions: { drafts: true, maxPerDoc: 30 },
-    fields: arrange([...provenanceFor(slug), ...fields, { name: 'body', type: 'textarea' }, json('cover'), json('contentResources')], access, layout),
+    fields: arrange([...provenanceFor(slug), ...fields, { name: 'body', type: 'textarea', maxLength: 100_000 }, json('cover'), json('contentResources')], access, layout),
     hooks: editorialHooks(slug, runtime),
   }, access)
 }
