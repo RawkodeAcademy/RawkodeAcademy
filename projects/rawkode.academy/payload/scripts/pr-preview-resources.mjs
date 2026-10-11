@@ -97,19 +97,25 @@ export async function listBuckets(request = api) {
   throw new Error('R2 bucket pagination exceeded its safety limit.')
 }
 
-async function emptyBucket(name) {
+export async function emptyBucket(name, request = api) {
+  const seen = new Set()
   let cursor
-  do {
-    const query = new URLSearchParams({ limit: '1000' })
+  for (let page = 0; page < 100; page += 1) {
+    const query = new URLSearchParams({ per_page: '1000' })
     if (cursor) query.set('cursor', cursor)
-    const result = await api(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(name)}/objects?${query}`)
-    const objects = Array.isArray(result?.objects) ? result.objects : []
+    const body = await request(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(name)}/objects?${query}`, {}, true)
+    const objects = body?.result?.objects
+    if (!Array.isArray(objects)) throw new Error(`Cloudflare returned an invalid R2 object list while cleaning ${name}.`)
     for (const object of objects) {
       if (typeof object?.key !== 'string') throw new Error(`Cloudflare returned an R2 object without a key while cleaning ${name}.`)
-      await api(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(name)}/objects/${encodeURIComponent(object.key)}`, { method: 'DELETE' })
+      await request(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(name)}/objects/${encodeURIComponent(object.key)}`, { method: 'DELETE' })
     }
-    cursor = typeof result?.cursor === 'string' && result.cursor ? result.cursor : undefined
-  } while (cursor)
+    cursor = body.result_info?.cursor
+    if (cursor === undefined || cursor === null || cursor === '') return
+    if (typeof cursor !== 'string' || seen.has(cursor)) throw new Error('Cloudflare returned an invalid or repeated R2 object cursor.')
+    seen.add(cursor)
+  }
+  throw new Error('R2 object pagination exceeded its safety limit.')
 }
 
 async function listNamespaces() {
