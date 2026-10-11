@@ -42,7 +42,7 @@ const applicationBody = [
  * partnership remains valuable without becoming an open-ended consultancy.
  */
 export const partnershipStartingPoint =
-	"Our advice comes from building and explaining developer tools, with developer advocacy experience at InfluxData, Equinix Metal and Pulumi. Start with a product review to find what gets in developers’ way and decide what to improve first.";
+	"We connect your product story, the experience of using it and the education developers need. Start with a product review to find where those pieces could work better together and which changes deserve your team’s attention first.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
@@ -53,7 +53,7 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"First 90 days: £12,000 in total. Direct partnerships are billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Bring experienced technical judgement into your decisions about developer relations, developer marketing, backlog priorities and defining your ideal customers. We agree the work and priorities before starting.",
+		"Use practical technical judgement to keep your product story, developer experience and education working together. We agree priorities across developer relations, developer marketing, your backlog and ideal customers before starting.",
 	included: [
 		"Slack Connect for questions and feedback on the work we agree",
 		"One 60-minute session each month to review progress and decide what to prioritise next",
@@ -84,7 +84,7 @@ export const fitProofReview: PartnershipOffer = {
 		"We use your product and give you a report with practical guidance to help developers adopt it.",
 	included: [
 		"A report on the developer experience and how to improve adoption",
-		"Practical guidance on what to prioritise",
+		"Priorities for what to improve, explain and teach next",
 		"A one-hour call to discuss the report and your questions",
 	],
 	excluded: [

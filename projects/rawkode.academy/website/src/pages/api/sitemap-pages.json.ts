@@ -141,7 +141,7 @@ async function generateNavigationItems(
 			title: "For Organizations",
 			category: "Organizations",
 			description:
-				"Get guidance on developer adoption with a product review, or ongoing advice and support with developer relations, marketing, backlog priorities and ideal customers",
+				"Connect your product story, developer experience and education, with practical priorities for what to build, explain and teach next.",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Start with a £5,000 product review for guidance on developer adoption. Continue with agreed advice and support at £4,000 a month for 90 days.",
+				"Connect product story, developer experience and education. Start with a £5,000 review or an agreed £4,000/month partnership for 90 days.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",
