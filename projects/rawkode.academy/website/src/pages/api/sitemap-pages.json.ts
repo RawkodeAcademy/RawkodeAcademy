@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Start with a £2,500 product review for guidance on developer adoption. Continue with agreed advice and support at £4,000 a month for 90 days.",
+				"Start with a £5,000 product review for guidance on developer adoption. Continue with agreed advice and support at £4,000 a month for 90 days.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",

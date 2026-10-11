@@ -42,7 +42,7 @@ const applicationBody = [
  * partnership remains valuable without becoming an open-ended consultancy.
  */
 export const partnershipStartingPoint =
-	"A product review is the usual starting point. Get practical guidance on developer adoption, then decide together whether ongoing advice and support would help.";
+	"Our advice comes from building and explaining developer tools, with developer advocacy experience at InfluxData, Equinix Metal and Pulumi. Start with a product review to find what gets in developers’ way and decide what to improve first.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
@@ -51,9 +51,9 @@ export const partnershipOffer: PartnershipOffer = {
 	price: "£4,000 / month",
 	priceShort: "£4k/mo",
 	cadence:
-		"First 90 days: £12,000 in total, billed monthly. We agree together whether to continue for another 90 days.",
+		"First 90 days: £12,000 in total. Direct partnerships are billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Get ongoing advice and support with developer relations, developer marketing, backlog priorities and defining your ideal customers. We agree the work and priorities before starting.",
+		"Bring experienced technical judgement into your decisions about developer relations, developer marketing, backlog priorities and defining your ideal customers. We agree the work and priorities before starting.",
 	included: [
 		"Slack Connect for questions and feedback on the work we agree",
 		"One 60-minute session each month to review progress and decide what to prioritise next",
@@ -77,8 +77,8 @@ export const fitProofReview: PartnershipOffer = {
 	id: "fit-proof-review",
 	name: "Product review",
 	label: "Start with a review",
-	price: "£2,500",
-	priceShort: "£2.5k",
+	price: "£5,000",
+	priceShort: "£5k",
 	cadence: "Work agreed before starting",
 	summary:
 		"We use your product and give you a report with practical guidance to help developers adopt it.",
@@ -93,7 +93,7 @@ export const fitProofReview: PartnershipOffer = {
 	],
 	notes: [
 		"We agree the areas to review, access and a delivery date before starting. You can use the report whether or not you continue with the partnership.",
-		"The full £2,500 comes off your first partnership invoice if you start within 14 days of our call. Where the review covers the work we agree, we start from those findings instead of repeating it.",
+		"Start the partnership within 14 days of our call and we credit the full £5,000 review fee against the first £12,000, 90-day commitment. That leaves £7,000 to continue. Where the review covers the work we agree, we start from those findings instead of repeating it.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
