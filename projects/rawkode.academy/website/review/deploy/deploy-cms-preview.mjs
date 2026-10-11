@@ -336,7 +336,7 @@ try {
 
 	// Verify a route rendered the content returned by the bridge-backed
 	// diagnostic before surfacing the preview URL.
-	const sentinelPath = `/watch/${encodeURIComponent(sentinel.slug)}`
+	const sentinelPath = `/watch/${sentinel.slug.split('/').map(encodeURIComponent).join('/')}`
 	const sentinelUrl = new URL(sentinelPath, previewUrl)
 	sentinelUrl.searchParams.set('cmsCacheProbe', `${identity.sha.slice(0, 12)}-${Date.now()}`)
 	const renderedDeadline = Date.now() + Math.min(waitSeconds, 120) * 1000
@@ -447,7 +447,7 @@ try {
 	if (!Number.isFinite(releaseAt) || releaseAt <= Date.now() + 10_000) {
 		throw new Error(`The scheduled video fixture did not leave enough time to observe its pre-release state: ${scheduledVideo.publishedAt}`)
 	}
-	const scheduledUrl = new URL(`/watch/${encodeURIComponent(scheduledVideo.slug)}`, previewUrl)
+	const scheduledUrl = new URL(`/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`, previewUrl)
 	scheduledUrl.searchParams.set('cmsPreviewProbe', String(Date.now()))
 	const preRelease = await fetch(scheduledUrl, {
 		headers: { accept: 'text/html', 'cache-control': 'no-store' },
@@ -469,7 +469,7 @@ try {
 		signal: AbortSignal.timeout(15_000),
 	})
 	const archiveBeforeHtml = await archiveBefore.text()
-	const scheduledHref = `/watch/${encodeURIComponent(scheduledVideo.slug)}`
+	const scheduledHref = `/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`
 	if (!archiveBefore.ok || archiveBeforeHtml.includes(scheduledHref)) {
 		throw new Error(`The watch archive should hide the future-dated video ${scheduledVideo.slug} before ${scheduledVideo.publishedAt}; Astro returned HTTP ${archiveBefore.status}.`)
 	}
