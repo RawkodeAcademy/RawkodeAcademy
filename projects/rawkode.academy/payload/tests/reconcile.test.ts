@@ -36,12 +36,12 @@ async function fixture(root: string): Promise<void> {
 async function simulateImport(snapshot: StaticContentSnapshot): Promise<{ documents: Record<string, Document[]>; objects: ActualObject[] }> {
   const expected = await expectedFromSnapshot(snapshot)
   const ids = new Map<string, string>()
-  snapshot.records.forEach((record, index) => ids.set(`${record.collection}:${record.legacyId}`, record.collection === 'videos' ? record.legacyId : id(index + 1)))
+  snapshot.records.forEach((record, index) => { ids.set(`${record.collection}:${record.legacyId}`, record.collection === 'videos' ? record.legacyId : id(index + 1)) })
   const documents: Record<string, Document[]> = {}
   snapshot.records.forEach((record, index) => {
     const rules = relations[record.collection] ?? {}
     const doc: Document = {
-      id: snapshot.records[index]!.collection === 'videos' ? record.legacyId : id(index + 1), legacyId: record.legacyId, slug: record.slug, sourceSystem: snapshot.sourceSystem, sourceRevision: record.sourceRevision,
+      id: record.collection === 'videos' ? record.legacyId : id(index + 1), ...(record.collection === 'videos' ? {} : { legacyId: record.legacyId }), slug: record.slug, sourceSystem: snapshot.sourceSystem, sourceRevision: record.sourceRevision,
       sourceHash: expected.records[index]!.sourceHash, sourceSequence: snapshot.sequence, importState: 'complete', locallyEdited: false, tombstone: false,
     }
     // static-assets has versions.drafts false, so Payload stores no _status.
@@ -52,7 +52,8 @@ async function simulateImport(snapshot: StaticContentSnapshot): Promise<{ docume
       const mapped = refs.map((ref: ContentReference) => ids.get(`${ref.collection}:${ref.legacyId}`)!)
       doc[field] = rules[field]!.many ? mapped : mapped[0] ?? null
     }
-    ;(documents[record.collection] ??= []).push(doc)
+    documents[record.collection] ??= []
+    documents[record.collection].push(doc)
   })
   const objects = snapshot.assetFiles.map(asset => ({ key: asset.r2Key, size: asset.bytes, checksum: asset.checksum }))
   return { documents, objects }
@@ -80,7 +81,7 @@ test('reconciliation reports zero diffs after a complete import and detects each
     return reconcile(input)
   }
   const find = (documents: Record<string, Document[]>, collection: string, legacyId: string) => {
-    const doc = documents[collection]?.find(candidate => candidate.legacyId === legacyId)
+    const doc = documents[collection]?.find(candidate => (collection === 'videos' ? candidate.id : candidate.legacyId) === legacyId)
     assert.ok(doc, `${collection}:${legacyId}`)
     return doc
   }

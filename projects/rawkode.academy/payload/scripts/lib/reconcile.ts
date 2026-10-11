@@ -124,7 +124,9 @@ function relationshipId(value: unknown): string | number | null {
 export function actualFromDocuments(documents: Record<string, Document[]>): ActualRecord[] {
   const legacyIds = new Map<string, string>()
   for (const [collection, docs] of Object.entries(documents)) {
-    for (const doc of docs) legacyIds.set(`${collection}#${String(doc.id)}`, String(doc.legacyId ?? `#${String(doc.id)}`))
+    // Videos retain their source/R2 identity as the primary ID. Other documents
+    // have environment-specific CUID2 IDs and a separate imported legacy key.
+    for (const doc of docs) legacyIds.set(`${collection}#${String(doc.id)}`, collection === 'videos' ? String(doc.id) : String(doc.legacyId ?? `#${String(doc.id)}`))
   }
   const records: ActualRecord[] = []
   for (const [collection, docs] of Object.entries(documents)) {
@@ -140,7 +142,7 @@ export function actualFromDocuments(documents: Record<string, Document[]>): Actu
       const sequence = Number(doc.sourceSequence)
       records.push({
         collection,
-        legacyId: String(doc.legacyId ?? `#${String(doc.id)}`),
+        legacyId: collection === 'videos' ? String(doc.id) : String(doc.legacyId ?? `#${String(doc.id)}`),
         slug: typeof doc.slug === 'string' ? doc.slug : null,
         sourceSystem: typeof doc.sourceSystem === 'string' ? doc.sourceSystem : null,
         sourceRevision: typeof doc.sourceRevision === 'string' ? doc.sourceRevision : null,
