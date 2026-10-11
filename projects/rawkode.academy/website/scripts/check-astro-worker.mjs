@@ -21,6 +21,7 @@ export async function checkAstroWorker(configPath) {
   const visited = new Set()
   let exportsCachedAstro = false
   let hasCacheFlag = false
+  let hasPreviewRoute = false
   while (pending.length) {
     const filename = pending.pop()
     if (visited.has(filename)) continue
@@ -30,6 +31,11 @@ export async function checkAstroWorker(configPath) {
     if (ast.parseDiagnostics.length) throw new Error(`Invalid generated Worker module: ${filename}`)
     const visit = node => {
       if (ts.isIdentifier(node) && node.text === 'PUBLIC_SSR_CACHE_ENABLED') hasCacheFlag = true
+      if (ts.isObjectLiteralExpression(node)) {
+        const fields = new Map(node.properties.filter(ts.isPropertyAssignment).map(property => [property.name.text, property.initializer]))
+        const literal = name => fields.get(name) && ts.isStringLiteral(fields.get(name)) ? fields.get(name).text : undefined
+        hasPreviewRoute ||= literal('type') === 'endpoint' && literal('route') === '/api/cms-preview-check' && literal('component') === 'src/pages/api/cms-preview-check.ts'
+      }
       ts.forEachChild(node, visit)
     }
     visit(ast)
@@ -51,6 +57,7 @@ export async function checkAstroWorker(configPath) {
   if (!exportsCachedAstro || !hasCacheFlag) {
     throw new Error(`The generated Wrangler main ${config.main} and its module graph do not contain the custom CachedAstro WorkerEntrypoint and cache gateway.`)
   }
+  if (!hasPreviewRoute) throw new Error('The generated Astro route manifest is missing the preview-only /api/cms-preview-check endpoint.')
   return { config, modules: visited.size }
 }
 

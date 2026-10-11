@@ -17,7 +17,7 @@ test("the public cache gateway allows anonymous SSR and checks bypasses before c
 	assert.equal(canUseCachedAstro(request("/watch", { headers: { "x-original-url": "/home" } })), false);
 	assert.equal(canUseCachedAstro(request("/home")), false);
 	assert.equal(canUseCachedAstro(request("/api/comments/video")), false);
-	assert.equal(canUseCachedAstro(request("/__cms-preview-check")), false);
+	assert.equal(canUseCachedAstro(request("/api/cms-preview-check")), false);
 	assert.equal(canUseCachedAstro(request("/_astro/site.css")), false);
 	assert.equal(canUseCachedAstro(request("/site.svg")), false);
 	assert.equal(canUseCachedAstro(request("/watch"), false), false);

@@ -31,7 +31,7 @@ export function canUseCachedAstro(request: Request, enabled = true): boolean {
     /\b(?:no-cache|no-store)\b|(?:^|,)\s*max-age=0(?:,|$)/i.test(request.headers.get('Cache-Control') ?? '') ||
     /\bno-cache\b/i.test(request.headers.get('Pragma') ?? '')
   ) return false
-  if (PRIVATE_PATH.test(pathname) || INTERACTIVE_API.test(pathname) || pathname === '/__cms-preview-check') return false
+  if (PRIVATE_PATH.test(pathname) || INTERACTIVE_API.test(pathname) || pathname === '/api/cms-preview-check') return false
   if (pathname.startsWith('/api/') && !PUBLIC_READ_APIS.some(pattern => pattern.test(pathname))) return false
   // These are dynamic Worker routes with immutable checksum-addressed output.
   // They use .svg or extensionless paths, so allow them before static-file bypass.

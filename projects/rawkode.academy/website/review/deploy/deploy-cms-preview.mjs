@@ -298,7 +298,7 @@ try {
 		try {
 			const response = await fetch(diagnosticUrl, {
 				method: 'POST',
-				headers: { accept: 'application/json', 'cache-control': 'no-store' },
+				headers: { accept: 'application/json', 'cache-control': 'no-store', origin: diagnosticUrl.origin },
 				signal: AbortSignal.timeout(15_000),
 			})
 			const body = await response.json().catch(() => null)

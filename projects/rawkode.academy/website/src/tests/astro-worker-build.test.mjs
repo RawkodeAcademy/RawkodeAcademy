@@ -5,7 +5,7 @@ import path from 'node:path'
 import test from 'node:test'
 import { checkAstroWorker } from '../../scripts/check-astro-worker.mjs'
 
-async function fixture(t, entry, modules = {}) {
+async function fixture(t, entry, modules = {}, includeRoute = true) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'astro-worker-build-'))
   t.after(() => rm(directory, { recursive: true, force: true }))
   const configPath = path.join(directory, 'wrangler.json')
@@ -13,7 +13,8 @@ async function fixture(t, entry, modules = {}) {
     compatibility_date: '2026-03-12', main: 'entry.mjs',
     exports: { default: { type: 'worker', cache: { enabled: false } }, CachedAstro: { type: 'worker' } },
   }))
-  await writeFile(path.join(directory, 'entry.mjs'), entry)
+  const route = includeRoute ? '\nconst routes = [{ routeData: { type: "endpoint", route: "/api/cms-preview-check", component: "src/pages/api/cms-preview-check.ts" } }];' : ''
+  await writeFile(path.join(directory, 'entry.mjs'), entry + route)
   for (const [name, source] of Object.entries(modules)) await writeFile(path.join(directory, name), source)
   return configPath
 }
@@ -62,4 +63,10 @@ test('still rejects a shared-cache-enabled request gateway', async t => {
     default: { type: 'worker', cache: { enabled: true } }, CachedAstro: { type: 'worker' },
   } }))
   await assert.rejects(checkAstroWorker(configPath), /uncached default gateway/)
+})
+
+// Astro excludes underscore-prefixed filenames even when direct handler tests pass.
+test('rejects an omitted preview route even when bypass code mentions its path', async t => {
+  const configPath = await fixture(t, 'export class CachedAstro {}; const flag = env.PUBLIC_SSR_CACHE_ENABLED; const bypass = "/api/cms-preview-check";', {}, false)
+  await assert.rejects(checkAstroWorker(configPath), /route manifest is missing/)
 })
