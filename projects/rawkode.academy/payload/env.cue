@@ -258,6 +258,7 @@ tasks: {
 			inputs: [
 				"src/migrations-cuid2/**",
 				"scripts/migrate-preview.ts",
+				"scripts/lib/preview-import-retry.ts",
 				"scripts/import-static.ts",
 				"scripts/lib/import-target.ts",
 				"scripts/lib/remote-target.ts",

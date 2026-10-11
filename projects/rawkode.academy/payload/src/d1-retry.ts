@@ -1,5 +1,17 @@
 import { setTimeout } from 'node:timers/promises'
 
+export const importConnectionExitCode = 75
+
+export function isImportConnectionError(error: unknown): boolean {
+  if (isTransientD1Error(error)) return true
+  const seen = new Set<unknown>()
+  for (let cause = error; cause instanceof Error && !seen.has(cause); cause = cause.cause) {
+    seen.add(cause)
+    if (cause.name === 'SocketError' && cause.message === 'other side closed') return true
+  }
+  return false
+}
+
 export function isTransientD1Error(error: unknown): boolean {
   const seen = new Set<unknown>()
   for (let cause = error; cause instanceof Error && !seen.has(cause); cause = cause.cause) {

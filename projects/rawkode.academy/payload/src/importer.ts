@@ -131,8 +131,15 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
   const sourceRecords = new Map(snapshot.records.map(record => [key(record), record]))
   const lookup = async (ref: ContentReference): Promise<Document | undefined> => {
     const field = sourceIdentityField(ref.collection)
-    const found = await payload.find({ collection: ref.collection as CollectionSlug, where: { [field]: { equals: ref.legacyId } }, limit: 1, pagination: false, depth: 0, draft: true, overrideAccess: false, user })
-    return found.docs[0] as unknown as Document | undefined
+    const query = { collection: ref.collection as CollectionSlug, where: { [field]: { equals: ref.legacyId } }, limit: 1, pagination: false, depth: 0, overrideAccess: false, user }
+    const found = await payload.find({ ...query, draft: true })
+    if (found.docs[0]) return found.docs[0] as unknown as Document
+    // D1 can commit the base INSERT and lose the subsequent version INSERT.
+    // Payload's draft query then sees no document, although its source identity
+    // is already reserved. Recover that row through the same staff access and
+    // source/conflict guards, instead of attempting a duplicate create.
+    const base = await payload.find({ ...query, draft: false })
+    return base.docs[0] as unknown as Document | undefined
   }
   const conflict = (record: ImportRecord, reason: string): void => {
     result.counts.conflicts += 1

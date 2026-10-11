@@ -169,3 +169,62 @@ for (const phase of ['pending', 'complete']) {
     assert.equal(repeated.counts.unchanged, input.records.length)
   })
 }
+
+test('a durable base row without its first draft version is recovered after a lost version INSERT', async () => {
+  const input = snapshot()
+  const h = harness(input.records.length)
+  const missingVersions = new Set<string>()
+  const originalFind = h.payload.find.bind(h.payload)
+  const originalCreate = h.payload.create.bind(h.payload)
+  const originalUpdate = h.payload.update.bind(h.payload)
+  let injected = false
+  let durableID: string | undefined
+  h.payload.find = (async args => {
+    const found = await originalFind(args)
+    return args.draft ? { ...found, docs: found.docs.filter(doc => !missingVersions.has(String(doc.id))) } : found
+  }) as Payload['find']
+  h.payload.create = (async args => {
+    if (args.data.legacyId === 'person-0' && [...h.documents.values()].some(doc => doc.legacyId === 'person-0')) throw new Error('UNIQUE constraint failed: legacy_id')
+    const saved = await originalCreate(args)
+    if (!injected && args.data.legacyId === 'person-0') {
+      injected = true
+      durableID = String(saved.id)
+      missingVersions.add(durableID)
+      throw new Error('D1_ERROR: Network connection lost.')
+    }
+    return saved
+  }) as Payload['create']
+  h.payload.update = (async args => {
+    const saved = await originalUpdate(args as Parameters<Payload['update']>[0])
+    missingVersions.delete(String(args.id))
+    return saved
+  }) as Payload['update']
+  const result = await importCatalogue(h.payload, user, input, { concurrency: 4, retryTransientD1: true })
+  assert.equal(result.counts.created + result.counts.updated, input.records.length)
+  assert.equal(h.documents.size, input.records.length)
+  assert.equal(missingVersions.size, 0)
+  assert.equal([...h.documents.values()].find(doc => doc.legacyId === 'person-0')?.id, durableID)
+  assert.equal((await importCatalogue(h.payload, user, input)).counts.unchanged, input.records.length)
+})
+
+test('base-row recovery still refuses editorial changes, foreign sources, and newer watermarks', async () => {
+  for (const protectedFields of [{ locallyEdited: true }, { sourceSystem: 'another-source' }, { sourceSequence: 2 }]) {
+    const input = snapshot()
+    const h = harness(input.records.length)
+    await importCatalogue(h.payload, user, input)
+    const document = [...h.documents.values()].find(doc => doc.legacyId === 'person-0')
+    assert.ok(document)
+    Object.assign(document, protectedFields, { name: 'Protected base value' })
+    const originalFind = h.payload.find.bind(h.payload)
+    h.payload.find = (async args => {
+      const found = await originalFind(args)
+      return args.draft ? { ...found, docs: found.docs.filter(doc => doc.id !== document.id) } : found
+    }) as Payload['find']
+    const writes = h.stats().writes
+    const result = await importCatalogue(h.payload, user, input, { retryTransientD1: true })
+    assert.equal(result.counts.conflicts, 1)
+    assert.equal(result.counts.unchanged, input.records.length - 1)
+    assert.equal(document.name, 'Protected base value')
+    assert.equal(h.stats().writes, writes)
+  }
+})

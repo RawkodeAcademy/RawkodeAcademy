@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { disposeCloudflare, prepareTarget } from './lib/remote-target'
 import { assertLegacyMigrationTarget, assertMigrationTarget } from '../src/id-schema'
 import { pullRequestIdentity } from './pr-preview-resources.mjs'
+import { retryPreviewImport } from './lib/preview-import-retry'
 
 // prepareTarget writes an explicit remote-only Wrangler config without a
 // `previews` block and asserts the resolved D1/R2 IDs before anything connects.
@@ -39,6 +40,8 @@ if (pullRequest) {
   // and editorial conflicts still fail the importer's per-record guards.
   const manifest = JSON.parse(readFileSync('.runtime/pr-preview-resources.json', 'utf8')) as { sha: string }
   if (manifest.sha !== pullRequestIdentity().sha) throw new Error('PR preview manifest does not match the pull request head SHA.')
-  execFileSync('bun', ['run', 'import:static', '--', '--target=pr-preview', '--resume'], { stdio: 'inherit', env: process.env })
+  await retryPreviewImport(() => {
+    execFileSync('bun', ['run', 'import:static', '--', '--target=pr-preview', '--resume'], { stdio: 'inherit', env: process.env })
+  })
 }
 console.log('Preview D1 migrations applied')

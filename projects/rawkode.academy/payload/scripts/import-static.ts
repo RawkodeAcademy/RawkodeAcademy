@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { assertProductionImportAllowed, assertSequenceAdvances, gitCommitWatermark, gitSha, gitTreeClean, parseImportTarget, resolveSequence, storedMaxSequence, type Watermark } from './lib/import-target'
 import { disposeCloudflare, prepareTarget, TargetError } from './lib/remote-target'
 import { assertCuid2DocumentSchema } from '../src/id-schema'
+import { importConnectionExitCode, isImportConnectionError } from '../src/d1-retry'
 
 const argv = process.argv.slice(2)
 const dryRun = argv.includes('--dry-run')
@@ -87,7 +88,7 @@ try {
 } catch (error) {
   // Preserve nested D1 causes and Payload field-validation details in CI logs.
   console.error(error)
-  process.exitCode = 1
+  process.exitCode = target === 'pr-preview' && isImportConnectionError(error) ? importConnectionExitCode : 1
 } finally {
   try { await payload.destroy() } catch (error) {
     console.error('Payload cleanup failed', error)
