@@ -42,7 +42,7 @@ const applicationBody = [
  * partnership remains valuable without becoming an open-ended consultancy.
  */
 export const partnershipStartingPoint =
-	"We connect your product story, the experience of using it and the education developers need. Start with a product review to find where those pieces could work better together and which changes deserve your team’s attention first.";
+	"Your product, developers and industry keep changing. We help your marketing, product and engineering teams keep deciding what to build, fix and explain for the developers you want to reach. As priorities shift, we connect your product story, developer experience and education so your teams can make those decisions together.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
@@ -53,7 +53,7 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"First 90 days: £12,000 in total. Direct partnerships are billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Use practical technical judgement to keep your product story, developer experience and education working together. We agree priorities across developer relations, developer marketing, your backlog and ideal customers before starting.",
+		"Keep making informed decisions as your product and industry change. We help your marketing, product and engineering teams identify useful features and fixes, respond to industry changes and develop credible technical thought leadership for the developers you intend to reach. We agree the work and responsibilities across developer relations, developer marketing, backlog priorities and defining ideal customers before starting.",
 	included: [
 		"Slack Connect for questions and feedback on the work we agree",
 		"One 60-minute session each month to review progress and decide what to prioritise next",
