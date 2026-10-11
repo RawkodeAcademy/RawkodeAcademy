@@ -89,7 +89,7 @@ test("retries a timed out boundary warm on a fresh URL, then proves that URL is 
 	expect(attempts).toBe(3);
 	expect(requestUrls[0]).toBe("https://preview.example/watch?probe=one");
 	expect(requestUrls[1]).not.toBe(requestUrls[0]);
-	expect(new URL(requestUrls[1]).searchParams.get("cmsRetryProbe")).toBe("1");
+	expect(new URL(requestUrls[1]!).searchParams.get("cmsRetryProbe")).toBe("1");
 	expect(requestUrls[2]).toBe(requestUrls[1]);
 	expect(result.archiveUrl.toString()).toBe(requestUrls[1]);
 	expect(timeoutBounds[0]?.timeout).toBe(PRE_RELEASE_REQUEST_TIMEOUT_MS);
