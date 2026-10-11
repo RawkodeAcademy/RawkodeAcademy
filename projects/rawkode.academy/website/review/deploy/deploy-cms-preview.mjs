@@ -531,6 +531,9 @@ try {
 		console.log('CMS D2 editing: unverified/unavailable in this preview')
 	}
 
+const decodeHtmlAttribute = value =>
+	value.replace(/&(?:amp|#0*38|#x0*26);/gi, '&')
+
 	// The seeded article exercises the CMS runtime D2 source hash and the same
 	// immutable media URL contract used by article covers and body images.
 	const articlePath = '/read/federated-graphql-microservices'
@@ -551,8 +554,8 @@ try {
 			const asset = html.match(/(\/cms-assets\/[A-Za-z0-9_-]{8,128}\?[^"'<>\s]+)/i)
 			if (response.ok && diagram && asset) {
 				articleHtml = html
-				diagramUrl = new URL(diagram[1].replaceAll('&amp;', '&'), previewUrl)
-				assetUrl = new URL(asset[1].replaceAll('&amp;', '&'), previewUrl)
+				diagramUrl = new URL(diagram[1].decodeHtmlAttribute, previewUrl)
+				assetUrl = new URL(asset[1].decodeHtmlAttribute, previewUrl)
 				break
 			}
 			articleState = `HTTP ${response.status}, article SSR was missing a D2 diagram or CMS image URL`
