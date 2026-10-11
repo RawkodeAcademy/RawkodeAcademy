@@ -16,8 +16,14 @@ export function isTransientD1Error(error: unknown): boolean {
   const seen = new Set<unknown>()
   for (let cause = error; cause instanceof Error && !seen.has(cause); cause = cause.cause) {
     seen.add(cause)
-    // The remote D1 proxy can wrap this exact transport failure while decoding JSON.
-    if (/^D1_ERROR: (?:Failed to parse body as JSON, got: Error: )?Network connection lost\.?$/.test(cause.message)) return true
+    // Miniflare returns e.stack in its HTTP 500 body. D1 can include the proxy's
+    // fetch frame in error.message when that response is not JSON. Accept only
+    // this known frame after the exact network-loss message, not arbitrary text.
+    const [message, ...frames] = cause.message.split('\n')
+    if (
+      /^D1_ERROR: (?:Failed to parse body as JSON, got: Error: )?Network connection lost\.?$/.test(message) &&
+      frames.every(frame => /^ {4}at async Object\.fetch \(file:\/\/\/[^\r\n]+\/miniflare\/dist\/src\/workers\/core\/entry\.worker\.js:\d+:\d+\)$/.test(frame))
+    ) return true
   }
   return false
 }

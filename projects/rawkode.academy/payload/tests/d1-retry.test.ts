@@ -70,3 +70,29 @@ test('recognizes only the exact D1 JSON transport wrapper, including nested quer
     assert.equal(isImportConnectionError(error), false, invalid)
   }
 })
+
+test('recognizes the proxy stack embedded in a D1 JSON transport response, not arbitrary suffixes', async () => {
+  const { isImportConnectionError } = await import('../src/d1-retry')
+  // Miniflare's entry worker returns e.stack as the HTTP 500 response body.
+  // D1 then includes that entire body, including this frame, in error.message.
+  const header = 'D1_ERROR: Failed to parse body as JSON, got: Error: Network connection lost.'
+  const frame = '\n    at async Object.fetch (file:///home/runner/work/repo/node_modules/.bun/miniflare@5.20261001.0-alpha/node_modules/miniflare/dist/src/workers/core/entry.worker.js:5330:22)'
+  const wrapped = new Error('Failed query: select chapters', { cause: new Error(header + frame) })
+  assert.ok(isTransientD1Error(wrapped))
+  assert.ok(isImportConnectionError(wrapped))
+  let attempts = 0
+  await retryTransientD1(async () => { if (++attempts === 1) throw wrapped })
+  assert.equal(attempts, 2)
+  for (const invalid of [
+    `${header}\nUNIQUE constraint failed`,
+    `${header}${frame}\nUNIQUE constraint failed`,
+    `${header}\n    at UNIQUE constraint failed`,
+    header + frame.replace('/miniflare/', '/unrelated/'),
+    header.replace('Network connection lost.', 'not authorized') + frame,
+    header.replace('Network connection lost.', 'UNIQUE constraint failed') + frame,
+    header.replace('D1_ERROR: ', '') + frame,
+  ]) {
+    assert.equal(isTransientD1Error(new Error(invalid)), false, invalid)
+    assert.equal(isImportConnectionError(new Error(invalid)), false, invalid)
+  }
+})
