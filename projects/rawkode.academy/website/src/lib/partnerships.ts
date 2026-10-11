@@ -64,7 +64,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Additional webinars, new integrations and ongoing repository maintenance are outside the programme.",
 	],
 	notes: [
-		"Before the cycle starts, we agree the workflow, webinar topic, practical takeaway, materials your team will supply and delivery dates.",
+		"Together, we'll choose a useful technical topic and turn it into a webinar and a practical resource developers can use.",
 	],
 	mailto: buildMailto("Adoption Advisory application", applicationBody),
 };
