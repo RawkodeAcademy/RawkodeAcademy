@@ -104,7 +104,7 @@ export async function emptyBucket(name, request = api) {
     const query = new URLSearchParams({ per_page: '1000' })
     if (cursor) query.set('cursor', cursor)
     const body = await request(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(name)}/objects?${query}`, {}, true)
-    const objects = body?.result?.objects
+    const objects = body?.result
     if (!Array.isArray(objects)) throw new Error(`Cloudflare returned an invalid R2 object list while cleaning ${name}.`)
     for (const object of objects) {
       if (typeof object?.key !== 'string') throw new Error(`Cloudflare returned an R2 object without a key while cleaning ${name}.`)
