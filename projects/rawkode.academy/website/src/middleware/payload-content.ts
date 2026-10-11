@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { env } from "cloudflare:workers";
 import {
 	getDefaultWorkerCache,
 	runWithPayloadRequest,
@@ -7,9 +8,6 @@ import {
 } from "@/lib/payload-content";
 
 type CloudflareLocals = {
-	runtime?: {
-		env?: WebsiteRuntimeEnv & { PUBLIC_SSR_CACHE_ENABLED?: string };
-	};
 	user?: unknown;
 };
 
@@ -279,7 +277,7 @@ function applyPublicResponseCachePolicy(
 export const payloadContentMiddleware = defineMiddleware(
 	async (context, next) => {
 		const locals = context.locals as typeof context.locals & CloudflareLocals;
-		const state: PayloadRequestState = { env: locals.runtime?.env };
+		const state: PayloadRequestState = { env: env as WebsiteRuntimeEnv };
 		const request = context.request;
 		// A PR preview can test Cloudflare's native Workers Cache at the named
 		// CachedAstro entrypoint. Avoid a second HTML cache underneath it so the

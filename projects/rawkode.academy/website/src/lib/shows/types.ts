@@ -1,6 +1,6 @@
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 
-// Cloudflare runtime env exposed via Astro.locals.runtime.env.
+// Cloudflare Worker bindings used by server-rendered show pages.
 export type ShowEnv = Record<string, unknown>;
 
 export interface ShowPageContext {

@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { GET } from "../pages/cms-assets/[assetId].ts";
+import { runWithPayloadRequest } from "../lib/payload-content.ts";
+
+function getAsset(context) {
+ const env = context.locals.runtime.env;
+ return runWithPayloadRequest({env}, () => GET({...context, locals: {get runtime() {throw new Error("Removed Astro runtime API accessed")}}}));
+}
+
 
 test("Cloudflare Images transform failures return an uncached original image", async () => {
 	const checksum = "a".repeat(64);
@@ -11,7 +18,7 @@ test("Cloudflare Images transform failures return an uncached original image", a
 		configurable: true,
 		value: {
 			default: {
-				match: async (key) => {
+				match: async () => {
 					cacheReads += 1;
 					return undefined;
 				},
@@ -23,7 +30,7 @@ test("Cloudflare Images transform failures return an uncached original image", a
 	});
 
 	try {
-		const response = await GET({
+		const response = await getAsset({
 			params: { assetId: "asset-test-id" },
 			url: new URL(
 				`https://academy.test/cms-assets/asset-test-id?v=${checksum}&w=640`,
@@ -92,7 +99,7 @@ test("missing Cloudflare Images binding returns an uncached original raster", as
 
 	try {
 		const url = `https://academy.test/cms-assets/asset-test-id?v=${checksum}&w=640`;
-		const response = await GET({
+		const response = await getAsset({
 			params: { assetId: "asset-test-id" },
 			url: new URL(url),
 			request: new Request(url),

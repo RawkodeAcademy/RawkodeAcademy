@@ -1,19 +1,5 @@
 import type { APIRoute } from "astro";
-import { getCollection, getEntry } from "@/lib/payload-content";
-
-interface PayloadBinding {
-	fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
-}
-
-interface RuntimeLocals {
-	runtime?: {
-		env?: {
-			PAYLOAD_PREVIEW_PR?: string;
-			PAYLOAD_PREVIEW_SHA?: string;
-			PAYLOAD_CONTENT?: PayloadBinding;
-		};
-	};
-}
+import { getCollection, getEntry, getPayloadRequestState } from "@/lib/payload-content";
 
 export const prerender = false;
 
@@ -59,8 +45,8 @@ function isD2SaveEvidence(value: unknown): value is D2SaveEvidence {
 	);
 }
 
-export const POST: APIRoute = async ({ locals }) => {
-	const env = (locals as typeof locals & RuntimeLocals).runtime?.env;
+export const POST: APIRoute = async () => {
+	const env = getPayloadRequestState()?.env;
 	if (!env?.PAYLOAD_PREVIEW_PR) {
 		return new Response(null, {
 			status: 404,

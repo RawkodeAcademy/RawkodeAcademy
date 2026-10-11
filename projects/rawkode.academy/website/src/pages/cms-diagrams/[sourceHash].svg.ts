@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { getPayloadRequestState } from "@/lib/payload-content";
 
 interface PayloadBinding {
 	fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
@@ -8,10 +9,6 @@ interface WebsiteEnvironment {
 	PAYLOAD_CONTENT?: PayloadBinding;
 	PAYLOAD_PREVIEW_PR?: string;
 	PAYLOAD_PREVIEW_SHA?: string;
-}
-
-interface RuntimeLocals {
-	runtime?: { env?: WebsiteEnvironment };
 }
 
 interface CloudflareCacheStorage extends CacheStorage {
@@ -67,10 +64,10 @@ async function cacheImmutableDiagram(cache: Cache | undefined, key: Request, res
 	return result;
 }
 
-export const GET: APIRoute = async ({ params, url, locals, request }) => {
+export const GET: APIRoute = async ({ params, url, request }) => {
 	const sourceHash = params.sourceHash ?? "";
 	if (!SHA256.test(sourceHash)) return noStore(404);
-	const env = (locals as typeof locals & RuntimeLocals).runtime?.env;
+	const env = getPayloadRequestState()?.env as WebsiteEnvironment | undefined;
 	const cache = typeof caches === "undefined"
 		? undefined
 		: (caches as CloudflareCacheStorage).default;

@@ -4,6 +4,7 @@ import { test } from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+let currentEnv;
 const context = vm.createContext({ Response, Request, URL, console });
 const module = new vm.SourceTextModule(ts.transpileModule(
 	readFileSync(new URL("../pages/__cms-preview-check.ts", import.meta.url), "utf8"),
@@ -11,9 +12,10 @@ const module = new vm.SourceTextModule(ts.transpileModule(
 ).outputText, { context });
 await module.link(specifier => {
 	assert.equal(specifier, "@/lib/payload-content");
-	return new vm.SyntheticModule(["getCollection", "getEntry"], function () {
+	return new vm.SyntheticModule(["getCollection", "getEntry", "getPayloadRequestState"], function () {
 		this.setExport("getCollection", async () => [{ id: "video", slug: "video", data: { title: "Video" } }]);
 		this.setExport("getEntry", async () => undefined);
+		this.setExport("getPayloadRequestState", () => ({env: currentEnv}));
 	}, { context });
 });
 await module.evaluate();
@@ -21,7 +23,7 @@ await module.evaluate();
 for (const scenario of ["safe", "missing", "full-files", "summary-local-path"]) {
 	test(`preview requires real sanitized summary and full module projections: ${scenario}`, async () => {
 		const views = [];
-		const response = await module.namespace.POST({ locals: { runtime: { env: {
+		currentEnv = {
 			PAYLOAD_PREVIEW_PR: "1419", PAYLOAD_PREVIEW_SHA: "a".repeat(40),
 			PAYLOAD_CONTENT: { fetch: async request => {
 				const url = new URL(request.url);
@@ -39,7 +41,8 @@ for (const scenario of ["safe", "missing", "full-files", "summary-local-path"]) 
 				if (scenario === "summary-local-path" && view === "summary") doc.unexpected = { localDir: "../../private" };
 				return Response.json({ doc });
 			} },
-		} } } });
+		};
+		const response = await module.namespace.POST({locals: {get runtime() {throw new Error("Removed Astro runtime API accessed")}}});
 		assert.equal(response.status, scenario === "safe" ? 200 : 503);
 		const body = await response.json();
 		assert.equal(body.demoProjectionPrivate, scenario === "safe" ? true : undefined);
@@ -48,6 +51,7 @@ for (const scenario of ["safe", "missing", "full-files", "summary-local-path"]) 
 }
 
 test("preview projection diagnostic remains unavailable outside PR previews", async () => {
+	currentEnv = undefined;
 	const response = await module.namespace.POST({ locals: {} });
 	assert.equal(response.status, 404);
 });
