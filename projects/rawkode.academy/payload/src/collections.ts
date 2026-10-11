@@ -97,7 +97,7 @@ const editorialHooks = (slug: string, runtime: CollectionRuntime = {}) => ({
       data: { key: `${slug}:${legacyId}`, collectionSlug: slug, legacyId, sourceHash: doc.sourceHash ?? '' } })
   }],
 })
-type CollectionRuntime = { d2Renderer?: DurableObjectNamespace }
+type CollectionRuntime = { d2Renderer?: DurableObjectNamespace; legacyDocumentIDs?: boolean }
 type Builder = (access: AdminAccess, runtime: CollectionRuntime) => CollectionConfig
 function content(slug: string, fields: Field[], layout: LayoutOptions = {}): Builder {
   return (access, runtime) => applyPreset({
@@ -242,6 +242,12 @@ export const createCollections = (config:AuthConfig,db:D1Database,access:AdminAc
     const collection = bySlug.get(slug)!
     return {
       ...collection,
+      // Use custom text IDs on document collections, while Payload's own
+      // migration, preference and version-row IDs retain their integer schema.
+      // Adapter-wide UUID mode also changes those internal tables.
+      fields: runtime.legacyDocumentIDs || collection.fields.some(field => 'name' in field && field.name === 'id')
+        ? collection.fields
+        : [{ name: 'id', type: 'text', required: true, defaultValue: createCuid2, admin: { hidden: true } }, ...collection.fields],
       hooks: {
         ...collection.hooks,
         beforeValidate: [assignCuid2DocumentID, ...(collection.hooks?.beforeValidate ?? [])],

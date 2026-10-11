@@ -15,6 +15,17 @@ const developer = 'developer-subject'
 const access: AdminAccess = { developerSubjects: [developer], localAuth: false }
 const collections = createCollections({ localAuth: false } as never, {} as never, access)
 const bySlug = new Map(collections.map(collection => [collection.slug, collection]))
+
+test('CUID2 document IDs are explicit custom text fields without changing the legacy migration schema', () => {
+	for (const collection of collections) {
+		const id = collection.fields.find(field => 'name' in field && field.name === 'id')
+		assert.equal(id?.type, 'text', `${collection.slug} uses a custom text ID`)
+	}
+	const legacy = createCollections({ localAuth: false } as never, {} as never, access, { legacyDocumentIDs: true })
+	for (const slug of ['videos', 'users', 'articles', 'static-assets']) {
+		assert.equal(legacy.find(collection => collection.slug === slug)?.fields.some(field => 'name' in field && field.name === 'id'), false)
+	}
+})
 const staffUser = { collection: 'users', role: 'staff', oidcSubject: 'someone-else' }
 const developerUser = { collection: 'users', role: 'staff', oidcSubject: developer }
 const customerUser = { collection: 'users', role: 'customer', oidcSubject: developer }

@@ -30,7 +30,7 @@ export default buildConfig({
   csrf:auth.origins,
   // Server-only. adminAccess is read by admin server components; never put it in admin.custom.
   custom:{adminAccess},
-  collections:createCollections(auth,cloudflare.env.D1,adminAccess,{d2Renderer:(cloudflare.env as CloudflareEnv & {D2_RENDERER?:DurableObjectNamespace}).D2_RENDERER}),
+  collections:createCollections(auth,cloudflare.env.D1,adminAccess,{d2Renderer:(cloudflare.env as CloudflareEnv & {D2_RENDERER?:DurableObjectNamespace}).D2_RENDERER,legacyDocumentIDs:!useCuid2Chain}),
   // The website reads through PublicContentBridge. Admin and staff clients use
   // Payload REST, so there is no need to expose a second generated content API.
   graphQL:{disable:true},
@@ -39,7 +39,8 @@ export default buildConfig({
   typescript:{autoGenerate:false,outputFile:path.resolve('payload-types.ts')},
   // D1 stores document IDs as TEXT. Hooks and the importer supply canonical
   // CUID2 values; videos use their existing CUID2 R2 content IDs as primary IDs.
-  db:experimentalD1Adapter({binding:cloudflare.env.D1,push:false,migrationDir:path.resolve(useCuid2Chain ? 'src/migrations-cuid2' : 'src/migrations'),idType:useCuid2Chain?'uuid':'number',allowIDOnCreate:true}),
+  // Explicit collection ID fields select TEXT; internal bookkeeping stays numeric.
+  db:experimentalD1Adapter({binding:cloudflare.env.D1,push:false,migrationDir:path.resolve(useCuid2Chain ? 'src/migrations-cuid2' : 'src/migrations'),idType:'number',allowIDOnCreate:true}),
   logger: {level:'warn',trace:log('trace'),debug:log('debug'),info:log('info'),warn:log('warn'),error:log('error'),fatal:log('fatal'),silent:()=>{}} as never,
   plugins:[...optionalPlugins,r2Storage({bucket:cloudflare.env.R2,collections:{media:true}})],
   onInit: async () => assertCuid2DocumentSchema(cloudflare.env.D1),

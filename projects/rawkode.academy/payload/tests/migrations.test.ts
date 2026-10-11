@@ -6,6 +6,9 @@ import { sql, type MigrateUpArgs } from '@payloadcms/db-d1-sqlite'
 import { migrations } from '../src/migrations-cuid2'
 import { cuid2DocumentTables } from '../src/id-schema'
 import { createCuid2, isCuid2 } from '../src/cuid2'
+import { buildConfig, type Payload } from 'payload'
+import { createCollections } from '../src/collections'
+import { experimentalD1Adapter } from '../src/d1-adapter'
 import * as enforce from '../src/pending-migrations/20261009_160000_review_revision_grants_enforce'
 
 const cuid = (prefix: string) => `${prefix}${'0'.repeat(23)}`
@@ -25,6 +28,45 @@ const migrationDB = (sqlite: DatabaseSync) => ({
     const query = queryOf(statement)
     return sqlite.prepare(query.sql).all(...query.params as (string | number | null)[])
   },
+})
+
+test('the live adapter ID schema matches the fresh chain, including Payload bookkeeping and versions', async () => {
+  const sqlite = new DatabaseSync(':memory:')
+  try {
+    const database = experimentalD1Adapter({ binding: {} as D1Database, push: false, idType: 'number', allowIDOnCreate: true })
+    const config = await buildConfig({
+      secret: 'schema-test-only',
+      db: database,
+      collections: createCollections({ localAuth: false } as never, {} as D1Database),
+    })
+    const payload = {
+      config,
+      collections: Object.fromEntries(config.collections.map(collection => [collection.slug, {
+        config: collection,
+        customIDType: collection.fields.find(field => 'name' in field && field.name === 'id')?.type,
+      }])),
+    } as unknown as Payload
+    const adapter = database.init({ payload })
+    await adapter.init!()
+    const args = { db: migrationDB(sqlite) } as unknown as MigrateUpArgs
+    for (const migration of migrations) {
+      await migration.up(args)
+      // Payload records each migration immediately, before the next one runs.
+      sqlite.prepare('INSERT INTO payload_migrations (name, batch) VALUES (?, 1)').run(migration.name)
+    }
+    for (const [name, table] of Object.entries(adapter.rawTables)) {
+      const stored = sqlite.prepare(`PRAGMA table_info("${name}")`).all() as { name: string; type: string }[]
+      for (const column of Object.values(table.columns)) {
+        if (!column.primaryKey && !column.reference) continue
+        const actual = stored.find(value => value.name === column.name)
+        assert.ok(actual, `${name}.${column.name} exists`)
+        const expected = column.type === 'uuid' || column.type === 'varchar' ? 'text' : column.type === 'serial' ? 'integer' : column.type
+        assert.equal(actual.type.toLowerCase(), expected, `${name}.${column.name} matches the live adapter`)
+      }
+    }
+  } finally {
+    sqlite.close()
+  }
 })
 
 // Run real migrations with FK enforcement held on, as in D1. SQLite ignores
