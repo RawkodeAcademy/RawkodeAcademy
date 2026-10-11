@@ -61,6 +61,19 @@ test('CUID2 migration refuses a nonempty target missing the terminal cleanup mig
   await assert.doesNotReject(assertMigrationTarget(completeCuid2Database(), 'cuid2'))
 })
 
+test('D1 reserved storage is empty only for targets that explicitly allow fresh migration', async () => {
+  const freshD1 = database({ tables: ['_cf_KV'] })
+  await assert.doesNotReject(assertMigrationTarget(freshD1, 'cuid2'))
+  await assert.rejects(assertMigrationTarget(freshD1, 'cuid2', { allowEmpty: false }), /refusing an empty D1/)
+  await assert.rejects(assertMigrationTarget(freshD1, 'legacy'), /empty or incomplete D1/)
+  for (const table of ['payload_migrations', 'unrelated', '_cf_custom']) {
+    await assert.rejects(
+      assertMigrationTarget(database({ tables: ['_cf_KV', table] }), 'cuid2'),
+      /incomplete CUID2 migration chain/,
+    )
+  }
+})
+
 test('CUID2 migration refuses an empty production target unless an explicit cutover path allows it', async () => {
   const empty = database({ tables: [] })
   await assert.rejects(

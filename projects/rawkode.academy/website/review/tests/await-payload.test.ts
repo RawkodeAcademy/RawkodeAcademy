@@ -110,7 +110,7 @@ function harness(fixture: Fixture = {}) {
 			return JSON.stringify(found);
 		},
 		env: fixture.env ?? {},
-		mode: fixture.mode,
+		...(fixture.mode ? { mode: fixture.mode } : {}),
 		async sleep(ms) {
 			clock += ms;
 		},

@@ -86,8 +86,9 @@ describe("honest author identity and overlapping groups", () => {
 		const first = authors[0]!;
 		const missing = {
 			...first,
-			data: { ...first.data, avatarUrl: undefined, name: "Ada Lovelace" },
+			data: { ...first.data, name: "Ada Lovelace" },
 		};
+		delete missing.data.avatarUrl;
 		const wrapper = group({ authors: [missing, authors[1]!] });
 		expect(wrapper.get('[aria-label="Ada Lovelace"]').text()).toBe("AL");
 		await wrapper.get("img").trigger("error");

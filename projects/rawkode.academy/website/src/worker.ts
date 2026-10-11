@@ -3,9 +3,8 @@ import { WorkerEntrypoint } from 'cloudflare:workers'
 import { cachedAstroProps, canUseCachedAstro } from './lib/public-cache-gateway'
 
 type Props = { host: string }
-type Env = {
+type WorkerEnv = Cloudflare.Env & {
   PUBLIC_SSR_CACHE_ENABLED?: string
-  [key: string]: unknown
 }
 type ContextWithExports = ExecutionContext & {
   exports: {
@@ -21,14 +20,14 @@ function withRoute(response: Response, route: 'public-cache' | 'bypass'): Respon
 
 /** Only the public entrypoint enables Workers Cache. It receives requests only
  * after the default gateway has screened cookies, credentials, and routes. */
-export class CachedAstro extends WorkerEntrypoint<Env, Props> {
-  fetch(request: Request): Promise<Response> {
+export class CachedAstro extends WorkerEntrypoint<WorkerEnv, Props> {
+  override fetch(request: Request): Promise<Response> {
     return handle(request, this.env, this.ctx)
   }
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
     if (canUseCachedAstro(request, env.PUBLIC_SSR_CACHE_ENABLED === 'true')) {
       const cached = (ctx as ContextWithExports).exports.CachedAstro({ props: cachedAstroProps(request) })
       return withRoute(await cached.fetch(request), 'public-cache')

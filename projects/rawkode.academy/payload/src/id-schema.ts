@@ -78,7 +78,10 @@ const legacyNumericDocumentTables = new Set<string>(['video_publications'])
 
 async function existingTables(db: D1Database): Promise<Set<string>> {
   const result = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all<TableName>()
-  return new Set(result.results.map(({ name }) => name))
+  // A newly provisioned remote D1 already contains this reserved storage
+  // table. Ignore only that exact platform table, never application tables
+  // or migration history (including an interrupted migration).
+  return new Set(result.results.map(({ name }) => name).filter(name => name !== '_cf_KV'))
 }
 
 async function recordedMigrationNames(db: D1Database, tables: Set<string>): Promise<string[]> {
@@ -107,7 +110,7 @@ export async function assertCuid2MigrationTarget(db: D1Database, options: { allo
   if (missing.length > 0 || unexpected.length > 0 || names.length !== cuid2MigrationNames.length) {
     const missingDescription = missing.length ? `missing ${missing.join(', ')}` : 'no required migrations missing'
     const unexpectedDescription = unexpected.length ? `unexpected ${unexpected.join(', ')}` : 'no unexpected migrations'
-    throw new Error(`CUID2 migration target guard: incomplete CUID2 migration chain (${missingDescription}; ${unexpectedDescription}); use a fresh isolated D1.`)
+    throw new Error(`CUID2 migration target guard: incomplete CUID2 migration chain (${missingDescription}; ${unexpectedDescription}; tables ${[...tables].sort().join(', ')}); use a fresh isolated D1.`)
   }
   await assertCuid2DocumentSchema(db)
 }

@@ -106,6 +106,12 @@ function toValidDate(value: unknown): Date | undefined {
 	return undefined;
 }
 
+// Not every public content kind carries both timestamps. Read optional
+// metadata without claiming that the collection has arbitrary string keys.
+function contentTimestamp(data: object, key: "updatedAt" | "publishedAt"): unknown {
+	return Reflect.get(data, key);
+}
+
 function pickLastmod(fallback: Date | undefined, ...values: unknown[]): Date {
 	for (const value of values) {
 		const parsed = toValidDate(value);
@@ -284,8 +290,8 @@ export async function getTechnologySitemapEntries(): Promise<
 			path: `/technology/${technology.slug}`,
 			lastmod: pickLastmod(
 				undefined,
-				(technology.data as Record<string, unknown>).updatedAt,
-				(technology.data as Record<string, unknown>).publishedAt,
+				contentTimestamp(technology.data, "updatedAt"),
+				contentTimestamp(technology.data, "publishedAt"),
 			),
 			changefreq: "weekly" as const,
 			priority: 0.5,
@@ -303,7 +309,7 @@ export async function getVideoSitemapEntries(): Promise<SitemapUrlEntry[]> {
 		path: `/watch/${video.slug}`,
 		lastmod: pickLastmod(
 			undefined,
-			(video.data as Record<string, unknown>).updatedAt,
+			contentTimestamp(video.data, "updatedAt"),
 			video.data.publishedAt,
 		),
 		changefreq: "daily" as const,
@@ -359,7 +365,7 @@ export async function getLearningPathSitemapEntries(): Promise<
 		path: `/learning-paths/${learningPath.slug}`,
 		lastmod: pickLastmod(
 			undefined,
-			(learningPath.data as Record<string, unknown>).updatedAt,
+			contentTimestamp(learningPath.data, "updatedAt"),
 			learningPath.data.publishedAt,
 		),
 		changefreq: "weekly" as const,
@@ -415,8 +421,8 @@ export async function getPeopleSitemapEntries(): Promise<SitemapUrlEntry[]> {
 			path: `/people/${person.slug}`,
 			lastmod: pickLastmod(
 				undefined,
-				(person.data as Record<string, unknown>).updatedAt,
-				(person.data as Record<string, unknown>).publishedAt,
+				contentTimestamp(person.data, "updatedAt"),
+				contentTimestamp(person.data, "publishedAt"),
 			),
 			changefreq: "monthly" as const,
 			priority: 0.4,
@@ -432,8 +438,8 @@ export async function getShowSitemapEntries(): Promise<SitemapUrlEntry[]> {
 		path: `/shows/${show.slug}`,
 		lastmod: pickLastmod(
 			undefined,
-			(show.data as Record<string, unknown>).updatedAt,
-			(show.data as Record<string, unknown>).publishedAt,
+			contentTimestamp(show.data, "updatedAt"),
+			contentTimestamp(show.data, "publishedAt"),
 		),
 		changefreq: "weekly" as const,
 		priority: 0.6,
@@ -459,8 +465,8 @@ export async function getSeriesSitemapEntries(): Promise<SitemapUrlEntry[]> {
 			path: `/series/${seriesEntry.slug}`,
 			lastmod: pickLastmod(
 				undefined,
-				(seriesEntry.data as Record<string, unknown>).updatedAt,
-				(seriesEntry.data as Record<string, unknown>).publishedAt,
+				contentTimestamp(seriesEntry.data, "updatedAt"),
+				contentTimestamp(seriesEntry.data, "publishedAt"),
 			),
 			changefreq: "weekly" as const,
 			priority: 0.5,
@@ -480,7 +486,7 @@ export async function getNewsSitemapEntries(
 		path: `/news/${item.slug}`,
 		lastmod: pickLastmod(
 			undefined,
-			(item.data as Record<string, unknown>).updatedAt,
+			contentTimestamp(item.data, "updatedAt"),
 			item.data.publishedAt,
 		),
 		changefreq: "weekly" as const,
@@ -527,7 +533,7 @@ export async function getAdrSitemapEntries(): Promise<SitemapUrlEntry[]> {
 		lastmod: pickLastmod(
 			undefined,
 			adr.data.adoptedAt,
-			(adr.data as Record<string, unknown>).updatedAt,
+			contentTimestamp(adr.data, "updatedAt"),
 		),
 		changefreq: "monthly" as const,
 		priority: 0.4,

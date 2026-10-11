@@ -153,8 +153,11 @@ const configPath = path.resolve('dist/server/wrangler.json')
 const previewConfigPath = path.resolve('dist/server/wrangler.pr-preview.json')
 const isolationConfigPath = path.resolve('dist/server/wrangler.isolation.pr-preview.json')
 const config = JSON.parse(await readFile(configPath, 'utf8'))
-if (!Array.isArray(config.compatibility_flags) || !config.compatibility_flags.includes('enable_ctx_exports')) {
-	throw new Error('The generated Astro Wrangler config must preserve enable_ctx_exports for the custom WorkerEntrypoint exports.')
+if (typeof config.compatibility_date !== 'string' || config.compatibility_date < '2025-11-17' || config.compatibility_flags?.includes('disable_ctx_exports')) {
+	throw new Error('The generated Astro Wrangler config must enable ctx.exports through its compatibility date for the custom WorkerEntrypoint exports.')
+}
+if (config.exports?.default?.type !== 'worker' || config.exports.default.cache?.enabled !== false || config.exports?.CachedAstro?.type !== 'worker') {
+	throw new Error('The generated Astro Wrangler config must preserve the uncached default gateway and named CachedAstro export. Check the resolved Cloudflare Vite plugin and Wrangler versions.')
 }
 if (typeof config.main !== 'string' || !config.main.trim() || config.main === '@astrojs/cloudflare/entrypoints/server') {
 	throw new Error('The generated Astro Wrangler config must point at the custom Astro Worker entrypoint.')

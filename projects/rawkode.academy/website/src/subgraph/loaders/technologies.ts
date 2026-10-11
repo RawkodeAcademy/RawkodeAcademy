@@ -13,7 +13,7 @@ export type TechnologyData = TechnologyEntry["data"] & ContentTechnologyData;
 export type LearningResources = NonNullable<
 	TechnologyData["learningResources"]
 >;
-export type TechnologyItem = Omit<TechnologyData, "icon"> & {
+export type TechnologyItem = Omit<TechnologyData, "icon" | "logo"> & {
 	id: string;
 	slug: string;
 	logo?: string | undefined;
