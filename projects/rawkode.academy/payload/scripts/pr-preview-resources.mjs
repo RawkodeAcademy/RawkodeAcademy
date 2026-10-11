@@ -124,7 +124,7 @@ export function isOwnedExistingBucketConflict(error) {
 
 async function ensureBucket(name) {
   if ((await listBuckets()).some(bucket => bucket.name === name)) return { name }
-  try { await api(\`/accounts/\${accountId}/r2/buckets\`, { method: 'POST', body: JSON.stringify({ name }) }) }
+  try { await api(`/accounts/${accountId}/r2/buckets`, { method: 'POST', body: JSON.stringify({ name }) }) }
   catch (error) {
     if ((await listBuckets()).some(bucket => bucket.name === name)) return { name }
     // R2 can return its owned-name conflict before the bucket appears in list.
