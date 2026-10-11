@@ -47,26 +47,28 @@ export const partnershipOffer: PartnershipOffer = {
 	label: "Rawkode Partner Programme",
 	price: "£4,000 / month",
 	priceShort: "£4k/mo",
-	cadence: "90 days, then month-to-month",
+	cadence:
+		"Initial 90-day cycle: £12,000 total, billed monthly. Renewal: further 90-day cycles, agreed together.",
 	summary:
-		"A working partnership for infrastructure companies that need sharper technical proof, useful demos, and a practitioner's read on what developers will trust.",
+		"A working partnership for infrastructure companies with a technical workflow they need buyers to understand. Get a practitioner's feedback, improve the demonstration and create useful material your team can reuse.",
 	included: [
-		"Slack Connect for questions, reviews, and decisions as they come up",
-		"One scheduled working session each month",
-		"One technical demo or proof asset each quarter, built with your team",
-		"A companion page, reusable clips, and a shared partner asset repository",
-		"A quarterly delivery and performance report with the next renewal decision",
+		"Slack Connect for technical questions, reviews and decisions about the agreed workflow",
+		"One 60-minute working session each month, with decisions and next actions shared in Slack",
+		"One recorded technical walkthrough of up to 45 minutes, using your team's working demo",
+		"A lightly edited master recording",
+		"One companion page of up to 500 words, using a standard format and the agreed source material",
+		"Two clips of up to 90 seconds each, taken from the same recording",
+		"One consolidated correction round and a shared folder containing the final assets",
+		"A one-page quarterly summary, discussed in that month's working session",
 	],
 	excluded: [
-		"On-call support, incident response, or implementation ownership",
-		"Guaranteed leads, sign-ups, positive reviews, or independent editorial coverage",
-		"Open-ended custom content, campaign planning, or unlimited revisions",
-		"Audience rental or blanket category exclusivity",
+		"On-call support, incident response, outsourced DevRel and campaign management are outside the programme.",
+		"The work is paid for; the technical judgement stays independent. There is no guarantee of praise, leads or separate editorial coverage.",
+		"The package covers one workflow and one recording per cycle. Additional recordings, bespoke articles, new integrations and ongoing repository maintenance are scoped separately.",
+		"New creative direction, additional formats and reshoots caused by changed requirements are scoped separately.",
 	],
 	notes: [
-		"The partner supplies a working environment, technical SME, source material, and timely approvals.",
-		"One factual-correction round is included for each published asset.",
-		"Additional demos, series, or strategy work are separately scoped add-ons.",
+		"Before the cycle starts, we agree the workflow, what the demonstration needs to show, the materials your team will supply and the delivery dates.",
 	],
 	mailto: buildMailto("Adoption Advisory application", applicationBody),
 };
@@ -78,21 +80,22 @@ export const fitProofReview: PartnershipOffer = {
 	label: "Optional qualification",
 	price: "£2,500",
 	priceShort: "£2.5k",
-	cadence: "One bounded review",
+	cadence: "One fixed-scope review",
 	summary:
-		"A focused review of one technical buyer workflow, with a scorecard and a clear recommendation on whether Adoption Advisory is useful.",
+		"Find the gaps in one important technical evaluation journey. David reviews the agreed demonstration and supporting materials, identifies the three most important proof gaps and recommends what to fix or demonstrate next.",
 	included: [
-		"One named workflow and its current proof gap",
-		"Async review of the supplied demo, docs, claims, and adoption context",
-		"A written scorecard and one 60-minute readout",
-		"Full fee credited toward Adoption Advisory when you start within 30 days",
+		"One named technical workflow and its current proof gaps",
+		"An agreed set of demo, documentation and adoption materials, reviewed asynchronously",
+		"A written scorecard and prioritised next-step plan",
+		"One 60-minute readout",
 	],
 	excluded: [
 		"Open-ended Slack access or implementation work",
 		"Coverage, mentions, lead generation, or audience rental",
 	],
 	notes: [
-		"The review is kept deliberately small. A working session or build beyond the named workflow is a separate engagement.",
+		"We agree the materials and delivery date before the review begins. The findings and next-step plan are yours to use whether or not you continue with Adoption Advisory.",
+		"The full £2,500 is credited against your first Adoption Advisory invoice when the partnership starts within 30 days of the readout. If you continue with the same workflow, the review becomes your onboarding, so we can start from its findings rather than repeat discovery.",
 	],
 	mailto: buildMailto("Fit & Proof Review application", applicationBody),
 };
@@ -109,13 +112,14 @@ export const applicationPaths = [
 ] as const;
 export type ApplicationPath = (typeof applicationPaths)[number];
 
-/** Boundaries shared across the organisation and partner surfaces. */
+/** Boundaries for the full partnership programme. */
 export const partnershipBoundaries = [
-	"Your team owns execution. Rawkode brings technical judgement, demos, and proof work.",
-	"Sponsorship funds the work, not the verdict: no guaranteed praise, leads, or independent coverage.",
-	"No on-call support, incident response, outsourced DevRel, or implementation ownership.",
-	"No open-ended custom content, campaign planning, or unlimited revisions.",
-	"Exclusivity is never blanket or automatic. Narrow exclusions are separately scoped and priced.",
+	"Your team supplies and maintains the working demo, environment, code and integrations. Product fixes and implementation stay with your team.",
+	"David provides technical critique, shapes and hosts the walkthrough, and produces the agreed recording and companion materials.",
+	"The work is paid for; the technical judgement stays independent. There is no guarantee of praise, leads or separate editorial coverage.",
+	"On-call support, incident response, outsourced DevRel and campaign management are outside the programme.",
+	"The package covers one workflow and one recording per cycle. Additional recordings, bespoke articles, new integrations and ongoing repository maintenance are scoped separately.",
+	"Exclusivity is considered only for a specifically agreed scope and price.",
 ] as const;
 
 /** General partnership application mailto used as a fallback. */
