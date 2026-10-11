@@ -66,7 +66,7 @@ if (pullRequest) {
 console.log(`Starting Wrangler Preview ${previewName} (Cloudflare token configured: ${Boolean(process.env.CLOUDFLARE_API_TOKEN)})`)
 
 async function runPreview(configPath, secretsFile) {
-  const args = ['node_modules/wrangler/bin/wrangler.js', pullRequest ? 'deploy' : 'preview', '--secrets-file', secretsFile]
+  const args = ['scripts/wrangler.mjs', pullRequest ? 'deploy' : 'preview', '--secrets-file', secretsFile]
   if (!pullRequest) args.push('--name', previewName, '--json')
   if (configPath) args.push('--config', configPath)
   const child = spawn('node', args, { env: {...process.env, CI: 'true'}, stdio: ['ignore', 'pipe', 'pipe'] })

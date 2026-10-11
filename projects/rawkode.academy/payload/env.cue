@@ -275,7 +275,7 @@ tasks: {
 			command: "sh"
 			// The tag lets the website review deploy wait for this exact commit.
 			// It is the first 12 characters of the full SHA on both sides.
-			args: ["-lc", "sha=$(git rev-parse HEAD); tag=$(printf '%s' \"$sha\" | cut -c1-12); \(_toolchain) bun x wrangler deploy --tag \"$tag\" --message \"$sha\""]
+			args: ["-lc", "sha=$(git rev-parse HEAD); tag=$(printf '%s' \"$sha\" | cut -c1-12); \(_toolchain) node scripts/wrangler.mjs deploy --tag \"$tag\" --message \"$sha\""]
 			env: PATH: _taskPath
 			dependsOn: [_t.build, _t.deploy.migrate]
 			// This is the production delivery root. The generated GitHub workflow
