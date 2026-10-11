@@ -110,7 +110,11 @@ export async function emptyBucket(name, request = api) {
       if (typeof object?.key !== 'string') throw new Error(`Cloudflare returned an R2 object without a key while cleaning ${name}.`)
       await request(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(name)}/objects/${encodeURIComponent(object.key)}`, { method: 'DELETE' })
     }
-    cursor = body.result_info?.cursor
+    const pagination = body.result_info
+    if (pagination?.is_truncated === true && (typeof pagination.cursor !== 'string' || pagination.cursor.length === 0)) {
+      throw new Error('Cloudflare marked the R2 object list truncated without a continuation cursor.')
+    }
+    cursor = pagination?.cursor
     if (cursor === undefined || cursor === null || cursor === '') return
     if (typeof cursor !== 'string' || seen.has(cursor)) throw new Error('Cloudflare returned an invalid or repeated R2 object cursor.')
     seen.add(cursor)

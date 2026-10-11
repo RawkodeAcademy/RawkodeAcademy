@@ -104,6 +104,7 @@ test('R2 cleanup deletes objects across result_info cursor pages', async () => {
 })
 
 test('R2 cleanup fails closed on malformed and repeated object cursors', async () => {
+  await assert.rejects(emptyBucket('bucket', async () => ({ result: [], result_info: { is_truncated: true } })), /truncated without a continuation cursor/)
   await assert.rejects(emptyBucket('bucket', async () => ({ result: {} })), /invalid R2 object list/)
   let calls = 0
   await assert.rejects(emptyBucket('bucket', async () => {
