@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { appendFile, readFile, unlink, writeFile } from 'node:fs/promises'
+import { appendFile, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { checkAstroWorker } from '../../scripts/check-astro-worker.mjs'
 import {
 	ensurePrPreviewResources,
 	namesForPullRequest,
@@ -155,26 +156,7 @@ if (!payloadReady) throw new Error(`Timed out waiting for successful Payload PR 
 const configPath = path.resolve('dist/server/wrangler.json')
 const previewConfigPath = path.resolve('dist/server/wrangler.pr-preview.json')
 const isolationConfigPath = path.resolve('dist/server/wrangler.isolation.pr-preview.json')
-const config = JSON.parse(await readFile(configPath, 'utf8'))
-if (typeof config.compatibility_date !== 'string' || config.compatibility_date < '2025-11-17' || config.compatibility_flags?.includes('disable_ctx_exports')) {
-	throw new Error('The generated Astro Wrangler config must enable ctx.exports through its compatibility date for the custom WorkerEntrypoint exports.')
-}
-if (config.exports?.default?.type !== 'worker' || config.exports.default.cache?.enabled !== false || config.exports?.CachedAstro?.type !== 'worker') {
-	throw new Error('The generated Astro Wrangler config must preserve the uncached default gateway and named CachedAstro export. Check the resolved Cloudflare Vite plugin and Wrangler versions.')
-}
-if (typeof config.main !== 'string' || !config.main.trim() || config.main === '@astrojs/cloudflare/entrypoints/server') {
-	throw new Error('The generated Astro Wrangler config must point at the custom Astro Worker entrypoint.')
-}
-const generatedWorkerEntrypoint = path.resolve(path.dirname(configPath), config.main)
-let generatedWorkerSource
-try {
-	generatedWorkerSource = await readFile(generatedWorkerEntrypoint, 'utf8')
-} catch (error) {
-	throw new Error(`The generated custom Astro Worker entrypoint is not readable at ${generatedWorkerEntrypoint}: ${error instanceof Error ? error.message : String(error)}`)
-}
-if (!generatedWorkerSource.includes('CachedAstro') || !generatedWorkerSource.includes('PUBLIC_SSR_CACHE_ENABLED')) {
-	throw new Error(`The generated Wrangler main ${config.main} does not contain the custom CachedAstro WorkerEntrypoint.`)
-}
+const { config } = await checkAstroWorker(configPath)
 config.name = names.websiteWorkerName
 config.workers_dev = true
 config.preview_urls = true
