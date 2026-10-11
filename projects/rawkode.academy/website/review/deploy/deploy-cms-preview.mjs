@@ -212,9 +212,9 @@ const isolationConfig = {
 	workers_dev: false,
 	preview_urls: false,
 }
-const bootstrapConfig = { ...config, preview_urls: false }
-if (bootstrapConfig.workers_dev !== false || bootstrapConfig.preview_urls !== false || Object.hasOwn(bootstrapConfig, 'routes')) {
-	throw new Error('The Astro PR Worker bootstrap must have no routes, workers.dev route, or preview URL.')
+const bootstrapConfig = { ...config, preview_urls: true }
+if (bootstrapConfig.workers_dev !== false || bootstrapConfig.preview_urls !== true || Object.hasOwn(bootstrapConfig, 'routes')) {
+	throw new Error('The Astro PR Worker bootstrap must have no routes or workers.dev route, and must enable version previews.')
 }
 if (config.workers_dev !== false || config.preview_urls !== true || Object.hasOwn(config, 'routes')) {
 	throw new Error('The Astro version preview must have no stable workers.dev route or configured route.')
