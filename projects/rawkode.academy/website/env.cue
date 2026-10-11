@@ -287,6 +287,7 @@ tasks: {
 				// Source and content changes must make the hosted Astro preview an
 				// affected task; otherwise the PR pipeline can be a no-op.
 				"review/deploy/deploy-cms-preview.mjs",
+				"review/deploy/scheduled-archive-boundary.mjs",
 				"scripts/preview-isolation-worker.mjs",
 				"../../../projects/rawkode.academy/payload/scripts/pr-preview-resources.mjs",
 				"../../../projects/rawkode.academy/payload/wrangler.jsonc",

@@ -9,6 +9,9 @@ import {
 	namesForPullRequest,
 	pullRequestIdentity,
 } from '../../../payload/scripts/pr-preview-resources.mjs'
+import {
+	verifyScheduledArchiveBoundary,
+} from './scheduled-archive-boundary.mjs'
 
 const identity = pullRequestIdentity()
 const resources = await ensurePrPreviewResources()
@@ -674,48 +677,17 @@ try {
 	}
 	console.log(`CMS media checks passed: D2 SVG ${sourceHash} and Cloudflare Images WebP ${assetUrl.pathname} at ${assetWidth}px.`)
 
-	// The first /watch entry was warmed earlier in this run. Re-render that same
-	// URL in the final 20 seconds before release and prove every shared TTL is
-	// clipped to the remaining time, then confirm that response is cached.
-	const boundaryProbeAt = releaseAt - 15_000
-	while (Date.now() < boundaryProbeAt) {
-		await new Promise(resolve => setTimeout(resolve, Math.min(5_000, boundaryProbeAt - Date.now())))
-	}
-	const boundaryRequestStartedAt = Date.now()
-	const secondsUntilRelease = Math.floor((releaseAt - boundaryRequestStartedAt) / 1000)
-	if (secondsUntilRelease < 1 || secondsUntilRelease > 20) {
-		throw new Error(`The scheduled archive cache probe did not run in its final 20 seconds before ${scheduledVideo.publishedAt}.`)
-	}
-	const boundaryWarm = await fetch(archiveUrl, {
-		headers: { accept: 'text/html' },
-		signal: AbortSignal.timeout(15_000),
+	// The first /watch entry was warmed earlier. Re-render the same URL with a
+	// 25-second runway, bounded retries, and every TTL clipped to release.
+	const { secondsUntilRelease, boundaryAges } = await verifyScheduledArchiveBoundary({
+		archiveUrl,
+		scheduledHref,
+		scheduledSlug: scheduledVideo.slug,
+		publishedAt: scheduledVideo.publishedAt,
+		releaseAt,
+		responseCacheAges,
 	})
-	const boundaryHtml = await boundaryWarm.text()
-	const boundaryCacheState = boundaryWarm.headers.get('cf-cache-status')?.toUpperCase()
-	const boundaryAges = responseCacheAges(boundaryWarm)
-	if (
-		!boundaryWarm.ok ||
-		boundaryHtml.includes(scheduledHref) ||
-		!['MISS', 'EXPIRED'].includes(boundaryCacheState ?? '') ||
-		!boundaryAges.length ||
-		boundaryAges.some(age => age > secondsUntilRelease)
-	) {
-		throw new Error(`The pre-release /watch response must be a cache MISS without ${scheduledVideo.slug}, with every shared TTL at or below ${secondsUntilRelease}s (HTTP ${boundaryWarm.status}, CF-Cache-Status ${boundaryCacheState ?? 'missing'}, TTLs ${boundaryAges.join(',') || 'missing'}).`)
-	}
-	const boundaryHit = await fetch(archiveUrl, {
-		headers: { accept: 'text/html' },
-		signal: AbortSignal.timeout(15_000),
-	})
-	const boundaryHitHtml = await boundaryHit.text()
-	if (
-		!boundaryHit.ok ||
-		boundaryHitHtml.includes(scheduledHref) ||
-		boundaryHit.headers.get('cf-cache-status')?.toUpperCase() !== 'HIT'
-	) {
-		throw new Error(`The clipped pre-release /watch response did not produce a cache HIT without ${scheduledVideo.slug} on the same URL (HTTP ${boundaryHit.status}, CF-Cache-Status ${boundaryHit.headers.get('cf-cache-status') ?? 'missing'}).`)
-	}
 	console.log(`Scheduled archive boundary warm passed: /watch was re-rendered ${secondsUntilRelease}s before release with clipped TTLs (${boundaryAges.join('/')}s), then served from cache.`)
-
 	// Wait through the saved future boundary and verify live Astro SSR sees it.
 	const scheduledDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
 	let scheduledVisible = false
