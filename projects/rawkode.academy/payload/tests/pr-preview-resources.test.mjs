@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
-import { pullRequestIdentity } from '../scripts/pr-preview-resources.mjs'
+import { isOwnedExistingBucketConflict, pullRequestIdentity } from '../scripts/pr-preview-resources.mjs'
 
 const fixtureDirectory = mkdtempSync(path.join(tmpdir(), 'pr-preview-identity-'))
 const eventPath = path.join(fixtureDirectory, 'event.json')
@@ -30,4 +30,16 @@ test('PR preview identity refuses to fall back to GITHUB_SHA when the event head
     GITHUB_EVENT_PATH: eventPath,
     GITHUB_SHA: mergeSha,
   }), /full 40-character head SHA/)
+})
+
+test('reuses only an R2 bucket conflict Cloudflare confirms is already owned', () => {
+  const owned = new Error('Cloudflare API POST /accounts/account-id/r2/buckets failed (409): The bucket you tried to create already exists, and you own it.')
+  assert.equal(isOwnedExistingBucketConflict(owned), true)
+  for (const error of [
+    new Error('Cloudflare API POST /accounts/account-id/r2/buckets failed (409): The bucket already exists but is not owned by you.'),
+    new Error('Cloudflare API POST /accounts/account-id/r2/buckets failed (403): The bucket you tried to create already exists, and you own it.'),
+    new Error('Cloudflare API POST /accounts/account-id/d1/database failed (409): The bucket you tried to create already exists, and you own it.'),
+    new Error('Cloudflare API POST /accounts/account-id/r2/buckets failed (409): The bucket you tried to create already exists, and you own it. Extra text'),
+    { message: owned.message },
+  ]) assert.equal(isOwnedExistingBucketConflict(error), false)
 })

@@ -118,11 +118,20 @@ async function ensureD1(name) {
   }
 }
 
+export function isOwnedExistingBucketConflict(error) {
+  return error instanceof Error && /^Cloudflare API POST \/accounts\/[^/]+\/r2\/buckets failed \(409\): The bucket you tried to create already exists, and you own it\.$/.test(error.message)
+}
+
 async function ensureBucket(name) {
   if ((await listBuckets()).some(bucket => bucket.name === name)) return { name }
-  try { await api(`/accounts/${accountId}/r2/buckets`, { method: 'POST', body: JSON.stringify({ name }) }) }
+  try { await api(\`/accounts/\${accountId}/r2/buckets\`, { method: 'POST', body: JSON.stringify({ name }) }) }
   catch (error) {
-    if (!(await listBuckets()).some(bucket => bucket.name === name)) throw error
+    if ((await listBuckets()).some(bucket => bucket.name === name)) return { name }
+    // R2 can return its owned-name conflict before the bucket appears in list.
+    // The deterministic PR/SHA name and Cloudflare's own-account response make
+    // this exact conflict safe to reuse on an idempotent workflow retry.
+    if (isOwnedExistingBucketConflict(error)) return { name }
+    throw error
   }
   return { name }
 }
