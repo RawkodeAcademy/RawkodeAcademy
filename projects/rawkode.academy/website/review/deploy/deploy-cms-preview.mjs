@@ -154,11 +154,12 @@ while (Date.now() < payloadCheckDeadline) {
 if (!payloadReady) throw new Error(`Timed out waiting for successful Payload PR workflow on ${identity.sha}: ${payloadCheckState}`)
 
 const configPath = path.resolve('dist/server/wrangler.json')
+const bootstrapConfigPath = path.resolve('dist/server/wrangler.pr-preview-bootstrap.json')
 const previewConfigPath = path.resolve('dist/server/wrangler.pr-preview.json')
 const isolationConfigPath = path.resolve('dist/server/wrangler.isolation.pr-preview.json')
 const { config } = await checkAstroWorker(configPath)
 config.name = names.websiteWorkerName
-config.workers_dev = true
+config.workers_dev = false
 config.preview_urls = true
 // Never route a PR preview through the production website hostname.
 delete config.routes
@@ -211,6 +212,14 @@ const isolationConfig = {
 	workers_dev: false,
 	preview_urls: false,
 }
+const bootstrapConfig = { ...config, preview_urls: false }
+if (bootstrapConfig.workers_dev !== false || bootstrapConfig.preview_urls !== false || Object.hasOwn(bootstrapConfig, 'routes')) {
+	throw new Error('The Astro PR Worker bootstrap must have no routes, workers.dev route, or preview URL.')
+}
+if (config.workers_dev !== false || config.preview_urls !== true || Object.hasOwn(config, 'routes')) {
+	throw new Error('The Astro version preview must have no stable workers.dev route or configured route.')
+}
+await writeFile(bootstrapConfigPath, `${JSON.stringify(bootstrapConfig, null, 2)}\n`)
 await writeFile(previewConfigPath, `${JSON.stringify(config, null, 2)}\n`)
 await writeFile(isolationConfigPath, `${JSON.stringify(isolationConfig, null, 2)}\n`)
 
@@ -231,6 +240,25 @@ try {
 		guard.once('close', code => resolve(code))
 	})
 	if (guardStatus !== 0) throw new Error(`Wrangler failed to deploy the per-PR identity isolation Worker (exit ${guardStatus}).`)
+
+	// Wrangler versions upload requires an existing Worker. Create its PR/SHA-specific
+	// script without routes or a workers.dev/preview URL; the version preview below
+	// becomes the only public website URL.
+	const bootstrap = spawn('node', [
+		'node_modules/wrangler/bin/wrangler.js',
+		'deploy',
+		'--config',
+		bootstrapConfigPath,
+	], { env: { ...process.env, CI: 'true' }, stdio: ['ignore', 'pipe', 'pipe'] })
+	bootstrap.stdout.setEncoding('utf8')
+	bootstrap.stderr.setEncoding('utf8')
+	bootstrap.stdout.on('data', chunk => process.stdout.write(chunk))
+	bootstrap.stderr.on('data', chunk => process.stderr.write(chunk))
+	const bootstrapStatus = await new Promise((resolve, reject) => {
+		bootstrap.once('error', reject)
+		bootstrap.once('close', code => resolve(code))
+	})
+	if (bootstrapStatus !== 0) throw new Error(`Wrangler failed to bootstrap the route-less Astro PR Worker (exit ${bootstrapStatus}).`)
 
 	const child = spawn('node', [
 		'node_modules/wrangler/bin/wrangler.js',
