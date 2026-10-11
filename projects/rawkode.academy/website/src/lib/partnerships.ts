@@ -41,6 +41,9 @@ const applicationBody = [
  * support promise. Demos and proof assets are deliberately bounded so the
  * partnership remains valuable without becoming an open-ended consultancy.
  */
+export const partnershipStartingPoint =
+	"A product demo review is the usual starting point. Get clear priorities your team can act on, then decide together whether ongoing technical advice would help.";
+
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
 	name: "90-day partnership",
@@ -50,10 +53,10 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"First 90 days: £12,000 in total, billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Work directly with David to improve your demo and documentation. Get ongoing technical advice, plus a joint webinar and a practical resource developers can use.",
+		"Keep getting David’s judgement as your team improves the agreed use case. Revisit your changes in Slack and monthly sessions, question trade-offs and decide what to improve next.",
 	included: [
-		"Slack Connect to ask David questions and get feedback on the agreed use case",
-		"One 60-minute session with David each month to review questions and decide what to do next",
+		"Slack Connect to ask David questions and get feedback on your team’s changes to the agreed use case",
+		"One 60-minute session with David each month to review those changes and decide what to improve next",
 		"One webinar every 90 days, co-hosted by David and your technical expert",
 		"One resource to go with the webinar: a short PDF guide or a code repository with an example developers can run",
 		"A short written recap in Slack with decisions and next steps",
@@ -64,16 +67,16 @@ export const partnershipOffer: PartnershipOffer = {
 		"Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
 	],
 	notes: [
-		"Together, we'll choose a useful technical topic and turn it into a webinar and a practical resource developers can use.",
+		"If ongoing help is already appropriate, we can start with the partnership.",
 	],
 	mailto: buildMailto("90-day partnership application", applicationBody),
 };
 
-/** Optional paid qualification route. It is not required for every partner. */
+/** Usual starting point, independently useful and not required for every partner. */
 export const fitProofReview: PartnershipOffer = {
 	id: "fit-proof-review",
 	name: "Product demo review",
-	label: "Optional starting point",
+	label: "Start with a review",
 	price: "£2,500",
 	priceShort: "£2.5k",
 	cadence: "One agreed use case",
