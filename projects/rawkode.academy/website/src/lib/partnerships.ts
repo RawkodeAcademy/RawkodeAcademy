@@ -50,25 +50,21 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"Initial 90-day cycle: £12,000 total, billed monthly. Renewal: further 90-day cycles, agreed together.",
 	summary:
-		"A working partnership for infrastructure companies with a technical workflow they need buyers to understand. Get a practitioner's feedback, improve the demonstration and create useful material your team can reuse.",
+		"Ongoing access to David's practitioner perspective and technical advice for infrastructure companies. Use Slack and monthly working sessions to improve your technical proof, with a joint webinar and one practical takeaway each quarter.",
 	included: [
 		"Slack Connect for technical questions, reviews and decisions about the agreed workflow",
 		"One 60-minute working session each month, with decisions and next actions shared in Slack",
-		"One recorded technical walkthrough of up to 45 minutes, using your team's working demo",
-		"A lightly edited master recording",
-		"One companion page of up to 500 words, using a standard format and the agreed source material",
-		"Two clips of up to 90 seconds each, taken from the same recording",
-		"One consolidated correction round and a shared folder containing the final assets",
-		"A one-page quarterly summary, discussed in that month's working session",
+		"One quarterly joint webinar, co-hosted by David and your technical expert",
+		"One practical takeaway chosen for the topic: a short PDF guide or a runnable example code repository",
+		"A short recap in Slack with decisions and next steps",
 	],
 	excluded: [
 		"On-call support, incident response, outsourced DevRel and campaign management are outside the programme.",
 		"The work is paid for; the technical judgement stays independent. There is no guarantee of praise, leads or separate editorial coverage.",
-		"The package covers one workflow and one recording per cycle. Additional recordings, bespoke articles, new integrations and ongoing repository maintenance are scoped separately.",
-		"New creative direction, additional formats and reshoots caused by changed requirements are scoped separately.",
+		"Additional webinars, new integrations and ongoing repository maintenance are outside the programme.",
 	],
 	notes: [
-		"Before the cycle starts, we agree the workflow, what the demonstration needs to show, the materials your team will supply and the delivery dates.",
+		"Before the cycle starts, we agree the workflow, webinar topic, practical takeaway, materials your team will supply and delivery dates.",
 	],
 	mailto: buildMailto("Adoption Advisory application", applicationBody),
 };
@@ -115,10 +111,10 @@ export type ApplicationPath = (typeof applicationPaths)[number];
 /** Boundaries for the full partnership programme. */
 export const partnershipBoundaries = [
 	"Your team supplies and maintains the working demo, environment, code and integrations. Product fixes and implementation stay with your team.",
-	"David provides technical critique, shapes and hosts the walkthrough, and produces the agreed recording and companion materials.",
+	"David provides ongoing technical advice, reviews the working example, shapes the webinar and co-hosts with your technical expert.",
 	"The work is paid for; the technical judgement stays independent. There is no guarantee of praise, leads or separate editorial coverage.",
 	"On-call support, incident response, outsourced DevRel and campaign management are outside the programme.",
-	"The package covers one workflow and one recording per cycle. Additional recordings, bespoke articles, new integrations and ongoing repository maintenance are scoped separately.",
+	"Each 90-day cycle includes one joint webinar and one practical takeaway for the agreed workflow. Additional webinars, new integrations and ongoing repository maintenance are outside the programme.",
 	"Exclusivity is considered only for a specifically agreed scope and price.",
 ] as const;
 
