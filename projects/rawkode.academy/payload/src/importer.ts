@@ -1,6 +1,7 @@
 import type { CollectionSlug, Payload } from 'payload'
+import { retryTransientD1 } from './d1-retry'
 import { createCuid2, isCuid2 } from './cuid2'
-import type { ContentCollection, ContentReference, ImportRecord, ImportSnapshot, SourceAsset } from './import-types'
+import type { ContentCollection, ContentReference, ImportRecord, ImportSnapshot } from './import-types'
 export type { ContentCollection, ContentReference, ImportRecord, ImportSnapshot, SourceAsset } from './import-types'
 type Document = Record<string, unknown> & { id: string; legacyId?: string }
 type Action = { collection: ContentCollection; legacyId: string; action: 'create' | 'update' | 'unchanged' | 'tombstone' | 'conflict' | 'pending' }
@@ -105,11 +106,11 @@ function validate(snapshot: ImportSnapshot): void {
   }
 }
 
-async function processBatches<T>(items: readonly T[], concurrency: number, visit: (item: T) => Promise<void>): Promise<void> {
+async function processBatches<T>(items: readonly T[], concurrency: number, visit: (item: T) => Promise<void>, retryD1 = false): Promise<void> {
   for (let offset = 0; offset < items.length; offset += concurrency) {
     // Drain every in-flight write before propagating a failure. The caller can
     // then safely dispose its D1 connection, and pending nodes remain resumable.
-    const settled = await Promise.allSettled(items.slice(offset, offset + concurrency).map(visit))
+    const settled = await Promise.allSettled(items.slice(offset, offset + concurrency).map(item => retryD1 ? retryTransientD1(() => visit(item)) : visit(item)))
     const failed = settled.find(result => result.status === 'rejected')
     if (failed?.status === 'rejected') throw failed.reason
   }
@@ -119,7 +120,7 @@ async function processBatches<T>(items: readonly T[], concurrency: number, visit
  * D1 does not give this importer an atomic compare-and-swap across editorial writes:
  * use an exclusive import window, and never run multiple imports concurrently.
  */
-export async function importCatalogue(payload: Payload, user: NonNullable<Parameters<Payload['find']>[0]['user']>, snapshot: ImportSnapshot, options: { dryRun?: boolean; concurrency?: number } = {}): Promise<ImportResult> {
+export async function importCatalogue(payload: Payload, user: NonNullable<Parameters<Payload['find']>[0]['user']>, snapshot: ImportSnapshot, options: { dryRun?: boolean; concurrency?: number; retryTransientD1?: boolean } = {}): Promise<ImportResult> {
   validate(snapshot)
   const concurrency = options.concurrency ?? 1
   if (!Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 8) throw new Error('Import concurrency must be between 1 and 8')
@@ -170,14 +171,20 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
       result.actions.push({ collection: record.collection, legacyId: record.legacyId, action: 'unchanged' })
       return
     }
-    pending.push({ record, hash, created: !existing })
-    eligibleSourceNodes.add(key(record))
-    if (result.dryRun) return
+    if (result.dryRun) {
+      pending.push({ record, hash, created: !existing })
+      eligibleSourceNodes.add(key(record))
+      return
+    }
     const data = { ...record.data, ...sourceMetadata(record), id: importedDocumentID(record.collection, record.legacyId, existing?.id), ...sourceIdentityData(record.collection, record.legacyId), slug: record.slug, sourceSystem: snapshot.sourceSystem, sourceRevision: record.sourceRevision, sourceHash: hash, sourceSequence: snapshot.sequence, sourceFields, mappingVersion: snapshot.mappingVersion, importedAt: new Date().toISOString(), locallyEdited: false, importState: 'pending', tombstone: record.tombstone ?? false, _status: 'draft' as const }
     const shared = { collection: record.collection as CollectionSlug, data, draft: true, depth: 0, overrideAccess: false, user, context: { importing: true, pipelineMachine: true } }
     const saved = existing ? await payload.update({ ...shared, id: existing.id }) : await payload.create(shared)
     documents.set(key(record), saved as unknown as Document)
-  })
+    // Register only after a successful write: a transient failure can occur
+    // after D1 persisted a row/version. Retrying re-reads its source identity.
+    pending.push({ record, hash, created: !existing })
+    eligibleSourceNodes.add(key(record))
+  }, options.retryTransientD1)
   // Propagate missing dependencies through the graph before publishing any pending node.
   // Valid cycles are allowed; one unresolved edge blocks its dependent source nodes.
   const blocked = new Set<string>()
@@ -236,6 +243,6 @@ export async function importCatalogue(payload: Payload, user: NonNullable<Parame
     else if (created) result.counts.created += 1
     else result.counts.updated += 1
     result.actions.push({ collection: record.collection, legacyId: record.legacyId, action })
-  })
+  }, options.retryTransientD1)
   return result
 }

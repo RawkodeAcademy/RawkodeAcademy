@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import { buildKlusteredSnapshot } from '../src/klustered-content'
-import { buildStaticSnapshot } from '../src/static-content'
+import { assertStaticReferencesResolved, buildStaticSnapshot } from '../src/static-content'
 
 const repositoryRoot = path.resolve(process.cwd(), '../../..')
 
@@ -45,6 +45,7 @@ test('static content preserves public article routes without publishing draft co
 
 test('static content snapshot preserves bodies, source metadata, relationships, and assets', async () => {
   const snapshot = await buildStaticSnapshot({ root: path.join(repositoryRoot, 'content'), sequence: 1 })
+  assert.doesNotThrow(() => assertStaticReferencesResolved(snapshot))
   assert.ok(snapshot.records.length > 1_000)
   assert.ok(snapshot.assetFiles.length > 100)
   assert.ok(snapshot.records.some(record => record.collection === 'articles'))
@@ -60,8 +61,14 @@ test('static content snapshot preserves bodies, source metadata, relationships, 
   assert.ok(snapshot.records.some(record => record.collection === 'course-modules'))
   assert.equal(snapshot.records.some(record => record.collection === 'course-modules' && record.legacyId.includes('/examples/')), false)
   const module = snapshot.records.find(record => record.collection === 'course-modules' && record.legacyId === 'complete-guide-zitadel/01-introduction')
+  assert.ok(module)
+  assert.equal(module?.slug, 'complete-guide-zitadel/01-introduction')
   assert.deepEqual(module?.relationships?.course, { collection: 'courses', legacyId: 'complete-guide-zitadel' })
-  const demoResource = (module?.data.contentResources as Record<string, unknown>[]).find(resource => (resource.embedConfig as Record<string, unknown> | undefined)?.src === 'oauth-pkce-app')
+  const moduleVideo = snapshot.records.find(record => record.collection === 'videos' && record.legacyId === 'hgg3yhgkk4jn9l7ryjw9ebs8')
+  assert.equal(moduleVideo?.status, 'published')
+  assert.equal(moduleVideo?.data.streamUrl, 'https://content.rawkode.academy/videos/hgg3yhgkk4jn9l7ryjw9ebs8/stream.m3u8')
+  assert.equal(moduleVideo?.source?.path, 'courses/complete-guide-zitadel/01-introduction.mdx')
+  const demoResource = (module.data.contentResources as Record<string, unknown>[]).find(resource => (resource.embedConfig as Record<string, unknown> | undefined)?.src === 'oauth-pkce-app')
   const demoConfig = demoResource?.embedConfig as Record<string, unknown> | undefined
   const demoFiles = demoConfig?.files as Record<string, string> | undefined
   assert.ok(demoFiles)
@@ -77,7 +84,7 @@ test('static content snapshot preserves bodies, source metadata, relationships, 
   assert.match(String(article.data.body), /cuenv/)
   assert.ok(Array.isArray(article.source?.assets))
   assert.deepEqual(Object.keys(article.source ?? {}).sort(), ['assets', 'path'])
-  assert.deepEqual((article.relationships?.authors as { legacyId: string }[])[0], { collection: 'people', legacyId: 'rawkode' })
+  assert.deepEqual((article.relationships?.authors as { legacyId: string }[] | undefined)?.[0], { collection: 'people', legacyId: 'rawkode' })
   const chapter = snapshot.records.find(record => record.collection === 'chapters')
   assert.ok(chapter)
   const asset = snapshot.assetFiles.find(candidate => candidate.relativePath.endsWith('introducing-cuenv/cover.png'))
@@ -90,6 +97,28 @@ test('static content snapshot preserves bodies, source metadata, relationships, 
   if (video?.relationships?.show) assert.ok(snapshot.records.some(record => record.collection === 'episodes' && record.relationships?.video && !Array.isArray(record.relationships.video)))
 })
 
+test('course-only videos preserve R2 IDs and cannot publish ahead of their parent course', async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), 'course-videos-'))
+  t.after(() => rm(root, { recursive: true, force: true }))
+  await mkdir(path.join(root, 'courses', 'example'), { recursive: true })
+  await writeFile(path.join(root, 'courses', 'example.mdx'), '---\ntitle: Example\ndraft: true\npublishedAt: 2030-01-01\n---\n')
+  await writeFile(path.join(root, 'courses', 'example', '01-intro.mdx'), '---\ntitle: Introduction\nslug: intro\npublishedAt: 2025-01-01\nvideo:\n  id: abcdefghijklmnopqrstuvwx\n---\n')
+  const snapshot = await buildStaticSnapshot({ root, sequence: 1 })
+  const video = snapshot.records.find(record => record.collection === 'videos')
+  assert.equal(video?.legacyId, 'abcdefghijklmnopqrstuvwx')
+  assert.equal(video?.status, 'draft')
+  assert.match(String(video?.data.publishedAt), /^2030-01-01/)
+  assert.equal(snapshot.records.find(record => record.collection === 'course-modules')?.slug, 'example/01-intro')
+  assert.throws(() => assertStaticReferencesResolved(snapshot), /people:rawkode/)
+  await mkdir(path.join(root, 'videos'))
+  await writeFile(path.join(root, 'videos', 'existing.md'), '---\nid: abcdefghijklmnopqrstuvwx\nslug: established-video-url\ntitle: Existing video\n---\n')
+  const withStandalone = await buildStaticSnapshot({ root, sequence: 2 })
+  const videos = withStandalone.records.filter(record => record.collection === 'videos')
+  assert.equal(videos.length, 1)
+  assert.equal(videos[0]?.slug, 'established-video-url')
+  assert.equal(videos[0]?.data.title, 'Existing video')
+})
+
 test('WebContainer import rejects unsafe or oversized example directories', async (t) => {
   const root = await mkdtemp(path.join(tmpdir(), 'static-webcontainer-bounds-'))
   t.after(() => rm(root, { recursive: true, force: true }))
@@ -100,8 +129,11 @@ test('WebContainer import rejects unsafe or oversized example directories', asyn
   await writeFile(path.join(examplesDir, 'server.js'), 'console.log("ok")\n')
   const valid = await buildStaticSnapshot({ root, sequence: 1 })
   const module = valid.records.find(record => record.collection === 'course-modules')
-  const resources = module?.data.contentResources as Record<string, unknown>[]
-  const files = (resources[0]?.embedConfig as Record<string, unknown>).files as Record<string, string>
+  assert.ok(module)
+  const resources = module.data.contentResources as Record<string, unknown>[]
+  const demoConfig = resources[0]?.embedConfig as Record<string, unknown> | undefined
+  assert.ok(demoConfig)
+  const files = demoConfig.files as Record<string, string>
   assert.deepEqual(Object.keys(files), ['server.js'])
   assert.equal(valid.assetFiles.some(asset => asset.relativePath.includes('/examples/')), false)
 

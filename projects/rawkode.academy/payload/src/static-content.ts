@@ -238,6 +238,7 @@ function relationsFor(collection: string, source: SourceFile): Record<string, Co
 }
 
 function validDemoPath(value: string): boolean {
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: Reject control characters in untrusted paths.
   if (!value || value.length > maxInlineDemoPathLength || value.startsWith('/') || value.includes('\\') || /[\u0000-\u001f\u007f]/.test(value)) return false
   const segments = value.split('/')
   return segments.every(segment => segment && segment !== '.' && segment !== '..' && !segment.startsWith('.'))
@@ -255,6 +256,7 @@ async function inlineDemoForResource(source: SourceFile, contentRoot: string, re
   if (!resourceSlug || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,159}$/.test(resourceSlug) || resourceSlug === '.' || resourceSlug === '..') {
     throw new Error(`Invalid WebContainer resource slug in ${source.relativePath}`)
   }
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: Reject control characters in untrusted paths.
   if (!localDir || localDir.length > maxInlineDemoPathLength || localDir.includes('\\') || /[\u0000-\u001f\u007f]/.test(localDir) || path.isAbsolute(localDir)) {
     throw new Error(`WebContainer resource ${resourceSlug} in ${source.relativePath} must provide a safe import.localDir`)
   }
@@ -305,8 +307,10 @@ async function inlineDemoForResource(source: SourceFile, contentRoot: string, re
   if (!Object.keys(files).length) throw new Error(`WebContainer example has no inline text files: ${path.relative(contentRoot, demoDirectory)}`)
   const configuredCommand = webContainerConfig.startCommand
   const authoredCommand = embedConfig?.startCommand
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: Commands must not contain control characters.
   const startCommand = typeof configuredCommand === 'string' && configuredCommand.trim() && configuredCommand.length <= 200 && !/[\u0000-\u001f\u007f]/.test(configuredCommand)
     ? configuredCommand
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: Commands must not contain control characters.
     : typeof authoredCommand === 'string' && authoredCommand.trim() && authoredCommand.length <= 200 && !/[\u0000-\u001f\u007f]/.test(authoredCommand)
       ? authoredCommand
       : undefined
@@ -338,8 +342,11 @@ async function inlineWebContainerResources(source: SourceFile, contentRoot: stri
 
 async function contentRecord(collection: string, source: SourceFile, contentRoot: string): Promise<ImportRecord> {
   const input = source.data
-  const legacyId = typeof input.id === 'string' && input.id.trim() ? input.id : sourceId(source.relativePath.replace(new RegExp(`^${collection === 'course-modules' ? 'courses' : collection}/`), ''))
-  const slug = typeof input.slug === 'string' && input.slug.trim() ? input.slug : legacyId
+  const fileID = sourceId(source.relativePath.replace(new RegExp(`^${collection === 'course-modules' ? 'courses' : collection}/`), ''))
+  const legacyId = collection === 'course-modules' ? fileID : typeof input.id === 'string' && input.id.trim() ? input.id : fileID
+  // The former Astro module loader explicitly used the course-relative file
+  // path as its ID, even when frontmatter contained a shorter `slug`.
+  const slug = collection === 'course-modules' ? legacyId : typeof input.slug === 'string' && input.slug.trim() ? input.slug : legacyId
   const data = directData(collection, source)
   if (collection === 'course-modules' && 'resources' in input) data.contentResources = await inlineWebContainerResources(source, contentRoot)
   return {
@@ -410,7 +417,6 @@ export async function buildStaticSnapshot(options: { root: string; sequence?: nu
     for (const absolutePath of candidates) {
       const extension = path.extname(absolutePath).slice(1).toLowerCase() as Format
       if (!spec.formats.includes(extension)) continue
-      const relative = path.relative(contentRoot, absolutePath).split(path.sep).join('/')
       const relativeToCollection = path.relative(path.join(contentRoot, spec.directory), absolutePath).split(path.sep).join('/')
       const collection = spec.collection === 'courses' && relativeToCollection.includes('/') ? 'course-modules' : spec.collection
       if (spec.collection === 'courses' && collection === 'course-modules' && relativeToCollection.split('/').length !== 2) continue
@@ -419,6 +425,8 @@ export async function buildStaticSnapshot(options: { root: string; sequence?: nu
   }
   const records: ImportRecord[] = []
   const assetFiles = new Map<string, StaticAssetFile>()
+  const knownVideos = new Set(files.filter(file => file.collection === 'videos').map(file => String(file.source.data.id)))
+  const courseSources = new Map(files.filter(file => file.collection === 'courses').map(file => [sourceId(file.source.relativePath.replace(/^courses\//, '')), file.source]))
   for (const { collection, source } of files) {
     const record = await contentRecord(collection, source, contentRoot)
     records.push(record)
@@ -441,6 +449,29 @@ export async function buildStaticSnapshot(options: { root: string; sequence?: nu
         records.push(resources)
       }
     }
+    if (collection === 'course-modules') {
+      const video = source.data.video as Record<string, unknown> | undefined
+      const videoID = typeof video?.id === 'string' ? video.id : undefined
+      if (videoID && !knownVideos.has(videoID)) {
+        const course = record.relationships?.course as ContentReference | null | undefined
+        const parent = course ? courseSources.get(course.legacyId) : undefined
+        const publishedAt = [source.data.publishedAt, parent?.data.publishedAt].filter((value): value is string => typeof value === 'string').sort((left, right) => Date.parse(left) - Date.parse(right)).at(-1)
+        records.push({
+          collection: 'videos', legacyId: videoID, slug: record.legacyId,
+          sourceRevision: sha256(`${source.checksum}:${parent?.checksum ?? ''}`),
+          status: record.status === 'published' && parent && statusFor('courses', parent.data) === 'published' ? 'published' : 'draft',
+          data: {
+            title: [parent?.data.title, source.data.title].filter(Boolean).join(': '),
+            description: source.data.description ?? '', type: 'recorded',
+            ...(publishedAt ? { publishedAt } : {}),
+            streamUrl: `https://content.rawkode.academy/videos/${videoID}/stream.m3u8`,
+            thumbnailUrl: typeof video?.thumbnailUrl === 'string' ? video.thumbnailUrl : `https://content.rawkode.academy/videos/${videoID}/thumbnail.webp`,
+          },
+          source: { path: source.relativePath },
+        })
+        knownVideos.add(videoID)
+      }
+    }
   }
   for (const directory of [...new Set(specs.map(spec => spec.directory))]) {
     for (const absolutePath of await walk(path.join(contentRoot, directory))) {
@@ -453,6 +484,21 @@ export async function buildStaticSnapshot(options: { root: string; sequence?: nu
   const configuredSequence = Number(process.env.STATIC_CONTENT_SEQUENCE ?? 1)
   const sequence = options.sequence ?? (Number.isSafeInteger(configuredSequence) && configuredSequence > 0 ? configuredSequence : 1)
   return { sourceSystem: 'rawkode-academy-static-content', mappingVersion: options.mappingVersion ?? 'astro-content-v1', sequence, records, assetFiles: [...assetFiles.values()] }
+}
+
+/** Static imports own the complete repository graph; reject missing source
+ * nodes before uploading assets or staging thousands of documents. */
+export function assertStaticReferencesResolved(snapshot: Pick<ImportSnapshot, 'records'>): void {
+  const keys = new Set(snapshot.records.map(record => `${record.collection}:${record.legacyId}`))
+  const missing: string[] = []
+  for (const record of snapshot.records) {
+    for (const [field, value] of Object.entries(record.relationships ?? {})) {
+      for (const ref of value === null ? [] : Array.isArray(value) ? value : [value]) {
+        if (!keys.has(`${ref.collection}:${ref.legacyId}`)) missing.push(`${record.collection}:${record.legacyId}.${field} -> ${ref.collection}:${ref.legacyId}`)
+      }
+    }
+  }
+  if (missing.length) throw new Error(`Static content has ${missing.length} unresolved references:\n${missing.join('\n')}`)
 }
 
 export const staticContentCollections: string[] = [

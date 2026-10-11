@@ -42,7 +42,9 @@ function harness(expectedNodes: number) {
   const payload = {
     async find({ collection, where }: { collection: string; where: Record<string, { equals: unknown }> }) {
       if (collection === 'deletion-markers') return { docs: [] }
-      const [field, condition] = Object.entries(where)[0]!
+      const entry = Object.entries(where)[0]
+      assert.ok(entry)
+      const [field, condition] = entry
       return { docs: [...documents.entries()].filter(([key, doc]) => key.startsWith(`${collection}:`) && doc[field] === condition.equals).map(([, doc]) => structuredClone(doc)) }
     },
     async create({ collection, data }: { collection: string; data: Record<string, unknown> }) { return write(collection, data, String(data.id)) },
@@ -106,7 +108,8 @@ test('an interrupted publication batch leaves complete and pending nodes safe to
 
 test('unresolved relationships remain pending when other batched nodes publish', async () => {
   const input = snapshot()
-  const video = input.records.find(record => record.collection === 'videos')!
+  const video = input.records.find(record => record.collection === 'videos')
+  assert.ok(video)
   video.relationships = { guests: [{ collection: 'people', legacyId: 'missing' }] }
   const h = harness(input.records.length)
   const result = await importCatalogue(h.payload, user, input, { concurrency: 4 })
@@ -120,7 +123,8 @@ test('batched retries retain editorial conflict protection', async () => {
   const input = snapshot()
   const h = harness(input.records.length)
   await importCatalogue(h.payload, user, input, { concurrency: 4 })
-  const edited = [...h.documents.values()].find(doc => doc.legacyId === 'person-0')!
+  const edited = [...h.documents.values()].find(doc => doc.legacyId === 'person-0')
+  assert.ok(edited)
   edited.locallyEdited = true
   edited.name = 'Editorial title'
   const result = await importCatalogue(h.payload, user, input, { concurrency: 4 })
@@ -135,3 +139,33 @@ test('invalid concurrency is rejected before any writes', async () => {
     assert.equal(h.stats().writes, 0)
   }
 })
+
+for (const phase of ['pending', 'complete']) {
+  test(`transient D1 failure after a durable ${phase} write re-reads identity without duplicate nodes or actions`, async () => {
+    const input = snapshot()
+    const h = harness(input.records.length)
+    const originalCreate = h.payload.create.bind(h.payload)
+    const originalUpdate = h.payload.update.bind(h.payload)
+    let injected = false
+    let savedID: unknown
+    const maybeFail = (saved: unknown, data: Record<string, unknown>) => {
+      if (!injected && data.legacyId === 'person-0' && data.importState === phase) {
+        injected = true
+        savedID = (saved as Document).id
+        throw new Error('Query failed', { cause: new Error('D1_ERROR: Network connection lost.') })
+      }
+      return saved
+    }
+    h.payload.create = (async args => maybeFail(await originalCreate(args), args.data as Record<string, unknown>)) as Payload['create']
+    h.payload.update = (async args => maybeFail(await originalUpdate(args as Parameters<Payload['update']>[0]), args.data as Record<string, unknown>)) as Payload['update']
+    const result = await importCatalogue(h.payload, user, input, { concurrency: 4, retryTransientD1: true })
+    assert.ok(injected)
+    assert.equal(h.documents.size, input.records.length)
+    assert.equal(result.actions.length, input.records.length)
+    assert.equal(result.counts.created + result.counts.updated, input.records.length)
+    assert.equal([...h.documents.values()].find(doc => doc.legacyId === 'person-0')?.id, savedID)
+    assert.ok([...h.documents.values()].every(doc => doc.importState === 'complete'))
+    const repeated = await importCatalogue(h.payload, user, input, { concurrency: 4, retryTransientD1: true })
+    assert.equal(repeated.counts.unchanged, input.records.length)
+  })
+}

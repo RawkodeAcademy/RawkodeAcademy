@@ -31,8 +31,10 @@ try {
   process.exit(1)
 }
 
+const { buildStaticSnapshot, staticContentCollections, assertStaticReferencesResolved } = await import('../src/static-content')
+const snapshot = await buildStaticSnapshot({ root: contentRoot, sequence: watermark.sequence })
+assertStaticReferencesResolved(snapshot)
 const prepared = prepareTarget(target)
-const { buildStaticSnapshot, staticContentCollections } = await import('../src/static-content')
 const { cloudflare } = await import('../src/cloudflare')
 const { default: config } = await import('../payload.config')
 const { importCatalogue } = await import('../src/importer')
@@ -40,7 +42,6 @@ const { precomputeD2Artifacts } = await import('./lib/d2-static')
 
 type ImportUser = NonNullable<Parameters<Awaited<ReturnType<typeof getPayload>>['find']>[0]['user']>
 const user = { id: 'static-content-importer', collection: 'users', role: 'staff' } as ImportUser
-const snapshot = await buildStaticSnapshot({ root: contentRoot, sequence: watermark.sequence })
 const payload = await getPayload({ config, disableOnInit: true })
 
 try {
@@ -75,7 +76,7 @@ try {
   }
   // Only disposable, SHA-isolated PR seeds overlap independent document writes.
   // Production/rehearsal imports retain the default sequential execution.
-  const result = await importCatalogue(payload, user, snapshot, { dryRun, concurrency: target === 'pr-preview' ? 8 : 1 })
+  const result = await importCatalogue(payload, user, snapshot, { dryRun, concurrency: target === 'pr-preview' ? 8 : 1, retryTransientD1: target === 'pr-preview' })
   const report = { target, resources: prepared.expected ?? null, watermark, source: contentRoot, records: snapshot.records.length, assetFiles: snapshot.assetFiles.length, assets, diagrams, elapsedMs: Date.now() - startedAt, ...result }
   const reportPath = path.join(projectDir, '.runtime', `import-${target}-${watermark.gitSha.slice(0, 12)}${dryRun ? '-dry-run' : ''}.json`)
   await mkdir(path.dirname(reportPath), { recursive: true })
