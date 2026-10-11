@@ -50,7 +50,7 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"First 90 days: £12,000 in total, billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Ask David technical questions in Slack and meet for an hour each month. You also get one joint webinar with David and your technical expert every 90 days, plus one short PDF guide or a code example developers can run.",
+		"Work directly with David to improve your demo and documentation. Get ongoing technical advice, plus a joint webinar and a practical resource developers can use.",
 	included: [
 		"Slack Connect to ask David questions and get feedback on the agreed use case",
 		"One 60-minute session with David each month to review questions and decide what to do next",
@@ -77,8 +77,7 @@ export const fitProofReview: PartnershipOffer = {
 	price: "£2,500",
 	priceShort: "£2.5k",
 	cadence: "One agreed use case",
-	summary:
-		"David tries one agreed use case using your demo and documentation. You get a written list of what's confusing, what's missing and what to fix first. We spend an hour going through the findings and your questions.",
+	summary: "Find out where developers get stuck when trying your product.",
 	included: [
 		"David tries one agreed use case using your demo and documentation",
 		"A written list of what is confusing, what is missing and what to fix first",
