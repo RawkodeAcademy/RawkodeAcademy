@@ -48,10 +48,7 @@ export const partnership = {
 			challenge: z
 				.string()
 				.trim()
-				.min(
-					1,
-					"Please describe what is difficult for developers using your product",
-				)
+				.min(1, "Please tell us what you would like to improve")
 				.max(5000),
 			proofAssets: z.string().trim().max(2000).optional(),
 			budgetQuarter: z.string().trim().max(500).optional(),
@@ -83,10 +80,10 @@ export const partnership = {
 						]
 					: []),
 				"",
-				"What is difficult for developers using your product:",
+				"What would you like to improve:",
 				input.challenge,
 				...(input.proofAssets
-					? ["", "Working demo, docs, or repository:", input.proofAssets]
+					? ["", "Product, demo, docs, or repository:", input.proofAssets]
 					: []),
 				...(input.budgetQuarter
 					? ["", "Budget and preferred start date:", input.budgetQuarter]

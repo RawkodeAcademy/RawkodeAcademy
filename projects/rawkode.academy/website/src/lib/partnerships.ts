@@ -30,8 +30,8 @@ const applicationBody = [
 	"Company and product:",
 	"Target developers or platform teams:",
 	"Who decides whether to use your product:",
-	"What is difficult for developers using your product:",
-	"Working demo, docs, or repository:",
+	"What would you like to improve:",
+	"Product, demo, docs, or repository:",
 	"Budget and preferred start date:",
 	"Links worth a look:",
 ].join("\n");
@@ -42,7 +42,7 @@ const applicationBody = [
  * partnership remains valuable without becoming an open-ended consultancy.
  */
 export const partnershipStartingPoint =
-	"A product demo review is the usual starting point. Get clear priorities your team can act on, then decide together whether ongoing technical advice would help.";
+	"A product review is the usual starting point. Get practical guidance on developer adoption, then decide together whether ongoing advice and support would help.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
@@ -53,17 +53,17 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"First 90 days: £12,000 in total, billed monthly. We agree together whether to continue for another 90 days.",
 	summary:
-		"Keep getting David’s judgement as your team improves the agreed use case. Revisit your changes in Slack and monthly sessions, question trade-offs and decide what to improve next.",
+		"Get ongoing advice and support with developer relations, developer marketing, backlog priorities and defining your ideal customers. We agree the work and priorities before starting.",
 	included: [
-		"Slack Connect to ask David questions and get feedback on your team’s changes to the agreed use case",
-		"One 60-minute session with David each month to review those changes and decide what to improve next",
-		"One webinar every 90 days, co-hosted by David and your technical expert",
+		"Slack Connect for questions and feedback on the work we agree",
+		"One 60-minute session each month to review progress and decide what to prioritise next",
+		"One webinar every 90 days, co-hosted by us and your technical expert",
 		"One resource to go with the webinar: a short PDF guide or a code repository with an example developers can run",
 		"A short written recap in Slack with decisions and next steps",
 	],
 	excluded: [
-		"On-call support, incident response, running your developer relations team and managing campaigns are outside the partnership.",
-		"David gives honest feedback. Praise, leads and separate coverage are not guaranteed.",
+		"On-call support and incident response are outside the partnership.",
+		"We give honest feedback. Praise, leads and separate coverage are not guaranteed.",
 		"Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
 	],
 	notes: [
@@ -75,26 +75,27 @@ export const partnershipOffer: PartnershipOffer = {
 /** Usual starting point, independently useful and not required for every partner. */
 export const fitProofReview: PartnershipOffer = {
 	id: "fit-proof-review",
-	name: "Product demo review",
+	name: "Product review",
 	label: "Start with a review",
 	price: "£2,500",
 	priceShort: "£2.5k",
-	cadence: "One agreed use case",
-	summary: "Find out where developers get stuck when trying your product.",
+	cadence: "Work agreed before starting",
+	summary:
+		"We use your product and give you a report with practical guidance to help developers adopt it.",
 	included: [
-		"David tries one agreed use case using your demo and documentation",
-		"A written list of what is confusing, what is missing and what to fix first",
-		"A one-hour call with David to go through the findings and your questions",
+		"A report on the developer experience and how to improve adoption",
+		"Practical guidance on what to prioritise",
+		"A one-hour call to discuss the report and your questions",
 	],
 	excluded: [
 		"Ongoing Slack access or building and fixing your product",
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"We agree the use case, demo, documentation and delivery date before starting. You can use the written findings whether or not you continue with the partnership.",
-		"The full £2,500 comes off your first partnership invoice if you start within 30 days of our call. For the same use case, the review is our starting point, so we do not repeat it when the partnership begins.",
+		"We agree the areas to review, access and a delivery date before starting. You can use the report whether or not you continue with the partnership.",
+		"The full £2,500 comes off your first partnership invoice if you start within 14 days of our call. Where the review covers the work we agree, we start from those findings instead of repeating it.",
 	],
-	mailto: buildMailto("Product demo review request", applicationBody),
+	mailto: buildMailto("Product review request", applicationBody),
 };
 
 /** Compatibility shape for components that render the primary offer. */
@@ -118,11 +119,11 @@ export const applicationPathLabels: Record<ApplicationPath, string> = {
 
 /** Boundaries for the full partnership programme. */
 export const partnershipBoundaries = [
-	"Your team supplies and maintains the demo, environment, code and integrations. Your team builds the product and fixes problems.",
-	"David answers technical questions, reviews the demo, helps plan the webinar and co-hosts it with your technical expert.",
-	"David gives honest feedback. Praise, leads and separate coverage are not guaranteed.",
-	"On-call support, incident response, running your developer relations team and managing campaigns are outside the partnership.",
-	"Each 90 days covers one agreed use case, one joint webinar and one PDF guide or runnable code example. Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
+	"Your team supplies and maintains the working environment and code needed for the webinar and runnable example. Your team builds the product and handles fixes.",
+	"We provide advice and support on the work we agree, help plan the webinar and co-host it with your technical expert.",
+	"We give honest feedback. Praise, leads and separate coverage are not guaranteed.",
+	"On-call support and incident response are outside the partnership.",
+	"Each 90 days includes one joint webinar and one PDF guide or runnable code example, alongside agreed advice and support. Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
 	"Exclusivity needs a separate agreement on the work and price.",
 ] as const;
 

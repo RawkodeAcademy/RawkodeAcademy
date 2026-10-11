@@ -4,7 +4,7 @@
 		<p :id="errorId" role="alert" aria-atomic="true" :class="error ? s.error : s.hidden">{{ error }}</p>
 		<div v-if="submitted" :class="[s.panel, s.status]">
 			<h3 :class="s.heading">Application received</h3>
-			<p :class="s.copy">David reads every application and replies either way.</p>
+			<p :class="s.copy">We read every application and reply either way.</p>
 		</div>
 		<form v-else method="POST" :class="s.form" @submit.prevent="submit" :aria-busy="!ready || loading" :aria-describedby="error ? errorId : undefined">
 			<fieldset :class="[s.form, 'form-controls']" :disabled="!ready || loading" aria-label="Partnership application">
@@ -77,7 +77,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.challenge)" :disabled="loading">
-					<Field.Label :class="s.label">What is difficult for developers using your product?</Field.Label>
+					<Field.Label :class="s.label">What would you like to improve?</Field.Label>
 					<Field.Textarea :class="[s.input, s.textarea]"
 						v-model="challenge"
 						name="challenge"
@@ -88,7 +88,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.proofAssets)" :disabled="loading">
-					<Field.Label :class="s.label">Working demo, docs, or repository <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Product, demo, docs, or repository <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="proofAssets"
 						type="text"
@@ -118,7 +118,7 @@
 					{{ loading ? "Sending application..." : "Submit application" }}
 				</button>
 			</fieldset>
-			<p v-if="!ready" :class="s.copy"><noscript>JavaScript is required to send this application. </noscript>You can <a href="mailto:david@rawkode.academy">email David directly</a> instead.</p>
+			<p v-if="!ready" :class="s.copy"><noscript>JavaScript is required to send this application. </noscript>You can <a href="mailto:david@rawkode.academy">email us directly</a> instead.</p>
 		</form>
 	</div>
 </template>
@@ -160,7 +160,7 @@ const fieldErrors = ref<Record<string, string>>({});
 const statusMessage = computed(() => {
 	if (!ready.value) return "Loading application form...";
 	if (submitted.value)
-		return "Application received. David reads every application and replies either way.";
+		return "Application received. We read every application and reply either way.";
 	return loading.value ? "Sending application..." : "";
 });
 
