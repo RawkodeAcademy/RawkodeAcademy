@@ -82,8 +82,8 @@ test('reuses only an R2 bucket conflict Cloudflare confirms is already owned', (
 test('R2 cleanup deletes objects across result_info cursor pages', async () => {
   const bucketName = `rawkode-academy-payload-pr-1419-${headSha.slice(0, 12)}`
   const pages = [
-    { result: { objects: [{ key: 'assets/first.svg' }, { key: 'assets/second image.svg' }] }, result_info: { cursor: 'next+/=' } },
-    { result: { objects: [{ key: 'assets/third.svg' }] }, result_info: {} },
+    { result: [{ key: 'assets/first.svg' }, { key: 'assets/second image.svg' }], result_info: { cursor: 'next+/=' } },
+    { result: [{ key: 'assets/third.svg' }], result_info: {} },
   ]
   const listCursors = []
   const deleted = []
@@ -108,7 +108,7 @@ test('R2 cleanup fails closed on malformed and repeated object cursors', async (
   let calls = 0
   await assert.rejects(emptyBucket('bucket', async () => {
     calls += 1
-    return { result: { objects: [] }, result_info: { cursor: 'same' } }
+    return { result: [], result_info: { cursor: 'same' } }
   }), /invalid or repeated R2 object cursor/)
   assert.equal(calls, 2)
 })
