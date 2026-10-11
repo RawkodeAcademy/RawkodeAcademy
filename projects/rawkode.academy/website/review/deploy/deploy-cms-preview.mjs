@@ -10,7 +10,10 @@ import {
 	pullRequestIdentity,
 } from '../../../payload/scripts/pr-preview-resources.mjs'
 import {
+	INITIAL_ARCHIVE_WARM_MIN_RUNWAY_MS,
+	PRE_RELEASE_SAFETY_MARGIN_MS,
 	verifyScheduledArchiveBoundary,
+	verifyScheduledArchiveWarm,
 } from './scheduled-archive-boundary.mjs'
 
 const identity = pullRequestIdentity()
@@ -20,6 +23,7 @@ if (resources.pullRequestNumber !== identity.pullRequestNumber || resources.sha 
 }
 
 const names = namesForPullRequest(identity.pullRequestNumber, identity.sha)
+const scheduledDetailCheckTimeoutMs = 15_000
 // A fresh isolated Payload target seeds the full catalogue, including more
 // than 9,000 chapters, before its check succeeds. Keep waiting for that exact
 // SHA rather than timing out while the matching import is still progressing.
@@ -338,6 +342,109 @@ try {
 	}
 	if (!sentinel) throw new Error(`Astro preview diagnostic did not return Payload content at ${diagnosticUrl}: ${diagnosticState}`)
 
+	// Prove publication timing and cache expiry before other long website checks.
+	const releaseAt = Date.parse(scheduledVideo.publishedAt)
+	const requiredScheduleRunwayMs = INITIAL_ARCHIVE_WARM_MIN_RUNWAY_MS + scheduledDetailCheckTimeoutMs + PRE_RELEASE_SAFETY_MARGIN_MS
+	if (!Number.isFinite(releaseAt) || releaseAt <= Date.now() + requiredScheduleRunwayMs) {
+		throw new Error(`The scheduled video fixture needs at least ${requiredScheduleRunwayMs}ms of runway for the detail and archive cache boundary checks: ${scheduledVideo.publishedAt}`)
+	}
+	const scheduledUrl = new URL(`/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`, previewUrl)
+	scheduledUrl.searchParams.set('cmsPreviewProbe', String(Date.now()))
+	const preRelease = await fetch(scheduledUrl, {
+		headers: { accept: 'text/html', 'cache-control': 'no-store' },
+		signal: AbortSignal.timeout(scheduledDetailCheckTimeoutMs),
+	})
+	if (preRelease.status !== 404) {
+		await preRelease.body?.cancel().catch(() => {})
+		throw new Error(`Scheduled video ${scheduledVideo.slug} should be hidden before ${scheduledVideo.publishedAt}; Astro returned HTTP ${preRelease.status}.`)
+	}
+	console.log(`Scheduled publication pre-check passed: ${scheduledVideo.slug} is hidden until ${scheduledVideo.publishedAt}.`)
+
+	// Warm the public archive while the video is still scheduled. Its cached
+	// response must expire at the next Payload release boundary, then re-render
+	// the archive with the newly published video without a deployment.
+	const archiveUrl = new URL('/watch', previewUrl)
+	archiveUrl.searchParams.set('cmsReleaseProbe', `${identity.sha.slice(0, 12)}-${Date.now()}`)
+	const scheduledHref = `/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`
+	await verifyScheduledArchiveWarm({
+		archiveUrl,
+		scheduledHref,
+		scheduledSlug: scheduledVideo.slug,
+		publishedAt: scheduledVideo.publishedAt,
+		releaseAt,
+	})
+	console.log(`Scheduled publication cache probe passed: warmed /watch hides ${scheduledVideo.slug} until ${scheduledVideo.publishedAt}.`)
+
+	// Prove the cache boundary and scheduled release before slower media probes
+	// can consume the five-minute fixture window.
+	const { secondsUntilRelease, boundaryAges, archiveUrl: scheduledArchiveUrl } = await verifyScheduledArchiveBoundary({
+		archiveUrl,
+		scheduledHref,
+		scheduledSlug: scheduledVideo.slug,
+		publishedAt: scheduledVideo.publishedAt,
+		releaseAt,
+		responseCacheAges,
+	})
+	console.log(`Scheduled archive boundary warm passed: /watch was re-rendered ${secondsUntilRelease}s before release with clipped TTLs (${boundaryAges.join('/')}s), then served from cache.`)
+	// Wait through the saved future boundary and verify live Astro SSR sees it.
+	const scheduledDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
+	let scheduledVisible = false
+	let scheduledState = 'waiting for the scheduled release time'
+	while (Date.now() < scheduledDeadline) {
+		if (Date.now() < releaseAt) {
+			await new Promise(resolve => setTimeout(resolve, Math.min(5_000, releaseAt - Date.now())))
+			continue
+		}
+		try {
+			const response = await fetch(scheduledUrl, {
+				headers: { accept: 'text/html', 'cache-control': 'no-store' },
+				signal: AbortSignal.timeout(15_000),
+			})
+			const html = await response.text()
+			const escapedTitle = scheduledVideo.title.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character])
+			if (response.ok && (html.includes(scheduledVideo.title) || html.includes(escapedTitle))) {
+				scheduledVisible = true
+				break
+			}
+			scheduledState = `HTTP ${response.status}, scheduled Payload video title was absent from Astro SSR HTML`
+		} catch (error) {
+			scheduledState = error instanceof Error ? error.message : String(error)
+		}
+		console.log(`Waiting for scheduled Payload publication ${scheduledVideo.slug}: ${scheduledState}`)
+		await new Promise(resolve => setTimeout(resolve, 5_000))
+	}
+	if (!scheduledVisible) {
+		throw new Error(`Astro preview did not reveal scheduled Payload video ${scheduledVideo.slug} after ${scheduledVideo.publishedAt}: ${scheduledState}`)
+	}
+	console.log(`Scheduled publication check passed: ${scheduledUrl.pathname} rendered after ${scheduledVideo.publishedAt}.`)
+	const archiveAfterDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
+	let scheduledArchiveVisible = false
+	let scheduledArchiveState = 'waiting for the scheduled archive response'
+	while (Date.now() < archiveAfterDeadline) {
+		try {
+			const response = await fetch(scheduledArchiveUrl, {
+				headers: { accept: 'text/html' },
+				signal: AbortSignal.timeout(15_000),
+			})
+			const html = await response.text()
+			const cacheState = response.headers.get('cf-cache-status')?.toUpperCase()
+			if (response.ok && html.includes(scheduledHref) && ['MISS', 'EXPIRED'].includes(cacheState ?? '')) {
+				scheduledArchiveVisible = true
+				break
+			}
+			scheduledArchiveState = `HTTP ${response.status}, scheduled archive link ${html.includes(scheduledHref) ? 'was present' : 'is absent'}; CF-Cache-Status ${cacheState ?? 'missing'}`
+		} catch (error) {
+			scheduledArchiveState = error instanceof Error ? error.message : String(error)
+		}
+		console.log(`Waiting for the warmed watch archive to expire at ${scheduledVideo.publishedAt}: ${scheduledArchiveState}`)
+		await new Promise(resolve => setTimeout(resolve, 5_000))
+	}
+	if (!scheduledArchiveVisible) {
+		throw new Error(`The warmed /watch archive did not reveal scheduled video ${scheduledVideo.slug} after ${scheduledVideo.publishedAt}: ${scheduledArchiveState}`)
+	}
+	console.log(`Scheduled archive cache check passed: warmed /watch hid ${scheduledVideo.slug} before release and showed it after its Payload publishedAt boundary.`)
+
+
 	// Verify a route rendered the content returned by the bridge-backed
 	// diagnostic before surfacing the preview URL.
 	const sentinelPath = `/watch/${sentinel.slug.split('/').map(encodeURIComponent).join('/')}`
@@ -445,47 +552,6 @@ try {
 	console.log('Ordinary summary/full content projections omit demo source files and local import paths.');
 	console.log(`WebContainer SSR check passed: ${webContainerPath} rendered the imported demo title and file content with COOP same-origin and COEP require-corp.`)
 
-	// Verify the scheduled fixture is hidden while its explicit publishedAt
-	// remains comfortably in the future. This happens before slower media checks.
-	const releaseAt = Date.parse(scheduledVideo.publishedAt)
-	if (!Number.isFinite(releaseAt) || releaseAt <= Date.now() + 10_000) {
-		throw new Error(`The scheduled video fixture did not leave enough time to observe its pre-release state: ${scheduledVideo.publishedAt}`)
-	}
-	const scheduledUrl = new URL(`/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`, previewUrl)
-	scheduledUrl.searchParams.set('cmsPreviewProbe', String(Date.now()))
-	const preRelease = await fetch(scheduledUrl, {
-		headers: { accept: 'text/html', 'cache-control': 'no-store' },
-		signal: AbortSignal.timeout(15_000),
-	})
-	if (preRelease.status !== 404) {
-		await preRelease.body?.cancel().catch(() => {})
-		throw new Error(`Scheduled video ${scheduledVideo.slug} should be hidden before ${scheduledVideo.publishedAt}; Astro returned HTTP ${preRelease.status}.`)
-	}
-	console.log(`Scheduled publication pre-check passed: ${scheduledVideo.slug} is hidden until ${scheduledVideo.publishedAt}.`)
-
-	// Warm the public archive while the video is still scheduled. Its cached
-	// response must expire at the next Payload release boundary, then re-render
-	// the archive with the newly published video without a deployment.
-	const archiveUrl = new URL('/watch', previewUrl)
-	archiveUrl.searchParams.set('cmsReleaseProbe', `${identity.sha.slice(0, 12)}-${Date.now()}`)
-	const archiveBefore = await fetch(archiveUrl, {
-		headers: { accept: 'text/html' },
-		signal: AbortSignal.timeout(15_000),
-	})
-	const archiveBeforeHtml = await archiveBefore.text()
-	const scheduledHref = `/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`
-	if (!archiveBefore.ok || archiveBeforeHtml.includes(scheduledHref)) {
-		throw new Error(`The watch archive should hide the future-dated video ${scheduledVideo.slug} before ${scheduledVideo.publishedAt}; Astro returned HTTP ${archiveBefore.status}.`)
-	}
-	const archiveWarm = await fetch(archiveUrl, {
-		headers: { accept: 'text/html' },
-		signal: AbortSignal.timeout(15_000),
-	})
-	await archiveWarm.body?.cancel().catch(() => {})
-	if (!archiveWarm.ok || archiveWarm.headers.get('cf-cache-status')?.toUpperCase() !== 'HIT') {
-		throw new Error(`The pre-release watch archive response did not warm Cloudflare Workers Cache (HTTP ${archiveWarm.status}, CF-Cache-Status ${archiveWarm.headers.get('cf-cache-status') ?? 'missing'}).`)
-	}
-	console.log(`Scheduled publication cache probe passed: warmed /watch hides ${scheduledVideo.slug} until ${scheduledVideo.publishedAt}.`)
 
 	if (d2SaveCapability === 'available') {
 		// The preview diagnostic creates a draft article through Payload's normal
@@ -677,74 +743,6 @@ try {
 	}
 	console.log(`CMS media checks passed: D2 SVG ${sourceHash} and Cloudflare Images WebP ${assetUrl.pathname} at ${assetWidth}px.`)
 
-	// The first /watch entry was warmed earlier. Re-render the same URL with a
-	// 25-second runway, bounded retries, and every TTL clipped to release.
-	const { secondsUntilRelease, boundaryAges } = await verifyScheduledArchiveBoundary({
-		archiveUrl,
-		scheduledHref,
-		scheduledSlug: scheduledVideo.slug,
-		publishedAt: scheduledVideo.publishedAt,
-		releaseAt,
-		responseCacheAges,
-	})
-	console.log(`Scheduled archive boundary warm passed: /watch was re-rendered ${secondsUntilRelease}s before release with clipped TTLs (${boundaryAges.join('/')}s), then served from cache.`)
-	// Wait through the saved future boundary and verify live Astro SSR sees it.
-	const scheduledDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
-	let scheduledVisible = false
-	let scheduledState = 'waiting for the scheduled release time'
-	while (Date.now() < scheduledDeadline) {
-		if (Date.now() < releaseAt) {
-			await new Promise(resolve => setTimeout(resolve, Math.min(5_000, releaseAt - Date.now())))
-			continue
-		}
-		try {
-			const response = await fetch(scheduledUrl, {
-				headers: { accept: 'text/html', 'cache-control': 'no-store' },
-				signal: AbortSignal.timeout(15_000),
-			})
-			const html = await response.text()
-			const escapedTitle = scheduledVideo.title.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character])
-			if (response.ok && (html.includes(scheduledVideo.title) || html.includes(escapedTitle))) {
-				scheduledVisible = true
-				break
-			}
-			scheduledState = `HTTP ${response.status}, scheduled Payload video title was absent from Astro SSR HTML`
-		} catch (error) {
-			scheduledState = error instanceof Error ? error.message : String(error)
-		}
-		console.log(`Waiting for scheduled Payload publication ${scheduledVideo.slug}: ${scheduledState}`)
-		await new Promise(resolve => setTimeout(resolve, 5_000))
-	}
-	if (!scheduledVisible) {
-		throw new Error(`Astro preview did not reveal scheduled Payload video ${scheduledVideo.slug} after ${scheduledVideo.publishedAt}: ${scheduledState}`)
-	}
-	console.log(`Scheduled publication check passed: ${scheduledUrl.pathname} rendered after ${scheduledVideo.publishedAt}.`)
-	const archiveAfterDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
-	let scheduledArchiveVisible = false
-	let scheduledArchiveState = 'waiting for the scheduled archive response'
-	while (Date.now() < archiveAfterDeadline) {
-		try {
-			const response = await fetch(archiveUrl, {
-				headers: { accept: 'text/html' },
-				signal: AbortSignal.timeout(15_000),
-			})
-			const html = await response.text()
-			const cacheState = response.headers.get('cf-cache-status')?.toUpperCase()
-			if (response.ok && html.includes(scheduledHref) && ['MISS', 'EXPIRED'].includes(cacheState ?? '')) {
-				scheduledArchiveVisible = true
-				break
-			}
-			scheduledArchiveState = `HTTP ${response.status}, scheduled archive link ${html.includes(scheduledHref) ? 'was present' : 'is absent'}; CF-Cache-Status ${cacheState ?? 'missing'}`
-		} catch (error) {
-			scheduledArchiveState = error instanceof Error ? error.message : String(error)
-		}
-		console.log(`Waiting for the warmed watch archive to expire at ${scheduledVideo.publishedAt}: ${scheduledArchiveState}`)
-		await new Promise(resolve => setTimeout(resolve, 5_000))
-	}
-	if (!scheduledArchiveVisible) {
-		throw new Error(`The warmed /watch archive did not reveal scheduled video ${scheduledVideo.slug} after ${scheduledVideo.publishedAt}: ${scheduledArchiveState}`)
-	}
-	console.log(`Scheduled archive cache check passed: warmed /watch hid ${scheduledVideo.slug} before release and showed it after its Payload publishedAt boundary.`)
 	console.log(`Version Preview URL: ${previewUrl}`)
 	if (process.env.GITHUB_OUTPUT) {
 		await appendFile(process.env.GITHUB_OUTPUT, `website_preview_url=${previewUrl}\nwebsite_preview_worker=${names.websiteWorkerName}\n`)
