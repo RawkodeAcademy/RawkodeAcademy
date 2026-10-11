@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
-import { isOwnedExistingBucketConflict, listBuckets, pullRequestIdentity } from '../scripts/pr-preview-resources.mjs'
+import { emptyBucket, isOwnedExistingBucketConflict, listBuckets, pullRequestIdentity } from '../scripts/pr-preview-resources.mjs'
 
 const fixtureDirectory = mkdtempSync(path.join(tmpdir(), 'pr-preview-identity-'))
 const eventPath = path.join(fixtureDirectory, 'event.json')
@@ -77,4 +77,38 @@ test('reuses only an R2 bucket conflict Cloudflare confirms is already owned', (
     new Error('Cloudflare API POST /accounts/account-id/r2/buckets failed (409): The bucket you tried to create already exists, and you own it. Extra text'),
     { message: owned.message },
   ]) assert.equal(isOwnedExistingBucketConflict(error), false)
+})
+
+test('R2 cleanup deletes objects across result_info cursor pages', async () => {
+  const bucketName = `rawkode-academy-payload-pr-1419-${headSha.slice(0, 12)}`
+  const pages = [
+    { result: { objects: [{ key: 'assets/first.svg' }, { key: 'assets/second image.svg' }] }, result_info: { cursor: 'next+/=' } },
+    { result: { objects: [{ key: 'assets/third.svg' }] }, result_info: {} },
+  ]
+  const listCursors = []
+  const deleted = []
+  await emptyBucket(bucketName, async (endpoint, init, includePagination) => {
+    if (init?.method === 'DELETE') {
+      deleted.push(decodeURIComponent(endpoint.slice(endpoint.lastIndexOf('/objects/') + '/objects/'.length)))
+      return {}
+    }
+    assert.deepEqual(init, {})
+    assert.equal(includePagination, true)
+    const query = new URL(endpoint, 'https://api.cloudflare.com').searchParams
+    assert.equal(query.get('per_page'), '1000')
+    listCursors.push(query.get('cursor'))
+    return pages.shift()
+  })
+  assert.deepEqual(listCursors, [null, 'next+/='])
+  assert.deepEqual(deleted, ['assets/first.svg', 'assets/second image.svg', 'assets/third.svg'])
+})
+
+test('R2 cleanup fails closed on malformed and repeated object cursors', async () => {
+  await assert.rejects(emptyBucket('bucket', async () => ({ result: {} })), /invalid R2 object list/)
+  let calls = 0
+  await assert.rejects(emptyBucket('bucket', async () => {
+    calls += 1
+    return { result: { objects: [] }, result_info: { cursor: 'same' } }
+  }), /invalid or repeated R2 object cursor/)
+  assert.equal(calls, 2)
 })
