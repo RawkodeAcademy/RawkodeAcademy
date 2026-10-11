@@ -16,7 +16,8 @@ export function isTransientD1Error(error: unknown): boolean {
   const seen = new Set<unknown>()
   for (let cause = error; cause instanceof Error && !seen.has(cause); cause = cause.cause) {
     seen.add(cause)
-    if (/^D1_ERROR: Network connection lost\.?$/.test(cause.message)) return true
+    // The remote D1 proxy can wrap this exact transport failure while decoding JSON.
+    if (/^D1_ERROR: (?:Failed to parse body as JSON, got: Error: )?Network connection lost\.?$/.test(cause.message)) return true
   }
   return false
 }

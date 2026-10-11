@@ -41,3 +41,32 @@ test('fresh PR import processes retry only connection exit status and stop after
     assert.equal(attempts, expected)
   }
 })
+
+
+test('recognizes only the exact D1 JSON transport wrapper, including nested query errors', async () => {
+  const { isImportConnectionError } = await import('../src/d1-retry')
+  const message = 'D1_ERROR: Failed to parse body as JSON, got: Error: Network connection lost.'
+  const wrapped = new Error('Failed query: select chapters', { cause: new Error(message, {
+    cause: new Error('Failed to parse body as JSON, got: Error: Network connection lost.'),
+  }) })
+  assert.ok(isTransientD1Error(wrapped))
+  assert.ok(isImportConnectionError(wrapped))
+  assert.ok(isTransientD1Error(new Error(message.slice(0, -1))))
+  let attempts = 0
+  assert.equal(await retryTransientD1(async () => {
+    if (++attempts === 1) throw wrapped
+    return 'source identity re-read'
+  }), 'source identity re-read')
+  assert.equal(attempts, 2)
+  for (const invalid of [
+    'Failed to parse body as JSON, got: Error: Network connection lost.',
+    'D1_ERROR: Failed to parse body as JSON, got: <html>Bad Gateway</html>',
+    'D1_ERROR: Failed to parse body as JSON, got: Error: not authorized',
+    'D1_ERROR: Failed to parse body as JSON, got: Error: UNIQUE constraint failed',
+    `${message} UNIQUE constraint failed`,
+  ]) {
+    const error = new Error('Failed query', { cause: new Error(invalid) })
+    assert.equal(isTransientD1Error(error), false, invalid)
+    assert.equal(isImportConnectionError(error), false, invalid)
+  }
+})

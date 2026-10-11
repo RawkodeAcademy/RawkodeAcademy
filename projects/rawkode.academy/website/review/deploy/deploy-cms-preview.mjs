@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { appendFile, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { checkAstroWorker } from '../../scripts/check-astro-worker.mjs'
+import { cmsMediaReferences } from './cms-media-references.mjs'
 import {
 	ensurePrPreviewResources,
 	namesForPullRequest,
@@ -531,9 +532,6 @@ try {
 		console.log('CMS D2 editing: unverified/unavailable in this preview')
 	}
 
-const decodeHtmlAttribute = value =>
-	value.replace(/&(?:amp|#0*38|#x0*26);/gi, '&')
-
 	// The seeded article exercises the CMS runtime D2 source hash and the same
 	// immutable media URL contract used by article covers and body images.
 	const articlePath = '/read/federated-graphql-microservices'
@@ -550,12 +548,11 @@ const decodeHtmlAttribute = value =>
 				signal: AbortSignal.timeout(15_000),
 			})
 			const html = await response.text()
-			const diagram = html.match(/(?:src|href)=["']([^"']*\/cms-diagrams\/([a-f0-9]{64})\.svg)["']/i)
-			const asset = html.match(/(\/cms-assets\/[A-Za-z0-9_-]{8,128}\?[^"'<>\s]+)/i)
+			const { diagramUrl: diagram, assetUrl: asset } = cmsMediaReferences(html, previewUrl)
 			if (response.ok && diagram && asset) {
 				articleHtml = html
-				diagramUrl = new URL(diagram[1].decodeHtmlAttribute, previewUrl)
-				assetUrl = new URL(asset[1].decodeHtmlAttribute, previewUrl)
+				diagramUrl = diagram
+				assetUrl = asset
 				break
 			}
 			articleState = `HTTP ${response.status}, article SSR was missing a D2 diagram or CMS image URL`
