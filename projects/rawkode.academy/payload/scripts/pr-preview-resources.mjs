@@ -50,7 +50,7 @@ export function payloadPreviewUrl(workerName) {
   return `https://${workerName}.${WORKERS_DEV_SUBDOMAIN}.workers.dev`
 }
 
-async function api(endpoint, init = {}) {
+async function api(endpoint, init = {}, includePagination = false) {
   if (!token) throw new Error('CLOUDFLARE_API_TOKEN is required to provision or remove PR preview resources.')
   if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID is required to provision or remove PR preview resources.')
   const response = await fetch(`https://api.cloudflare.com/client/v4${endpoint}`, {
@@ -62,7 +62,7 @@ async function api(endpoint, init = {}) {
     const messages = Array.isArray(body.errors) ? body.errors.map(error => error.message).filter(Boolean).join('; ') : ''
     throw new Error(`Cloudflare API ${init.method ?? 'GET'} ${endpoint} failed (${response.status})${messages ? `: ${messages}` : ''}`)
   }
-  return body.result
+  return includePagination ? body : body.result
 }
 
 async function listD1() {
@@ -75,9 +75,26 @@ async function listD1() {
   return databases
 }
 
-async function listBuckets() {
-  const result = await api(`/accounts/${accountId}/r2/buckets`)
-  return Array.isArray(result) ? result : Array.isArray(result?.buckets) ? result.buckets : []
+export async function listBuckets(request = api) {
+  const buckets = []
+  const seen = new Set()
+  let cursor
+  // R2 pagination lives in result_info, outside result. Both provisioning and
+  // PR cleanup must see every page before deciding a named bucket is absent.
+  for (let page = 0; page < 100; page += 1) {
+    const query = new URLSearchParams({ per_page: '100' })
+    if (cursor) query.set('cursor', cursor)
+    const body = await request(`/accounts/${accountId}/r2/buckets?${query}`, {}, true)
+    const result = body?.result
+    const entries = Array.isArray(result) ? result : result?.buckets
+    if (!Array.isArray(entries)) throw new Error('Cloudflare returned an invalid R2 bucket list.')
+    buckets.push(...entries)
+    cursor = body.result_info?.cursor
+    if (cursor === undefined || cursor === null || cursor === '') return buckets
+    if (typeof cursor !== 'string' || seen.has(cursor)) throw new Error('Cloudflare returned an invalid or repeated R2 bucket cursor.')
+    seen.add(cursor)
+  }
+  throw new Error('R2 bucket pagination exceeded its safety limit.')
 }
 
 async function emptyBucket(name) {
