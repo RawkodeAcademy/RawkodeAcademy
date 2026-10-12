@@ -38,25 +38,46 @@ type ForeignKeyInfo = { from: string; table: string }
  * adapter schema would make admin, auth and relationship reads inconsistent.
  */
 export async function assertCuid2DocumentSchema(db: D1Database): Promise<void> {
-  for (const table of cuid2DocumentTables) {
-    const columns = await db.prepare(`PRAGMA table_info("${table}")`).all<TableInfo>()
-    const id = columns.results.find(column => column.name === 'id')
-    if (!id) throw new Error(`CUID2 schema guard: missing ${table}.id; apply the isolated CUID2 migration chain first`)
-    if (id.type.toLowerCase() !== 'text') throw new Error(`CUID2 schema guard: ${table}.id is ${id.type || 'untyped'}, expected TEXT; use the documented data cutover before deploying`)
+  // D1 round trips dominate cold Payload initialization. Read all required
+  // document IDs through SQLite's table-valued PRAGMA in one query.
+  const requiredTables = cuid2DocumentTables.map(name => `('${name}')`).join(', ')
+  const ids = await db.prepare(`
+    WITH required(table_name) AS (VALUES ${requiredTables})
+    SELECT required.table_name AS table_name, lower(column_info.type) AS id_type
+    FROM required
+    LEFT JOIN pragma_table_info(required.table_name) AS column_info
+      ON column_info.name = 'id'
+    ORDER BY required.table_name
+  `).all<{ table_name: string; id_type: string | null }>()
+
+  for (const { table_name, id_type } of ids.results) {
+    if (!id_type) throw new Error(`CUID2 schema guard: missing ${table_name}.id; apply the isolated CUID2 migration chain first`)
+    if (id_type !== 'text') throw new Error(`CUID2 schema guard: ${table_name}.id is ${id_type || 'untyped'}, expected TEXT; use the documented data cutover before deploying`)
   }
 
-  const tables = await db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all<{ name: string }>()
-  for (const { name } of tables.results) {
-    if (!/^[a-z_][a-z0-9_]*$/.test(name)) continue
-    const [columns, foreignKeys] = await Promise.all([
-      db.prepare(`PRAGMA table_info("${name}")`).all<TableInfo>(),
-      db.prepare(`PRAGMA foreign_key_list("${name}")`).all<ForeignKeyInfo>(),
-    ])
-    const types = new Map(columns.results.map(column => [column.name, column.type.toLowerCase()]))
-    for (const reference of foreignKeys.results) {
-      if (!cuid2DocumentTableSet.has(reference.table)) continue
-      if (types.get(reference.from) !== 'text') throw new Error(`CUID2 schema guard: ${name}.${reference.from} must be TEXT to reference ${reference.table}.id`)
-    }
+  // Check every foreign-key column that targets a CUID2 document table in a
+  // single query instead of issuing PRAGMA calls once per table.
+  const references = await db.prepare(`
+    WITH required(table_name) AS (VALUES ${requiredTables})
+    SELECT tables.name AS table_name,
+      foreign_keys."from" AS source_column,
+      foreign_keys."table" AS referenced_table,
+      lower(column_info.type) AS source_type
+    FROM sqlite_master AS tables
+    JOIN pragma_foreign_key_list(tables.name) AS foreign_keys ON 1 = 1
+    JOIN pragma_table_info(tables.name) AS column_info
+      ON column_info.name = foreign_keys."from"
+    WHERE tables.type = 'table'
+      AND foreign_keys."table" IN (SELECT table_name FROM required)
+  `).all<{
+    table_name: string
+    source_column: string
+    referenced_table: string
+    source_type: string
+  }>()
+
+  for (const { table_name, source_column, referenced_table, source_type } of references.results) {
+    if (source_type !== 'text') throw new Error(`CUID2 schema guard: ${table_name}.${source_column} must be TEXT to reference ${referenced_table}.id`)
   }
 }
 
