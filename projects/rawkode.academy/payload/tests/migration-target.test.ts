@@ -29,6 +29,9 @@ function database(options: {
         },
       } as never
     },
+    batch(statements: Array<{ all<T>(): Promise<Result<T>> }>) {
+      return Promise.all(statements.map(statement => statement.all()))
+    },
   } as unknown as D1Database
 }
 
