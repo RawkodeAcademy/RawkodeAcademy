@@ -50,6 +50,12 @@ export async function deployPayloadReadBridge({ identity, source }) {
 
   try {
     const baseConfig = JSON.parse(await readFile(path.join(payloadDir, 'wrangler.jsonc'), 'utf8'))
+    // Wrangler resolves `main` relative to the generated config file. This config
+    // lives under `.runtime`, so preserve the project's original worker path.
+    baseConfig.main = path.relative(
+      path.dirname(configPath),
+      path.resolve(payloadDir, baseConfig.main),
+    )
     baseConfig.name = source.workerName
     baseConfig.workers_dev = false
     baseConfig.preview_urls = false
