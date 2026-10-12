@@ -220,10 +220,14 @@ function addPreviewPayloadDiagnostics(
 	const hits = Math.round(metrics["data-cache-hit"] ?? 0);
 	const misses = Math.round(metrics["data-cache-miss"] ?? 0);
 	const calls = Math.round(metrics["payload-bridge-call"] ?? 0);
+	const writes = Math.round(metrics["data-cache-write"] ?? 0);
+	const skipped = Math.round(metrics["data-cache-skip"] ?? 0);
+	const boundarySkips = Math.round(metrics["data-cache-boundary-skip"] ?? 0);
+	const policySkips = Math.round(metrics["data-cache-policy-skip"] ?? 0);
 	const headers = new Headers(response.headers);
 	headers.set(
 		"X-Payload-Data-Cache",
-		`hits=${hits}; misses=${misses}; calls=${calls}`,
+		`hits=${hits}; misses=${misses}; calls=${calls}; writes=${writes}; skipped=${skipped}; boundary-skips=${boundarySkips}; policy-skips=${policySkips}`,
 	);
 	const timings = [`payload-route;dur=${routeDurationMs.toFixed(1)}`];
 	const bindingMs = metrics["payload-binding-ms"];
