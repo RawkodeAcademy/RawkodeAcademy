@@ -521,7 +521,20 @@ async function getBridgeJson<T>(path: string): Promise<T> {
 	recordBridgeTimings(response.headers.get("Server-Timing"));
 	if (response.status === 404) throw new PayloadNotFoundError();
 	if (!response.ok) {
-		throw new Error(`Payload content request failed (${response.status}).`);
+		let detail = "";
+		if (state?.env?.PAYLOAD_PREVIEW_PR) {
+			const errorBody = (await response.clone().json().catch(() => null)) as
+				| { diagnostic?: unknown; error?: unknown }
+				| null;
+			const message =
+				typeof errorBody?.diagnostic === "string"
+					? errorBody.diagnostic
+					: typeof errorBody?.error === "string"
+						? errorBody.error
+						: "";
+			if (message) detail = `: ${message.slice(0, 240)}`;
+		}
+		throw new Error(`Payload content request failed (${response.status})${detail}.`);
 	}
 	const body = (await response.json()) as T & { nextReleaseAt?: string | null };
 	recordNextReleaseAt(body.nextReleaseAt);

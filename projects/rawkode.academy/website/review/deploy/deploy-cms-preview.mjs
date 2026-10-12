@@ -332,7 +332,12 @@ try {
 				sentinel = body.video
 				break
 			}
-			diagnosticState = `HTTP ${response.status}, Payload preview diagnostic returned incomplete read-only content/source evidence`
+			const detail = typeof body?.diagnostic === 'string'
+				? body.diagnostic
+				: typeof body?.error === 'string'
+					? body.error
+					: 'Payload preview diagnostic returned incomplete read-only content/source evidence'
+			diagnosticState = `HTTP ${response.status}, ${detail}`
 		} catch (error) {
 			diagnosticState = error instanceof Error ? error.message : String(error)
 		}

@@ -12,6 +12,21 @@ function monotonicNow(): number {
 	return globalThis.performance?.now?.() ?? Date.now();
 }
 
+function previewFailureResponse(phase: 'init' | 'total', error: unknown, startedAt: number): Response {
+  const diagnostic = (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).slice(0, 240)
+  console.error(`Payload content preview ${phase} failed`, error)
+  return Response.json(
+    { error: `Payload content preview ${phase} failed`, diagnostic },
+    {
+      status: 503,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Server-Timing': `payload-${phase};dur=${Math.max(0, monotonicNow() - startedAt).toFixed(1)}`,
+      },
+    },
+  )
+}
+
 const handler: ExportedHandler = openNextHandler
 type IncomingRequest = Parameters<NonNullable<ExportedHandler['fetch']>>[0]
 export default {
@@ -54,11 +69,23 @@ export class PublicContentBridge extends WorkerEntrypoint<CloudflareEnv> {
           return Response.json({error:'CMS preview readiness failed'}, {status:503,headers:{'Cache-Control':'no-store'}})
         }
       }
+      const previewEnabled = Boolean((this.env as CloudflareEnv & {PAYLOAD_PREVIEW_PR?: string}).PAYLOAD_PREVIEW_PR)
       const payloadInitStartedAt = monotonicNow()
-      const payload = await loadPayload()
+      let payload: Awaited<ReturnType<typeof loadPayload>>
+      try {
+        payload = await loadPayload()
+      } catch (error) {
+        if (!previewEnabled) throw error
+        return previewFailureResponse('init', error, payloadInitStartedAt)
+      }
       const payloadInitDuration = monotonicNow() - payloadInitStartedAt
-      const response = await publicContentBridge(request, payload, this.env.R2)
-      const previewEnabled = (this.env as CloudflareEnv & {PAYLOAD_PREVIEW_PR?: string}).PAYLOAD_PREVIEW_PR
+      let response: Response
+      try {
+        response = await publicContentBridge(request, payload, this.env.R2)
+      } catch (error) {
+        if (!previewEnabled) throw error
+        return previewFailureResponse('total', error, payloadInitStartedAt)
+      }
       if (!previewEnabled) return response
       const headers = new Headers(response.headers)
       const existingTiming = headers.get('Server-Timing')

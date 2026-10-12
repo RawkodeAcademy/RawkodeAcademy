@@ -22,7 +22,10 @@ export const GET: APIRoute = async () => {
 		}
 		const [video] = await getCollection("videos", undefined, { limit: 1 });
 		if (!video) {
-			return new Response(JSON.stringify({ error: "No public video is available." }), {
+			return new Response(JSON.stringify({
+				error: "No public video is available.",
+				diagnostic: "The source has no publicly visible video in the seeded baseline.",
+			}), {
 				status: 503,
 				headers: {
 					"Content-Type": "application/json; charset=utf-8",
@@ -73,8 +76,12 @@ export const GET: APIRoute = async () => {
 				},
 			},
 		);
-	} catch {
-		return new Response(JSON.stringify({ error: "Payload bridge is unavailable." }), {
+	} catch (error) {
+		const diagnostic = error instanceof Error ? error.message : String(error);
+		return new Response(JSON.stringify({
+			error: "Payload bridge is unavailable.",
+			diagnostic: diagnostic.slice(0, 240),
+		}), {
 			status: 503,
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",
