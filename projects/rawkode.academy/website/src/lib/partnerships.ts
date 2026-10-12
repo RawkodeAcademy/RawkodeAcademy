@@ -98,7 +98,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a first-run review. David works through your product the way a new user would, from first install or sign-up to a first working result, records every place he stalls and tells you plainly what he found. If that's useful, continue to the full 90 days: a live session on Rawkode Live with your engineer, a runnable example David writes, monthly working sessions, a monthly call with the other partners on where the industry is heading, and a day-90 read-out.";
+	"Every partnership starts with a first-run review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. Delivered in 10 business days, invoiced on delivery. Continue to the full 90 days only if it's useful.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -150,7 +150,7 @@ export const partnershipOutcomes = [
 export const partnershipGroupCall = {
 	title: "A monthly all-partner call",
 	detail:
-		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. Not recorded, and nothing said is repeated outside the call.",
+		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. Not recorded, and nothing said is repeated outside the call. Until three partners are active, it runs as a one-to-one industry briefing with David.",
 } as const;
 
 /** The fixed 90-day arc. The review is the first step. */
