@@ -50,7 +50,9 @@ ci: pipelines: {
 	pullRequest: {
 		environment: "production"
 		when: pullRequest: true
-		tasks: [_t.deploy.preview]
+		// Public website previews reuse the accepted read-only baseline. Backend
+		// changes are validated here; provisioning/import/deploy is operator-run.
+		tasks: [_t.check, _t.test]
 	}
 }
 

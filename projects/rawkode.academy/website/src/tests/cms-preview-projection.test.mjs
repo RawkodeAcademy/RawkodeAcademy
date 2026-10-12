@@ -27,10 +27,7 @@ for (const scenario of ["safe", "missing", "full-files", "summary-local-path"]) 
 			PAYLOAD_PREVIEW_PR: "1419", PAYLOAD_PREVIEW_SHA: "a".repeat(40),
 			PAYLOAD_CONTENT: { fetch: async request => {
 				const url = new URL(request.url);
-				if (url.pathname === "/v1/preview/readiness") return Response.json({
-					scheduledVideo: { id: "scheduled", slug: "scheduled", title: "Scheduled", publishedAt: "2027-01-01T00:00:00Z" },
-					d2SaveCapability: "unavailable",
-				});
+				assert.equal(request.method, "GET");
 				assert.equal(url.pathname, "/v1/collections/course-modules");
 				const view = url.searchParams.get("view");
 				views.push(view);
@@ -42,7 +39,7 @@ for (const scenario of ["safe", "missing", "full-files", "summary-local-path"]) 
 				return Response.json({ doc });
 			} },
 		};
-		const response = await module.namespace.POST({locals: {get runtime() {throw new Error("Removed Astro runtime API accessed")}}});
+		const response = await module.namespace.GET({locals: {get runtime() {throw new Error("Removed Astro runtime API accessed")}}});
 		assert.equal(response.status, scenario === "safe" ? 200 : 503);
 		const body = await response.json();
 		assert.equal(body.demoProjectionPrivate, scenario === "safe" ? true : undefined);
@@ -52,6 +49,6 @@ for (const scenario of ["safe", "missing", "full-files", "summary-local-path"]) 
 
 test("preview projection diagnostic remains unavailable outside PR previews", async () => {
 	currentEnv = undefined;
-	const response = await module.namespace.POST({ locals: {} });
+	const response = await module.namespace.GET({ locals: {} });
 	assert.equal(response.status, 404);
 });

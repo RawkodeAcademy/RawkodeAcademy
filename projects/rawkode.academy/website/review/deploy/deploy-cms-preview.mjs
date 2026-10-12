@@ -5,32 +5,23 @@ import path from 'node:path'
 import { checkAstroWorker } from '../../scripts/check-astro-worker.mjs'
 import { cmsMediaReferences } from './cms-media-references.mjs'
 import {
-	ensurePrPreviewResources,
+	ensureWebsitePreviewResources,
 	namesForPullRequest,
 	pullRequestIdentity,
 } from '../../../payload/scripts/pr-preview-resources.mjs'
-import {
-	INITIAL_ARCHIVE_WARM_MIN_RUNWAY_MS,
-	PRE_RELEASE_SAFETY_MARGIN_MS,
-	verifyScheduledArchiveBoundary,
-	verifyScheduledArchiveWarm,
-} from './scheduled-archive-boundary.mjs'
+import { WEBSITE_PREVIEW_CONTENT_SOURCE } from '../../../payload/scripts/website-preview-source.mjs'
 
 const identity = pullRequestIdentity()
-const resources = await ensurePrPreviewResources()
+const resources = await ensureWebsitePreviewResources(identity)
 if (resources.pullRequestNumber !== identity.pullRequestNumber || resources.sha !== identity.sha) {
-	throw new Error('The Payload preview resources are not keyed to this website workflow PR/SHA.')
+	throw new Error('The website preview resources are not keyed to this website workflow PR/SHA.')
 }
 
 const names = namesForPullRequest(identity.pullRequestNumber, identity.sha)
-const scheduledDetailCheckTimeoutMs = 15_000
-// A fresh isolated Payload target seeds the full catalogue, including more
-// than 9,000 chapters, before its check succeeds. Keep waiting for that exact
-// SHA rather than timing out while the matching import is still progressing.
-const waitSeconds = Number(process.env.PR_PREVIEW_WAIT_SECONDS ?? '7200')
-if (!Number.isSafeInteger(waitSeconds) || waitSeconds < 1 || waitSeconds > 7200) {
-	throw new Error('PR_PREVIEW_WAIT_SECONDS must be between 1 and 7200.')
-}
+const source = WEBSITE_PREVIEW_CONTENT_SOURCE
+// Bounded retries only for the newly uploaded website's HTTP checks. There is
+// no backend workflow, import, readiness or publication-boundary wait.
+const waitSeconds = 120
 
 async function hasWebpSignature(response) {
 	const reader = response.body?.getReader()
@@ -55,22 +46,10 @@ async function hasWebpSignature(response) {
 	)
 }
 
-function hasValidD2SaveEvidence(value) {
-	return Boolean(
-		value &&
-		value.articleStatus === 'draft' &&
-		value.hiddenFromPublic === true &&
-		typeof value.articleId === 'string' &&
-		typeof value.articleSlug === 'string' &&
-		/^[a-f0-9]{64}$/i.test(value.sourceHash ?? '') &&
-		/^[a-f0-9]{64}$/i.test(value.svgChecksum ?? ''),
-	)
-}
-
 function assertPublicSsrCachePolicy(response) {
 	// Cloudflare consumes and strips Cloudflare-CDN-Cache-Control before the
 	// response reaches clients. Check the client-visible policies and verify
-	// the actual release boundary with CF-Cache-Status below.
+	// the actual cache HIT with CF-Cache-Status below.
 	const headers = ['cache-control', 'cdn-cache-control']
 		.map(name => [name, response.headers.get(name)])
 		.filter(([, value]) => value)
@@ -98,68 +77,9 @@ function assertPublicSsrCachePolicy(response) {
 	if (!foundMaxAge) throw new Error('The Astro SSR response did not expose a max-age or s-maxage freshness bound.')
 	const cachePolicy = response.headers.get('cache-control')?.toLowerCase() ?? ''
 	if (!/(?:^|,)\s*must-revalidate(?:,|$)/i.test(cachePolicy)) {
-		throw new Error('The client-visible Cache-Control policy must forbid stale responses; the scheduled release probe verifies Cloudflare edge behavior.')
+		throw new Error('The client-visible Cache-Control policy must forbid stale responses; stale responses are not allowed.')
 	}
 }
-
-function responseCacheAges(response) {
-	return ['cache-control', 'cdn-cache-control', 'cloudflare-cdn-cache-control']
-		.flatMap(name => (response.headers.get(name) ?? '').split(',').map(part => part.trim()))
-		.filter(part => /^(?:s-maxage|max-age)=/i.test(part))
-		.map(part => Number(part.slice(part.indexOf('=') + 1).replace(/^"|"$/g, '')))
-		.filter(Number.isSafeInteger)
-}
-
-// Both PR workflows are triggered by changes under either project. Wait for
-// the exact SHA's Payload job to finish before uploading the website Worker;
-// its success includes D1 migrations, static import and Payload deployment.
-const repository = process.env.GITHUB_REPOSITORY
-const githubToken = process.env.GITHUB_TOKEN
-const apiUrl = process.env.GITHUB_API_URL ?? 'https://api.github.com'
-if (!repository || !/^[^/]+\/[^/]+$/.test(repository) || !githubToken) {
-	throw new Error('GITHUB_REPOSITORY and GITHUB_TOKEN are required to wait for the paired Payload PR workflow.')
-}
-const payloadCheckUrl = new URL(`${apiUrl.replace(/\/+$/, '')}/repos/${repository}/commits/${identity.sha}/check-runs?per_page=100`)
-const payloadCheckDeadline = Date.now() + waitSeconds * 1000
-let payloadReady = false
-let payloadCheckState = 'Payload workflow check has not appeared yet'
-let payloadCheckLogAt = 0
-while (Date.now() < payloadCheckDeadline) {
-	try {
-		const response = await fetch(payloadCheckUrl, {
-			headers: {
-				accept: 'application/vnd.github+json',
-				authorization: `Bearer ${githubToken}`,
-				'x-github-api-version': '2022-11-28',
-			},
-			signal: AbortSignal.timeout(10_000),
-		})
-		const body = await response.json().catch(() => null)
-		if (!response.ok) {
-			if (response.status === 401 || response.status === 403) throw new Error(`GitHub check-run API denied access (HTTP ${response.status}).`)
-			payloadCheckState = `GitHub check-run API returned HTTP ${response.status}`
-		} else {
-			const check = (body?.check_runs ?? [])
-				.filter(candidate => candidate.name === 'rawkode-academy-payload-pullRequest')
-				.sort((left, right) => Date.parse(right.started_at ?? right.created_at) - Date.parse(left.started_at ?? left.created_at))[0]
-			if (check?.status === 'completed') {
-				if (check.conclusion !== 'success') throw new Error(`The paired Payload PR workflow completed with conclusion ${check.conclusion ?? 'unknown'} for ${identity.sha}.`)
-				payloadReady = true
-				break
-			}
-			payloadCheckState = check ? `Payload workflow is ${check.status}` : 'Payload workflow check has not appeared yet'
-		}
-	} catch (error) {
-		if (error instanceof Error && /GitHub check-run API denied|paired Payload PR workflow completed/.test(error.message)) throw error
-		payloadCheckState = error instanceof Error ? error.message : String(error)
-	}
-	if (Date.now() - payloadCheckLogAt >= 60_000) {
-		console.log(`Waiting for Payload PR workflow on ${identity.sha}: ${payloadCheckState}`)
-		payloadCheckLogAt = Date.now()
-	}
-	await new Promise(resolve => setTimeout(resolve, 5_000))
-}
-if (!payloadReady) throw new Error(`Timed out waiting for successful Payload PR workflow on ${identity.sha}: ${payloadCheckState}`)
 
 const configPath = path.resolve('dist/server/wrangler.json')
 const bootstrapConfigPath = path.resolve('dist/server/wrangler.pr-preview-bootstrap.json')
@@ -188,8 +108,10 @@ delete sessions[0].preview_id
 const previewReadModels = new Set(['BRACKETS_READ', 'LEADERBOARD_READ', 'ACHIEVEMENTS_READ'])
 config.services = (config.services ?? []).filter(binding => previewReadModels.has(binding.binding))
 config.services.push({ binding: 'IDENTITY', service: names.websiteIsolationWorkerName })
-config.services.push({ binding: 'PAYLOAD_CONTENT', service: names.workerName, entrypoint: 'PublicContentBridge' })
+config.services.push({ binding: 'PAYLOAD_CONTENT', service: names.websiteIsolationWorkerName, entrypoint: 'PublicContentReadOnly' })
 config.images = { ...(config.images ?? {}), binding: 'IMAGES' }
+// Static assets must pass the preview's GET-only gateway too.
+config.assets = { ...(config.assets ?? {}), run_worker_first: true }
 // Applications and newsletter preferences must not send external email.
 delete config.send_email
 config.vars = {
@@ -197,6 +119,8 @@ config.vars = {
 	PAYLOAD_PREVIEW_PR: String(identity.pullRequestNumber),
 	PAYLOAD_PREVIEW_SHA: identity.sha,
 	PUBLIC_SSR_CACHE_ENABLED: 'true',
+	PAYLOAD_PREVIEW_SOURCE_WORKER: source.workerName,
+	PAYLOAD_PREVIEW_SOURCE_SHA: source.sha,
 }
 // Keep the public request gateway uncached. Only its named inner Astro entrypoint
 // uses Workers Cache after the gateway has excluded credentials and interactive routes.
@@ -219,6 +143,7 @@ const isolationConfig = {
 	compatibility_flags: config.compatibility_flags,
 	workers_dev: false,
 	preview_urls: false,
+	services: [{ binding: 'PUBLIC_CONTENT_SOURCE', service: source.workerName, entrypoint: source.entrypoint }],
 }
 const bootstrapConfig = { ...config, preview_urls: true }
 if (bootstrapConfig.workers_dev !== false || bootstrapConfig.preview_urls !== true || Object.hasOwn(bootstrapConfig, 'routes')) {
@@ -292,158 +217,52 @@ try {
 	const previewUrl = matches.at(-1)?.[1]?.replace(/[),]+$/, '')
 	if (!previewUrl) throw new Error('Wrangler did not print a Version Preview URL for the Astro SSR preview.')
 
-	// This preview-only POST proves the paired bridge is reachable and returns a
-	// future publication fixture. It also exercises the CMS D2 save hook when
-	// the isolated preview has a D2_RENDERER binding.
+	// Read-only public projections verify the reused bridge without seeding fixtures.
 	const diagnosticUrl = new URL('/api/cms-preview-check', previewUrl)
 	const diagnosticDeadline = Date.now() + Math.min(waitSeconds, 120) * 1000
 	let sentinel
-	let scheduledVideo
-	let d2Save
-	let d2SaveCapability
 	let diagnosticState = 'no response'
 	while (Date.now() < diagnosticDeadline) {
 		try {
 			const response = await fetch(diagnosticUrl, {
-				method: 'POST',
+				method: 'GET',
 				headers: { accept: 'application/json', 'cache-control': 'no-store', origin: diagnosticUrl.origin },
 				signal: AbortSignal.timeout(15_000),
 			})
 			const body = await response.json().catch(() => null)
-			const d2CapabilityValid = body?.d2SaveCapability === 'available'
-				? hasValidD2SaveEvidence(body?.d2Save)
-				: body?.d2SaveCapability === 'unavailable' &&
-					body &&
-					!Object.prototype.hasOwnProperty.call(body, 'd2Save')
 			if (
 				response.ok &&
 				body?.demoProjectionPrivate === true &&
 				typeof body?.video?.id === 'string' &&
 				typeof body?.video?.slug === 'string' && body.video.slug.trim() &&
 				typeof body?.video?.title === 'string' && body.video.title.trim() &&
-				typeof body?.scheduledVideo?.id === 'string' &&
-				typeof body?.scheduledVideo?.slug === 'string' && body.scheduledVideo.slug.trim() &&
-				typeof body?.scheduledVideo?.title === 'string' && body.scheduledVideo.title.trim() &&
-				typeof body?.scheduledVideo?.publishedAt === 'string' &&
-				d2CapabilityValid
+				body?.readOnly === true &&
+				body?.contentSource?.worker === source.workerName &&
+				body?.contentSource?.sha === source.sha
 			) {
 				sentinel = body.video
-				scheduledVideo = body.scheduledVideo
-				d2SaveCapability = body.d2SaveCapability
-				d2Save = d2SaveCapability === 'available' ? body.d2Save : undefined
 				break
 			}
-			diagnosticState = `HTTP ${response.status}, Payload preview diagnostic returned incomplete content, D2 capability, or schedule evidence`
+			diagnosticState = `HTTP ${response.status}, Payload preview diagnostic returned incomplete read-only content/source evidence`
 		} catch (error) {
 			diagnosticState = error instanceof Error ? error.message : String(error)
 		}
-		console.log(`Waiting for Astro PAYLOAD_CONTENT diagnostic ${names.workerName}: ${diagnosticState}`)
+		console.log(`Waiting for Astro PAYLOAD_CONTENT diagnostic ${source.workerName}: ${diagnosticState}`)
 		await new Promise(resolve => setTimeout(resolve, 5_000))
 	}
 	if (!sentinel) throw new Error(`Astro preview diagnostic did not return Payload content at ${diagnosticUrl}: ${diagnosticState}`)
 
-	// Prove publication timing and cache expiry before other long website checks.
-	const releaseAt = Date.parse(scheduledVideo.publishedAt)
-	const requiredScheduleRunwayMs = INITIAL_ARCHIVE_WARM_MIN_RUNWAY_MS + scheduledDetailCheckTimeoutMs + PRE_RELEASE_SAFETY_MARGIN_MS
-	if (!Number.isFinite(releaseAt) || releaseAt <= Date.now() + requiredScheduleRunwayMs) {
-		throw new Error(`The scheduled video fixture needs at least ${requiredScheduleRunwayMs}ms of runway for the detail and archive cache boundary checks: ${scheduledVideo.publishedAt}`)
-	}
-	const scheduledUrl = new URL(`/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`, previewUrl)
-	scheduledUrl.searchParams.set('cmsPreviewProbe', String(Date.now()))
-	const preRelease = await fetch(scheduledUrl, {
-		headers: { accept: 'text/html', 'cache-control': 'no-store' },
-		signal: AbortSignal.timeout(scheduledDetailCheckTimeoutMs),
-	})
-	if (preRelease.status !== 404) {
-		await preRelease.body?.cancel().catch(() => {})
-		throw new Error(`Scheduled video ${scheduledVideo.slug} should be hidden before ${scheduledVideo.publishedAt}; Astro returned HTTP ${preRelease.status}.`)
-	}
-	console.log(`Scheduled publication pre-check passed: ${scheduledVideo.slug} is hidden until ${scheduledVideo.publishedAt}.`)
-
-	// Warm the public archive while the video is still scheduled. Its cached
-	// response must expire at the next Payload release boundary, then re-render
-	// the archive with the newly published video without a deployment.
-	const archiveUrl = new URL('/watch', previewUrl)
-	archiveUrl.searchParams.set('cmsReleaseProbe', `${identity.sha.slice(0, 12)}-${Date.now()}`)
-	const scheduledHref = `/watch/${scheduledVideo.slug.split('/').map(encodeURIComponent).join('/')}`
-	await verifyScheduledArchiveWarm({
-		archiveUrl,
-		scheduledHref,
-		scheduledSlug: scheduledVideo.slug,
-		publishedAt: scheduledVideo.publishedAt,
-		releaseAt,
-	})
-	console.log(`Scheduled publication cache probe passed: warmed /watch hides ${scheduledVideo.slug} until ${scheduledVideo.publishedAt}.`)
-
-	// Prove the cache boundary and scheduled release before slower media probes
-	// can consume the five-minute fixture window.
-	const { secondsUntilRelease, boundaryAges, archiveUrl: scheduledArchiveUrl } = await verifyScheduledArchiveBoundary({
-		archiveUrl,
-		scheduledHref,
-		scheduledSlug: scheduledVideo.slug,
-		publishedAt: scheduledVideo.publishedAt,
-		releaseAt,
-		responseCacheAges,
-	})
-	console.log(`Scheduled archive boundary warm passed: /watch was re-rendered ${secondsUntilRelease}s before release with clipped TTLs (${boundaryAges.join('/')}s), then served from cache.`)
-	// Wait through the saved future boundary and verify live Astro SSR sees it.
-	const scheduledDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
-	let scheduledVisible = false
-	let scheduledState = 'waiting for the scheduled release time'
-	while (Date.now() < scheduledDeadline) {
-		if (Date.now() < releaseAt) {
-			await new Promise(resolve => setTimeout(resolve, Math.min(5_000, releaseAt - Date.now())))
-			continue
+	// The website gateway must reject mutations before Astro or any service binding.
+	for (const pathname of ['/api/cms-preview-check', '/favicon-32x32.png']) {
+		for (const method of ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']) {
+			const response = await fetch(new URL(pathname, previewUrl), { method, signal: AbortSignal.timeout(15_000) })
+			await response.body?.cancel().catch(() => {})
+			if (response.status !== 405 || response.headers.get('allow') !== 'GET') throw new Error(`Read-only website accepted ${method} at ${pathname}.`)
 		}
-		try {
-			const response = await fetch(scheduledUrl, {
-				headers: { accept: 'text/html', 'cache-control': 'no-store' },
-				signal: AbortSignal.timeout(15_000),
-			})
-			const html = await response.text()
-			const escapedTitle = scheduledVideo.title.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character])
-			if (response.ok && (html.includes(scheduledVideo.title) || html.includes(escapedTitle))) {
-				scheduledVisible = true
-				break
-			}
-			scheduledState = `HTTP ${response.status}, scheduled Payload video title was absent from Astro SSR HTML`
-		} catch (error) {
-			scheduledState = error instanceof Error ? error.message : String(error)
-		}
-		console.log(`Waiting for scheduled Payload publication ${scheduledVideo.slug}: ${scheduledState}`)
-		await new Promise(resolve => setTimeout(resolve, 5_000))
 	}
-	if (!scheduledVisible) {
-		throw new Error(`Astro preview did not reveal scheduled Payload video ${scheduledVideo.slug} after ${scheduledVideo.publishedAt}: ${scheduledState}`)
-	}
-	console.log(`Scheduled publication check passed: ${scheduledUrl.pathname} rendered after ${scheduledVideo.publishedAt}.`)
-	const archiveAfterDeadline = releaseAt + Math.min(waitSeconds, 90) * 1000
-	let scheduledArchiveVisible = false
-	let scheduledArchiveState = 'waiting for the scheduled archive response'
-	while (Date.now() < archiveAfterDeadline) {
-		try {
-			const response = await fetch(scheduledArchiveUrl, {
-				headers: { accept: 'text/html' },
-				signal: AbortSignal.timeout(15_000),
-			})
-			const html = await response.text()
-			const cacheState = response.headers.get('cf-cache-status')?.toUpperCase()
-			if (response.ok && html.includes(scheduledHref) && ['MISS', 'EXPIRED'].includes(cacheState ?? '')) {
-				scheduledArchiveVisible = true
-				break
-			}
-			scheduledArchiveState = `HTTP ${response.status}, scheduled archive link ${html.includes(scheduledHref) ? 'was present' : 'is absent'}; CF-Cache-Status ${cacheState ?? 'missing'}`
-		} catch (error) {
-			scheduledArchiveState = error instanceof Error ? error.message : String(error)
-		}
-		console.log(`Waiting for the warmed watch archive to expire at ${scheduledVideo.publishedAt}: ${scheduledArchiveState}`)
-		await new Promise(resolve => setTimeout(resolve, 5_000))
-	}
-	if (!scheduledArchiveVisible) {
-		throw new Error(`The warmed /watch archive did not reveal scheduled video ${scheduledVideo.slug} after ${scheduledVideo.publishedAt}: ${scheduledArchiveState}`)
-	}
-	console.log(`Scheduled archive cache check passed: warmed /watch hid ${scheduledVideo.slug} before release and showed it after its Payload publishedAt boundary.`)
-
+	const identityResponse = await fetch(new URL('/api/auth/sign-in', previewUrl), { redirect: 'manual', signal: AbortSignal.timeout(15_000) })
+	await identityResponse.body?.cancel().catch(() => {})
+	if (identityResponse.status !== 503) throw new Error('Identity must remain unavailable in the read-only website preview.')
 
 	// Verify a route rendered the content returned by the bridge-backed
 	// diagnostic before surfacing the preview URL.
@@ -552,54 +371,6 @@ try {
 	console.log('Ordinary summary/full content projections omit demo source files and local import paths.');
 	console.log(`WebContainer SSR check passed: ${webContainerPath} rendered the imported demo title and file content with COOP same-origin and COEP require-corp.`)
 
-
-	if (d2SaveCapability === 'available') {
-		// The preview diagnostic creates a draft article through Payload's normal
-		// Local API. Its save hook must render and persist the D2 artifact in the
-		// isolated per-PR R2 bucket, and the website must serve those exact bytes.
-		const saveHookSourceHash = d2Save.sourceHash
-		const saveHookDiagramUrl = new URL(`/cms-diagrams/${saveHookSourceHash}.svg`, previewUrl)
-		const saveHookDiagramDeadline = Date.now() + Math.min(waitSeconds, 120) * 1000
-		let saveHookDiagramReady = false
-		let saveHookDiagramState = 'no response'
-		while (Date.now() < saveHookDiagramDeadline) {
-			try {
-				const response = await fetch(saveHookDiagramUrl, {
-					headers: { accept: 'image/svg+xml', 'cache-control': 'no-store' },
-					signal: AbortSignal.timeout(15_000),
-				})
-				const contentType = response.headers.get('content-type')?.split(';')[0]?.trim()
-				const returnedSourceHash = response.headers.get('x-source-checksum')
-				const returnedSvgChecksum = response.headers.get('x-content-checksum')
-				const etag = response.headers.get('etag')?.replace(/^W\//, '').replace(/^"|"$/g, '')
-				const svg = response.ok && contentType === 'image/svg+xml' ? await response.text() : ''
-				const svgChecksum = svg ? createHash('sha256').update(svg.trim()).digest('hex') : ''
-				if (
-					response.ok &&
-					contentType === 'image/svg+xml' &&
-					returnedSourceHash === saveHookSourceHash &&
-					returnedSvgChecksum === d2Save.svgChecksum &&
-					etag === d2Save.svgChecksum &&
-					svgChecksum === d2Save.svgChecksum &&
-					svg.trim().startsWith('<svg') && svg.trim().endsWith('</svg>')
-				) {
-					saveHookDiagramReady = true
-					break
-				}
-				saveHookDiagramState = `HTTP ${response.status}, D2 save-hook artifact checksum or SVG body did not match`
-			} catch (error) {
-				saveHookDiagramState = error instanceof Error ? error.message : String(error)
-			}
-			console.log(`Waiting for D2 CMS save-hook artifact ${saveHookSourceHash}: ${saveHookDiagramState}`)
-			await new Promise(resolve => setTimeout(resolve, 5_000))
-		}
-		if (!saveHookDiagramReady) {
-			throw new Error(`Astro preview did not serve the checksum-verified D2 CMS save-hook artifact at ${saveHookDiagramUrl}: ${saveHookDiagramState}`)
-		}
-		console.log(`CMS D2 save-hook check passed: draft ${d2Save.articleSlug} produced ${saveHookSourceHash}.`)
-	} else {
-		console.log('CMS D2 editing: unverified/unavailable in this preview')
-	}
 
 	// The seeded article exercises the CMS runtime D2 source hash and the same
 	// immutable media URL contract used by article covers and body images.
@@ -743,17 +514,23 @@ try {
 	}
 	console.log(`CMS media checks passed: D2 SVG ${sourceHash} and Cloudflare Images WebP ${assetUrl.pathname} at ${assetWidth}px.`)
 
+	await writeFile(path.resolve('dist/server/website-preview-verification.json'), `${JSON.stringify({
+		pullRequestNumber: identity.pullRequestNumber,
+		websiteSha: identity.sha,
+		previewUrl,
+		contentSource: source,
+		readOnly: true,
+	})}\n`)
 	console.log(`Version Preview URL: ${previewUrl}`)
 	if (process.env.GITHUB_OUTPUT) {
 		await appendFile(process.env.GITHUB_OUTPUT, `website_preview_url=${previewUrl}\nwebsite_preview_worker=${names.websiteWorkerName}\n`)
 	}
 	if (process.env.GITHUB_STEP_SUMMARY) {
-		const d2EditingSummary = d2SaveCapability === 'available'
-			? 'CMS D2 save hook verified'
-			: 'CMS D2 editing: unverified/unavailable in this preview'
-		await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Website preview\n\n[Open the Astro SSR preview](${previewUrl})\n\nPaired Payload preview SHA: \`${identity.sha}\`. SSR verified ${sentinelPath}, a Workers Cache hit for SSR/D2/Cloudflare Images, cookie-bearing bypass, ${d2EditingSummary}, the warmed /watch archive hiding then revealing ${scheduledVideo.slug} at its Payload release boundary, and a public cache TTL of at most 30 seconds.\n`)
+		await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Website preview\n\n[Open the read-only Astro SSR preview](${previewUrl})\n\nWebsite PR/head: \`${identity.pullRequestNumber}/${identity.sha}\`. Reused public content: \`${source.workerName}#${source.entrypoint}\` at source SHA \`${source.sha}\`. GET-only access, SSR video, public Workers Cache HIT, credential cache bypass, sanitized demo projections, WebContainer SSR, checksum-verified D2 SVG and Cloudflare Images WebP passed. No database imports, backend deployments or backend readiness waits. Scheduling mutations and editorial saves are outside this read-only preview.\n`)
+
 	}
 } finally {
+	await unlink(bootstrapConfigPath).catch(() => {})
 	await unlink(previewConfigPath).catch(() => {})
 	await unlink(isolationConfigPath).catch(() => {})
 }

@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { WEBSITE_PREVIEW_CONTENT_SOURCE } from './website-preview-source.mjs'
 
 const projectDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const runtimeDir = path.join(projectDir, '.runtime')
@@ -65,10 +66,10 @@ async function api(endpoint, init = {}, includePagination = false) {
   return includePagination ? body : body.result
 }
 
-async function listD1() {
+async function listD1(request = api) {
   const databases = []
   for (let page = 1; page <= 100; page += 1) {
-    const result = await api(`/accounts/${accountId}/d1/database?per_page=100&page=${page}`)
+    const result = await request(`/accounts/${accountId}/d1/database?per_page=100&page=${page}`)
     databases.push(...(Array.isArray(result) ? result : []))
     if (!result?.length || result.length < 100) break
   }
@@ -122,10 +123,10 @@ export async function emptyBucket(name, request = api) {
   throw new Error('R2 object pagination exceeded its safety limit.')
 }
 
-async function listNamespaces() {
+async function listNamespaces(request = api) {
   const namespaces = []
   for (let page = 1; page <= 100; page += 1) {
-    const result = await api(`/accounts/${accountId}/storage/kv/namespaces?per_page=100&page=${page}`)
+    const result = await request(`/accounts/${accountId}/storage/kv/namespaces?per_page=100&page=${page}`)
     namespaces.push(...(Array.isArray(result) ? result : []))
     if (!result?.length || result.length < 100) break
   }
@@ -163,16 +164,32 @@ async function ensureBucket(name) {
   return { name }
 }
 
-async function ensureNamespace(title) {
-  const existing = (await listNamespaces()).find(namespace => namespace.title === title)
+async function ensureNamespace(title, request = api) {
+  const existing = (await listNamespaces(request)).find(namespace => namespace.title === title)
   if (existing) return { id: existing.id, title }
   try {
-    const result = await api(`/accounts/${accountId}/storage/kv/namespaces`, { method: 'POST', body: JSON.stringify({ title }) })
+    const result = await request(`/accounts/${accountId}/storage/kv/namespaces`, { method: 'POST', body: JSON.stringify({ title }) })
     return { id: result.id, title }
   } catch (error) {
-    const raced = (await listNamespaces()).find(namespace => namespace.title === title)
+    const raced = (await listNamespaces(request)).find(namespace => namespace.title === title)
     if (raced) return { id: raced.id, title }
     throw error
+  }
+}
+
+// Website previews borrow only the public read model. They own no database
+// or bucket, and must not invoke the backend provisioning/import path.
+export async function ensureWebsitePreviewResources(identity = pullRequestIdentity(), request = api) {
+  const names = namesForPullRequest(identity.pullRequestNumber, identity.sha)
+  const session = await ensureNamespace(names.sessionTitle, request)
+  if (!/^[0-9a-f]{32}$/i.test(String(session.id))) throw new Error('Cloudflare returned an invalid session namespace ID.')
+  return {
+    pullRequestNumber: identity.pullRequestNumber,
+    sha: identity.sha,
+    websiteWorkerName: names.websiteWorkerName,
+    websiteIsolationWorkerName: names.websiteIsolationWorkerName,
+    sessionNamespaceId: session.id,
+    sessionNamespaceTitle: session.title,
   }
 }
 
@@ -209,27 +226,29 @@ function pullRequestNumberFromArgs() {
   return number
 }
 
-async function cleanup(pullRequestNumber) {
+export async function cleanup(pullRequestNumber, request = api) {
+  if (!Number.isSafeInteger(pullRequestNumber) || pullRequestNumber < 1) throw new Error('Invalid cleanup PR number.')
+  const source = WEBSITE_PREVIEW_CONTENT_SOURCE
   const prefix = `rawkode-academy-payload-pr-${pullRequestNumber}-`
   const websitePrefix = `rawkode-academy-website-pr-${pullRequestNumber}-`
-  const d1 = (await listD1()).filter(database => typeof database.name === 'string' && database.name.startsWith(prefix) && /^rawkode-academy-payload-pr-\d+-[0-9a-f]{12}$/.test(database.name))
-  const buckets = (await listBuckets()).filter(bucket => typeof bucket.name === 'string' && bucket.name.startsWith(prefix) && /^rawkode-academy-payload-pr-\d+-[0-9a-f]{12}$/.test(bucket.name))
-  const namespaces = (await listNamespaces()).filter(namespace => typeof namespace.title === 'string' && (namespace.title.startsWith(`${websitePrefix}`) || namespace.title.startsWith(`${prefix}`)) && /-pr-\d+-[0-9a-f]{12}-session$/.test(namespace.title))
+  const d1 = (await listD1(request)).filter(database => database.name !== source.databaseName && (database.uuid ?? database.id) !== source.databaseId && typeof database.name === 'string' && database.name.startsWith(prefix) && /^rawkode-academy-payload-pr-\d+-[0-9a-f]{12}$/.test(database.name))
+  const buckets = (await listBuckets(request)).filter(bucket => bucket.name !== source.bucketName && typeof bucket.name === 'string' && bucket.name.startsWith(prefix) && /^rawkode-academy-payload-pr-\d+-[0-9a-f]{12}$/.test(bucket.name))
+  const namespaces = (await listNamespaces(request)).filter(namespace => typeof namespace.title === 'string' && (namespace.title.startsWith(`${websitePrefix}`) || namespace.title.startsWith(`${prefix}`)) && /-pr-\d+-[0-9a-f]{12}-session$/.test(namespace.title))
   const scripts = []
   for (let page = 1; page <= 100; page += 1) {
-    const result = await api(`/accounts/${accountId}/workers/scripts?per_page=100&page=${page}`)
+    const result = await request(`/accounts/${accountId}/workers/scripts?per_page=100&page=${page}`)
     scripts.push(...(Array.isArray(result) ? result : []))
     if (!result?.length || result.length < 100) break
   }
   const workerPattern = new RegExp(`^rawkode-academy-(?:payload|website)-pr-${pullRequestNumber}-[0-9a-f]{12}(?:-isolation)?$`)
-  const workers = scripts.filter(script => typeof script.id === 'string' && workerPattern.test(script.id))
-  for (const worker of workers) await api(`/accounts/${accountId}/workers/scripts/${encodeURIComponent(worker.id)}`, { method: 'DELETE' })
-  for (const database of d1) await api(`/accounts/${accountId}/d1/database/${database.uuid ?? database.id}`, { method: 'DELETE' })
+  const workers = scripts.filter(script => script.id !== source.workerName && typeof script.id === 'string' && workerPattern.test(script.id))
+  for (const worker of workers) await request(`/accounts/${accountId}/workers/scripts/${encodeURIComponent(worker.id)}`, { method: 'DELETE' })
+  for (const database of d1) await request(`/accounts/${accountId}/d1/database/${database.uuid ?? database.id}`, { method: 'DELETE' })
   for (const bucket of buckets) {
-    await emptyBucket(bucket.name)
-    await api(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(bucket.name)}`, { method: 'DELETE' })
+    await emptyBucket(bucket.name, request)
+    await request(`/accounts/${accountId}/r2/buckets/${encodeURIComponent(bucket.name)}`, { method: 'DELETE' })
   }
-  for (const namespace of namespaces) await api(`/accounts/${accountId}/storage/kv/namespaces/${namespace.id}`, { method: 'DELETE' })
+  for (const namespace of namespaces) await request(`/accounts/${accountId}/storage/kv/namespaces/${namespace.id}`, { method: 'DELETE' })
   console.log(JSON.stringify({ action: 'cleaned', pullRequestNumber, workers: workers.length, d1: d1.length, r2: buckets.length, kv: namespaces.length }))
 }
 

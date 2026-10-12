@@ -28,6 +28,9 @@ export class CachedAstro extends WorkerEntrypoint<WorkerEnv, Props> {
 
 export default {
   async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
+    if ((env as WorkerEnv & { PAYLOAD_PREVIEW_PR?: string }).PAYLOAD_PREVIEW_PR && request.method !== 'GET') {
+      return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET', 'Cache-Control': 'no-store' } })
+    }
     if (canUseCachedAstro(request, env.PUBLIC_SSR_CACHE_ENABLED === 'true')) {
       const cached = (ctx as ContextWithExports).exports.CachedAstro({ props: cachedAstroProps(request) })
       return withRoute(await cached.fetch(request), 'public-cache')

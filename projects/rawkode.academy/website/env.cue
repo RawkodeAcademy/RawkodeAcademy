@@ -4,7 +4,7 @@ import "github.com/cuenv/cuenv/schema"
 
 schema.#Project
 
-name: "rawkode-academy-website"
+name:         "rawkode-academy-website"
 _cuenvBinary: "0.56.1"
 // cuenv can exit successfully when a project's environment evaluation is
 // skipped. The generated PR workflow requires this project's pipeline report.
@@ -14,11 +14,13 @@ runtime: schema.#DevenvRuntime
 hooks: onEnter: devenv: schema.#Devenv
 
 let _t = tasks
+
 // CI tasks resolve their tools through Nix directly, the way the platform
 // services do, instead of relying on the devenv shell being materialised on
 // the runner. The explicit PATH exposes the runner's Nix profile and Bun.
 let _taskPath = "/home/runner/.bun/bin:/Users/rawkode/.bun/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
 let _toolchain = "nix shell nixpkgs#bun nixpkgs#nodejs_24 nixpkgs#d2 -c"
+
 // The review frontend (preview.rawkode.academy) is a separate Worker. Its
 // tasks share one input set so that only review changes redeploy it.
 let _reviewInputs = [
@@ -84,7 +86,7 @@ ci: pipelines: {
 		when: {
 			pullRequest: true
 		}
-		tasks: [_t.deploy.preview, _t.review.test, _t.review.build]
+		tasks: [_t.deploy.verifyPreview]
 		annotations: "Preview URL": schema.#TaskCaptureRef & {
 			cuenvTask:    "deploy.preview"
 			cuenvCapture: "previewUrl"
@@ -247,23 +249,34 @@ tasks: {
 			dependsOn: [_t.review.test, _t.review.build, _t.deploy.awaitPayload]
 			inputs: _reviewInputs
 		}
+		// No inputs: this delivery gate must run even if affected-task selection
+		// skips the deploy. A missing/stale marker fails instead of reporting a
+		// no-op green pipeline without a verified current-head preview URL.
+		verifyPreview: schema.#Task & {
+			hermetic: false
+			command:  "sh"
+			args: ["-lc", "\(_toolchain) bun review/deploy/check-preview-verification.mjs"]
+			env: {
+				PATH:              _taskPath
+				GITHUB_EVENT_NAME: schema.#EnvPassthrough
+				GITHUB_EVENT_PATH: schema.#EnvPassthrough
+			}
+			dependsOn: [_t.deploy.preview]
+		}
 		preview: schema.#Task & {
 			hermetic: false
 			command:  "sh"
 			args: ["-lc", "\(_toolchain) bun review/deploy/deploy-cms-preview.mjs"]
 			env: {
-				PATH:                  _taskPath
+				PATH: _taskPath
 				CLOUDFLARE_API_TOKEN: schema.#OnePasswordRef & {
 					ref: "op://sa.rawkode.academy/cloudflare/api-tokens/workers"
 				}
-				GITHUB_API_URL:        schema.#EnvPassthrough
-				GITHUB_EVENT_NAME:     schema.#EnvPassthrough
-				GITHUB_EVENT_PATH:     schema.#EnvPassthrough
-				GITHUB_OUTPUT:         schema.#EnvPassthrough
-				GITHUB_REPOSITORY:     schema.#EnvPassthrough
-				GITHUB_SHA:            schema.#EnvPassthrough
-				GITHUB_STEP_SUMMARY:   schema.#EnvPassthrough
-				GITHUB_TOKEN:          schema.#EnvPassthrough
+				GITHUB_EVENT_NAME:   schema.#EnvPassthrough
+				GITHUB_EVENT_PATH:   schema.#EnvPassthrough
+				GITHUB_OUTPUT:       schema.#EnvPassthrough
+				GITHUB_SHA:          schema.#EnvPassthrough
+				GITHUB_STEP_SUMMARY: schema.#EnvPassthrough
 			}
 			dependsOn: [_t.build, _t.review.test, _t.review.build]
 			// A pull-request preview is the pipeline's deliverable. Deploy it only
@@ -286,9 +299,9 @@ tasks: {
 				"wrangler.jsonc",
 				// Source and content changes must make the hosted Astro preview an
 				// affected task; otherwise the PR pipeline can be a no-op.
-				"review/deploy/deploy-cms-preview.mjs",
-				"review/deploy/scheduled-archive-boundary.mjs",
+				"review/deploy/**",
 				"scripts/preview-isolation-worker.mjs",
+				"scripts/preview-content-proxy.mjs",
 				"../../../projects/rawkode.academy/payload/scripts/pr-preview-resources.mjs",
 				"../../../projects/rawkode.academy/payload/wrangler.jsonc",
 				"../../../projects/rawkode.academy/payload/**",

@@ -377,6 +377,8 @@ export interface WebsiteRuntimeEnv {
 	IMAGES?: unknown;
 	PAYLOAD_PREVIEW_PR?: string;
 	PAYLOAD_PREVIEW_SHA?: string;
+	PAYLOAD_PREVIEW_SOURCE_WORKER?: string;
+	PAYLOAD_PREVIEW_SOURCE_SHA?: string;
 	PUBLIC_SSR_CACHE_ENABLED?: string;
 }
 
