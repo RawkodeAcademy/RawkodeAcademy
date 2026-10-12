@@ -447,6 +447,72 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
   return withPayloadTimings(response, timings)
 }
 
+type HomepagePageBody = {
+  docs: Doc[]
+  page: number
+  limit: number
+  totalDocs: number
+  hasNextPage: boolean
+  nextReleaseAt?: string | null
+}
+
+export async function homepageResponse(request: Request, payload: PublicPayload, now = Date.now()): Promise<Response> {
+  if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } })
+  const url = new URL(request.url)
+  if (url.pathname !== '/v1/homepage') return Response.json({ error: 'Not found' }, { status: 404 })
+  for (const key of url.searchParams.keys()) {
+    if (key !== 'limit' || url.searchParams.getAll(key).length !== 1) return Response.json({ error: 'Invalid homepage query parameters' }, { status: 400 })
+  }
+  const rawLimit = url.searchParams.get('limit') ?? '12'
+  const limit = Number(rawLimit)
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) return Response.json({ error: 'limit must be between 1 and 100' }, { status: 400 })
+
+  const collections = [
+    { key: 'videoPage', collection: 'videos' },
+    { key: 'articlePage', collection: 'articles' },
+    { key: 'newsPage', collection: 'news' },
+    { key: 'coursePage', collection: 'courses' },
+    { key: 'learningPathPage', collection: 'learning-paths' },
+  ] as const
+  const responses = await Promise.all(collections.map(({ collection }) => {
+    const params = new URLSearchParams({ page: '1', limit: String(limit), releasedOnly: 'true', view: 'summary' })
+    const collectionUrl = new URL('/v1/collections/' + collection + '?' + params.toString(), 'https://payload-content.internal')
+    return collectionResponse(new Request(collectionUrl), payload, now)
+  }))
+  const failed = responses.find(response => !response.ok)
+  if (failed) return Response.json({ error: 'Homepage content is unavailable' }, { status: 502, headers: { 'Cache-Control': 'no-store' } })
+
+  const pages = await Promise.all(responses.map(response => response.json() as Promise<HomepagePageBody>))
+  const boundaries = pages.flatMap(page => {
+    if (typeof page.nextReleaseAt !== 'string') return []
+    const value = Date.parse(page.nextReleaseAt)
+    return Number.isFinite(value) ? [value] : []
+  })
+  const boundary = boundaries.length ? Math.min(...boundaries) : undefined
+  const nextReleaseAt = boundary === undefined ? null : new Date(boundary).toISOString()
+  const timings: Partial<Record<PayloadTimingPhase, number>> = {}
+  const phases = new Set<PayloadTimingPhase>(['find', 'overlay', 'assets', 'chapters', 'release', 'total'])
+  for (const response of responses) {
+    for (const metric of (response.headers.get('Server-Timing') ?? '').split(',')) {
+      const [name, rawDuration] = metric.trim().split(';dur=')
+      if (!name?.startsWith('payload-') || !rawDuration) continue
+      const phase = name.slice('payload-'.length) as PayloadTimingPhase
+      const duration = Number(rawDuration)
+      if (!phases.has(phase) || !Number.isFinite(duration)) continue
+      timings[phase] = (timings[phase] ?? 0) + duration
+    }
+  }
+
+  return withPayloadTimings(Response.json({
+    videoPage: pages[0],
+    articlePage: pages[1],
+    newsPage: pages[2],
+    coursePage: pages[3],
+    learningPathPage: pages[4],
+    nextReleaseAt,
+  }, { headers: cacheHeaders(nextReleaseAt, now) }), timings)
+}
+
 export async function assetResponse(request: Request, payload: PublicPayload, bucket: R2Bucket, now = Date.now()): Promise<Response> {
   if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } })
   const segments = new URL(request.url).pathname.split('/').filter(Boolean)
