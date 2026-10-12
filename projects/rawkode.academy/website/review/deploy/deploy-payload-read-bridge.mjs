@@ -87,11 +87,14 @@ export async function deployPayloadReadBridge({ identity, source }) {
       PAYLOAD_PREVIEW_PR: String(identity.pullRequestNumber),
       PAYLOAD_PREVIEW_SHA: identity.sha,
       PAYLOAD_PREVIEW_SOURCE_DATA_SHA: source.dataSha,
-      OIDC_DIRECT_ORIGINS: '[]',
+      // Payload validates a registered direct origin while loading its config.
+      // This private service-only Worker has no public route; keep its required
+      // auth origin on the already-registered Payload preview host.
+      OIDC_DIRECT_ORIGINS: '["https://pr-local-rawkode-academy-payload.rawkodeacademy.workers.dev"]',
       OIDC_BRIDGE_ORIGINS: '[]',
       OIDC_STAFF_SUBJECTS: '[]',
       DEVELOPER_SUBJECTS: '[]',
-      REVIEW_PUBLIC_MEDIA_ORIGIN: 'http://127.0.0.1:3100',
+      REVIEW_PUBLIC_MEDIA_ORIGIN: 'https://pr-local-rawkode-academy-payload.rawkodeacademy.workers.dev',
       POC_DEV_LOCAL_AUTH: 'false',
     }
     await writeFile(configPath, JSON.stringify(baseConfig, null, 2) + '\n')
