@@ -1,6 +1,10 @@
 import type { Payload } from 'payload'
 import { isCuid2 } from './cuid2'
 
+function monotonicNow(): number {
+	return globalThis.performance?.now?.() ?? Date.now();
+}
+
 export const publicContentCollections = [
   'videos', 'articles', 'news', 'shows', 'episodes', 'people', 'technologies', 'series', 'courses', 'course-modules',
   'learning-paths', 'chapters', 'learning-resources', 'adrs', 'changelog', 'testimonials',
@@ -375,7 +379,7 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
     throw error
   }
   if (!parsed) return Response.json({ error: 'Not found' }, { status: 404 })
-  const requestStartedAt = performance.now()
+  const requestStartedAt = monotonicNow()
   const timings: Partial<Record<PayloadTimingPhase, number>> = {}
   const requestQuery: Query = {
     collection: parsed.collection,
@@ -385,21 +389,21 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
   }
   const exact = Boolean(parsed.id || parsed.slug)
   const query = exact ? { ...requestQuery, page: 1, limit: 2 } : { ...requestQuery, page: parsed.page, limit: parsed.limit }
-  let phaseStartedAt = performance.now()
+  let phaseStartedAt = monotonicNow()
   const result = await payload.find(query as never)
-  timings.find = performance.now() - phaseStartedAt
+  timings.find = monotonicNow() - phaseStartedAt
   const rawDocs = result.docs as unknown as Doc[]
   const visible = rawDocs.filter(doc => isVisibleDocument(parsed!.collection, doc, now).visible)
   if (exact && visible.length > 1) return Response.json({ error: 'The requested slug is ambiguous' }, { status: 409 })
-  phaseStartedAt = performance.now()
+  phaseStartedAt = monotonicNow()
   const overlay = parsed.collection === 'videos' ? await overlayVideos(payload, visible) : new Map<string, Record<string, unknown>>()
-  timings.overlay = performance.now() - phaseStartedAt
+  timings.overlay = monotonicNow() - phaseStartedAt
   const viewForDoc = (doc: Doc): 'summary' | 'full' =>
     isVisibleDocument(parsed!.collection, doc, now).metadataOnly ? 'summary' : parsed!.view
   const assetPaths = visible.flatMap(doc => assetReferencePaths(doc, parsed!.collection, viewForDoc(doc)))
-  phaseStartedAt = performance.now()
+  phaseStartedAt = monotonicNow()
   const assetDocs = await loadAssetDocs(payload, assetPaths)
-  timings.assets = performance.now() - phaseStartedAt
+  timings.assets = monotonicNow() - phaseStartedAt
   const docs = visible.map(doc => {
     const visibility = isVisibleDocument(parsed!.collection, doc, now)
     const base = projectFields(doc, parsed!.collection, parsed!.view, visibility.metadataOnly, now)
@@ -418,28 +422,28 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
     })
     return { ...merged, mediaAssets: assets }
   })
-  phaseStartedAt = performance.now()
+  phaseStartedAt = monotonicNow()
   if (parsed.collection === 'videos' && parsed.view === 'full') await hydrateVideoChapters(payload, docs, now)
-  timings.chapters = performance.now() - phaseStartedAt
-  phaseStartedAt = performance.now()
+  timings.chapters = monotonicNow() - phaseStartedAt
+  phaseStartedAt = monotonicNow()
   const nextReleaseAt = exact
     ? (visible[0] && visible[0].publishedAt && Date.parse(String(visible[0].publishedAt)) > now ? new Date(Date.parse(String(visible[0].publishedAt))).toISOString() : null)
     : await earliestNextRelease(payload, parsed, now)
-  timings.release = performance.now() - phaseStartedAt
+  timings.release = monotonicNow() - phaseStartedAt
   const headers = cacheHeaders(nextReleaseAt, now)
   if (exact) {
     if (!docs.length) {
       const response = Response.json({ error: 'Not found' }, { status: 404, headers })
-      timings.total = performance.now() - requestStartedAt
+      timings.total = monotonicNow() - requestStartedAt
       return withPayloadTimings(response, timings)
     }
     const response = Response.json({ doc: docs[0], nextReleaseAt }, { headers })
-    timings.total = performance.now() - requestStartedAt
+    timings.total = monotonicNow() - requestStartedAt
     return withPayloadTimings(response, timings)
   }
   const totalDocs = typeof result.totalDocs === 'number' && Number.isSafeInteger(result.totalDocs) ? result.totalDocs : visible.length
   const response = Response.json({ docs, page: parsed.page, limit: parsed.limit, totalDocs, hasNextPage: Boolean(result.hasNextPage), nextReleaseAt }, { headers })
-  timings.total = performance.now() - requestStartedAt
+  timings.total = monotonicNow() - requestStartedAt
   return withPayloadTimings(response, timings)
 }
 

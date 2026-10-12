@@ -7,6 +7,10 @@ import {
 	type WebsiteRuntimeEnv,
 } from "@/lib/payload-content";
 
+function monotonicNow(): number {
+	return globalThis.performance?.now?.() ?? Date.now();
+}
+
 type CloudflareLocals = {
 	user?: unknown;
 };
@@ -328,7 +332,7 @@ export const payloadContentMiddleware = defineMiddleware(
 			}
 		}
 		return runWithPayloadRequest(state, async () => {
-			const routeStartedAt = performance.now();
+			const routeStartedAt = monotonicNow();
 			let response = await next();
 			response = applyPublicResponseCachePolicy(
 				request,
@@ -348,7 +352,7 @@ export const payloadContentMiddleware = defineMiddleware(
 			response = addPreviewPayloadDiagnostics(
 				response,
 				state,
-				performance.now() - routeStartedAt,
+				monotonicNow() - routeStartedAt,
 			);
 			if (
 				cache &&

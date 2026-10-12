@@ -1,6 +1,10 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { TechnologyData } from "@rawkodeacademy/content";
 
+function monotonicNow(): number {
+	return globalThis.performance?.now?.() ?? Date.now();
+}
+
 /** The public record shapes returned by Payload's PublicContentBridge. */
 export type PayloadCollectionName =
 	| "videos"
@@ -511,9 +515,9 @@ async function getBridgeJson<T>(path: string): Promise<T> {
 
 	if (edgeCache) recordPayloadMetric("data-cache-miss");
 	recordPayloadMetric("payload-bridge-call");
-	const bindingStartedAt = performance.now();
+	const bindingStartedAt = monotonicNow();
 	const response = await binding.fetch(bridgeUrl);
-	recordPayloadMetric("payload-binding-ms", performance.now() - bindingStartedAt);
+	recordPayloadMetric("payload-binding-ms", monotonicNow() - bindingStartedAt);
 	recordBridgeTimings(response.headers.get("Server-Timing"));
 	if (response.status === 404) throw new PayloadNotFoundError();
 	if (!response.ok) {
