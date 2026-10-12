@@ -98,7 +98,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a first-run review. David works through your product the way a new user would, from first install or sign-up to a first working result, records every place he stalls and tells you plainly what he found. If that's useful, continue to the full 90 days: a live session on Rawkode Live with your engineer, a runnable example David writes, monthly working sessions and a day-90 read-out.";
+	"Every partnership starts with a first-run review. David works through your product the way a new user would, from first install or sign-up to a first working result, records every place he stalls and tells you plainly what he found. If that's useful, continue to the full 90 days: a live session on Rawkode Live with your engineer, a runnable example David writes, monthly working sessions, a monthly call with the other partners on where the industry is heading, and a day-90 read-out.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -146,6 +146,13 @@ export const partnershipOutcomes = [
 	},
 ] as const;
 
+/** Monthly call for every current partner. Part of the full 90 days. */
+export const partnershipGroupCall = {
+	title: "A monthly all-partner call",
+	detail:
+		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. Not recorded, and nothing said is repeated outside the call.",
+} as const;
+
 /** The fixed 90-day arc. The review is the first step. */
 export const partnershipPlan: PartnershipStep[] = [
 	{
@@ -166,7 +173,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "From month 2",
-		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days.",
+		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days. A monthly all-partner call on what's changing across the industry.",
 	},
 ];
 
@@ -179,13 +186,14 @@ export const partnershipOffer: PartnershipOffer = {
 	cadence:
 		"Or US$15,600. The £5,000 (US$6,500) review counts towards it, so continuing costs £7,000 more: £3,500 (US$4,550) a month for two months.",
 	summary:
-		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
+		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
 	included: [
 		"The first-run review: recorded first run, friction log and ranked list",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
+		"A monthly all-partner call with David and the other current partners on industry changes",
 		"A day-90 re-run of the first run, compared with the original",
 		"A day-90 read-out against the targets set on the review call",
 	],
@@ -208,7 +216,7 @@ export const partnershipTerms = [
 	{
 		title: "After day 90",
 		detail:
-			"Nothing renews automatically. If you want another 90 days, we agree it in writing: £12,000 for a fresh first run on what has changed, an updated ranked list, a new partner session and example, monthly working sessions and another re-run.",
+			"Nothing renews automatically. If you want another 90 days, we agree it in writing: £12,000 for a fresh first run on what has changed, an updated ranked list, a new partner session and example, monthly working sessions, the all-partner call and another re-run.",
 	},
 	{
 		title: "Invoicing",
@@ -255,7 +263,7 @@ export const fitProofReview: PartnershipOffer = {
 		"A one-hour call to go through it with your team",
 	],
 	excluded: [
-		"Ongoing Slack access, the live session and the runnable example",
+		"Ongoing Slack access, the all-partner call, the live session and the runnable example",
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
