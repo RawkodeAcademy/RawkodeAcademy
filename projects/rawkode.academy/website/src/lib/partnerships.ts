@@ -86,7 +86,7 @@ export const partnershipOutcomes = [
 	{
 		title: "A before-and-after re-run",
 		detail:
-			"At day 90 David repeats the first run on what you've shipped since, and compares the two: time to a first working result and the number of stall points, before and after.",
+			"At day 90 David repeats the first run on what you've shipped since and checks every stall point in the original log: fixed, improved or still there. You get the count before and after, not just an impression.",
 	},
 	{
 		title: "A day-90 read-out",
@@ -111,7 +111,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Month 3",
-		what: "David re-runs the first run on what you've shipped and compares it with the original. Day-90 read-out against the targets. Decide what to work on next quarter.",
+		what: "David re-runs the first run on what you've shipped and checks each original stall point. Day-90 read-out against the targets. Decide what to work on next quarter.",
 	},
 	{
 		when: "From month 2",
