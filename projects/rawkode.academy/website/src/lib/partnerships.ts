@@ -153,6 +153,97 @@ export const partnershipGroupCall = {
 		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. Not recorded, and nothing said is repeated outside the call. Until three partners are active, it runs as a one-to-one industry briefing with David.",
 } as const;
 
+export interface PartnershipPerk {
+	title: string;
+	detail: string;
+}
+
+/**
+ * Extras in the full 90 days. Each is small and bounded so six partners stay
+ * deliverable. Anything an audience sees is labelled as partner content.
+ */
+export const partnershipPerks: PartnershipPerk[] = [
+	{
+		title: "Fix checks",
+		detail:
+			"Ship a fix for something on your ranked list and David re-tests that step himself within five business days, so you know it worked before the day-90 re-run. Up to three a quarter.",
+	},
+	{
+		title: "Launch pre-flight",
+		detail:
+			"Before one launch a quarter, David does a recorded first run of the new feature or quick start and sends you the three things most likely to trip developers up. Give us 10 business days' notice. It doesn't mean David will cover the launch publicly.",
+	},
+	{
+		title: "Champion pack",
+		detail:
+			"At day 90, a one-page before-and-after summary and a five-minute video walkthrough from David that your champion can forward to the CEO or board. If you publish it, it stays marked as prepared under a paid partnership.",
+	},
+	{
+		title: "Cross-partner patterns",
+		detail:
+			"Each quarter, an anonymised write-up of the friction patterns David saw across every partner's first run, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
+	},
+	{
+		title: "The Technology Matrix, walked through",
+		detail:
+			"The Technology Matrix is Rawkode Academy's written, opinionated radar of cloud-native, platform and AI-infrastructure tools. Each all-partner call starts with what has moved on it and why.",
+	},
+	{
+		title: "Your example in the Academy",
+		detail:
+			"The runnable example David writes for you is listed in the resources of the matching Rawkode Academy technology page or course, marked as a partner example.",
+	},
+	{
+		title: "An accurate technology page",
+		detail:
+			"David checks your product's entry in the Rawkode Academy technology catalogue and fixes outdated facts, with a line saying you are a current partner. Corrections only, not marketing copy.",
+	},
+	{
+		title: "A partner note in the newsletter",
+		detail:
+			"Once per 90 days, a short technical note from your team, such as the example repository or the partner session, appears in the Rawkode Academy newsletter, marked as a partner note. David checks it for accuracy.",
+	},
+	{
+		title: "A partner AMA on Discord",
+		detail:
+			"Once per 90 days, a labelled partner AMA in the Rawkode Academy Discord, hosted by David with your engineer.",
+	},
+	{
+		title: "Warm introductions",
+		detail:
+			"Up to two a quarter, to maintainers, practitioners or other partners you want to reach, made only where David thinks both sides benefit and both agree.",
+	},
+];
+
+/** Extras for partners who continue past the first 90 days. */
+export const renewalPerks: PartnershipPerk[] = [
+	{
+		title: "First refusal on your place",
+		detail:
+			"Current partners keep their place for the next 90 days and get review start dates before anyone on the waiting list.",
+	},
+	{
+		title: "A guest article",
+		detail:
+			"Your engineer publishes one technical article on Rawkode Academy, marked as partner content and edited by David for accuracy. Product pitches get sent back.",
+	},
+	{
+		title: "A Klustered partner special",
+		detail:
+			"Your team joins a Klustered episode, breaking and fixing clusters live, labelled as a partner special.",
+	},
+	{
+		title: "Opt-in contact from your session",
+		detail:
+			"Developers who sign up for your partner session's materials can choose to hear from your team. The box is unticked by default and covered in the statement of work.",
+	},
+	{
+		title: "Listed as a current partner",
+		detail:
+			"With your permission, your logo appears under current partners on this page while the partnership runs.",
+	},
+];
+
 /** The fixed 90-day arc. The review is the first step. */
 export const partnershipPlan: PartnershipStep[] = [
 	{
@@ -194,6 +285,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
 		"A monthly all-partner call with David and the other current partners on industry changes",
+		"Partner extras: fix checks, a launch pre-flight, a champion pack for your board, labelled newsletter and Discord slots, and warm introductions",
 		"A day-90 re-run of the first run, compared with the original",
 		"A day-90 read-out against the targets set on the review call",
 	],
