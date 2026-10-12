@@ -171,7 +171,7 @@ async function renderArchive(search = "", data = collections) {
 	return { html, dom, jsonLd, pageProps, payloadCalls: payload.calls };
 }
 
-test("Watch is a static server-rendered archive with labeled GET search, existing SEO title and feeds", async () => {
+test("Watch is a server-rendered archive with labeled GET search, existing SEO title and feeds", async () => {
 	const { dom, html, pageProps, payloadCalls } = await renderArchive();
 	assert.equal(dom.querySelector("h1").text, "Videos");
 	assert.equal(dom.querySelectorAll(".archive-feedGrid > a").length, 23);
@@ -181,15 +181,15 @@ test("Watch is a static server-rendered archive with labeled GET search, existin
 		1,
 	);
 	assert.match(dom.text, /Showing 1–24 of 329 videos/);
-	assert.deepEqual(
-		payloadCalls.filter((call) => call.kind === "all").map((call) => call.collection),
-		["videos"],
-		"the browse archive explicitly reads the full Payload video collection",
+	assert.equal(
+		payloadCalls.some((call) => call.kind === "all"),
+		false,
+		"the unsearched archive does not load the full video corpus",
 	);
 	assert.deepEqual(
-		payloadCalls.filter((call) => call.kind === "page" && call.collection === "videos").map((call) => call.options.page),
-		[1, 2, 3, 4],
-		"all video pages are read so later slugs do not disappear past the first 100",
+		payloadCalls.filter((call) => call.kind === "page" && call.collection === "videos").map((call) => call.options),
+		[{ page: 1, limit: 24, releasedOnly: true, view: "summary" }],
+		"the archive requests only one released summary page",
 	);
 	assert.equal(
 		dom.querySelector('nav[aria-label="Video library pages"] p').text,

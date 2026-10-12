@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { getAllCollection } from "@/lib/payload-content";
+import { getAllCollection, getPayloadCollectionPage } from "@/lib/payload-content";
 import { getPublishedVideos } from "@/lib/content";
 import { academyPage } from "@rawkodeacademy/design-system";
 import AcademyCatalogMasthead from "@/components/academy/AcademyCatalogMasthead.astro";
@@ -9,26 +9,70 @@ import NewsletterCTA from "@/components/newsletter/NewsletterCTA.astro";
 import Page from "@/wrappers/page.astro";
 import VideoItemListJsonLd from "@/components/html/video-itemlist-jsonld.astro";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
-import { selectWatchArchive, watchArchiveHref, WATCH_PAGE_SIZE } from "@/lib/watch-archive";
+import {
+	selectWatchArchive,
+	selectWatchArchivePage,
+	watchArchiveHref,
+	WATCH_PAGE_SIZE,
+	type WatchArchiveSelection,
+} from "@/lib/watch-archive";
 
 const styles = academyPage();
-// This archive needs complete counts and stable pagination. The bridge pages
-// are cached individually, so the full corpus is fetched only on a cold cache.
 const requestedQuery = Astro.url.searchParams.get("q");
-const [publishedVideos, technologies, people, shows] = await Promise.all([
-	getPublishedVideos().then((videos) =>
-		videos
-			.sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime()),
-	),
-	requestedQuery ? getAllCollection("technologies") : Promise.resolve([]),
-	requestedQuery ? getAllCollection("people") : Promise.resolve([]),
-	requestedQuery ? getAllCollection("shows") : Promise.resolve([]),
-]);
-const archive = selectWatchArchive(publishedVideos, {
-	query: requestedQuery,
-	page: Astro.url.searchParams.get("page"),
-	technologies, people, shows,
-});
+type WatchVideoEntry = Awaited<ReturnType<typeof getPublishedVideos>>[number];
+let publishedVideos: Awaited<ReturnType<typeof getPublishedVideos>> = [];
+let archive: WatchArchiveSelection<WatchVideoEntry>;
+
+if (requestedQuery) {
+	const [videos, technologies, people, shows] = await Promise.all([
+		getPublishedVideos(),
+		getAllCollection("technologies"),
+		getAllCollection("people"),
+		getAllCollection("shows"),
+	]);
+	publishedVideos = videos.sort(
+		(a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+	);
+	archive = selectWatchArchive(publishedVideos, {
+		query: requestedQuery,
+		page: Astro.url.searchParams.get("page"),
+		technologies,
+		people,
+		shows,
+	});
+} else {
+	const rawPage = Astro.url.searchParams.get("page") ?? "1";
+	const requestedPage = /^\d+$/.test(rawPage)
+		? Math.max(1, Math.min(1000, Number(rawPage)))
+		: 1;
+	const pageOptions = (page: number, limit = WATCH_PAGE_SIZE) =>
+		getPayloadCollectionPage("videos", {
+			page,
+			limit,
+			releasedOnly: true,
+			view: "summary",
+		});
+	const [requestedVideos, firstVideos] = await Promise.all([
+		pageOptions(requestedPage),
+		requestedPage === 1 ? Promise.resolve(undefined) : pageOptions(1, 10),
+	]);
+	const requestedSelection = selectWatchArchivePage(
+		requestedVideos.docs,
+		requestedVideos.totalDocs,
+		String(requestedPage),
+	);
+	const visiblePage =
+		requestedSelection.page === requestedPage
+			? requestedVideos
+			: await pageOptions(requestedSelection.page);
+	archive = selectWatchArchivePage(
+		visiblePage.docs,
+		requestedVideos.totalDocs,
+		String(requestedSelection.page),
+	);
+	publishedVideos =
+		archive.page === 1 ? archive.items : (firstVideos?.docs ?? []);
+}
 
 const compactCopy = (value: string | undefined, maxLength = 220) => {
 	const normalized = (value ?? "").replace(/\s+/g, " ").trim();
@@ -96,8 +140,8 @@ const pageDescription =
 		<AcademyCatalogMasthead
 			title="Videos"
 			description="Live builds, deep dives, and honest conversations with the people behind the tools. Every session is recorded and searchable."
-			figure={publishedVideos.length}
-			figureLabel={publishedVideos.length === 1 ? "video in the library" : "videos in the library"}
+			figure={archive.total}
+			figureLabel={archive.total === 1 ? "video in the library" : "videos in the library"}
 			mosaic={mosaic}
 			mosaicShape="video"
 		/>

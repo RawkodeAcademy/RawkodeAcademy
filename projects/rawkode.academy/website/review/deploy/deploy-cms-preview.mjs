@@ -4,6 +4,7 @@ import { appendFile, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { checkAstroWorker } from '../../scripts/check-astro-worker.mjs'
 import { cmsMediaReferences } from './cms-media-references.mjs'
+import { deployPayloadReadBridge } from './deploy-payload-read-bridge.mjs'
 import {
 	ensureWebsitePreviewResources,
 	namesForPullRequest,
@@ -18,9 +19,16 @@ if (resources.pullRequestNumber !== identity.pullRequestNumber || resources.sha 
 }
 
 const names = namesForPullRequest(identity.pullRequestNumber, identity.sha)
-const source = WEBSITE_PREVIEW_CONTENT_SOURCE
-// Bounded retries only for the newly uploaded website's HTTP checks. There is
-// no backend workflow, import, readiness or publication-boundary wait.
+const seedSource = WEBSITE_PREVIEW_CONTENT_SOURCE
+const source = {
+	...seedSource,
+	pullRequestNumber: identity.pullRequestNumber,
+	workerName: names.workerName + '-content',
+	sha: identity.sha,
+	dataSha: seedSource.sha,
+}
+// The current-head read bridge uses the verified seeded data baseline; no
+// data import, migration, editorial save, or scheduling fixture is run here.
 const waitSeconds = 120
 
 async function hasWebpSignature(response) {
@@ -81,6 +89,84 @@ function assertPublicSsrCachePolicy(response) {
 	}
 }
 
+async function measureSsrPage(previewUrl, pathname) {
+	const startedAt = performance.now()
+	const response = await fetch(new URL(pathname, previewUrl), {
+		headers: { accept: 'text/html' },
+		signal: AbortSignal.timeout(60_000),
+	})
+	const ttfbMs = performance.now() - startedAt
+	const html = await response.text()
+	const totalMs = performance.now() - startedAt
+	const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+	if (!response.ok || !contentType.includes('text/html') || !html.includes('<html')) {
+		throw new Error('Preview SSR performance probe failed for ' + pathname + ' (HTTP ' + response.status + ').')
+	}
+	return {
+		pathname,
+		ttfbMs: Math.round(ttfbMs),
+		totalMs: Math.round(totalMs),
+		cfCache: response.headers.get('cf-cache-status')?.toUpperCase() ?? 'missing',
+		dataCache: response.headers.get('x-payload-data-cache') ?? 'missing',
+		serverTiming: response.headers.get('server-timing') ?? 'missing',
+	}
+}
+
+function cacheCount(value, key) {
+	const match = value.match(new RegExp('(?:^|;\\s*)' + key + '=([0-9]+)'))
+	return match ? Number(match[1]) : -1
+}
+
+async function verifyPreviewRenderTimings(previewUrl, identity) {
+	const probe = identity.sha.slice(0, 12) + '-' + Date.now()
+	const cases = [
+		['cold-watch', '/watch?previewPerf=' + probe + '-watch-cold'],
+		['warm-watch', '/watch?previewPerf=' + probe + '-watch-warm'],
+		['edge-hit-watch', '/watch?previewPerf=' + probe + '-watch-warm'],
+		['cold-home', '/?previewPerf=' + probe + '-home-cold'],
+		['warm-home', '/?previewPerf=' + probe + '-home-warm'],
+		['edge-hit-home', '/?previewPerf=' + probe + '-home-warm'],
+	]
+	const results = {}
+	for (const [label, pathname] of cases) {
+		results[label] = await measureSsrPage(previewUrl, pathname)
+		console.log('[preview-perf] ' + label + ' ' + JSON.stringify(results[label]))
+	}
+	for (const label of ['cold-watch', 'warm-watch', 'edge-hit-watch', 'cold-home', 'warm-home', 'edge-hit-home']) {
+		if (results[label].dataCache === 'missing' || results[label].serverTiming === 'missing') {
+			throw new Error('Preview performance diagnostics were missing from ' + label + '.')
+		}
+	}
+	for (const route of ['watch', 'home']) {
+		const cold = results['cold-' + route]
+		const warm = results['warm-' + route]
+		const hit = results['edge-hit-' + route]
+		if (cacheCount(cold.dataCache, 'misses') < 1) {
+			throw new Error('The ' + route + ' cold probe did not record a Payload data-cache miss.')
+		}
+		if (cacheCount(warm.dataCache, 'hits') < 1 || cacheCount(warm.dataCache, 'misses') !== 0) {
+			throw new Error('The ' + route + ' warm probe did not reuse the Payload data cache.')
+		}
+		if (!cold.serverTiming.includes('payload-find;dur=') || !cold.serverTiming.includes('payload-init;dur=')) {
+			throw new Error('The ' + route + ' cold probe is missing Payload initialization/query timings.')
+		}
+		if (hit.cfCache !== 'HIT') {
+			throw new Error('The ' + route + ' repeated probe did not hit the HTML edge cache.')
+		}
+	}
+	if (process.env.GITHUB_STEP_SUMMARY) {
+		const rows = ['cold-watch', 'warm-watch', 'edge-hit-watch', 'cold-home', 'warm-home', 'edge-hit-home']
+			.map(label => {
+				const item = results[label]
+				return '| ' + label + ' | ' + item.ttfbMs + ' ms | ' + item.totalMs + ' ms | ' + item.cfCache + ' | ' + item.dataCache + ' |'
+			})
+			.join('\n')
+		await appendFile(process.env.GITHUB_STEP_SUMMARY,
+			'\n## Preview render timings\n\n| Probe | TTFB | Total | HTML cache | Payload data cache |\n| --- | ---: | ---: | --- | --- |\n' + rows + '\n\n')
+	}
+	return results
+}
+
 const configPath = path.resolve('dist/server/wrangler.json')
 const bootstrapConfigPath = path.resolve('dist/server/wrangler.pr-preview-bootstrap.json')
 const previewConfigPath = path.resolve('dist/server/wrangler.pr-preview.json')
@@ -121,6 +207,7 @@ config.vars = {
 	PUBLIC_SSR_CACHE_ENABLED: 'true',
 	PAYLOAD_PREVIEW_SOURCE_WORKER: source.workerName,
 	PAYLOAD_PREVIEW_SOURCE_SHA: source.sha,
+	PAYLOAD_PREVIEW_SOURCE_DATA_SHA: source.dataSha,
 }
 // Keep the public request gateway uncached. Only its named inner Astro entrypoint
 // uses Workers Cache after the gateway has excluded credentials and interactive routes.
@@ -157,6 +244,8 @@ await writeFile(previewConfigPath, `${JSON.stringify(config, null, 2)}\n`)
 await writeFile(isolationConfigPath, `${JSON.stringify(isolationConfig, null, 2)}\n`)
 
 try {
+	await deployPayloadReadBridge({ identity, source })
+
 	const guard = spawn('node', [
 		'node_modules/wrangler/bin/wrangler.js',
 		'deploy',
@@ -217,7 +306,7 @@ try {
 	const previewUrl = matches.at(-1)?.[1]?.replace(/[),]+$/, '')
 	if (!previewUrl) throw new Error('Wrangler did not print a Version Preview URL for the Astro SSR preview.')
 
-	// Read-only public projections verify the reused bridge without seeding fixtures.
+	// Verify the current-head read bridge against the reused, seeded D1/R2 data without imports or migrations.
 	const diagnosticUrl = new URL('/api/cms-preview-check', previewUrl)
 	const diagnosticDeadline = Date.now() + Math.min(waitSeconds, 120) * 1000
 	let sentinel
@@ -333,6 +422,8 @@ try {
 	}
 	if (!rendered) throw new Error(`Astro preview SSR/cache checks did not pass at ${sentinelUrl}: ${renderState}`)
 	console.log(`SSR content and cache checks passed: ${sentinelPath} rendered Payload video “${sentinel.title}”; a repeat request hit Cloudflare Workers Cache, while cookie, Authorization, and Cloudflare Access requests bypassed it. Public TTL is at most 30 seconds.`)
+
+	await verifyPreviewRenderTimings(previewUrl, identity)
 
 	// This imported course demo proves its title and file contents come through
 	// the Payload-only endpoint on the SSR route. COOP/COEP are required by the
@@ -526,7 +617,7 @@ try {
 		await appendFile(process.env.GITHUB_OUTPUT, `website_preview_url=${previewUrl}\nwebsite_preview_worker=${names.websiteWorkerName}\n`)
 	}
 	if (process.env.GITHUB_STEP_SUMMARY) {
-		await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Website preview\n\n[Open the read-only Astro SSR preview](${previewUrl})\n\nWebsite PR/head: \`${identity.pullRequestNumber}/${identity.sha}\`. Reused public content: \`${source.workerName}#${source.entrypoint}\` at source SHA \`${source.sha}\`. GET-only access, SSR video, public Workers Cache HIT, credential cache bypass, sanitized demo projections, WebContainer SSR, checksum-verified D2 SVG and Cloudflare Images WebP passed. No database imports, backend deployments or backend readiness waits. Scheduling mutations and editorial saves are outside this read-only preview.\n`)
+		await appendFile(process.env.GITHUB_STEP_SUMMARY, `## Website preview\n\n[Open the read-only Astro SSR preview](${previewUrl})\n\nWebsite PR/head: \`${identity.pullRequestNumber}/${identity.sha}\`. Current-head Payload code: \`${source.workerName}#${source.entrypoint}\` at \`${source.sha}\`, backed by seeded D1/R2 data from \`${source.dataSha}\`. GET-only access, SSR video, public Workers Cache HIT, credential cache bypass, sanitized demo projections, WebContainer SSR, checksum-verified D2 SVG and Cloudflare Images WebP passed. No content import or migration ran. Scheduling mutations and editorial saves are outside this read-only preview.\n`)
 
 	}
 } finally {

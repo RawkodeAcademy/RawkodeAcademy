@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAllCollection, listPayloadContent } from "@/lib/payload-content";
+import { getAllCollection, getPayloadCollectionPage, listPayloadContent } from "@/lib/payload-content";
 
 import { getHomepageContent, getLatestContent } from "@/lib/content";
 
 vi.mock("@/lib/payload-content", () => ({
 	getAllCollection: vi.fn(),
+	getPayloadCollectionPage: vi.fn(),
 	listPayloadContent: vi.fn(),
 }));
 const mockedGetCollection = vi.mocked(listPayloadContent);
 const mockedGetAllCollection = vi.mocked(getAllCollection);
+const mockedGetPayloadCollectionPage = vi.mocked(getPayloadCollectionPage);
 
 const entry = (id: string, data: Record<string, unknown>) => ({
 	id,
@@ -23,6 +25,7 @@ describe("Academy latest content", () => {
 	beforeEach(() => {
 		mockedGetCollection.mockReset();
 		mockedGetAllCollection.mockReset();
+		mockedGetPayloadCollectionPage.mockReset();
 	});
 
 	it("merges every public content format into one date-sorted feed", async () => {
@@ -169,22 +172,24 @@ describe("Academy latest content", () => {
 			],
 		};
 
-		mockedGetAllCollection.mockImplementation(async (collection) => {
+		mockedGetPayloadCollectionPage.mockImplementation(async (collection) => {
 			const values = collections[collection as keyof typeof collections] ?? [];
-			return values as never;
-		});
-		mockedGetCollection.mockImplementation(async (collection) => {
-			const values = collections[collection as keyof typeof collections] ?? [];
-			return values as never;
+			const released = values.filter((value) =>
+				!(value.data.publishedAt instanceof Date) || value.data.publishedAt <= now,
+			);
+			return { docs: released.slice(0, 12), totalDocs: released.length } as never;
 		});
 
 		const homepage = await getHomepageContent(12, now);
 
-		expect(mockedGetAllCollection).toHaveBeenCalledTimes(1);
-		expect(mockedGetAllCollection).toHaveBeenCalledWith("videos");
-		expect(mockedGetCollection).toHaveBeenCalledTimes(4);
-		for (const collection of ["articles", "news", "courses", "learningPaths"] as const) {
-			expect(mockedGetCollection).toHaveBeenCalledWith(collection, { limit: 100 });
+		expect(mockedGetAllCollection).not.toHaveBeenCalled();
+		expect(mockedGetPayloadCollectionPage).toHaveBeenCalledTimes(5);
+		for (const collection of ["videos", "articles", "news", "courses", "learningPaths"] as const) {
+			expect(mockedGetPayloadCollectionPage).toHaveBeenCalledWith(collection, {
+				limit: 12,
+				releasedOnly: true,
+				view: "summary",
+			});
 		}
 		expect(homepage.counts).toEqual({
 			videos: 1,

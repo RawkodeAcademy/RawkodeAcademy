@@ -50,8 +50,16 @@ export class PublicContentBridge extends WorkerEntrypoint<CloudflareEnv> {
           return Response.json({error:'CMS preview readiness failed'}, {status:503,headers:{'Cache-Control':'no-store'}})
         }
       }
+      const payloadInitStartedAt = performance.now()
       const payload = await loadPayload()
-      return publicContentBridge(request, payload, this.env.R2)
+      const payloadInitDuration = performance.now() - payloadInitStartedAt
+      const response = await publicContentBridge(request, payload, this.env.R2)
+      const previewEnabled = (this.env as CloudflareEnv & {PAYLOAD_PREVIEW_PR?: string}).PAYLOAD_PREVIEW_PR
+      if (!previewEnabled) return response
+      const headers = new Headers(response.headers)
+      const existingTiming = headers.get('Server-Timing')
+      headers.set('Server-Timing', [existingTiming, `payload-init;dur=${payloadInitDuration.toFixed(1)}`].filter(Boolean).join(', '))
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
     })
   }
 }

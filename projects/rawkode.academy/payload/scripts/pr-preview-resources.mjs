@@ -240,7 +240,7 @@ export async function cleanup(pullRequestNumber, request = api) {
     scripts.push(...(Array.isArray(result) ? result : []))
     if (!result?.length || result.length < 100) break
   }
-  const workerPattern = new RegExp(`^rawkode-academy-(?:payload|website)-pr-${pullRequestNumber}-[0-9a-f]{12}(?:-isolation)?$`)
+  const workerPattern = new RegExp(`^rawkode-academy-(?:payload|website)-pr-${pullRequestNumber}-[0-9a-f]{12}(?:-isolation|-content)?$`)
   const workers = scripts.filter(script => script.id !== source.workerName && typeof script.id === 'string' && workerPattern.test(script.id))
   for (const worker of workers) await request(`/accounts/${accountId}/workers/scripts/${encodeURIComponent(worker.id)}`, { method: 'DELETE' })
   for (const database of d1) await request(`/accounts/${accountId}/d1/database/${database.uuid ?? database.id}`, { method: 'DELETE' })

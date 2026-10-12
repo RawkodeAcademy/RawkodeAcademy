@@ -14,7 +14,7 @@ const collectionSet = new Set<string>(publicContentCollections)
 const dateCollections = new Set<PublicContentCollection>(['videos', 'articles', 'news', 'courses', 'course-modules', 'learning-paths'])
 const collectionFields: Record<PublicContentCollection, { summary: string[]; full: string[]; searchable: string[] }> = {
   videos: { summary: ['slug','title','tagline','subtitle','description','publishedAt','duration','type','category','thumbnailUrl','show','technologies','guests','episode','terms','cover'], full: ['whatYouWillLearn','streamUrl','youtubeId','podcast','subscribeLinks','chapters','audioFileSize','body','contentResources'], searchable: ['title','description','subtitle'] },
-  articles: { summary: ['slug','title','description','subtitle','publishedAt','updatedAt','type','howto','authors','technologies','series','cover'], full: ['resources','body','contentResources'], searchable: ['title','description','subtitle'] },
+  articles: { summary: ['slug','title','description','subtitle','openGraph','publishedAt','updatedAt','type','howto','authors','technologies','series','cover'], full: ['resources','body','contentResources'], searchable: ['title','description','subtitle'] },
   news: { summary: ['slug','title','description','publishedAt','authors','technologies','cover'], full: ['body'], searchable: ['title','description'] },
   shows: { summary: ['slug','name','status','tagline','description','hosts','cover'], full: ['episodes','podcast','subscribeLinks','gameFormatUrl','terms','body'], searchable: ['name','description','tagline'] },
   episodes: { summary: ['slug','code','terms','video','show','title'], full: ['body'], searchable: ['code','title'] },
@@ -353,6 +353,20 @@ async function overlayVideos(payload: PublicPayload, docs: Doc[]): Promise<Map<s
   }))
 }
 
+type PayloadTimingPhase = 'find' | 'overlay' | 'assets' | 'chapters' | 'release' | 'total'
+
+function withPayloadTimings(response: Response, timings: Partial<Record<PayloadTimingPhase, number>>): Response {
+  const headers = new Headers(response.headers)
+  const entries = Object.entries(timings)
+    .filter((entry): entry is [PayloadTimingPhase, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1]))
+    .map(([phase, duration]) => `payload-${phase};dur=${Math.max(0, duration).toFixed(1)}`)
+  if (entries.length) {
+    const existing = headers.get('Server-Timing')
+    headers.set('Server-Timing', [existing, ...entries].filter(Boolean).join(', '))
+  }
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
+}
+
 export async function collectionResponse(request: Request, payload: PublicPayload, now = Date.now()): Promise<Response> {
   if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } })
   let parsed: CollectionRequest | null
@@ -361,6 +375,8 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
     throw error
   }
   if (!parsed) return Response.json({ error: 'Not found' }, { status: 404 })
+  const requestStartedAt = performance.now()
+  const timings: Partial<Record<PayloadTimingPhase, number>> = {}
   const requestQuery: Query = {
     collection: parsed.collection,
     where: parsed.id ? { and: [publicWhere(parsed, now), { id: { equals: parsed.id } }] }
@@ -369,15 +385,21 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
   }
   const exact = Boolean(parsed.id || parsed.slug)
   const query = exact ? { ...requestQuery, page: 1, limit: 2 } : { ...requestQuery, page: parsed.page, limit: parsed.limit }
+  let phaseStartedAt = performance.now()
   const result = await payload.find(query as never)
+  timings.find = performance.now() - phaseStartedAt
   const rawDocs = result.docs as unknown as Doc[]
   const visible = rawDocs.filter(doc => isVisibleDocument(parsed!.collection, doc, now).visible)
   if (exact && visible.length > 1) return Response.json({ error: 'The requested slug is ambiguous' }, { status: 409 })
+  phaseStartedAt = performance.now()
   const overlay = parsed.collection === 'videos' ? await overlayVideos(payload, visible) : new Map<string, Record<string, unknown>>()
+  timings.overlay = performance.now() - phaseStartedAt
   const viewForDoc = (doc: Doc): 'summary' | 'full' =>
     isVisibleDocument(parsed!.collection, doc, now).metadataOnly ? 'summary' : parsed!.view
   const assetPaths = visible.flatMap(doc => assetReferencePaths(doc, parsed!.collection, viewForDoc(doc)))
+  phaseStartedAt = performance.now()
   const assetDocs = await loadAssetDocs(payload, assetPaths)
+  timings.assets = performance.now() - phaseStartedAt
   const docs = visible.map(doc => {
     const visibility = isVisibleDocument(parsed!.collection, doc, now)
     const base = projectFields(doc, parsed!.collection, parsed!.view, visibility.metadataOnly, now)
@@ -396,17 +418,29 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
     })
     return { ...merged, mediaAssets: assets }
   })
+  phaseStartedAt = performance.now()
   if (parsed.collection === 'videos' && parsed.view === 'full') await hydrateVideoChapters(payload, docs, now)
+  timings.chapters = performance.now() - phaseStartedAt
+  phaseStartedAt = performance.now()
   const nextReleaseAt = exact
     ? (visible[0] && visible[0].publishedAt && Date.parse(String(visible[0].publishedAt)) > now ? new Date(Date.parse(String(visible[0].publishedAt))).toISOString() : null)
     : await earliestNextRelease(payload, parsed, now)
+  timings.release = performance.now() - phaseStartedAt
   const headers = cacheHeaders(nextReleaseAt, now)
   if (exact) {
-    if (!docs.length) return Response.json({ error: 'Not found' }, { status: 404, headers })
-    return Response.json({ doc: docs[0], nextReleaseAt }, { headers })
+    if (!docs.length) {
+      const response = Response.json({ error: 'Not found' }, { status: 404, headers })
+      timings.total = performance.now() - requestStartedAt
+      return withPayloadTimings(response, timings)
+    }
+    const response = Response.json({ doc: docs[0], nextReleaseAt }, { headers })
+    timings.total = performance.now() - requestStartedAt
+    return withPayloadTimings(response, timings)
   }
   const totalDocs = typeof result.totalDocs === 'number' && Number.isSafeInteger(result.totalDocs) ? result.totalDocs : visible.length
-  return Response.json({ docs, page: parsed.page, limit: parsed.limit, totalDocs, hasNextPage: Boolean(result.hasNextPage), nextReleaseAt }, { headers })
+  const response = Response.json({ docs, page: parsed.page, limit: parsed.limit, totalDocs, hasNextPage: Boolean(result.hasNextPage), nextReleaseAt }, { headers })
+  timings.total = performance.now() - requestStartedAt
+  return withPayloadTimings(response, timings)
 }
 
 export async function assetResponse(request: Request, payload: PublicPayload, bucket: R2Bucket, now = Date.now()): Promise<Response> {

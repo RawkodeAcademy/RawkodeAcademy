@@ -206,6 +206,33 @@ function withHeaders(response: Response, headers: Headers): Response {
 	});
 }
 
+function addPreviewPayloadDiagnostics(
+	response: Response,
+	state: PayloadRequestState,
+	routeDurationMs: number,
+): Response {
+	if (!state.env?.PAYLOAD_PREVIEW_PR) return response;
+	const metrics: Record<string, number> = state.payloadMetrics ?? {};
+	const hits = Math.round(metrics["data-cache-hit"] ?? 0);
+	const misses = Math.round(metrics["data-cache-miss"] ?? 0);
+	const calls = Math.round(metrics["payload-bridge-call"] ?? 0);
+	const headers = new Headers(response.headers);
+	headers.set(
+		"X-Payload-Data-Cache",
+		`hits=${hits}; misses=${misses}; calls=${calls}`,
+	);
+	const timings = [`payload-route;dur=${routeDurationMs.toFixed(1)}`];
+	const bindingMs = metrics["payload-binding-ms"];
+	if (bindingMs !== undefined) timings.push(`payload-binding;dur=${bindingMs.toFixed(1)}`);
+	for (const phase of ["init", "find", "overlay", "assets", "chapters", "release", "total"]) {
+		const duration = metrics[`source-payload-${phase}`];
+		if (duration !== undefined) timings.push(`payload-${phase};dur=${duration.toFixed(1)}`);
+	}
+	const existing = headers.get("Server-Timing");
+	headers.set("Server-Timing", [existing, ...timings].filter(Boolean).join(", "));
+	return withHeaders(response, headers);
+}
+
 function noStoreResponse(response: Response, privateResponse: boolean): Response {
 	const headers = new Headers(response.headers);
 	headers.set("Cache-Control", privateResponse ? "private, no-store" : "no-store");
@@ -277,7 +304,7 @@ function applyPublicResponseCachePolicy(
 export const payloadContentMiddleware = defineMiddleware(
 	async (context, next) => {
 		const locals = context.locals as typeof context.locals & CloudflareLocals;
-		const state: PayloadRequestState = { env: env as WebsiteRuntimeEnv };
+		const state: PayloadRequestState = { env: env as WebsiteRuntimeEnv, payloadMetrics: {} };
 		const request = context.request;
 		// A PR preview can test Cloudflare's native Workers Cache at the named
 		// CachedAstro entrypoint. Avoid a second HTML cache underneath it so the
@@ -301,6 +328,7 @@ export const payloadContentMiddleware = defineMiddleware(
 			}
 		}
 		return runWithPayloadRequest(state, async () => {
+			const routeStartedAt = performance.now();
 			let response = await next();
 			response = applyPublicResponseCachePolicy(
 				request,
@@ -312,17 +340,27 @@ export const payloadContentMiddleware = defineMiddleware(
 				const headers = new Headers(response.headers);
 				headers.set("X-Website-Cache", "MISS");
 				response = withHeaders(response, headers);
-				if (cache && responseCanUseCache(request, response)) {
-					try {
-						await cache.put(cacheKey, response.clone());
-					} catch {
-						// Cache storage is an optimization; the live response still succeeds.
-					}
-				}
 			} else {
 				const headers = new Headers(response.headers);
 				headers.set("X-Website-Cache", "BYPASS");
 				response = withHeaders(response, headers);
+			}
+			response = addPreviewPayloadDiagnostics(
+				response,
+				state,
+				performance.now() - routeStartedAt,
+			);
+			if (
+				cache &&
+				cacheKey &&
+				!requestIsPrivate(request, Boolean(locals.user)) &&
+				responseCanUseCache(request, response)
+			) {
+				try {
+					await cache.put(cacheKey, response.clone());
+				} catch {
+					// Cache storage is an optimization; the live response still succeeds.
+				}
 			}
 			return response;
 		});

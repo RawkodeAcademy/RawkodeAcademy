@@ -341,6 +341,7 @@ export type CollectionEntry<C extends WebsiteCollectionName = WebsiteCollectionN
 export interface PayloadListOptions {
 	page?: number;
 	limit?: number;
+	releasedOnly?: boolean;
 	view?: "summary" | "full";
 	authorId?: string;
 	technologyId?: string;
@@ -357,6 +358,7 @@ export interface PayloadListResult<C extends WebsiteCollectionName> {
 	docs: PayloadEntry<C>[];
 	page: number;
 	limit: number;
+	totalDocs: number;
 	hasNextPage: boolean;
 	nextReleaseAt?: string | null;
 }
@@ -379,12 +381,14 @@ export interface WebsiteRuntimeEnv {
 	PAYLOAD_PREVIEW_SHA?: string;
 	PAYLOAD_PREVIEW_SOURCE_WORKER?: string;
 	PAYLOAD_PREVIEW_SOURCE_SHA?: string;
+	PAYLOAD_PREVIEW_SOURCE_DATA_SHA?: string;
 	PUBLIC_SSR_CACHE_ENABLED?: string;
 }
 
 export interface PayloadRequestState {
 	env?: WebsiteRuntimeEnv | undefined;
 	nextReleaseAt?: number;
+	payloadMetrics?: Record<string, number>;
 }
 
 interface CloudflareCacheStorage extends CacheStorage {
@@ -414,6 +418,21 @@ export function getPayloadRequestState(): PayloadRequestState | undefined {
 
 function collectionSlug(collection: WebsiteCollectionName): PayloadCollectionName {
 	return COLLECTION_SLUGS[collection];
+}
+
+function recordPayloadMetric(name: string, value = 1): void {
+	const metrics = payloadRequestStorage.getStore()?.payloadMetrics;
+	if (!metrics || !Number.isFinite(value)) return;
+	metrics[name] = (metrics[name] ?? 0) + value;
+}
+
+function recordBridgeTimings(value: string | null): void {
+	if (!value) return;
+	for (const metric of value.split(",")) {
+		const match = metric.trim().match(/^([a-z][a-z0-9-]*);dur=([0-9]+(?:\.[0-9]+)?)/i);
+		if (!match || !/^payload-(?:init|find|overlay|assets|chapters|release|total)$/.test(match[1]!)) continue;
+		recordPayloadMetric(`source-${match[1]}`, Number(match[2]));
+	}
 }
 
 function recordNextReleaseAt(value: unknown): void {
@@ -482,12 +501,20 @@ async function getBridgeJson<T>(path: string): Promise<T> {
 		if (cached) {
 			const body = (await cached.json()) as T & { nextReleaseAt?: string | null };
 			recordNextReleaseAt(body.nextReleaseAt);
-			if (!isBoundaryExpired(body.nextReleaseAt)) return body;
+			if (!isBoundaryExpired(body.nextReleaseAt)) {
+				recordPayloadMetric("data-cache-hit");
+				return body;
+			}
 			await edgeCache.delete(cacheKey);
 		}
 	}
 
+	if (edgeCache) recordPayloadMetric("data-cache-miss");
+	recordPayloadMetric("payload-bridge-call");
+	const bindingStartedAt = performance.now();
 	const response = await binding.fetch(bridgeUrl);
+	recordPayloadMetric("payload-binding-ms", performance.now() - bindingStartedAt);
+	recordBridgeTimings(response.headers.get("Server-Timing"));
 	if (response.status === 404) throw new PayloadNotFoundError();
 	if (!response.ok) {
 		throw new Error(`Payload content request failed (${response.status}).`);
@@ -702,6 +729,7 @@ export async function getPayloadCollectionPage<C extends WebsiteCollectionName>(
 		docs: PayloadDocument[];
 		page: number;
 		limit: number;
+		totalDocs: number;
 		hasNextPage: boolean;
 		nextReleaseAt?: string | null;
 	}>(`/v1/collections/${collectionSlug(collection)}?${query}`);
@@ -763,9 +791,8 @@ export async function getAllCollection<C extends WebsiteCollectionName>(
 		throw new Error(`Payload collection ${collection} exceeded the 10000 item limit.`);
 	}
 
-	// Video archives and homepage counts need the full corpus. Read up to three
-	// later pages concurrently to avoid serial bridge round trips, while
-	// consuming them in page order and stopping only at the first final page.
+	// Bulk video surfaces such as search, feeds, and sitemaps need the full corpus.
+	// Read later pages in bounded concurrent batches.
 	let page = 1;
 	while (page <= 100) {
 		const result = await getPayloadCollectionPage(collection, pageOptions(page));

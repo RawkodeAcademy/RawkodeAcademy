@@ -12,7 +12,7 @@ export default {
 	},
 }
 
-// Only this named service entrypoint can read the pinned public content source.
+// Only this named service entrypoint can read the current-head bridge on the pinned data baseline.
 export class PublicContentReadOnly extends WorkerEntrypoint {
 	fetch(request) {
 		return handlePreviewContent(request, this.env.PUBLIC_CONTENT_SOURCE)

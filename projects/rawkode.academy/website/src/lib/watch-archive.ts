@@ -30,6 +30,17 @@ interface WatchArchiveOptions {
 	shows: readonly ShowEntry[];
 }
 
+export interface WatchArchiveSelection<T> {
+	query: string;
+	page: number;
+	pageCount: number;
+	total: number;
+	items: T[];
+	first: number;
+	last: number;
+	showFeatured: boolean;
+}
+
 const referenceId = (reference: unknown): string => {
 	if (typeof reference === "string") return reference.replace(/\/index$/, "");
 	if (
@@ -61,7 +72,7 @@ function entryMap<T extends { id: string; data: { id?: string | undefined } }>(
 export function selectWatchArchive<T extends WatchVideo>(
 	videos: readonly T[],
 	options: WatchArchiveOptions,
-) {
+): WatchArchiveSelection<T> {
 	const query = (options.query ?? "").trim().replace(/\s+/g, " ");
 	const terms = normalizedText(query).split(" ").filter(Boolean);
 	const technologies = entryMap(options.technologies);
@@ -112,6 +123,31 @@ export function selectWatchArchive<T extends WatchVideo>(
 		first: total ? offset + 1 : 0,
 		last: offset + items.length,
 		showFeatured: query.length === 0 && page === 1,
+	};
+}
+
+/** Build archive controls from one already-paginated Payload page and its exact total. */
+export function selectWatchArchivePage<T extends WatchVideo>(
+	videos: readonly T[],
+	totalDocs: number,
+	pageValue?: string | null,
+): WatchArchiveSelection<T> {
+	const total = Number.isSafeInteger(totalDocs) && totalDocs >= 0 ? totalDocs : videos.length;
+	const pageCount = Math.max(1, Math.ceil(total / WATCH_PAGE_SIZE));
+	const rawPage = pageValue ?? "1";
+	const requestedPage = /^\d+$/.test(rawPage) ? Number(rawPage) : 1;
+	const page = Math.min(pageCount, Math.max(1, requestedPage));
+	const offset = (page - 1) * WATCH_PAGE_SIZE;
+	const items = [...videos].slice(0, WATCH_PAGE_SIZE);
+	return {
+		query: "",
+		page,
+		pageCount,
+		total,
+		items,
+		first: items.length ? offset + 1 : 0,
+		last: items.length ? Math.min(total, offset + items.length) : 0,
+		showFeatured: page === 1,
 	};
 }
 
