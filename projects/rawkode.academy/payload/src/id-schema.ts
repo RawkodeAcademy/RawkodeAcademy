@@ -30,7 +30,6 @@ export const cuid2MigrationNames = [
 ] as const
 const cuid2MigrationNameSet = new Set<string>(cuid2MigrationNames)
 type TableInfo = { name: string; type: string }
-type ForeignKeyInfo = { from: string; table: string }
 
 /**
  * Refuse to serve against the old integer-ID schema. Production cutover needs
