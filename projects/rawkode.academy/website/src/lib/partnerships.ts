@@ -44,7 +44,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a £5,000 product review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach. Continue to the full 90-day partnership for £7,000 more only if it's useful.";
+	"Start with a £5,000 product review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to the full 90-day partnership for £7,000 more only if it's useful.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -84,9 +84,14 @@ export const partnershipOutcomes = [
 			"David writes the example repository for that use case against your product. Your engineer checks it is accurate. Fork it, publish it, put it in your docs.",
 	},
 	{
+		title: "A before-and-after re-run",
+		detail:
+			"At day 90 David repeats the first run on what you've shipped since, and compares the two: time to a first working result and the number of stall points, before and after.",
+	},
+	{
 		title: "A day-90 read-out",
 		detail:
-			"What changed, what the session and the first run showed, and what to work on next quarter, reported against two or three numbers you already track and the targets we set for them in week one. If we miss a target, the read-out says why.",
+			"What changed, what the re-run, the session and your own numbers show, and what to work on next quarter. We report against two or three numbers you already track and the targets we set in week one. If we miss a target, the read-out says why.",
 	},
 ] as const;
 
@@ -106,7 +111,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Month 3",
-		what: "Day-90 read-out against the targets. Decide what to work on next quarter, and whether to continue.",
+		what: "David re-runs the first run on what you've shipped and compares it with the original. Day-90 read-out against the targets. Decide what to work on next quarter.",
 	},
 	{
 		when: "From month 2",
@@ -121,15 +126,16 @@ export const partnershipOffer: PartnershipOffer = {
 	price: "£12,000",
 	priceShort: "£12k/90 days",
 	cadence:
-		"Or US$16,000 in total: the £5,000 review, then £3,500 a month for two months if you continue.",
+		"Or US$15,600: the £5,000 (US$6,500) review, then £3,500 (US$4,550) a month for two months if you continue.",
 	summary:
-		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David and a day-90 read-out.",
+		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
 	included: [
 		"The product review: recorded first run, friction log and ranked list",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
+		"A day-90 re-run of the first run, compared with the original",
 		"A day-90 read-out against the targets we set in week one",
 	],
 	excluded: [
@@ -146,17 +152,17 @@ export const partnershipTerms = [
 	{
 		title: "Stop after the review",
 		detail:
-			"The review is the first step and is priced on its own. If you stop there you have paid £5,000 (US$6,500) and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
+			"The review is the first step and is priced on its own. It is invoiced when we deliver it, not before. If you stop there you have paid £5,000 (US$6,500) and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
 	},
 	{
 		title: "After day 90",
 		detail:
-			"Stop with nothing further to pay, or continue for another 90 days at £12,000. Each further 90 days repeats the cycle on what has changed: a fresh first run, an updated ranked list, a new partner session and example, and monthly working sessions. Once you continue, either side can stop with 30 days' notice.",
+			"Nothing renews automatically. If you want another 90 days, we agree it in writing: £12,000 for a fresh first run on what has changed, an updated ranked list, a new partner session and example, monthly working sessions and another re-run.",
 	},
 	{
 		title: "Invoicing",
 		detail:
-			"The review is invoiced when we start. If you continue, the remaining £7,000 (US$9,500) is invoiced as two monthly payments of £3,500 (US$4,750). Fixed prices in GBP or USD, EUR on request, 30-day payment terms. Prices exclude VAT where it applies.",
+			"The review is invoiced on delivery. If you continue, the remaining £7,000 (US$9,100) is invoiced as two monthly payments of £3,500 (US$4,550). Fixed prices in GBP or USD, EUR on request, 30-day payment terms. Prices exclude VAT where it applies.",
 	},
 	{
 		title: "Paperwork",
@@ -198,7 +204,7 @@ export const fitProofReview: PartnershipOffer = {
 	],
 	notes: [
 		"We agree the product areas and the developer David is acting as before starting.",
-		"Continue to the full 90 days within 30 days of the review call for £7,000 more. The £5,000 you've paid counts in full.",
+		"After the review call you have 30 days to decide. Continue to the full 90 days for £7,000 (US$9,100) more, or stop and keep everything.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
