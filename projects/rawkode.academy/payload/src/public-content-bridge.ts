@@ -61,6 +61,7 @@ export type CollectionRequest = {
   slug?: string
   page: number
   limit: number
+  releasedOnly?: boolean
   filters: Record<string, string>
 }
 
@@ -98,9 +99,12 @@ export function parseCollectionRequest(url: URL): CollectionRequest | null {
   // full projection so a future video's derived chapters cannot be listed or
   // fetched independently of their parent publication date.
   if (collection === 'chapters') return null
-  const allowed = new Set(['id','slug','view','page','limit','authorId','technologyId','showId','courseId','seriesId','personId','type','category','q'])
+  const allowed = new Set(['id','slug','view','page','limit','releasedOnly','authorId','technologyId','showId','courseId','seriesId','personId','type','category','q'])
   for (const key of url.searchParams.keys()) if (!allowed.has(key) || url.searchParams.getAll(key).length !== 1) throw new RequestError(400, 'Invalid query parameters')
   const values = Object.fromEntries(url.searchParams.entries())
+  if (values.releasedOnly !== undefined && values.releasedOnly !== 'true') throw new RequestError(400, 'releasedOnly must be true')
+  const releasedOnly = values.releasedOnly === 'true'
+  if (releasedOnly && !dateCollections.has(collection)) throw new RequestError(400, 'releasedOnly is supported only for dated collections')
   const view = values.view ?? (values.id || values.slug ? 'full' : 'summary')
   if (view !== 'summary' && view !== 'full') throw new RequestError(400, 'Invalid view')
   const exact = Boolean(values.id || values.slug)
@@ -122,7 +126,7 @@ export function parseCollectionRequest(url: URL): CollectionRequest | null {
   if (!exact && (!Number.isSafeInteger(page) || page < 1 || page > 1000)) throw new RequestError(400, 'page must be between 1 and 1000')
   if (!exact && (!Number.isSafeInteger(limit) || limit < 1 || limit > 100)) throw new RequestError(400, 'limit must be between 1 and 100')
   if (!exact && values.q && limit > 50) throw new RequestError(400, 'limit must be 50 or less when q is used')
-  return { collection, view, ...(values.id ? { id: values.id } : {}), ...(values.slug ? { slug: values.slug } : {}), page, limit, filters: Object.fromEntries(Object.entries(values).filter(([key]) => key in relationFilters || key in scalarFilters || key === 'q')) }
+  return { collection, view, ...(values.id ? { id: values.id } : {}), ...(values.slug ? { slug: values.slug } : {}), page, limit, ...(releasedOnly ? { releasedOnly } : {}), filters: Object.fromEntries(Object.entries(values).filter(([key]) => key in relationFilters || key in scalarFilters || key === 'q')) }
 }
 
 export class RequestError extends Error {
@@ -157,6 +161,10 @@ function publicWhere(request: CollectionRequest, now: number, scheduledOnly = fa
   }
   if (dateCollections.has(collection)) {
     if (scheduledOnly) and.push({ publishedAt: { greater_than: new Date(now).toISOString() } })
+    else if (request.releasedOnly) and.push({ or: [
+      { publishedAt: { exists: false } }, { publishedAt: { equals: null } }, { publishedAt: { equals: '' } },
+      { publishedAt: { less_than_equal: new Date(now).toISOString() } },
+    ] })
     else if (collection === 'videos') and.push({ or: [
       { publishedAt: { exists: false } }, { publishedAt: { equals: null } }, { publishedAt: { less_than_equal: new Date(now).toISOString() } },
       { and: [{ type: { equals: 'live' } }, { publishedAt: { greater_than: new Date(now).toISOString() } }] },
@@ -183,17 +191,25 @@ function safeValue(value: unknown): unknown {
     .map(([key, child]) => [key, safeValue(child)]))
 }
 
-function projectFields(doc: Doc, collection: PublicContentCollection, view: 'summary' | 'full', metadataOnly = false): Record<string, unknown> {
+function projectFields(doc: Doc, collection: PublicContentCollection, view: 'summary' | 'full', metadataOnly = false, now = Date.now()): Record<string, unknown> {
   const allowed = new Set(['id','slug', ...collectionFields[collection].summary, ...(view === 'full' ? collectionFields[collection].full : [])])
   const summary = new Set(collectionFields[collection].summary)
   const output: Record<string, unknown> = { id: String(doc.id) }
   for (const field of allowed) {
-    if (field === 'id' || privateFields.has(field) || !(field in doc)) continue
+    const missingPublishedAt = field === 'publishedAt' && (doc[field] === undefined || doc[field] === null || doc[field] === '')
+    if (field === 'id' || privateFields.has(field) || (!(field in doc) && !missingPublishedAt)) continue
     // Future live streams may advertise public metadata, but exact ID/slug
     // lookups default to the full view. Keep them on the summary projection
     // until publishedAt, including when a publication overlay is present.
     if (metadataOnly && !summary.has(field)) continue
-    output[field] = field === 'contentResources' ? publicContentResources(doc[field]) : safeValue(doc[field])
+    if (missingPublishedAt) {
+      // A published record without a date is immediately visible. Give the
+      // website a valid presentation date instead of leaking Payload's empty
+      // field into routes that format publishedAt.
+      output[field] = new Date(now).toISOString()
+    } else {
+      output[field] = field === 'contentResources' ? publicContentResources(doc[field]) : safeValue(doc[field])
+    }
   }
   return output
 }
@@ -364,13 +380,13 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
   const assetDocs = await loadAssetDocs(payload, assetPaths)
   const docs = visible.map(doc => {
     const visibility = isVisibleDocument(parsed!.collection, doc, now)
-    const base = projectFields(doc, parsed!.collection, parsed!.view, visibility.metadataOnly)
+    const base = projectFields(doc, parsed!.collection, parsed!.view, visibility.metadataOnly, now)
     const released = overlay.get(String(doc.id))
     const publishedDocument = released && isVisibleDocument('videos', released, now).visible
       ? { ...doc, ...released, ...(Array.isArray(released.reviewChapters) ? { chapters: released.reviewChapters } : {}), id: doc.id }
       : undefined
     const merged = publishedDocument
-      ? projectFields(publishedDocument, 'videos', parsed!.view, visibility.metadataOnly)
+      ? projectFields(publishedDocument, 'videos', parsed!.view, visibility.metadataOnly, now)
       : base
     const assets = assetReferencePaths(doc, parsed!.collection, viewForDoc(doc)).flatMap(rootPath => {
       const asset = assetDocs.get(rootPath)
@@ -389,7 +405,8 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
     if (!docs.length) return Response.json({ error: 'Not found' }, { status: 404, headers })
     return Response.json({ doc: docs[0], nextReleaseAt }, { headers })
   }
-  return Response.json({ docs, page: parsed.page, limit: parsed.limit, hasNextPage: Boolean(result.hasNextPage), nextReleaseAt }, { headers })
+  const totalDocs = typeof result.totalDocs === 'number' && Number.isSafeInteger(result.totalDocs) ? result.totalDocs : visible.length
+  return Response.json({ docs, page: parsed.page, limit: parsed.limit, totalDocs, hasNextPage: Boolean(result.hasNextPage), nextReleaseAt }, { headers })
 }
 
 export async function assetResponse(request: Request, payload: PublicPayload, bucket: R2Bucket, now = Date.now()): Promise<Response> {

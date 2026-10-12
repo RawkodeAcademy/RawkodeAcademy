@@ -21,7 +21,7 @@ async function excerpt(description: string | undefined) {
 	vi.mocked(listPayloadContent).mockImplementation(async (name) =>
 		(name === "news" ? [story] : []) as never,
 	);
-	const items = await getLatestContent(12, publishedAt);
+	const items = await getLatestContent(12);
 	expect(items).toHaveLength(1);
 	expect(items[0]).toMatchObject({
 		href: `/news/${story.slug}`,

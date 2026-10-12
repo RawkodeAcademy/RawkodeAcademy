@@ -342,6 +342,7 @@ export interface PayloadListOptions {
 	page?: number;
 	limit?: number;
 	view?: "summary" | "full";
+	releasedOnly?: boolean;
 	authorId?: string;
 	technologyId?: string;
 	showId?: string;
@@ -357,6 +358,7 @@ export interface PayloadListResult<C extends WebsiteCollectionName> {
 	docs: PayloadEntry<C>[];
 	page: number;
 	limit: number;
+	totalDocs: number;
 	hasNextPage: boolean;
 	nextReleaseAt?: string | null;
 }
@@ -496,7 +498,10 @@ async function getBridgeJson<T>(path: string): Promise<T> {
 	recordNextReleaseAt(body.nextReleaseAt);
 	if (edgeCache) {
 		const cached = withCacheHeaders(response, body);
-		if (!isBoundaryExpired(body.nextReleaseAt)) {
+		if (
+			cached.headers.get("Cache-Control") !== "no-store" &&
+			!isBoundaryExpired(body.nextReleaseAt)
+		) {
 			await edgeCache.put(cacheKey, cached.clone());
 		}
 	}
@@ -699,6 +704,7 @@ export async function getPayloadCollectionPage<C extends WebsiteCollectionName>(
 		docs: PayloadDocument[];
 		page: number;
 		limit: number;
+		totalDocs: number;
 		hasNextPage: boolean;
 		nextReleaseAt?: string | null;
 	}>(`/v1/collections/${collectionSlug(collection)}?${query}`);

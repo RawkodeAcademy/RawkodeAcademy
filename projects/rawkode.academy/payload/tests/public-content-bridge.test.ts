@@ -16,6 +16,10 @@ test('bridge accepts only the bounded fixed collection query contract', () => {
   const detail = parseCollectionRequest(new URL('https://payload.internal/v1/collections/videos?slug=example'))
   assert.equal(detail?.view, 'full')
   assert.equal(detail?.slug, 'example')
+  const released = parseCollectionRequest(new URL('https://payload.internal/v1/collections/videos?releasedOnly=true'))
+  assert.equal(released?.releasedOnly, true)
+  assert.throws(() => parseCollectionRequest(new URL('https://payload.internal/v1/collections/videos?releasedOnly=false')))
+  assert.throws(() => parseCollectionRequest(new URL('https://payload.internal/v1/collections/people?releasedOnly=true')))
   assert.throws(() => parseCollectionRequest(new URL('https://payload.internal/v1/collections/videos?where[title][like]=x')))
   assert.throws(() => parseCollectionRequest(new URL('https://payload.internal/v1/collections/videos?q=x&limit=51')))
   assert.throws(() => parseCollectionRequest(new URL('https://payload.internal/v1/collections/articles?showId=show')))
@@ -82,6 +86,53 @@ test('summary response projects card media and hides provenance and future-live 
   assert.equal((listQuery.select as Record<string, unknown>).sourceAssets, true, 'internal asset provenance is read only to derive public mediaAssets')
   const assetQuery = queries.find(query => query.collection === 'static-assets')!
   assert.equal(JSON.stringify(assetQuery.where).includes('_status'), false, 'static-assets has no draft status column')
+})
+
+test('released-only lists return exact totals and keep the next scheduled release boundary', async () => {
+  const queries: Record<string, unknown>[] = []
+  const payload = {
+    async find(args: Record<string, unknown>) {
+      queries.push(args)
+      if (args.collection === 'videos' && args.sort === 'publishedAt') {
+        return { docs: [{ id: 'future-video', type: 'recorded', publishedAt: '2026-10-11T12:00:00.000Z' }], totalDocs: 1, hasNextPage: false }
+      }
+      if (args.collection === 'videos') {
+        return { docs: [{ id: videoID, slug: 'released-video', title: 'Released video', type: 'recorded', _status: 'published', tombstone: false }], totalDocs: 329, hasNextPage: false }
+      }
+      return { docs: [], totalDocs: 0, hasNextPage: false }
+    },
+  }
+  const response = await collectionResponse(new Request('https://payload.internal/v1/collections/videos?releasedOnly=true&limit=1'), payload as never, now)
+  const body = await response.json() as { docs: Record<string, unknown>[]; totalDocs: number; nextReleaseAt: string | null }
+  assert.equal(response.status, 200)
+  assert.equal(body.docs.length, 1)
+  assert.equal(body.totalDocs, 329)
+  assert.equal(body.docs[0]!.publishedAt, new Date(now).toISOString(), 'undated content stays immediately visible with a valid presentation date')
+  assert.equal(body.nextReleaseAt, '2026-10-11T12:00:00.000Z')
+  const releasedQuery = queries.find(query => query.collection === 'videos' && query.sort !== 'publishedAt')!
+  assert.match(JSON.stringify(releasedQuery.where), /less_than_equal/)
+  assert.match(JSON.stringify(releasedQuery.where), /exists/)
+  assert.doesNotMatch(JSON.stringify(releasedQuery.where), /greater_than/)
+  const boundaryQuery = queries.find(query => query.collection === 'videos' && query.sort === 'publishedAt')!
+  assert.match(JSON.stringify(boundaryQuery.where), /greater_than/)
+  assert.match(response.headers.get('Cache-Control') ?? '', /s-maxage=30/)
+})
+
+test('released-only empty pages still advertise the scheduled release boundary', async () => {
+  const releaseAt = '2026-10-11T12:00:00.000Z'
+  const payload = {
+    async find(args: Record<string, unknown>) {
+      if (args.collection === 'videos' && args.sort === 'publishedAt') return { docs: [{ id: videoID, type: 'recorded', publishedAt: releaseAt }], totalDocs: 1, hasNextPage: false }
+      if (args.collection === 'videos') return { docs: [], totalDocs: 0, hasNextPage: false }
+      return { docs: [], totalDocs: 0, hasNextPage: false }
+    },
+  }
+  const response = await collectionResponse(new Request('https://payload.internal/v1/collections/videos?releasedOnly=true&limit=1'), payload as never, now)
+  const body = await response.json() as { docs: unknown[]; totalDocs: number; nextReleaseAt: string | null }
+  assert.deepEqual(body.docs, [])
+  assert.equal(body.totalDocs, 0)
+  assert.equal(body.nextReleaseAt, releaseAt)
+  assert.match(response.headers.get('Cache-Control') ?? '', /s-maxage=30/)
 })
 
 test('exact future-live lookups keep full fields hidden until publishedAt', async () => {

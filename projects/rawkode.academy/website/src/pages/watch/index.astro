@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { getAllCollection } from "@/lib/payload-content";
+import { getAllCollection, getPayloadCollectionPage } from "@/lib/payload-content";
 import { getPublishedVideos } from "@/lib/content";
 import { academyPage } from "@rawkodeacademy/design-system";
 import AcademyCatalogMasthead from "@/components/academy/AcademyCatalogMasthead.astro";
@@ -9,26 +9,74 @@ import NewsletterCTA from "@/components/newsletter/NewsletterCTA.astro";
 import Page from "@/wrappers/page.astro";
 import VideoItemListJsonLd from "@/components/html/video-itemlist-jsonld.astro";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
-import { selectWatchArchive, watchArchiveHref, WATCH_PAGE_SIZE } from "@/lib/watch-archive";
+import { selectWatchArchive, selectWatchArchivePage, watchArchiveHref, WATCH_PAGE_SIZE } from "@/lib/watch-archive";
 
 const styles = academyPage();
-// This archive needs complete counts and stable pagination. The bridge pages
-// are cached individually, so the full corpus is fetched only on a cold cache.
 const requestedQuery = Astro.url.searchParams.get("q");
-const [publishedVideos, technologies, people, shows] = await Promise.all([
-	getPublishedVideos().then((videos) =>
-		videos
-			.sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime()),
-	),
-	requestedQuery ? getAllCollection("technologies") : Promise.resolve([]),
-	requestedQuery ? getAllCollection("people") : Promise.resolve([]),
-	requestedQuery ? getAllCollection("shows") : Promise.resolve([]),
-]);
-const archive = selectWatchArchive(publishedVideos, {
-	query: requestedQuery,
-	page: Astro.url.searchParams.get("page"),
-	technologies, people, shows,
-});
+const hasSearchQuery = Boolean(requestedQuery?.trim());
+const { archive, mosaicVideos, publishedVideoCount } = await (async () => {
+	if (hasSearchQuery) {
+		const [publishedVideos, technologies, people, shows] = await Promise.all([
+			getPublishedVideos(),
+			getAllCollection("technologies"),
+			getAllCollection("people"),
+			getAllCollection("shows"),
+		]);
+		const archive = selectWatchArchive(publishedVideos, {
+			query: requestedQuery,
+			page: Astro.url.searchParams.get("page"),
+			technologies,
+			people,
+			shows,
+		});
+		return {
+			archive,
+			mosaicVideos: publishedVideos,
+			publishedVideoCount: publishedVideos.length,
+		};
+	}
+
+	const rawPage = Astro.url.searchParams.get("page") ?? "1";
+	const parsedPage = /^\d+$/.test(rawPage) ? Number(rawPage) : 1;
+	const requestedPage = Math.max(
+		1,
+		Number.isSafeInteger(parsedPage) ? Math.min(1000, parsedPage) : 1000,
+	);
+	let pageResult = await getPayloadCollectionPage("videos", {
+		page: requestedPage,
+		limit: WATCH_PAGE_SIZE,
+		releasedOnly: true,
+	});
+	let archive = selectWatchArchivePage(
+		pageResult.docs,
+		pageResult.totalDocs,
+		requestedPage,
+	);
+	if (archive.page !== pageResult.page) {
+		pageResult = await getPayloadCollectionPage("videos", {
+			page: archive.page,
+			limit: WATCH_PAGE_SIZE,
+			releasedOnly: true,
+		});
+		archive = selectWatchArchivePage(
+			pageResult.docs,
+			pageResult.totalDocs,
+			archive.page,
+		);
+	}
+	const firstPageVideos = archive.page === 1
+		? pageResult.docs
+		: (await getPayloadCollectionPage("videos", {
+				page: 1,
+				limit: 10,
+				releasedOnly: true,
+			})).docs;
+	return {
+		archive,
+		mosaicVideos: firstPageVideos,
+		publishedVideoCount: pageResult.totalDocs,
+	};
+})();
 
 const compactCopy = (value: string | undefined, maxLength = 220) => {
 	const normalized = (value ?? "").replace(/\s+/g, " ").trim();
@@ -60,7 +108,7 @@ const videos = archive.items.map((video) => ({
 const featured = archive.showFeatured ? videos[0] : undefined;
 // The latest session gets its own feature below, so the masthead schedules
 // the sessions that came before it.
-const mosaic = publishedVideos.slice(1, 10).map((video) => getVideoThumbnailUrl(video.data.id));
+const mosaic = mosaicVideos.slice(1, 10).map((video) => getVideoThumbnailUrl(video.data.id));
 const libraryVideos = featured ? videos.slice(1) : videos;
 const listUrl = new URL(watchArchiveHref(archive.query, archive.page), Astro.site ?? Astro.url).href;
 
@@ -96,8 +144,8 @@ const pageDescription =
 		<AcademyCatalogMasthead
 			title="Videos"
 			description="Live builds, deep dives, and honest conversations with the people behind the tools. Every session is recorded and searchable."
-			figure={publishedVideos.length}
-			figureLabel={publishedVideos.length === 1 ? "video in the library" : "videos in the library"}
+			figure={publishedVideoCount}
+			figureLabel={publishedVideoCount === 1 ? "video in the library" : "videos in the library"}
 			mosaic={mosaic}
 			mosaicShape="video"
 		/>

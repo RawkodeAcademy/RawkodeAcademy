@@ -1,6 +1,10 @@
-import { getAllCollection, listPayloadContent } from "@/lib/payload-content";
+import {
+	getAllCollection,
+	getPayloadCollectionPage,
+	listPayloadContent,
+	type PayloadEntry,
+} from "@/lib/payload-content";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
-import { isNewsPublished } from "@/lib/news-publication";
 
 export type AcademyContentKind =
 	| "Video"
@@ -53,13 +57,13 @@ const formatDuration = (seconds: number) => {
  * Videos are filtered by publishedAt <= now and sorted newest first.
  */
 export async function getPublishedVideos(limit?: number) {
-	const now = new Date();
 	const records = limit === undefined
 		? await getAllCollection("videos")
-		: await listPayloadContent("videos", { limit });
-	const videos = records.filter(
-		({ data }) => data.publishedAt <= now,
-	);
+		: await listPayloadContent("videos", { limit, releasedOnly: true });
+	const now = new Date();
+	const videos = limit === undefined
+		? records.filter(({ data }) => data.publishedAt <= now)
+		: records;
 	return videos.sort(
 		(a, b) =>
 			new Date(b.data.publishedAt).getTime() -
@@ -86,18 +90,14 @@ export async function getUpcomingVideos() {
  * every published resource, while collection routes such as `/watch` and
  * `/read` remain format-specific views.
  */
-export async function getLatestContent(
-	limit = 12,
-	now = new Date(),
-): Promise<AcademyContentItem[]> {
-	const [videos, articles, news, courses, learningPaths] = await Promise.all([
-		getPublishedVideos(Math.max(20, limit)),
-		listPayloadContent("articles", { limit: Math.max(20, limit) }).then((items) => items.filter(({ data }) => data.publishedAt <= now)),
-		listPayloadContent("news", { limit: Math.max(20, limit) }).then((items) => items.filter(({ data }) => isNewsPublished(data.publishedAt, now))),
-		listPayloadContent("courses", { limit: Math.max(20, limit) }).then((items) => items.filter(({ data }) => data.publishedAt <= now)),
-		listPayloadContent("learningPaths", { limit: Math.max(20, limit) }).then((items) => items.filter(({ data }) => data.publishedAt <= now)),
-	]);
-
+function latestContentFromCollections(
+	videos: PayloadEntry<"videos">[],
+	articles: PayloadEntry<"articles">[],
+	news: PayloadEntry<"news">[],
+	courses: PayloadEntry<"courses">[],
+	learningPaths: PayloadEntry<"learningPaths">[],
+	limit: number,
+): AcademyContentItem[] {
 	const items: AcademyContentItem[] = [
 		...videos.map((video) => ({
 			kind: "Video" as const,
@@ -162,4 +162,53 @@ export async function getLatestContent(
 				new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
 		)
 		.slice(0, limit);
+}
+
+/** Read one released window per collection and reuse it for the homepage feed,
+ * featured video, learning-path cards, and exact archive counts. */
+export async function getHomepageContent(limit = 12) {
+	const windowSize = Math.max(8, limit);
+	const [videoPage, articlePage, newsPage, coursePage, learningPathPage] =
+		await Promise.all([
+			getPayloadCollectionPage("videos", { limit: windowSize, releasedOnly: true }),
+			getPayloadCollectionPage("articles", { limit: windowSize, releasedOnly: true }),
+			getPayloadCollectionPage("news", { limit: windowSize, releasedOnly: true }),
+			getPayloadCollectionPage("courses", { limit: windowSize, releasedOnly: true }),
+			getPayloadCollectionPage("learningPaths", { limit: windowSize, releasedOnly: true }),
+		]);
+	// The bridge applies the release predicate before paginating and counting.
+	// Avoid re-filtering against a clock sampled before those requests complete.
+	const videos = videoPage.docs;
+	const articles = articlePage.docs;
+	const news = newsPage.docs;
+	const courses = coursePage.docs;
+	const learningPaths = learningPathPage.docs.sort(
+		(a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+	);
+
+	return {
+		latest: latestContentFromCollections(videos, articles, news, courses, learningPaths, limit),
+		videos,
+		learningPaths,
+		counts: {
+			videos: videoPage.totalDocs,
+			articles: articlePage.totalDocs,
+			news: newsPage.totalDocs,
+			courses: coursePage.totalDocs,
+			learningPaths: learningPathPage.totalDocs,
+		},
+	};
+}
+
+export async function getLatestContent(limit = 12): Promise<AcademyContentItem[]> {
+	const windowSize = Math.max(20, limit);
+	const [videos, articles, news, courses, learningPaths] = await Promise.all([
+		getPublishedVideos(windowSize),
+		listPayloadContent("articles", { limit: windowSize, releasedOnly: true }),
+		listPayloadContent("news", { limit: windowSize, releasedOnly: true }),
+		listPayloadContent("courses", { limit: windowSize, releasedOnly: true }),
+		listPayloadContent("learningPaths", { limit: windowSize, releasedOnly: true }),
+	]);
+
+	return latestContentFromCollections(videos, articles, news, courses, learningPaths, limit);
 }

@@ -1,10 +1,9 @@
 ---
-import { getCollection } from "@/lib/payload-content";
 import { academyPage } from "@rawkodeacademy/design-system";
 import AcademyPage from "@/components/academy/AcademyPage.vue";
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA.astro";
 import Page from "@/wrappers/page.astro";
-import { getLatestContent, getPublishedVideos } from "@/lib/content";
+import { getHomepageContent } from "@/lib/content";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
 
 const styles = academyPage();
@@ -12,19 +11,8 @@ const styles = academyPage();
 // The homepage is format-agnostic. Collection routes such as /watch and
 // /read remain focused, but Latest is one chronological stream of everything
 // the Academy publishes.
-const now = new Date();
-const [latest, publishedVideos, learningPaths, courses, articles] =
-	await Promise.all([
-		getLatestContent(12, now),
-		getPublishedVideos(),
-		getCollection("learningPaths", ({ data }) => data.publishedAt <= now),
-		getCollection("courses", ({ data }) => data.publishedAt <= now),
-		getCollection("articles", ({ data }) => data.publishedAt <= now),
-	]);
-
-learningPaths.sort(
-	(a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
-);
+const { latest, videos: publishedVideos, learningPaths, counts } =
+	await getHomepageContent(12);
 
 const compactCopy = (value: string | undefined, maxLength = 220) => {
 	const normalized = (value ?? "").replace(/\s+/g, " ").trim();
@@ -91,23 +79,23 @@ const plural = (count: number, singular: string, pluralForm = `${singular}s`) =>
 const archive = [
 	{
 		href: "/watch",
-		value: `${publishedVideos.length}`,
-		label: plural(publishedVideos.length, "Video"),
+		value: `${counts.videos}`,
+		label: plural(counts.videos, "Video"),
 	},
 	{
 		href: "/read",
-		value: `${articles.length}`,
-		label: plural(articles.length, "Article"),
+		value: `${counts.articles}`,
+		label: plural(counts.articles, "Article"),
 	},
 	{
 		href: "/learning-paths",
-		value: `${learningPaths.length}`,
-		label: plural(learningPaths.length, "Learning path"),
+		value: `${counts.learningPaths}`,
+		label: plural(counts.learningPaths, "Learning path"),
 	},
 	{
 		href: "/courses",
-		value: `${courses.length}`,
-		label: plural(courses.length, "Course"),
+		value: `${counts.courses}`,
+		label: plural(counts.courses, "Course"),
 	},
 ].filter((link) => link.value !== "0");
 
