@@ -687,5 +687,6 @@ export async function publicContentBridge(request: Request, payload: PublicPaylo
   if (url.pathname.startsWith('/v1/assets/')) return assetResponse(request, payload, bucket)
   if (url.pathname.startsWith('/v1/diagrams/')) return diagramResponse(request, bucket)
   if (url.pathname === '/v1/demos') return demoResponse(request, payload)
+  if (url.pathname === '/v1/homepage') return homepageResponse(request, payload)
   return collectionResponse(request, payload)
 }
