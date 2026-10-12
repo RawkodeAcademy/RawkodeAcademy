@@ -181,6 +181,7 @@ export function createPayloadContentFixtures(collections = {}, { now = new Date(
 		getCollection,
 		getAllCollection,
 		getPayloadCollectionPage,
+		getPayloadHomepagePages,
 		listPayloadContent,
 		getPayloadImageVariant(image, width) {
 			const source =
