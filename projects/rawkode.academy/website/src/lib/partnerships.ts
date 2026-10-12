@@ -82,7 +82,7 @@ export const partnershipOutcomes = [
 	{
 		title: "A day-90 read-out",
 		detail:
-			"What changed, what the session and the first run showed, and what to work on next quarter, measured against the two or three numbers you already track that we agree in week one.",
+			"What changed, what the session and the first run showed, and what to work on next quarter, reported against the two or three numbers and targets we agree in week one, using numbers you already track. If we miss a target, the read-out says why.",
 	},
 ] as const;
 
@@ -90,7 +90,7 @@ export const partnershipOutcomes = [
 export const partnershipPlan: PartnershipStep[] = [
 	{
 		when: "Weeks 1–2",
-		what: "Kick-off call. You give us a trial or sandbox account. We agree the two or three numbers to watch and record the first run.",
+		what: "Kick-off call. You give us a trial or sandbox account. We agree two or three numbers you already track and a target for each, then record the first run.",
 	},
 	{
 		when: "Month 1 session",
@@ -117,7 +117,7 @@ export const partnershipOffer: PartnershipOffer = {
 	price: "£12,000",
 	priceShort: "£12k/90 days",
 	cadence:
-		"Invoiced as £4,000 a month in advance. Stop after month one if it isn't working.",
+		"Or US$16,000. Invoiced monthly in advance. Stop after month one if it isn't working.",
 	summary:
 		"Everything above, plus David on Slack for the whole 90 days and a 60-minute working session each month with a written recap of decisions and next steps.",
 	included: [
@@ -148,27 +148,27 @@ export const partnershipTerms = [
 	{
 		title: "After day 90",
 		detail:
-			"Continue month to month at £4,000 with 30 days' notice to stop, or stop at day 90 with nothing further to pay. We ask you to decide by day 75.",
+			"Stop at day 90 with nothing further to pay, or continue for another 90 days at the same price. Each further 90 days repeats the cycle on what has changed: a fresh first run, an updated ranked list, a new partner session and example, and three working sessions. Once you continue, you can stop with 30 days' notice.",
 	},
 	{
 		title: "Invoicing",
 		detail:
-			"Monthly in advance, 30-day payment terms. Prices exclude VAT where it applies. We can invoice in USD or EUR at a price fixed when you sign.",
+			"Monthly in advance, 30-day payment terms. Prices exclude VAT where it applies. Fixed prices in GBP or USD: £12,000 or US$16,000 for the partnership, £5,000 or US$6,500 for the review. EUR on request.",
 	},
 	{
 		title: "Paperwork",
 		detail:
-			"A one-page statement of work listing the deliverables and dates above, before you sign. We can work under your MSA and sign your NDA.",
+			"A one-page statement of work listing the deliverables, dates and targets above, before you sign. It names the contracting entity. We can work under your MSA and sign your NDA.",
 	},
 	{
 		title: "Access and data",
 		detail:
-			"We work from a trial or sandbox account. We don't need production systems or customer data.",
+			"We work from a trial or sandbox account. We don't need production systems or customer data. Slack Connect is a shared channel your admins control and can close at any time.",
 	},
 	{
 		title: "Ownership",
 		detail:
-			"You own your product, code and decisions. The example repository is open source. You can reuse the session recording on your own channels.",
+			"You own the first-run recording, the friction log, the ranked list and the read-out. The example repository is published under the Apache 2.0 licence. You approve the session title and use case, can reuse the recording on your own channels, and can ask us to unlist it.",
 	},
 ] as const;
 
@@ -179,7 +179,7 @@ export const fitProofReview: PartnershipOffer = {
 	label: "Want to see the work first?",
 	price: "£5,000",
 	priceShort: "£5k",
-	cadence: "Delivered within 10 business days of access",
+	cadence: "Or US$6,500. Delivered within 10 business days of access",
 	summary:
 		"The first part of the partnership on its own: David's recorded first run of your product and a written review you can act on whether or not you continue.",
 	included: [
@@ -194,10 +194,47 @@ export const fitProofReview: PartnershipOffer = {
 	],
 	notes: [
 		"We agree the product areas and the developer we're acting as before starting.",
-		"Start the partnership within 30 days of the review call and the full £5,000 counts towards it: the remaining £7,000 is invoiced over the first two months.",
+		"Start the partnership within 30 days of the review call and the full £5,000 counts towards it. The remaining £7,000 is invoiced as £3,500 in each of the first two months. The month-one break still applies: stop after month one and you have paid £8,500 in total.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
+
+/**
+ * Illustrative friction-log rows for a fictional product, so buyers can see
+ * the format of the deliverable. Labelled as illustrative on the page.
+ */
+export const sampleFrictionLog = [
+	{
+		at: "04:10",
+		step: "Install the CLI",
+		finding:
+			"The install script needs a newer glibc than the docs list. The error names a missing symbol, not the fix.",
+		impact: "High",
+		action: "Fix",
+		recommendation:
+			"Ship a static build and check the platform before installing.",
+	},
+	{
+		at: "11:45",
+		step: "Connect a cluster",
+		finding:
+			"The quick start assumes a kubeconfig context called default. Most developers have several contexts.",
+		impact: "High",
+		action: "Explain",
+		recommendation:
+			"Show the --context flag in the first command and print the active context on connect.",
+	},
+	{
+		at: "23:30",
+		step: "First deployment",
+		finding:
+			"The deploy succeeds but nothing says how to reach the service. The answer is in a GitHub issue.",
+		impact: "Medium",
+		action: "Teach",
+		recommendation:
+			"End the quick start with a port-forward and a curl, then link a guide on ingress.",
+	},
+] as const;
 
 /** Compatibility shape for components that render the primary offer. */
 export const partnershipTiers = [partnershipOffer] as const;
