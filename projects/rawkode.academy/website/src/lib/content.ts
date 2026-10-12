@@ -5,7 +5,6 @@ import {
 	type PayloadEntry,
 } from "@/lib/payload-content";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
-import { isNewsPublished } from "@/lib/news-publication";
 
 export type AcademyContentKind =
 	| "Video"
