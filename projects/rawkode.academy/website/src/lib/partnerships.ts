@@ -44,30 +44,34 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"A 90-day developer adoption partnership with David Flanagan of Rawkode Academy: a recorded first run of your product, a ranked fix list, a live Rawkode Academy session and a runnable example. £12,000, stop after month one if it isn't working.";
+	"Start with a £5,000 product review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach. Continue to the full 90-day partnership for £7,000 more only if it's useful.";
 
 export const partnershipHeroTitle =
-	"Find where developers get stuck. Decide what to fix. Teach the rest.";
+	"Find out where developers give up on your product.";
 
 export const partnershipHeroLede =
-	"A 90-day partnership with David Flanagan, founder of Rawkode Academy.";
+	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"David uses your product the way a new user would, records every place he stalls and tells you plainly what he found. Then he helps your team decide what to change, what to explain and what to teach, and teaches one use case live to the Rawkode Academy audience with your engineer.";
+	"Every partnership starts with a product review. David works through your product the way a new user would, from first install or sign-up to a first working result, records every place he stalls and tells you plainly what he found. If that's useful, continue to the full 90 days: a live session on Rawkode Live with your engineer, a runnable example David writes, monthly working sessions and a day-90 read-out.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
+
+/** Example week-one numbers, so buyers can see what "agreed numbers" means. */
+export const exampleMeasures =
+	"For example: time from sign-up or install to a first successful deploy, quick-start completion rate, or the share of trials that are still active after a week.";
 
 /** What the partner has in hand at day 90. The page leads with this. */
 export const partnershipOutcomes = [
 	{
 		title: "A recorded first run",
 		detail:
-			"David works through your product from sign-up to a first working result, as your target developer would, with the screen recorded and every stall point written down. You get the recording and the friction log in the first two weeks.",
+			"David works through your product from first install or sign-up to a first working result, as your target developer would, with the screen recorded and every stall point written down. Delivered in the first two weeks as part of the review.",
 	},
 	{
 		title: "A ranked list of what to fix, explain and teach",
 		detail:
-			"Each friction point ranked by how much it costs developers and how hard it is to change, with a recommendation for each. Your product lead owns the list; we review it with them every month.",
+			"Each friction point ranked by how much it costs developers and how hard it is to change, with a recommendation for each. Your product lead owns the list; David reviews progress with them every month.",
 	},
 	{
 		title: "A live session on Rawkode Academy",
@@ -75,59 +79,58 @@ export const partnershipOutcomes = [
 			"David and your engineer teach one agreed use case live on Rawkode Live, labelled as a partner session. The recording stays published on Rawkode Academy and you can reuse it on your own channels.",
 	},
 	{
-		title: "A runnable example, written by us",
+		title: "A runnable example, written by David",
 		detail:
-			"We write the example repository for that use case against your product, under an open-source licence. Your engineer checks it is accurate. Fork it, publish it, put it in your docs.",
+			"David writes the example repository for that use case against your product. Your engineer checks it is accurate. Fork it, publish it, put it in your docs.",
 	},
 	{
 		title: "A day-90 read-out",
 		detail:
-			"What changed, what the session and the first run showed, and what to work on next quarter, reported against the two or three numbers and targets we agree in week one, using numbers you already track. If we miss a target, the read-out says why.",
+			"What changed, what the session and the first run showed, and what to work on next quarter, reported against two or three numbers you already track and the targets we set for them in week one. If we miss a target, the read-out says why.",
 	},
 ] as const;
 
-/** The fixed 90-day arc. */
+/** The fixed 90-day arc. The review is the first step. */
 export const partnershipPlan: PartnershipStep[] = [
 	{
-		when: "Weeks 1–2",
-		what: "Kick-off call. You give us a trial or sandbox account. We agree two or three numbers you already track and a target for each, then record the first run.",
+		when: "Weeks 1–2 · product review",
+		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch and a target for each. David records the first run and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call.",
 	},
 	{
-		when: "Month 1 session",
-		what: "Walk through the friction log and agree the ranked list. Pick the use case to teach.",
+		when: "Decide",
+		what: "Within 30 days of the review call, continue to the full 90 days or stop. Either way you keep everything from the review.",
 	},
 	{
 		when: "Month 2",
-		what: "We write the runnable example. Your engineer reviews it. We prepare and run the live session together.",
+		what: "Agree the use case to teach. David writes the runnable example, your engineer reviews it, and we run the live session together. Monthly working session on the ranked list.",
 	},
 	{
-		when: "Month 3 session",
-		what: "Day-90 read-out. Decide what to work on next quarter, and whether to continue.",
+		when: "Month 3",
+		what: "Day-90 read-out against the targets. Decide what to work on next quarter, and whether to continue.",
 	},
 	{
-		when: "Throughout",
-		what: "Slack Connect for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days.",
+		when: "From month 2",
+		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days.",
 	},
 ];
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "partnership-90d",
-	name: "90-day partnership",
+	name: "Full 90-day partnership",
 	label: "Work with Rawkode Academy",
 	price: "£12,000",
 	priceShort: "£12k/90 days",
 	cadence:
-		"Or US$16,000. Invoiced monthly in advance. Stop after month one if it isn't working.",
+		"Or US$16,000 in total: the £5,000 review, then £3,500 a month for two months if you continue.",
 	summary:
-		"Everything above, plus David on Slack for the whole 90 days and a 60-minute working session each month with a written recap of decisions and next steps.",
+		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David and a day-90 read-out.",
 	included: [
-		"A recorded first run of your product and a written friction log",
-		"A ranked list of what to fix, explain and teach, reviewed monthly",
+		"The product review: recorded first run, friction log and ranked list",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
-		"One runnable example repository, written by us, open source",
-		"Three 60-minute working sessions with written recaps",
+		"One runnable example repository, written by David",
+		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
-		"A day-90 read-out against the numbers we agree in week one",
+		"A day-90 read-out against the targets we set in week one",
 	],
 	excluded: [
 		"Building or fixing your product. Your team owns the changes.",
@@ -141,51 +144,52 @@ export const partnershipOffer: PartnershipOffer = {
 /** Terms buyers, finance and procurement ask about. */
 export const partnershipTerms = [
 	{
-		title: "Month-one break",
+		title: "Stop after the review",
 		detail:
-			"After the first monthly session, either side can stop. You pay for month one only and keep the recording, the friction log and the first ranked list.",
+			"The review is the first step and is priced on its own. If you stop there you have paid £5,000 (US$6,500) and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
 	},
 	{
 		title: "After day 90",
 		detail:
-			"Stop at day 90 with nothing further to pay, or continue for another 90 days at the same price. Each further 90 days repeats the cycle on what has changed: a fresh first run, an updated ranked list, a new partner session and example, and three working sessions. Once you continue, you can stop with 30 days' notice.",
+			"Stop with nothing further to pay, or continue for another 90 days at £12,000. Each further 90 days repeats the cycle on what has changed: a fresh first run, an updated ranked list, a new partner session and example, and monthly working sessions. Once you continue, either side can stop with 30 days' notice.",
 	},
 	{
 		title: "Invoicing",
 		detail:
-			"Monthly in advance, 30-day payment terms. Prices exclude VAT where it applies. Fixed prices in GBP or USD: £12,000 or US$16,000 for the partnership, £5,000 or US$6,500 for the review. EUR on request.",
+			"The review is invoiced when we start. If you continue, the remaining £7,000 (US$9,500) is invoiced as two monthly payments of £3,500 (US$4,750). Fixed prices in GBP or USD, EUR on request, 30-day payment terms. Prices exclude VAT where it applies.",
 	},
 	{
 		title: "Paperwork",
 		detail:
-			"A one-page statement of work listing the deliverables, dates and targets above, before you sign. It names the contracting entity. We can work under your MSA and sign your NDA.",
+			"A one-page statement of work listing the deliverables, dates and targets, before you sign. It names the contracting entity and the liability cap. We can work under your MSA and sign your NDA.",
 	},
 	{
 		title: "Access and data",
 		detail:
-			"We work from a trial or sandbox account. We don't need production systems or customer data. Slack Connect is a shared channel your admins control and can close at any time.",
+			"We work from a trial or sandbox account and don't need production systems or customer data. Recordings are shared with you privately, and we delete our copies on request. Slack Connect is a shared channel your admins control and can close at any time.",
 	},
 	{
 		title: "Ownership",
 		detail:
-			"You own the first-run recording, the friction log, the ranked list and the read-out. The example repository is published under the Apache 2.0 licence. You approve the session title and use case, can reuse the recording on your own channels, and can ask us to unlist it.",
+			"You own the first-run recording, the friction log, the ranked list and the read-out. The example repository is licensed Apache 2.0, so you can use, change and ship it. You approve the session title and use case, can reuse the recording on your own channels, and can ask us to unlist it.",
 	},
 ] as const;
 
-/** Entry offer, independently useful and credited towards the partnership. */
+/** First step of every partnership, independently useful. */
 export const fitProofReview: PartnershipOffer = {
 	id: "product-review",
 	name: "Product review",
-	label: "Want to see the work first?",
+	label: "Step one",
 	price: "£5,000",
 	priceShort: "£5k",
 	cadence: "Or US$6,500. Delivered within 10 business days of access",
 	summary:
-		"The first part of the partnership on its own: David's recorded first run of your product and a written review you can act on whether or not you continue.",
+		"The first step of every partnership, and useful on its own: David's recorded first run of your product and a written review you can act on whether or not you continue.",
 	included: [
-		"The screen recording of David's first run, from sign-up to a first working result",
+		"The screen recording of David's first run, from first install or sign-up to a first working result",
 		"A friction log with every stall point and where it happened",
 		"A ranked list of what to fix, explain and teach, with a recommendation for each",
+		"Two or three numbers to watch, with a target for each",
 		"A one-hour call to go through it with your team",
 	],
 	excluded: [
@@ -193,8 +197,8 @@ export const fitProofReview: PartnershipOffer = {
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"We agree the product areas and the developer we're acting as before starting.",
-		"Start the partnership within 30 days of the review call and the full £5,000 counts towards it. The remaining £7,000 is invoiced as £3,500 in each of the first two months. The month-one break still applies: stop after month one and you have paid £8,500 in total.",
+		"We agree the product areas and the developer David is acting as before starting.",
+		"Continue to the full 90 days within 30 days of the review call for £7,000 more. The £5,000 you've paid counts in full.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
