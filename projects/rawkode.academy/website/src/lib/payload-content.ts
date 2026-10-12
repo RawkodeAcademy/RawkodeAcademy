@@ -342,7 +342,6 @@ export interface PayloadListOptions {
 	page?: number;
 	limit?: number;
 	view?: "summary" | "full";
-	releasedOnly?: boolean;
 	authorId?: string;
 	technologyId?: string;
 	showId?: string;
@@ -358,7 +357,6 @@ export interface PayloadListResult<C extends WebsiteCollectionName> {
 	docs: PayloadEntry<C>[];
 	page: number;
 	limit: number;
-	totalDocs: number;
 	hasNextPage: boolean;
 	nextReleaseAt?: string | null;
 }
@@ -704,7 +702,6 @@ export async function getPayloadCollectionPage<C extends WebsiteCollectionName>(
 		docs: PayloadDocument[];
 		page: number;
 		limit: number;
-		totalDocs: number;
 		hasNextPage: boolean;
 		nextReleaseAt?: string | null;
 	}>(`/v1/collections/${collectionSlug(collection)}?${query}`);
@@ -747,16 +744,52 @@ export async function getAllCollection<C extends WebsiteCollectionName>(
 	options: Omit<PayloadListOptions, "view" | "page" | "limit"> = {},
 ): Promise<PayloadEntry<C>[]> {
 	const entries: PayloadEntry<C>[] = [];
-	for (let page = 1; page <= 100; page += 1) {
-		const result = await getPayloadCollectionPage(collection, {
-			...options,
-			page,
-			limit: 100,
-			view: "summary",
-		});
-		entries.push(...(filter ? result.docs.filter(filter) : result.docs));
-		if (!result.hasNextPage) return entries;
+	const append = (docs: PayloadEntry<C>[]) => {
+		entries.push(...(filter ? docs.filter(filter) : docs));
+	};
+	const pageOptions = (page: number) => ({
+		...options,
+		page,
+		limit: 100,
+		view: "summary" as const,
+	});
+
+	if (collection !== "videos") {
+		for (let page = 1; page <= 100; page += 1) {
+			const result = await getPayloadCollectionPage(collection, pageOptions(page));
+			append(result.docs);
+			if (!result.hasNextPage) return entries;
+		}
+		throw new Error(`Payload collection ${collection} exceeded the 10000 item limit.`);
 	}
+
+	// Video archives and homepage counts need the full corpus. Read up to three
+	// later pages concurrently to avoid serial bridge round trips, while
+	// consuming them in page order and stopping only at the first final page.
+	let page = 1;
+	while (page <= 100) {
+		const result = await getPayloadCollectionPage(collection, pageOptions(page));
+		append(result.docs);
+		if (!result.hasNextPage) return entries;
+
+		const nextPages = [page + 1, page + 2, page + 3].filter((candidate) => candidate <= 100);
+		const pages = await Promise.all(
+			nextPages.map((candidate) =>
+				getPayloadCollectionPage(collection, pageOptions(candidate)),
+			),
+		);
+		let reachedEnd = false;
+		for (const next of pages) {
+			append(next.docs);
+			if (!next.hasNextPage) {
+				reachedEnd = true;
+				break;
+			}
+		}
+		if (reachedEnd) return entries;
+		page += 4;
+	}
+
 	throw new Error(`Payload collection ${collection} exceeded the 10000 item limit.`);
 }
 

@@ -115,32 +115,6 @@ export function selectWatchArchive<T extends WatchVideo>(
 	};
 }
 
-/** Select a server-paginated browse window when search is empty. */
-export function selectWatchArchivePage<T extends WatchVideo>(
-	videos: readonly T[],
-	total: number,
-	requestedPage: number,
-) {
-	const count = Number.isSafeInteger(total) && total > 0 ? total : 0;
-	const pageCount = Math.max(1, Math.ceil(count / WATCH_PAGE_SIZE));
-	const page = Math.min(
-		pageCount,
-		Math.max(1, Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1),
-	);
-	const offset = (page - 1) * WATCH_PAGE_SIZE;
-	const items = videos.slice(0, WATCH_PAGE_SIZE);
-	return {
-		query: "",
-		page,
-		pageCount,
-		total: count,
-		items,
-		first: count ? offset + 1 : 0,
-		last: count ? offset + items.length : 0,
-		showFeatured: count > 0 && page === 1,
-	};
-}
-
 export function watchArchiveHref(query: string, page = 1): string {
 	const params = new URLSearchParams();
 	if (query) params.set("q", query);

@@ -183,16 +183,14 @@ test("Watch is a static server-rendered archive with labeled GET search, existin
 	assert.match(dom.text, /Showing 1–24 of 329 videos/);
 	assert.deepEqual(
 		payloadCalls.filter((call) => call.kind === "all").map((call) => call.collection),
-		[],
-		"the unsearched browse archive does not read the full Payload video collection",
+		["videos"],
+		"the browse archive explicitly reads the full Payload video collection",
 	);
 	assert.deepEqual(
 		payloadCalls.filter((call) => call.kind === "page" && call.collection === "videos").map((call) => call.options.page),
-		[1],
-		"the first browse page is served from one bounded Payload read",
+		[1, 2, 3, 4],
+		"all video pages are read so later slugs do not disappear past the first 100",
 	);
-	assert.equal(payloadCalls.find((call) => call.kind === "page" && call.collection === "videos").options.limit, 24);
-	assert.equal(payloadCalls.find((call) => call.kind === "page" && call.collection === "videos").options.releasedOnly, true);
 	assert.equal(
 		dom.querySelector('nav[aria-label="Video library pages"] p').text,
 		"Page 1 of 14",
@@ -262,25 +260,6 @@ test("unfiltered archive features the latest once and keeps every published URL 
 		fixtures.map((video) => `/watch/${video.data.slug}`),
 	);
 	assert.equal(new Set(seen).size, 329);
-});
-
-test("unsearched later pages fetch one page plus the small first-page mosaic window", async () => {
-	const { dom, payloadCalls } = await renderArchive("?page=2");
-	const videoPages = payloadCalls
-		.filter((call) => call.kind === "page" && call.collection === "videos")
-		.map((call) => ({
-			page: call.options.page,
-			limit: call.options.limit,
-			releasedOnly: call.options.releasedOnly,
-		}));
-	assert.deepEqual(videoPages, [
-		{ page: 2, limit: 24, releasedOnly: true },
-		{ page: 1, limit: 10, releasedOnly: true },
-	]);
-	assert.match(dom.text, /Showing 25–48 of 329 videos/);
-	assert.match(dom.text, /Page 2 of 14/);
-	assert.equal(dom.querySelector(".layout-mastheadSummary").text, "329 videos in the library");
-	assert.equal(dom.querySelectorAll('[aria-label="Featured session"]').length, 0);
 });
 
 test("all published fixture URLs remain reachable once across ordinary 24-result pages", async () => {

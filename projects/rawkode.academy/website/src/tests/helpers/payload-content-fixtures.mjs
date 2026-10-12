@@ -101,13 +101,6 @@ export function createPayloadContentFixtures(collections = {}, { now = new Date(
 		const limit = Math.max(1, Math.min(100, Math.floor(options.limit ?? 50)));
 		calls.push({ kind: "page", collection, options: { ...options, page, limit } });
 		const matching = records(collection)
-			.filter((entry) => {
-				if (!options.releasedOnly) return true;
-				const publishedAt = entry.data?.publishedAt;
-				if (publishedAt == null || publishedAt === "") return true;
-				const timestamp = new Date(publishedAt).getTime();
-				return Number.isFinite(timestamp) && timestamp <= now.getTime();
-			})
 			.filter((entry) => matchesOptions(collection, entry, options))
 			.sort((left, right) => compareStableOrder(collection, left, right));
 		const start = (page - 1) * limit;
@@ -115,7 +108,6 @@ export function createPayloadContentFixtures(collections = {}, { now = new Date(
 			docs: matching.slice(start, start + limit),
 			page,
 			limit,
-			totalDocs: matching.length,
 			hasNextPage: start + limit < matching.length,
 			nextReleaseAt: null,
 		};
