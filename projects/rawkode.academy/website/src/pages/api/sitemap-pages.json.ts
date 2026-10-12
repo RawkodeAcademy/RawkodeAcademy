@@ -138,10 +138,10 @@ async function generateNavigationItems(
 		},
 		{
 			href: "/organizations",
-			title: "For Organizations",
+			title: "For teams building developer products",
 			category: "Organizations",
 			description:
-				"A £12,000, 90-day partnership for developer-product teams, backed by practical Academy education and product experience. Optional £5,000 review.",
+				"Work with Rawkode Academy for 90 days to understand what developers need and decide what to build, improve and explain. £12,000. Optional £5,000 product review.",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"A £12,000, 90-day partnership for developer-product teams: ongoing judgement across marketing, product and engineering. Optional £5,000 product review.",
+				"Work with Rawkode Academy for 90 days to understand what developers need and decide what to build, improve and explain. £12,000. Optional £5,000 product review.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",

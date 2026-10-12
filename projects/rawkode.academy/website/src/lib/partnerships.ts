@@ -41,8 +41,17 @@ const applicationBody = [
  * support promise. Demos and proof assets are deliberately bounded so the
  * partnership remains valuable without becoming an open-ended consultancy.
  */
+export const partnershipDescription =
+	"Work with Rawkode Academy for 90 days to understand what developers need and decide what to build, improve and explain. £12,000. Optional £5,000 product review.";
+
+export const partnershipHeroLede =
+	"Understand what they need, what’s changing, and where to focus next.";
+
 export const partnershipStartingPoint =
-	"Work with your marketing, product and engineering teams for 90 days to decide what to build, fix and explain for the developers you want to reach. As your product and industry change, we help keep priorities, developer experience and technical thought leadership moving together.";
+	"Work with Rawkode Academy for 90 days. Bring an experienced outside perspective to the decisions your marketing, product and engineering teams make: which problems matter, what needs to improve, and how to explain your product clearly.";
+
+export const organizationsStartingPoint =
+	"Work with Rawkode Academy for 90 days to decide which developer problems matter, what to improve and how to explain your product clearly. Bring an experienced outside perspective to decisions across marketing, product and engineering as the work develops.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "adoption-advisory",
@@ -51,15 +60,15 @@ export const partnershipOffer: PartnershipOffer = {
 	price: "£12,000",
 	priceShort: "£12k/90 days",
 	cadence:
-		"For the first 90 days. Direct partnerships are billed at £4,000/month. We agree together whether to continue for another 90 days.",
+		"The first commitment is 90 days. If you start directly, it is billed at £4,000 per month. Before it ends, we agree together whether to continue for another 90 days.",
 	summary:
-		"Identify the features and fixes that matter to your intended developers, respond to industry changes, and shape credible technical thought leadership. We bring outside technical judgement to priorities across developer relations, developer marketing, your backlog and ideal customers. We agree the work and responsibilities before starting.",
+		"Keep an experienced perspective involved as the work develops. Through Slack and monthly working sessions, we help you work through trade-offs, review what you have learned and revisit earlier advice. The context carries forward as your product changes and new questions come up.",
 	included: [
 		"Slack Connect for questions and feedback on the work we agree",
 		"One 60-minute session each month to review progress and decide what to prioritise next",
+		"A short written recap in Slack with decisions and next steps",
 		"One webinar every 90 days, co-hosted by us and your technical expert",
 		"One resource to go with the webinar: a short PDF guide or a code repository with an example developers can run",
-		"A short written recap in Slack with decisions and next steps",
 	],
 	excluded: [
 		"On-call support and incident response are outside the partnership.",
@@ -67,7 +76,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Extra webinars, new integrations and ongoing code repository maintenance are outside the partnership.",
 	],
 	notes: [
-		"Your team builds the product and handles fixes. We help turn developer problems into practical priorities.",
+		"The partnership also includes a joint webinar and a supporting resource to teach one agreed use case.",
 	],
 	mailto: buildMailto("90-day partnership application", applicationBody),
 };
@@ -76,12 +85,11 @@ export const partnershipOffer: PartnershipOffer = {
 export const fitProofReview: PartnershipOffer = {
 	id: "fit-proof-review",
 	name: "Product review",
-	label: "Not ready to commit to 90 days?",
+	label: "Prefer to start with a smaller piece of work?",
 	price: "£5,000",
 	priceShort: "£5k",
 	cadence: "Work agreed before starting",
-	summary:
-		"We use your product and give you a report with practical guidance to help developers adopt it.",
+	summary: "Start with a focused look at the developer experience.",
 	included: [
 		"A report on the developer experience and how to improve adoption",
 		"Priorities for what to improve, explain and teach next",
@@ -93,7 +101,7 @@ export const fitProofReview: PartnershipOffer = {
 	],
 	notes: [
 		"We agree the areas to review, access and a delivery date before starting. You can use the report whether or not you continue with the partnership.",
-		"Start the partnership within 14 days of our call and we credit the full £5,000 review fee against the first £12,000, 90-day commitment. That leaves £7,000 to continue. Where the review covers the work we agree, we start from those findings instead of repeating it.",
+		"Start the partnership within 14 days of the review call and the full £5,000 review fee counts towards the first £12,000, 90-day commitment. That leaves £7,000 to pay. The review and first 90 days cost £12,000 in total. Where the review covers the work we agree, we use those findings instead of repeating it.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
