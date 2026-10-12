@@ -760,6 +760,56 @@ export async function getPayloadCollectionPage<C extends WebsiteCollectionName>(
 	};
 }
 
+export interface PayloadHomepagePages {
+	videoPage: PayloadListResult<"videos">;
+	articlePage: PayloadListResult<"articles">;
+	newsPage: PayloadListResult<"news">;
+	coursePage: PayloadListResult<"courses">;
+	learningPathPage: PayloadListResult<"learningPaths">;
+	nextReleaseAt?: string | null;
+}
+
+type RawPayloadListResult = {
+	docs: PayloadDocument[];
+	page: number;
+	limit: number;
+	totalDocs: number;
+	hasNextPage: boolean;
+	nextReleaseAt?: string | null;
+};
+
+type RawPayloadHomepagePages = {
+	videoPage: RawPayloadListResult;
+	articlePage: RawPayloadListResult;
+	newsPage: RawPayloadListResult;
+	coursePage: RawPayloadListResult;
+	learningPathPage: RawPayloadListResult;
+	nextReleaseAt?: string | null;
+};
+
+/** Fetch the homepage's five bounded content windows through one Payload request. */
+export async function getPayloadHomepagePages(limit = 12): Promise<PayloadHomepagePages> {
+	const normalizedLimit = Math.max(1, Math.min(100, Math.floor(limit)));
+	const response = await getBridgeJson<RawPayloadHomepagePages>(
+		`/v1/homepage?limit=${normalizedLimit}`,
+	);
+	const mapPage = <C extends WebsiteCollectionName>(
+		collection: C,
+		page: RawPayloadListResult,
+	): PayloadListResult<C> => ({
+		...page,
+		docs: page.docs.map((doc) => toEntry(collection, doc)),
+	});
+	return {
+		...response,
+		videoPage: mapPage("videos", response.videoPage),
+		articlePage: mapPage("articles", response.articlePage),
+		newsPage: mapPage("news", response.newsPage),
+		coursePage: mapPage("courses", response.coursePage),
+		learningPathPage: mapPage("learningPaths", response.learningPathPage),
+	};
+}
+
 /** Fetch one bounded list page. Use this when a route can show a known window. */
 export async function listPayloadContent<C extends WebsiteCollectionName>(
 	collection: C,
