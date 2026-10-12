@@ -118,6 +118,35 @@ export function createPayloadContentFixtures(collections = {}, { now = new Date(
 			nextReleaseAt: null,
 		};
 	}
+	async function getPayloadHomepagePages(limit = 12) {
+		const normalizedLimit = Math.max(1, Math.min(100, Math.floor(limit)));
+		calls.push({ kind: "homepage", limit: normalizedLimit });
+		const pageFor = (collection) => {
+			const matching = records(collection)
+				.filter((entry) => {
+					const publishedAt = entry?.data?.publishedAt;
+					return !publishedAt || new Date(publishedAt) <= now;
+				})
+				.sort((left, right) => compareStableOrder(collection, left, right));
+			return {
+				docs: matching.slice(0, normalizedLimit),
+				page: 1,
+				limit: normalizedLimit,
+				totalDocs: matching.length,
+				hasNextPage: matching.length > normalizedLimit,
+				nextReleaseAt: null,
+			};
+		};
+		return {
+			videoPage: pageFor("videos"),
+			articlePage: pageFor("articles"),
+			newsPage: pageFor("news"),
+			coursePage: pageFor("courses"),
+			learningPathPage: pageFor("learningPaths"),
+			nextReleaseAt: null,
+		};
+	}
+
 	async function listPayloadContent(collection, options = {}) {
 		return (await getPayloadCollectionPage(collection, options)).docs;
 	}
