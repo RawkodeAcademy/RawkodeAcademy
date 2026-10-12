@@ -540,11 +540,15 @@ async function getBridgeJson<T>(path: string): Promise<T> {
 	recordNextReleaseAt(body.nextReleaseAt);
 	if (edgeCache) {
 		const cached = withCacheHeaders(response, body);
-		if (
-			cached.headers.get("Cache-Control") !== "no-store" &&
-			!isBoundaryExpired(body.nextReleaseAt)
-		) {
+		const boundaryExpired = isBoundaryExpired(body.nextReleaseAt);
+		const policyAllowsCache = cached.headers.get("Cache-Control") !== "no-store";
+		if (policyAllowsCache && !boundaryExpired) {
 			await edgeCache.put(cacheKey, cached.clone());
+			recordPayloadMetric("data-cache-write");
+		} else {
+			recordPayloadMetric("data-cache-skip");
+			if (boundaryExpired) recordPayloadMetric("data-cache-boundary-skip");
+			if (!policyAllowsCache) recordPayloadMetric("data-cache-policy-skip");
 		}
 	}
 	return body;
