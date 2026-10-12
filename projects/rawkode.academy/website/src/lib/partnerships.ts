@@ -39,6 +39,51 @@ const applicationBody = [
 	"Funding stage and when you'd like to start:",
 ].join("\n");
 
+/**
+ * Capacity. David does every review and partnership himself, so places are
+ * capped. The page prints these numbers as written: update `active` and
+ * `asOf` by hand whenever a review starts or a partnership ends, and never
+ * lower `places` or raise `active` to manufacture urgency.
+ */
+export const partnershipCapacity = {
+	/** Partners (including reviews in progress) David works with at once. */
+	places: 6,
+	/** Places taken today. */
+	active: 0,
+	/** New first-run reviews David can start in a calendar month. */
+	newStartsPerMonth: 2,
+	asOf: "12 October 2026",
+	/** Week the next review can start, e.g. "2 November 2026". Leave null until known. */
+	nextStart: null as string | null,
+} as const;
+
+export const partnershipPlacesOpen = Math.max(
+	0,
+	partnershipCapacity.places - partnershipCapacity.active,
+);
+
+export const partnershipIsFull = partnershipPlacesOpen === 0;
+
+/** One-line capacity statement used in the hero. */
+export const partnershipCapacitySummary = `At most ${partnershipCapacity.places} partners at a time and ${partnershipCapacity.newStartsPerMonth} new reviews a month, because David does the work himself.${partnershipCapacity.nextStart ? ` Next review start: week of ${partnershipCapacity.nextStart}.` : ""}`;
+
+/**
+ * Current availability, worded for the page. While no places are taken the
+ * page states the limits and the booking order rather than a count.
+ */
+export const partnershipAvailability = partnershipIsFull
+	? `All ${partnershipCapacity.places} places are taken as of ${partnershipCapacity.asOf}. Apply to join the waiting list; places go in the order reviews are booked.`
+	: partnershipCapacity.active > 0
+		? `${partnershipPlacesOpen} of ${partnershipCapacity.places} places open as of ${partnershipCapacity.asOf}. Places go in the order reviews are booked.`
+		: `Reviews start in the order they're booked, ${partnershipCapacity.newStartsPerMonth} a month. Once ${partnershipCapacity.places} partners are in progress, new reviews wait for a place.`;
+
+/**
+ * Honest statement that the paid offer is new. The method is not: David has
+ * done first runs of new tools in public on Rawkode Live for years.
+ */
+export const partnershipIsNewNote =
+	"The paid review is new. The method isn't: David has worked through new tools for the first time, live and unscripted, on Rawkode Live since 2020. The review is the same work done privately, timed, and written up as a ranked list.";
+
 /** Who the programme is for. Used in the hero eyebrow and search copy. */
 export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
@@ -57,7 +102,7 @@ export const partnershipStartingPoint =
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
-/** Example week-one numbers, so buyers can see what "agreed numbers" means. */
+/** Example numbers to watch, so buyers can see what "agreed numbers" means. */
 export const exampleMeasures =
 	"For example: time from sign-up or install to a first successful deploy, quick-start completion rate, or the share of trials that are still active after a week.";
 
@@ -65,33 +110,39 @@ export const exampleMeasures =
 export const partnershipOutcomes = [
 	{
 		title: "A recorded first run",
+		inReview: true,
 		detail:
 			"David works through your product from first install or sign-up to a first working result, as your target developer would, with the screen recorded and every stall point written down. Delivered in the first two weeks as part of the review.",
 	},
 	{
 		title: "A ranked list of what to fix, explain and teach",
+		inReview: true,
 		detail:
 			"Each friction point ranked by how much it costs developers and how hard it is to change, with a recommendation for each. Your product lead owns the list; David reviews progress with them every month.",
 	},
 	{
 		title: "A live session on Rawkode Academy",
+		inReview: false,
 		detail:
 			"David and your engineer teach one agreed use case live on Rawkode Live, labelled as a partner session. The recording stays published on Rawkode Academy and you can reuse it on your own channels.",
 	},
 	{
 		title: "A runnable example, written by David",
+		inReview: false,
 		detail:
 			"David writes the example repository for that use case against your product. Your engineer checks it is accurate. Fork it, publish it, put it in your docs.",
 	},
 	{
 		title: "A before-and-after re-run",
+		inReview: false,
 		detail:
 			"At day 90 David repeats the first run on what you've shipped since and checks every stall point in the original log: fixed, improved or still there. You get the count before and after, not just an impression.",
 	},
 	{
 		title: "A day-90 read-out",
+		inReview: false,
 		detail:
-			"What changed, what the re-run, the session and your own numbers show, and what to work on next quarter. We report against two or three numbers you already track and the targets we set in week one. If we miss a target, the read-out says why.",
+			"What changed, what the re-run, the session and your own numbers show, and what to work on next quarter. We report against two or three numbers you already track and the targets set on the review call. If we miss a target, the read-out says why.",
 	},
 ] as const;
 
@@ -99,7 +150,7 @@ export const partnershipOutcomes = [
 export const partnershipPlan: PartnershipStep[] = [
 	{
 		when: "Weeks 1–2 · first-run review",
-		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch and a target for each. David records the first run and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call.",
+		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch; targets are set on the review call, once the findings exist. David records the first run and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call, checking the list against your own funnel numbers.",
 	},
 	{
 		when: "Decide",
@@ -126,7 +177,7 @@ export const partnershipOffer: PartnershipOffer = {
 	price: "£12,000",
 	priceShort: "£12k/90 days",
 	cadence:
-		"Or US$15,600: the £5,000 (US$6,500) review, then £3,500 (US$4,550) a month for two months if you continue.",
+		"Or US$15,600. The £5,000 (US$6,500) review counts towards it, so continuing costs £7,000 more: £3,500 (US$4,550) a month for two months.",
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
 	included: [
@@ -136,7 +187,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
 		"A day-90 re-run of the first run, compared with the original",
-		"A day-90 read-out against the targets we set in week one",
+		"A day-90 read-out against the targets set on the review call",
 	],
 	excluded: [
 		"Building or fixing your product. Your team owns the changes.",
@@ -208,7 +259,8 @@ export const fitProofReview: PartnershipOffer = {
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"Before starting we agree the product areas and who David is acting as. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two.",
+		"Before starting we agree the product areas, who David is acting as, and where the run ends: a first working result, or something closer to production, such as a highly available install, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source install to the move to the paid product.",
+		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
 		"After the review call you have 30 days to decide. Continue to the full 90 days for £7,000 (US$9,100) more, or stop and keep everything.",
 	],
 	mailto: buildMailto("First-run review request", applicationBody),
@@ -220,6 +272,8 @@ export const fitProofReview: PartnershipOffer = {
  */
 export const sampleFrictionLog = [
 	{
+		rank: 1,
+		effort: "Medium",
 		at: "04:10",
 		step: "Install the CLI",
 		finding:
@@ -230,6 +284,8 @@ export const sampleFrictionLog = [
 			"Ship a static build and check the platform before installing.",
 	},
 	{
+		rank: 2,
+		effort: "Low",
 		at: "11:45",
 		step: "Connect a cluster",
 		finding:
@@ -240,6 +296,8 @@ export const sampleFrictionLog = [
 			"Show the --context flag in the first command and print the active context on connect.",
 	},
 	{
+		rank: 4,
+		effort: "Low",
 		at: "23:30",
 		step: "First deployment",
 		finding:
@@ -249,7 +307,33 @@ export const sampleFrictionLog = [
 		recommendation:
 			"End the quick start with a port-forward and a curl, then link a guide on ingress.",
 	},
+	{
+		rank: 3,
+		effort: "Medium",
+		at: "41:05",
+		step: "Move to the hosted product",
+		finding:
+			"Moving from the open-source install to the hosted product means re-entering every setting by hand. No export, and the docs don't mention it.",
+		impact: "High",
+		action: "Fix",
+		recommendation:
+			"Add an import command that reads the open-source config, and link it from the upgrade page.",
+	},
 ] as const;
+
+/**
+ * Illustrative only: how one finding becomes a number to watch and a day-90
+ * check. Uses the fictional product from the sample log.
+ */
+export const sampleFindingToNumber = {
+	finding:
+		"Rank 2: the quick start assumes a kubeconfig context called default.",
+	number:
+		"Share of new installs that complete the quick start, from your own product analytics.",
+	target: "Set on the review call, against your current figure.",
+	check:
+		"At day 90 David re-runs the quick start on the shipped fix, and the read-out reports the share before and after from your data.",
+} as const;
 
 /** Compatibility shape for components that render the primary offer. */
 export const partnershipTiers = [partnershipOffer] as const;

@@ -1,7 +1,7 @@
 import { defineAction } from "astro:actions";
-import { z } from "astro/zod";
 import { EmailMessage } from "cloudflare:email";
 import { env } from "cloudflare:workers";
+import { z } from "astro/zod";
 import { applicationPathLabels, applicationPaths } from "@/lib/partnerships";
 
 // Sender must be on a domain onboarded to Cloudflare Email Routing.
@@ -75,7 +75,7 @@ export const partnership = {
 				...(input.technicalBuyer
 					? [
 							"",
-							"Who decides whether to use your product:",
+							"Who approves the spend and decides on use:",
 							input.technicalBuyer,
 						]
 					: []),

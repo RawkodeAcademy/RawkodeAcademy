@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { getPublishedVideos } from "@/lib/content";
+import { partnershipIsNewNote } from "@/lib/partnerships";
 import { getSiteStats } from "@/lib/site-stats";
 
 interface Props {
@@ -26,6 +27,10 @@ const episodesFor = (id: string) =>
 	videos.filter((video) => showId(video.data.show) === id).length;
 
 const rawkodeLiveEpisodes = episodesFor("rawkode-live");
+// Public first runs: episodes where David works through a tool for the first time.
+const firstRunEpisodes = videos.filter((video) =>
+	String(video.data.slug ?? video.id).startsWith("hands-on-introduction"),
+).length;
 const klusteredEpisodes = episodesFor("klustered");
 
 /**
@@ -34,7 +39,7 @@ const klusteredEpisodes = episodesFor("klustered");
  */
 const youtube = {
 	subscribers: "28,000",
-	lifetimeViews: "1.1 million",
+	lifetimeViews: "Over 1.1 million",
 	asOf: "October 2026",
 };
 
@@ -42,13 +47,14 @@ const youtube = {
 // are the same words people gave us, attributed the same way.
 const featuredIds = compact
 	? ["reggie-wilkerson", "solomon-hykes"]
-	: ["reggie-wilkerson", "mikkel-hegnhoj", "solomon-hykes", "jens-neuse"];
+	: ["jens-neuse", "reggie-wilkerson", "solomon-hykes", "mikkel-hegnhoj"];
 const context: Record<string, string> = {
 	"reggie-wilkerson":
 		"On advisory work: positioning, demos and ongoing guidance",
-	"mikkel-hegnhoj": "On a developer programme David built for Fermyon",
+	"mikkel-hegnhoj":
+		"On Advent of Spin, the hands-on challenges Rawkode Academy created for Fermyon",
 	"solomon-hykes": "On having his product used live",
-	"jens-neuse": "On having his product used live",
+	"jens-neuse": "On David's public first run of WunderGraph on Rawkode Live",
 };
 const testimonials = (await getCollection("testimonials"))
 	.filter((entry) => featuredIds.includes(entry.id))
@@ -118,10 +124,14 @@ const examples = [
 			<div><dt>Lifetime YouTube views</dt><dd>{youtube.lifetimeViews}</dd></div>
 			<div><dt><a href="/shows/rawkode-live">Rawkode Live</a> episodes</dt><dd>{rawkodeLiveEpisodes}</dd></div>
 			<div><dt><a href="/shows/klustered">Klustered</a> episodes</dt><dd>{klusteredEpisodes}</dd></div>
+			<div><dt>Public first runs of new tools</dt><dd>{firstRunEpisodes}</dd></div>
 		</dl>
 		<p class="partnership-proof__meta">YouTube figures from the public channel, {youtube.asOf}. {academyStats.videoCount} videos in the <a href="/watch">Academy catalogue</a>. We don't promise view counts for partner sessions.</p>
 
 		<p class="editorial-card__body">The audience is platform, cloud-native and infrastructure engineers. Recent sessions include <a href="/watch/manage-and-run-ai-ml-models-as-oci-artifacts-with-oras">running AI/ML models as OCI artifacts with ORAS</a>, <a href="/watch/mcp-servers-for-rust-developers">MCP servers for Rust developers</a> and <a href="/watch/introducing-wassette-securing-mcp-with-webassembly">securing MCP with WebAssembly</a>.</p>
+
+		<p class="editorial-card__body">{partnershipIsNewNote}</p>
+		<p class="editorial-card__body">Developer platforms and APIs: <a href="/watch/hands-on-introduction-to-wundergraph">WunderGraph</a> · <a href="/watch/hands-on-introduction-to-dagger">Dagger</a> · <a href="/watch/hands-on-introduction-to-restate">Restate</a>. Data and state: <a href="/watch/hands-on-introduction-to-schemahero">SchemaHero</a> · <a href="/watch/hands-on-introduction-to-litestream">Litestream</a> · <a href="/watch/hands-on-introduction-to-spicedb">SpiceDB</a>.</p>
 
 		<div class="partnership-proof__quotes">
 			{testimonials.map((entry) => (
@@ -141,7 +151,7 @@ const examples = [
 
 		{!compact && (
 			<>
-				<p class="editorial-card__body">Before Rawkode Academy, David did this work from the inside at developer-tool companies:</p>
+				<p class="editorial-card__body">Before Rawkode Academy, David worked inside developer-tool companies. That wasn't review work, but it is where he learned what developers need from a product in their first hour:</p>
 				<ul class="editorial-list">
 					{examples.map((example) => (
 						<li>

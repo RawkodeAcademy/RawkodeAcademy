@@ -67,7 +67,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.technicalBuyer)" :disabled="loading">
-					<Field.Label :class="s.label">Who decides whether to use your product? <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Who approves the spend, and who decides whether to use it? <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="technicalBuyer"
 						type="text"
@@ -88,7 +88,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.proofAssets)" :disabled="loading">
-					<Field.Label :class="s.label">Product, demo, docs, or repository <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Product, demo, docs or repository, and can you give us a trial or sandbox account? <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="proofAssets"
 						type="text"
@@ -124,16 +124,15 @@
 </template>
 
 <script setup lang="ts">
-import { Field } from "@ark-ui/vue/field";
-import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
-import { academyForms } from "@rawkodeacademy/design-system";
-
 import { actions, isInputError } from "astro:actions";
+import { Field } from "@ark-ui/vue/field";
+import { academyForms } from "@rawkodeacademy/design-system";
+import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
 import {
+	type ApplicationPath,
 	applicationPathLabels,
 	applicationPaths,
 	resolveApplicationPath,
-	type ApplicationPath,
 } from "@/lib/partnerships";
 
 const s = academyForms();
