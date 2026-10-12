@@ -4,7 +4,7 @@
 		<p :id="errorId" role="alert" aria-atomic="true" :class="error ? s.error : s.hidden">{{ error }}</p>
 		<div v-if="submitted" :class="[s.panel, s.status]">
 			<h3 :class="s.heading">Application received</h3>
-			<p :class="s.copy">We read every application and reply either way.</p>
+			<p :class="s.copy">David reads every application and replies within two business days.</p>
 		</div>
 		<form v-else method="POST" :class="s.form" @submit.prevent="submit" :aria-busy="!ready || loading" :aria-describedby="error ? errorId : undefined">
 			<fieldset :class="[s.form, 'form-controls']" :disabled="!ready || loading" aria-label="Partnership application">
@@ -98,12 +98,12 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.budgetQuarter)" :disabled="loading">
-					<Field.Label :class="s.label">Budget and preferred start date <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Funding stage and when you’d like to start <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="budgetQuarter"
 						type="text"
 						name="budgetQuarter"
-						placeholder="For example: Q4 2026, £4k/month"
+						placeholder="For example: Series A, January 2027"
 					/>
 					<Field.ErrorText v-if="fieldErrors.budgetQuarter" :class="s.fieldError">{{ fieldErrors.budgetQuarter }}</Field.ErrorText>
 				</Field.Root>
@@ -132,6 +132,7 @@ import { actions, isInputError } from "astro:actions";
 import {
 	applicationPathLabels,
 	applicationPaths,
+	resolveApplicationPath,
 	type ApplicationPath,
 } from "@/lib/partnerships";
 
@@ -160,7 +161,7 @@ const fieldErrors = ref<Record<string, string>>({});
 const statusMessage = computed(() => {
 	if (!ready.value) return "Loading application form...";
 	if (submitted.value)
-		return "Application received. We read every application and reply either way.";
+		return "Application received. David reads every application and replies within two business days.";
 	return loading.value ? "Sending application..." : "";
 });
 
@@ -181,8 +182,10 @@ const onDocumentClick = (event: MouseEvent) => {
 
 onMounted(() => {
 	ready.value = true;
-	const route = new URLSearchParams(window.location.search).get("route");
-	if (route && isApplicationPath(route)) {
+	const route = resolveApplicationPath(
+		new URLSearchParams(window.location.search).get("route"),
+	);
+	if (route) {
 		path.value = route;
 	}
 	document.addEventListener("click", onDocumentClick);

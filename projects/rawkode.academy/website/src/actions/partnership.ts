@@ -86,7 +86,7 @@ export const partnership = {
 					? ["", "Product, demo, docs, or repository:", input.proofAssets]
 					: []),
 				...(input.budgetQuarter
-					? ["", "Budget and preferred start date:", input.budgetQuarter]
+					? ["", "Funding stage and start:", input.budgetQuarter]
 					: []),
 				...(input.links ? ["", "Links worth a look:", input.links] : []),
 				"",
