@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getCollection, getPayloadRequestState } from "@/lib/payload-content";
+import { getCollection, getPayloadHomepagePages, getPayloadRequestState } from "@/lib/payload-content";
 
 export const prerender = false;
 
@@ -7,7 +7,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
 	const env = getPayloadRequestState()?.env;
 	if (!env?.PAYLOAD_PREVIEW_PR) {
 		return new Response(null, {
@@ -57,6 +57,25 @@ export const GET: APIRoute = async () => {
 			if (view === "full" && (!Array.isArray(projection.doc.contentResources) || !projection.doc.contentResources.some(resource => isRecord(resource) && isRecord(resource.embedConfig) && resource.embedConfig.container === "webcontainer"))) {
 				throw new Error("The full module projection is missing its sanitized demo metadata.");
 			}
+		}
+
+		if (new URL(request.url).searchParams.get("homepage") === "1") {
+			const homepage = await getPayloadHomepagePages(8);
+			return new Response(JSON.stringify({
+				homepage: {
+					videos: homepage.videoPage.totalDocs,
+					articles: homepage.articlePage.totalDocs,
+					news: homepage.newsPage.totalDocs,
+					courses: homepage.coursePage.totalDocs,
+					learningPaths: homepage.learningPathPage.totalDocs,
+				},
+				readOnly: true,
+			}), {
+				headers: {
+					"Content-Type": "application/json; charset=utf-8",
+					"Cache-Control": "no-store",
+				},
+			});
 		}
 
 		return new Response(
