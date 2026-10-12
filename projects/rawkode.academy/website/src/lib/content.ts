@@ -1,6 +1,6 @@
 import {
 	getAllCollection,
-	getPayloadCollectionPage,
+	getPayloadHomepagePages,
 	listPayloadContent,
 	type PayloadEntry,
 } from "@/lib/payload-content";
@@ -166,34 +166,8 @@ function latestContentFromCollections(
 /** Load bounded released windows for the homepage; Payload supplies archive totals. */
 export async function getHomepageContent(limit = 12, _now = new Date()) {
 	const collectionWindow = Math.max(8, limit);
-	const [videoPage, articlePage, newsPage, coursePage, learningPathPage] =
-		await Promise.all([
-			getPayloadCollectionPage("videos", {
-				limit: collectionWindow,
-				releasedOnly: true,
-				view: "summary",
-			}),
-			getPayloadCollectionPage("articles", {
-				limit: collectionWindow,
-				releasedOnly: true,
-				view: "summary",
-			}),
-			getPayloadCollectionPage("news", {
-				limit: collectionWindow,
-				releasedOnly: true,
-				view: "summary",
-			}),
-			getPayloadCollectionPage("courses", {
-				limit: collectionWindow,
-				releasedOnly: true,
-				view: "summary",
-			}),
-			getPayloadCollectionPage("learningPaths", {
-				limit: collectionWindow,
-				releasedOnly: true,
-				view: "summary",
-			}),
-		]);
+	const { videoPage, articlePage, newsPage, coursePage, learningPathPage } =
+		await getPayloadHomepagePages(collectionWindow);
 	const videos = videoPage.docs;
 	const articles = articlePage.docs;
 	const news = newsPage.docs;
