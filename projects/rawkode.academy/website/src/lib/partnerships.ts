@@ -44,7 +44,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a £5,000 product review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to the full 90-day partnership for £7,000 more only if it's useful.";
+	"Start with a £5,000 first-run review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to the full 90-day partnership for £7,000 more only if it's useful.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -53,7 +53,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a product review. David works through your product the way a new user would, from first install or sign-up to a first working result, records every place he stalls and tells you plainly what he found. If that's useful, continue to the full 90 days: a live session on Rawkode Live with your engineer, a runnable example David writes, monthly working sessions and a day-90 read-out.";
+	"Every partnership starts with a first-run review. David works through your product the way a new user would, from first install or sign-up to a first working result, records every place he stalls and tells you plainly what he found. If that's useful, continue to the full 90 days: a live session on Rawkode Live with your engineer, a runnable example David writes, monthly working sessions and a day-90 read-out.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -98,7 +98,7 @@ export const partnershipOutcomes = [
 /** The fixed 90-day arc. The review is the first step. */
 export const partnershipPlan: PartnershipStep[] = [
 	{
-		when: "Weeks 1–2 · product review",
+		when: "Weeks 1–2 · first-run review",
 		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch and a target for each. David records the first run and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call.",
 	},
 	{
@@ -130,7 +130,7 @@ export const partnershipOffer: PartnershipOffer = {
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
 	included: [
-		"The product review: recorded first run, friction log and ranked list",
+		"The first-run review: recorded first run, friction log and ranked list",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
@@ -172,7 +172,12 @@ export const partnershipTerms = [
 	{
 		title: "Access and data",
 		detail:
-			"We work from a trial or sandbox account and don't need production systems or customer data. Recordings are shared with you privately, and we delete our copies on request. Slack Connect is a shared channel your admins control and can close at any time.",
+			"We work from a trial or sandbox account and don't need production systems or customer data. Recordings are shared with you privately and we delete our copies 90 days after the work ends, or sooner if you ask. Slack Connect is a shared channel your admins control and can close at any time.",
+	},
+	{
+		title: "If David can't make it",
+		detail:
+			"David does the work himself. If he can't deliver a scheduled item, we move the date with your agreement or refund that part of the fee.",
 	},
 	{
 		title: "Ownership",
@@ -184,7 +189,7 @@ export const partnershipTerms = [
 /** First step of every partnership, independently useful. */
 export const fitProofReview: PartnershipOffer = {
 	id: "product-review",
-	name: "Product review",
+	name: "First-run review",
 	label: "Step one",
 	price: "£5,000",
 	priceShort: "£5k",
@@ -203,10 +208,10 @@ export const fitProofReview: PartnershipOffer = {
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"We agree the product areas and the developer David is acting as before starting.",
+		"Before starting we agree the product areas and who David is acting as. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two.",
 		"After the review call you have 30 days to decide. Continue to the full 90 days for £7,000 (US$9,100) more, or stop and keep everything.",
 	],
-	mailto: buildMailto("Product review request", applicationBody),
+	mailto: buildMailto("First-run review request", applicationBody),
 };
 
 /**
@@ -253,7 +258,7 @@ export const partnershipTierNames = partnershipTiers.map((offer) => offer.name);
 /** Options for the application form's preferred route field. */
 export const applicationPaths = [
 	"90-day partnership",
-	"Product review",
+	"First-run review",
 	"Not sure yet",
 ] as const;
 export type ApplicationPath = (typeof applicationPaths)[number];
@@ -261,14 +266,15 @@ export type ApplicationPath = (typeof applicationPaths)[number];
 /** Plain labels for form values and preselection links. */
 export const applicationPathLabels: Record<ApplicationPath, string> = {
 	"90-day partnership": partnershipOffer.name,
-	"Product review": fitProofReview.name,
+	"First-run review": fitProofReview.name,
 	"Not sure yet": "Not sure yet",
 };
 
 /** Route values from earlier links that still preselect the right option. */
 export const legacyApplicationPaths: Record<string, ApplicationPath> = {
 	"Adoption Advisory": "90-day partnership",
-	"Fit & Proof Review": "Product review",
+	"Fit & Proof Review": "First-run review",
+	"Product review": "First-run review",
 };
 
 /** Resolve a ?route= value, including legacy names, to a current path. */

@@ -141,7 +141,7 @@ async function generateNavigationItems(
 			title: "For teams building developer products",
 			category: "Organizations",
 			description:
-				"Work with Rawkode Academy for 90 days to understand what developers need and decide what to build, improve and explain. £12,000. Optional £5,000 product review.",
+				"Find out where developers give up on your product. Start with a £5,000 first-run review, and continue to a 90-day partnership, £12,000 in total, only if it's useful.",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -161,7 +161,7 @@ async function generateNavigationItems(
 			title: "Partner application",
 			category: "Organizations",
 			description:
-				"Apply for a Rawkode Academy partnership or a product review",
+				"Apply for a Rawkode Academy first-run review or partnership",
 			keywords: [
 				"fit check",
 				"adoption",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Work with Rawkode Academy for 90 days to understand what developers need and decide what to build, improve and explain. £12,000. Optional £5,000 product review.",
+				"Find out where developers give up on your product. Start with a £5,000 first-run review, and continue to a 90-day partnership, £12,000 in total, only if it's useful.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",
