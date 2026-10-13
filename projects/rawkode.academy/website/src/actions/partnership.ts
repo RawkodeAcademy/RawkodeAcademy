@@ -6,6 +6,8 @@ import { applicationPathLabels, applicationPaths } from "@/lib/partnerships";
 
 const ATTIO_API_URL = "https://api.attio.com/v2";
 const DEFAULT_DEAL_STAGE = "Replied";
+const DEFAULT_DEAL_VALUE_USD = 5000;
+const DEFAULT_OFFER_ATTRIBUTE = "offer";
 const DEAL_OWNER = "david@rawkode.academy";
 
 interface AttioRecordResponse {
@@ -151,18 +153,25 @@ export const partnership = {
 					);
 				}
 
-				// Attio's deal currency is configured on the built-in `value`
-				// attribute and cannot be overridden per record. This workspace
-				// uses USD, so these are the page's exact dollar prices.
-				const dealValue = input.path === "90-day partnership" ? 12000 : 5000;
 				const dealStage =
 					env.ATTIO_INBOUND_DEAL_STAGE?.trim() || DEFAULT_DEAL_STAGE;
+				// Attio's built-in deal value inherits its currency from the
+				// workspace attribute, which David has configured as USD.
+				const configuredValue = Number(env.ATTIO_INBOUND_DEAL_VALUE_USD);
+				const dealValue =
+					Number.isFinite(configuredValue) && configuredValue > 0
+						? configuredValue
+						: DEFAULT_DEAL_VALUE_USD;
+				const offerAttribute =
+					env.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE?.trim() ||
+					DEFAULT_OFFER_ATTRIBUTE;
 				try {
 					await attioRequest(apiKey, "/objects/deals/records", "POST", {
 						name: `${input.company}: ${applicationPathLabels[input.path]}`,
 						stage: dealStage,
 						owner: DEAL_OWNER,
 						value: dealValue,
+						[offerAttribute]: "review",
 						associated_people: [
 							{
 								target_object: "people",

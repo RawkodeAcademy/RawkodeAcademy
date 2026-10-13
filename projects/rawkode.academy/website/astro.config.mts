@@ -295,6 +295,16 @@ export default defineConfig({
 				access: "public",
 				default: "Replied",
 			}),
+			ATTIO_INBOUND_DEAL_VALUE_USD: envField.string({
+				context: "server",
+				access: "public",
+				default: "5000",
+			}),
+			ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: envField.string({
+				context: "server",
+				access: "public",
+				default: "offer",
+			}),
 		},
 	},
 	security: {

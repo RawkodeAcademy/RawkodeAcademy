@@ -8,6 +8,8 @@ let attioApiKey: string | undefined;
 const workerEnv = {
 	PARTNERSHIP_FORM_RATE_LIMITER: { limit },
 	ATTIO_INBOUND_DEAL_STAGE: undefined as string | undefined,
+	ATTIO_INBOUND_DEAL_VALUE_USD: undefined as string | undefined,
+	ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: undefined as string | undefined,
 };
 const imports: Record<string, unknown> = {
 	"astro:actions": { defineAction: (definition: unknown) => definition },
@@ -21,11 +23,13 @@ const imports: Record<string, unknown> = {
 		applicationPaths: [
 			"90-day partnership",
 			"First-run review",
+			"Annual partnership",
 			"Not sure yet",
 		],
 		applicationPathLabels: {
 			"90-day partnership": "Full 90-day partnership",
 			"First-run review": "First-run review",
+			"Annual partnership": "Annual partnership",
 			"Not sure yet": "Not sure yet",
 		},
 	},
@@ -76,6 +80,8 @@ const requestBody = (call: readonly unknown[]) =>
 beforeEach(() => {
 	attioApiKey = "attio-test-key";
 	workerEnv.ATTIO_INBOUND_DEAL_STAGE = undefined;
+	workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = undefined;
+	workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = undefined;
 	limit.mockReset().mockResolvedValue({ success: true });
 	vi.stubGlobal("fetch", vi.fn());
 });
@@ -121,7 +127,7 @@ describe("partnership Attio action", () => {
 
 	it.each([
 		["First-run review", 5000],
-		["90-day partnership", 12000],
+		["90-day partnership", 5000],
 	])("writes person, company, note and a %s deal worth $%i", async (path, value) => {
 		vi.mocked(fetch)
 			.mockResolvedValueOnce(recordResponse("company-id"))
@@ -168,6 +174,7 @@ describe("partnership Attio action", () => {
 			stage: "Replied",
 			owner: "david@rawkode.academy",
 			value,
+			offer: "review",
 			associated_company: {
 				target_object: "companies",
 				target_record_id: "company-id",
@@ -207,6 +214,24 @@ describe("partnership Attio action", () => {
 
 		const deal = vi.mocked(fetch).mock.calls[3]!;
 		expect(requestBody(deal).data.values.stage).toBe("Qualified");
+	});
+
+	it("uses the configured deal value and Offer attribute slug", async () => {
+		workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = "6500";
+		workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = "inbound_offer";
+		vi.mocked(fetch)
+			.mockResolvedValueOnce(recordResponse("company-id"))
+			.mockResolvedValueOnce(recordResponse("person-id"))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(recordResponse("deal-id"));
+
+		await apply.handler(input, context);
+
+		const deal = vi.mocked(fetch).mock.calls[3]!;
+		expect(requestBody(deal).data.values).toMatchObject({
+			value: 6500,
+			inbound_offer: "review",
+		});
 	});
 
 	it("returns a mailto fallback when a core Attio write fails", async () => {
