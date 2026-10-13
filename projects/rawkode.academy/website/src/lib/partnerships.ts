@@ -178,7 +178,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "Cross-partner patterns",
 		detail:
-			"Each quarter, an anonymised write-up of the places engineers got stuck across every partner's review, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
+			"Each quarter, you get an anonymised write-up of the places engineers got stuck across every partner's review, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
 	},
 	{
 		title: "The Technology Matrix, walked through",
@@ -245,7 +245,7 @@ export const renewalPerks: PartnershipPerk[] = [
 export const partnershipPlan: PartnershipStep[] = [
 	{
 		when: "Weeks 1–2 · product review",
-		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch; targets are set on the review call, once the findings exist. David carries out the product review and delivers the written report within 10 business days, then walks your team through it in a one-hour call, checking the report against your own funnel numbers.",
+		what: "We start with a kick-off call, and you give us a trial or sandbox account. We agree the numbers to watch, and we set targets on the review call once the findings exist. David carries out the product review and delivers the written report within 10 business days, then walks your team through it in a one-hour call, checking the report against your own funnel numbers.",
 	},
 	{
 		when: "Decide",
@@ -257,7 +257,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Month 3",
-		what: "David repeats the review on what you've shipped and checks each place engineers got stuck. Day-90 read-out against the targets. Decide what to work on next quarter.",
+		what: "David repeats the review on what you've shipped and checks each place engineers got stuck. At the day-90 read-out, we compare the results with the targets and decide what to work on next quarter.",
 	},
 	{
 		when: "From month 2",
@@ -284,7 +284,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
 		"A monthly all-partner call with David and the other current partners on industry changes",
-		"Extras for partners: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions where they help both sides",
+		"Partners also get extras: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions where they help both sides.",
 		"A day-90 review compared with the original",
 		"A day-90 read-out against the targets set on the review call",
 	],

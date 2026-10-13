@@ -55,6 +55,16 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 		/Your monthly 60-minute working sessions with David run all year too/,
 	);
 	assert.match(partnershipCopy, /exclude VAT where it applies/);
+	assert.match(
+		partnershipCopy,
+		/We start with a kick-off call, and you give us a trial or sandbox account\./,
+	);
+	assert.match(
+		partnershipCopy,
+		/At the day-90 read-out, we compare the results with the targets and decide what to work on next quarter\./,
+	);
+	assert.match(partnershipCopy, /Each quarter, you get an anonymised write-up/);
+	assert.match(partnershipCopy, /Partners also get extras:/);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
 
 	const deliverables = page.indexOf('id="what-you-get-title"');
