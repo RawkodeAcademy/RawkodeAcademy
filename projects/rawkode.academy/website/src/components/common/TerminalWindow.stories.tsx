@@ -212,7 +212,7 @@ export const MultipleCommands: Story = {
               Configuration saved to ~/.rawkode/config.yaml
             </TerminalWindow>
             
-            <TerminalWindow title="First Run">
+            <TerminalWindow title="Initial run">
               $ rawkode create my-first-app
               <span class="text-primary">Creating new application 'my-first-app'...</span>
               ✓ Generated project structure

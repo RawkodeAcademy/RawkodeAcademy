@@ -10,7 +10,7 @@
 			<p :class="s.copy">David reads every enquiry and replies within two business days.</p>
 		</div>
 		<form v-else method="POST" :class="s.form" @submit.prevent="submit" :aria-busy="!ready || loading" :aria-describedby="error ? errorId : undefined">
-			<fieldset :class="[s.form, 'form-controls']" :disabled="!ready || loading" aria-label="First-run review enquiry" @focusin="trackStarted">
+			<fieldset :class="[s.form, 'form-controls']" :disabled="!ready || loading" aria-label="Product review enquiry" @focusin="trackStarted">
 				<input type="hidden" name="path" :value="path" />
 				<div class="form-honeypot" aria-hidden="true">
 					<label :for="honeypotId">Website</label>
@@ -113,7 +113,7 @@ const fallback = ref(false);
 const error = ref("");
 const fieldErrors = ref<Record<string, string>>({});
 const fallbackMailto = computed(() => {
-	const subject = encodeURIComponent("First-run review enquiry");
+	const subject = encodeURIComponent("Product review enquiry");
 	const body = encodeURIComponent(
 		[
 			`Name: ${name.value}`,

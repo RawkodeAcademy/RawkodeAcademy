@@ -25,13 +25,13 @@ const imports: Record<string, unknown> = {
 	"@/lib/partnerships": {
 		applicationPaths: [
 			"90-day partnership",
-			"First-run review",
+			"Product review",
 			"Annual partnership",
 			"Not sure yet",
 		],
 		applicationPathLabels: {
 			"90-day partnership": "Full 90-day partnership",
-			"First-run review": "First-run review",
+			"Product review": "Product review",
 			"Annual partnership": "Annual partnership",
 			"Not sure yet": "Not sure yet",
 		},
@@ -63,7 +63,7 @@ const input = {
 	name: "Ada Lovelace",
 	email: "ada@analytical.engine",
 	company: "Analytical Engine",
-	path: "First-run review",
+	path: "Product review",
 	message: "Please review our Kubernetes quick start.",
 	website: "",
 };
@@ -132,7 +132,7 @@ describe("partnership Attio action", () => {
 	});
 
 	it.each([
-		["First-run review", 5000],
+		["Product review", 5000],
 		["90-day partnership", 5000],
 	])("writes person, company, note and a %s deal worth $%i", async (path, value) => {
 		vi.mocked(fetch)
@@ -178,7 +178,7 @@ describe("partnership Attio action", () => {
 		expect(requestBody(note).data).toMatchObject({
 			parent_object: "people",
 			parent_record_id: "person-id",
-			title: `Partnership enquiry: ${path === "90-day partnership" ? "Full 90-day partnership" : "First-run review"}`,
+			title: `Partnership enquiry: ${path === "90-day partnership" ? "Full 90-day partnership" : "Product review"}`,
 			content: input.message,
 		});
 		expect(deal[0]).toBe("https://api.attio.com/v2/objects/deals/records");

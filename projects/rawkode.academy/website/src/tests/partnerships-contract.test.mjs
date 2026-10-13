@@ -22,12 +22,27 @@ const partnershipCopy = readFileSync(
 	"utf8",
 );
 
-test("partnership page leads with the private fixed-price review", () => {
+test("partnership page uses the approved landing hero and one CTA", () => {
+	assert.match(page, /eyebrow="Partnerships"/);
 	assert.match(
 		page,
-		/David, a Kubernetes practitioner, works through your quick start privately and on the record, then sends you a ranked report of where developers get stuck\. It costs a fixed \$5,000, with no retainer\./,
+		/See exactly where engineers get stuck with your product\./,
 	);
-	assert.match(page, />Book a first-run review<\/a>/);
+	assert.match(
+		page,
+		/I install and use your product the way your users would, record the whole session, and send you a list of what to fix first\. It costs a fixed \$5,000\./,
+	);
+	assert.match(
+		page,
+		/I work with Datum Cloud today, and I've worked with Teleport, Heroku, Microsoft Azure and ngrok\./,
+	);
+	assert.equal(page.match(/>Book a product review<\/a>/g)?.length, 3);
+	assert.deepEqual(
+		Array.from(page.matchAll(/<a [^>]*>([^<]+)<\/a>/g), (match) =>
+			match[1].trim(),
+		),
+		["Book a product review", "Book a product review", "Book a product review"],
+	);
 	assert.match(partnershipCopy, /price: "\$5,000"/);
 	assert.match(partnershipCopy, /price: "\$12,000"/);
 	assert.match(partnershipCopy, /price: "\$40,000 a year"/);
@@ -42,19 +57,21 @@ test("partnership page leads with the private fixed-price review", () => {
 	assert.match(partnershipCopy, /exclude VAT where it applies/);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
 
-	const review = page.indexOf('id="review"');
-	const programme = page.indexOf('id="programme"');
-	const annual = page.indexOf('id="annual"');
+	const deliverables = page.indexOf('id="what-you-get-title"');
+	const process = page.indexOf('id="how-it-works-title"');
+	const pricing = page.indexOf('id="pricing"');
+	const partners = page.indexOf('id="past-partners-title"');
 	const enquiry = page.indexOf('id="apply"');
-	const sample = page.indexOf('id="sample"');
-	const proof = page.indexOf("<PartnershipProof />");
 
-	assert(review > -1);
-	assert(review < programme);
-	assert(programme < annual);
-	assert(annual < enquiry);
-	assert(enquiry < sample);
-	assert(sample < proof);
+	assert(deliverables > -1);
+	assert(deliverables < process);
+	assert(process < pricing);
+	assert(pricing < partners);
+	assert(partners < enquiry);
+	assert.doesNotMatch(
+		page,
+		/id="sample"|<PartnershipProof \/>|See the 90 days/,
+	);
 });
 
 test("partnership enquiry is short and tracks its conversion steps", () => {

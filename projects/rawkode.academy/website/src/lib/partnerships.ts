@@ -50,7 +50,7 @@ export const partnershipCapacity = {
 	places: 6,
 	/** Places taken today. */
 	active: 0,
-	/** New first-run reviews David can start in a calendar month. */
+	/** New product reviews David can start in a calendar month. */
 	newStartsPerMonth: 2,
 	asOf: "12 October 2026",
 	/** Week the next review can start, e.g. "2 November 2026". Leave null until known. */
@@ -77,16 +77,16 @@ export const partnershipAvailability = partnershipIsFull
 		? `${partnershipPlacesOpen} of ${partnershipCapacity.places} places open as of ${partnershipCapacity.asOf}. Places go in the order reviews are booked.`
 		: `Reviews start in the order they're booked, ${partnershipCapacity.newStartsPerMonth} a month. Once ${partnershipCapacity.places} partners are in progress, new reviews wait for a place.`;
 
-/** Where the first-run review method comes from. */
+/** Where the product-review method comes from. */
 export const partnershipMethodNote =
-	"David has worked through new tools for the first time, live and unscripted, on Rawkode Live since 2020. The first-run review is the same work done privately, timed and written up as a ranked list.";
+	"David has worked through new tools for the first time, live and unscripted, on Rawkode Live since 2020. The product review is the same work done privately, timed and written up as a ranked list.";
 
 /** Who the programme is for. Used in the hero eyebrow and search copy. */
 export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 first-run review from David Flanagan of Rawkode Academy. You get a recording of David's first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
+	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a recording of David using your product and a ranked list of what to fix, explain and teach, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -95,7 +95,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a first-run review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a quarterly or annual partnership.";
+	"Every partnership starts with a product review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a quarterly or annual partnership.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -106,7 +106,7 @@ export const exampleMeasures =
 /** What the partner has in hand at day 90. The page leads with this. */
 export const partnershipOutcomes = [
 	{
-		title: "A recorded first run",
+		title: "A recorded product review",
 		inReview: true,
 		detail:
 			"David works through your product from first install or sign-up to a first working result, as your target developer would, with the screen recorded and every stall point written down. Delivered in the first two weeks as part of the review.",
@@ -133,7 +133,7 @@ export const partnershipOutcomes = [
 		title: "A before-and-after re-run",
 		inReview: false,
 		detail:
-			"At day 90 David repeats the first run on what you've shipped since and checks every stall point in the original log: fixed, improved or still there. You get the count before and after, not just an impression.",
+			"At day 90 David repeats the review on what you've shipped since and checks every stall point in the original log: fixed, improved or still there. You get the count before and after, not just an impression.",
 	},
 	{
 		title: "A day-90 read-out",
@@ -168,7 +168,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "Launch pre-flight",
 		detail:
-			"Before one launch a quarter, David does a recorded first run of the new feature or quick start and sends you the three things most likely to trip developers up. Give us 10 business days' notice. It doesn't mean David will cover the launch publicly.",
+			"Before one launch a quarter, David does a recorded review of the new feature or quick start and sends you the three things most likely to trip developers up. Give us 10 business days' notice. It doesn't mean David will cover the launch publicly.",
 	},
 	{
 		title: "90-day results summary",
@@ -178,7 +178,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "Cross-partner patterns",
 		detail:
-			"Each quarter, an anonymised write-up of the friction patterns David saw across every partner's first run, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
+			"Each quarter, an anonymised write-up of the friction patterns David saw across every partner's review, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
 	},
 	{
 		title: "The Technology Matrix, walked through",
@@ -244,8 +244,8 @@ export const renewalPerks: PartnershipPerk[] = [
 /** The fixed 90-day arc. The review is the first step. */
 export const partnershipPlan: PartnershipStep[] = [
 	{
-		when: "Weeks 1–2 · first-run review",
-		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch; targets are set on the review call, once the findings exist. David records the first run and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call, checking the list against your own funnel numbers.",
+		when: "Weeks 1–2 · product review",
+		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch; targets are set on the review call, once the findings exist. David records the product review and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call, checking the list against your own funnel numbers.",
 	},
 	{
 		when: "Decide",
@@ -257,7 +257,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Month 3",
-		what: "David re-runs the first run on what you've shipped and checks each original stall point. Day-90 read-out against the targets. Decide what to work on next quarter.",
+		what: "David repeats the review on what you've shipped and checks each original stall point. Day-90 read-out against the targets. Decide what to work on next quarter.",
 	},
 	{
 		when: "From month 2",
@@ -278,14 +278,14 @@ export const partnershipOffer: PartnershipOffer = {
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
 	included: [
-		"The first-run review: recorded first run, friction log and ranked list",
+		"The product review: recording, friction log and ranked list",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
 		"A monthly all-partner call with David and the other current partners on industry changes",
-		"Extras for partners: David re-tests fixes you ship, does a first run before one launch a quarter, sends a 90-day results summary you can share with your board, gives you labelled spots in the newsletter and Discord, and makes warm introductions where they help both sides",
-		"A day-90 re-run of the first run, compared with the original",
+		"Extras for partners: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you labelled spots in the newsletter and Discord, and makes warm introductions where they help both sides",
+		"A day-90 review compared with the original",
 		"A day-90 read-out against the targets set on the review call",
 	],
 	excluded: [
@@ -305,7 +305,7 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	priceShort: "$40k/year",
 	cadence: "It costs $40,000 a year, billed at $10,000 a quarter.",
 	summary:
-		"The year starts with the full first-run review. You also get Slack with David and a place on the monthly all-partner call for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
+		"The year starts with the full product review. You also get Slack with David and a place on the monthly all-partner call for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
 	included: [],
 	excluded: [],
 	notes: [partnershipReviewCredit],
@@ -313,7 +313,7 @@ export const annualPartnershipOffer: PartnershipOffer = {
 };
 
 export const annualPartnershipDetails = [
-	"At each quarterly read-out, you decide what the next quarter covers. It can be a re-run compared with last time, a first run before a launch followed by a re-check of your fixes, or a live session on Rawkode Live with a runnable example repository. You tell David your choice at the read-out or within five business days, and he confirms it in writing.",
+	"At each quarterly read-out, you decide what the next quarter covers. It can be a re-run compared with last time, a review before a launch followed by a re-check of your fixes, or a live session on Rawkode Live with a runnable example repository. You tell David your choice at the read-out or within five business days, and he confirms it in writing.",
 	"The contract runs for the full year, and either side can choose not to continue after that.",
 ] as const;
 
@@ -327,7 +327,7 @@ export const partnershipTerms = [
 	{
 		title: "Renewal",
 		detail:
-			"Nothing renews automatically. A quarterly partnership ends after 90 days, and an annual partnership ends after a year, with a first run each quarter. If you want to carry on, we agree it in writing.",
+			"Nothing renews automatically. A quarterly partnership ends after 90 days, and an annual partnership ends after a year, with a review each quarter. If you want to carry on, we agree it in writing.",
 	},
 	{
 		title: "Invoicing",
@@ -351,23 +351,23 @@ export const partnershipTerms = [
 	{
 		title: "Ownership",
 		detail:
-			"You own the first-run recording, the friction log, the ranked list and the read-out. The example repository is licensed Apache 2.0, so you can use, change and ship it. You approve the session title and use case, can reuse the recording on your own channels, and can ask us to unlist it.",
+			"You own the review recording, the friction log, the ranked list and the read-out. The example repository is licensed Apache 2.0, so you can use, change and ship it. You approve the session title and use case, can reuse the recording on your own channels, and can ask us to unlist it.",
 	},
 ] as const;
 
 /** First step of every partnership, independently useful. */
 export const fitProofReview: PartnershipOffer = {
 	id: "product-review",
-	name: "First-run review",
+	name: "Product review",
 	label: "Step one",
 	price: "$5,000",
 	priceShort: "$5k",
 	cadence:
 		"A fixed price, delivered within 10 business days of getting access.",
 	summary:
-		"The first step of every partnership, and useful on its own: David's recorded first run of your product and a written review you can act on whether or not you continue.",
+		"The first step of every partnership, and useful on its own: David's recorded product review and a written report you can act on whether or not you continue.",
 	included: [
-		"The screen recording of David's first run, from first install or sign-up to a first working result",
+		"The screen recording of David's product review, from first install or sign-up to a first working result",
 		"A friction log with every stall point and where it happened",
 		"A ranked list of what to fix, explain and teach, with a recommendation for each",
 		"Two or three numbers to watch, with a target for each",
@@ -382,7 +382,7 @@ export const fitProofReview: PartnershipOffer = {
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
 		`${partnershipReviewCredit} You can then continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
 	],
-	mailto: buildMailto("First-run review request", applicationBody),
+	mailto: buildMailto("Product review request", applicationBody),
 };
 
 /**
@@ -464,7 +464,7 @@ export const partnershipTierNames = partnershipTiers.map((offer) => offer.name);
 /** Options for the application form's preferred route field. */
 export const applicationPaths = [
 	"90-day partnership",
-	"First-run review",
+	"Product review",
 	"Annual partnership",
 	"Not sure yet",
 ] as const;
@@ -473,7 +473,7 @@ export type ApplicationPath = (typeof applicationPaths)[number];
 /** Plain labels for form values and preselection links. */
 export const applicationPathLabels: Record<ApplicationPath, string> = {
 	"90-day partnership": partnershipOffer.name,
-	"First-run review": fitProofReview.name,
+	"Product review": fitProofReview.name,
 	"Annual partnership": annualPartnershipOffer.name,
 	"Not sure yet": "Not sure yet",
 };
@@ -481,8 +481,7 @@ export const applicationPathLabels: Record<ApplicationPath, string> = {
 /** Route values from earlier links that still preselect the right option. */
 export const legacyApplicationPaths: Record<string, ApplicationPath> = {
 	"Adoption Advisory": "90-day partnership",
-	"Fit & Proof Review": "First-run review",
-	"Product review": "First-run review",
+	"Fit & Proof Review": "Product review",
 };
 
 /** Resolve a ?route= value, including legacy names, to a current path. */
