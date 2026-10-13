@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 first-run review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to the full 90-day partnership for $7,000 more only if it's useful.";
+	"Start with a $5,000 first-run review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to a $12,000 90-day partnership or a $40,000 annual partnership only if it's useful.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -95,7 +95,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a first-run review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. Delivered in 10 business days, invoiced on delivery. Continue to the full 90 days only if it's useful.";
+	"Every partnership starts with a first-run review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. Delivered in 10 business days, invoiced on delivery. Continue to a quarterly or annual partnership only if it's useful.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -249,7 +249,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Decide",
-		what: "Within 30 days of the review call, continue to the full 90 days or stop. Either way you keep everything from the review.",
+		what: "Sign a quarterly or annual partnership within 30 days of the review being delivered and the $5,000 review counts towards it. Or stop. Either way you keep everything from the review.",
 	},
 	{
 		when: "Month 2",
@@ -265,14 +265,16 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 ];
 
+export const partnershipReviewCredit =
+	"The $5,000 review counts towards a quarterly or annual partnership when it is signed within 30 days of the review being delivered.";
+
 export const partnershipOffer: PartnershipOffer = {
 	id: "partnership-90d",
 	name: "Full 90-day partnership",
 	label: "Work with Rawkode Academy",
 	price: "$12,000",
 	priceShort: "$12k/90 days",
-	cadence:
-		"Fixed price. The $5,000 review counts towards it, so continuing costs $7,000 more: $3,500 a month for two months.",
+	cadence: `Fixed price. ${partnershipReviewCredit} When it counts, continuing costs $7,000 more: $3,500 a month for two months.`,
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
 	included: [
@@ -295,6 +297,21 @@ export const partnershipOffer: PartnershipOffer = {
 	mailto: buildMailto("90-day partnership", applicationBody),
 };
 
+export const annualPartnershipOffer: PartnershipOffer = {
+	id: "partnership-annual",
+	name: "Annual partnership",
+	label: "Work with Rawkode Academy for a year",
+	price: "$40,000",
+	priceShort: "$40k/year",
+	cadence:
+		"$10,000 billed per quarter. A year of quarterly runs, fixed price, no auto-renew.",
+	summary: "The full 90-day partnership repeated each quarter for one year.",
+	included: partnershipOffer.included,
+	excluded: partnershipOffer.excluded,
+	notes: [partnershipReviewCredit],
+	mailto: buildMailto("Annual partnership", applicationBody),
+};
+
 /** Terms buyers, finance and procurement ask about. */
 export const partnershipTerms = [
 	{
@@ -303,14 +320,13 @@ export const partnershipTerms = [
 			"The review is the first step and is priced on its own. It is invoiced when we deliver it, not before. If you stop there you have paid $5,000 and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
 	},
 	{
-		title: "After day 90",
+		title: "Renewal",
 		detail:
-			"Nothing renews automatically. If you want another 90 days, we agree it in writing: $12,000 for a fresh first run on what has changed, an updated ranked list, a new partner session and example, monthly working sessions, the all-partner call and another re-run.",
+			"Nothing renews automatically. A quarterly partnership ends after 90 days. An annual partnership includes four quarterly runs and ends after the year. Any further partnership is agreed in writing.",
 	},
 	{
 		title: "Invoicing",
-		detail:
-			"The review is invoiced on delivery. If you continue, the remaining $7,000 is invoiced as two monthly payments of $3,500. Fixed prices in USD, 30-day payment terms. Prices exclude tax where it applies.",
+		detail: `The review is invoiced on delivery. ${partnershipReviewCredit} The quarterly partnership's remaining $7,000 is invoiced as two monthly payments of $3,500. The annual partnership is billed at $10,000 per quarter. Fixed prices in USD, 30-day payment terms. Prices exclude tax where it applies.`,
 	},
 	{
 		title: "Paperwork",
@@ -358,7 +374,7 @@ export const fitProofReview: PartnershipOffer = {
 	notes: [
 		"Before starting we agree the product areas, who David is acting as, and where the run ends: a first working result, or something closer to production, such as a highly available install, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source install to the move to the paid product.",
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
-		"After the review call you have 30 days to decide. Continue to the full 90 days for $7,000 more, or stop and keep everything.",
+		`${partnershipReviewCredit} Continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
 	],
 	mailto: buildMailto("First-run review request", applicationBody),
 };
@@ -432,14 +448,18 @@ export const sampleFindingToNumber = {
 		"At day 90 David re-runs the quick start on the shipped fix, and the read-out reports the share before and after from your data.",
 } as const;
 
-/** Compatibility shape for components that render the primary offer. */
-export const partnershipTiers = [partnershipOffer] as const;
+/** Compatibility shape for components that render the partnership offers. */
+export const partnershipTiers = [
+	partnershipOffer,
+	annualPartnershipOffer,
+] as const;
 export const partnershipTierNames = partnershipTiers.map((offer) => offer.name);
 
 /** Options for the application form's preferred route field. */
 export const applicationPaths = [
 	"90-day partnership",
 	"First-run review",
+	"Annual partnership",
 	"Not sure yet",
 ] as const;
 export type ApplicationPath = (typeof applicationPaths)[number];
@@ -448,6 +468,7 @@ export type ApplicationPath = (typeof applicationPaths)[number];
 export const applicationPathLabels: Record<ApplicationPath, string> = {
 	"90-day partnership": partnershipOffer.name,
 	"First-run review": fitProofReview.name,
+	"Annual partnership": annualPartnershipOffer.name,
 	"Not sure yet": "Not sure yet",
 };
 

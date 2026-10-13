@@ -30,17 +30,21 @@ test("partnership page leads with the private fixed-price review", () => {
 	assert.match(page, />Book a first-run review<\/a>/);
 	assert.match(partnershipCopy, /price: "\$5,000"/);
 	assert.match(partnershipCopy, /price: "\$12,000"/);
+	assert.match(partnershipCopy, /price: "\$40,000"/);
+	assert.match(partnershipCopy, /\$10,000 billed per quarter/);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
 
 	const review = page.indexOf('id="review"');
 	const programme = page.indexOf('id="programme"');
+	const annual = page.indexOf('id="annual"');
 	const enquiry = page.indexOf('id="apply"');
 	const sample = page.indexOf('id="sample"');
 	const proof = page.indexOf("<PartnershipProof />");
 
 	assert(review > -1);
 	assert(review < programme);
-	assert(programme < enquiry);
+	assert(programme < annual);
+	assert(annual < enquiry);
 	assert(enquiry < sample);
 	assert(sample < proof);
 });
