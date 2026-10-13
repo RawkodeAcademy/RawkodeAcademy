@@ -9,6 +9,8 @@ const DEFAULT_DEAL_STAGE = "In Progress";
 const DEFAULT_DEAL_VALUE_USD = 5000;
 const DEFAULT_OFFER_ATTRIBUTE = "offer";
 const DEFAULT_OFFER_OPTION = "Review";
+const DEFAULT_SOURCE_ATTRIBUTE = "source";
+const DEFAULT_SOURCE_VALUE = "Inbound: partnerships page";
 const DEAL_OWNER = "david@rawkode.academy";
 
 interface AttioRecordResponse {
@@ -47,6 +49,25 @@ const attioRecordId = (response: AttioRecordResponse): string => {
 		throw new Error("Attio response did not include a record ID");
 	}
 	return recordId;
+};
+
+const attioAttributeExists = async (
+	apiKey: string,
+	attribute: string,
+): Promise<boolean> => {
+	try {
+		const response = await fetch(
+			`${ATTIO_API_URL}/objects/deals/attributes/${encodeURIComponent(attribute)}`,
+			{
+				headers: {
+					Authorization: `Bearer ${apiKey}`,
+				},
+			},
+		);
+		return response.ok;
+	} catch {
+		return false;
+	}
 };
 
 const rateLimitKey = async (request: Request): Promise<string> => {
@@ -132,6 +153,15 @@ export const partnership = {
 				);
 				const personId = attioRecordId(person);
 
+				const sourceAttribute =
+					env.ATTIO_SOURCE_ATTRIBUTE?.trim() || DEFAULT_SOURCE_ATTRIBUTE;
+				const sourceValue =
+					env.ATTIO_SOURCE_VALUE?.trim() || DEFAULT_SOURCE_VALUE;
+				const hasSourceAttribute = await attioAttributeExists(
+					apiKey,
+					sourceAttribute,
+				);
+
 				const noteResponse = await fetch(`${ATTIO_API_URL}/notes`, {
 					method: "POST",
 					headers: {
@@ -142,7 +172,9 @@ export const partnership = {
 						data: {
 							parent_object: "people",
 							parent_record_id: personId,
-							title: `Partnership enquiry: ${applicationPathLabels[input.path]}`,
+							title: hasSourceAttribute
+								? `Partnership enquiry: ${applicationPathLabels[input.path]}`
+								: `Partnership enquiry [Source: ${sourceValue}]: ${applicationPathLabels[input.path]}`,
 							format: "plaintext",
 							content: input.message,
 						},
@@ -175,6 +207,7 @@ export const partnership = {
 						owner: DEAL_OWNER,
 						value: dealValue,
 						[offerAttribute]: offerOption,
+						...(hasSourceAttribute ? { [sourceAttribute]: sourceValue } : {}),
 						associated_people: [
 							{
 								target_object: "people",

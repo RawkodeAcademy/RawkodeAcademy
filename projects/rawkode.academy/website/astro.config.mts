@@ -310,6 +310,16 @@ export default defineConfig({
 				access: "public",
 				default: "Review",
 			}),
+			ATTIO_SOURCE_ATTRIBUTE: envField.string({
+				context: "server",
+				access: "public",
+				default: "source",
+			}),
+			ATTIO_SOURCE_VALUE: envField.string({
+				context: "server",
+				access: "public",
+				default: "Inbound: partnerships page",
+			}),
 		},
 	},
 	security: {

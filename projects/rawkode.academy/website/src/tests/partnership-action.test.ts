@@ -11,6 +11,8 @@ const workerEnv = {
 	ATTIO_INBOUND_DEAL_VALUE_USD: undefined as string | undefined,
 	ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: undefined as string | undefined,
 	ATTIO_INBOUND_DEAL_OFFER_OPTION: undefined as string | undefined,
+	ATTIO_SOURCE_ATTRIBUTE: undefined as string | undefined,
+	ATTIO_SOURCE_VALUE: undefined as string | undefined,
 };
 const imports: Record<string, unknown> = {
 	"astro:actions": { defineAction: (definition: unknown) => definition },
@@ -84,6 +86,8 @@ beforeEach(() => {
 	workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = undefined;
 	workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = undefined;
 	workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = undefined;
+	workerEnv.ATTIO_SOURCE_ATTRIBUTE = undefined;
+	workerEnv.ATTIO_SOURCE_VALUE = undefined;
 	limit.mockReset().mockResolvedValue({ success: true });
 	vi.stubGlobal("fetch", vi.fn());
 });
@@ -135,19 +139,21 @@ describe("partnership Attio action", () => {
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
 			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
 			.mockResolvedValueOnce(recordResponse("deal-id"));
 
 		await expect(apply.handler({ ...input, path }, context)).resolves.toEqual({
 			success: true,
 			accepted: true,
 		});
-		expect(fetch).toHaveBeenCalledTimes(4);
+		expect(fetch).toHaveBeenCalledTimes(5);
 
 		const calls = vi.mocked(fetch).mock.calls;
 		const company = calls[0]!;
 		const person = calls[1]!;
-		const note = calls[2]!;
-		const deal = calls[3]!;
+		const attribute = calls[2]!;
+		const note = calls[3]!;
+		const deal = calls[4]!;
 		expect(company[0]).toBe(
 			"https://api.attio.com/v2/objects/companies/records?matching_attribute=domains",
 		);
@@ -165,10 +171,14 @@ describe("partnership Attio action", () => {
 		expect(requestBody(person).data.values.company[0].target_record_id).toBe(
 			"company-id",
 		);
+		expect(attribute[0]).toBe(
+			"https://api.attio.com/v2/objects/deals/attributes/source",
+		);
 		expect(note[0]).toBe("https://api.attio.com/v2/notes");
 		expect(requestBody(note).data).toMatchObject({
 			parent_object: "people",
 			parent_record_id: "person-id",
+			title: `Partnership enquiry: ${path === "90-day partnership" ? "Full 90-day partnership" : "First-run review"}`,
 			content: input.message,
 		});
 		expect(deal[0]).toBe("https://api.attio.com/v2/objects/deals/records");
@@ -177,6 +187,7 @@ describe("partnership Attio action", () => {
 			owner: "david@rawkode.academy",
 			value,
 			offer: "Review",
+			source: "Inbound: partnerships page",
 			associated_company: {
 				target_object: "companies",
 				target_record_id: "company-id",
@@ -195,13 +206,14 @@ describe("partnership Attio action", () => {
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
 			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
 			.mockResolvedValueOnce(new Response(null, { status: 500 }));
 
 		await expect(apply.handler(input, context)).resolves.toEqual({
 			success: true,
 			accepted: true,
 		});
-		expect(fetch).toHaveBeenCalledTimes(4);
+		expect(fetch).toHaveBeenCalledTimes(5);
 	});
 
 	it("uses the configured inbound deal stage", async () => {
@@ -210,11 +222,12 @@ describe("partnership Attio action", () => {
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
 			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
 			.mockResolvedValueOnce(recordResponse("deal-id"));
 
 		await apply.handler(input, context);
 
-		const deal = vi.mocked(fetch).mock.calls[3]!;
+		const deal = vi.mocked(fetch).mock.calls[4]!;
 		expect(requestBody(deal).data.values.stage).toBe("Qualified");
 	});
 
@@ -226,15 +239,56 @@ describe("partnership Attio action", () => {
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
 			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
 			.mockResolvedValueOnce(recordResponse("deal-id"));
 
 		await apply.handler(input, context);
 
-		const deal = vi.mocked(fetch).mock.calls[3]!;
+		const deal = vi.mocked(fetch).mock.calls[4]!;
 		expect(requestBody(deal).data.values).toMatchObject({
 			value: 6500,
 			inbound_offer: "Custom review",
 		});
+	});
+
+	it("uses configured source attribution when the Deal attribute exists", async () => {
+		workerEnv.ATTIO_SOURCE_ATTRIBUTE = "lead_source";
+		workerEnv.ATTIO_SOURCE_VALUE = "Website";
+		vi.mocked(fetch)
+			.mockResolvedValueOnce(recordResponse("company-id"))
+			.mockResolvedValueOnce(recordResponse("person-id"))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(recordResponse("deal-id"));
+
+		await apply.handler(input, context);
+
+		const calls = vi.mocked(fetch).mock.calls;
+		expect(calls[2]![0]).toBe(
+			"https://api.attio.com/v2/objects/deals/attributes/lead_source",
+		);
+		expect(requestBody(calls[3]!).data.title).not.toContain("Source");
+		expect(requestBody(calls[4]!).data.values.lead_source).toBe("Website");
+	});
+
+	it("falls back to the note title when the source attribute is missing", async () => {
+		vi.mocked(fetch)
+			.mockResolvedValueOnce(recordResponse("company-id"))
+			.mockResolvedValueOnce(recordResponse("person-id"))
+			.mockResolvedValueOnce(new Response(null, { status: 404 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(recordResponse("deal-id"));
+
+		await expect(apply.handler(input, context)).resolves.toEqual({
+			success: true,
+			accepted: true,
+		});
+
+		const calls = vi.mocked(fetch).mock.calls;
+		expect(requestBody(calls[3]!).data.title).toContain(
+			"Source: Inbound: partnerships page",
+		);
+		expect(requestBody(calls[4]!).data.values).not.toHaveProperty("source");
 	});
 
 	it("returns a mailto fallback when a core Attio write fails", async () => {
