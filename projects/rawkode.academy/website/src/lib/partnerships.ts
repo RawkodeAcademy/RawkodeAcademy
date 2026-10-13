@@ -57,6 +57,23 @@ export const partnershipCapacity = {
 	nextStart: null as string | null,
 } as const;
 
+/**
+ * Hand-edited availability shown in the partnerships hero. Update only this
+ * value when the number of first-run reviews David can start this month changes.
+ */
+export const partnershipPlacesOpenThisMonth = 2;
+
+export const formatPartnershipPlacesOpenThisMonth = (
+	places: number,
+): string => {
+	const openPlaces = Math.max(0, Math.trunc(places));
+	if (openPlaces === 0) return "No first-run review places open this month";
+	return `${openPlaces} first-run review ${openPlaces === 1 ? "place" : "places"} open this month`;
+};
+
+export const partnershipPlacesOpenThisMonthLabel =
+	formatPartnershipPlacesOpenThisMonth(partnershipPlacesOpenThisMonth);
+
 export const partnershipPlacesOpen = Math.max(
 	0,
 	partnershipCapacity.places - partnershipCapacity.active,
