@@ -138,10 +138,10 @@ async function generateNavigationItems(
 		},
 		{
 			href: "/organizations",
-			title: "For Organizations",
+			title: "For teams building developer products",
 			category: "Organizations",
 			description:
-				"Partnerships for cloud-native and DevTool teams reviewing technical buyer proof, docs, demos, launches, and sales enablement",
+				"Find out where developers give up on your product. Start with a £5,000 first-run review, and continue to a 90-day partnership, £12,000 in total, only if it's useful.",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -161,7 +161,7 @@ async function generateNavigationItems(
 			title: "Partner application",
 			category: "Organizations",
 			description:
-				"Apply for the Rawkode Academy partner programme or a Fit & Proof Review",
+				"Apply for a Rawkode Academy first-run review or partnership",
 			keywords: [
 				"fit check",
 				"adoption",
@@ -186,7 +186,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Partnerships for cloud-native and DevTool teams with evaluation risk in docs, demos, launches, technical proof, and sales enablement",
+				"Find out where developers give up on your product. Start with a £5,000 first-run review, and continue to a 90-day partnership, £12,000 in total, only if it's useful.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",
@@ -249,16 +249,18 @@ async function generateNavigationItems(
 				.map((article) => article.data.series?.id)
 				.filter((id): id is string => Boolean(id)),
 		);
-		series.filter((s) => publishedSeriesIds.has(s.id)).forEach((s) => {
-			navigationItems.push({
-				id: `/series/${s.id}`,
-				title: s.data.title,
-				description: "Read this series",
-				href: `/series/${s.id}`,
-				category: "Series",
-				keywords: [s.data.title.toLowerCase(), "series", "read", "articles"],
+		series
+			.filter((s) => publishedSeriesIds.has(s.id))
+			.forEach((s) => {
+				navigationItems.push({
+					id: `/series/${s.id}`,
+					title: s.data.title,
+					description: "Read this series",
+					href: `/series/${s.id}`,
+					category: "Series",
+					keywords: [s.data.title.toLowerCase(), "series", "read", "articles"],
+				});
 			});
-		});
 
 		// Add courses
 		const courses = await getCollection("courses");

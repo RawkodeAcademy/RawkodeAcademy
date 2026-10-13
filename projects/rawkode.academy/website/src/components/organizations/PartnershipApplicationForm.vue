@@ -4,7 +4,7 @@
 		<p :id="errorId" role="alert" aria-atomic="true" :class="error ? s.error : s.hidden">{{ error }}</p>
 		<div v-if="submitted" :class="[s.panel, s.status]">
 			<h3 :class="s.heading">Application received</h3>
-			<p :class="s.copy">David reads every application and replies either way.</p>
+			<p :class="s.copy">David reads every application and replies within two business days.</p>
 		</div>
 		<form v-else method="POST" :class="s.form" @submit.prevent="submit" :aria-busy="!ready || loading" :aria-describedby="error ? errorId : undefined">
 			<fieldset :class="[s.form, 'form-controls']" :disabled="!ready || loading" aria-label="Partnership application">
@@ -46,10 +46,10 @@
 						<Field.ErrorText v-if="fieldErrors.company" :class="s.fieldError">{{ fieldErrors.company }}</Field.ErrorText>
 					</Field.Root>
 					<Field.Root :class="s.field" :disabled="loading">
-						<Field.Label :class="s.label">Preferred route</Field.Label>
+						<Field.Label :class="s.label">What would you like help with?</Field.Label>
 						<Field.Select v-model="path" name="path" :class="s.input">
 							<option v-for="option in applicationPaths" :key="option" :value="option">
-								{{ option }}
+								{{ applicationPathLabels[option] }}
 							</option>
 						</Field.Select>
 					</Field.Root>
@@ -67,7 +67,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.technicalBuyer)" :disabled="loading">
-					<Field.Label :class="s.label">Technical buyer <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Who approves the spend, and who decides whether to use it? <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="technicalBuyer"
 						type="text"
@@ -77,7 +77,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.challenge)" :disabled="loading">
-					<Field.Label :class="s.label">Your current adoption challenge</Field.Label>
+					<Field.Label :class="s.label">What would you like to improve?</Field.Label>
 					<Field.Textarea :class="[s.input, s.textarea]"
 						v-model="challenge"
 						name="challenge"
@@ -88,7 +88,7 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.proofAssets)" :disabled="loading">
-					<Field.Label :class="s.label">Working demo, docs, or repository <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Product, demo, docs or repository, and can you give us a trial or sandbox account? <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="proofAssets"
 						type="text"
@@ -98,12 +98,12 @@
 				</Field.Root>
 
 				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.budgetQuarter)" :disabled="loading">
-					<Field.Label :class="s.label">Budget and preferred quarter <em>(optional)</em></Field.Label>
+					<Field.Label :class="s.label">Funding stage and when you’d like to start <em>(optional)</em></Field.Label>
 					<Field.Input :class="s.input"
 						v-model="budgetQuarter"
 						type="text"
 						name="budgetQuarter"
-						placeholder="For example: Q4 2026, £4k/month"
+						placeholder="For example: Series A, January 2027"
 					/>
 					<Field.ErrorText v-if="fieldErrors.budgetQuarter" :class="s.fieldError">{{ fieldErrors.budgetQuarter }}</Field.ErrorText>
 				</Field.Root>
@@ -118,18 +118,22 @@
 					{{ loading ? "Sending application..." : "Submit application" }}
 				</button>
 			</fieldset>
-			<p v-if="!ready" :class="s.copy"><noscript>JavaScript is required to send this application. </noscript>You can <a href="mailto:david@rawkode.academy">email David directly</a> instead.</p>
+			<p v-if="!ready" :class="s.copy"><noscript>JavaScript is required to send this application. </noscript>You can <a href="mailto:david@rawkode.academy">email us directly</a> instead.</p>
 		</form>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { Field } from "@ark-ui/vue/field";
-import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
-import { academyForms } from "@rawkodeacademy/design-system";
-
 import { actions, isInputError } from "astro:actions";
-import { applicationPaths, type ApplicationPath } from "@/lib/partnerships";
+import { Field } from "@ark-ui/vue/field";
+import { academyForms } from "@rawkodeacademy/design-system";
+import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
+import {
+	type ApplicationPath,
+	applicationPathLabels,
+	applicationPaths,
+	resolveApplicationPath,
+} from "@/lib/partnerships";
 
 const s = academyForms();
 const errorId = `${useId()}-error`;
@@ -155,7 +159,8 @@ const error = ref("");
 const fieldErrors = ref<Record<string, string>>({});
 const statusMessage = computed(() => {
 	if (!ready.value) return "Loading application form...";
-	if (submitted.value) return "Application received. David reads every application and replies either way.";
+	if (submitted.value)
+		return "Application received. David reads every application and replies within two business days.";
 	return loading.value ? "Sending application..." : "";
 });
 
@@ -176,8 +181,10 @@ const onDocumentClick = (event: MouseEvent) => {
 
 onMounted(() => {
 	ready.value = true;
-	const route = new URLSearchParams(window.location.search).get("route");
-	if (route && isApplicationPath(route)) {
+	const route = resolveApplicationPath(
+		new URLSearchParams(window.location.search).get("route"),
+	);
+	if (route) {
 		path.value = route;
 	}
 	document.addEventListener("click", onDocumentClick);
@@ -200,10 +207,14 @@ async function submit() {
 			company: company.value,
 			path: path.value,
 			targetDevelopers: targetDevelopers.value,
-			...(technicalBuyer.value.trim() ? { technicalBuyer: technicalBuyer.value } : {}),
+			...(technicalBuyer.value.trim()
+				? { technicalBuyer: technicalBuyer.value }
+				: {}),
 			challenge: challenge.value,
 			...(proofAssets.value.trim() ? { proofAssets: proofAssets.value } : {}),
-			...(budgetQuarter.value.trim() ? { budgetQuarter: budgetQuarter.value } : {}),
+			...(budgetQuarter.value.trim()
+				? { budgetQuarter: budgetQuarter.value }
+				: {}),
 			...(links.value.trim() ? { links: links.value } : {}),
 		});
 

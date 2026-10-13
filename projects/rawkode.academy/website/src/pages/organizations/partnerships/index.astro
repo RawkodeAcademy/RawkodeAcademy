@@ -1,11 +1,29 @@
 ---
 import FAQJsonLD from "@/components/html/faq-jsonld.astro";
 import PartnershipApplicationForm from "@/components/organizations/PartnershipApplicationForm.vue";
+import PartnershipExperience from "@/components/organizations/PartnershipExperience.astro";
+import PartnershipProof from "@/components/organizations/PartnershipProof.astro";
 import EditorialShell from "@/components/ui/EditorialShell.astro";
 import {
+	applicationPaths,
+	exampleMeasures,
 	fitProofReview,
-	partnershipBoundaries,
+	partnershipAudience,
+	partnershipAvailability,
+	partnershipCapacitySummary,
+	partnershipDescription,
+	partnershipHeroLede,
+	partnershipHeroTitle,
+	partnershipIsFull,
 	partnershipOffer,
+	partnershipOutcomes,
+	partnershipPerks,
+	partnershipPlan,
+	partnershipStartingPoint,
+	partnershipTerms,
+	renewalPerks,
+	sampleFindingToNumber,
+	sampleFrictionLog,
 } from "@/lib/partnerships";
 import Page from "@/wrappers/page.astro";
 
@@ -13,80 +31,165 @@ export const prerender = true;
 
 const faqs = [
 	{
-		question: "How does Slack access work?",
+		question: "How is this different from sponsoring a video?",
 		answer:
-			"Slack Connect is the place for questions, reviews, and decisions as they come up. It is async partner communication, not on-call support or incident response. Questions are normally answered within two business days.",
+			"A sponsorship buys airtime. Here you pay for David's time and judgement on your product: the first run, the ranked list and the advice. The live session is part of that work, labelled as a partner session, and it teaches a real use case. If the product isn't ready to teach yet, David tells you and the time goes on fixing that first.",
 	},
 	{
-		question: "What do we need to provide?",
+		question:
+			"We could come on Rawkode Live for free. What does the review add?",
 		answer:
-			"A working environment, technical subject-matter expert, relevant docs or repository, source material, and timely approvals. You keep ownership of implementation and execution.",
+			"A maintainer session is public, about an hour, and you are there steering, so David sees the path you show him. In the review David works alone as your target user, with nobody to rescue him, logs every stall against the recording, ranks what to fix, explain and teach, sets numbers to watch and, if you continue, re-runs it at day 90 to check what changed.",
 	},
 	{
-		question: "How is additional work handled?",
+		question: "Isn't David too experienced to get stuck where our users do?",
 		answer:
-			"Additional demos or strategy work are separately scoped. The programme does not include audience rental or guaranteed sign-ups.",
+			"Before starting we agree who he is acting as, such as an application developer who has never run a cluster, and he works to what that person would know. The walkthrough call then checks the ranked list against your own funnel numbers, so findings that don't show up in your data get marked down.",
+	},
+	{
+		question: "Who on our side should own it?",
+		answer:
+			"Whoever owns developer adoption. Often that is the head of DevRel or developer experience, with product owning the fixes. The ranked list says which items are for product, which for docs and which for DevRel.",
+	},
+	{
+		question: "Can we sponsor content as well?",
+		answer:
+			"Sponsorship is a separate conversation from the partnership. Neither changes what David tells you in the review.",
+	},
+	{
+		question: "Do open-source maintainers have to pay to come on Rawkode Live?",
+		answer:
+			"No. Maintainer sessions on Rawkode Live are still free and unpaid, and they aren't labelled as partner sessions. The partnership is for teams who want the review, the advice and the work around the session.",
+	},
+	{
+		question: "How much of our engineers' time does it take?",
+		answer:
+			"About half a day across the 90 days: an hour to review the runnable example, an hour to prepare the session and the live hour itself. David writes the example. Your product lead joins the monthly sessions.",
+	},
+	{
+		question: "Who is this a good fit for?",
+		answer:
+			"Developer-tool teams from seed to Series C whose users are platform, cloud-native or AI-infrastructure engineers, with a product someone can install or sign up for and try, including open-source projects installed from GitHub or Helm. The review can follow your open-source install path. There is no separate open-source price.",
+	},
+	{
+		question: "What numbers do we agree, and when?",
+		answer: `Two or three numbers you already track, agreed at kick-off. Targets for day 90 are set on the review call, once the findings exist. ${exampleMeasures} We report against them in the read-out using your data.`,
+	},
+	{
+		question: "What happens on the all-partner call?",
+		answer:
+			"Once a month David and the current partners, at most six teams, spend an hour on what's changing across cloud-native, platform engineering, AI infrastructure and developer tools: new projects, shifts in how teams adopt tools, and what David is hearing from engineers. It isn't recorded and nothing said is repeated outside the call. If you compete directly with another partner, tell us and keep anything sensitive for your one-to-one sessions. Until three partners are active, the call runs one-to-one with David.",
+	},
+	{
+		question: "Why are places limited?",
+		answer:
+			"David does every review and partnership himself, alongside running Rawkode Academy. Six partners at a time is what he can do properly, and two new reviews a month is what he can start without the existing ones slipping. The limits are the same whether or not places are free. A place is booked when the statement of work is signed and a start date is set; unsigned holds lapse after seven days.",
+	},
+	{
+		question: "How do we stop?",
+		answer:
+			"Stop after the review and you have paid £5,000, invoiced on delivery. Stop at day 90 and there is nothing further to pay. Nothing renews automatically.",
 	},
 ];
 
-const process = [
-	{
-		step: "01",
-		title: "Apply with a real problem",
-		body: "Tell us who needs to trust the product, what they need to see, and where the current proof falls short.",
-	},
-	{
-		step: "02",
-		title: "Agree the first workflow",
-		body: "We choose a technical buyer workflow, the working environment, the first proof gap, and the first quarter's asset.",
-	},
-	{
-		step: "03",
-		title: "Build, review, and learn",
-		body: "Slack keeps the work moving. The monthly session makes decisions. The quarterly report tells us what to keep, change, or stop.",
-	},
-];
+const reviewCta = partnershipIsFull
+	? "Join the waiting list"
+	: "Start with a review";
 
-const badFits = partnershipBoundaries;
-const applyHref = `/organizations/partnerships?route=${encodeURIComponent(partnershipOffer.name)}#apply`;
-const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(fitProofReview.name)}#apply`;
+const applyHref = `/organizations/partnerships?route=${encodeURIComponent(applicationPaths[0])}#apply`;
+const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(applicationPaths[1])}#apply`;
 ---
 
 <Page
 	title="Partnerships"
-	description="Rawkode Academy's Adoption Advisory partner programme for infrastructure companies that need technical proof, useful demos, and practitioner trust."
+	description={partnershipDescription}
 >
 	<FAQJsonLD questions={faqs} slot="extra-head" />
 	<EditorialShell
-		eyebrow="Rawkode Partner Programme"
-		title="Turn technical depth into practitioner trust."
-		lede={partnershipOffer.summary}
+		eyebrow={partnershipAudience}
+		title={partnershipHeroTitle}
+		lede={partnershipHeroLede}
 	>
-		<div class="editorial-actions" slot="actions">
-			<a class="editorial-button" href={applyHref} data-apply-path={partnershipOffer.name}>Apply for Adoption Advisory</a>
-			<a class="editorial-button editorial-button--secondary" href="#programme">See the programme</a>
+		<p class="partnership-hero-intro" slot="intro">{partnershipStartingPoint}</p>
+		<div class="partnership-hero-offer" slot="actions">
+			<p class="partnership-hero-commitment">Start with a {fitProofReview.price} review. Continue to the full 90 days, {partnershipOffer.price} in total, only if it’s useful.</p>
+			<p class="partnership-capacity">{partnershipCapacitySummary}</p>
+			<div class="editorial-actions">
+				<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]}>{reviewCta}</a>
+				<a class="editorial-button editorial-button--secondary" href="#plan-title">See the 90 days</a>
+			</div>
 		</div>
 
-		<section id="programme" class="editorial-section editorial-section--split" aria-labelledby="programme-title">
+		<section id="sample" class="editorial-section editorial-section--split" aria-labelledby="sample-title">
 			<div class="editorial-section__header">
-				<h2 id="programme-title" class="editorial-section__title">{partnershipOffer.name}</h2>
-				<p class="editorial-section__lede">Work with David on a specific technical workflow. Your team keeps ownership of the product, content, and community. The partnership includes agreed proof assets and distribution, backed by technical critique and practitioner context.</p>
+				<h2 id="sample-title" class="editorial-section__title">What a friction log looks like</h2>
+				<p class="editorial-section__lede">An illustrative extract for a fictional Kubernetes CLI with a hosted product, to show the format. A full log has a row for every stall point, each tied to a timestamp in the recording. Rows follow the recording; rank follows how much each stall costs developers against how hard it is to change.</p>
+				<p class="editorial-section__lede">To see how David works through a product he hasn't used before, watch the public <a href="/watch/hands-on-introduction-to-wundergraph">hands-on introduction to WunderGraph</a> on Rawkode Live. The review is the same approach, done privately and written up.</p>
 			</div>
-			<div class="partner-offer-card">
-				<div>
-					<p class="partner-offer-card__price">{partnershipOffer.price}</p>
-					<p class="partner-offer-card__cadence">{partnershipOffer.cadence}</p>
-				</div>
-				<ul class="editorial-list">
-					{partnershipOffer.included.map((item) => <li>{item}</li>)}
-				</ul>
-				<a class="editorial-button" href={applyHref} data-apply-path={partnershipOffer.name}>Apply for the programme</a>
+			<div class="partnership-sample">
+				<table>
+					<thead>
+						<tr><th scope="col">Rank</th><th scope="col">At</th><th scope="col">Step</th><th scope="col">What happened</th><th scope="col">Impact</th><th scope="col">Effort to change</th><th scope="col">Action</th><th scope="col">Recommendation</th></tr>
+					</thead>
+					<tbody>
+						{sampleFrictionLog.map((row) => (
+							<tr>
+								<td>{row.rank}</td>
+								<td>{row.at}</td>
+								<td>{row.step}</td>
+								<td>{row.finding}</td>
+								<td>{row.impact}</td>
+								<td>{row.effort}</td>
+								<td>{row.action}</td>
+								<td>{row.recommendation}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
 			</div>
+			<dl class="partnership-terms">
+				<div><dt>Illustrative: from a finding to a number</dt><dd>{sampleFindingToNumber.finding}</dd></div>
+				<div><dt>Number to watch</dt><dd>{sampleFindingToNumber.number} Target: {sampleFindingToNumber.target}</dd></div>
+				<div><dt>Day-90 check</dt><dd>{sampleFindingToNumber.check}</dd></div>
+			</dl>
 		</section>
 
-		<section class="editorial-section editorial-section--split" aria-labelledby="review-title">
+		<section class="editorial-section editorial-section--split" aria-labelledby="outcomes-title">
 			<div class="editorial-section__header">
-				<p class="editorial-kicker">Optional starting point</p>
+				<h2 id="outcomes-title" class="editorial-section__title">By day 90 you have</h2>
+				<p class="editorial-section__lede">Things you can point to, not a quarter of calls. The first two arrive in the first two weeks.</p>
+			</div>
+			<ul class="partnership-outcomes">
+				{partnershipOutcomes.map((outcome) => (
+					<li>
+						<p class="partnership-plan__when">{outcome.inReview ? `Included in the ${fitProofReview.price} review` : "If you continue"}</p>
+						<h3 class="editorial-card__title">{outcome.title}</h3>
+						<p class="editorial-card__body">{outcome.detail}</p>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="editorial-section editorial-section--split" aria-labelledby="plan-title">
+			<div class="editorial-section__header">
+				<h2 id="plan-title" class="editorial-section__title">How the 90 days run</h2>
+			</div>
+			<ol class="partnership-plan">
+				{partnershipPlan.map((step) => (
+					<li>
+						<p class="partnership-plan__when">{step.when}</p>
+						<p class="editorial-card__body">{step.what}</p>
+					</li>
+				))}
+			</ol>
+		</section>
+
+
+		<PartnershipProof />
+
+		<section id="review" class="editorial-section editorial-section--split" aria-labelledby="review-title">
+			<div class="editorial-section__header">
+				<p class="editorial-kicker">{fitProofReview.label}</p>
 				<h2 id="review-title" class="editorial-section__title">{fitProofReview.name}</h2>
 				<p class="editorial-section__lede">{fitProofReview.summary}</p>
 			</div>
@@ -98,37 +201,102 @@ const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(
 				<ul class="editorial-list">
 					{fitProofReview.included.map((item) => <li>{item}</li>)}
 				</ul>
-				<a class="partner-card__link" href={reviewApplyHref} data-apply-path={fitProofReview.name}>Start with a fit review</a>
+				{fitProofReview.notes.map((note) => <p class="editorial-card__body">{note}</p>)}
+				<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]}>{reviewCta}</a>
 			</div>
 		</section>
 
-		<section class="editorial-section editorial-section--split" aria-labelledby="process-title">
+		<section id="compare" class="editorial-section editorial-section--split" aria-labelledby="compare-title">
 			<div class="editorial-section__header">
-				<h2 id="process-title" class="editorial-section__title">How it starts</h2>
+				<h2 id="compare-title" class="editorial-section__title">What else you could spend this on</h2>
 			</div>
-			<div class="partner-process">
-				{process.map((item) => (
-					<article class="partner-process__item">
-						<span class="partner-process__step">{item.step}</span>
-						<h3 class="editorial-card__title">{item.title}</h3>
-						<p class="editorial-card__body">{item.body}</p>
-					</article>
+			<dl class="partnership-terms">
+				<div>
+					<dt>A sponsored video</dt>
+					<dd>Puts your product in front of an audience, which is worth doing. It doesn't tell you where your product loses developers or check whether anything changed afterwards.</dd>
+				</div>
+				<div>
+					<dt>An agency developer-experience audit</dt>
+					<dd>Gets you a report. Check whether it also includes a live session that teaches the use case, an example written for you, and a re-run that checks the fixes worked.</dd>
+				</div>
+				<div>
+					<dt>Hiring a developer advocate</dt>
+					<dd>The right long-term move for many teams, but it takes months to recruit and ramp. The review tells them, or you, where to start.</dd>
+				</div>
+			</dl>
+		</section>
+
+		<section id="programme" class="editorial-section editorial-section--split" aria-labelledby="programme-title">
+			<div class="editorial-section__header">
+				<h2 id="programme-title" class="editorial-section__title">{partnershipOffer.name}</h2>
+				<p class="editorial-section__lede">{partnershipOffer.summary}</p>
+			</div>
+			<div class="partner-offer-card">
+				<div>
+					<p class="partner-offer-card__price">{partnershipOffer.price}</p>
+					<p class="partner-offer-card__cadence">{partnershipOffer.cadence}</p>
+				</div>
+				<p class="editorial-card__body">Included:</p>
+				<ul class="editorial-list">
+					{partnershipOffer.included.map((item) => <li>{item}</li>)}
+				</ul>
+				<p class="editorial-card__body">Not included:</p>
+				<ul class="editorial-list">
+					{partnershipOffer.excluded.map((item) => <li>{item}</li>)}
+				</ul>
+				<a class="editorial-button editorial-button--secondary" href={applyHref} data-apply-path={applicationPaths[0]}>{partnershipIsFull ? "Join the waiting list" : "Apply for the full 90 days"}</a>
+			</div>
+		</section>
+
+		<section id="extras" class="editorial-section editorial-section--split" aria-labelledby="extras-title">
+			<div class="editorial-section__header">
+				<h2 id="extras-title" class="editorial-section__title">Also in the full 90 days</h2>
+				<p class="editorial-section__lede">Small, bounded extras around the main work. Anything your audience or ours sees is labelled as partner content. See the <a href="/technology/matrix">Technology Matrix</a>.</p>
+			</div>
+			<dl class="partnership-terms">
+				{partnershipPerks.map((perk) => (
+					<div>
+						<dt>{perk.title}</dt>
+						<dd>{perk.detail}</dd>
+					</div>
 				))}
-			</div>
+			</dl>
 		</section>
 
-		<section class="editorial-section editorial-section--split" aria-labelledby="boundaries-title">
+		<section id="renewal" class="editorial-section editorial-section--split" aria-labelledby="renewal-title">
 			<div class="editorial-section__header">
-				<h2 id="boundaries-title" class="editorial-section__title">Clear boundaries</h2>
+				<h2 id="renewal-title" class="editorial-section__title">If you continue past day 90</h2>
+				<p class="editorial-section__lede">Partners who renew keep everything above and add these.</p>
 			</div>
-			<ul class="editorial-list partner-boundaries">
-				{badFits.map((item) => <li>{item}</li>)}
-			</ul>
+			<dl class="partnership-terms">
+				{renewalPerks.map((perk) => (
+					<div>
+						<dt>{perk.title}</dt>
+						<dd>{perk.detail}</dd>
+					</div>
+				))}
+			</dl>
+		</section>
+
+		<PartnershipExperience />
+
+		<section id="terms" class="editorial-section editorial-section--split" aria-labelledby="terms-title">
+			<div class="editorial-section__header">
+				<h2 id="terms-title" class="editorial-section__title">Terms, for you and your finance team</h2>
+			</div>
+			<dl class="partnership-terms">
+				{partnershipTerms.map((term) => (
+					<div>
+						<dt>{term.title}</dt>
+						<dd>{term.detail}</dd>
+					</div>
+				))}
+			</dl>
 		</section>
 
 		<section class="editorial-section editorial-section--split" aria-labelledby="faq-title">
 			<div class="editorial-section__header">
-				<h2 id="faq-title" class="editorial-section__title">Before you apply</h2>
+				<h2 id="faq-title" class="editorial-section__title">Questions</h2>
 			</div>
 			<div class="editorial-faq">
 				{faqs.map((faq) => (
@@ -142,9 +310,9 @@ const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(
 
 		<section id="apply" class="editorial-section editorial-section--split partnerships-apply" aria-labelledby="apply-title">
 			<div class="editorial-section__header">
-				<p class="editorial-kicker">Apply</p>
-				<h2 id="apply-title" class="editorial-section__title">Bring the next adoption problem.</h2>
-				<p class="editorial-section__lede">Tell us who needs to trust the product, what they need to see, and what you want to build this quarter. Rough context is enough.</p>
+				<h2 id="apply-title" class="editorial-section__title">Tell us about your product.</h2>
+				<p class="editorial-section__lede">A few lines is enough. David replies within two business days with a recommendation: start with the review, or don’t, and why.</p>
+				<p class="partnership-capacity">{partnershipAvailability}</p>
 			</div>
 			<div class="partnerships-apply__body">
 				<PartnershipApplicationForm client:visible />
@@ -154,18 +322,72 @@ const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(
 </Page>
 
 <style>
-	.partner-process__step {
+	.partnership-capacity { margin: 0; max-width: 68ch; font-family: var(--fonts-academy-mono), ui-monospace, monospace; font-size: 0.875rem; line-height: 1.6; letter-spacing: 0.01em; color: var(--colors-academy-text); }
+
+	.partnership-hero-intro { margin: 0; max-width: 68ch; font-family: var(--fonts-academy-text), system-ui, sans-serif; font-size: 1.125rem; line-height: 1.7; color: var(--colors-academy-text-muted); }
+	.partnership-hero-offer { display: grid; gap: 1rem; }
+	.partnership-hero-commitment { margin: 0; font-family: var(--fonts-academy-text), system-ui, sans-serif; font-size: 1.125rem; font-weight: 700; color: var(--colors-academy-text); }
+
+	.partnership-outcomes,
+	.partnership-plan {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 1.25rem;
+		min-width: 0;
+	}
+	.partnership-outcomes li,
+	.partnership-plan li {
+		display: grid;
+		gap: 0.35rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--colors-academy-border);
+	}
+	.partnership-plan__when,
+	.partnership-terms dt {
+		margin: 0;
 		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
-		font-size: 0.7rem;
+		font-size: 0.8rem;
 		font-weight: 700;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 		color: var(--colors-academy-accent);
 	}
+	.partnership-terms { display: grid; gap: 1.25rem; margin: 0; min-width: 0; }
+	.partnership-terms div { display: grid; gap: 0.35rem; }
+	.partnership-terms dd { margin: 0; line-height: 1.65; color: var(--colors-academy-text); }
+
+	.partnership-sample { overflow-x: auto; min-width: 0; }
+	.partnership-sample table {
+		width: 100%;
+		min-width: 44rem;
+		border-collapse: collapse;
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+	.partnership-sample th,
+	.partnership-sample td {
+		padding: 0.6rem 0.75rem 0.6rem 0;
+		text-align: left;
+		vertical-align: top;
+		border-top: 1px solid var(--colors-academy-border);
+		color: var(--colors-academy-text);
+	}
+	.partnership-sample th {
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--colors-academy-text-muted);
+	}
+	.partnership-sample td:first-child { font-family: var(--fonts-academy-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
 	.partner-offer-card {
 		display: grid;
 		gap: 1rem;
 		justify-items: start;
+		min-width: 0;
 	}
 
 	.partner-offer-card__price {
@@ -181,59 +403,7 @@ const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(
 		margin: 0.15rem 0 0;
 		color: var(--colors-academy-text-muted);
 		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
-		font-size: 0.72rem;
-		letter-spacing: 0.08em;
-	}
-
-	.partner-card__link {
-		display: inline-flex;
-		align-items: center;
-		min-height: 44px;
-		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
-		font-size: 0.72rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: var(--colors-academy-accent);
-		text-decoration: none;
-	}
-
-	.partner-card__link:hover {
-		text-decoration: underline;
-		text-underline-offset: 0.2em;
-	}
-	.partner-card__link:focus-visible {
-		outline: 2px solid var(--colors-academy-accent);
-		outline-offset: 4px;
-	}
-
-	.partner-process {
-		display: grid;
-		gap: 0;
-		border-top: 1px solid var(--colors-academy-border);
-		border-bottom: 1px solid var(--colors-academy-border);
-	}
-
-	.partner-process__item {
-		display: grid;
-		gap: 0.5rem;
-		padding: 1rem 0;
-	}
-
-	.partner-process__item + .partner-process__item {
-		border-top: 1px solid var(--colors-academy-border);
-	}
-
-	.partner-process__item h3 {
-		margin: 0;
-	}
-
-	.partner-boundaries {
-		margin: 0;
-	}
-
-	@media (min-width: 760px) {
-		.partner-process__item {
-			padding: 1rem;
-		}
+		font-size: 0.875rem;
+		letter-spacing: 0.02em;
 	}
 </style>
