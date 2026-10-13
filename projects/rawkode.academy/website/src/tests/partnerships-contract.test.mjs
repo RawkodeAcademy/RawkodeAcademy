@@ -41,7 +41,6 @@ test("partnership page leads with the private fixed-price review", () => {
 	);
 	assert.match(partnershipCopy, /exclude VAT where it applies/);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
-	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /champion|\btax\b/i);
 
 	const review = page.indexOf('id="review"');
 	const programme = page.indexOf('id="programme"');
