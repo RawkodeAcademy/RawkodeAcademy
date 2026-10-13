@@ -1,5 +1,7 @@
 const PUBLIC_CONTENT_PATH = /^\/v1\/(?:homepage|collections\/[a-z][a-z-]*|assets\/[a-z0-9]+|diagrams\/[a-f0-9]{64}\.svg|demos)$/
 
+// `/v1/homepage` is the bounded aggregate read used by homepage SSR.
+
 // The populated backend also has a preview-only readiness mutation endpoint.
 // Enforce the capability boundary here before any request reaches that Worker.
 export async function handlePreviewContent(request, sourceBinding) {
