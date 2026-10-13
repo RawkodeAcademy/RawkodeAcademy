@@ -25,14 +25,23 @@ const partnershipCopy = readFileSync(
 test("partnership page leads with the private fixed-price review", () => {
 	assert.match(
 		page,
-		/A private, recorded first run of your quick start by a Kubernetes practitioner, plus a ranked friction report\. \$5k, fixed price, no retainer\./,
+		/David, a Kubernetes practitioner, works through your quick start privately and on the record, then sends you a ranked report of where developers get stuck\. It costs a fixed \$5,000, with no retainer\./,
 	);
 	assert.match(page, />Book a first-run review<\/a>/);
 	assert.match(partnershipCopy, /price: "\$5,000"/);
 	assert.match(partnershipCopy, /price: "\$12,000"/);
-	assert.match(partnershipCopy, /price: "\$40,000"/);
-	assert.match(partnershipCopy, /\$10,000 billed per quarter/);
+	assert.match(partnershipCopy, /price: "\$40,000 a year"/);
+	assert.match(
+		partnershipCopy,
+		/It costs \$40,000 a year, billed at \$10,000 a quarter/,
+	);
+	assert.match(
+		partnershipCopy,
+		/Your monthly 60-minute working sessions with David run all year too/,
+	);
+	assert.match(partnershipCopy, /exclude VAT where it applies/);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
+	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /champion|\btax\b/i);
 
 	const review = page.indexOf('id="review"');
 	const programme = page.indexOf('id="programme"');

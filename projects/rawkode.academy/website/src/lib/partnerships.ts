@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 first-run review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to a $12,000 90-day partnership or a $40,000 annual partnership only if it's useful.";
+	"Start with a $5,000 first-run review from David Flanagan of Rawkode Academy. You get a recording of David's first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -95,7 +95,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a first-run review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. Delivered in 10 business days, invoiced on delivery. Continue to a quarterly or annual partnership only if it's useful.";
+	"Every partnership starts with a first-run review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a quarterly or annual partnership.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -171,9 +171,9 @@ export const partnershipPerks: PartnershipPerk[] = [
 			"Before one launch a quarter, David does a recorded first run of the new feature or quick start and sends you the three things most likely to trip developers up. Give us 10 business days' notice. It doesn't mean David will cover the launch publicly.",
 	},
 	{
-		title: "Champion pack",
+		title: "90-day results summary",
 		detail:
-			"At day 90, a one-page before-and-after summary and a five-minute video walkthrough from David that your champion can forward to the CEO or board. If you publish it, it stays marked as prepared under a paid partnership.",
+			"At the end of the 90 days, David sends you a one-page summary of what changed, with before and after numbers, and a five-minute video walking through it. It's written so you can forward it to your CEO or board. If you publish it, it stays marked as prepared under a paid partnership.",
 	},
 	{
 		title: "Cross-partner patterns",
@@ -249,7 +249,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Decide",
-		what: "Sign a quarterly or annual partnership within 30 days of the review being delivered and the $5,000 review counts towards it. Or stop. Either way you keep everything from the review.",
+		what: "If you sign a quarterly or annual partnership within 30 days of the review being delivered, the $5,000 you paid for it counts towards the cost. You can also stop there. Either way, you keep everything from the review.",
 	},
 	{
 		when: "Month 2",
@@ -274,7 +274,7 @@ export const partnershipOffer: PartnershipOffer = {
 	label: "Work with Rawkode Academy",
 	price: "$12,000",
 	priceShort: "$12k/90 days",
-	cadence: `Fixed price. ${partnershipReviewCredit} When it counts, continuing costs $7,000 more: $3,500 a month for two months.`,
+	cadence: `This is a fixed price. ${partnershipReviewCredit} In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.`,
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
 	included: [
@@ -284,7 +284,7 @@ export const partnershipOffer: PartnershipOffer = {
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
 		"A monthly all-partner call with David and the other current partners on industry changes",
-		"Partner extras: fix checks, a launch pre-flight, a champion pack for your board, labelled newsletter and Discord slots, and warm introductions",
+		"Extras for partners: David re-tests fixes you ship, does a first run before one launch a quarter, sends a 90-day results summary you can share with your board, gives you labelled spots in the newsletter and Discord, and makes warm introductions where they help both sides",
 		"A day-90 re-run of the first run, compared with the original",
 		"A day-90 read-out against the targets set on the review call",
 	],
@@ -301,16 +301,21 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	id: "partnership-annual",
 	name: "Annual partnership",
 	label: "Work with Rawkode Academy for a year",
-	price: "$40,000",
+	price: "$40,000 a year",
 	priceShort: "$40k/year",
-	cadence:
-		"$10,000 billed per quarter. A year of quarterly runs, fixed price, no auto-renew.",
-	summary: "The full 90-day partnership repeated each quarter for one year.",
-	included: partnershipOffer.included,
-	excluded: partnershipOffer.excluded,
+	cadence: "It costs $40,000 a year, billed at $10,000 a quarter.",
+	summary:
+		"The year starts with the full first-run review. You also get Slack with David and a place on the monthly all-partner call for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
+	included: [],
+	excluded: [],
 	notes: [partnershipReviewCredit],
 	mailto: buildMailto("Annual partnership", applicationBody),
 };
+
+export const annualPartnershipDetails = [
+	"At each quarterly read-out, you decide what the next quarter covers. It can be a re-run compared with last time, a first run before a launch followed by a re-check of your fixes, or a live session on Rawkode Live with a runnable example repository. You tell David your choice at the read-out or within five business days, and he confirms it in writing.",
+	"The contract runs for the full year, and either side can choose not to continue after that.",
+] as const;
 
 /** Terms buyers, finance and procurement ask about. */
 export const partnershipTerms = [
@@ -322,11 +327,11 @@ export const partnershipTerms = [
 	{
 		title: "Renewal",
 		detail:
-			"Nothing renews automatically. A quarterly partnership ends after 90 days. An annual partnership includes four quarterly runs and ends after the year. Any further partnership is agreed in writing.",
+			"Nothing renews automatically. A quarterly partnership ends after 90 days, and an annual partnership ends after a year, with a first run each quarter. If you want to carry on, we agree it in writing.",
 	},
 	{
 		title: "Invoicing",
-		detail: `The review is invoiced on delivery. ${partnershipReviewCredit} The quarterly partnership's remaining $7,000 is invoiced as two monthly payments of $3,500. The annual partnership is billed at $10,000 per quarter. Fixed prices in USD, 30-day payment terms. Prices exclude tax where it applies.`,
+		detail: `The review is invoiced on delivery. ${partnershipReviewCredit} For the quarterly partnership, the remaining $7,000 is invoiced as two monthly payments of $3,500. The annual partnership is billed at $10,000 a quarter. All prices are fixed and in USD, with 30-day payment terms, and exclude VAT where it applies.`,
 	},
 	{
 		title: "Paperwork",
@@ -357,7 +362,8 @@ export const fitProofReview: PartnershipOffer = {
 	label: "Step one",
 	price: "$5,000",
 	priceShort: "$5k",
-	cadence: "Fixed price. Delivered within 10 business days of access",
+	cadence:
+		"A fixed price, delivered within 10 business days of getting access.",
 	summary:
 		"The first step of every partnership, and useful on its own: David's recorded first run of your product and a written review you can act on whether or not you continue.",
 	included: [
@@ -374,7 +380,7 @@ export const fitProofReview: PartnershipOffer = {
 	notes: [
 		"Before starting we agree the product areas, who David is acting as, and where the run ends: a first working result, or something closer to production, such as a highly available install, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source install to the move to the paid product.",
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
-		`${partnershipReviewCredit} Continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
+		`${partnershipReviewCredit} You can then continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
 	],
 	mailto: buildMailto("First-run review request", applicationBody),
 };
