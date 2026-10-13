@@ -44,6 +44,7 @@ type StaticPageDefinition = {
 };
 
 const staticPages: StaticPageDefinition[] = [
+	{ path: "/games/kubele", changefreq: "daily", priority: 0.5 },
 	// Homepage is the strongest within-site signal.
 	{ path: "/", changefreq: "daily", priority: 1.0 },
 	// Top-level content listings - primary navigation targets.
