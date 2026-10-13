@@ -293,7 +293,7 @@ export default defineConfig({
 			ATTIO_INBOUND_DEAL_STAGE: envField.string({
 				context: "server",
 				access: "public",
-				default: "Replied",
+				default: "In Progress",
 			}),
 			ATTIO_INBOUND_DEAL_VALUE_USD: envField.string({
 				context: "server",
@@ -304,6 +304,11 @@ export default defineConfig({
 				context: "server",
 				access: "public",
 				default: "offer",
+			}),
+			ATTIO_INBOUND_DEAL_OFFER_OPTION: envField.string({
+				context: "server",
+				access: "public",
+				default: "Review",
 			}),
 		},
 	},

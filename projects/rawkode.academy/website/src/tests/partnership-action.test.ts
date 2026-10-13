@@ -10,6 +10,7 @@ const workerEnv = {
 	ATTIO_INBOUND_DEAL_STAGE: undefined as string | undefined,
 	ATTIO_INBOUND_DEAL_VALUE_USD: undefined as string | undefined,
 	ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: undefined as string | undefined,
+	ATTIO_INBOUND_DEAL_OFFER_OPTION: undefined as string | undefined,
 };
 const imports: Record<string, unknown> = {
 	"astro:actions": { defineAction: (definition: unknown) => definition },
@@ -82,6 +83,7 @@ beforeEach(() => {
 	workerEnv.ATTIO_INBOUND_DEAL_STAGE = undefined;
 	workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = undefined;
 	workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = undefined;
+	workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = undefined;
 	limit.mockReset().mockResolvedValue({ success: true });
 	vi.stubGlobal("fetch", vi.fn());
 });
@@ -171,10 +173,10 @@ describe("partnership Attio action", () => {
 		});
 		expect(deal[0]).toBe("https://api.attio.com/v2/objects/deals/records");
 		expect(requestBody(deal).data.values).toMatchObject({
-			stage: "Replied",
+			stage: "In Progress",
 			owner: "david@rawkode.academy",
 			value,
-			offer: "review",
+			offer: "Review",
 			associated_company: {
 				target_object: "companies",
 				target_record_id: "company-id",
@@ -219,6 +221,7 @@ describe("partnership Attio action", () => {
 	it("uses the configured deal value and Offer attribute slug", async () => {
 		workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = "6500";
 		workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = "inbound_offer";
+		workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = "Custom review";
 		vi.mocked(fetch)
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
@@ -230,7 +233,7 @@ describe("partnership Attio action", () => {
 		const deal = vi.mocked(fetch).mock.calls[3]!;
 		expect(requestBody(deal).data.values).toMatchObject({
 			value: 6500,
-			inbound_offer: "review",
+			inbound_offer: "Custom review",
 		});
 	});
 

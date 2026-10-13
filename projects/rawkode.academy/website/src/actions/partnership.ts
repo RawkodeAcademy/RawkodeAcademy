@@ -5,9 +5,10 @@ import { env } from "cloudflare:workers";
 import { applicationPathLabels, applicationPaths } from "@/lib/partnerships";
 
 const ATTIO_API_URL = "https://api.attio.com/v2";
-const DEFAULT_DEAL_STAGE = "Replied";
+const DEFAULT_DEAL_STAGE = "In Progress";
 const DEFAULT_DEAL_VALUE_USD = 5000;
 const DEFAULT_OFFER_ATTRIBUTE = "offer";
+const DEFAULT_OFFER_OPTION = "Review";
 const DEAL_OWNER = "david@rawkode.academy";
 
 interface AttioRecordResponse {
@@ -165,13 +166,15 @@ export const partnership = {
 				const offerAttribute =
 					env.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE?.trim() ||
 					DEFAULT_OFFER_ATTRIBUTE;
+				const offerOption =
+					env.ATTIO_INBOUND_DEAL_OFFER_OPTION?.trim() || DEFAULT_OFFER_OPTION;
 				try {
 					await attioRequest(apiKey, "/objects/deals/records", "POST", {
 						name: `${input.company}: ${applicationPathLabels[input.path]}`,
 						stage: dealStage,
 						owner: DEAL_OWNER,
 						value: dealValue,
-						[offerAttribute]: "review",
+						[offerAttribute]: offerOption,
 						associated_people: [
 							{
 								target_object: "people",
