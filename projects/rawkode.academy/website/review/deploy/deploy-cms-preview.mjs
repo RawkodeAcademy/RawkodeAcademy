@@ -346,6 +346,39 @@ try {
 	}
 	if (!sentinel) throw new Error(`Astro preview diagnostic did not return Payload content at ${diagnosticUrl}: ${diagnosticState}`)
 
+	// Exercise the homepage's combined Payload read before asking Astro to render it.
+	// This distinguishes bridge/projection failures from homepage template failures.
+	const homepageDiagnosticUrl = new URL('/api/cms-preview-check?homepage=1', previewUrl)
+	const homepageDiagnosticStartedAt = Date.now()
+	const homepageResponse = await fetch(homepageDiagnosticUrl, {
+		method: 'GET',
+		headers: { accept: 'application/json', 'cache-control': 'no-store', origin: homepageDiagnosticUrl.origin },
+		signal: AbortSignal.timeout(15_000),
+	})
+	const homepageBody = await homepageResponse.json().catch(() => null)
+	const homepageCounts = homepageBody?.homepage
+	const homepageElapsedMs = Date.now() - homepageDiagnosticStartedAt
+	console.log('[preview-homepage-diagnostic] ' + JSON.stringify({
+		status: homepageResponse.status,
+		elapsedMs: homepageElapsedMs,
+		homepage: homepageCounts ?? null,
+		diagnostic: homepageBody?.diagnostic ?? homepageBody?.error ?? null,
+	}))
+	const homepageCollections = ['videos', 'articles', 'news', 'courses', 'learningPaths']
+	if (
+		!homepageResponse.ok ||
+		homepageBody?.readOnly !== true ||
+		!homepageCounts ||
+		homepageCollections.some(collection => !Number.isSafeInteger(homepageCounts[collection]) || homepageCounts[collection] < 0)
+	) {
+		const detail = typeof homepageBody?.diagnostic === 'string'
+			? homepageBody.diagnostic
+			: typeof homepageBody?.error === 'string'
+				? homepageBody.error
+				: 'Payload homepage diagnostic returned incomplete aggregate counts'
+		throw new Error(`Payload homepage diagnostic failed (HTTP ${homepageResponse.status}, ${homepageElapsedMs}ms): ${detail}`)
+	}
+
 	// The website gateway must reject mutations before Astro or any service binding.
 	for (const pathname of ['/api/cms-preview-check', '/favicon-32x32.png']) {
 		for (const method of ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']) {

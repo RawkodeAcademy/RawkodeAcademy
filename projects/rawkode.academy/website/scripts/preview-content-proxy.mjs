@@ -1,4 +1,4 @@
-const PUBLIC_CONTENT_PATH = /^\/v1\/(?:collections\/[a-z][a-z-]*|assets\/[a-z0-9]+|diagrams\/[a-f0-9]{64}\.svg|demos)$/
+const PUBLIC_CONTENT_PATH = /^\/v1\/(?:homepage|collections\/[a-z][a-z-]*|assets\/[a-z0-9]+|diagrams\/[a-f0-9]{64}\.svg|demos)$/
 
 // The populated backend also has a preview-only readiness mutation endpoint.
 // Enforce the capability boundary here before any request reaches that Worker.
