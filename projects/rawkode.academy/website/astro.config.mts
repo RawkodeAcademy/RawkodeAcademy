@@ -285,6 +285,16 @@ export default defineConfig({
 				access: "public",
 				default: "true",
 			}),
+			ATTIO_API_KEY: envField.string({
+				context: "server",
+				access: "secret",
+				optional: true,
+			}),
+			ATTIO_INBOUND_DEAL_STAGE: envField.string({
+				context: "server",
+				access: "public",
+				default: "Replied",
+			}),
 		},
 	},
 	security: {

@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a £5,000 first-run review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to the full 90-day partnership for £7,000 more only if it's useful.";
+	"Start with a $5,000 first-run review from David Flanagan of Rawkode Academy: a recorded first run of your product and a ranked list of what to fix, explain and teach, invoiced on delivery. Continue to the full 90-day partnership for $7,000 more only if it's useful.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -269,10 +269,10 @@ export const partnershipOffer: PartnershipOffer = {
 	id: "partnership-90d",
 	name: "Full 90-day partnership",
 	label: "Work with Rawkode Academy",
-	price: "£12,000",
-	priceShort: "£12k/90 days",
+	price: "$12,000",
+	priceShort: "$12k/90 days",
 	cadence:
-		"Or US$15,600. The £5,000 (US$6,500) review counts towards it, so continuing costs £7,000 more: £3,500 (US$4,550) a month for two months.",
+		"Fixed price. The $5,000 review counts towards it, so continuing costs $7,000 more: $3,500 a month for two months.",
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
 	included: [
@@ -300,17 +300,17 @@ export const partnershipTerms = [
 	{
 		title: "Stop after the review",
 		detail:
-			"The review is the first step and is priced on its own. It is invoiced when we deliver it, not before. If you stop there you have paid £5,000 (US$6,500) and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
+			"The review is the first step and is priced on its own. It is invoiced when we deliver it, not before. If you stop there you have paid $5,000 and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
 	},
 	{
 		title: "After day 90",
 		detail:
-			"Nothing renews automatically. If you want another 90 days, we agree it in writing: £12,000 for a fresh first run on what has changed, an updated ranked list, a new partner session and example, monthly working sessions, the all-partner call and another re-run.",
+			"Nothing renews automatically. If you want another 90 days, we agree it in writing: $12,000 for a fresh first run on what has changed, an updated ranked list, a new partner session and example, monthly working sessions, the all-partner call and another re-run.",
 	},
 	{
 		title: "Invoicing",
 		detail:
-			"The review is invoiced on delivery. If you continue, the remaining £7,000 (US$9,100) is invoiced as two monthly payments of £3,500 (US$4,550). Fixed prices in GBP or USD, EUR on request, 30-day payment terms. Prices exclude VAT where it applies.",
+			"The review is invoiced on delivery. If you continue, the remaining $7,000 is invoiced as two monthly payments of $3,500. Fixed prices in USD, 30-day payment terms. Prices exclude tax where it applies.",
 	},
 	{
 		title: "Paperwork",
@@ -339,9 +339,9 @@ export const fitProofReview: PartnershipOffer = {
 	id: "product-review",
 	name: "First-run review",
 	label: "Step one",
-	price: "£5,000",
-	priceShort: "£5k",
-	cadence: "Or US$6,500. Delivered within 10 business days of access",
+	price: "$5,000",
+	priceShort: "$5k",
+	cadence: "Fixed price. Delivered within 10 business days of access",
 	summary:
 		"The first step of every partnership, and useful on its own: David's recorded first run of your product and a written review you can act on whether or not you continue.",
 	included: [
@@ -358,7 +358,7 @@ export const fitProofReview: PartnershipOffer = {
 	notes: [
 		"Before starting we agree the product areas, who David is acting as, and where the run ends: a first working result, or something closer to production, such as a highly available install, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source install to the move to the paid product.",
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
-		"After the review call you have 30 days to decide. Continue to the full 90 days for £7,000 (US$9,100) more, or stop and keep everything.",
+		"After the review call you have 30 days to decide. Continue to the full 90 days for $7,000 more, or stop and keep everything.",
 	],
 	mailto: buildMailto("First-run review request", applicationBody),
 };
