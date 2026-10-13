@@ -77,12 +77,9 @@ export const partnershipAvailability = partnershipIsFull
 		? `${partnershipPlacesOpen} of ${partnershipCapacity.places} places open as of ${partnershipCapacity.asOf}. Places go in the order reviews are booked.`
 		: `Reviews start in the order they're booked, ${partnershipCapacity.newStartsPerMonth} a month. Once ${partnershipCapacity.places} partners are in progress, new reviews wait for a place.`;
 
-/**
- * Honest statement that the paid offer is new. The method is not: David has
- * done first runs of new tools in public on Rawkode Live for years.
- */
-export const partnershipIsNewNote =
-	"The paid review is new. The method isn't: David has worked through new tools for the first time, live and unscripted, on Rawkode Live since 2020. The review is the same work done privately, timed, and written up as a ranked list.";
+/** Where the first-run review method comes from. */
+export const partnershipMethodNote =
+	"David has worked through new tools for the first time, live and unscripted, on Rawkode Live since 2020. The first-run review is the same work done privately, timed and written up as a ranked list.";
 
 /** Who the programme is for. Used in the hero eyebrow and search copy. */
 export const partnershipAudience =
