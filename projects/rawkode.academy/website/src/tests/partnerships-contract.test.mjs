@@ -30,7 +30,7 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(
 		page,
-		/I install and use your product the way your users would, record the whole session, and send you a list of what to fix first\. It costs a fixed \$5,000\./,
+		/I review how engineers get started with your product and tell you what to fix first, in order of importance\. It's a fixed \$5,000\./,
 	);
 	assert.match(
 		page,

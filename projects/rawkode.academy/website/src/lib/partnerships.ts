@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a recording of David using your product and a ranked list of what to fix, explain and teach, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
+	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first, in order of importance, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -95,33 +95,33 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a product review. David works through your product as a new user would, records every place he stalls and tells you plainly what he found. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a quarterly or annual partnership.";
+	"Every partnership starts with a product review. David tells you plainly where engineers get stuck with your product and what to fix first. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a quarterly or annual partnership.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
 /** Example numbers to watch, so buyers can see what "agreed numbers" means. */
 export const exampleMeasures =
-	"For example: time from sign-up or install to a first successful deploy, quick-start completion rate, or the share of trials that are still active after a week.";
+	"For example: time from sign-up or setup to a first successful deploy, quick-start completion rate, or the share of trials that are still active after a week.";
 
 /** What the partner has in hand at day 90. The page leads with this. */
 export const partnershipOutcomes = [
 	{
-		title: "A recorded product review",
+		title: "A product review",
 		inReview: true,
 		detail:
-			"David works through your product from first install or sign-up to a first working result, as your target developer would, with the screen recorded and every stall point written down. Delivered in the first two weeks as part of the review.",
+			"David reviews your product from setup or sign-up to a working result and writes down the places engineers get stuck. Delivered in the first two weeks as part of the review.",
 	},
 	{
-		title: "A ranked list of what to fix, explain and teach",
+		title: "A written report",
 		inReview: true,
 		detail:
-			"Each friction point ranked by how much it costs developers and how hard it is to change, with a recommendation for each. Your product lead owns the list; David reviews progress with them every month.",
+			"The places engineers get stuck are ranked by how much they cost developers and how hard they are to change, with what to fix first. Your product lead owns the list; David reviews progress with them every month.",
 	},
 	{
 		title: "A live session on Rawkode Academy",
 		inReview: false,
 		detail:
-			"David and your engineer teach one agreed use case live on Rawkode Live, labelled as a partner session. The recording stays published on Rawkode Academy and you can reuse it on your own channels.",
+			"David and your engineer teach one agreed use case live on Rawkode Live, labelled as a partner session. The session stays published on Rawkode Academy and you can reuse it on your own channels.",
 	},
 	{
 		title: "A runnable example, written by David",
@@ -133,7 +133,7 @@ export const partnershipOutcomes = [
 		title: "A before-and-after re-run",
 		inReview: false,
 		detail:
-			"At day 90 David repeats the review on what you've shipped since and checks every stall point in the original log: fixed, improved or still there. You get the count before and after, not just an impression.",
+			"At day 90 David repeats the review on what you've shipped since and checks every place engineers got stuck in the original report: fixed, improved or still there. You get the count before and after, not just an impression.",
 	},
 	{
 		title: "A day-90 read-out",
@@ -147,7 +147,7 @@ export const partnershipOutcomes = [
 export const partnershipGroupCall = {
 	title: "A monthly all-partner call",
 	detail:
-		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. Not recorded, and nothing said is repeated outside the call. Until three partners are active, it runs as a one-to-one industry briefing with David.",
+		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. The call is private, and nothing said is repeated outside it. Until three partners are active, it runs as a one-to-one industry briefing with David.",
 } as const;
 
 export interface PartnershipPerk {
@@ -168,7 +168,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "Launch pre-flight",
 		detail:
-			"Before one launch a quarter, David does a recorded review of the new feature or quick start and sends you the three things most likely to trip developers up. Give us 10 business days' notice. It doesn't mean David will cover the launch publicly.",
+			"Before one launch a quarter, David reviews the new feature or quick start and sends you the three things most likely to trip developers up. Give us 10 business days' notice. It doesn't mean David will cover the launch publicly.",
 	},
 	{
 		title: "90-day results summary",
@@ -178,7 +178,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "Cross-partner patterns",
 		detail:
-			"Each quarter, an anonymised write-up of the friction patterns David saw across every partner's review, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
+			"Each quarter, an anonymised write-up of the places engineers got stuck across every partner's review, so you can compare your onboarding with your peers'. No product is named. It starts once three partners are active.",
 	},
 	{
 		title: "The Technology Matrix, walked through",
@@ -245,7 +245,7 @@ export const renewalPerks: PartnershipPerk[] = [
 export const partnershipPlan: PartnershipStep[] = [
 	{
 		when: "Weeks 1–2 · product review",
-		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch; targets are set on the review call, once the findings exist. David records the product review and delivers the friction log and ranked list within 10 business days, then walks your team through it in a one-hour call, checking the list against your own funnel numbers.",
+		what: "Kick-off call. You give us a trial or sandbox account. We agree the numbers to watch; targets are set on the review call, once the findings exist. David carries out the product review and delivers the written report within 10 business days, then walks your team through it in a one-hour call, checking the report against your own funnel numbers.",
 	},
 	{
 		when: "Decide",
@@ -257,7 +257,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Month 3",
-		what: "David repeats the review on what you've shipped and checks each original stall point. Day-90 read-out against the targets. Decide what to work on next quarter.",
+		what: "David repeats the review on what you've shipped and checks each place engineers got stuck. Day-90 read-out against the targets. Decide what to work on next quarter.",
 	},
 	{
 		when: "From month 2",
@@ -278,13 +278,13 @@ export const partnershipOffer: PartnershipOffer = {
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
 	included: [
-		"The product review: recording, friction log and ranked list",
+		"The product review and written report",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David, answers within two business days",
 		"A monthly all-partner call with David and the other current partners on industry changes",
-		"Extras for partners: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you labelled spots in the newsletter and Discord, and makes warm introductions where they help both sides",
+		"Extras for partners: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions where they help both sides",
 		"A day-90 review compared with the original",
 		"A day-90 read-out against the targets set on the review call",
 	],
@@ -322,7 +322,7 @@ export const partnershipTerms = [
 	{
 		title: "Stop after the review",
 		detail:
-			"The review is the first step and is priced on its own. It is invoiced when we deliver it, not before. If you stop there you have paid $5,000 and keep the recording, the friction log and the ranked list. There is nothing to cancel.",
+			"The review is the first step and is priced on its own. It is invoiced when we deliver it, not before. If you stop there you have paid $5,000 and keep the review and written report. There is nothing to cancel.",
 	},
 	{
 		title: "Renewal",
@@ -341,7 +341,7 @@ export const partnershipTerms = [
 	{
 		title: "Access and data",
 		detail:
-			"We work from a trial or sandbox account and don't need production systems or customer data. Recordings are shared with you privately and we delete our copies 90 days after the work ends, or sooner if you ask. Slack Connect is a shared channel your admins control and can close at any time.",
+			"We work from a trial or sandbox account and don't need production systems or customer data. Review materials are shared with you privately and we delete our copies 90 days after the work ends, or sooner if you ask. Slack Connect is a shared channel your admins control and can close at any time.",
 	},
 	{
 		title: "If David can't make it",
@@ -351,7 +351,7 @@ export const partnershipTerms = [
 	{
 		title: "Ownership",
 		detail:
-			"You own the review recording, the friction log, the ranked list and the read-out. The example repository is licensed Apache 2.0, so you can use, change and ship it. You approve the session title and use case, can reuse the recording on your own channels, and can ask us to unlist it.",
+			"You own the review, the report and the read-out. The example repository is licensed Apache 2.0, so you can use, change and ship it. You approve the session title and use case, can reuse the published session on your own channels, and can ask us to unlist it.",
 	},
 ] as const;
 
@@ -365,11 +365,10 @@ export const fitProofReview: PartnershipOffer = {
 	cadence:
 		"A fixed price, delivered within 10 business days of getting access.",
 	summary:
-		"The first step of every partnership, and useful on its own: David's recorded product review and a written report you can act on whether or not you continue.",
+		"The first step of every partnership, and useful on its own: David's product review and a written report you can act on whether or not you continue.",
 	included: [
-		"The screen recording of David's product review, from first install or sign-up to a first working result",
-		"A friction log with every stall point and where it happened",
-		"A ranked list of what to fix, explain and teach, with a recommendation for each",
+		"A written report showing the places engineers get stuck",
+		"A ranked list of what to fix first, in order of importance",
 		"Two or three numbers to watch, with a target for each",
 		"A one-hour call to go through it with your team",
 	],
@@ -378,81 +377,12 @@ export const fitProofReview: PartnershipOffer = {
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"Before starting we agree the product areas, who David is acting as, and where the run ends: a first working result, or something closer to production, such as a highly available install, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source install to the move to the paid product.",
+		"Before starting we agree the product areas, who David is acting as, and where the review ends: a first working result, or something closer to production, such as a highly available setup, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source setup to the move to the paid product.",
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
 		`${partnershipReviewCredit} You can then continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
-
-/**
- * Illustrative friction-log rows for a fictional product, so buyers can see
- * the format of the deliverable. Labelled as illustrative on the page.
- */
-export const sampleFrictionLog = [
-	{
-		rank: 1,
-		effort: "Medium",
-		at: "04:10",
-		step: "Install the CLI",
-		finding:
-			"The install script needs a newer glibc than the docs list. The error names a missing symbol, not the fix.",
-		impact: "High",
-		action: "Fix",
-		recommendation:
-			"Ship a static build and check the platform before installing.",
-	},
-	{
-		rank: 2,
-		effort: "Low",
-		at: "11:45",
-		step: "Connect a cluster",
-		finding:
-			"The quick start assumes a kubeconfig context called default. Most developers have several contexts.",
-		impact: "High",
-		action: "Explain",
-		recommendation:
-			"Show the --context flag in the first command and print the active context on connect.",
-	},
-	{
-		rank: 4,
-		effort: "Low",
-		at: "23:30",
-		step: "First deployment",
-		finding:
-			"The deploy succeeds but nothing says how to reach the service. The answer is in a GitHub issue.",
-		impact: "Medium",
-		action: "Teach",
-		recommendation:
-			"End the quick start with a port-forward and a curl, then link a guide on ingress.",
-	},
-	{
-		rank: 3,
-		effort: "Medium",
-		at: "41:05",
-		step: "Move to the hosted product",
-		finding:
-			"Moving from the open-source install to the hosted product means re-entering every setting by hand. No export, and the docs don't mention it.",
-		impact: "High",
-		action: "Fix",
-		recommendation:
-			"Add an import command that reads the open-source config, and link it from the upgrade page.",
-	},
-] as const;
-
-/**
- * Illustrative only: how one finding becomes a number to watch and a day-90
- * check. Uses the fictional product from the sample log.
- */
-export const sampleFindingToNumber = {
-	finding:
-		"Rank 2: the quick start assumes a kubeconfig context called default.",
-	number:
-		"Share of new installs that complete the quick start, from your own product analytics.",
-	target: "Set on the review call, against your current figure.",
-	check:
-		"At day 90 David re-runs the quick start on the shipped fix, and the read-out reports the share before and after from your data.",
-} as const;
 
 /** Compatibility shape for components that render the partnership offers. */
 export const partnershipTiers = [
