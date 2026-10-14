@@ -188,10 +188,11 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.doesNotMatch(partnershipCopy, /puff piece/);
 	assert.match(partnershipCopy, /"A ranked list of what to fix first"/);
-	assert.doesNotMatch(
+	assert.match(
 		partnershipCopy,
-		/A ranked list of what to fix first, in order of importance/,
+		/You get a written list of what to fix first, invoiced on delivery\./,
 	);
+	assert.doesNotMatch(partnershipCopy, /in order of importance/);
 	assert.match(partnershipCopy, /and makes warm introductions\./);
 	assert.doesNotMatch(partnershipCopy, /all-partner/i);
 	assert.doesNotMatch(page, /all-partner/i);
