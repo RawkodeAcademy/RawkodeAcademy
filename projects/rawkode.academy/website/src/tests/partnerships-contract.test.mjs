@@ -153,18 +153,9 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	assert.match(partnershipCopy, /Partners also get extras:/);
 	assert.match(partnershipCopy, /"Slack Connect with David",/);
 	assert.doesNotMatch(partnershipCopy, /"Slack Connect with David\."/);
-	assert.match(
-		partnershipCopy,
-		/roadmap trade-offs\./,
-	);
-	assert.match(
-		letsChat,
-		/David reads every enquiry and replies by email\./,
-	);
-	assert.match(
-		letsChat,
-		/David replies by email with a recommendation:/,
-	);
+	assert.match(partnershipCopy, /roadmap trade-offs\./);
+	assert.match(letsChat, /David reads every enquiry and replies by email\./);
+	assert.match(letsChat, /David replies by email with a recommendation:/);
 	assert.doesNotMatch(`${partnershipCopy}\n${letsChat}`, /two business days/i);
 	assert.match(
 		partnershipCopy,
@@ -266,4 +257,13 @@ test("partnership enquiry is short and tracks its conversion steps", () => {
 	assert.match(partnershipCopy, /"Annual plan"/);
 	assert.match(action, /applicationPathDeals/);
 	assert.match(action, /accept: "form"/);
+	assert.doesNotMatch(action, /matching_attribute/);
+	assert.doesNotMatch(action, /"PUT"/);
+	assert.match(page, /serverFieldErrors=/);
+	assert.match(page, /submittedValues=/);
+	assert.match(page, /isInputError/);
+	assert.match(form, /aria-describedby/);
+	assert.match(form, /maxlength="200"/);
+	assert.match(form, /maxlength="1000"/);
+	assert.match(form, /maxlength="5000"/);
 });

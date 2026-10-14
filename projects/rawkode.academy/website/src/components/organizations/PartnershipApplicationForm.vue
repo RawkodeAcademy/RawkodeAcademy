@@ -28,6 +28,7 @@
 						name="website"
 						tabindex="-1"
 						autocomplete="off"
+						maxlength="500"
 					/>
 				</div>
 				<div :class="s.row">
@@ -41,9 +42,11 @@
 							name="name"
 							autocomplete="name"
 							required
+							maxlength="200"
 							:aria-invalid="fieldErrors.name ? 'true' : undefined"
+							:aria-describedby="fieldErrors.name ? nameErrorId : undefined"
 						/>
-						<p v-if="fieldErrors.name" :class="s.fieldError">{{ fieldErrors.name }}</p>
+						<p v-if="fieldErrors.name" :id="nameErrorId" :class="s.fieldError">{{ fieldErrors.name }}</p>
 					</div>
 					<div :class="s.field">
 						<label :class="s.label" :for="emailId">Work email</label>
@@ -56,8 +59,9 @@
 							autocomplete="email"
 							required
 							:aria-invalid="fieldErrors.email ? 'true' : undefined"
+							:aria-describedby="fieldErrors.email ? emailErrorId : undefined"
 						/>
-						<p v-if="fieldErrors.email" :class="s.fieldError">{{ fieldErrors.email }}</p>
+						<p v-if="fieldErrors.email" :id="emailErrorId" :class="s.fieldError">{{ fieldErrors.email }}</p>
 					</div>
 				</div>
 
@@ -71,16 +75,27 @@
 						name="company"
 						autocomplete="organization"
 						required
+						maxlength="1000"
 						:aria-invalid="fieldErrors.company ? 'true' : undefined"
+						:aria-describedby="fieldErrors.company ? companyErrorId : undefined"
 					/>
-					<p v-if="fieldErrors.company" :class="s.fieldError">{{ fieldErrors.company }}</p>
+					<p v-if="fieldErrors.company" :id="companyErrorId" :class="s.fieldError">{{ fieldErrors.company }}</p>
 				</div>
 
 				<div :class="s.field">
 					<label :class="s.label" :for="pathId">What are you interested in?</label>
-					<select :id="pathId" v-model="path" :class="s.input" name="path" required>
+					<select
+						:id="pathId"
+						v-model="path"
+						:class="s.input"
+						name="path"
+						required
+						:aria-invalid="fieldErrors.path ? 'true' : undefined"
+						:aria-describedby="fieldErrors.path ? pathErrorId : undefined"
+					>
 						<option v-for="option in applicationPaths" :key="option" :value="option">{{ option }}</option>
 					</select>
+					<p v-if="fieldErrors.path" :id="pathErrorId" :class="s.fieldError">{{ fieldErrors.path }}</p>
 				</div>
 
 				<div :class="s.field">
@@ -92,9 +107,11 @@
 						name="message"
 						rows="4"
 						required
+						maxlength="5000"
 						:aria-invalid="fieldErrors.message ? 'true' : undefined"
+						:aria-describedby="fieldErrors.message ? messageErrorId : undefined"
 					/>
-					<p v-if="fieldErrors.message" :class="s.fieldError">{{ fieldErrors.message }}</p>
+					<p v-if="fieldErrors.message" :id="messageErrorId" :class="s.fieldError">{{ fieldErrors.message }}</p>
 				</div>
 
 				<button type="submit" :class="s.button" :disabled="loading">
@@ -117,9 +134,24 @@ import {
 	resolveApplicationPath,
 } from "@/lib/partnerships";
 
-const props = withDefaults(defineProps<{ initialPath?: ApplicationPath }>(), {
-	initialPath: "Not sure yet",
-});
+const props = withDefaults(
+	defineProps<{
+		initialPath?: ApplicationPath;
+		submittedValues?: {
+			name?: string;
+			email?: string;
+			company?: string;
+			path?: string;
+			message?: string;
+		};
+		serverFieldErrors?: Record<string, string>;
+	}>(),
+	{
+		initialPath: "Not sure yet",
+		submittedValues: () => ({}),
+		serverFieldErrors: () => ({}),
+	},
+);
 
 const s = academyForms();
 const errorId = `${useId()}-error`;
@@ -129,15 +161,27 @@ const emailId = useId();
 const companyId = useId();
 const pathId = useId();
 const messageId = useId();
+const nameErrorId = `${nameId}-error`;
+const emailErrorId = `${emailId}-error`;
+const companyErrorId = `${companyId}-error`;
+const pathErrorId = `${pathId}-error`;
+const messageErrorId = `${messageId}-error`;
 
 const FALLBACK_ERROR =
 	"We could not send your enquiry. Please email david@rawkode.academy directly.";
 
-const name = ref("");
-const email = ref("");
-const company = ref("");
-const path = ref<ApplicationPath>(props.initialPath);
-const message = ref("");
+const isApplicationPath = (value: string): value is ApplicationPath =>
+	(applicationPaths as readonly string[]).includes(value);
+
+const submittedText = (value: string | undefined) => value ?? "";
+const name = ref(submittedText(props.submittedValues.name));
+const email = ref(submittedText(props.submittedValues.email));
+const company = ref(submittedText(props.submittedValues.company));
+const submittedPath = props.submittedValues.path ?? "";
+const path = ref<ApplicationPath>(
+	isApplicationPath(submittedPath) ? submittedPath : props.initialPath,
+);
+const message = ref(submittedText(props.submittedValues.message));
 const website = ref("");
 
 const ready = ref(false);
@@ -146,7 +190,9 @@ const submitted = ref(false);
 const formStarted = ref(false);
 const fallback = ref(false);
 const error = ref("");
-const fieldErrors = ref<Record<string, string>>({});
+const fieldErrors = ref<Record<string, string>>({
+	...props.serverFieldErrors,
+});
 const fallbackMailto = computed(() => {
 	const subject = encodeURIComponent("Product review enquiry");
 	const body = encodeURIComponent(
@@ -167,9 +213,6 @@ const statusMessage = computed(() => {
 		return "Enquiry received. David reads every enquiry and will reply by email.";
 	return loading.value ? "Sending enquiry..." : "";
 });
-
-const isApplicationPath = (value: string): value is ApplicationPath =>
-	(applicationPaths as readonly string[]).includes(value);
 
 const onDocumentClick = (event: MouseEvent) => {
 	const target = event.target as HTMLElement | null;

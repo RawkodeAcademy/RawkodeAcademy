@@ -1,7 +1,7 @@
 import { defineAction } from "astro:actions";
 import { getSecret } from "astro:env/server";
-import { z } from "astro/zod";
 import { env } from "cloudflare:workers";
+import { z } from "astro/zod";
 import {
 	applicationPathDeals,
 	applicationPathLabels,
@@ -23,18 +23,27 @@ interface AttioRecordResponse {
 	};
 }
 
+interface AttioQueryResponse {
+	data?: Array<{
+		id?: {
+			record_id?: string;
+		};
+	}>;
+}
+
+const attioHeaders = (apiKey: string) => ({
+	Authorization: `Bearer ${apiKey}`,
+	"Content-Type": "application/json",
+});
+
 const attioRequest = async <Response>(
 	apiKey: string,
 	path: string,
-	method: "POST" | "PUT",
 	values: Record<string, unknown>,
 ): Promise<Response> => {
 	const response = await fetch(`${ATTIO_API_URL}${path}`, {
-		method,
-		headers: {
-			Authorization: `Bearer ${apiKey}`,
-			"Content-Type": "application/json",
-		},
+		method: "POST",
+		headers: attioHeaders(apiKey),
 		body: JSON.stringify({ data: { values } }),
 	});
 
@@ -51,6 +60,60 @@ const attioRecordId = (response: AttioRecordResponse): string => {
 		throw new Error("Attio response did not include a record ID");
 	}
 	return recordId;
+};
+
+const findRecordId = async (
+	apiKey: string,
+	object: "companies" | "people",
+	filter: Record<string, string>,
+): Promise<string | undefined> => {
+	const response = await fetch(
+		`${ATTIO_API_URL}/objects/${object}/records/query`,
+		{
+			method: "POST",
+			headers: attioHeaders(apiKey),
+			body: JSON.stringify({ filter, limit: 1 }),
+		},
+	);
+	if (!response.ok) {
+		throw new Error(`Attio query failed with status ${response.status}`);
+	}
+	const body = (await response.json()) as AttioQueryResponse;
+	if (!Array.isArray(body.data)) {
+		throw new Error("Attio query did not include records");
+	}
+	const [match] = body.data;
+	if (!match) return undefined;
+	const recordId = match.id?.record_id;
+	if (!recordId) {
+		throw new Error("Attio query did not include a record ID");
+	}
+	return recordId;
+};
+
+const createNote = async (
+	apiKey: string,
+	parentObject: "companies" | "people",
+	parentRecordId: string,
+	title: string,
+	content: string,
+) => {
+	const response = await fetch(`${ATTIO_API_URL}/notes`, {
+		method: "POST",
+		headers: attioHeaders(apiKey),
+		body: JSON.stringify({
+			data: {
+				parent_object: parentObject,
+				parent_record_id: parentRecordId,
+				title,
+				format: "plaintext",
+				content,
+			},
+		}),
+	});
+	if (!response.ok) {
+		throw new Error(`Attio note request failed with status ${response.status}`);
+	}
 };
 
 const attioAttributeExists = async (
@@ -89,6 +152,32 @@ const fallbackResponse = {
 	fallback: "mailto",
 } as const;
 
+const companyReviewContent = (
+	domain: string,
+	companyName: string,
+	email: string,
+) =>
+	[
+		"A public partnership form matched this company by an unverified email domain.",
+		`Email domain: ${domain}`,
+		`Submitted company name: ${companyName}`,
+		`Submitted email: ${email}`,
+		"The company record was not changed. Review this match before relying on it.",
+	].join("\n");
+
+const personReviewContent = (
+	name: string,
+	email: string,
+	companyName: string,
+) =>
+	[
+		"A public partnership form matched this person by an unverified email address.",
+		`Submitted name: ${name}`,
+		`Submitted email: ${email}`,
+		`Submitted company: ${companyName}`,
+		"The person record was not changed. Review this match before relying on it.",
+	].join("\n");
+
 const enquiryInput = z.object({
 	name: z.string().trim().min(1, "Please tell us your name").max(200),
 	email: z.email("Please enter a valid work email"),
@@ -125,33 +214,44 @@ const saveEnquiry = async (
 	}
 
 	try {
-		const company = await attioRequest<AttioRecordResponse>(
-			apiKey,
-			"/objects/companies/records?matching_attribute=domains",
-			"PUT",
-			{
-				name: input.company,
-				domains: [emailDomain],
-			},
-		);
-		const companyId = attioRecordId(company);
-
-		const person = await attioRequest<AttioRecordResponse>(
-			apiKey,
-			"/objects/people/records?matching_attribute=email_addresses",
-			"PUT",
-			{
-				name: [{ full_name: input.name }],
-				email_addresses: [input.email],
-				company: [
+		const emailAddress = input.email.toLowerCase();
+		const existingCompanyId = await findRecordId(apiKey, "companies", {
+			domains: emailDomain,
+		});
+		const companyId =
+			existingCompanyId ??
+			attioRecordId(
+				await attioRequest<AttioRecordResponse>(
+					apiKey,
+					"/objects/companies/records",
 					{
-						target_object: "companies",
-						target_record_id: companyId,
+						name: input.company,
+						domains: [emailDomain],
 					},
-				],
-			},
-		);
-		const personId = attioRecordId(person);
+				),
+			);
+
+		const existingPersonId = await findRecordId(apiKey, "people", {
+			email_addresses: emailAddress,
+		});
+		const personId =
+			existingPersonId ??
+			attioRecordId(
+				await attioRequest<AttioRecordResponse>(
+					apiKey,
+					"/objects/people/records",
+					{
+						name: [{ full_name: input.name }],
+						email_addresses: [input.email],
+						company: [
+							{
+								target_object: "companies",
+								target_record_id: companyId,
+							},
+						],
+					},
+				),
+			);
 
 		const sourceAttribute =
 			env.ATTIO_SOURCE_ATTRIBUTE?.trim() || DEFAULT_SOURCE_ATTRIBUTE;
@@ -161,29 +261,33 @@ const saveEnquiry = async (
 			sourceAttribute,
 		);
 
-		const noteResponse = await fetch(`${ATTIO_API_URL}/notes`, {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${apiKey}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				data: {
-					parent_object: "people",
-					parent_record_id: personId,
-					title: hasSourceAttribute
-						? `Partnership enquiry: ${applicationPathLabels[input.path]}`
-						: `Partnership enquiry [Source: ${sourceValue}]: ${applicationPathLabels[input.path]}`,
-					format: "plaintext",
-					content: input.message,
-				},
-			}),
-		});
-		if (!noteResponse.ok) {
-			throw new Error(
-				`Attio note request failed with status ${noteResponse.status}`,
+		if (existingCompanyId) {
+			await createNote(
+				apiKey,
+				"companies",
+				existingCompanyId,
+				"Review partnership enquiry: existing company",
+				companyReviewContent(emailDomain, input.company, input.email),
 			);
 		}
+		if (existingPersonId) {
+			await createNote(
+				apiKey,
+				"people",
+				existingPersonId,
+				"Review partnership enquiry: existing person",
+				personReviewContent(input.name, input.email, input.company),
+			);
+		}
+		await createNote(
+			apiKey,
+			"people",
+			personId,
+			hasSourceAttribute
+				? `Partnership enquiry: ${applicationPathLabels[input.path]}`
+				: `Partnership enquiry [Source: ${sourceValue}]: ${applicationPathLabels[input.path]}`,
+			input.message,
+		);
 
 		const dealStage =
 			env.ATTIO_INBOUND_DEAL_STAGE?.trim() || DEFAULT_DEAL_STAGE;
@@ -193,7 +297,7 @@ const saveEnquiry = async (
 		const offerAttribute =
 			env.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE?.trim() || DEFAULT_OFFER_ATTRIBUTE;
 		try {
-			await attioRequest(apiKey, "/objects/deals/records", "POST", {
+			await attioRequest(apiKey, "/objects/deals/records", {
 				name: `${input.company}: ${applicationPathLabels[input.path]}`,
 				stage: dealStage,
 				owner: DEAL_OWNER,

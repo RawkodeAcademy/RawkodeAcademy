@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { after, test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { Window } from "happy-dom";
 
 const require = createRequire(import.meta.url);
@@ -438,11 +438,16 @@ for (const fixture of fixtures) {
 				host.querySelector("[role=alert]").textContent,
 				/highlighted|try again/,
 			);
-			if (fixture.partnership)
+			if (fixture.partnership) {
+				const email = host.querySelector("[name=email]");
+				const describedBy = email.getAttribute("aria-describedby");
+				assert.equal(email.getAttribute("aria-invalid"), "true");
+				assert.ok(describedBy);
 				assert.equal(
-					host.querySelector("[name=email]").getAttribute("aria-invalid"),
-					"true",
+					host.querySelector(`[id="${describedBy}"]`).textContent,
+					"Please check this email",
 				);
+			}
 			form.requestSubmit();
 			assert.equal(calls.length, 2);
 			respond({ data: { success: true, message: "Check your inbox" } });
@@ -716,6 +721,62 @@ for (const fixture of fixtures.filter((item) => !item.partnership)) {
 		}
 	});
 }
+test("partnership enquiry keeps rejected values and describes each field error", async () => {
+	const fixture = fixtures.find((item) => item.partnership);
+	const submittedValues = {
+		name: "  Ada ",
+		email: "not-an-email",
+		company: "Analytical Engine",
+		path: "Annual plan",
+		message: "   ",
+	};
+	const serverFieldErrors = {
+		name: "Please tell us your name",
+		email: "Please enter a valid work email",
+		message: "Please add a message",
+	};
+	const view = await hydrate(fixture, { submittedValues, serverFieldErrors });
+	try {
+		const form = view.host.querySelector("form");
+		assert.equal(form.querySelector("[name=name]").value, "  Ada ");
+		assert.equal(form.querySelector("[name=email]").value, "not-an-email");
+		assert.equal(
+			form.querySelector("[name=company]").value,
+			"Analytical Engine",
+		);
+		assert.equal(form.querySelector("[name=path]").value, "Annual plan");
+		assert.equal(form.querySelector("[name=message]").value, "   ");
+		assert.equal(
+			form.querySelector("[name=name]").getAttribute("maxlength"),
+			"200",
+		);
+		assert.equal(
+			form.querySelector("[name=company]").getAttribute("maxlength"),
+			"1000",
+		);
+		assert.equal(
+			form.querySelector("[name=message]").getAttribute("maxlength"),
+			"5000",
+		);
+		assert.equal(
+			form.querySelector("[name=company]").hasAttribute("aria-describedby"),
+			false,
+		);
+		for (const [name, message] of Object.entries(serverFieldErrors)) {
+			const control = form.querySelector(`[name=${name}]`);
+			const describedBy = control.getAttribute("aria-describedby");
+			assert.equal(control.getAttribute("aria-invalid"), "true");
+			assert.ok(describedBy);
+			assert.equal(
+				form.querySelector(`[id="${describedBy}"]`).textContent,
+				message,
+			);
+		}
+	} finally {
+		view.close();
+	}
+});
+
 after(async () => {
 	await window.happyDOM.abort();
 });

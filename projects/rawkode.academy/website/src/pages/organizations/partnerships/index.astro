@@ -1,5 +1,5 @@
 ---
-import { actions } from "astro:actions";
+import { actions, isInputError } from "astro:actions";
 import { getCollection } from "astro:content";
 import PartnerLogos from "@/components/organizations/PartnerLogos.astro";
 import PartnershipApplicationForm from "@/components/organizations/PartnershipApplicationForm.vue";
@@ -38,6 +38,49 @@ const enquiryFallback =
 	submittedData != null &&
 	"fallback" in submittedData &&
 	submittedData.fallback === "mailto";
+const enquiryError = submittedEnquiry?.error;
+const enquiryFields = ["name", "email", "company", "path", "message"] as const;
+const serverFieldErrors =
+	enquiryError && isInputError(enquiryError)
+		? Object.fromEntries(
+				enquiryFields.flatMap((field) => {
+					const message = enquiryError.fields[field]?.find(
+						(item) => item.length > 0,
+					);
+					return message ? [[field, message]] : [];
+				}),
+			)
+		: {};
+const emptySubmission = {
+	name: "",
+	email: "",
+	company: "",
+	path: "",
+	message: "",
+};
+const submissionField = (formData: FormData, key: string) => {
+	const value = formData.get(key);
+	return typeof value === "string" ? value : "";
+};
+const readRejectedSubmission = async (request: Request) => {
+	if (request.method !== "POST") return emptySubmission;
+	try {
+		const formData = await request.formData();
+		return {
+			name: submissionField(formData, "name"),
+			email: submissionField(formData, "email"),
+			company: submissionField(formData, "company"),
+			path: submissionField(formData, "path"),
+			message: submissionField(formData, "message"),
+		};
+	} catch {
+		return emptySubmission;
+	}
+};
+const submittedValues =
+	enquiryError || enquiryRateLimited || enquiryFallback
+		? await readRejectedSubmission(Astro.request)
+		: emptySubmission;
 
 const faqs = [
 	{
@@ -289,7 +332,7 @@ const partnershipQuotes = quoteIds.map((id) => {
 						{enquiryRateLimited && <p role="alert">Too many enquiries were sent recently. Please wait a minute and try again.</p>}
 						{enquiryFallback && <p role="alert">Something went wrong, so your enquiry wasn't sent. Please <a href="mailto:david@rawkode.academy">email David directly</a>.</p>}
 						{submittedEnquiry?.error && <p role="alert">Please check the highlighted fields.</p>}
-						<PartnershipApplicationForm client:visible initialPath={initialPath} />
+						<PartnershipApplicationForm client:visible initialPath={initialPath} submittedValues={submittedValues} serverFieldErrors={serverFieldErrors} />
 					</>
 				)}
 			</div>
