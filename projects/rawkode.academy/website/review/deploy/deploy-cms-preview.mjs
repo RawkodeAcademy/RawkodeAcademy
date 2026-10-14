@@ -137,6 +137,25 @@ async function verifyPreviewRenderTimings(previewUrl, identity) {
 			throw new Error('Preview performance diagnostics were missing from ' + label + '.')
 		}
 	}
+	// A scheduled publication can expire the cold response between probes. In
+	// that case, let the first warm request refresh the Payload cache, then use
+	// a fresh page URL to confirm the refreshed data entry is reusable.
+	for (const route of ['watch', 'home']) {
+		const warmLabel = 'warm-' + route
+		const isPayloadCacheHit = result =>
+			cacheCount(result.dataCache, 'hits') >= 1 && cacheCount(result.dataCache, 'misses') === 0
+		if (isPayloadCacheHit(results[warmLabel])) continue
+		for (let attempt = 1; attempt <= 2; attempt += 1) {
+			const pathname = (route === 'watch' ? '/watch' : '/') +
+				'?previewPerf=' + probe + '-' + route + '-warm-retry-' + attempt
+			const retry = await measureSsrPage(previewUrl, pathname)
+			console.log('[preview-perf] ' + warmLabel + '-retry-' + attempt + ' ' + JSON.stringify(retry))
+			if (isPayloadCacheHit(retry)) {
+				results[warmLabel] = retry
+				break
+			}
+		}
+	}
 	for (const route of ['watch', 'home']) {
 		const cold = results['cold-' + route]
 		const warm = results['warm-' + route]
