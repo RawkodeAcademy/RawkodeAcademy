@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { academyGame } from "@rawkodeacademy/design-system";
-import { dailyPuzzle, dayKey, markGuess, MAX_GUESSES, normalize, restoreGuesses, shareResult, type Mark } from "@/lib/games/kubele";
+import { dailyPuzzle, dayKey, markGuess, MAX_GUESSES, normalize, restoreGuesses, shareResult } from "@/lib/games/kubele";
 const props = defineProps<{ registered: boolean }>();
 const stats = ref<{ played: number; wins: number; streak: number; distribution: number[] } | null>(null);
 const theme = academyGame();
@@ -18,15 +18,6 @@ const rows = computed(() => Array.from({ length: MAX_GUESSES }, (_, index) => {
 	const marks = guesses.value[index] ? markGuess(word, target.value) : [];
 	return Array.from({ length: target.value.length }, (_, position) => ({ letter: word[position] ?? "", mark: marks[position] }));
 }));
-const keyboard = computed(() => {
-	const state: Record<string, Mark> = {};
-	const rank = { absent: 0, present: 1, correct: 2 };
-	for (const guess of guesses.value) markGuess(guess, target.value).forEach((mark, index) => {
-		const letter = guess[index]!;
-		if (!state[letter] || rank[mark] > rank[state[letter]]) state[letter] = mark;
-	});
-	return state;
-});
 const storageKey = () => `kubele:v1:${puzzle.value.date}`;
 function load() {
 	try { guesses.value = restoreGuesses(localStorage.getItem(storageKey()), target.value); }
@@ -49,12 +40,6 @@ function submit() {
 	message.value = won.value ? "Kube-rilliant! You solved today's puzzle." : finished.value ? "Out of guesses. Discover today's answer below." : `Guess ${guesses.value.length} of 6: ${markGuess(guess, target.value).map((mark, i) => `${guess[i]} ${mark}`).join(", ")}.`;
 	try { localStorage.setItem(storageKey(), JSON.stringify(guesses.value)); }
 	catch { message.value += " Progress could not be saved in this browser."; }
-}
-function press(key: string) {
-	if (checkDay() || finished.value) return;
-	if (key === "Enter") submit();
-	else if (key === "Backspace") input.value = input.value.slice(0, -1);
-	else if (normalize(input.value).length < target.value.length) input.value += key;
 }
 async function syncStats(save = false) {
  if (!props.registered) return;
@@ -101,13 +86,7 @@ onUnmounted(() => { clearInterval(timer); window.removeEventListener("focus", ch
 		<form v-if="!finished" @submit.prevent="submit">
 			<label for="kubele-guess">Your guess ({{ target.length }} letters)</label>
 			<div class="entry"><input id="kubele-guess" v-model="input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" :maxlength="target.length * 2" aria-describedby="kubele-help" /><button type="submit">Guess</button></div>
-			<p id="kubele-help" class="help">Use your keyboard or tap the letters below.</p>
-			<div class="keyboard" aria-label="On-screen keyboard">
-				<div v-for="keys in ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM']" :key="keys" class="keys">
-					<button v-for="key in keys" :key="key" type="button" :class="keyboard[key]" :aria-label="`${key}${keyboard[key] ? `: ${keyboard[key]}` : ''}`" @click="press(key)">{{ key }}</button>
-				</div>
-				<div class="keys"><button type="button" @click="press('Backspace')">Delete</button><button type="button" @click="press('Enter')">Enter</button></div>
-			</div>
+			<p id="kubele-help" class="help">Type your guess and press Enter or select Guess.</p>
 		</form>
 		<section v-else class="result" aria-label="Puzzle result">
 			<h2>{{ won ? 'Kube-rilliant!' : 'Better luck next kube.' }}</h2>
@@ -149,9 +128,6 @@ input, textarea { min-width: 0; width: 100%; padding: .75rem; border: 1px solid 
 input { text-transform: uppercase; font-family: var(--font-red-hat-mono); }
 button { padding: .6rem .85rem; border: 1px solid var(--editorial-hairline); border-radius: var(--radius-sm); color: inherit; background: var(--surface-card); }
 button:hover { outline: 1px solid currentColor; }
-.keyboard { display: grid; gap: .35rem; }
-.keys { display: flex; justify-content: center; gap: .25rem; }
-.keys button { min-width: 0; flex: 1; padding: .5rem .1rem; }
 .result { border: 1px solid var(--editorial-hairline); padding: 1.25rem; background: var(--surface-card); line-height: 1.6; }
 a { color: var(--editorial-spruce); text-underline-offset: .2em; }
 footer { border-top: 1px solid var(--editorial-hairline); padding-top: 1rem; font-size: .85rem; }
