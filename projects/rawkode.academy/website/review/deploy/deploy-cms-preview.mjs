@@ -407,8 +407,14 @@ try {
 		}
 	}
 	const identityResponse = await fetch(new URL('/api/auth/sign-in', previewUrl), { redirect: 'manual', signal: AbortSignal.timeout(15_000) })
-	await identityResponse.body?.cancel().catch(() => {})
-	if (identityResponse.status !== 503) throw new Error('Identity must remain unavailable in the read-only website preview.')
+	const identityBody = await identityResponse.text()
+	const signInIsDisabled =
+		identityResponse.status === 200 &&
+		identityBody.includes('Sign-in is disabled in this review preview.') &&
+		!/<(?:form|input|button)\b/i.test(identityBody)
+	if (identityResponse.status !== 503 && !signInIsDisabled) {
+		throw new Error(`Identity must remain unavailable in the read-only website preview (HTTP ${identityResponse.status}).`)
+	}
 
 	// Verify a route rendered the content returned by the bridge-backed
 	// diagnostic before surfacing the preview URL.
