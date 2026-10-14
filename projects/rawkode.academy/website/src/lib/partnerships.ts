@@ -294,9 +294,9 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	label: "Work with Rawkode Academy for a year",
 	price: "$40,000 a year",
 	priceShort: "$40k/year",
-	cadence: "It costs $40,000 a year, billed at $10,000 a quarter.",
+	cadence: "$40,000 a year",
 	summary:
-		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
+		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership. Billed $10,000 a quarter.",
 	included: [],
 	excluded: [],
 	notes: [partnershipReviewCredit],
