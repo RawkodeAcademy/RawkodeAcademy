@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
+	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -390,7 +390,7 @@ export const productReviewScope =
 
 /** Delivery promise shown beside the review steps. */
 export const productReviewCompletion =
-	"If the review is missing anything the statement of work lists, I finish it before you're invoiced.";
+	"If the review is missing anything the statement of work lists, I finish it.";
 
 /** Compatibility shape for components that render the partnership offers. */
 export const partnershipTiers = [

@@ -51,7 +51,15 @@ test("partnership page follows the approved redesign", () => {
 	);
 	assert.match(page, /<dt>Price<\/dt>/);
 	assert.match(page, /<dt>Delivered in<\/dt>/);
-	assert.match(page, /<dt>Invoiced<\/dt>/);
+	assert.doesNotMatch(page, /invoic|on delivery/i);
+	assert.doesNotMatch(
+		partnershipCopy
+			.match(
+				/export const (partnershipDescription|productReviewCompletion) =[^;]+;/g,
+			)
+			?.join("\n") ?? "",
+		/invoic|on delivery/i,
+	);
 	assert.match(
 		page,
 		/28\.2K YouTube subscribers · over 370 hours of live streams/,
@@ -230,7 +238,7 @@ test("partnership page follows the approved redesign", () => {
 	assert.match(partnershipCopy, /"A ranked list of what to fix first"/);
 	assert.match(
 		partnershipCopy,
-		/You get a written list of what to fix first, invoiced on delivery\./,
+		/You get a written list of what to fix first\./,
 	);
 	assert.match(partnershipCopy, /warm introductions/);
 	assert.match(partnershipCopy, /export const productReviewScope =/);
