@@ -1,11 +1,12 @@
 ---
-import PartnershipApplicationForm from "@/components/organizations/PartnershipApplicationForm.vue";
+import { getCollection } from "astro:content";
 import PartnerLogos from "@/components/organizations/PartnerLogos.astro";
+import PartnershipApplicationForm from "@/components/organizations/PartnershipApplicationForm.vue";
 import EditorialShell from "@/components/ui/EditorialShell.astro";
 import {
-	applicationPaths,
 	annualPartnershipDetails,
 	annualPartnershipOffer,
+	applicationPaths,
 	fitProofReview,
 	partnershipDescription,
 	partnershipOffer,
@@ -18,6 +19,29 @@ export const prerender = true;
 const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(applicationPaths[1])}#enquiry-form`;
 const partnershipReviewHeroTitle =
 	"See exactly where engineers get stuck with your product.";
+
+const quoteIds = [
+	"reggie-wilkerson",
+	"jens-neuse",
+	"solomon-hykes",
+	"mikkel-hegnhoj",
+] as const;
+
+const quoteContext = {
+	"reggie-wilkerson":
+		"On advisory work: positioning, demos and ongoing guidance",
+	"jens-neuse": "On David's public walkthrough of WunderGraph on Rawkode Live",
+	"solomon-hykes": "On having his product used live",
+	"mikkel-hegnhoj":
+		"On Advent of Spin, the hands-on challenges Rawkode Academy created for Fermyon",
+} as const;
+
+const testimonials = await getCollection("testimonials");
+const partnershipQuotes = quoteIds.map((id) => {
+	const entry = testimonials.find((item) => item.id === id);
+	if (!entry) throw new Error(`Missing partnership quote: ${id}`);
+	return { id, entry, context: quoteContext[id] };
+});
 ---
 
 <Page
@@ -29,10 +53,53 @@ const partnershipReviewHeroTitle =
 		title={partnershipReviewHeroTitle}
 		lede="I review how engineers get started with your product and tell you what to fix first, in order of importance. It's a fixed $5,000."
 	>
+		<p class="partnership-byline" slot="intro">David Flanagan runs Rawkode Academy and Rawkode Live. The Rawkode Academy YouTube channel has 28.2K subscribers and over 370 hours of live streams.</p>
 		<div class="partnership-hero-offer" slot="actions">
-			<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]} data-partnership-hero-cta>Book a product review</a>
+			<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]} data-partnership-cta data-cta-location="hero">Book a product review</a>
 			<p class="partnership-hero-proof">I work with Datum Cloud today, and I've worked with Teleport, Heroku, Microsoft Azure and ngrok.</p>
 		</div>
+
+		<section id="partner-quotes" class="editorial-section" aria-label="Partner quotes">
+			<div class="partnership-quotes">
+				{partnershipQuotes.map(({ entry, context }) => (
+					<figure>
+						<p class="partnership-quotes__context">{context}</p>
+						<blockquote>{entry.data.quote.trim()}</blockquote>
+						<figcaption>
+							{entry.data.author.link ? (
+								<a href={entry.data.author.link}>{entry.data.author.name}</a>
+							) : (
+								entry.data.author.name
+							)}, {entry.data.author.title}
+						</figcaption>
+					</figure>
+				))}
+			</div>
+		</section>
+
+		<section id="fit" class="editorial-section editorial-section--split" aria-labelledby="fit-title">
+			<div class="editorial-section__header">
+				<h2 id="fit-title" class="editorial-section__title">Is this for you?</h2>
+			</div>
+			<div class="landing-copy">
+				<div class="landing-fit">
+					<p>This is a good fit if:</p>
+					<ul class="editorial-list">
+						<li>you build developer tools such as infrastructure tools, Kubernetes and cloud native projects, cloud platforms or AI infrastructure.</li>
+						<li>you're between seed and Series C.</li>
+						<li>an engineer can install or sign up for your product and try it, including open-source projects installed from GitHub or Helm.</li>
+					</ul>
+				</div>
+				<div class="landing-fit">
+					<p>It's probably not for you if:</p>
+					<ul class="editorial-list">
+						<li>engineers can't install or sign up for your product and try it.</li>
+						<li>you aren't a developer tools company between seed and Series C working in infrastructure, Kubernetes and cloud native, cloud platforms or AI.</li>
+						<li>you make a data tool.</li>
+					</ul>
+				</div>
+			</div>
+		</section>
 
 		<section class="editorial-section editorial-section--split" aria-labelledby="what-you-get-title">
 			<div class="editorial-section__header">
@@ -81,23 +148,28 @@ const partnershipReviewHeroTitle =
 			</div>
 		</section>
 
-		<div class="landing-cta">
-			<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]}>Book a product review</a>
-		</div>
-
-		<section class="editorial-section editorial-section--split" aria-labelledby="past-partners-title">
+		<section id="what-you-control" class="editorial-section editorial-section--split" aria-labelledby="what-you-control-title">
 			<div class="editorial-section__header">
-				<h2 id="past-partners-title" class="editorial-section__title">Past partners</h2>
-				<p class="editorial-section__lede">Datum Cloud is the current partner. These are teams Rawkode Academy has worked with before.</p>
+				<h2 id="what-you-control-title" class="editorial-section__title">What you control</h2>
 			</div>
-			<PartnerLogos showCurrent={false} />
+			<div class="landing-copy">
+				<p>You decide what each quarter covers, and you own the review, the report and the read-out.</p>
+				<p>Stop after the review and you have paid $5,000, invoiced on delivery. Stop at day 90 and there is nothing further to pay. Nothing renews automatically.</p>
+			</div>
+		</section>
+
+		<section id="who-ive-worked-with" class="editorial-section editorial-section--split" aria-labelledby="who-ive-worked-with-title">
+			<div class="editorial-section__header">
+				<h2 id="who-ive-worked-with-title" class="editorial-section__title">Who I've worked with</h2>
+			</div>
+			<PartnerLogos />
 		</section>
 
 		<section id="apply" class="editorial-section editorial-section--split partnerships-apply" aria-labelledby="apply-title">
 			<div class="editorial-section__header">
 				<h2 id="apply-title" class="editorial-section__title">Tell David about your product</h2>
 				<p class="editorial-section__lede">A few lines about your product and where engineers get stuck is enough. David replies within two business days and tells you honestly whether the review is worth doing.</p>
-				<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]}>Book a product review</a>
+				<a class="editorial-button" href={reviewApplyHref} data-apply-path={applicationPaths[1]} data-partnership-cta data-cta-location="end">Book a product review</a>
 			</div>
 			<div id="enquiry-form" class="partnerships-apply__body">
 				<PartnershipApplicationForm client:visible />
@@ -108,23 +180,59 @@ const partnershipReviewHeroTitle =
 </Page>
 
 <script>
-	const heroCta = document.querySelector("[data-partnership-hero-cta]");
-	heroCta?.addEventListener("click", () => {
-		window.posthog?.capture("cta_clicked", {
-			cta: "book_a_product_review",
-			label: "Book a product review",
-			placement: "partnership_hero",
-			path: window.location.pathname,
+	document.querySelectorAll("[data-partnership-cta]").forEach((cta) => {
+		cta.addEventListener("click", () => {
+			window.posthog?.capture("cta_clicked", {
+				cta: "book_a_product_review",
+				label: "Book a product review",
+				location: cta.getAttribute("data-cta-location"),
+				path: window.location.pathname,
+			});
 		});
 	});
 </script>
 
 <style>
-	.partnership-hero-offer { display: grid; justify-items: start; gap: 0.75rem; }
+	.partnership-byline,
 	.partnership-hero-proof { margin: 0; max-width: 65ch; line-height: 1.55; color: var(--colors-academy-text-muted); }
+	.partnership-hero-offer { display: grid; justify-items: start; gap: 0.75rem; }
+
+	.partnership-quotes { display: grid; gap: 1.25rem; }
+	.partnership-quotes figure { margin: 0; display: grid; gap: 0.5rem; }
+	.partnership-quotes blockquote {
+		margin: 0;
+		padding-left: 1rem;
+		border-left: 2px solid var(--colors-academy-accent);
+		color: var(--colors-academy-text);
+		line-height: 1.65;
+		white-space: pre-wrap;
+	}
+	.partnership-quotes__context {
+		margin: 0;
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--colors-academy-accent);
+	}
+	.partnership-quotes figcaption {
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.8rem;
+		color: var(--colors-academy-text-muted);
+	}
+	.partnership-quotes a {
+		color: var(--colors-academy-accent);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+	.partnership-quotes a:focus-visible {
+		outline: 2px solid var(--colors-academy-accent);
+		outline-offset: 4px;
+	}
 
 	.landing-copy { display: grid; gap: 0.75rem; max-width: 65ch; }
 	.landing-copy p { margin: 0; line-height: 1.65; color: var(--colors-academy-text); }
+	.landing-fit { display: grid; gap: 0.35rem; }
 
 	.landing-pricing {
 		display: grid;
@@ -135,8 +243,6 @@ const partnershipReviewHeroTitle =
 	.landing-pricing article h3,
 	.landing-pricing article p { margin: 0; }
 	.landing-pricing article p { line-height: 1.55; color: var(--colors-academy-text); }
-
-	.landing-cta { display: flex; justify-content: center; padding-block: clamp(1.5rem, 4vw, 3rem); }
 
 	.partner-offer-card__price {
 		margin: 0.4rem 0 0;
