@@ -5,6 +5,7 @@ import vm from 'node:vm'
 import ts from 'typescript'
 import { handlePreviewContent } from '../../scripts/preview-content-proxy.mjs'
 import { assertPreviewVerification } from '../../review/deploy/check-preview-verification.mjs'
+import { namesForPullRequest } from '../../../payload/scripts/pr-preview-resources.mjs'
 import { WEBSITE_PREVIEW_CONTENT_SOURCE } from '../../../payload/scripts/website-preview-source.mjs'
 
 const origin = 'https://payload-content.internal'
@@ -200,7 +201,13 @@ const currentVerification = () => ({
   pullRequestNumber: verificationIdentity.pullRequestNumber,
   websiteSha: verificationIdentity.sha,
   previewUrl: verifiedPreviewUrl,
-  contentSource: { ...WEBSITE_PREVIEW_CONTENT_SOURCE },
+  contentSource: {
+    ...WEBSITE_PREVIEW_CONTENT_SOURCE,
+    pullRequestNumber: verificationIdentity.pullRequestNumber,
+    workerName: `${namesForPullRequest(verificationIdentity.pullRequestNumber, verificationIdentity.sha).workerName}-content`,
+    sha: verificationIdentity.sha,
+    dataSha: WEBSITE_PREVIEW_CONTENT_SOURCE.sha,
+  },
   readOnly: true,
 })
 
@@ -228,7 +235,10 @@ for (const [name, changes] of [
 
 for (const [name, changes] of [
   ['a production Worker', { workerName: 'rawkode-academy-payload' }],
+  ['the historical baseline Worker', { workerName: WEBSITE_PREVIEW_CONTENT_SOURCE.workerName, sha: WEBSITE_PREVIEW_CONTENT_SOURCE.sha }],
   ['another backend version', { sha: 'd'.repeat(40) }],
+  ['a replaced data baseline', { dataSha: 'd'.repeat(40) }],
+  ['another database', { databaseId: '0'.repeat(32) }],
   ['the editorial entrypoint', { entrypoint: 'ReviewBridge' }],
   ['the default backend entrypoint', { entrypoint: undefined }],
 ]) {

@@ -9,8 +9,17 @@ export function assertPreviewVerification(value, identity) {
   if (value?.websiteSha !== identity.sha || value?.pullRequestNumber !== identity.pullRequestNumber || value?.readOnly !== true) {
     throw new Error('No verified read-only website preview exists for this PR/head SHA.')
   }
-  const source = WEBSITE_PREVIEW_CONTENT_SOURCE
-  if (value.contentSource?.workerName !== source.workerName || value.contentSource?.sha !== source.sha || value.contentSource?.entrypoint !== source.entrypoint) {
+  const baseline = WEBSITE_PREVIEW_CONTENT_SOURCE
+  const contentWorkerName = `${names.workerName}-content`
+  const contentSource = value.contentSource
+  if (
+    contentSource?.workerName !== contentWorkerName ||
+    contentSource?.sha !== identity.sha ||
+    contentSource?.dataSha !== baseline.sha ||
+    contentSource?.entrypoint !== baseline.entrypoint ||
+    contentSource?.databaseId !== baseline.databaseId ||
+    contentSource?.bucketName !== baseline.bucketName
+  ) {
     throw new Error('The verified website preview used an unexpected public content source.')
   }
   const url = new URL(value.previewUrl)
