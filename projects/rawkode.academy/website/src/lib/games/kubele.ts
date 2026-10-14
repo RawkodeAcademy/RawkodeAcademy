@@ -11,7 +11,7 @@ export const ANSWERS: Answer[] = [
 	{ name: "KubeStellar", kind: "CNCF Sandbox project", description: "Distributes Kubernetes resources across clusters.", url: "https://kubestellar.io" },
 	{ name: "Kyverno", kind: "CNCF project", description: "A Kubernetes policy engine for validation, mutation, and generation.", url: "https://kyverno.io" },
 	{ name: "Namespace", kind: "Cloud native term", description: "Scopes names and organizes resources within a cluster.", url: "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/" },
-	{ name: "Microcks", kind: "CNCF Sandbox project", description: "Mocks and tests APIs and event-driven services.", url: "https://microcks.io" },
+	{ name: "Microcks", kind: "CNCF Incubating project", description: "Mocks and tests APIs and event-driven services.", url: "https://microcks.io" },
 	{ name: "Prometheus", kind: "CNCF project", description: "Collects metrics and evaluates queries and alerting rules.", url: "https://prometheus.io" },
 	{ name: "Service Mesh", kind: "Cloud native term", description: "An infrastructure layer managing communication between services.", url: "https://glossary.cncf.io/service-mesh/" },
 	{ name: "Inspektor Gadget", kind: "CNCF Sandbox project", description: "eBPF tools for inspecting Linux and Kubernetes workloads.", url: "https://inspektor-gadget.io" },
