@@ -17,6 +17,8 @@ test('availability: live, then available, then ended, then upcoming for live vid
   assert.equal(availability('recorded', { ...none, publishedAt: iso(0) }, now), 'available', 'publishedAt == now is available')
   assert.equal(availability('recorded', { ...none, publishedAt: iso(1) }, now), null, 'a future recorded video is hidden')
   assert.equal(availability('live', { ...none, scheduledStartAt: iso(2) }, now), 'upcoming')
+  assert.equal(availability('live', { ...none, scheduledStartAt: iso(0) }, now), 'upcoming', 'a schedule at now is still upcoming')
+  assert.equal(availability('live', { ...none, scheduledStartAt: iso(-1) }, now), null, 'a missed schedule is not upcoming forever')
   assert.equal(availability('recorded', { ...none, scheduledStartAt: iso(2) }, now), null, 'upcoming is for live videos only')
   assert.equal(availability('live', { ...none, scheduledStartAt: iso(-1), broadcastStartedAt: iso(-1) }, now), 'live')
   assert.equal(availability('live', { ...none, broadcastStartedAt: new Date(now - liveStaleMs).toISOString() }, now), 'live', 'at the cap')

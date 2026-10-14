@@ -75,6 +75,8 @@ export function availability(type: unknown, times: EditorialTimesV1, now: number
   if (!Number.isNaN(started) && Number.isNaN(ended) && now - started <= staleMs) return 'live'
   if (!Number.isNaN(at(times.publishedAt)) && at(times.publishedAt) <= now) return 'available'
   if (!Number.isNaN(ended) || !Number.isNaN(started)) return 'ended'
-  if (type === 'live' && times.scheduledStartAt) return 'upcoming'
+  // A schedule that has already passed, with no start reported, is not upcoming.
+  const scheduled = at(times.scheduledStartAt)
+  if (type === 'live' && !Number.isNaN(scheduled) && scheduled >= now) return 'upcoming'
   return null
 }

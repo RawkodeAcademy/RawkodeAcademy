@@ -101,6 +101,7 @@ test('broadcast commands accept ad hoc live starts, refuse recorded videos and s
   assert.equal(await h.status(h.times.execute(studio, { action: 'broadcast-started', legacyId: 'missing-video', commandId: h.id(), at: iso(0) })), 404)
   h.sqlite.exec("INSERT INTO videos(id,legacy_id,legacy_type,slug,title,_status,type) VALUES(12,'old-live','Video','old-live','Old live','draft','live')")
   assert.equal(await h.status(h.times.execute(studio, { action: 'broadcast-started', legacyId: 'old-live', commandId: h.id(), at: iso(-25 * 3600 * 1000) })), 400, 'older than a day')
+  assert.equal(await h.status(h.times.execute(studio, { action: 'broadcast-ended', legacyId: 'old-live', commandId: h.id(), at: iso(-25 * 3600 * 1000) })), 400, 'an old end is too old too')
   assert.equal(await h.status(h.times.execute(studio, { action: 'broadcast-started', legacyId: 'old-live', commandId: h.id(), at: iso(3 * minute) })), 400, 'beyond the clock skew allowance')
   assert.equal(await h.status(h.times.execute(studio, { action: 'broadcast-ended', legacyId: 'old-live', commandId: h.id(), at: iso(0) })), 409, 'not started')
   assert.equal(await h.status(h.times.execute(studio, { action: 'broadcast-started', legacyId: 'old-live', videoId: 12, commandId: h.id(), at: iso(0) })), 400, 'exactly one target')

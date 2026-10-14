@@ -115,9 +115,9 @@ export class EditorialTimes {
       if (video.type !== 'live') throw new ReviewError(409, 'Only live videos have broadcast times')
       const at = canonicalTime(input.at)!
       if (Date.parse(at) > now + broadcastFutureMs) throw new ReviewError(400, 'Broadcast time is in the future')
+      if (Date.parse(at) < now - broadcastPastMs) throw new ReviewError(400, 'Broadcast time is too old')
       if (input.action === 'broadcast-started') {
         // No schedule is required: live shows may start ad hoc.
-        if (Date.parse(at) < now - broadcastPastMs) throw new ReviewError(400, 'Broadcast time is too old')
         if (before.broadcast_started_at && before.broadcast_started_at !== at) {
           // A stream stopped and started again on the same Studio session: the show
           // is live again. The first start stays; the earlier end is cleared.

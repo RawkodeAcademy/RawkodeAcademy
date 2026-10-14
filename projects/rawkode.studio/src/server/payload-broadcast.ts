@@ -57,7 +57,7 @@ const errorMessage = (error: unknown) =>
 
 // Queues one broadcast event for the session's current stream times. Returns the
 // event id, or null when nothing is reported. The (session, action, time) key makes
-// a repeated call a no-op; an end is queued only after its start was.
+// a repeated call a no-op; an end is queued only after the current segment's start was.
 export async function queueBroadcastEvent(
 	env: StudioEnv,
 	session: Pick<StudioSessionRecord, "id" | "contentVideoId" | "streamEnvironment" | "streamStartedAt" | "streamEndedAt">,
@@ -68,6 +68,14 @@ export async function queueBroadcastEvent(
 	const seconds = action === "broadcast-started" ? session.streamStartedAt : session.streamEndedAt;
 	if (!seconds) return null;
 	const at = new Date(seconds * 1000).toISOString();
+	// An end belongs to the current segment. A historical start is not enough:
+	// after a restart, a lost start insert must not let the end queue against the
+	// previous segment. The cron then backfills the current start and this end,
+	// in that order.
+	const segmentStart = session.streamStartedAt
+		? new Date(session.streamStartedAt * 1000).toISOString()
+		: null;
+	if (action === "broadcast-ended" && !segmentStart) return null;
 	const values = [crypto.randomUUID(), session.id, action, session.contentVideoId, at];
 	await config.db
 		.prepare(
@@ -76,9 +84,14 @@ export async function queueBroadcastEvent(
 				   VALUES (?, ?, ?, ?, ?)`
 				: `INSERT OR IGNORE INTO studio_broadcast_events (id, session_id, action, content_video_id, occurred_at)
 				   SELECT ?, ?, ?, ?, ?
-				    WHERE EXISTS (SELECT 1 FROM studio_broadcast_events WHERE session_id = ? AND action = 'broadcast-started')`,
+				    WHERE EXISTS (
+				      SELECT 1 FROM studio_broadcast_events
+				       WHERE session_id = ?
+				         AND action = 'broadcast-started'
+				         AND occurred_at = ?
+				    )`,
 		)
-		.bind(...values, ...(action === "broadcast-ended" ? [session.id] : []))
+		.bind(...values, ...(action === "broadcast-ended" ? [session.id, segmentStart] : []))
 		.run();
 	const row = await config.db
 		.prepare(

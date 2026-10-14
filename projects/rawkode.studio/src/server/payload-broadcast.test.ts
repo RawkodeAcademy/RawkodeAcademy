@@ -238,6 +238,37 @@ describe("Studio broadcast times for Payload", () => {
 		expect(h.events().map((event) => [event.action, event.state])).toEqual([["broadcast-started", "sent"]]);
 	});
 
+	it("queues an end only after the current segment start, not an earlier one", async () => {
+		const h = await setup();
+		const session = (await getStudioSession(h.env, "session-1"))!;
+		const firstStart = Math.floor(Date.now() / 1000) - 180;
+		const firstEnd = firstStart + 60;
+		const secondStart = firstEnd + 10;
+		const secondEnd = secondStart + 30;
+		const iso = (seconds: number) => new Date(seconds * 1000).toISOString();
+		await queueBroadcastEvent(h.env, { ...session, streamStartedAt: firstStart }, "broadcast-started");
+		await queueBroadcastEvent(h.env, { ...session, streamStartedAt: firstStart, streamEndedAt: firstEnd }, "broadcast-ended");
+		// The new start never reached the outbox. The end must not attach to the previous segment.
+		await expect(queueBroadcastEvent(h.env, {
+			...session,
+			streamStartedAt: secondStart,
+			streamEndedAt: secondEnd,
+		}, "broadcast-ended")).resolves.toBeNull();
+		expect(h.events().map((event) => event.occurred_at)).toEqual([iso(firstStart), iso(firstEnd)]);
+		await queueBroadcastEvent(h.env, { ...session, streamStartedAt: secondStart }, "broadcast-started");
+		await expect(queueBroadcastEvent(h.env, {
+			...session,
+			streamStartedAt: secondStart,
+			streamEndedAt: secondEnd,
+		}, "broadcast-ended")).resolves.toEqual(expect.any(String));
+		expect(h.events().map((event) => [event.action, event.occurred_at])).toEqual([
+			["broadcast-started", iso(firstStart)],
+			["broadcast-ended", iso(firstEnd)],
+			["broadcast-started", iso(secondStart)],
+			["broadcast-ended", iso(secondEnd)],
+		]);
+	});
+
 	it("reports nothing for test streams, sessions without a content video, unconfigured Payload, or an end without a start", async () => {
 		for (const options of [{ environment: "test" as const }, { contentVideoId: null }, { payload: false }]) {
 			const h = await setup(options);
