@@ -10,14 +10,14 @@ async function readStats(id: string) {
 	const results: Result[] = [];
 	let cursor: string | undefined;
 	do {
-		const page = await env.SESSION.list({ prefix: prefix(id), cursor });
+		const page = await env.SESSION.list({ prefix: prefix(id), ...(cursor ? { cursor } : {}) });
 		const values = await Promise.all(page.keys.map(key => env.SESSION.get<Result>(key.name, "json")));
 		results.push(...values.filter((value): value is Result => value !== null));
 		cursor = page.list_complete ? undefined : page.cursor;
 	} while (cursor);
 	results.sort((a, b) => b.date.localeCompare(a.date));
 	const distribution = Array<number>(MAX_GUESSES).fill(0);
-	for (const result of results) if (result.won) distribution[result.guesses.length - 1]++;
+	for (const result of results) if (result.won) distribution[result.guesses.length - 1] = (distribution[result.guesses.length - 1] ?? 0) + 1;
 	let streak = 0;
 	let expected = Date.parse(`${dayKey()}T00:00:00Z`);
 	if (results[0]?.date !== dayKey()) expected -= 86400000;
@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 		// KV listings may lag a new write: include this result in the immediate response.
 		if (!data.today) {
 			data.stats.played++;
-			if (result.won) { data.stats.wins++; data.stats.distribution[result.guesses.length - 1]++; data.stats.streak++; }
+			if (result.won) { data.stats.wins++; data.stats.distribution[result.guesses.length - 1] = (data.stats.distribution[result.guesses.length - 1] ?? 0) + 1; data.stats.streak++; }
 			else data.stats.streak = 0;
 		}
 		return json({ stats: data.stats, today: result.guesses });
