@@ -77,7 +77,7 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(
 		page,
-		/If you stop after the review, you pay \$5,000, invoiced when the review is delivered\. The 90-day partnership ends at day 90, and there's nothing more to pay\. The annual partnership is a 12-month contract, billed at \$10,000 a quarter\./,
+		/If you stop after the review, you pay \$5,000, invoiced when the review is delivered\. The 90-day partnership ends at day 90, and there's nothing more to pay\. The annual partnership is a 12-month contract, billed at \$10,000 a quarter\. Nothing renews automatically\./,
 	);
 	assert.match(
 		partnershipCopy,
@@ -178,7 +178,10 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	assert.match(partnershipCopy, /and makes warm introductions\./);
 	assert.doesNotMatch(partnershipCopy, /all-partner/i);
 	assert.doesNotMatch(page, /all-partner/i);
-	assert.doesNotMatch(page, /renews automatically/i);
+	assert.equal(
+		page.match(/Nothing renews automatically\./g)?.length,
+		2,
+	);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /partner call/i);
 	assert.doesNotMatch(
 		partnershipCopy,
