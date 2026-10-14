@@ -267,7 +267,8 @@ export const partnershipOffer: PartnershipOffer = {
 	label: "Work with Rawkode Academy",
 	price: "$12,000",
 	priceShort: "$12k/90 days",
-	cadence: `This is a fixed price. ${partnershipReviewCredit} In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.`,
+	cadence:
+		"This is a fixed price. The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered. In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.",
 	summary:
 		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
 	included: [
@@ -296,7 +297,7 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	priceShort: "$40k/year",
 	cadence: "$40,000 a year",
 	summary:
-		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership. Billed $10,000 a quarter.",
+		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership. Billed $10,000 a quarter. If you sign within 30 days of your review being delivered, the $5,000 review fee comes off your first quarter.",
 	included: [],
 	excluded: [],
 	notes: [partnershipReviewCredit],
@@ -370,7 +371,7 @@ export const fitProofReview: PartnershipOffer = {
 	notes: [
 		"Before starting we agree the product areas, who David is acting as, and where the review ends: a first working result, or something closer to production, such as a highly available setup, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source setup to the move to the paid product.",
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
-		`${partnershipReviewCredit} You can then continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
+		"The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered. You can then continue to the 90-day partnership for $7,000 more, choose the annual partnership, or stop and keep everything.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };

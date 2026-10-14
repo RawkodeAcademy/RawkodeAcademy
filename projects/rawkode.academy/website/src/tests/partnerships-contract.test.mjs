@@ -151,7 +151,20 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	assert.match(partnershipCopy, /price: "\$12,000"/);
 	assert.match(partnershipCopy, /price: "\$40,000 a year"/);
 	assert.match(partnershipCopy, /cadence: "\$40,000 a year"/);
-	assert.match(partnershipCopy, /Billed \$10,000 a quarter\./);
+	assert.match(
+		partnershipCopy,
+		/Billed \$10,000 a quarter\. If you sign within 30 days of your review being delivered, the \$5,000 review fee comes off your first quarter\./,
+	);
+	assert.match(
+		partnershipCopy,
+		/This is a fixed price\. The \$5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered\./,
+	);
+	assert.match(
+		partnershipCopy,
+		/counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered\. You can then continue to the 90-day partnership for \$7,000 more/,
+	);
+	assert.doesNotMatch(partnershipCopy, /continue to the quarterly partnership/);
+	assert.match(partnershipCopy, /offer: "Partnership \(Quarterly\)"/);
 	assert.doesNotMatch(
 		partnershipCopy,
 		/It costs \$40,000 a year, billed at \$10,000 a quarter/,
