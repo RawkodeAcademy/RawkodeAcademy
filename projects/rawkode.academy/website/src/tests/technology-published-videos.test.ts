@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { listPayloadContent } from "@/lib/payload-content";
+import { getAllCollection } from "@/lib/payload-content";
 import { getVideosForTechnology } from "../utils/get-videos-for-technology";
 
-vi.mock("@/lib/payload-content", () => ({ listPayloadContent: vi.fn() }));
+vi.mock("@/lib/payload-content", () => ({ getAllCollection: vi.fn() }));
 
 afterEach(() => vi.useRealTimers());
 
@@ -41,18 +41,22 @@ describe("technology recording publication boundary", () => {
 			entry("future-live", "2999-01-01", [{ id: "acorn/index" }], "live"),
 			entry("other", "2020-01-01", [{ id: "other/index" }]),
 		];
-		vi.mocked(listPayloadContent).mockResolvedValue(
-			fixtures.filter((video) =>
-				video.data.technologies.some((technology) => technology.id === "acorn/index"),
-			) as never,
-		);
+		vi.mocked(getAllCollection).mockImplementation(async (_collection, filter, options) => {
+			const matched = fixtures.filter((video) =>
+				video.data.technologies.some(
+					(technology) => technology.id === options?.technologyId,
+				),
+			);
+			return (filter ? matched.filter(filter) : matched) as never;
+		});
 		const result = await getVideosForTechnology("acorn/index");
 		expect(result.map((video) => video.slug)).toEqual(["boundary", "old"]);
 		expect(result[1]?.publishedAt).toEqual(new Date("2020-01-01"));
 		expect(result[1]?.thumbnailUrl).toContain("/old/thumbnail.webp");
-		expect(listPayloadContent).toHaveBeenCalledWith("videos", {
-			technologyId: "acorn/index",
-			limit: 100,
-		});
+		expect(getAllCollection).toHaveBeenCalledWith(
+			"videos",
+			expect.any(Function),
+			{ technologyId: "acorn/index" },
+		);
 	});
 });

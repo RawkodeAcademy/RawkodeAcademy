@@ -7,7 +7,7 @@ export async function GET(context: APIContext) {
 	const show = context.params.showId
 		? await getEntry("shows", { slug: context.params.showId })
 		: undefined;
-	if (!show || !show.data.publish || show.data.status === "coming-soon") {
+	if (!show || show.data.status === "coming-soon") {
 		return new Response("Show not found or not published", { status: 404 });
 	}
 	const videos = await listPayloadContent("videos", {

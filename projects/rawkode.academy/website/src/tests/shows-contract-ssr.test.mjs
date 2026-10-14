@@ -23,12 +23,12 @@ class FixedDate extends Date {
 		return now;
 	}
 }
-const show = (id = "klustered", publish = true) => ({
+const show = (id = "klustered", publish = undefined) => ({
 	id: `show-${id}-payload-cuid`,
 	slug: id,
 	data: {
 		name: `${id} show`,
-		publish,
+		...(publish === undefined ? {} : { publish }),
 		hosts: [],
 		description: "Authored description",
 	},

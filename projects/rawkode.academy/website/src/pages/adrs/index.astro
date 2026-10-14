@@ -1,5 +1,6 @@
 ---
 import { getAllCollection, getEntries } from "@/lib/payload-content";
+import { extractAdrNumber } from "@/lib/adr-jsonld";
 import { createLogger } from "@/lib/logger";
 import AcademyCatalogMasthead from "@/components/academy/AcademyCatalogMasthead.astro";
 import { academyCatalog, academyLayout } from "@rawkodeacademy/design-system";
@@ -11,9 +12,9 @@ const logger = createLogger("adrs");
 const allAdrs = await getAllCollection("adrs");
 
 allAdrs.sort((a, b) => {
-			const adrNumberA = a.slug.match(/^(\d{4})-/)?.[1] || "0000";
-			const adrNumberB = b.slug.match(/^(\d{4})-/)?.[1] || "0000";
-	return Number.parseInt(adrNumberA) - Number.parseInt(adrNumberB);
+	const adrNumberA = extractAdrNumber(a.slug) ?? "0000";
+	const adrNumberB = extractAdrNumber(b.slug) ?? "0000";
+	return Number.parseInt(adrNumberA, 10) - Number.parseInt(adrNumberB, 10);
 });
 
 const adrAuthors = await Promise.all(
@@ -41,9 +42,6 @@ const formatDate = (date: Date): string => {
 	}).format(date);
 };
 
-const getAdrNumber = (id: string): string => {
-	return id.match(/^(\d{4})-/)?.[1] || "0000";
-};
 const styles = academyLayout({ width: "wide" });
 const catalog = academyCatalog();
 ---
@@ -61,7 +59,7 @@ const catalog = academyCatalog();
 				{allAdrs.map((adr) => {
 					const authorData = adrAuthors.find((author) => author.id === adr.id);
 					const authors = authorData?.authors.filter((author) => author && author.data) || [];
-					const adrNumber = getAdrNumber(adr.id);
+					const adrNumber = extractAdrNumber(adr.slug) ?? "0000";
 
 					return (
 						<a href={`/adrs/${adr.slug}`} class={catalog.row}>

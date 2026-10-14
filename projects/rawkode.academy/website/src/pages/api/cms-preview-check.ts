@@ -96,10 +96,12 @@ export const GET: APIRoute = async ({ request }) => {
 			},
 		);
 	} catch (error) {
-		const diagnostic = error instanceof Error ? error.message : String(error);
+		const diagnostic = error instanceof Error
+			? error.message.slice(0, 240)
+			: "Payload bridge is unavailable.";
 		return new Response(JSON.stringify({
 			error: "Payload bridge is unavailable.",
-			diagnostic: diagnostic.slice(0, 240),
+			diagnostic,
 		}), {
 			status: 503,
 			headers: {

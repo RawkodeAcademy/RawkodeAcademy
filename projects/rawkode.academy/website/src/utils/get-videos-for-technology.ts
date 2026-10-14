@@ -1,4 +1,4 @@
-import { listPayloadContent } from "@/lib/payload-content";
+import { getAllCollection } from "@/lib/payload-content";
 import { createLogger } from "@/lib/logger";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
 
@@ -12,10 +12,11 @@ const logger = createLogger("videos");
 export async function getVideosForTechnology(technologyId: string) {
 	try {
 		const now = new Date();
-		const allVideos = (await listPayloadContent("videos", {
-			technologyId,
-			limit: 100,
-		})).filter((video) => video.data.publishedAt <= now);
+		const allVideos = await getAllCollection(
+			"videos",
+			(video) => video.data.publishedAt <= now,
+			{ technologyId },
+		);
 
 		// Sort by published date, most recent first
 		const sortedVideos = allVideos.sort(
