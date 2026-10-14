@@ -371,6 +371,19 @@ function withPayloadTimings(response: Response, timings: Partial<Record<PayloadT
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
 
+async function measurePayloadPhase<T>(
+  timings: Partial<Record<PayloadTimingPhase, number>>,
+  phase: PayloadTimingPhase,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const startedAt = monotonicNow()
+  try {
+    return await operation()
+  } finally {
+    timings[phase] = monotonicNow() - startedAt
+  }
+}
+
 export async function collectionResponse(request: Request, payload: PublicPayload, now = Date.now()): Promise<Response> {
   if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET' } })
   let parsed: CollectionRequest | null
@@ -395,15 +408,23 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
   const rawDocs = result.docs as unknown as Doc[]
   const visible = rawDocs.filter(doc => isVisibleDocument(parsed!.collection, doc, now).visible)
   if (exact && visible.length > 1) return Response.json({ error: 'The requested slug is ambiguous' }, { status: 409 })
-  phaseStartedAt = monotonicNow()
-  const overlay = parsed.collection === 'videos' ? await overlayVideos(payload, visible) : new Map<string, Record<string, unknown>>()
-  timings.overlay = monotonicNow() - phaseStartedAt
   const viewForDoc = (doc: Doc): 'summary' | 'full' =>
     isVisibleDocument(parsed!.collection, doc, now).metadataOnly ? 'summary' : parsed!.view
   const assetPaths = visible.flatMap(doc => assetReferencePaths(doc, parsed!.collection, viewForDoc(doc)))
-  phaseStartedAt = monotonicNow()
-  const assetDocs = await loadAssetDocs(payload, assetPaths)
-  timings.assets = monotonicNow() - phaseStartedAt
+  const exactNextReleaseAt = exact
+    ? (visible[0] && visible[0].publishedAt && Date.parse(String(visible[0].publishedAt)) > now ? new Date(Date.parse(String(visible[0].publishedAt))).toISOString() : null)
+    : null
+  // These lookups depend only on the primary collection result (or request
+  // filters), so run them together instead of adding their latencies.
+  const [overlay, assetDocs, nextReleaseAt] = await Promise.all([
+    measurePayloadPhase(timings, 'overlay', () => parsed!.collection === 'videos'
+      ? overlayVideos(payload, visible)
+      : Promise.resolve(new Map<string, Record<string, unknown>>())),
+    measurePayloadPhase(timings, 'assets', () => loadAssetDocs(payload, assetPaths)),
+    measurePayloadPhase(timings, 'release', () => exact
+      ? Promise.resolve(exactNextReleaseAt)
+      : earliestNextRelease(payload, parsed!, now)),
+  ])
   const docs = visible.map(doc => {
     const visibility = isVisibleDocument(parsed!.collection, doc, now)
     const base = projectFields(doc, parsed!.collection, parsed!.view, visibility.metadataOnly, now)
@@ -425,11 +446,6 @@ export async function collectionResponse(request: Request, payload: PublicPayloa
   phaseStartedAt = monotonicNow()
   if (parsed.collection === 'videos' && parsed.view === 'full') await hydrateVideoChapters(payload, docs, now)
   timings.chapters = monotonicNow() - phaseStartedAt
-  phaseStartedAt = monotonicNow()
-  const nextReleaseAt = exact
-    ? (visible[0] && visible[0].publishedAt && Date.parse(String(visible[0].publishedAt)) > now ? new Date(Date.parse(String(visible[0].publishedAt))).toISOString() : null)
-    : await earliestNextRelease(payload, parsed, now)
-  timings.release = monotonicNow() - phaseStartedAt
   const headers = cacheHeaders(nextReleaseAt, now)
   if (exact) {
     if (!docs.length) {
