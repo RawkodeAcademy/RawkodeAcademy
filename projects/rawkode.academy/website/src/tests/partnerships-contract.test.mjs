@@ -171,6 +171,9 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 		/A ranked list of what to fix first, in order of importance/,
 	);
 	assert.match(partnershipCopy, /and makes warm introductions\./);
+	assert.doesNotMatch(partnershipCopy, /all-partner/i);
+	assert.doesNotMatch(page, /all-partner/i);
+	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /partner call/i);
 	assert.doesNotMatch(
 		partnershipCopy,
 		/warm introductions where they help both sides/,

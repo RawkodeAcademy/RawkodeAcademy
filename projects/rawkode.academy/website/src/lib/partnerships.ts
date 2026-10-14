@@ -143,13 +143,6 @@ export const partnershipOutcomes = [
 	},
 ] as const;
 
-/** Monthly call for every current partner. Part of the full 90 days. */
-export const partnershipGroupCall = {
-	title: "A monthly all-partner call",
-	detail:
-		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. The call is private, and nothing said is repeated outside it. Until three partners are active, it runs as a one-to-one industry briefing with David.",
-} as const;
-
 export interface PartnershipPerk {
 	title: string;
 	detail: string;
@@ -183,7 +176,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "The Technology Matrix, walked through",
 		detail:
-			"The Technology Matrix is Rawkode Academy's written, opinionated radar of cloud-native, platform and AI-infrastructure tools. Each all-partner call starts with what has moved on it and why.",
+			"The Technology Matrix is Rawkode Academy's written, opinionated radar of cloud-native, platform and AI-infrastructure tools.",
 	},
 	{
 		title: "Your example in the Academy",
@@ -261,7 +254,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "From month 2",
-		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days. A monthly all-partner call on what's changing across the industry.",
+		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days.",
 	},
 ];
 
@@ -276,14 +269,13 @@ export const partnershipOffer: PartnershipOffer = {
 	priceShort: "$12k/90 days",
 	cadence: `This is a fixed price. ${partnershipReviewCredit} In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.`,
 	summary:
-		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
+		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
 	included: [
 		"The product review and written report",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
 		"Slack Connect with David.",
-		"A monthly all-partner call with David and the other current partners on industry changes",
 		"Partners also get extras: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions.",
 		"A day-90 review compared with the original, and a read-out against the targets set on the review call.",
 	],
@@ -304,7 +296,7 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	priceShort: "$40k/year",
 	cadence: "It costs $40,000 a year, billed at $10,000 a quarter.",
 	summary:
-		"The year starts with the full product review. You also get Slack with David and a place on the monthly all-partner call for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
+		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
 	included: [],
 	excluded: [],
 	notes: [partnershipReviewCredit],
@@ -372,7 +364,7 @@ export const fitProofReview: PartnershipOffer = {
 		"A one-hour call to go through it with your team",
 	],
 	excluded: [
-		"Ongoing Slack access, the all-partner call, the live session and the runnable example",
+		"Ongoing Slack access, the live session and the runnable example",
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
