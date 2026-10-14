@@ -346,7 +346,7 @@ export const partnershipTerms = [
 	{
 		title: "If David can't make it",
 		detail:
-			"David does the work himself. If he can't deliver a scheduled item, we move the date with your agreement or refund that part of the fee.",
+			"David does the work himself. If he can't deliver a scheduled item, we move the date with your agreement.",
 	},
 	{
 		title: "Ownership",
