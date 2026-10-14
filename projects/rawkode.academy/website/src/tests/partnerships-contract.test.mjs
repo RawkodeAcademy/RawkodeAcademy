@@ -29,6 +29,10 @@ const logos = readFileSync(
 	new URL("../components/organizations/PartnerLogos.astro", import.meta.url),
 	"utf8",
 );
+const quotesModule = readFileSync(
+	new URL("../lib/partnership-quotes.ts", import.meta.url),
+	"utf8",
+);
 const letsChat = readFileSync(
 	new URL("../pages/organizations/lets-chat.astro", import.meta.url),
 	"utf8",
@@ -107,9 +111,10 @@ test("partnership page follows the approved redesign", () => {
 		"solomon-hykes",
 		"mikkel-hegnhoj",
 	]) {
-		assert.match(page, new RegExp(quoteId));
+		assert.match(quotesModule, new RegExp(`"${quoteId}"`));
 	}
-	assert.match(page, /Partnership quote excerpt no longer matches/);
+	assert.match(page, /isVerbatimExcerpt\(entry\.data\.quote, excerpt\)/);
+	assert.doesNotMatch(page, /throw new Error\(`Partnership quote/);
 
 	// Pricing: every card has its own button, and the credit is stated once.
 	assert.match(page, /\{partnershipReviewCredit\}/);

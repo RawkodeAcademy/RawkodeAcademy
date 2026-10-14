@@ -6,6 +6,13 @@ import PartnershipApplicationForm from "@/components/organizations/PartnershipAp
 import ReviewPreview from "@/components/organizations/ReviewPreview.astro";
 import EditorialShell from "@/components/ui/EditorialShell.astro";
 import {
+	isVerbatimExcerpt,
+	type PartnershipQuoteId,
+	partnershipPullQuoteId,
+	partnershipQuoteContext,
+	partnershipQuoteExcerpts,
+} from "@/lib/partnership-quotes";
+import {
 	type ApplicationPath,
 	annualPartnershipDetails,
 	annualPartnershipOffer,
@@ -239,45 +246,25 @@ const faqs = [
 	},
 ];
 
-/**
- * Quotes are shown as verbatim excerpts. The build fails if an excerpt
- * stops matching its testimonial, so the page can't misquote anyone.
- */
-const pullQuoteId = "solomon-hykes";
-const quoteExcerpts = {
-	"solomon-hykes":
-		"As a builder, watching someone use your product in real time is one of the most useful things you can do.",
-	"reggie-wilkerson":
-		"His deep expertise in the cloud native landscape has helped us refine our product positioning, create compelling demo videos, and confidently navigate the market.",
-	"jens-neuse":
-		"It was great to see him explore WunderGraph for the first time, especially to see the excitement when we were combining APIs, first with GraphQL and then with TypeScript.",
-	"mikkel-hegnhoj":
-		"We've seen notable results in developers joining our community and using our services.",
-} as const;
-
-const quoteContext = {
-	"reggie-wilkerson": "On advisory work: positioning and demos",
-	"jens-neuse": "On David's public walkthrough of WunderGraph on Rawkode Live",
-	"mikkel-hegnhoj": "On Advent of Spin, built for Fermyon",
-} as const;
-
-const normaliseQuote = (text: string) =>
-	text.replace(/\s+/g, " ").trim().toLowerCase();
-
+// Excerpts are checked against their testimonials in CI
+// (src/tests/partnership-quotes.test.ts). A quote that no longer matches is
+// left out here rather than failing the request.
 const testimonials = await getCollection("testimonials");
-const quoteFor = (id: keyof typeof quoteExcerpts) => {
+const quoteFor = (id: PartnershipQuoteId) => {
 	const entry = testimonials.find((item) => item.id === id);
-	if (!entry) throw new Error(`Missing partnership quote: ${id}`);
-	const excerpt = quoteExcerpts[id];
-	if (!normaliseQuote(entry.data.quote).includes(normaliseQuote(excerpt))) {
-		throw new Error(`Partnership quote excerpt no longer matches: ${id}`);
-	}
+	const excerpt = partnershipQuoteExcerpts[id];
+	if (!entry || !isVerbatimExcerpt(entry.data.quote, excerpt)) return undefined;
 	return { id, excerpt, author: entry.data.author };
 };
-const pullQuote = quoteFor(pullQuoteId);
+const pullQuote = quoteFor(partnershipPullQuoteId);
 const partnerQuotes = (
-	Object.keys(quoteContext) as (keyof typeof quoteContext)[]
-).map((id) => ({ ...quoteFor(id), context: quoteContext[id] }));
+	Object.keys(
+		partnershipQuoteContext,
+	) as (keyof typeof partnershipQuoteContext)[]
+).flatMap((id) => {
+	const quote = quoteFor(id);
+	return quote ? [{ ...quote, context: partnershipQuoteContext[id] }] : [];
+});
 ---
 
 <Page
@@ -322,12 +309,14 @@ const partnerQuotes = (
 			<PartnerLogos variant="grid" />
 		</section>
 
+		{pullQuote && (
 		<section id="pull-quote" class="editorial-section" aria-label="What builders say">
 			<figure class="partnership-pull-quote">
 				<blockquote>{pullQuote.excerpt}</blockquote>
 				<figcaption><strong>{pullQuote.author.name}</strong>, {pullQuote.author.title}</figcaption>
 			</figure>
 		</section>
+		)}
 
 		<section id="how-it-works" class="editorial-section editorial-section--split" aria-labelledby="how-it-works-title">
 			<div class="editorial-section__header">
@@ -445,6 +434,7 @@ const partnerQuotes = (
 			</div>
 		</section>
 
+		{partnerQuotes.length > 0 && (
 		<section id="partner-quotes" class="editorial-section" aria-labelledby="partner-quotes-title">
 			<div class="editorial-section__header">
 				<h2 id="partner-quotes-title" class="editorial-section__title">What partners say</h2>
@@ -464,6 +454,7 @@ const partnerQuotes = (
 				))}
 			</ul>
 		</section>
+		)}
 
 		<section id="questions" class="editorial-section editorial-section--split" aria-labelledby="questions-title">
 			<div class="editorial-section__header">
