@@ -46,6 +46,8 @@ test("the historical list contains the ten approved past partners", () => {
 			"Zitadel",
 		],
 	);
+	assert.doesNotMatch(logos, /Current partner|Past partners/);
+	assert.doesNotMatch(logos, /Teams we've worked with/);
 	assert.doesNotMatch(logos, /Armo|Komodor/);
 	assert.doesNotMatch(proof, /a dozen/i);
 });

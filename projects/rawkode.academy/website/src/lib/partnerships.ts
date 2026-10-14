@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first, in order of importance, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
+	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -143,13 +143,6 @@ export const partnershipOutcomes = [
 	},
 ] as const;
 
-/** Monthly call for every current partner. Part of the full 90 days. */
-export const partnershipGroupCall = {
-	title: "A monthly all-partner call",
-	detail:
-		"One hour each month with David and the other current partners on what's changing in cloud-native, platform engineering, AI infrastructure and developer tools, and what it means for your roadmap. The call is private, and nothing said is repeated outside it. Until three partners are active, it runs as a one-to-one industry briefing with David.",
-} as const;
-
 export interface PartnershipPerk {
 	title: string;
 	detail: string;
@@ -183,7 +176,7 @@ export const partnershipPerks: PartnershipPerk[] = [
 	{
 		title: "The Technology Matrix, walked through",
 		detail:
-			"The Technology Matrix is Rawkode Academy's written, opinionated radar of cloud-native, platform and AI-infrastructure tools. Each all-partner call starts with what has moved on it and why.",
+			"The Technology Matrix is Rawkode Academy's written, opinionated radar of cloud-native, platform and AI-infrastructure tools.",
 	},
 	{
 		title: "Your example in the Academy",
@@ -261,7 +254,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "From month 2",
-		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days. A monthly all-partner call on what's changing across the industry.",
+		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs.",
 	},
 ];
 
@@ -274,23 +267,22 @@ export const partnershipOffer: PartnershipOffer = {
 	label: "Work with Rawkode Academy",
 	price: "$12,000",
 	priceShort: "$12k/90 days",
-	cadence: `This is a fixed price. ${partnershipReviewCredit} In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.`,
+	cadence:
+		"This is a fixed price. The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered. In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.",
 	summary:
-		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, the monthly all-partner call, a before-and-after re-run and a day-90 read-out.",
+		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
 	included: [
 		"The product review and written report",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
-		"Slack Connect with David, answers within two business days",
-		"A monthly all-partner call with David and the other current partners on industry changes",
-		"Partners also get extras: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions where they help both sides.",
-		"A day-90 review compared with the original",
-		"A day-90 read-out against the targets set on the review call",
+		"Slack Connect with David",
+		"Partners also get extras: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions.",
+		"A day-90 review compared with the original, and a read-out against the targets set on the review call",
 	],
 	excluded: [
 		"Building or fixing your product. Your team owns the changes.",
-		"Guaranteed viewers, leads or praise. You get straight answers and a labelled partner session, not a puff piece.",
+		"We don't promise a number of viewers, leads or positive coverage. The partner session is clearly labelled as a partnership, and you get straight answers.",
 		"On-call support, extra sessions and maintaining the example after day 90, unless agreed separately.",
 	],
 	notes: [],
@@ -303,9 +295,9 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	label: "Work with Rawkode Academy for a year",
 	price: "$40,000 a year",
 	priceShort: "$40k/year",
-	cadence: "It costs $40,000 a year, billed at $10,000 a quarter.",
+	cadence: "$40,000 a year",
 	summary:
-		"The year starts with the full product review. You also get Slack with David and a place on the monthly all-partner call for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership.",
+		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership. Billed $10,000 a quarter. If you sign within 30 days of your review being delivered, the $5,000 review fee comes off your first quarter.",
 	included: [],
 	excluded: [],
 	notes: [partnershipReviewCredit],
@@ -368,18 +360,18 @@ export const fitProofReview: PartnershipOffer = {
 		"The first step of every partnership, and useful on its own: David's product review and a written report you can act on whether or not you continue.",
 	included: [
 		"A written report showing the places engineers get stuck",
-		"A ranked list of what to fix first, in order of importance",
+		"A ranked list of what to fix first",
 		"Two or three numbers to watch, with a target for each",
 		"A one-hour call to go through it with your team",
 	],
 	excluded: [
-		"Ongoing Slack access, the all-partner call, the live session and the runnable example",
+		"Ongoing Slack access, the live session and the runnable example",
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
 		"Before starting we agree the product areas, who David is acting as, and where the review ends: a first working result, or something closer to production, such as a highly available setup, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source setup to the move to the paid product.",
 		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
-		`${partnershipReviewCredit} You can then continue to the quarterly partnership for $7,000 more, choose the annual partnership, or stop and keep everything.`,
+		"The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered. You can then continue to the 90-day partnership for $7,000 more, choose the annual partnership, or stop and keep everything.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
@@ -393,24 +385,45 @@ export const partnershipTierNames = partnershipTiers.map((offer) => offer.name);
 
 /** Options for the application form's preferred route field. */
 export const applicationPaths = [
-	"90-day partnership",
 	"Product review",
-	"Annual partnership",
+	"90-day partnership",
+	"Annual plan",
 	"Not sure yet",
 ] as const;
 export type ApplicationPath = (typeof applicationPaths)[number];
 
+export const productReviewPath = "Product review" satisfies ApplicationPath;
+
 /** Plain labels for form values and preselection links. */
 export const applicationPathLabels: Record<ApplicationPath, string> = {
-	"90-day partnership": partnershipOffer.name,
 	"Product review": fitProofReview.name,
-	"Annual partnership": annualPartnershipOffer.name,
+	"90-day partnership": partnershipOffer.name,
+	"Annual plan": annualPartnershipOffer.name,
 	"Not sure yet": "Not sure yet",
 };
 
-/** Route values from earlier links that still preselect the right option. */
+/** Attio Offer option title and USD value for each application route. */
+export const applicationPathDeals: Record<
+	ApplicationPath,
+	{ offer: string; valueUsd: number }
+> = {
+	"Product review": { offer: "Review", valueUsd: 5000 },
+	"Not sure yet": { offer: "Review", valueUsd: 5000 },
+	"90-day partnership": {
+		offer: "Partnership (Quarterly)",
+		valueUsd: 12000,
+	},
+	"Annual plan": { offer: "Partnership (Yearly)", valueUsd: 40000 },
+};
+
+/**
+ * Route values from earlier links that still preselect the right option.
+ * "First-run review" and "Fit & Proof Review" both meant the paid review.
+ */
 export const legacyApplicationPaths: Record<string, ApplicationPath> = {
 	"Adoption Advisory": "90-day partnership",
+	"Annual partnership": "Annual plan",
+	"First-run review": "Product review",
 	"Fit & Proof Review": "Product review",
 };
 

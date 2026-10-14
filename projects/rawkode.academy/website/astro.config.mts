@@ -295,20 +295,10 @@ export default defineConfig({
 				access: "public",
 				default: "In Progress",
 			}),
-			ATTIO_INBOUND_DEAL_VALUE_USD: envField.string({
-				context: "server",
-				access: "public",
-				default: "5000",
-			}),
 			ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: envField.string({
 				context: "server",
 				access: "public",
 				default: "offer",
-			}),
-			ATTIO_INBOUND_DEAL_OFFER_OPTION: envField.string({
-				context: "server",
-				access: "public",
-				default: "Review",
 			}),
 			ATTIO_SOURCE_ATTRIBUTE: envField.string({
 				context: "server",

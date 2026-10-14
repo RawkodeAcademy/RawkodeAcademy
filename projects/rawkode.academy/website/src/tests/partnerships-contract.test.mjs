@@ -25,6 +25,10 @@ const header = readFileSync(
 	new URL("../components/shell/AcademyHeader.astro", import.meta.url),
 	"utf8",
 );
+const letsChat = readFileSync(
+	new URL("../pages/organizations/lets-chat.astro", import.meta.url),
+	"utf8",
+);
 
 test("partnership page uses the approved landing hero and one CTA", () => {
 	assert.match(page, /eyebrow="Partnerships"/);
@@ -34,9 +38,9 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(
 		page,
-		/I review how engineers get started with your product and tell you what to fix first, in order of importance\. It's a fixed \$5,000\./,
+		/I review how engineers get started with your product and tell you what to fix first\. It's a fixed \$5,000\./,
 	);
-	assert.match(
+	assert.doesNotMatch(
 		page,
 		/I work with Datum Cloud today, and I've worked with Teleport, Heroku, Microsoft Azure and ngrok\./,
 	);
@@ -64,7 +68,8 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 		/you aren't a developer tools company between seed and Series C working in infrastructure, Kubernetes and cloud native, cloud platforms or AI\./,
 	);
 	assert.match(page, /you make a data tool\./);
-	assert.match(page, /Who I've worked with/);
+	assert.match(page, /Teams I've worked with/);
+	assert.doesNotMatch(page, /Who I've worked with/);
 	assert.match(page, /<PartnerLogos \/>/);
 	assert.doesNotMatch(page, /showCurrent=\{false\}/);
 	assert.match(
@@ -73,7 +78,7 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(
 		page,
-		/Stop after the review and you have paid \$5,000, invoiced on delivery\. Stop at day 90 and there is nothing further to pay\. Nothing renews automatically\./,
+		/If you stop after the review, you pay \$5,000, invoiced when the review is delivered\. The 90-day partnership ends at day 90, and there's nothing more to pay\. The annual partnership is a 12-month contract, billed at \$10,000 a quarter\. Nothing renews automatically\./,
 	);
 	assert.match(
 		partnershipCopy,
@@ -102,27 +107,65 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 		page,
 		/On Advent of Spin, the hands-on challenges Rawkode Academy created for Fermyon/,
 	);
-	assert.equal(page.match(/>Book a product review<\/a>/g)?.length, 2);
-	assert.equal(header.match(/>Book a product review<\/a>/g)?.length, 1);
+	assert.equal(page.match(/>Ask about a product review<\/a>/g)?.length, 2);
+	assert.equal(header.match(/>Ask about a product review<\/a>/g)?.length, 1);
+	assert.doesNotMatch(`${page}\n${header}`, />Book a product review<\/a>/);
+	assert.match(
+		page,
+		/Within 10 business days, you get a written report showing the places engineers get stuck and what to fix first\./,
+	);
+	assert.doesNotMatch(page, /in order of importance/);
+	assert.doesNotMatch(page, /partnershipReviewCredit/);
+	assert.match(partnershipCopy, /export const partnershipReviewCredit =/);
+	assert.match(
+		page,
+		/notes every place he gets stuck against the recording, ranks what to fix, explain or teach/,
+	);
+	assert.match(
+		page,
+		/if the statement of work isn't signed within seven days, the place is released\./,
+	);
+	assert.doesNotMatch(page, /unsigned holds|logs every stall/);
+	assert.equal(page.match(/>Ask about the annual plan<\/a>/g)?.length, 1);
+	assert.match(page, /href="\?route=Annual%20plan#apply"/);
 	assert.deepEqual(
 		Array.from(
 			page.matchAll(/<a class="editorial-button"[^>]*>([^<]+)<\/a>/g),
 			(match) => match[1].trim(),
 		),
-		["Book a product review", "Book a product review"],
+		[
+			"Ask about a product review",
+			"Ask about the annual plan",
+			"Ask about a product review",
+		],
 	);
 	assert.deepEqual(
 		[
 			...page.matchAll(/data-cta-location="([^"]+)"/g),
 			...header.matchAll(/data-cta-location="([^"]+)"/g),
 		].map((match) => match[1]),
-		["hero", "end", "header"],
+		["hero", "annual", "end", "header"],
 	);
 	assert.match(page, /location: cta\.getAttribute\("data-cta-location"\)/);
 	assert.match(partnershipCopy, /price: "\$5,000"/);
 	assert.match(partnershipCopy, /price: "\$12,000"/);
 	assert.match(partnershipCopy, /price: "\$40,000 a year"/);
+	assert.match(partnershipCopy, /cadence: "\$40,000 a year"/);
 	assert.match(
+		partnershipCopy,
+		/Billed \$10,000 a quarter\. If you sign within 30 days of your review being delivered, the \$5,000 review fee comes off your first quarter\./,
+	);
+	assert.match(
+		partnershipCopy,
+		/This is a fixed price\. The \$5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered\./,
+	);
+	assert.match(
+		partnershipCopy,
+		/counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered\. You can then continue to the 90-day partnership for \$7,000 more/,
+	);
+	assert.doesNotMatch(partnershipCopy, /continue to the quarterly partnership/);
+	assert.match(partnershipCopy, /offer: "Partnership \(Quarterly\)"/);
+	assert.doesNotMatch(
 		partnershipCopy,
 		/It costs \$40,000 a year, billed at \$10,000 a quarter/,
 	);
@@ -141,6 +184,49 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(partnershipCopy, /Each quarter, you get an anonymised write-up/);
 	assert.match(partnershipCopy, /Partners also get extras:/);
+	assert.match(partnershipCopy, /"Slack Connect with David",/);
+	assert.doesNotMatch(partnershipCopy, /"Slack Connect with David\."/);
+	assert.match(partnershipCopy, /roadmap trade-offs\./);
+	assert.match(letsChat, /David reads every enquiry and replies by email\./);
+	assert.match(letsChat, /David replies by email with a recommendation:/);
+	assert.doesNotMatch(`${partnershipCopy}\n${letsChat}`, /two business days/i);
+	assert.doesNotMatch(
+		`${page}\n${form}\n${letsChat}\n${partnershipCopy}`,
+		/replies within|reply within|get back to you within|within 24|within 48/i,
+	);
+	assert.match(
+		partnershipCopy,
+		/"A day-90 review compared with the original, and a read-out against the targets set on the review call",/,
+	);
+	assert.doesNotMatch(
+		partnershipCopy,
+		/"A day-90 read-out against the targets set on the review call"/,
+	);
+	assert.match(
+		partnershipCopy,
+		/The partner session is clearly labelled as a partnership, and you get straight answers\./,
+	);
+	assert.doesNotMatch(partnershipCopy, /puff piece/);
+	assert.match(partnershipCopy, /"A ranked list of what to fix first"/);
+	assert.match(
+		partnershipCopy,
+		/You get a written list of what to fix first, invoiced on delivery\./,
+	);
+	assert.doesNotMatch(partnershipCopy, /in order of importance/);
+	assert.match(partnershipCopy, /and makes warm introductions\./);
+	assert.doesNotMatch(
+		`${page}\n${partnershipCopy}`,
+		/all-partner|all partner|monthly call/i,
+	);
+	assert.equal(
+		page.match(/Nothing renews automatically\./g)?.length,
+		2,
+	);
+	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /partner call/i);
+	assert.doesNotMatch(
+		partnershipCopy,
+		/warm introductions where they help both sides/,
+	);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
 
 	const quotes = page.indexOf('id="partner-quotes"');
@@ -150,8 +236,10 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	const pricing = page.indexOf('id="pricing"');
 	const control = page.indexOf('id="what-you-control"');
 	const partners = page.indexOf('id="who-ive-worked-with"');
+	const questions = page.indexOf('id="questions"');
 	const enquiry = page.indexOf('id="apply"');
 	const heroCta = page.indexOf('data-cta-location="hero"');
+	const annualCta = page.indexOf('data-cta-location="annual"');
 	const endCta = page.indexOf('data-cta-location="end"');
 
 	assert(heroCta > -1);
@@ -162,12 +250,22 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	assert(process < pricing);
 	assert(pricing < control);
 	assert(control < partners);
-	assert(partners < enquiry);
+	assert(partners < questions);
+	assert(questions < enquiry);
+	assert(pricing < annualCta);
+	assert(annualCta < control);
 	assert(enquiry < endCta);
 	assert.doesNotMatch(
 		page,
 		/id="sample"|<PartnershipProof \/>|See the 90 days/,
 	);
+	assert.match(page, /fitProofReview\.included\.map/);
+	assert.match(page, /fitProofReview\.notes\.map/);
+	assert.match(page, /partnershipOffer\.included\.map/);
+	assert.match(page, /partnershipOffer\.excluded\.map/);
+	assert.match(page, /class="editorial-card__body">Included:</);
+	assert.match(page, /class="editorial-card__body">Not included:</);
+	assert.match(page, /class="editorial-list"/);
 });
 
 test("partnership enquiry is short and tracks its conversion steps", () => {
@@ -187,6 +285,28 @@ test("partnership enquiry is short and tracks its conversion steps", () => {
 	assert.doesNotMatch(form, /api\.attio\.com/);
 	assert.match(action, /https:\/\/api\.attio\.com\/v2/);
 	assert.match(page, /capture\("cta_clicked"/);
-	assert.match(form, /capturePartnershipEvent\("partnership_form_started"\)/);
-	assert.match(form, /capturePartnershipEvent\("partnership_form_submitted"\)/);
+	assert.match(page, /<details>/);
+	assert.match(page, /<summary>/);
+	assert.match(page, /summary \{/);
+	assert.doesNotMatch(page, /Accordion/);
+	assert.match(form, /capturePartnershipEvent\("enquiry_form_started"\)/);
+	assert.match(form, /capturePartnershipEvent\("enquiry_form_submitted"\)/);
+	assert.match(form, /action="\?_action=partnership\.applyForm"/);
+	assert.match(form, /name="path"/);
+	assert.doesNotMatch(form, /:disabled="!ready/);
+	assert.match(partnershipCopy, /"First-run review": "Product review"/);
+	assert.match(partnershipCopy, /"Fit & Proof Review": "Product review"/);
+	assert.doesNotMatch(partnershipCopy, /"Product review": "First-run review"/);
+	assert.match(partnershipCopy, /"Annual plan"/);
+	assert.match(action, /applicationPathDeals/);
+	assert.match(action, /accept: "form"/);
+	assert.doesNotMatch(action, /matching_attribute/);
+	assert.doesNotMatch(action, /"PUT"/);
+	assert.match(page, /serverFieldErrors=/);
+	assert.match(page, /submittedValues=/);
+	assert.match(page, /isInputError/);
+	assert.match(form, /aria-describedby/);
+	assert.match(form, /maxlength="200"/);
+	assert.match(form, /maxlength="1000"/);
+	assert.match(form, /maxlength="5000"/);
 });
