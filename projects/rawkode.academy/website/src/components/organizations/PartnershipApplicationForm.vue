@@ -7,7 +7,7 @@
 		</p>
 		<div v-if="submitted" :class="[s.panel, s.status]">
 			<h3 :class="s.heading">Enquiry received</h3>
-			<p :class="s.copy">David reads every enquiry and replies within two business days.</p>
+			<p :class="s.copy">David reads every enquiry and will reply by email.</p>
 		</div>
 		<form
 			v-else
@@ -77,7 +77,7 @@
 				</div>
 
 				<div :class="s.field">
-					<label :class="s.label" :for="pathId">Preferred route</label>
+					<label :class="s.label" :for="pathId">What are you interested in?</label>
 					<select :id="pathId" v-model="path" :class="s.input" name="path" required>
 						<option v-for="option in applicationPaths" :key="option" :value="option">{{ option }}</option>
 					</select>
@@ -101,7 +101,7 @@
 					{{ loading ? "Sending enquiry..." : "Send enquiry" }}
 				</button>
 			</fieldset>
-			<p v-if="!ready" :class="s.copy">You can <a href="mailto:david@rawkode.academy">email us directly</a> instead.</p>
+			<p v-if="!ready" :class="s.copy">You can <a href="mailto:david@rawkode.academy">email David directly</a> instead.</p>
 		</form>
 	</div>
 </template>
@@ -164,7 +164,7 @@ const fallbackMailto = computed(() => {
 const statusMessage = computed(() => {
 	if (!ready.value) return "Loading enquiry form...";
 	if (submitted.value)
-		return "Enquiry received. David reads every enquiry and replies within two business days.";
+		return "Enquiry received. David reads every enquiry and will reply by email.";
 	return loading.value ? "Sending enquiry..." : "";
 });
 
@@ -274,7 +274,7 @@ async function submit() {
 		} else {
 			fallback.value = true;
 			error.value =
-				"Attio is not available, so your enquiry was not sent automatically.";
+				"Something went wrong, so your enquiry wasn't sent. Please email David directly.";
 		}
 	} catch {
 		fallback.value = true;

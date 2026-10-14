@@ -498,7 +498,7 @@ test("partnership CRM fallback keeps the form and offers a prefilled email", asy
 		assert(view.host.querySelector("form"));
 		assert.match(
 			view.host.querySelector("[role=alert]").textContent,
-			/not sent automatically/,
+			/Something went wrong, so your enquiry wasn't sent\. Please email David directly\./,
 		);
 		const fallback = view.host.querySelector(
 			'a[href^="mailto:david@rawkode.academy"]',
