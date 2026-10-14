@@ -179,6 +179,13 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 		page,
 		/id="sample"|<PartnershipProof \/>|See the 90 days/,
 	);
+	assert.match(page, /fitProofReview\.included\.map/);
+	assert.match(page, /fitProofReview\.notes\.map/);
+	assert.match(page, /partnershipOffer\.included\.map/);
+	assert.match(page, /partnershipOffer\.excluded\.map/);
+	assert.match(page, /class="editorial-card__body">Included:</);
+	assert.match(page, /class="editorial-card__body">Not included:</);
+	assert.match(page, /class="editorial-list"/);
 });
 
 test("partnership enquiry is short and tracks its conversion steps", () => {
