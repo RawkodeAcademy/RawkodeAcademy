@@ -1,17 +1,32 @@
 ---
 import { actions, isInputError } from "astro:actions";
-import { getCollection } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import PartnerLogos from "@/components/organizations/PartnerLogos.astro";
 import PartnershipApplicationForm from "@/components/organizations/PartnershipApplicationForm.vue";
+import ReviewPreview from "@/components/organizations/ReviewPreview.astro";
 import EditorialShell from "@/components/ui/EditorialShell.astro";
 import {
+	isVerbatimExcerpt,
+	type PartnershipQuoteId,
+	partnershipPullQuoteId,
+	partnershipQuoteContext,
+	partnershipQuoteExcerpts,
+} from "@/lib/partnership-quotes";
+import {
+	type ApplicationPath,
 	annualPartnershipDetails,
 	annualPartnershipOffer,
 	exampleMeasures,
 	fitProofReview,
+	PARTNERSHIP_EMAIL,
+	type PartnershipOffer,
+	partnershipCapacity,
 	partnershipDescription,
 	partnershipOffer,
+	partnershipReviewCredit,
+	productReviewCompletion,
 	productReviewPath,
+	productReviewScope,
 	resolveApplicationPath,
 } from "@/lib/partnerships";
 import Page from "@/wrappers/page.astro";
@@ -20,7 +35,9 @@ export const prerender = false;
 
 Astro.response.headers.set("Cache-Control", "private, no-cache");
 
-const reviewApplyHref = `/organizations/partnerships?route=${encodeURIComponent(productReviewPath)}#enquiry-form`;
+const applyHref = (path: ApplicationPath) =>
+	`/organizations/partnerships?route=${encodeURIComponent(path)}#enquiry-form`;
+const reviewApplyHref = applyHref(productReviewPath);
 const initialPath =
 	resolveApplicationPath(Astro.url.searchParams.get("route")) ?? "Not sure yet";
 const submittedEnquiry = Astro.getActionResult(actions.partnership.applyForm);
@@ -81,22 +98,127 @@ const submittedValues =
 		? await readRejectedSubmission(Astro.request)
 		: emptySubmission;
 
+const partnershipReviewHeroTitle =
+	"See exactly where engineers get stuck with your product.";
+
+const owner = await getEntry("people", "rawkode");
+const ownerAvatar = owner?.data.avatarUrl
+	? `${owner.data.avatarUrl}?s=96`
+	: undefined;
+
+const reviewSteps = [
+	{
+		title: "You give me access",
+		detail:
+			"A trial or sandbox account. We agree who I'm acting as, and where the run starts and ends.",
+	},
+	{
+		title: "I work through it alone",
+		detail:
+			"As your target user, with nobody to rescue me. Delivered within 10 business days of getting access.",
+	},
+	{
+		title: "You get a ranked report",
+		detail:
+			"Where engineers get stuck and what to fix first. Then a one-hour call to walk your team through it and agree the numbers to watch.",
+	},
+];
+
+/** Split "$40,000 a year" into the amount and the period after it. */
+const splitPrice = (price: string) => {
+	const match = price.match(/^(\$[\d,]+)(?:\s+(.+))?$/);
+	return { amount: match?.[1] ?? price, period: match?.[2] };
+};
+
+interface PricingCard {
+	offer: PartnershipOffer;
+	route: ApplicationPath;
+	period: string;
+	cta: string;
+	ctaName?: string;
+	ctaLocation: string;
+	featured?: boolean;
+	lead?: string;
+	choices?: readonly string[];
+	showExcluded?: boolean;
+}
+
+const pricingCards: PricingCard[] = [
+	{
+		offer: fitProofReview,
+		route: productReviewPath,
+		period: "one-off, fixed",
+		cta: "Ask about a product review",
+		ctaLocation: "pricing-review",
+		featured: true,
+	},
+	{
+		offer: partnershipOffer,
+		route: "90-day partnership",
+		period: "fixed, 90 days",
+		cta: "Ask about the 90-day plan",
+		ctaName: "ask_about_the_90_day_plan",
+		ctaLocation: "pricing-90-day",
+		lead: "Everything in the product review, plus:",
+		showExcluded: true,
+	},
+	{
+		offer: annualPartnershipOffer,
+		route: "Annual plan",
+		period: splitPrice(annualPartnershipOffer.price).period ?? "a year",
+		cta: "Ask about the annual plan",
+		ctaName: "ask_about_the_annual_plan",
+		ctaLocation: "pricing-annual",
+		choices: annualPartnershipDetails,
+	},
+];
+
+const noLockIn = [
+	{
+		title: "Stop at any stage",
+		detail: `Stop after the review and you've paid ${fitProofReview.price}. The 90-day partnership ends at day 90, with nothing more to pay.`,
+	},
+	{
+		title: "Nothing renews automatically",
+		detail:
+			"The annual partnership is a 12-month contract, billed at $10,000 a quarter.",
+	},
+	{
+		title: "You own the work",
+		detail:
+			"You decide what each quarter covers, and you own the review, the report and the read-out.",
+	},
+];
+
 const faqs = [
 	{
 		question: "How is this different from sponsoring a video?",
 		answer:
-			"A sponsorship buys airtime. Here you pay for David's time and judgement on your product: the review, the ranked list and the advice. The live session is part of that work, labelled as a partner session, and it teaches a real use case. If the product isn't ready to teach yet, David tells you and the time goes on fixing that first.",
+			"A sponsorship buys airtime. Here you pay for my time and judgement on your product: the review, the ranked list and the advice. The live session is part of that work, labelled as a partner session, and it teaches a real use case. If the product isn't ready to teach yet, I tell you and the time goes on fixing that first.",
 	},
 	{
 		question:
 			"We could come on Rawkode Live for free. What does the review add?",
 		answer:
-			"A maintainer session is public, about an hour, and you are there steering, so David sees the path you show him. In the review David works alone as your target user, with nobody to rescue him, notes every place he gets stuck against the recording, ranks what to fix, explain or teach, sets numbers to watch and, if you continue, re-runs it at day 90 to check what changed.",
+			"A maintainer session is public, about an hour, and you are there steering, so I see the path you show me. In the review I work alone as your target user, with nobody to rescue me. I note every place I get stuck against the recording, rank what to fix, explain or teach, set numbers to watch and, if you continue, re-run it at day 90 to check what changed.",
 	},
 	{
-		question: "Isn't David too experienced to get stuck where our users do?",
+		question: "Aren't you too experienced to get stuck where our users do?",
 		answer:
-			"Before starting we agree who he is acting as, such as an application developer who has never run a cluster, and he works to what that person would know. The walkthrough call then checks the ranked list against your own funnel numbers, so findings that don't show up in your data get marked down.",
+			"Before starting we agree who I'm acting as, such as an application developer who has never run a cluster, and I work to what that person would know. The walkthrough call then checks the ranked list against your own funnel numbers, so findings that don't show up in your data get marked down.",
+	},
+	{
+		question: "What exactly does the review cover?",
+		answer: productReviewScope,
+	},
+	{
+		question: "How much of our engineers' time does it take?",
+		answer:
+			"About half a day across the 90 days: an hour to review the runnable example, an hour to prepare the session and the live hour itself. I write the example. Your product lead joins the monthly sessions.",
+	},
+	{
+		question: "What numbers do we agree, and when?",
+		answer: `Two or three numbers you already track, agreed at kick-off. Targets for day 90 are set on the review call, once the findings exist. ${exampleMeasures} We report against them in the read-out using your data.`,
 	},
 	{
 		question: "Who on our side should own it?",
@@ -104,64 +226,40 @@ const faqs = [
 			"Whoever owns developer adoption. Often that is the head of DevRel or developer experience, with product owning the fixes. The ranked list says which items are for product, which for docs and which for DevRel.",
 	},
 	{
+		question: "Why are places limited?",
+		answer:
+			"I do every review and partnership myself, alongside running Rawkode Academy. Six partners at a time is what I can do properly, and two new reviews a month is what I can start without the existing ones slipping. The limits are the same whether or not places are free. A place is booked when the statement of work is signed and a start date is set; if the statement of work isn't signed within seven days, the place is released.",
+	},
+	{
 		question: "Can we sponsor content as well?",
 		answer:
-			"Sponsorship is a separate conversation from the partnership. Neither changes what David tells you in the review.",
+			"Sponsorship is a separate conversation from the partnership. Neither changes what I tell you in the review.",
 	},
 	{
 		question: "Do open-source maintainers have to pay to come on Rawkode Live?",
 		answer:
 			"No. Maintainer sessions on Rawkode Live are still free and unpaid, and they aren't labelled as partner sessions. The partnership is for teams who want the review, the advice and the work around the session.",
 	},
-	{
-		question: "How much of our engineers' time does it take?",
-		answer:
-			"About half a day across the 90 days: an hour to review the runnable example, an hour to prepare the session and the live hour itself. David writes the example. Your product lead joins the monthly sessions.",
-	},
-	{
-		question: "Who is this a good fit for?",
-		answer:
-			"Developer-tool teams from seed to Series C whose users are platform, cloud-native or AI-infrastructure engineers, with a product someone can install or sign up for and try, including open-source projects installed from GitHub or Helm. The review can follow your open-source install path. There is no separate open-source price.",
-	},
-	{
-		question: "What numbers do we agree, and when?",
-		answer: `Two or three numbers you already track, agreed at kick-off. Targets for day 90 are set on the review call, once the findings exist. ${exampleMeasures} We report against them in the read-out using your data.`,
-	},
-	{
-		question: "Why are places limited?",
-		answer:
-			"David does every review and partnership himself, alongside running Rawkode Academy. Six partners at a time is what he can do properly, and two new reviews a month is what he can start without the existing ones slipping. The limits are the same whether or not places are free. A place is booked when the statement of work is signed and a start date is set; if the statement of work isn't signed within seven days, the place is released.",
-	},
-	{
-		question: "How do we stop?",
-		answer:
-			"If you stop after the review, you pay $5,000, invoiced when the review is delivered. The 90-day partnership ends at day 90, and there's nothing more to pay. The annual partnership is a 12-month contract, billed at $10,000 a quarter. Nothing renews automatically.",
-	},
 ];
-const partnershipReviewHeroTitle =
-	"See exactly where engineers get stuck with your product.";
 
-const quoteIds = [
-	"reggie-wilkerson",
-	"jens-neuse",
-	"solomon-hykes",
-	"mikkel-hegnhoj",
-] as const;
-
-const quoteContext = {
-	"reggie-wilkerson":
-		"On advisory work: positioning, demos and ongoing guidance",
-	"jens-neuse": "On David's public walkthrough of WunderGraph on Rawkode Live",
-	"solomon-hykes": "On having his product used live",
-	"mikkel-hegnhoj":
-		"On Advent of Spin, the hands-on challenges Rawkode Academy created for Fermyon",
-} as const;
-
+// Excerpts are checked against their testimonials in CI
+// (src/tests/partnership-quotes.test.ts). A quote that no longer matches is
+// left out here rather than failing the request.
 const testimonials = await getCollection("testimonials");
-const partnershipQuotes = quoteIds.map((id) => {
+const quoteFor = (id: PartnershipQuoteId) => {
 	const entry = testimonials.find((item) => item.id === id);
-	if (!entry) throw new Error(`Missing partnership quote: ${id}`);
-	return { id, entry, context: quoteContext[id] };
+	const excerpt = partnershipQuoteExcerpts[id];
+	if (!entry || !isVerbatimExcerpt(entry.data.quote, excerpt)) return undefined;
+	return { id, excerpt, author: entry.data.author };
+};
+const pullQuote = quoteFor(partnershipPullQuoteId);
+const partnerQuotes = (
+	Object.keys(
+		partnershipQuoteContext,
+	) as (keyof typeof partnershipQuoteContext)[]
+).flatMap((id) => {
+	const quote = quoteFor(id);
+	return quote ? [{ ...quote, context: partnershipQuoteContext[id] }] : [];
 });
 ---
 
@@ -172,28 +270,64 @@ const partnershipQuotes = quoteIds.map((id) => {
 	<EditorialShell
 		eyebrow="Partnerships"
 		title={partnershipReviewHeroTitle}
-		lede="I review how engineers get started with your product and tell you what to fix first. It's a fixed $5,000."
+		lede="I review how engineers get started with your product and tell you what to fix first."
 	>
-		<p class="partnership-byline" slot="intro">David Flanagan runs Rawkode Academy and Rawkode Live. The Rawkode Academy YouTube channel has 28.2K subscribers and over 370 hours of live streams.</p>
-		<div class="partnership-hero-offer" slot="actions">
-			<a class="editorial-button" href={reviewApplyHref} data-apply-path={productReviewPath} data-partnership-cta data-cta-location="hero">Ask about a product review</a>
+		<dl class="partnership-facts" slot="intro">
+			<div>
+				<dt>Price</dt>
+				<dd>{fitProofReview.price} fixed</dd>
+			</div>
+			<div>
+				<dt>Delivered in</dt>
+				<dd>10 business days</dd>
+			</div>
+		</dl>
+		<div class="partnership-hero-actions" slot="actions">
+			<a id="partnership-hero-cta" class="editorial-button" href={reviewApplyHref} data-apply-path={productReviewPath} data-partnership-cta data-cta-location="hero">Ask about a product review</a>
+			<a class="partnership-text-link" href="#pricing">See all pricing</a>
 		</div>
+		<div class="partnership-byline" slot="actions">
+			{ownerAvatar && <img src={ownerAvatar} alt="" width="48" height="48" loading="eager" decoding="async" />}
+			<p>
+				<strong>David Flanagan</strong>
+				<span>Runs Rawkode Academy and Rawkode Live</span>
+				<span class="partnership-byline__stats">28.2K YouTube subscribers · over 370 hours of live streams</span>
+			</p>
+		</div>
+		<ReviewPreview slot="aside" placement="hero" />
 
-		<section id="partner-quotes" class="editorial-section" aria-label="Partner quotes">
-			<div class="partnership-quotes">
-				{partnershipQuotes.map(({ entry, context }) => (
-					<figure>
-						<p class="partnership-quotes__context">{context}</p>
-						<blockquote>{entry.data.quote.trim()}</blockquote>
-						<figcaption>
-							{entry.data.author.link ? (
-								<a href={entry.data.author.link}>{entry.data.author.name}</a>
-							) : (
-								entry.data.author.name
-							)}, {entry.data.author.title}
-						</figcaption>
-					</figure>
-				))}
+		<section id="who-ive-worked-with" class="editorial-section" aria-labelledby="who-ive-worked-with-title">
+			<h2 id="who-ive-worked-with-title" class="partnership-label">Teams I've worked with</h2>
+			<PartnerLogos variant="grid" />
+		</section>
+
+		{pullQuote && (
+		<section id="pull-quote" class="editorial-section" aria-label="What builders say">
+			<figure class="partnership-pull-quote">
+				<blockquote>{pullQuote.excerpt}</blockquote>
+				<figcaption><strong>{pullQuote.author.name}</strong>, {pullQuote.author.title}</figcaption>
+			</figure>
+		</section>
+		)}
+
+		<section id="how-it-works" class="editorial-section editorial-section--split" aria-labelledby="how-it-works-title">
+			<div class="editorial-section__header">
+				<h2 id="how-it-works-title" class="editorial-section__title">How the review works</h2>
+			</div>
+			<div class="partnership-steps-body">
+				<ol class="partnership-steps">
+					{reviewSteps.map((step, index) => (
+						<li>
+							<span class="partnership-steps__number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+							<div>
+								<h3>{step.title}</h3>
+								<p>{step.detail}</p>
+							</div>
+						</li>
+					))}
+				</ol>
+				<ReviewPreview placement="inline" />
+				<p class="partnership-promise">{productReviewCompletion}</p>
 			</div>
 		</section>
 
@@ -201,105 +335,123 @@ const partnershipQuotes = quoteIds.map((id) => {
 			<div class="editorial-section__header">
 				<h2 id="fit-title" class="editorial-section__title">Is this for you?</h2>
 			</div>
-			<div class="landing-copy">
-				<div class="landing-fit">
-					<p>This is a good fit if:</p>
-					<ul class="editorial-list">
-						<li>you build developer tools such as infrastructure tools, Kubernetes and cloud native projects, cloud platforms or AI infrastructure.</li>
-						<li>you're between seed and Series C.</li>
-						<li>an engineer can install or sign up for your product and try it, including open-source projects installed from GitHub or Helm.</li>
+			<div class="partnership-fit">
+				<div class="partnership-fit__card">
+					<h3>Good fit</h3>
+					<ul>
+						<li>You build developer tools: infrastructure tools, Kubernetes and cloud native projects, cloud platforms or AI infrastructure.</li>
+						<li>You're between seed and Series C.</li>
+						<li>An engineer can install or sign up for your product and try it, including open-source projects installed from GitHub or Helm.</li>
 					</ul>
 				</div>
-				<div class="landing-fit">
-					<p>It's probably not for you if:</p>
-					<ul class="editorial-list">
-						<li>engineers can't install or sign up for your product and try it.</li>
-						<li>you aren't a developer tools company between seed and Series C working in infrastructure, Kubernetes and cloud native, cloud platforms or AI.</li>
-						<li>you make a data tool.</li>
+				<div class="partnership-fit__card partnership-fit__card--no">
+					<h3>Not a fit</h3>
+					<ul>
+						<li>Engineers can't install or sign up for your product and try it.</li>
+						<li>You make a data tool.</li>
 					</ul>
 				</div>
-			</div>
-		</section>
-
-		<section class="editorial-section editorial-section--split" aria-labelledby="what-you-get-title">
-			<div class="editorial-section__header">
-				<h2 id="what-you-get-title" class="editorial-section__title">What you get</h2>
-			</div>
-			<div class="landing-copy">
-				<p>Within 10 business days, you get a written report showing the places engineers get stuck and what to fix first.</p>
-				<p>David agrees the numbers to watch with you and walks your team through the report.</p>
-			</div>
-		</section>
-
-		<section class="editorial-section editorial-section--split" aria-labelledby="how-it-works-title">
-			<div class="editorial-section__header">
-				<h2 id="how-it-works-title" class="editorial-section__title">How it works</h2>
-			</div>
-			<div class="landing-copy">
-				<p>You give David a trial or sandbox account and agree where the run starts and ends. He works privately, delivers the review and invoices only after delivery.</p>
 			</div>
 		</section>
 
 		<section id="pricing" class="editorial-section" aria-labelledby="pricing-title">
-			<div class="editorial-section__header">
-				<h2 id="pricing-title" class="editorial-section__title">Pricing</h2>
+			<div class="partnership-pricing__header">
+				<div class="editorial-section__header">
+					<h2 id="pricing-title" class="editorial-section__title">Pricing</h2>
+					<p class="editorial-section__lede">Start with the review. Continue only if it's useful.</p>
+					<p class="partnership-label">{partnershipCapacity.places} partner places · {partnershipCapacity.newStartsPerMonth} new reviews a month</p>
+				</div>
+				<p class="partnership-credit">{partnershipReviewCredit}</p>
 			</div>
-			<div class="landing-pricing">
-				<article>
-					<h3>{fitProofReview.name}</h3>
-					<p class="partner-offer-card__price">{fitProofReview.price}</p>
-					<p>{fitProofReview.cadence}</p>
-					<p>{fitProofReview.summary}</p>
-					<p class="editorial-card__body">Included:</p>
-					<ul class="editorial-list">
-						{fitProofReview.included.map((item) => <li>{item}</li>)}
-					</ul>
-					{fitProofReview.notes.map((note) => <p class="editorial-card__body">{note}</p>)}
-				</article>
-				<article>
-					<h3>{partnershipOffer.name}</h3>
-					<p class="partner-offer-card__price">{partnershipOffer.price}</p>
-					<p>{partnershipOffer.cadence}</p>
-					<p>{partnershipOffer.summary}</p>
-					<p class="editorial-card__body">Included:</p>
-					<ul class="editorial-list">
-						{partnershipOffer.included.map((item) => <li>{item}</li>)}
-					</ul>
-					<p class="editorial-card__body">Not included:</p>
-					<ul class="editorial-list">
-						{partnershipOffer.excluded.map((item) => <li>{item}</li>)}
-					</ul>
-				</article>
-				<article>
-					<h3>{annualPartnershipOffer.name}</h3>
-					<p class="partner-offer-card__price partner-offer-card__price--sentence">{annualPartnershipOffer.cadence}</p>
-					<p>{annualPartnershipOffer.summary}</p>
-					{annualPartnershipDetails.map((detail) => <p>{detail}</p>)}
-					<a class="editorial-button" href="?route=Annual%20plan#apply" data-apply-path="Annual plan" data-partnership-cta data-cta="ask_about_the_annual_plan" data-cta-location="annual">Ask about the annual plan</a>
-				</article>
+			<div class="partnership-pricing">
+				{pricingCards.map((card) => {
+					const { amount } = splitPrice(card.offer.price);
+					return (
+						<article class:list={["partnership-plan", card.featured && "partnership-plan--featured"]} aria-labelledby={`plan-${card.offer.id}`}>
+							<div class="partnership-plan__heading">
+								<h3 id={`plan-${card.offer.id}`}>{card.offer.name}</h3>
+								{card.featured && <span class="partnership-plan__badge">Start here</span>}
+							</div>
+							<p class="partnership-plan__price"><span>{amount}</span> <span class="partnership-plan__period">{card.period}</span></p>
+							<p class="partnership-plan__cadence">{card.offer.cadence}</p>
+							{card.featured && <p class="partnership-plan__summary">{card.offer.summary}</p>}
+							<div class="partnership-plan__body">
+								{card.lead && <p class="partnership-plan__lead">{card.lead}</p>}
+								<ul class="partnership-plan__list">
+									{card.offer.included.map((item) => <li>{item}</li>)}
+								</ul>
+								{card.choices && (
+									<div class="partnership-plan__choices">
+										<p class="partnership-plan__lead">Each quarter, you choose one:</p>
+										<ul>
+											{card.choices.map((choice) => <li>{choice}</li>)}
+										</ul>
+									</div>
+								)}
+								{card.offer.notes.map((note) => <p class="partnership-plan__note">{note}</p>)}
+								{card.showExcluded && (
+									<details class="partnership-plan__excluded">
+										<summary>What's not included</summary>
+										<ul>
+											{card.offer.excluded.map((item) => <li>{item}</li>)}
+										</ul>
+									</details>
+								)}
+							</div>
+							<a
+								class:list={["editorial-button", !card.featured && "editorial-button--secondary"]}
+								href={applyHref(card.route)}
+								data-apply-path={card.route}
+								data-partnership-cta
+								data-cta={card.ctaName}
+								data-cta-location={card.ctaLocation}
+							>{card.cta}</a>
+						</article>
+					);
+				})}
 			</div>
 		</section>
 
-		<section id="what-you-control" class="editorial-section editorial-section--split" aria-labelledby="what-you-control-title">
-			<div class="editorial-section__header">
-				<h2 id="what-you-control-title" class="editorial-section__title">What you control</h2>
-			</div>
-			<div class="landing-copy">
-				<p>You decide what each quarter covers, and you own the review, the report and the read-out.</p>
-				<p>If you stop after the review, you pay $5,000, invoiced when the review is delivered. The 90-day partnership ends at day 90, and there's nothing more to pay. The annual partnership is a 12-month contract, billed at $10,000 a quarter. Nothing renews automatically.</p>
+		<section id="no-lock-in" class="editorial-section" aria-labelledby="no-lock-in-title">
+			<div class="partnership-terms">
+				<h2 id="no-lock-in-title">No lock-in</h2>
+				<ul>
+					{noLockIn.map((term) => (
+						<li>
+							<strong>{term.title}</strong>
+							<span>{term.detail}</span>
+						</li>
+					))}
+				</ul>
 			</div>
 		</section>
 
-		<section id="who-ive-worked-with" class="editorial-section editorial-section--split" aria-labelledby="who-ive-worked-with-title">
+		{partnerQuotes.length > 0 && (
+		<section id="partner-quotes" class="editorial-section" aria-labelledby="partner-quotes-title">
 			<div class="editorial-section__header">
-				<h2 id="who-ive-worked-with-title" class="editorial-section__title">Teams I've worked with</h2>
+				<h2 id="partner-quotes-title" class="editorial-section__title">What partners say</h2>
 			</div>
-			<PartnerLogos />
+			<ul class="partnership-quotes">
+				{partnerQuotes.map(({ excerpt, author, context }) => (
+					<li>
+						<figure>
+							<p class="partnership-label">{context}</p>
+							<blockquote>{excerpt}</blockquote>
+							<figcaption>
+								{author.link ? <a href={author.link}>{author.name}</a> : <strong>{author.name}</strong>}
+								<span>{author.title}</span>
+							</figcaption>
+						</figure>
+					</li>
+				))}
+			</ul>
 		</section>
+		)}
 
 		<section id="questions" class="editorial-section editorial-section--split" aria-labelledby="questions-title">
 			<div class="editorial-section__header">
 				<h2 id="questions-title" class="editorial-section__title">Questions</h2>
+				<p class="editorial-section__lede">Something else? Email <a class="partnership-text-link" href={`mailto:${PARTNERSHIP_EMAIL}`}>{PARTNERSHIP_EMAIL}</a></p>
 			</div>
 			<div class="partnership-faq">
 				{faqs.map((faq) => (
@@ -313,28 +465,34 @@ const partnershipQuotes = quoteIds.map((id) => {
 
 		<section id="apply" class="editorial-section editorial-section--split partnerships-apply" aria-labelledby="apply-title">
 			<div class="editorial-section__header">
-				<h2 id="apply-title" class="editorial-section__title">Tell David about your product</h2>
-				<p class="editorial-section__lede">A few lines about your product and where engineers get stuck is enough. David reads every one and tells you honestly whether the review is worth doing.</p>
-				<a class="editorial-button" href={reviewApplyHref} data-apply-path={productReviewPath} data-partnership-cta data-cta-location="end">Ask about a product review</a>
+				<h2 id="apply-title" class="editorial-section__title">Tell me about your product</h2>
+				<p class="editorial-section__lede">A few lines about your product and where engineers get stuck is enough. I read every one and tell you honestly whether the review is worth doing.</p>
 			</div>
 			<div id="enquiry-form" class="partnerships-apply__body">
 				{enquiryReceived ? (
 					<div>
 						<h3>Enquiry received</h3>
-						<p>David reads every enquiry and will reply by email.</p>
+						<p>I read every enquiry and will reply by email.</p>
 					</div>
 				) : (
 					<>
 						{enquiryRateLimited && <p role="alert">Too many enquiries were sent recently. Please wait a minute and try again.</p>}
-						{enquiryFallback && <p role="alert">Something went wrong, so your enquiry wasn't sent. Please <a href="mailto:david@rawkode.academy">email David directly</a>.</p>}
+						{enquiryFallback && <p role="alert">Something went wrong, so your enquiry wasn't sent. Please <a href={`mailto:${PARTNERSHIP_EMAIL}`}>email me directly</a>.</p>}
 						{submittedEnquiry?.error && <p role="alert">Please check the highlighted fields.</p>}
 						<PartnershipApplicationForm client:visible initialPath={initialPath} submittedValues={submittedValues} serverFieldErrors={serverFieldErrors} />
 					</>
 				)}
 			</div>
 		</section>
-
 	</EditorialShell>
+
+	<div class="partnership-pinned" data-partnership-pinned>
+		<p>
+			<strong>{fitProofReview.name}</strong>
+			<span>{fitProofReview.price} · fixed price</span>
+		</p>
+		<a class="partnership-pinned__cta" href={reviewApplyHref} data-apply-path={productReviewPath} data-partnership-cta data-cta-location="pinned" tabindex="-1">Ask about it</a>
+	</div>
 </Page>
 
 <script>
@@ -349,85 +507,709 @@ const partnershipQuotes = quoteIds.map((id) => {
 			});
 		});
 	});
+
+	// The pinned bar appears once the hero button has scrolled away and
+	// leaves again when the enquiry form is reached. Positions are read on
+	// scroll (once per frame) so jumps such as anchor links are handled too.
+	const pinned = document.querySelector<HTMLElement>(
+		"[data-partnership-pinned]",
+	);
+	const pinnedCta = pinned?.querySelector<HTMLAnchorElement>("a");
+	const heroCta = document.getElementById("partnership-hero-cta");
+	const enquiry = document.getElementById("apply");
+	if (pinned && pinnedCta && heroCta && enquiry) {
+		let frame = 0;
+		const update = () => {
+			frame = 0;
+			const pastHero = heroCta.getBoundingClientRect().bottom < 0;
+			const atEnquiry =
+				enquiry.getBoundingClientRect().top < window.innerHeight;
+			const show = pastHero && !atEnquiry;
+			pinned.toggleAttribute("data-visible", show);
+			pinnedCta.tabIndex = show ? 0 : -1;
+		};
+		const schedule = () => {
+			if (!frame) frame = window.requestAnimationFrame(update);
+		};
+		window.addEventListener("scroll", schedule, { passive: true });
+		window.addEventListener("resize", schedule, { passive: true });
+		update();
+	}
 </script>
 
 <style>
-	.partnership-byline,
-	.partnership-hero-proof { margin: 0; max-width: 65ch; line-height: 1.55; color: var(--colors-academy-text-muted); }
-	.partnership-hero-offer { display: grid; justify-items: start; gap: 0.75rem; }
-
-	.partnership-quotes { display: grid; gap: 1.25rem; }
-	.partnership-quotes figure { margin: 0; display: grid; gap: 0.5rem; }
-	.partnership-quotes blockquote {
+	.partnership-label {
 		margin: 0;
-		padding-left: 1rem;
-		border-left: 2px solid var(--colors-academy-accent);
-		color: var(--colors-academy-text);
-		line-height: 1.65;
-		white-space: pre-wrap;
-	}
-	.partnership-quotes__context {
-		margin: 0;
-		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
-		font-size: 0.75rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--colors-academy-accent);
-	}
-	.partnership-quotes figcaption {
 		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
 		font-size: 0.8rem;
+		font-weight: 600;
 		color: var(--colors-academy-text-muted);
 	}
-	.partnership-quotes a {
-		color: var(--colors-academy-accent);
+
+	.partnership-text-link {
+		color: var(--colors-academy-text);
+		font-weight: 600;
 		text-decoration: underline;
 		text-underline-offset: 0.2em;
 	}
-	.partnership-quotes a:focus-visible {
+
+	.partnership-text-link:focus-visible {
 		outline: 2px solid var(--colors-academy-accent);
 		outline-offset: 4px;
 	}
 
-	.landing-copy { display: grid; gap: 0.75rem; max-width: 65ch; }
-	.landing-copy p { margin: 0; line-height: 1.65; color: var(--colors-academy-text); }
-	.landing-fit { display: grid; gap: 0.35rem; }
-
-	.landing-pricing {
+	/* Hero */
+	.partnership-facts {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-		gap: 1.5rem;
+		max-width: 26rem;
+		margin: 0.25rem 0 0;
+		border: 1px solid var(--colors-academy-border);
+		border-radius: var(--radii-academy-l);
+		background: var(--colors-academy-panel);
 	}
-	.landing-pricing article { display: grid; align-content: start; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--colors-academy-border); }
-	.landing-pricing article h3,
-	.landing-pricing article p { margin: 0; }
-	.landing-pricing article p { line-height: 1.55; color: var(--colors-academy-text); }
 
-	.partner-offer-card__price {
-		margin: 0.4rem 0 0;
-		font-family: var(--fonts-academy-text), system-ui, sans-serif;
-		font-size: clamp(1.9rem, 5vw, 2.8rem);
-		font-weight: 750;
+	.partnership-facts div {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		padding: 0.75rem 1rem;
+	}
+
+	.partnership-facts div + div {
+		border-top: 1px solid var(--colors-academy-border);
+	}
+
+	.partnership-facts dt {
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.8rem;
+		color: var(--colors-academy-text-muted);
+	}
+
+	.partnership-facts dd {
+		margin: 0;
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: 1.05rem;
+		font-weight: 800;
+		color: var(--colors-academy-text);
+	}
+
+	@media (min-width: 40rem) {
+		.partnership-facts {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.partnership-facts div {
+			flex-direction: column;
+			justify-content: flex-start;
+			gap: 0.15rem;
+		}
+
+		.partnership-facts div + div {
+			border-top: none;
+			border-left: 1px solid var(--colors-academy-border);
+		}
+	}
+
+	.partnership-hero-actions {
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1.5rem;
+	}
+
+	@media (max-width: 39.99rem) {
+		.partnership-hero-actions {
+			display: grid;
+			justify-items: stretch;
+			text-align: center;
+		}
+
+		.partnership-hero-actions .partnership-text-link {
+			display: inline-flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 2.75rem;
+		}
+	}
+
+	.partnership-byline {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--colors-academy-border);
+	}
+
+	.partnership-byline img {
+		flex: none;
+		width: 3rem;
+		height: 3rem;
+		border-radius: var(--radii-academy-pill);
+		background: var(--colors-academy-ground);
+	}
+
+	.partnership-byline p {
+		display: grid;
+		margin: 0;
+		line-height: 1.35;
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-byline strong {
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-byline__stats {
+		margin-top: 0.15rem;
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.8rem;
+		color: var(--colors-academy-text-muted);
+	}
+
+	/* Partners */
+	#who-ive-worked-with {
+		display: grid;
+		gap: 1rem;
+	}
+
+	/* Pull quote */
+	.partnership-pull-quote {
+		display: grid;
+		gap: 1rem;
+		max-width: 48rem;
+		margin: 0;
+	}
+
+	.partnership-pull-quote blockquote {
+		margin: 0;
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-pull-quote blockquote::before {
+		content: "“";
+		display: block;
+		height: 0.55em;
+		font-size: 2.5em;
+		line-height: 1;
+		color: var(--colors-academy-accent);
+	}
+
+	.partnership-pull-quote figcaption {
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-pull-quote figcaption strong {
+		color: var(--colors-academy-text);
+	}
+
+	/* How it works */
+	.partnership-steps-body {
+		display: grid;
+		gap: 1.5rem;
+		min-width: 0;
+	}
+
+	.partnership-steps {
+		display: grid;
+		gap: 1.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.partnership-steps li {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+	}
+
+	.partnership-steps__number {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: var(--radii-academy-pill);
+		background: var(--colors-academy-text);
+		color: var(--colors-academy-canvas);
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.8rem;
+	}
+
+	.partnership-steps h3,
+	.partnership-steps p {
+		margin: 0;
+	}
+
+	.partnership-steps h3 {
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: 1.15rem;
+		font-weight: 800;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-steps p {
+		margin-top: 0.2rem;
+		line-height: 1.55;
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-promise {
+		margin: 0;
+		padding: 0.85rem 1rem;
+		border-left: 2px solid var(--colors-academy-status-spruce);
+		background: var(--colors-academy-panel);
+		font-weight: 600;
+		color: var(--colors-academy-text);
+	}
+
+	/* Fit */
+	.partnership-fit {
+		display: grid;
+		gap: 0.75rem;
+		min-width: 0;
+	}
+
+	.partnership-fit__card {
+		display: grid;
+		gap: 0.65rem;
+		padding: 1.25rem;
+		border: 1px solid var(--colors-academy-border);
+		border-radius: var(--radii-academy-l);
+		background: var(--colors-academy-panel);
+	}
+
+	.partnership-fit__card--no {
+		background: var(--colors-academy-ground);
+	}
+
+	.partnership-fit__card h3 {
+		margin: 0;
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--colors-academy-status-spruce);
+	}
+
+	.partnership-fit__card--no h3 {
+		color: var(--colors-academy-text-muted);
+	}
+
+	.partnership-fit__card ul {
+		display: grid;
+		gap: 0.6rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.partnership-fit__card li {
+		position: relative;
+		padding-left: 1.6rem;
+		line-height: 1.5;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-fit__card--no li {
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-fit__card li::before {
+		content: "✓";
+		position: absolute;
+		left: 0;
+		font-weight: 700;
+		color: var(--colors-academy-status-spruce);
+	}
+
+	.partnership-fit__card--no li::before {
+		content: "✕";
+		color: var(--colors-academy-text-muted);
+	}
+
+	/* Pricing */
+	.partnership-pricing__header {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 1rem 2.5rem;
+	}
+
+	.partnership-credit {
+		max-width: 28rem;
+		margin: 0;
+		padding: 0.85rem 1rem;
+		border: 1px dashed var(--colors-academy-border);
+		border-radius: var(--radii-academy-m);
+		background: var(--colors-academy-panel);
+		font-size: 0.95rem;
+		line-height: 1.5;
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-pricing {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+		gap: 1rem;
+		margin-top: 1.5rem;
+	}
+
+	.partnership-plan {
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+		min-width: 0;
+		padding: 1.5rem;
+		border: 1px solid var(--colors-academy-border);
+		border-radius: var(--radii-academy-l);
+		background: var(--colors-academy-panel);
+	}
+
+	.partnership-plan--featured {
+		border: 2px solid var(--colors-academy-accent);
+	}
+
+	.partnership-plan p,
+	.partnership-plan h3 {
+		margin: 0;
+	}
+
+	.partnership-plan__heading {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.partnership-plan__heading h3 {
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: 1.3rem;
+		font-weight: 800;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-plan__badge {
+		flex: none;
+		padding: 0.2rem 0.55rem;
+		border-radius: var(--radii-academy-pill);
+		background: var(--colors-academy-accent);
+		color: var(--colors-academy-accent-foreground);
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.72rem;
+		font-weight: 600;
+	}
+
+	.partnership-plan__price {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.15rem 0.5rem;
+	}
+
+	.partnership-plan__price span:first-child {
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: clamp(2.5rem, 5vw, 3rem);
+		font-weight: 900;
+		line-height: 1;
 		letter-spacing: -0.03em;
 		color: var(--colors-academy-text);
 	}
 
-	.partner-offer-card__price--sentence {
-		max-width: 30ch;
-		font-size: clamp(1.5rem, 4vw, 2.25rem);
-		line-height: 1.15;
+	.partnership-plan__period {
+		color: var(--colors-academy-text-muted);
 	}
 
+	.partnership-plan__cadence {
+		padding: 0.6rem 0.75rem;
+		border-radius: var(--radii-academy-m);
+		background: var(--colors-academy-ground);
+		font-size: 0.92rem;
+		line-height: 1.45;
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-plan__summary {
+		line-height: 1.5;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-plan__body {
+		display: grid;
+		align-content: start;
+		gap: 0.75rem;
+		flex: 1 1 auto;
+	}
+
+	.partnership-plan__lead {
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.8rem;
+		color: var(--colors-academy-text-muted);
+	}
+
+	.partnership-plan__list {
+		display: grid;
+		gap: 0.55rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.partnership-plan__list li {
+		position: relative;
+		padding-left: 1.5rem;
+		line-height: 1.45;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-plan__list li::before {
+		content: "✓";
+		position: absolute;
+		left: 0;
+		font-weight: 700;
+		color: var(--colors-academy-text-muted);
+	}
+
+	.partnership-plan--featured .partnership-plan__list li::before {
+		color: var(--colors-academy-accent);
+	}
+
+	.partnership-plan__choices {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.partnership-plan__choices ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.partnership-plan__choices li {
+		padding: 0.35rem 0.6rem;
+		border: 1px solid var(--colors-academy-border);
+		border-radius: var(--radii-academy-m);
+		background: var(--colors-academy-ground);
+		font-size: 0.85rem;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-plan__note {
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: var(--colors-academy-text-muted);
+	}
+
+	.partnership-plan__excluded {
+		border-top: 1px solid var(--colors-academy-border);
+	}
+
+	.partnership-plan__excluded summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 2.75rem;
+		cursor: pointer;
+		font-weight: 600;
+		color: var(--colors-academy-text-soft);
+		list-style: none;
+	}
+
+	.partnership-plan__excluded summary::-webkit-details-marker,
+	#questions .partnership-faq summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.partnership-plan__excluded summary::after,
+	#questions .partnership-faq summary::after {
+		content: "";
+		flex: none;
+		width: 0.45rem;
+		height: 0.45rem;
+		border-right: 2px solid currentColor;
+		border-bottom: 2px solid currentColor;
+		transform: rotate(45deg);
+	}
+
+	.partnership-plan__excluded[open] summary::after,
+	#questions .partnership-faq details[open] summary::after {
+		transform: rotate(225deg);
+	}
+
+	.partnership-plan__excluded summary:focus-visible,
+	#questions .partnership-faq summary:focus-visible {
+		outline: 2px solid var(--colors-academy-accent);
+		outline-offset: 4px;
+	}
+
+	.partnership-plan__excluded ul {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0 0 0.5rem;
+		padding-left: 1.1rem;
+		font-size: 0.9rem;
+		line-height: 1.45;
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-plan > .editorial-button {
+		width: 100%;
+	}
+
+	/* No lock-in */
+	.partnership-terms {
+		display: grid;
+		gap: 1.25rem;
+		padding: 1.75rem 1.25rem;
+		border: 1px solid var(--colors-academy-ink-border);
+		border-radius: var(--radii-academy-l);
+		background: var(--colors-academy-ink);
+		color: var(--colors-academy-ink-text);
+	}
+
+	.partnership-terms h2 {
+		margin: 0;
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: clamp(1.75rem, 3vw, 2.25rem);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--colors-academy-ink-text);
+	}
+
+	.partnership-terms ul {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.partnership-terms li {
+		display: grid;
+		align-content: start;
+		gap: 0.3rem;
+		padding: 1rem;
+		border: 1px solid var(--colors-academy-ink-border);
+		border-radius: var(--radii-academy-m);
+		background: var(--colors-academy-ink-raised);
+	}
+
+	.partnership-terms strong {
+		font-family: var(--fonts-academy-display), system-ui, sans-serif;
+		font-size: 1.05rem;
+		color: var(--colors-academy-ink-text);
+	}
+
+	.partnership-terms span {
+		font-size: 0.92rem;
+		line-height: 1.45;
+		color: var(--colors-academy-ink-text-soft);
+	}
+
+	@media (min-width: 64rem) {
+		.partnership-terms ul {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+
+		.partnership-terms {
+			grid-template-columns: minmax(12rem, 0.3fr) 1fr;
+			align-items: start;
+			padding: 2.5rem;
+		}
+	}
+
+	/* Partner quotes */
+	.partnership-quotes {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: min(85%, 20rem);
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0 0 0.5rem;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		list-style: none;
+	}
+
+	.partnership-quotes li {
+		scroll-snap-align: start;
+		display: flex;
+	}
+
+	@media (min-width: 64rem) {
+		.partnership-quotes {
+			grid-auto-flow: row;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			overflow: visible;
+		}
+	}
+
+	.partnership-quotes figure {
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+		width: 100%;
+		margin: 0;
+		padding: 1.25rem;
+		border: 1px solid var(--colors-academy-border);
+		border-radius: var(--radii-academy-l);
+		background: var(--colors-academy-panel);
+	}
+
+	.partnership-quotes blockquote {
+		margin: 0;
+		line-height: 1.55;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-quotes figcaption {
+		display: grid;
+		margin-top: auto;
+		font-size: 0.92rem;
+		color: var(--colors-academy-text-soft);
+	}
+
+	.partnership-quotes figcaption a,
+	.partnership-quotes figcaption strong {
+		justify-self: start;
+		font-weight: 700;
+		color: var(--colors-academy-text);
+	}
+
+	.partnership-quotes figcaption a {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.partnership-quotes figcaption a:focus-visible {
+		outline: 2px solid var(--colors-academy-accent);
+		outline-offset: 4px;
+	}
+
+	/* Questions */
 	#questions .partnership-faq {
 		display: grid;
 		gap: 0.75rem;
+		min-width: 0;
 	}
 
 	#questions .partnership-faq details {
 		margin: 0;
 		padding: 0;
 		border: 1px solid var(--colors-academy-border);
-		border-radius: 4px;
+		border-radius: var(--radii-academy-m);
 		background: var(--colors-academy-panel);
 	}
 
@@ -445,33 +1227,78 @@ const partnershipQuotes = quoteIds.map((id) => {
 		list-style: none;
 	}
 
-	#questions .partnership-faq summary::-webkit-details-marker {
-		display: none;
-	}
-
-	#questions .partnership-faq summary::after {
-		content: "";
-		flex: none;
-		width: 0.45rem;
-		height: 0.45rem;
-		border-right: 2px solid currentColor;
-		border-bottom: 2px solid currentColor;
-		transform: rotate(45deg);
-	}
-
-	#questions .partnership-faq details[open] summary::after {
-		transform: rotate(225deg);
-	}
-
-	#questions .partnership-faq summary:focus-visible {
-		outline: 2px solid var(--colors-academy-accent);
-		outline-offset: 4px;
-	}
-
 	#questions .partnership-faq details > p {
 		margin: 0;
 		padding: 0 1.25rem 1.25rem;
 		line-height: 1.65;
-		color: var(--colors-academy-text);
+		color: var(--colors-academy-text-soft);
+	}
+
+	/* Pinned mobile bar */
+	.partnership-pinned {
+		position: fixed;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 40;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.75rem var(--spacing-academy-gutter) calc(0.75rem + env(safe-area-inset-bottom));
+		border-top: 1px solid var(--colors-academy-ink-border);
+		background: var(--colors-academy-ink);
+		color: var(--colors-academy-ink-text);
+		transform: translateY(100%);
+		visibility: hidden;
+		transition: transform var(--duration-base, 200ms) ease, visibility 0s linear var(--duration-base, 200ms);
+	}
+
+	.partnership-pinned[data-visible] {
+		transform: translateY(0);
+		visibility: visible;
+		transition: transform var(--duration-base, 200ms) ease;
+	}
+
+	.partnership-pinned p {
+		display: grid;
+		margin: 0;
+		line-height: 1.25;
+	}
+
+	.partnership-pinned span {
+		font-family: var(--fonts-academy-mono), ui-monospace, monospace;
+		font-size: 0.78rem;
+		color: var(--colors-academy-ink-text-soft);
+	}
+
+	.partnership-pinned__cta {
+		flex: none;
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+		padding-inline: 1.15rem;
+		border-radius: var(--radii-academy-s);
+		background: var(--colors-academy-ink-accent);
+		color: var(--colors-academy-ink);
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.partnership-pinned__cta:focus-visible {
+		outline: 2px solid var(--colors-academy-ink-accent);
+		outline-offset: 3px;
+	}
+
+	@media (min-width: 64rem) {
+		.partnership-pinned {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.partnership-pinned,
+		.partnership-pinned[data-visible] {
+			transition: none;
+		}
 	}
 </style>

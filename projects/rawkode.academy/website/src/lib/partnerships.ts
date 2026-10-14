@@ -86,7 +86,7 @@ export const partnershipAudience =
 	"For developer-tool teams, seed to Series C, building for platform, cloud-native and AI-infrastructure engineers";
 
 export const partnershipDescription =
-	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first, invoiced on delivery. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
+	"Start with a $5,000 product review from David Flanagan of Rawkode Academy. You get a written list of what to fix first. If it's useful, you can go on to a $12,000 90-day partnership or a $40,000 annual partnership.";
 
 export const partnershipHeroTitle =
 	"Find out where developers give up on your product.";
@@ -259,7 +259,7 @@ export const partnershipPlan: PartnershipStep[] = [
 ];
 
 export const partnershipReviewCredit =
-	"The $5,000 review counts towards a quarterly or annual partnership when it is signed within 30 days of the review being delivered.";
+	"The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered.";
 
 export const partnershipOffer: PartnershipOffer = {
 	id: "partnership-90d",
@@ -268,16 +268,16 @@ export const partnershipOffer: PartnershipOffer = {
 	price: "$12,000",
 	priceShort: "$12k/90 days",
 	cadence:
-		"This is a fixed price. The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered. In that case, continuing costs $7,000 more, paid as $3,500 a month for two months.",
-	summary:
-		"The review, plus the rest of the 90 days: a live session, a runnable example, monthly working sessions with written recaps, Slack with David, a before-and-after re-run and a day-90 read-out.",
+		"A fixed price. After a review, continuing costs $7,000 more, paid as $3,500 a month for two months.",
+	summary: "The review, then the rest of the 90 days working on what it finds.",
 	included: [
-		"The product review and written report",
 		"One live partner session on Rawkode Live, co-taught with your engineer",
-		"One runnable example repository, written by David",
+		"One runnable example repository, written by me",
 		"Monthly 60-minute working sessions with written recaps",
-		"Slack Connect with David",
-		"Partners also get extras: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions.",
+		"Slack Connect with me",
+		"Re-tests of fixes you ship, and a review before one launch a quarter",
+		"A 90-day results summary you can share with your board",
+		"Mentions in the newsletter and on Discord, and warm introductions",
 		"A day-90 review compared with the original, and a read-out against the targets set on the review call",
 	],
 	excluded: [
@@ -295,18 +295,28 @@ export const annualPartnershipOffer: PartnershipOffer = {
 	label: "Work with Rawkode Academy for a year",
 	price: "$40,000 a year",
 	priceShort: "$40k/year",
-	cadence: "$40,000 a year",
+	cadence:
+		"Billed $10,000 a quarter. A 12-month contract, and either side can choose not to continue after that.",
 	summary:
-		"The year starts with the full product review. You also get Slack with David for the whole year. Your monthly 60-minute working sessions with David run all year too, as they do in the 90-day partnership. Billed $10,000 a quarter. If you sign within 30 days of your review being delivered, the $5,000 review fee comes off your first quarter.",
-	included: [],
+		"A year of working together, with the review at the start and a read-out every quarter.",
+	included: [
+		"The full product review to start the year",
+		"Monthly 60-minute working sessions with me, all year",
+		"Slack with me for the whole year",
+		"A read-out each quarter, where you decide what the next quarter covers",
+	],
 	excluded: [],
-	notes: [partnershipReviewCredit],
+	notes: [
+		"You tell me your choice at the read-out or within five business days, and I confirm it in writing.",
+	],
 	mailto: buildMailto("Annual partnership", applicationBody),
 };
 
+/** What each quarter of the annual partnership can cover. */
 export const annualPartnershipDetails = [
-	"At each quarterly read-out, you decide what the next quarter covers. It can be a re-run compared with last time, a review before a launch followed by a re-check of your fixes, or a live session on Rawkode Live with a runnable example repository. You tell David your choice at the read-out or within five business days, and he confirms it in writing.",
-	"The contract runs for the full year, and either side can choose not to continue after that.",
+	"A re-run compared with last time",
+	"A review before a launch, then a re-check of your fixes",
+	"A live session on Rawkode Live with a runnable example repository",
 ] as const;
 
 /** Terms buyers, finance and procurement ask about. */
@@ -357,7 +367,7 @@ export const fitProofReview: PartnershipOffer = {
 	cadence:
 		"A fixed price, delivered within 10 business days of getting access.",
 	summary:
-		"The first step of every partnership, and useful on its own: David's product review and a written report you can act on whether or not you continue.",
+		"The first step of every partnership, and useful on its own: a written report you can act on whether or not you continue.",
 	included: [
 		"A written report showing the places engineers get stuck",
 		"A ranked list of what to fix first",
@@ -369,12 +379,18 @@ export const fitProofReview: PartnershipOffer = {
 		"Public coverage, product mentions or leads",
 	],
 	notes: [
-		"Before starting we agree the product areas, who David is acting as, and where the review ends: a first working result, or something closer to production, such as a highly available setup, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source setup to the move to the paid product.",
-		"If the review is missing anything the statement of work lists, David finishes it before you are invoiced.",
-		"The $5,000 review counts towards a 90-day or annual partnership when it is signed within 30 days of the review being delivered. You can then continue to the 90-day partnership for $7,000 more, choose the annual partnership, or stop and keep everything.",
+		"Covers up to two kinds of user, such as a platform team and the application developers they serve.",
 	],
 	mailto: buildMailto("Product review request", applicationBody),
 };
+
+/** What the review covers. Answered in the partnerships FAQ. */
+export const productReviewScope =
+	"Before starting we agree the product areas, who I'm acting as, and where the review ends: a first working result, or something closer to production, such as a highly available setup, a backup and restore, or an upgrade, as long as it fits in the 10 business days. For products with more than one kind of user, such as a platform team and the application developers they serve, the review covers up to two. An open-source project and its paid or hosted product count as two, so one review can follow a developer from the open-source setup to the move to the paid product.";
+
+/** Delivery promise shown beside the review steps. */
+export const productReviewCompletion =
+	"If the review is missing anything the statement of work lists, I finish it.";
 
 /** Compatibility shape for components that render the partnership offers. */
 export const partnershipTiers = [
