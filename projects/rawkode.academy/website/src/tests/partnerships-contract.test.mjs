@@ -38,7 +38,7 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(
 		page,
-		/I review how engineers get started with your product and tell you what to fix first, in order of importance\. It's a fixed \$5,000\./,
+		/I review how engineers get started with your product and tell you what to fix first\. It's a fixed \$5,000\./,
 	);
 	assert.match(
 		page,
@@ -106,8 +106,25 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 		page,
 		/On Advent of Spin, the hands-on challenges Rawkode Academy created for Fermyon/,
 	);
-	assert.equal(page.match(/>Book a product review<\/a>/g)?.length, 2);
-	assert.equal(header.match(/>Book a product review<\/a>/g)?.length, 1);
+	assert.equal(page.match(/>Ask about a product review<\/a>/g)?.length, 2);
+	assert.equal(header.match(/>Ask about a product review<\/a>/g)?.length, 1);
+	assert.doesNotMatch(`${page}\n${header}`, />Book a product review<\/a>/);
+	assert.match(
+		page,
+		/Within 10 business days, you get a written report showing the places engineers get stuck and what to fix first\./,
+	);
+	assert.doesNotMatch(page, /in order of importance/);
+	assert.doesNotMatch(page, /partnershipReviewCredit/);
+	assert.match(partnershipCopy, /export const partnershipReviewCredit =/);
+	assert.match(
+		page,
+		/notes every place he gets stuck against the recording, ranks what to fix, explain or teach/,
+	);
+	assert.match(
+		page,
+		/if the statement of work isn't signed within seven days, the place is released\./,
+	);
+	assert.doesNotMatch(page, /unsigned holds|logs every stall/);
 	assert.equal(page.match(/>Ask about the annual plan<\/a>/g)?.length, 1);
 	assert.match(page, /href="\?route=Annual%20plan#apply"/);
 	assert.deepEqual(
@@ -116,9 +133,9 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 			(match) => match[1].trim(),
 		),
 		[
-			"Book a product review",
+			"Ask about a product review",
 			"Ask about the annual plan",
-			"Book a product review",
+			"Ask about a product review",
 		],
 	);
 	assert.deepEqual(
