@@ -312,6 +312,13 @@ for (const fixture of fixtures) {
 
 	test(`${fixture.file}: hydration restores validation, mocked action, errors and retry`, async () => {
 		calls = [];
+		const capturedEvents = [];
+		if (fixture.partnership) {
+			window.posthog = {
+				capture: (event, properties) =>
+					capturedEvents.push({ event, properties }),
+			};
+		}
 		const view = await hydrate(fixture);
 		try {
 			const { host } = view;
@@ -336,10 +343,18 @@ for (const fixture of fixtures) {
 				for (const [name, value] of Object.entries({
 					name: "Test Person",
 					company: "Test Company",
-					targetDevelopers: "Platform teams",
-					challenge: "Adoption challenge",
+					message: "Our quick start loses Kubernetes users.",
 				}))
 					setValue(host, name, value);
+				const nameInput = host.querySelector("[name=name]");
+				nameInput.dispatchEvent(new window.Event("focusin", { bubbles: true }));
+				host
+					.querySelector("[name=email]")
+					.dispatchEvent(new window.Event("focusin", { bubbles: true }));
+				assert.deepEqual(
+					capturedEvents.map(({ event }) => event),
+					["partnership_form_started"],
+				);
 			}
 			for (const input of form.querySelectorAll(
 				"input:not([type=hidden]),select,textarea",
@@ -379,8 +394,8 @@ for (const fixture of fixtures) {
 					email: "person@example.test",
 					company: "Test Company",
 					path: "Not sure yet",
-					targetDevelopers: "Platform teams",
-					challenge: "Adoption challenge",
+					message: "Our quick start loses Kubernetes users.",
+					website: "",
 				});
 				respond({ error: { fields: { email: ["Please check this email"] } } });
 			} else {
@@ -413,20 +428,68 @@ for (const fixture of fixtures) {
 			assert.equal(calls.length, 2);
 			respond({ data: { success: true, message: "Check your inbox" } });
 			await flush();
-			if (fixture.partnership) assert.equal(host.querySelector("form"), null);
-			else {
+			if (fixture.partnership) {
+				assert.equal(host.querySelector("form"), null);
+				assert.deepEqual(
+					capturedEvents.map(({ event }) => event),
+					["partnership_form_started", "partnership_form_submitted"],
+				);
+				assert.equal(capturedEvents[1].properties.form, "partnership_enquiry");
+			} else {
 				assert.equal(host.querySelector("[type=checkbox]").checked, false);
 				assert.equal(host.querySelector("button[type=submit]").disabled, true);
 			}
 			assert.match(
 				host.querySelector("[role=status]").textContent,
-				/Application received|Check your inbox/,
+				/Enquiry received|Check your inbox/,
 			);
 		} finally {
 			view.close();
+			if (fixture.partnership) delete window.posthog;
 		}
 	});
 }
+
+test("partnership CRM fallback keeps the form and offers a prefilled email", async () => {
+	calls = [];
+	const capturedEvents = [];
+	window.posthog = {
+		capture: (event) => capturedEvents.push(event),
+	};
+	const fixture = fixtures.find((item) => item.partnership);
+	const view = await hydrate(fixture);
+	try {
+		for (const [name, value] of Object.entries({
+			name: "Test Person",
+			email: "person@example.test",
+			company: "Test Company",
+			message: "Please review our quick start.",
+		})) {
+			setValue(view.host, name, value);
+		}
+		view.host
+			.querySelector("[name=name]")
+			.dispatchEvent(new window.Event("focusin", { bubbles: true }));
+		view.host.querySelector("form").requestSubmit();
+		respond({ data: { success: false, fallback: "mailto" } });
+		await flush();
+
+		assert(view.host.querySelector("form"));
+		assert.match(
+			view.host.querySelector("[role=alert]").textContent,
+			/not sent automatically/,
+		);
+		const fallback = view.host.querySelector(
+			'a[href^="mailto:david@rawkode.academy"]',
+		);
+		assert(fallback);
+		assert.match(decodeURIComponent(fallback.href), /Test Company/);
+		assert.deepEqual(capturedEvents, ["partnership_form_started"]);
+	} finally {
+		view.close();
+		delete window.posthog;
+	}
+});
 
 for (const fixture of fixtures.filter((item) => !item.partnership)) {
 	test(`${fixture.file}: signed-in identity and explicit consent survive hydration`, async () => {

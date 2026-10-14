@@ -141,7 +141,7 @@ async function generateNavigationItems(
 			title: "For teams building developer products",
 			category: "Organizations",
 			description:
-				"Find out where developers give up on your product. Start with a £5,000 first-run review, and continue to a 90-day partnership, £12,000 in total, only if it's useful.",
+				"Find out where developers give up on your product. Start with a $5,000 product review, then choose a $12,000 90-day partnership or a $40,000 annual partnership only if it's useful.",
 			keywords: [
 				"partnerships",
 				"fit check",
@@ -160,8 +160,7 @@ async function generateNavigationItems(
 			href: "/organizations/lets-chat",
 			title: "Partner application",
 			category: "Organizations",
-			description:
-				"Apply for a Rawkode Academy first-run review or partnership",
+			description: "Apply for a Rawkode Academy product review or partnership",
 			keywords: [
 				"fit check",
 				"adoption",
@@ -186,7 +185,7 @@ async function generateNavigationItems(
 			title: "Partnerships",
 			category: "Organizations",
 			description:
-				"Find out where developers give up on your product. Start with a £5,000 first-run review, and continue to a 90-day partnership, £12,000 in total, only if it's useful.",
+				"Find out where developers give up on your product. Start with a $5,000 product review, then choose a $12,000 90-day partnership or a $40,000 annual partnership only if it's useful.",
 			keywords: [
 				"partnerships",
 				"practitioner proof",
