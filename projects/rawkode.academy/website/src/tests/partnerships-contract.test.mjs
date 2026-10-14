@@ -147,6 +147,34 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(partnershipCopy, /Each quarter, you get an anonymised write-up/);
 	assert.match(partnershipCopy, /Partners also get extras:/);
+	assert.match(partnershipCopy, /"Slack Connect with David\."/);
+	assert.doesNotMatch(
+		partnershipCopy,
+		/Slack Connect with David, answers within two business days/,
+	);
+	assert.match(
+		partnershipCopy,
+		/A day-90 review compared with the original, and a read-out against the targets set on the review call\./,
+	);
+	assert.doesNotMatch(
+		partnershipCopy,
+		/"A day-90 read-out against the targets set on the review call"/,
+	);
+	assert.match(
+		partnershipCopy,
+		/The partner session is clearly labelled as a partnership, and you get straight answers\./,
+	);
+	assert.doesNotMatch(partnershipCopy, /puff piece/);
+	assert.match(partnershipCopy, /"A ranked list of what to fix first"/);
+	assert.doesNotMatch(
+		partnershipCopy,
+		/A ranked list of what to fix first, in order of importance/,
+	);
+	assert.match(partnershipCopy, /and makes warm introductions\./);
+	assert.doesNotMatch(
+		partnershipCopy,
+		/warm introductions where they help both sides/,
+	);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /£|US\$/);
 
 	const quotes = page.indexOf('id="partner-quotes"');
