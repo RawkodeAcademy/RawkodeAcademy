@@ -25,6 +25,10 @@ const header = readFileSync(
 	new URL("../components/shell/AcademyHeader.astro", import.meta.url),
 	"utf8",
 );
+const letsChat = readFileSync(
+	new URL("../pages/organizations/lets-chat.astro", import.meta.url),
+	"utf8",
+);
 
 test("partnership page uses the approved landing hero and one CTA", () => {
 	assert.match(page, /eyebrow="Partnerships"/);
@@ -73,7 +77,7 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(
 		page,
-		/Stop after the review and you have paid \$5,000, invoiced on delivery\. Stop at day 90 and there is nothing further to pay\. Nothing renews automatically\./,
+		/If you stop after the review, you pay \$5,000, invoiced when the review is delivered\. The 90-day partnership ends at day 90, and there's nothing more to pay\. The annual partnership is a 12-month contract, billed at \$10,000 a quarter\./,
 	);
 	assert.match(
 		partnershipCopy,
@@ -147,14 +151,24 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.match(partnershipCopy, /Each quarter, you get an anonymised write-up/);
 	assert.match(partnershipCopy, /Partners also get extras:/);
-	assert.match(partnershipCopy, /"Slack Connect with David\."/);
-	assert.doesNotMatch(
-		partnershipCopy,
-		/Slack Connect with David, answers within two business days/,
-	);
+	assert.match(partnershipCopy, /"Slack Connect with David",/);
+	assert.doesNotMatch(partnershipCopy, /"Slack Connect with David\."/);
 	assert.match(
 		partnershipCopy,
-		/A day-90 review compared with the original, and a read-out against the targets set on the review call\./,
+		/roadmap trade-offs\./,
+	);
+	assert.match(
+		letsChat,
+		/David reads every enquiry and replies by email\./,
+	);
+	assert.match(
+		letsChat,
+		/David replies by email with a recommendation:/,
+	);
+	assert.doesNotMatch(`${partnershipCopy}\n${letsChat}`, /two business days/i);
+	assert.match(
+		partnershipCopy,
+		/"A day-90 review compared with the original, and a read-out against the targets set on the review call",/,
 	);
 	assert.doesNotMatch(
 		partnershipCopy,
@@ -173,6 +187,7 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	assert.match(partnershipCopy, /and makes warm introductions\./);
 	assert.doesNotMatch(partnershipCopy, /all-partner/i);
 	assert.doesNotMatch(page, /all-partner/i);
+	assert.doesNotMatch(page, /renews automatically/i);
 	assert.doesNotMatch(`${page}\n${partnershipCopy}`, /partner call/i);
 	assert.doesNotMatch(
 		partnershipCopy,

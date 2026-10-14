@@ -254,7 +254,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "From month 2",
-		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs. Answers within two business days.",
+		what: "Slack Connect with David for questions and second opinions on launches, docs, demos and roadmap trade-offs.",
 	},
 ];
 
@@ -275,9 +275,9 @@ export const partnershipOffer: PartnershipOffer = {
 		"One live partner session on Rawkode Live, co-taught with your engineer",
 		"One runnable example repository, written by David",
 		"Monthly 60-minute working sessions with written recaps",
-		"Slack Connect with David.",
+		"Slack Connect with David",
 		"Partners also get extras: David re-tests fixes you ship, does a review before one launch a quarter, sends a 90-day results summary you can share with your board, gives you mentions in the newsletter and on Discord, and makes warm introductions.",
-		"A day-90 review compared with the original, and a read-out against the targets set on the review call.",
+		"A day-90 review compared with the original, and a read-out against the targets set on the review call",
 	],
 	excluded: [
 		"Building or fixing your product. Your team owns the changes.",
