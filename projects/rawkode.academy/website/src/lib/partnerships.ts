@@ -393,24 +393,45 @@ export const partnershipTierNames = partnershipTiers.map((offer) => offer.name);
 
 /** Options for the application form's preferred route field. */
 export const applicationPaths = [
-	"90-day partnership",
 	"Product review",
-	"Annual partnership",
+	"90-day partnership",
+	"Annual plan",
 	"Not sure yet",
 ] as const;
 export type ApplicationPath = (typeof applicationPaths)[number];
 
+export const productReviewPath = "Product review" satisfies ApplicationPath;
+
 /** Plain labels for form values and preselection links. */
 export const applicationPathLabels: Record<ApplicationPath, string> = {
-	"90-day partnership": partnershipOffer.name,
 	"Product review": fitProofReview.name,
-	"Annual partnership": annualPartnershipOffer.name,
+	"90-day partnership": partnershipOffer.name,
+	"Annual plan": annualPartnershipOffer.name,
 	"Not sure yet": "Not sure yet",
 };
 
-/** Route values from earlier links that still preselect the right option. */
+/** Attio Offer option title and USD value for each application route. */
+export const applicationPathDeals: Record<
+	ApplicationPath,
+	{ offer: string; valueUsd: number }
+> = {
+	"Product review": { offer: "Review", valueUsd: 5000 },
+	"Not sure yet": { offer: "Review", valueUsd: 5000 },
+	"90-day partnership": {
+		offer: "Partnership (Quarterly)",
+		valueUsd: 12000,
+	},
+	"Annual plan": { offer: "Partnership (Yearly)", valueUsd: 40000 },
+};
+
+/**
+ * Route values from earlier links that still preselect the right option.
+ * "First-run review" and "Fit & Proof Review" both meant the paid review.
+ */
 export const legacyApplicationPaths: Record<string, ApplicationPath> = {
 	"Adoption Advisory": "90-day partnership",
+	"Annual partnership": "Annual plan",
+	"First-run review": "Product review",
 	"Fit & Proof Review": "Product review",
 };
 

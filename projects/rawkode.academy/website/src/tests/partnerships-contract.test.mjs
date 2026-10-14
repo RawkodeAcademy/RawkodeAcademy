@@ -104,19 +104,25 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	);
 	assert.equal(page.match(/>Book a product review<\/a>/g)?.length, 2);
 	assert.equal(header.match(/>Book a product review<\/a>/g)?.length, 1);
+	assert.equal(page.match(/>Ask about the annual plan<\/a>/g)?.length, 1);
+	assert.match(page, /href="\?route=Annual%20plan#apply"/);
 	assert.deepEqual(
 		Array.from(
 			page.matchAll(/<a class="editorial-button"[^>]*>([^<]+)<\/a>/g),
 			(match) => match[1].trim(),
 		),
-		["Book a product review", "Book a product review"],
+		[
+			"Book a product review",
+			"Ask about the annual plan",
+			"Book a product review",
+		],
 	);
 	assert.deepEqual(
 		[
 			...page.matchAll(/data-cta-location="([^"]+)"/g),
 			...header.matchAll(/data-cta-location="([^"]+)"/g),
 		].map((match) => match[1]),
-		["hero", "end", "header"],
+		["hero", "annual", "end", "header"],
 	);
 	assert.match(page, /location: cta\.getAttribute\("data-cta-location"\)/);
 	assert.match(partnershipCopy, /price: "\$5,000"/);
@@ -150,8 +156,10 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	const pricing = page.indexOf('id="pricing"');
 	const control = page.indexOf('id="what-you-control"');
 	const partners = page.indexOf('id="who-ive-worked-with"');
+	const questions = page.indexOf('id="questions"');
 	const enquiry = page.indexOf('id="apply"');
 	const heroCta = page.indexOf('data-cta-location="hero"');
+	const annualCta = page.indexOf('data-cta-location="annual"');
 	const endCta = page.indexOf('data-cta-location="end"');
 
 	assert(heroCta > -1);
@@ -162,7 +170,10 @@ test("partnership page uses the approved landing hero and one CTA", () => {
 	assert(process < pricing);
 	assert(pricing < control);
 	assert(control < partners);
-	assert(partners < enquiry);
+	assert(partners < questions);
+	assert(questions < enquiry);
+	assert(pricing < annualCta);
+	assert(annualCta < control);
 	assert(enquiry < endCta);
 	assert.doesNotMatch(
 		page,
@@ -187,6 +198,19 @@ test("partnership enquiry is short and tracks its conversion steps", () => {
 	assert.doesNotMatch(form, /api\.attio\.com/);
 	assert.match(action, /https:\/\/api\.attio\.com\/v2/);
 	assert.match(page, /capture\("cta_clicked"/);
-	assert.match(form, /capturePartnershipEvent\("partnership_form_started"\)/);
-	assert.match(form, /capturePartnershipEvent\("partnership_form_submitted"\)/);
+	assert.match(page, /<details>/);
+	assert.match(page, /<summary>/);
+	assert.match(page, /summary \{/);
+	assert.doesNotMatch(page, /Accordion/);
+	assert.match(form, /capturePartnershipEvent\("enquiry_form_started"\)/);
+	assert.match(form, /capturePartnershipEvent\("enquiry_form_submitted"\)/);
+	assert.match(form, /action="\?_action=partnership\.applyForm"/);
+	assert.match(form, /name="path"/);
+	assert.doesNotMatch(form, /:disabled="!ready/);
+	assert.match(partnershipCopy, /"First-run review": "Product review"/);
+	assert.match(partnershipCopy, /"Fit & Proof Review": "Product review"/);
+	assert.doesNotMatch(partnershipCopy, /"Product review": "First-run review"/);
+	assert.match(partnershipCopy, /"Annual plan"/);
+	assert.match(action, /applicationPathDeals/);
+	assert.match(action, /accept: "form"/);
 });

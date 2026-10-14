@@ -9,9 +9,16 @@
 			<h3 :class="s.heading">Enquiry received</h3>
 			<p :class="s.copy">David reads every enquiry and replies within two business days.</p>
 		</div>
-		<form v-else method="POST" :class="s.form" @submit.prevent="submit" :aria-busy="!ready || loading" :aria-describedby="error ? errorId : undefined">
-			<fieldset :class="[s.form, 'form-controls']" :disabled="!ready || loading" aria-label="Product review enquiry" @focusin="trackStarted">
-				<input type="hidden" name="path" :value="path" />
+		<form
+			v-else
+			method="POST"
+			action="?_action=partnership.applyForm"
+			:class="s.form"
+			@submit="onSubmit"
+			:aria-busy="loading"
+			:aria-describedby="error ? errorId : undefined"
+		>
+			<fieldset :class="[s.form, 'form-controls']" :disabled="loading" aria-label="Product review enquiry" @input="trackStarted">
 				<div class="form-honeypot" aria-hidden="true">
 					<label :for="honeypotId">Website</label>
 					<input
@@ -24,76 +31,104 @@
 					/>
 				</div>
 				<div :class="s.row">
-					<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.name)" :disabled="loading">
-						<Field.Label :class="s.label">Name</Field.Label>
-						<Field.Input :class="s.input"
+					<div :class="s.field">
+						<label :class="s.label" :for="nameId">Name</label>
+						<input
+							:id="nameId"
 							v-model="name"
+							:class="s.input"
 							type="text"
 							name="name"
 							autocomplete="name"
 							required
+							:aria-invalid="fieldErrors.name ? 'true' : undefined"
 						/>
-						<Field.ErrorText v-if="fieldErrors.name" :class="s.fieldError">{{ fieldErrors.name }}</Field.ErrorText>
-					</Field.Root>
-					<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.email)" :disabled="loading">
-						<Field.Label :class="s.label">Work email</Field.Label>
-						<Field.Input :class="s.input"
+						<p v-if="fieldErrors.name" :class="s.fieldError">{{ fieldErrors.name }}</p>
+					</div>
+					<div :class="s.field">
+						<label :class="s.label" :for="emailId">Work email</label>
+						<input
+							:id="emailId"
 							v-model="email"
+							:class="s.input"
 							type="email"
 							name="email"
 							autocomplete="email"
 							required
+							:aria-invalid="fieldErrors.email ? 'true' : undefined"
 						/>
-						<Field.ErrorText v-if="fieldErrors.email" :class="s.fieldError">{{ fieldErrors.email }}</Field.ErrorText>
-					</Field.Root>
+						<p v-if="fieldErrors.email" :class="s.fieldError">{{ fieldErrors.email }}</p>
+					</div>
 				</div>
 
-				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.company)" :disabled="loading">
-					<Field.Label :class="s.label">Company</Field.Label>
-					<Field.Input :class="s.input"
+				<div :class="s.field">
+					<label :class="s.label" :for="companyId">Company</label>
+					<input
+						:id="companyId"
 						v-model="company"
+						:class="s.input"
 						type="text"
 						name="company"
 						autocomplete="organization"
 						required
+						:aria-invalid="fieldErrors.company ? 'true' : undefined"
 					/>
-					<Field.ErrorText v-if="fieldErrors.company" :class="s.fieldError">{{ fieldErrors.company }}</Field.ErrorText>
-				</Field.Root>
+					<p v-if="fieldErrors.company" :class="s.fieldError">{{ fieldErrors.company }}</p>
+				</div>
 
-				<Field.Root :class="s.field" :invalid="Boolean(fieldErrors.message)" :disabled="loading">
-					<Field.Label :class="s.label">Message</Field.Label>
-					<Field.Textarea :class="[s.input, s.textarea]"
+				<div :class="s.field">
+					<label :class="s.label" :for="pathId">Preferred route</label>
+					<select :id="pathId" v-model="path" :class="s.input" name="path" required>
+						<option v-for="option in applicationPaths" :key="option" :value="option">{{ option }}</option>
+					</select>
+				</div>
+
+				<div :class="s.field">
+					<label :class="s.label" :for="messageId">Message</label>
+					<textarea
+						:id="messageId"
 						v-model="message"
+						:class="[s.input, s.textarea]"
 						name="message"
 						rows="4"
 						required
+						:aria-invalid="fieldErrors.message ? 'true' : undefined"
 					/>
-					<Field.ErrorText v-if="fieldErrors.message" :class="s.fieldError">{{ fieldErrors.message }}</Field.ErrorText>
-				</Field.Root>
+					<p v-if="fieldErrors.message" :class="s.fieldError">{{ fieldErrors.message }}</p>
+				</div>
 
 				<button type="submit" :class="s.button" :disabled="loading">
 					{{ loading ? "Sending enquiry..." : "Send enquiry" }}
 				</button>
 			</fieldset>
-			<p v-if="!ready" :class="s.copy"><noscript>JavaScript is required to send this enquiry. </noscript>You can <a href="mailto:david@rawkode.academy">email us directly</a> instead.</p>
+			<p v-if="!ready" :class="s.copy">You can <a href="mailto:david@rawkode.academy">email us directly</a> instead.</p>
 		</form>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { actions, isInputError } from "astro:actions";
-import { Field } from "@ark-ui/vue/field";
 import { academyForms } from "@rawkodeacademy/design-system";
 import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
 import {
 	type ApplicationPath,
+	applicationPathDeals,
 	applicationPaths,
 	resolveApplicationPath,
 } from "@/lib/partnerships";
 
+const props = withDefaults(defineProps<{ initialPath?: ApplicationPath }>(), {
+	initialPath: "Not sure yet",
+});
+
 const s = academyForms();
 const errorId = `${useId()}-error`;
 const honeypotId = `${useId()}-website`;
+const nameId = useId();
+const emailId = useId();
+const companyId = useId();
+const pathId = useId();
+const messageId = useId();
 
 const FALLBACK_ERROR =
 	"We could not send your enquiry. Please email david@rawkode.academy directly.";
@@ -101,7 +136,7 @@ const FALLBACK_ERROR =
 const name = ref("");
 const email = ref("");
 const company = ref("");
-const path = ref<ApplicationPath>("Not sure yet");
+const path = ref<ApplicationPath>(props.initialPath);
 const message = ref("");
 const website = ref("");
 
@@ -160,24 +195,43 @@ onBeforeUnmount(() => {
 	document.removeEventListener("click", onDocumentClick);
 });
 
-const capturePartnershipEvent = (event: string) => {
+const capturePartnershipEvent = (
+	event: "enquiry_form_started" | "enquiry_form_submitted",
+) => {
 	window.posthog?.capture(event, {
 		form: "partnership_enquiry",
 		path: window.location.pathname,
 		route: path.value,
+		...(event === "enquiry_form_submitted"
+			? { offer: applicationPathDeals[path.value].offer }
+			: {}),
 	});
 };
 
-const trackStarted = (event: FocusEvent) => {
-	const target = event.target as HTMLElement | null;
+const trackStarted = (event: Event) => {
+	const target = event.target;
 	if (
 		formStarted.value ||
-		!target?.matches("input:not([type='hidden']), textarea")
+		!(
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLTextAreaElement
+		) ||
+		!target.matches(
+			"input:not([type='hidden']):not([name='website']), textarea",
+		) ||
+		target.value.length === 0
 	) {
 		return;
 	}
 	formStarted.value = true;
-	capturePartnershipEvent("partnership_form_started");
+	capturePartnershipEvent("enquiry_form_started");
+};
+
+const onSubmit = (event: Event) => {
+	if (!ready.value) return;
+	event.preventDefault();
+	if (loading.value) return;
+	void submit();
 };
 
 async function submit() {
@@ -212,7 +266,7 @@ async function submit() {
 		} else if (result.data?.success) {
 			submitted.value = true;
 			if (result.data.accepted !== false) {
-				capturePartnershipEvent("partnership_form_submitted");
+				capturePartnershipEvent("enquiry_form_submitted");
 			}
 		} else if (result.data?.rateLimited) {
 			error.value =

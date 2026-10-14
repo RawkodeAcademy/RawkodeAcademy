@@ -14,6 +14,36 @@ const workerEnv = {
 	ATTIO_SOURCE_ATTRIBUTE: undefined as string | undefined,
 	ATTIO_SOURCE_VALUE: undefined as string | undefined,
 };
+const loadModule = (filename: string) => {
+	const output = ts.transpileModule(readFileSync(filename, "utf8"), {
+		compilerOptions: {
+			module: ts.ModuleKind.CommonJS,
+			target: ts.ScriptTarget.ES2022,
+		},
+	}).outputText;
+	const module = { exports: {} as Record<string, unknown> };
+	new Function("require", "module", "exports", output)(
+		() => {
+			throw new Error(`Unexpected import from ${filename}`);
+		},
+		module,
+		module.exports,
+	);
+	return module.exports;
+};
+const partnerships = loadModule("src/lib/partnerships.ts") as {
+	applicationPaths: readonly [
+		"Product review",
+		"90-day partnership",
+		"Annual plan",
+		"Not sure yet",
+	];
+	applicationPathLabels: Record<string, string>;
+	applicationPathDeals: Record<string, { offer: string; valueUsd: number }>;
+	resolveApplicationPath: (
+		value: string | null | undefined,
+	) => string | undefined;
+};
 const imports: Record<string, unknown> = {
 	"astro:actions": { defineAction: (definition: unknown) => definition },
 	"astro:env/server": {
@@ -22,20 +52,7 @@ const imports: Record<string, unknown> = {
 	},
 	"astro/zod": { z },
 	"cloudflare:workers": { env: workerEnv },
-	"@/lib/partnerships": {
-		applicationPaths: [
-			"90-day partnership",
-			"Product review",
-			"Annual partnership",
-			"Not sure yet",
-		],
-		applicationPathLabels: {
-			"90-day partnership": "Full 90-day partnership",
-			"Product review": "Product review",
-			"Annual partnership": "Annual partnership",
-			"Not sure yet": "Not sure yet",
-		},
-	},
+	"@/lib/partnerships": partnerships,
 };
 const code = ts.transpileModule(
 	readFileSync("src/actions/partnership.ts", "utf8"),
@@ -132,9 +149,11 @@ describe("partnership Attio action", () => {
 	});
 
 	it.each([
-		["Product review", 5000],
-		["90-day partnership", 5000],
-	])("writes person, company, note and a %s deal worth $%i", async (path, value) => {
+		["Product review", 5000, "Review"],
+		["Not sure yet", 5000, "Review"],
+		["90-day partnership", 12000, "Partnership (Quarterly)"],
+		["Annual plan", 40000, "Partnership (Yearly)"],
+	] as const)("writes person, company, note and a %s deal worth $%i offered as %s", async (path, value, offer) => {
 		vi.mocked(fetch)
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
@@ -178,7 +197,7 @@ describe("partnership Attio action", () => {
 		expect(requestBody(note).data).toMatchObject({
 			parent_object: "people",
 			parent_record_id: "person-id",
-			title: `Partnership enquiry: ${path === "90-day partnership" ? "Full 90-day partnership" : "Product review"}`,
+			title: `Partnership enquiry: ${partnerships.applicationPathLabels[path]}`,
 			content: input.message,
 		});
 		expect(deal[0]).toBe("https://api.attio.com/v2/objects/deals/records");
@@ -186,7 +205,7 @@ describe("partnership Attio action", () => {
 			stage: "In Progress",
 			owner: "david@rawkode.academy",
 			value,
-			offer: "Review",
+			offer,
 			source: "Inbound: partnerships page",
 			associated_company: {
 				target_object: "companies",
@@ -242,13 +261,65 @@ describe("partnership Attio action", () => {
 			.mockResolvedValueOnce(new Response(null, { status: 200 }))
 			.mockResolvedValueOnce(recordResponse("deal-id"));
 
-		await apply.handler(input, context);
+		await apply.handler({ ...input, path: "Annual plan" }, context);
 
 		const deal = vi.mocked(fetch).mock.calls[4]!;
 		expect(requestBody(deal).data.values).toMatchObject({
 			value: 6500,
 			inbound_offer: "Custom review",
 		});
+	});
+
+	it("keeps route pricing when the configured offer is still the review default", async () => {
+		workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = "5000";
+		workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = "Review";
+		vi.mocked(fetch)
+			.mockResolvedValueOnce(recordResponse("company-id"))
+			.mockResolvedValueOnce(recordResponse("person-id"))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(new Response(null, { status: 200 }))
+			.mockResolvedValueOnce(recordResponse("deal-id"));
+
+		await apply.handler({ ...input, path: "90-day partnership" }, context);
+
+		const deal = vi.mocked(fetch).mock.calls[4]!;
+		expect(requestBody(deal).data.values).toMatchObject({
+			value: 12000,
+			offer: "Partnership (Quarterly)",
+		});
+	});
+
+	it("maps legacy route names onto the current options and prices", () => {
+		expect([...partnerships.applicationPaths]).toEqual([
+			"Product review",
+			"90-day partnership",
+			"Annual plan",
+			"Not sure yet",
+		]);
+		expect(partnerships.applicationPathDeals).toEqual({
+			"Product review": { offer: "Review", valueUsd: 5000 },
+			"Not sure yet": { offer: "Review", valueUsd: 5000 },
+			"90-day partnership": {
+				offer: "Partnership (Quarterly)",
+				valueUsd: 12000,
+			},
+			"Annual plan": { offer: "Partnership (Yearly)", valueUsd: 40000 },
+		});
+		expect(partnerships.resolveApplicationPath("First-run review")).toBe(
+			"Product review",
+		);
+		expect(partnerships.resolveApplicationPath("Fit & Proof Review")).toBe(
+			"Product review",
+		);
+		expect(partnerships.resolveApplicationPath("Product review")).toBe(
+			"Product review",
+		);
+		expect(partnerships.resolveApplicationPath("Annual partnership")).toBe(
+			"Annual plan",
+		);
+		expect(partnerships.resolveApplicationPath("Adoption Advisory")).toBe(
+			"90-day partnership",
+		);
 	});
 
 	it("uses configured source attribution when the Deal attribute exists", async () => {

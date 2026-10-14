@@ -272,9 +272,25 @@ for (const fixture of fixtures) {
 		const form = host.querySelector("form");
 		assert.equal(form.method.toLowerCase(), "post");
 		assert.equal(form.hasAttribute("novalidate"), false);
-		assert.equal(form.getAttribute("aria-busy"), "true");
 		const fieldset = form.querySelector("fieldset");
-		assert.equal(fieldset.disabled, true);
+		if (fixture.partnership) {
+			assert.equal(
+				form.getAttribute("action"),
+				"?_action=partnership.applyForm",
+			);
+			assert.notEqual(form.getAttribute("aria-busy"), "true");
+			assert.equal(fieldset.disabled, false);
+			assert.deepEqual(
+				Array.from(
+					form.querySelectorAll("select[name=path] option"),
+					(option) => option.textContent,
+				),
+				["Product review", "90-day partnership", "Annual plan", "Not sure yet"],
+			);
+		} else {
+			assert.equal(form.getAttribute("aria-busy"), "true");
+			assert.equal(fieldset.disabled, true);
+		}
 		assert.ok(fieldset.getAttribute("aria-label"));
 		for (const control of form.querySelectorAll(
 			"input, select, textarea, button",
@@ -295,18 +311,21 @@ for (const fixture of fixtures) {
 			host.querySelector('[role="status"]').textContent,
 			/Loading .* form/,
 		);
-		const fallback = form.querySelector("noscript").innerHTML;
-		assert.match(fallback, /JavaScript is required/);
-		// Text-only noscript avoids SSR hydration mismatch when scripting-enabled
-		// HTML parsers treat noscript contents as raw text rather than elements.
-		assert.equal(form.querySelector("noscript").children.length, 0);
-		if (fixture.partnership)
+		if (fixture.partnership) {
+			assert.equal(form.querySelector("noscript"), null);
+			assert.doesNotMatch(host.textContent, /JavaScript is required/);
 			assert.ok(form.querySelector('a[href="mailto:david@rawkode.academy"]'));
-		else
+		} else {
+			const fallback = form.querySelector("noscript").innerHTML;
+			assert.match(fallback, /JavaScript is required/);
+			// Text-only noscript avoids SSR hydration mismatch when scripting-enabled
+			// HTML parsers treat noscript contents as raw text rather than elements.
+			assert.equal(form.querySelector("noscript").children.length, 0);
 			assert.match(
 				fallback,
 				/Course content remains available without signing up/,
 			);
+		}
 		assert.equal(calls.length, 0, "SSR must not invoke actions");
 	});
 
@@ -353,7 +372,7 @@ for (const fixture of fixtures) {
 					.dispatchEvent(new window.Event("focusin", { bubbles: true }));
 				assert.deepEqual(
 					capturedEvents.map(({ event }) => event),
-					["partnership_form_started"],
+					["enquiry_form_started"],
 				);
 			}
 			for (const input of form.querySelectorAll(
@@ -432,9 +451,11 @@ for (const fixture of fixtures) {
 				assert.equal(host.querySelector("form"), null);
 				assert.deepEqual(
 					capturedEvents.map(({ event }) => event),
-					["partnership_form_started", "partnership_form_submitted"],
+					["enquiry_form_started", "enquiry_form_submitted"],
 				);
 				assert.equal(capturedEvents[1].properties.form, "partnership_enquiry");
+				assert.equal(capturedEvents[1].properties.route, "Not sure yet");
+				assert.equal(capturedEvents[1].properties.offer, "Review");
 			} else {
 				assert.equal(host.querySelector("[type=checkbox]").checked, false);
 				assert.equal(host.querySelector("button[type=submit]").disabled, true);
@@ -484,7 +505,7 @@ test("partnership CRM fallback keeps the form and offers a prefilled email", asy
 		);
 		assert(fallback);
 		assert.match(decodeURIComponent(fallback.href), /Test Company/);
-		assert.deepEqual(capturedEvents, ["partnership_form_started"]);
+		assert.deepEqual(capturedEvents, ["enquiry_form_started"]);
 	} finally {
 		view.close();
 		delete window.posthog;
