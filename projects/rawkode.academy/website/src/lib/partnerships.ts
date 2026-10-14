@@ -95,7 +95,7 @@ export const partnershipHeroLede =
 	"Then decide what to fix, what to explain and what to teach, with David Flanagan, founder of Rawkode Academy.";
 
 export const partnershipStartingPoint =
-	"Every partnership starts with a product review. David tells you plainly where engineers get stuck with your product and what to fix first. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a quarterly or annual partnership.";
+	"Every partnership starts with a product review. David tells you plainly where engineers get stuck with your product and what to fix first. You get it within 10 business days, and we only invoice once it's delivered. If it's useful, you can go on to a 90-day or annual partnership.";
 
 export const organizationsStartingPoint = partnershipStartingPoint;
 
@@ -242,7 +242,7 @@ export const partnershipPlan: PartnershipStep[] = [
 	},
 	{
 		when: "Decide",
-		what: "If you sign a quarterly or annual partnership within 30 days of the review being delivered, the $5,000 you paid for it counts towards the cost. You can also stop there. Either way, you keep everything from the review.",
+		what: "If you sign a 90-day or annual partnership within 30 days of the review being delivered, the $5,000 you paid for it counts towards the cost. You can also stop there. Either way, you keep everything from the review.",
 	},
 	{
 		when: "Month 2",
@@ -329,11 +329,11 @@ export const partnershipTerms = [
 	{
 		title: "Renewal",
 		detail:
-			"Nothing renews automatically. A quarterly partnership ends after 90 days, and an annual partnership ends after a year, with a review each quarter. If you want to carry on, we agree it in writing.",
+			"Nothing renews automatically. The 90-day partnership ends after 90 days, and the annual partnership ends after a year. If you want to continue, we agree it in writing.",
 	},
 	{
 		title: "Invoicing",
-		detail: `The review is invoiced on delivery. ${partnershipReviewCredit} For the quarterly partnership, the remaining $7,000 is invoiced as two monthly payments of $3,500. The annual partnership is billed at $10,000 a quarter. All prices are fixed and in USD, with 30-day payment terms, and exclude VAT where it applies.`,
+		detail: `The review is invoiced on delivery. ${partnershipReviewCredit} For the 90-day partnership, the remaining $7,000 is invoiced as two monthly payments of $3,500. The annual partnership is billed at $10,000 a quarter. All prices are fixed and in USD, with 30-day payment terms, and exclude VAT where it applies.`,
 	},
 	{
 		title: "Paperwork",
