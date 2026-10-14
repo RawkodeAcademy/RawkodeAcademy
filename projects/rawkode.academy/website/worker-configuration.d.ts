@@ -8,9 +8,7 @@ interface __BaseEnv_Env {
 	CLOUDFLARE_ACCOUNT_ID: "0aeb879de8e3cdde5fb3d413025222ce";
 	NOTIFICATIONS_VAPID_PUBLIC_KEY: "BDgtSVztEoFZDmO0Iz-MpBNaYv8ukGIQQYS8SwUBt7vMLXQT60-zjsyMTY8opukUBHoptdgm2u-uonWthz6e1SE";
 	ATTIO_INBOUND_DEAL_STAGE: "In Progress";
-	ATTIO_INBOUND_DEAL_VALUE_USD: "5000";
 	ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: "offer";
-	ATTIO_INBOUND_DEAL_OFFER_OPTION: "Review";
 	ATTIO_SOURCE_ATTRIBUTE: "source";
 	ATTIO_SOURCE_VALUE: "Inbound: partnerships page";
 	EMOJI_REACTIONS: Fetcher /* platform-emoji-reactions-write-model */;
@@ -40,7 +38,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "CLOUDFLARE_ACCOUNT_ID" | "NOTIFICATIONS_VAPID_PUBLIC_KEY" | "ATTIO_INBOUND_DEAL_STAGE" | "ATTIO_INBOUND_DEAL_VALUE_USD" | "ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE" | "ATTIO_INBOUND_DEAL_OFFER_OPTION" | "ATTIO_SOURCE_ATTRIBUTE" | "ATTIO_SOURCE_VALUE">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "CLOUDFLARE_ACCOUNT_ID" | "NOTIFICATIONS_VAPID_PUBLIC_KEY" | "ATTIO_INBOUND_DEAL_STAGE" | "ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE" | "ATTIO_SOURCE_ATTRIBUTE" | "ATTIO_SOURCE_VALUE">> {}
 }
 
 // Begin runtime types

@@ -11,11 +11,6 @@ import {
 const ATTIO_API_URL = "https://api.attio.com/v2";
 const DEFAULT_DEAL_STAGE = "In Progress";
 const DEFAULT_OFFER_ATTRIBUTE = "offer";
-// Wrangler still publishes these as the single review deal. They are the
-// route-map defaults for a product review, so they must not replace the
-// quarterly and yearly deals. Any other configured value still wins.
-const HISTORICAL_REVIEW_VALUE_USD = 5000;
-const HISTORICAL_REVIEW_OFFER = "Review";
 const DEFAULT_SOURCE_ATTRIBUTE = "source";
 const DEFAULT_SOURCE_VALUE = "Inbound: partnerships page";
 const DEAL_OWNER = "david@rawkode.academy";
@@ -195,27 +190,15 @@ const saveEnquiry = async (
 		// Attio's built-in deal value inherits its currency from the
 		// workspace attribute, which David has configured as USD.
 		const mappedDeal = applicationPathDeals[input.path];
-		const configuredValue = Number(env.ATTIO_INBOUND_DEAL_VALUE_USD);
-		const dealValue =
-			Number.isFinite(configuredValue) &&
-			configuredValue > 0 &&
-			configuredValue !== HISTORICAL_REVIEW_VALUE_USD
-				? configuredValue
-				: mappedDeal.valueUsd;
 		const offerAttribute =
 			env.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE?.trim() || DEFAULT_OFFER_ATTRIBUTE;
-		const configuredOption = env.ATTIO_INBOUND_DEAL_OFFER_OPTION?.trim();
-		const offerOption =
-			configuredOption && configuredOption !== HISTORICAL_REVIEW_OFFER
-				? configuredOption
-				: mappedDeal.offer;
 		try {
 			await attioRequest(apiKey, "/objects/deals/records", "POST", {
 				name: `${input.company}: ${applicationPathLabels[input.path]}`,
 				stage: dealStage,
 				owner: DEAL_OWNER,
-				value: dealValue,
-				[offerAttribute]: offerOption,
+				value: mappedDeal.valueUsd,
+				[offerAttribute]: mappedDeal.offer,
 				...(hasSourceAttribute ? { [sourceAttribute]: sourceValue } : {}),
 				associated_people: [
 					{

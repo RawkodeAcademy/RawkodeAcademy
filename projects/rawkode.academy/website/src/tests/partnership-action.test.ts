@@ -8,9 +8,7 @@ let attioApiKey: string | undefined;
 const workerEnv = {
 	PARTNERSHIP_FORM_RATE_LIMITER: { limit },
 	ATTIO_INBOUND_DEAL_STAGE: undefined as string | undefined,
-	ATTIO_INBOUND_DEAL_VALUE_USD: undefined as string | undefined,
 	ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE: undefined as string | undefined,
-	ATTIO_INBOUND_DEAL_OFFER_OPTION: undefined as string | undefined,
 	ATTIO_SOURCE_ATTRIBUTE: undefined as string | undefined,
 	ATTIO_SOURCE_VALUE: undefined as string | undefined,
 };
@@ -100,9 +98,7 @@ const requestBody = (call: readonly unknown[]) =>
 beforeEach(() => {
 	attioApiKey = "attio-test-key";
 	workerEnv.ATTIO_INBOUND_DEAL_STAGE = undefined;
-	workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = undefined;
 	workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = undefined;
-	workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = undefined;
 	workerEnv.ATTIO_SOURCE_ATTRIBUTE = undefined;
 	workerEnv.ATTIO_SOURCE_VALUE = undefined;
 	limit.mockReset().mockResolvedValue({ success: true });
@@ -250,10 +246,8 @@ describe("partnership Attio action", () => {
 		expect(requestBody(deal).data.values.stage).toBe("Qualified");
 	});
 
-	it("uses the configured deal value and Offer attribute slug", async () => {
-		workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = "6500";
+	it("renames the Offer attribute without changing the route's offer or value", async () => {
 		workerEnv.ATTIO_INBOUND_DEAL_OFFER_ATTRIBUTE = "inbound_offer";
-		workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = "Custom review";
 		vi.mocked(fetch)
 			.mockResolvedValueOnce(recordResponse("company-id"))
 			.mockResolvedValueOnce(recordResponse("person-id"))
@@ -265,28 +259,20 @@ describe("partnership Attio action", () => {
 
 		const deal = vi.mocked(fetch).mock.calls[4]!;
 		expect(requestBody(deal).data.values).toMatchObject({
-			value: 6500,
-			inbound_offer: "Custom review",
+			value: 40000,
+			inbound_offer: "Partnership (Yearly)",
 		});
+		expect(requestBody(deal).data.values).not.toHaveProperty("offer");
 	});
 
-	it("keeps route pricing when the configured offer is still the review default", async () => {
-		workerEnv.ATTIO_INBOUND_DEAL_VALUE_USD = "5000";
-		workerEnv.ATTIO_INBOUND_DEAL_OFFER_OPTION = "Review";
-		vi.mocked(fetch)
-			.mockResolvedValueOnce(recordResponse("company-id"))
-			.mockResolvedValueOnce(recordResponse("person-id"))
-			.mockResolvedValueOnce(new Response(null, { status: 200 }))
-			.mockResolvedValueOnce(new Response(null, { status: 200 }))
-			.mockResolvedValueOnce(recordResponse("deal-id"));
-
-		await apply.handler({ ...input, path: "90-day partnership" }, context);
-
-		const deal = vi.mocked(fetch).mock.calls[4]!;
-		expect(requestBody(deal).data.values).toMatchObject({
-			value: 12000,
-			offer: "Partnership (Quarterly)",
-		});
+	it("does not let env overrides replace a route's offer or value", () => {
+		const actionSource = readFileSync("src/actions/partnership.ts", "utf8");
+		const astroConfig = readFileSync("astro.config.mts", "utf8");
+		const wrangler = readFileSync("wrangler.jsonc", "utf8");
+		for (const source of [actionSource, astroConfig, wrangler]) {
+			expect(source).not.toContain("ATTIO_INBOUND_DEAL_VALUE_USD");
+			expect(source).not.toContain("ATTIO_INBOUND_DEAL_OFFER_OPTION");
+		}
 	});
 
 	it("maps legacy route names onto the current options and prices", () => {

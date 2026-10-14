@@ -290,7 +290,7 @@ export const partnershipOffer: PartnershipOffer = {
 	],
 	excluded: [
 		"Building or fixing your product. Your team owns the changes.",
-		"Guaranteed viewers, leads or praise. You get straight answers and a labelled partner session, not a puff piece.",
+		"We don't promise a number of viewers, leads or positive coverage. You get straight answers and a labelled partner session, not a puff piece.",
 		"On-call support, extra sessions and maintaining the example after day 90, unless agreed separately.",
 	],
 	notes: [],
