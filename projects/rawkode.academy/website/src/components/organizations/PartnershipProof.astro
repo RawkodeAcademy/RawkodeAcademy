@@ -1,5 +1,5 @@
 ---
-import { getCollection } from "astro:content";
+import { getAllCollection, getCollection } from "@/lib/payload-content";
 import { getPublishedVideos } from "@/lib/content";
 import PartnerLogos from "@/components/organizations/PartnerLogos.astro";
 import { partnershipMethodNote } from "@/lib/partnerships";
@@ -13,24 +13,29 @@ const { compact = false } = Astro.props;
 
 const academyStats = await getSiteStats();
 const videos = await getPublishedVideos();
+const shows = await getAllCollection("shows");
+const showSlugById = new Map(shows.map((show) => [show.id, show.slug]));
 
-const showId = (value: unknown): string | null => {
+const showSlug = (value: unknown): string | null => {
 	if (!value) return null;
-	if (typeof value === "string") return value;
-	if (typeof value === "object" && "id" in value) {
-		const id = (value as { id?: unknown }).id;
-		return typeof id === "string" ? id : null;
+	if (typeof value === "string") return showSlugById.get(value) ?? value;
+	if (typeof value === "object") {
+		const reference = value as { id?: unknown; slug?: unknown };
+		if (typeof reference.slug === "string") return reference.slug;
+		if (typeof reference.id === "string") {
+			return showSlugById.get(reference.id) ?? reference.id;
+		}
 	}
 	return null;
 };
 
-const episodesFor = (id: string) =>
-	videos.filter((video) => showId(video.data.show) === id).length;
+const episodesFor = (slug: string) =>
+	videos.filter((video) => showSlug(video.data.show) === slug).length;
 
 const rawkodeLiveEpisodes = episodesFor("rawkode-live");
 // Public product walkthroughs where David works through a tool for the first time.
 const firstRunEpisodes = videos.filter((video) =>
-	String(video.data.slug ?? video.id).startsWith("hands-on-introduction"),
+	(video.slug || video.data.slug).startsWith("hands-on-introduction"),
 ).length;
 const klusteredEpisodes = episodesFor("klustered");
 
@@ -48,8 +53,8 @@ const context: Record<string, string> = {
 	"jens-neuse": "On David's public walkthrough of WunderGraph on Rawkode Live",
 };
 const testimonials = (await getCollection("testimonials"))
-	.filter((entry) => featuredIds.includes(entry.id))
-	.sort((a, b) => featuredIds.indexOf(a.id) - featuredIds.indexOf(b.id));
+	.filter((entry) => featuredIds.includes(entry.slug))
+	.sort((a, b) => featuredIds.indexOf(a.slug) - featuredIds.indexOf(b.slug));
 
 const examples = [
 	{
@@ -128,7 +133,7 @@ const examples = [
 		<div class="partnership-proof__quotes">
 			{testimonials.map((entry) => (
 				<figure>
-					{context[entry.id] && <p class="partnership-proof__context">{context[entry.id]}</p>}
+					{context[entry.slug] && <p class="partnership-proof__context">{context[entry.slug]}</p>}
 					<blockquote>{entry.data.quote.trim()}</blockquote>
 					<figcaption>
 						{entry.data.author.link ? (

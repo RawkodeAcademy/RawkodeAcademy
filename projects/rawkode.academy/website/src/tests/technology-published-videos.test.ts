@@ -47,7 +47,10 @@ describe("technology recording publication boundary", () => {
 					(technology) => technology.id === options?.technologyId,
 				),
 			);
-			return (filter ? matched.filter(filter) : matched) as never;
+			const selected = filter
+				? matched.filter((video) => filter(video as never))
+				: matched;
+			return selected as never;
 		});
 		const result = await getVideosForTechnology("acorn/index");
 		expect(result.map((video) => video.slug)).toEqual(["boundary", "old"]);
