@@ -379,6 +379,43 @@ describe("Studio to Payload review handoff", () => {
 		}
 	});
 
+	it("does not start a second hls-approved job while a promotion lease is held", async () => {
+		const h = await setup();
+		await h.mark({}, false);
+		const second = "recording-2";
+		const secondKey = `studio/recordings/session-1/${second}/source.webm`;
+		const secondReady = `studio/recordings/session-1/${second}/ready.json`;
+		h.content.set(secondKey, "y".repeat(10), "source-etag-2");
+		await markStudioRecordingReady(h.env, operator, {
+			recordingId: second,
+			sessionId: "session-1",
+			sourceEtag: "source-etag-2",
+			sourceFormat: "webm",
+			sourceKey: secondKey,
+		});
+		const set = (id: string, sql: string) =>
+			h.d1.sqlite.prepare(`UPDATE studio_recordings SET ${sql} WHERE recording_id = ?`).run(id);
+		set(recordingId, "review_state = 'published', review_publication_id = 'publication-1', review_published_at = 100, review_next_attempt_at = NULL");
+		set(second, "review_state = 'published', review_publication_id = 'publication-2', review_published_at = 100, review_next_attempt_at = NULL");
+		const original = h.content.bucket.put.bind(h.content.bucket);
+		let secondResult: Promise<unknown> = Promise.resolve(null);
+		h.content.bucket.put = async (key: string, value: string, options?: R2PutOptions) => {
+			const saved = await original(key, value, options);
+			if (key === readyKey && value.includes('"outputMode": "hls-approved"')) {
+				secondResult = requestReviewAdoption(h.env, second, { now: 20_000 });
+				await secondResult;
+			}
+			return saved;
+		};
+		expect(await requestReviewAdoption(h.env, recordingId, { now: 20_000 })).toEqual({ status: "promoted" });
+		await expect(secondResult).resolves.toEqual({ status: "published" });
+		expect(h.content.text(secondReady) ?? "").not.toContain("hls-approved");
+		expect(h.d1.row("SELECT review_state FROM studio_recordings WHERE recording_id = ?", second)?.review_state).toBe("published");
+		expect(() => set(second, "review_state = 'promoted', review_next_attempt_at = 10")).toThrow(/UNIQUE constraint failed/);
+		set(recordingId, "review_next_attempt_at = NULL");
+		expect(() => set(second, "review_state = 'promoted', review_next_attempt_at = 10")).not.toThrow();
+	});
+
 	it("promotes one take per video at a time, and the newest publication wins", async () => {
 		const h = await setup();
 		await h.mark({}, false);

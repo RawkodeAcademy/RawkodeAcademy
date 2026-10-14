@@ -1,5 +1,6 @@
 import { outputDir } from "./globals.ts";
 import {
+  deletePrivateDestinationObjects,
   downloadFromS3,
   downloadFromS3ToFile,
   downloadUrl,
@@ -245,6 +246,12 @@ async function runHls(): Promise<void> {
     secretKey: r2Secrets.secretAccessKey,
     pathPrefix: outputPrefix,
   });
+
+  // v1 objects already at this prefix survive rclone copy. Drop only the raw
+  // files; the approved renditions and original.mp3 stay.
+  if (approved) {
+    await deletePrivateDestinationObjects(s3, r2Secrets.bucket, outputPrefix);
+  }
 }
 
 try {

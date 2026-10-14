@@ -10,7 +10,7 @@ Cloud Run job `transcoding-job` (project `rawkode-academy-production`, region `e
 | --- | --- | --- | --- |
 | `hls` (default) | v1 | `SOURCE_KEY`, or `videos/{id}/original.mkv` | `videos/{id}/`: HLS renditions, `original.mp3`, the source and `original.mkv`, `transcode-status.json`. Unchanged. |
 | `review-proxy` | v2, `visibility: "review"` | `SOURCE_KEY` with `If-Match: SOURCE_ETAG` | One private `studio/recordings/{s}/{r}/review/{execution}-a{attempt}/review.mp4` (720p H.264/AAC, fast start, `If-None-Match: *`), then `review/transcode-status.json` with a `review` block. |
-| `hls-approved` | v2, `visibility: "public"` | `SOURCE_KEY` with `If-Match: SOURCE_ETAG` | `videos/{id}/`: HLS renditions, `original.mp3` and `transcode-status.json`. The source and `original.mkv` stay in a private `work/` directory and are never uploaded. |
+| `hls-approved` | v2, `visibility: "public"` | `SOURCE_KEY` with `If-Match: SOURCE_ETAG` | `videos/{id}/`: HLS renditions, `original.mp3` and `transcode-status.json`. The source and `original.mkv` stay in a private `work/` directory and are never uploaded. `source.*` and `original.mkv` already at that prefix are deleted before the job completes. |
 
 `review-proxy` fails early when the source is larger than `MAX_REVIEW_SOURCE_BYTES` (default 8 GiB) and when the proxy is larger than 5 GiB, the single PutObject limit.
 

@@ -1999,7 +1999,9 @@ export async function saveReviewRecordingMarker(
 		);
 	}
 
-	await db
+	// Same statement as the row write: a public handoff that already inserted its
+	// row and has not yet written ready.json cannot lose the race to this insert.
+	const inserted = await db
 		.prepare(
 			`INSERT INTO studio_recordings (
 				recording_id,
@@ -2021,13 +2023,15 @@ export async function saveReviewRecordingMarker(
 				created_at,
 				updated_at
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'marker-pending', 'review', ?, ?, ?, 'pending', ?, unixepoch(), unixepoch())
+			SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 'marker-pending', 'review', ?, ?, ?, 'pending', ?, unixepoch(), unixepoch()
+			 WHERE NOT ${freshPublicHandoffExistsSql("?", "?")}
 			ON CONFLICT(recording_id) DO UPDATE SET
 				status = 'marker-pending',
 				updated_at = excluded.updated_at
 			WHERE studio_recordings.visibility = 'review'
 			  AND studio_recordings.review_state = 'pending'
-			  AND studio_recordings.source_etag = excluded.source_etag`,
+			  AND studio_recordings.source_etag = excluded.source_etag
+			  AND NOT ${freshPublicHandoffExistsSql("excluded.video_id", "excluded.recording_id")}`,
 		)
 		.bind(
 			marker.recordingId,
@@ -2047,8 +2051,19 @@ export async function saveReviewRecordingMarker(
 				marker.sourceEtag,
 			),
 			options.requestedBy,
+			marker.videoId,
+			marker.recordingId,
 		)
 		.run();
+	if (writeCount(inserted) === 0) {
+		if (await freshPublicHandoffBlocks(db, marker.videoId, marker.recordingId)) {
+			throw new StudioRecordingConflictError(
+				`Recording ${marker.recordingId} is blocked by a public handoff`,
+				"public-in-progress",
+			);
+		}
+		throw new Error(`Recording ${marker.recordingId} was already handed off`);
+	}
 	const saved = await getStudioReviewRecording(env, marker.recordingId);
 	if (
 		saved?.visibility !== "review" ||
@@ -2082,7 +2097,77 @@ export async function saveReviewRecordingMarker(
 	return { readyMarkerKey, sourceVerified: true };
 }
 
-export class StudioRecordingConflictError extends Error {}
+// How long a public handoff may sit in marker-pending before a review insert is
+// allowed to proceed. The public path refreshes this immediately before it writes
+// ready.json, so the two statements cannot both commit.
+export const publicHandoffLeaseSeconds = 120;
+
+function unpromotedReviewExistsSql(videoSql: string, recordingSql: string): string {
+	return `EXISTS (
+		    SELECT 1
+		      FROM studio_recordings AS review_block
+		     WHERE review_block.video_id = ${videoSql}
+		       AND review_block.recording_id <> ${recordingSql}
+		       AND review_block.visibility = 'review'
+		       AND (
+		         review_block.review_state IS NULL
+		         OR review_block.review_state NOT IN ('promoted', 'withdrawn')
+		       )
+		  )`;
+}
+
+function freshPublicHandoffExistsSql(videoSql: string, recordingSql: string): string {
+	return `EXISTS (
+		    SELECT 1
+		      FROM studio_recordings AS public_block
+		     WHERE public_block.video_id = ${videoSql}
+		       AND public_block.recording_id <> ${recordingSql}
+		       AND public_block.visibility = 'public'
+		       AND public_block.status = 'marker-pending'
+		       AND public_block.updated_at >= unixepoch() - ${publicHandoffLeaseSeconds}
+		  )`;
+}
+
+async function unpromotedReviewBlocks(
+	db: D1Database,
+	videoId: string,
+	recordingId: string,
+): Promise<boolean> {
+	const row = await db
+		.prepare(`SELECT 1 AS blocked WHERE ${unpromotedReviewExistsSql("?", "?")} LIMIT 1`)
+		.bind(videoId, recordingId)
+		.first();
+	return row !== null;
+}
+
+async function freshPublicHandoffBlocks(
+	db: D1Database,
+	videoId: string,
+	recordingId: string,
+): Promise<boolean> {
+	const row = await db
+		.prepare(`SELECT 1 AS blocked WHERE ${freshPublicHandoffExistsSql("?", "?")} LIMIT 1`)
+		.bind(videoId, recordingId)
+		.first();
+	return row !== null;
+}
+
+function writeCount(result: D1Result<unknown>): number {
+	return result.meta?.changes ?? result.meta?.rows_written ?? 0;
+}
+
+export class StudioRecordingConflictError extends Error {
+	readonly reason: "taken" | "review-in-progress" | "public-in-progress";
+
+	constructor(
+		message: string,
+		reason: "taken" | "review-in-progress" | "public-in-progress" = "taken",
+	) {
+		super(message);
+		this.name = "StudioRecordingConflictError";
+		this.reason = reason;
+	}
+}
 
 export async function saveRecordingReadyMarker(
 	env: StudioEnv,
@@ -2122,7 +2207,8 @@ export async function saveRecordingReadyMarker(
 					created_at,
 					updated_at
 				)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'marker-pending', unixepoch(), unixepoch())
+				SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 'marker-pending', unixepoch(), unixepoch()
+				 WHERE NOT ${unpromotedReviewExistsSql("?", "?")}
 				ON CONFLICT(recording_id) DO UPDATE SET
 					session_id = excluded.session_id,
 					video_id = excluded.video_id,
@@ -2133,9 +2219,10 @@ export async function saveRecordingReadyMarker(
 					output_prefix = excluded.output_prefix,
 					ready_marker_key = excluded.ready_marker_key,
 					status = 'marker-pending',
-					updated_at = excluded.updated_at
+					updated_at = unixepoch()
 				WHERE studio_recordings.visibility = 'public'
-				  AND studio_recordings.session_id = excluded.session_id`,
+				  AND studio_recordings.session_id = excluded.session_id
+				  AND NOT ${unpromotedReviewExistsSql("excluded.video_id", "excluded.recording_id")}`,
 			)
 			.bind(
 				marker.recordingId,
@@ -2147,13 +2234,53 @@ export async function saveRecordingReadyMarker(
 				marker.sourceFormat,
 				marker.outputPrefix,
 				readyMarkerKey,
+				marker.videoId,
+				marker.recordingId,
 			)
 			.run();
 		// A recording ID owned by another session, or by a review take, is never
-		// taken over by a public marker: the guarded upsert writes nothing.
-		if ((upserted.meta?.changes ?? 1) === 0) {
+		// taken over by a public marker. An unpromoted review for this video fails
+		// the same statement, so it cannot land between a preflight read and this write.
+		if (writeCount(upserted) === 0) {
+			if (await unpromotedReviewBlocks(db, marker.videoId, marker.recordingId)) {
+				throw new StudioRecordingConflictError(
+					`Recording ${marker.recordingId} is blocked by client review`,
+					"review-in-progress",
+				);
+			}
 			throw new StudioRecordingConflictError(
 				`Recording ${marker.recordingId} belongs to another session or review take`,
+			);
+		}
+		// Refresh the lease and re-check in one statement immediately before the
+		// marker write. A review row that arrived after the insert wins.
+		const leased = await db
+			.prepare(
+				`UPDATE studio_recordings
+				    SET updated_at = unixepoch()
+				  WHERE recording_id = ?
+				    AND session_id = ?
+				    AND visibility = 'public'
+				    AND status = 'marker-pending'
+				    AND NOT ${unpromotedReviewExistsSql("studio_recordings.video_id", "studio_recordings.recording_id")}`,
+			)
+			.bind(marker.recordingId, marker.studioSessionId)
+			.run();
+		if (writeCount(leased) === 0) {
+			await db
+				.prepare(
+					`UPDATE studio_recordings
+					    SET status = 'ready',
+					        updated_at = 0
+					  WHERE recording_id = ?
+					    AND visibility = 'public'
+					    AND status = 'marker-pending'`,
+				)
+				.bind(marker.recordingId)
+				.run();
+			throw new StudioRecordingConflictError(
+				`Recording ${marker.recordingId} is blocked by client review`,
+				"review-in-progress",
 			);
 		}
 	}

@@ -1146,6 +1146,8 @@ export async function markStudioRecordingReady(
 				409,
 			);
 		}
+		// Fast rejection. saveRecordingReadyMarker repeats the predicate in the
+		// same statement as the row write, and again immediately before ready.json.
 		if (await hasUnpromotedReviewRecording(env, videoId)) {
 			throw new StudioOperationError(
 				"conflict",
@@ -1171,7 +1173,9 @@ export async function markStudioRecordingReady(
 		if (error instanceof StudioRecordingConflictError) {
 			throw new StudioOperationError(
 				"conflict",
-				"This recording ID was already handed off.",
+				error.reason === "review-in-progress"
+					? "This video has a recording in client review; publish it through review or withdraw the take first."
+					: "This recording ID was already handed off.",
 				409,
 			);
 		}
@@ -1310,9 +1314,21 @@ async function markReviewRecordingReady(
 			};
 		}
 	}
-	const handoff = await saveReviewRecordingMarker(env, marker, {
-		requestedBy: reviewRequestedBy(user),
-	});
+	let handoff: Awaited<ReturnType<typeof saveReviewRecordingMarker>>;
+	try {
+		handoff = await saveReviewRecordingMarker(env, marker, {
+			requestedBy: reviewRequestedBy(user),
+		});
+	} catch (error) {
+		if (error instanceof StudioRecordingConflictError && error.reason === "public-in-progress") {
+			throw new StudioOperationError(
+				"conflict",
+				"This video has a public recording handoff in progress; retry shortly.",
+				409,
+			);
+		}
+		throw error;
+	}
 	// Fire and forget: the response never waits on Payload. Without defer, the
 	// 5 minute cron picks the recording up.
 	options.defer?.(

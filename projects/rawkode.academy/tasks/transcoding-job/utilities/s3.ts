@@ -1,8 +1,10 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   GetObjectCommandInput,
   HeadObjectCommand,
   HeadObjectCommandInput,
+  ListObjectsV2Command,
   NoSuchKey,
   PutObjectCommand,
   PutObjectCommandInput,
@@ -11,7 +13,13 @@ import {
 import { existsSync, expandGlob } from "@std/fs";
 import { join, relative } from "@std/path";
 import { createReadStream } from "node:fs";
-import { quoteEtag, sameEtag } from "./review.ts";
+import {
+  approvedOutputPrefix,
+  isPrivateWorkFile,
+  quoteEtag,
+  sameEtag,
+  selectPrivateDestinationKeys,
+} from "./review.ts";
 
 export const downloadFromS3 = async (
   s3: S3Client,
@@ -235,4 +243,49 @@ export const uploadPrivateOnce = async (
     throw new Error(`Uploaded ${remoteKey} does not match the local file`);
   }
   return { bytes, etag: head.ETag.replace(/^"|"$/g, "") };
+};
+
+// Removes raw source.* and original.mkv left under videos/{id}/ by an earlier v1
+// run. rclone copy does not delete destination-only objects, so an approved
+// promotion has to delete those keys explicitly. Nothing outside the denylist
+// is eligible, and a key that fails the denylist throws before any delete.
+export const deletePrivateDestinationObjects = async (
+  s3: S3Client,
+  bucketName: string,
+  prefix: string,
+): Promise<string[]> => {
+  const normalized = approvedOutputPrefix(prefix);
+  const listed: string[] = [];
+  let continuationToken: string | undefined;
+  do {
+    const page = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: normalized,
+        ContinuationToken: continuationToken,
+      }),
+    );
+    for (const object of page.Contents ?? []) {
+      if (object.Key) listed.push(object.Key);
+    }
+    continuationToken = page.IsTruncated
+      ? page.NextContinuationToken
+      : undefined;
+  } while (continuationToken);
+
+  const doomed = selectPrivateDestinationKeys(normalized, listed);
+  for (const key of doomed) {
+    const name = key.slice(normalized.length);
+    if (name.includes("/") || !isPrivateWorkFile(name)) {
+      throw new Error(`Refusing to delete ${key}`);
+    }
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      }),
+    );
+    console.log(`Deleted private destination object s3://${bucketName}/${key}`);
+  }
+  return doomed;
 };

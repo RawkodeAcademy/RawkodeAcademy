@@ -4,6 +4,7 @@
 //   once under an execution-scoped key. No HLS and no public objects.
 // - "hls-approved": public HLS for an approved Studio review recording. The raw
 //   source and original.mkv stay in a private work directory and are never uploaded.
+//   source.* and original.mkv already published under the video prefix are deleted.
 export type OutputMode = "hls" | "review-proxy" | "hls-approved";
 
 export function parseOutputMode(value: string | undefined): OutputMode {
@@ -89,6 +90,38 @@ export function reviewFfmpegArgs(input: string, output: string): string[] {
 // Only the approved HLS rendition and its derived audio become public.
 export function isPrivateWorkFile(name: string): boolean {
   return /^source\.[a-z0-9]+$/.test(name) || name === "original.mkv";
+}
+
+// Approved output is videos/{id}/, and {id} may itself contain slashes.
+const approvedOutputPrefixPattern = /^videos\/(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)+$/;
+
+export function approvedOutputPrefix(prefix: string): string {
+  const trimmed = prefix.trim().replace(/^\/+/, "");
+  const withSlash = trimmed.endsWith("/") ? trimmed : `${trimmed}/`;
+  if (
+    withSlash.includes("..") ||
+    withSlash.includes("//") ||
+    !approvedOutputPrefixPattern.test(withSlash)
+  ) {
+    throw new Error(
+      `Refusing to delete private files outside an approved video prefix: ${prefix}`,
+    );
+  }
+  return withSlash;
+}
+
+// Destination keys an approved promotion must remove. Only direct children of the
+// video prefix that are raw source or original.mkv; renditions and original.mp3 stay.
+export function selectPrivateDestinationKeys(
+  prefix: string,
+  keys: readonly string[],
+): string[] {
+  const normalized = approvedOutputPrefix(prefix);
+  return keys.filter((key) => {
+    if (!key.startsWith(normalized)) return false;
+    const name = key.slice(normalized.length);
+    return name.length > 0 && !name.includes("/") && isPrivateWorkFile(name);
+  });
 }
 
 export async function sha256Stream(

@@ -3201,6 +3201,86 @@ describe("Studio client review recordings", () => {
 		expect(h.row()).toMatchObject({ output_prefix: "videos/video-1/", review_state: "promoted" });
 	});
 
+	it("refuses a public marker when a review row lands after the preflight", async () => {
+		const h = await reviewHarness(false);
+		const db = h.env.STUDIO_DB!;
+		const prepare = db.prepare.bind(db);
+		let armed = true;
+		h.env.STUDIO_DB = {
+			prepare(sql: string) {
+				if (
+					armed &&
+					sql.includes("INSERT INTO studio_recordings") &&
+					sql.includes("review_block")
+				) {
+					armed = false;
+					h.d1.sqlite.prepare(
+						`INSERT INTO studio_recordings (
+							recording_id, session_id, video_id, source_bucket, source_key, source_etag,
+							source_format, output_prefix, ready_marker_key, status, visibility, review_state
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready', 'review', 'pending')`,
+					).run(
+						"recording-review",
+						"session-1",
+						"video-1",
+						"rawkode-academy-content",
+						"studio/recordings/session-1/recording-review/source.webm",
+						"review-etag",
+						"webm",
+						"studio/recordings/session-1/recording-review/review/",
+						"studio/recordings/session-1/recording-review/ready.json",
+					);
+				}
+				return prepare(sql);
+			},
+		} as typeof db;
+		await expect(h.mark()).rejects.toMatchObject({ status: 409 });
+		expect(h.content.text(reviewReadyKey)).toBeNull();
+		expect(h.d1.row("SELECT recording_id FROM studio_recordings WHERE visibility = 'public'")).toBeUndefined();
+	});
+
+	it("does not adopt a review take while a public marker write holds the lease", async () => {
+		const h = await reviewHarness(false);
+		const original = h.content.bucket.put.bind(h.content.bucket);
+		h.content.bucket.put = async (key: string, value: string, options?: R2PutOptions) => {
+			const saved = await original(key, value, options);
+			if (String(key).endsWith("/ready.json")) {
+				await h.addSession("session-2", true);
+				const sourceKey = "studio/recordings/session-2/recording-2/source.webm";
+				h.content.set(sourceKey, "y".repeat(32), "source-etag-2");
+				await expect(markStudioRecordingReady(h.env, user, {
+					recordingId: "recording-2",
+					sessionId: "session-2",
+					sourceEtag: "source-etag-2",
+					sourceFormat: "webm",
+					sourceKey,
+				})).rejects.toMatchObject({ status: 409 });
+				expect(h.content.text("studio/recordings/session-2/recording-2/ready.json")).toBeNull();
+			}
+			return saved;
+		};
+		await expect(h.mark()).resolves.toMatchObject({ contractVersion: 1 });
+		expect(h.content.text(reviewReadyKey)).toContain('"contractVersion": 1');
+	});
+
+	it("adopts a review take after a public handoff lease expires without a marker write", async () => {
+		const h = await reviewHarness(false);
+		await h.mark();
+		h.d1.sqlite.prepare(
+			"UPDATE studio_recordings SET status = 'marker-pending', updated_at = 0 WHERE recording_id = 'recording-1'",
+		).run();
+		await h.addSession("session-2", true);
+		const sourceKey = "studio/recordings/session-2/recording-2/source.webm";
+		h.content.set(sourceKey, "y".repeat(32), "source-etag-2");
+		await expect(markStudioRecordingReady(h.env, user, {
+			recordingId: "recording-2",
+			sessionId: "session-2",
+			sourceEtag: "source-etag-2",
+			sourceFormat: "webm",
+			sourceKey,
+		})).resolves.toMatchObject({ visibility: "review" });
+	});
+
 	it("refuses a public marker for a video with an unpromoted review recording", async () => {
 		const h = await reviewHarness(true);
 		await h.mark();

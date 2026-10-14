@@ -1,5 +1,6 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import {
+  approvedOutputPrefix,
   DEFAULT_MAX_REVIEW_SOURCE_BYTES,
   isPrivateWorkFile,
   maxReviewSourceBytes,
@@ -8,6 +9,7 @@ import {
   reviewFfmpegArgs,
   reviewOutputKey,
   sameEtag,
+  selectPrivateDestinationKeys,
   sha256Stream,
 } from "./review.ts";
 
@@ -66,6 +68,32 @@ Deno.test("never publishes the raw source or original.mkv for approved recording
   assertEquals(isPrivateWorkFile("original.mkv"), true);
   assertEquals(isPrivateWorkFile("original.mp3"), false);
   assertEquals(isPrivateWorkFile("stream.m3u8"), false);
+});
+
+Deno.test("deletes only leftover raw files directly under the approved video prefix", () => {
+  assertEquals(approvedOutputPrefix("videos/video-1"), "videos/video-1/");
+  assertEquals(
+    approvedOutputPrefix("/videos/rawkode-live/example/"),
+    "videos/rawkode-live/example/",
+  );
+  const keys = [
+    "videos/rawkode-live/example/source.webm",
+    "videos/rawkode-live/example/source.mkv",
+    "videos/rawkode-live/example/original.mkv",
+    "videos/rawkode-live/example/original.mp3",
+    "videos/rawkode-live/example/stream.m3u8",
+    "videos/rawkode-live/example/720p/source.webm",
+    "videos/other/source.webm",
+    "studio/recordings/session/recording/source.webm",
+  ];
+  assertEquals(selectPrivateDestinationKeys("videos/rawkode-live/example/", keys), [
+    "videos/rawkode-live/example/source.webm",
+    "videos/rawkode-live/example/source.mkv",
+    "videos/rawkode-live/example/original.mkv",
+  ]);
+  assertThrows(() => selectPrivateDestinationKeys("studio/recordings/session/", keys));
+  assertThrows(() => selectPrivateDestinationKeys("videos/../other/", keys));
+  assertThrows(() => approvedOutputPrefix("videos/"));
 });
 
 Deno.test("hashes chunks as a stream", async () => {

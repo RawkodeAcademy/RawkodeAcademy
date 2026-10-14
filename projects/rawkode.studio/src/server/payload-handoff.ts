@@ -287,15 +287,11 @@ export async function retriggerTranscode(
 	return true;
 }
 
-// One public HLS run per video at a time: two takes promoted together would
-// sync different renditions into the same videos/{id}/ prefix. The newest
-// publication wins; an older published take is withdrawn as superseded.
-async function promotionGate(
+async function newerPublication(
 	config: HandoffConfig,
 	row: StudioReviewRecordingRow,
-	now: number,
-): Promise<ReviewHandoffResult | null> {
-	const newer = await config.db
+): Promise<{ recording_id: string } | null> {
+	return await config.db
 		.prepare(
 			`SELECT recording_id
 			   FROM studio_recordings
@@ -308,15 +304,13 @@ async function promotionGate(
 		)
 		.bind(row.video_id, row.recording_id, row.review_published_at ?? 0)
 		.first<{ recording_id: string }>();
-	if (newer) {
-		await update(config.db, row.recording_id, {
-			review_state: "withdrawn",
-			review_last_error: `Superseded by the newer publication of ${newer.recording_id}`,
-			review_next_attempt_at: null,
-		});
-		return { status: "withdrawn" };
-	}
-	const inFlight = await config.db
+}
+
+async function inFlightPromotion(
+	config: HandoffConfig,
+	row: StudioReviewRecordingRow,
+): Promise<{ recording_id: string } | null> {
+	return await config.db
 		.prepare(
 			`SELECT recording_id
 			   FROM studio_recordings
@@ -329,12 +323,104 @@ async function promotionGate(
 		)
 		.bind(row.video_id, row.recording_id)
 		.first<{ recording_id: string }>();
-	if (inFlight) {
+}
+
+async function releasePromotionClaim(
+	config: HandoffConfig,
+	row: StudioReviewRecordingRow,
+): Promise<void> {
+	await config.db
+		.prepare(
+			`DELETE FROM studio_promotion_claims
+			  WHERE video_id = ?
+			    AND recording_id = ?`,
+		)
+		.bind(row.video_id, row.recording_id)
+		.run();
+}
+
+// One row per video. The same recording may renew. A different recording may take
+// the row when its lease has expired and the holder is not mid-transcode, or when
+// the holder's public transcode has finished (review_next_attempt_at cleared).
+async function claimVideoPromotion(
+	config: HandoffConfig,
+	row: StudioReviewRecordingRow,
+	now: number,
+): Promise<boolean> {
+	const claimed = await config.db
+		.prepare(
+			`INSERT INTO studio_promotion_claims (video_id, recording_id, lease_until)
+			 VALUES (?, ?, ?)
+			 ON CONFLICT(video_id) DO UPDATE SET
+			   recording_id = excluded.recording_id,
+			   lease_until = excluded.lease_until
+			 WHERE studio_promotion_claims.recording_id = excluded.recording_id
+			    OR (
+			      studio_promotion_claims.lease_until <= ?
+			      AND NOT EXISTS (
+			        SELECT 1
+			          FROM studio_recordings AS holder
+			         WHERE holder.recording_id = studio_promotion_claims.recording_id
+			           AND holder.video_id = studio_promotion_claims.video_id
+			           AND holder.review_state = 'promoted'
+			           AND holder.review_next_attempt_at IS NOT NULL
+			      )
+			    )
+			    OR EXISTS (
+			      SELECT 1
+			        FROM studio_recordings AS holder
+			       WHERE holder.recording_id = studio_promotion_claims.recording_id
+			         AND holder.video_id = studio_promotion_claims.video_id
+			         AND holder.review_state = 'promoted'
+			         AND holder.review_next_attempt_at IS NULL
+			    )
+			 RETURNING recording_id`,
+		)
+		.bind(row.video_id, row.recording_id, now + transcodeStallSeconds, now)
+		.first<{ recording_id: string }>();
+	return claimed?.recording_id === row.recording_id;
+}
+
+async function withdrawSuperseded(
+	config: HandoffConfig,
+	row: StudioReviewRecordingRow,
+	newerId: string,
+): Promise<void> {
+	await update(config.db, row.recording_id, {
+		review_state: "withdrawn",
+		review_last_error: `Superseded by the newer publication of ${newerId}`,
+		review_next_attempt_at: null,
+	});
+}
+
+// One public HLS run per video. The claim is keyed by video and acquired before
+// either ready marker is rewritten, so two published takes cannot both start an
+// hls-approved job. The newest publication still wins; an older one is withdrawn.
+async function promotionGate(
+	config: HandoffConfig,
+	row: StudioReviewRecordingRow,
+	now: number,
+): Promise<ReviewHandoffResult | null> {
+	const newer = await newerPublication(config, row);
+	if (newer) {
+		await withdrawSuperseded(config, row, newer.recording_id);
+		return { status: "withdrawn" };
+	}
+	if (!(await claimVideoPromotion(config, row, now))) {
+		const inFlight = await inFlightPromotion(config, row);
 		await update(config.db, row.recording_id, {
-			review_last_error: `Waiting for the public transcode of ${inFlight.recording_id}`,
+			review_last_error: inFlight
+				? `Waiting for the public transcode of ${inFlight.recording_id}`
+				: "Waiting for the public transcode of another take of this video",
 			review_next_attempt_at: now + 300,
 		});
 		return { status: "published" };
+	}
+	const newerNow = await newerPublication(config, row);
+	if (newerNow) {
+		await releasePromotionClaim(config, row);
+		await withdrawSuperseded(config, row, newerNow.recording_id);
+		return { status: "withdrawn" };
 	}
 	return null;
 }
@@ -354,6 +440,7 @@ export async function promoteRecording(
 	);
 	const etag = await writeMarker(config, row, marker);
 	if (!etag) {
+		await releasePromotionClaim(config, row);
 		await park(config, row, now, "Ready marker changed; promotion refused");
 		return false;
 	}
