@@ -88,6 +88,42 @@ test('summary response projects card media and hides provenance and future-live 
   assert.equal(JSON.stringify(assetQuery.where).includes('_status'), false, 'static-assets has no draft status column')
 })
 
+test('summary collection lookups run concurrently after the primary page query', async () => {
+  let inFlight = 0
+  let maximumInFlight = 0
+  const payload = {
+    async find(args: Record<string, unknown>) {
+      inFlight += 1
+      maximumInFlight = Math.max(maximumInFlight, inFlight)
+      try {
+        await new Promise(resolve => setTimeout(resolve, 10))
+        if (args.collection === 'video-publications') return { docs: [], hasNextPage: false }
+        if (args.collection === 'static-assets') return { docs: [], hasNextPage: false }
+        if (args.collection === 'videos' && args.sort === 'publishedAt') {
+          return { docs: [{ id: 'future-video', publishedAt: '2026-10-11T12:00:00.000Z' }], hasNextPage: false }
+        }
+        if (args.collection === 'videos') {
+          return { docs: [{
+            id: videoID, slug: 'parallel-video', title: 'Parallel video', type: 'recorded',
+            publishedAt: '2026-10-09T12:00:00.000Z', _status: 'published', tombstone: false,
+            cover: { image: './images/cover.webp' },
+            sourcePath: 'videos/parallel-video.mdx',
+            sourceAssets: [{ relativePath: 'videos/images/cover.webp' }],
+          }], totalDocs: 1, hasNextPage: false }
+        }
+        return { docs: [], hasNextPage: false }
+      } finally {
+        inFlight -= 1
+      }
+    },
+  }
+  const response = await collectionResponse(new Request('https://payload.internal/v1/collections/videos?limit=1'), payload as never, now)
+  const body = await response.json() as { nextReleaseAt: string | null }
+  assert.equal(response.status, 200)
+  assert.equal(body.nextReleaseAt, '2026-10-11T12:00:00.000Z')
+  assert.equal(maximumInFlight, 3, 'overlay, asset, and release reads should overlap')
+})
+
 test('released-only lists return exact totals and keep the next scheduled release boundary', async () => {
   const queries: Record<string, unknown>[] = []
   const payload = {
