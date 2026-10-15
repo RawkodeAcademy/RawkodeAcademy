@@ -25,6 +25,7 @@ export const navigationGroups = [
 		{ label: "Partnerships", href: "/organizations/partnerships" },
 		{ label: "Share your project", href: "/maintainers/share-your-project" },
 		{ label: "CNIcon", href: "/games/cnicon" },
+		{ label: "Kubele", href: "/games/kubele" },
 		{ label: "Join the Academy", href: "/#join" },
 	] },
 	{ label: "Academy", items: [
