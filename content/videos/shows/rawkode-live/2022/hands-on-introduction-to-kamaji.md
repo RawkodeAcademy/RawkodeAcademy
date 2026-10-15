@@ -3,7 +3,7 @@ id: iu73cnmo4xit3a5g7olhizfo
 slug: hands-on-introduction-to-kamaji
 title: Hands-on Introduction to Kamaji
 description: >-
-  Adriano Pezzuto walks through Kamaji, running tenant Kubernetes control planes
+  Dario Tranchitella walks through Kamaji, running tenant Kubernetes control planes
   as pods inside a management cluster, then provisions a tenant and joins AWS
   worker nodes via kubeadm and Cluster API conventions.
 whatYouWillLearn:
@@ -101,7 +101,7 @@ chapters:
     title: Conclusion and Edge/IoT Discussion
 duration: 4433
 guests:
-  - bsctl
+  - prometherion
 resources:
   - title: Kamaji
     type: url
