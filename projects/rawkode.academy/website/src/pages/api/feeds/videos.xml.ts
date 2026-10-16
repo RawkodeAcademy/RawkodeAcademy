@@ -26,7 +26,19 @@ export async function GET(context: APIContext) {
 			site,
 			items: sortedVideos.map((video) => {
 				const duration =
-					typeof video.data.duration === "number" ? video.data.duration : 0;
+					typeof video.data.duration === "number" &&
+					Number.isFinite(video.data.duration) &&
+					video.data.duration > 0
+						? video.data.duration
+						: undefined;
+				const durationTag =
+					typeof duration === "number"
+						? `<itunes:duration>${Math.floor(duration / 60)}:${(
+								duration % 60
+							)
+								.toString()
+								.padStart(2, "0")}</itunes:duration>`
+						: "";
 				const itunesImageUrl = getVideoThumbnailJpegUrl(site, video.data.id);
 				return {
 					title: video.data.title,
@@ -35,9 +47,7 @@ export async function GET(context: APIContext) {
 					link: `/watch/${video.data.slug}/`,
 					customData: `
 						<enclosure url="${itunesImageUrl}" type="image/jpeg" />
-						<itunes:duration>${Math.floor(duration / 60)}:${(duration % 60)
-							.toString()
-							.padStart(2, "0")}</itunes:duration>
+						${durationTag}
 						<itunes:image href="${itunesImageUrl}" />
 					`,
 					categories: (video.data.technologies as string[])

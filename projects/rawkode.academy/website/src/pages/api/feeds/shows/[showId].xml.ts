@@ -78,8 +78,6 @@ export async function GET(context: APIContext) {
 	const items = await Promise.all(
 		showVideos.map(async (video, index) => {
 			const episodeNumber = showVideos.length - index;
-			const duration =
-				typeof video.data.duration === "number" ? video.data.duration : 0;
 			const audioUrl = `https://content.rawkode.academy/videos/${video.data.id}/original.mp3`;
 			const originalThumbnailUrl = getVideoThumbnailUrl(video.data.id);
 			const episodeUrl = `${site}/watch/${video.data.slug}/`;
@@ -134,7 +132,11 @@ export async function GET(context: APIContext) {
 				],
 				itunes: {
 					title: video.data.title,
-					duration: duration,
+					...(typeof video.data.duration === "number" &&
+					Number.isFinite(video.data.duration) &&
+					video.data.duration > 0
+						? { duration: video.data.duration }
+						: {}),
 					image: thumbnailUrl,
 					explicit: podcastConfig?.explicit ?? false,
 					author: "Rawkode Academy",
