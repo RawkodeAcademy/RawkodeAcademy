@@ -211,7 +211,9 @@ const guestEntries = Array.isArray(video.data.guests)
 		).filter((g): g is NonNullable<typeof g> => Boolean(g))
 	: [];
 
-const thumbnailUrl = getVideoThumbnailUrl(video.data.id);
+const thumbnailUrl = video.data.youtubeId
+	? `https://i.ytimg.com/vi/${video.data.youtubeId}/hqdefault.jpg`
+	: getVideoThumbnailUrl(video.data.id);
 const streamUrl = `https://content.rawkode.academy/videos/${video.data.id}/stream.m3u8`;
 const captionUrl = `https://content.rawkode.academy/videos/${video.data.id}/captions/en.vtt`;
 const isLive = video.data.type === "live";
@@ -328,6 +330,7 @@ const scheduledLabel = new Intl.DateTimeFormat("en-US", {
 	hour: "numeric",
 	minute: "2-digit",
 	timeZoneName: "short",
+	timeZone: "UTC",
 }).format(video.data.publishedAt);
 const notificationsPublicKey = env.NOTIFICATIONS_VAPID_PUBLIC_KEY ?? "";
 const publishedIso =
@@ -450,6 +453,16 @@ const watchStatusLabel = isLiveNow
 							Join us on <time datetime={publishedIso}>{scheduledLabel}</time>.
 							The player will activate when the stream is available.
 						</p>
+						{video.data.youtubeId && (
+							<a
+								class={watch.factLink}
+								href={`https://www.youtube.com/live/${video.data.youtubeId}`}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								Open the scheduled stream on YouTube ↗
+							</a>
+						)}
 						<StreamNotifyButton
 							client:visible
 							videoSlug={video.data.slug}

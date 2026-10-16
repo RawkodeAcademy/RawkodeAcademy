@@ -40,7 +40,8 @@ const formatDate = (value: Date) =>
 		timeZone: "UTC",
 	});
 
-const formatDuration = (seconds: number) => {
+const formatDuration = (seconds?: number) => {
+	if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return undefined;
 	const minutes = Math.floor(seconds / 60);
 	if (minutes < 60) return `${minutes} min`;
 	const hours = Math.floor(minutes / 60);
@@ -96,19 +97,22 @@ export async function getLatestContent(
 	]);
 
 	const items: AcademyContentItem[] = [
-		...videos.map((video) => ({
-			kind: "Video" as const,
-			href: `/watch/${video.data.slug}`,
-			title: video.data.title,
-			description: compactCopy(video.data.subtitle || video.data.description),
-			publishedAt: video.data.publishedAt.toISOString(),
-			meta: [
-				"Video",
-				formatDate(video.data.publishedAt),
-				formatDuration(video.data.duration),
-			],
-			mediaSrc: getVideoThumbnailUrl(video.data.id),
-		})),
+		...videos.map((video) => {
+			const duration = formatDuration(video.data.duration);
+			return {
+				kind: "Video" as const,
+				href: `/watch/${video.data.slug}`,
+				title: video.data.title,
+				description: compactCopy(video.data.subtitle || video.data.description),
+				publishedAt: video.data.publishedAt.toISOString(),
+				meta: [
+					"Video",
+					formatDate(video.data.publishedAt),
+					...(duration ? [duration] : []),
+				],
+				mediaSrc: getVideoThumbnailUrl(video.data.id),
+			};
+		}),
 		...articles.map((article) => ({
 			kind: "Article" as const,
 			href: `/read/${article.id}`,

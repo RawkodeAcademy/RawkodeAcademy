@@ -53,7 +53,8 @@ const videos = defineCollection({
 		whatYouWillLearn: z.array(z.string().trim().min(1)).default([]),
 		terms: z.array(z.string().trim().min(1)).optional(),
 		publishedAt: z.coerce.date(),
-		duration: z.number().positive(),
+		// Scheduled streams may not have a known runtime until after broadcast.
+		duration: z.number().positive().optional(),
 		audioFileSize: z.number().positive().optional(), // bytes, for podcast enclosure
 		type: z.enum(["live", "recorded"]).optional(),
 		realtimeKit: z
@@ -68,7 +69,8 @@ const videos = defineCollection({
 		category: z
 			.enum(["editorial", "tutorial", "review", "interview", "announcement"])
 			.optional(),
-		// streamUrl/thumbnailUrl/duration are derived at runtime
+		// streamUrl and thumbnailUrl are derived at runtime.
+		// Scheduled streams may not have a duration yet.
 		// Technologies: accept plain ids (e.g., "docker") or full entry ids ("docker/index"),
 		// normalize to "<id>/index" for internal use, and verify existence.
 		technologies: z
