@@ -33,13 +33,18 @@ ${sortedVideos
 	.map((video) => {
 		const videoUrl = `${site}/watch/${video.data.slug}/`;
 		const published = new Date(video.data.publishedAt).toISOString();
-		const dur =
-			typeof video.data.duration === "number" ? video.data.duration : 0;
-		const durationMinutes = Math.floor(dur / 60);
-		const durationSeconds = dur % 60;
-		const formattedDuration = `${durationMinutes}:${durationSeconds
-			.toString()
-			.padStart(2, "0")}`;
+		const duration =
+			typeof video.data.duration === "number" &&
+			Number.isFinite(video.data.duration) &&
+			video.data.duration > 0
+				? video.data.duration
+				: undefined;
+		const durationContent =
+			typeof duration === "number"
+				? `<p>Duration: ${Math.floor(duration / 60)}:${(duration % 60)
+						.toString()
+						.padStart(2, "0")}</p>`
+				: "";
 
 		const categories = ((video.data.technologies as string[]) || [])
 			.map((id) => {
@@ -60,7 +65,7 @@ ${sortedVideos
 \t\t<content type="html"><![CDATA[
 \t\t\t<img src="${thumbnailUrl}" alt="${video.data.title}" />
 \t\t\t<p>${video.data.description}</p>
-\t\t\t<p>Duration: ${formattedDuration}</p>
+\t\t\t${durationContent}
 \t\t]]></content>
 \t\t${categories}
 \t</entry>`;

@@ -7,13 +7,14 @@ import AcademyCatalogMasthead from "@/components/academy/AcademyCatalogMasthead.
 import NewsletterCTA from "@/components/newsletter/NewsletterCTA.astro";
 import Page from "@/wrappers/page.astro";
 import VideoItemListJsonLd from "@/components/html/video-itemlist-jsonld.astro";
-import { getPublishedVideos } from "@/lib/content";
+import { getPublishedVideos, getUpcomingVideos } from "@/lib/content";
 import { getVideoThumbnailUrl } from "@/lib/video-thumbnail";
 import { selectWatchArchive, watchArchiveHref, WATCH_PAGE_SIZE } from "@/lib/watch-archive";
 
 const styles = academyPage();
-const [publishedVideos, technologies, people, shows] = await Promise.all([
+const [publishedVideos, upcomingVideos, technologies, people, shows] = await Promise.all([
 	getPublishedVideos(),
+	getUpcomingVideos(),
 	getCollection("technologies"),
 	getCollection("people"),
 	getCollection("shows"),
@@ -51,6 +52,33 @@ const videos = archive.items.map((video) => ({
 	duration: formatDuration(video.data.duration),
 	mediaSrc: getVideoThumbnailUrl(video.data.id),
 }));
+const jsonLdVideos = archive.items.map(({ data }) => ({
+	id: data.id,
+	slug: data.slug,
+	title: data.title,
+	description: data.description,
+	publishedAt: data.publishedAt,
+	...(typeof data.duration === "number" ? { duration: data.duration } : {}),
+}));
+const upcomingStreams = upcomingVideos.map((video) => ({
+	href: `/watch/${video.data.slug}`,
+	title: video.data.title,
+	description: compactCopy(video.data.subtitle || video.data.description),
+	scheduledAt: new Intl.DateTimeFormat("en-US", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+		timeZoneName: "short",
+		timeZone: "UTC",
+	}).format(video.data.publishedAt),
+	mediaSrc: video.data.youtubeId
+		? `https://i.ytimg.com/vi/${video.data.youtubeId}/hqdefault.jpg`
+		: getVideoThumbnailUrl(video.data.id),
+}));
+const showUpcomingStreams = !archive.query && archive.page === 1 && upcomingStreams.length > 0;
 const featured = archive.showFeatured ? videos[0] : undefined;
 // The latest session gets its own feature below, so the masthead schedules
 // the sessions that came before it.
@@ -80,7 +108,7 @@ const pageDescription =
 		<link rel="alternate" type="application/atom+xml" title="Rawkode Academy - Videos (Atom)" href="/api/feeds/videos.atom" />
 		<link rel="alternate" type="application/feed+json" title="Rawkode Academy - Videos (JSON Feed)" href="/api/feeds/videos.json" />
 		<VideoItemListJsonLd
-			videos={archive.items.map((video) => video.data)}
+			videos={jsonLdVideos}
 			listUrl={listUrl}
 			listName="Rawkode Academy Videos"
 			limit={WATCH_PAGE_SIZE}
@@ -95,6 +123,27 @@ const pageDescription =
 			mosaic={mosaic}
 			mosaicShape="video"
 		/>
+		{showUpcomingStreams && (
+			<section class={styles.section} aria-labelledby="upcoming-streams-title">
+				<div class={styles.sectionHead}>
+					<h2 id="upcoming-streams-title" class={styles.sectionTitle}>Upcoming live streams</h2>
+				</div>
+				<div class={styles.feedGrid}>
+					{upcomingStreams.map((item) => (
+						<a href={item.href} class={styles.card}>
+							<div class={styles.cardArt}>
+								<img src={item.mediaSrc} alt="" class={styles.cardImage} width="640" height="360" loading="lazy" />
+							</div>
+							<div class={styles.cardBody}>
+								<p class={styles.cardMeta}>Upcoming · {item.scheduledAt}</p>
+								<h3 class={styles.cardTitle}>{item.title}</h3>
+								<p class={styles.lede}>{item.description}</p>
+							</div>
+						</a>
+					))}
+				</div>
+			</section>
+		)}
 		{featured && (
 			<section class={styles.section} aria-label="Featured session">
 				<a href={featured.href} class={styles.watchFeature}>

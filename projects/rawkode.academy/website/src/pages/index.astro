@@ -37,7 +37,7 @@ const compactCopy = (value: string | undefined, maxLength = 220) => {
 };
 
 const formatDuration = (seconds?: number | null) => {
-	if (!seconds || seconds <= 0) return "Recorded session";
+	if (!seconds || seconds <= 0) return undefined;
 	const minutes = Math.floor(seconds / 60);
 	if (minutes < 60) return `${minutes} min`;
 	const hours = Math.floor(minutes / 60);
@@ -53,16 +53,19 @@ const formatPathDuration = (minutes?: number | null) => {
 	return remainder > 0 ? `${hours}h ${remainder}m core video` : `${hours}h core video`;
 };
 
-const videos = publishedVideos.slice(0, 1).map((video) => ({
-	href: `/watch/${video.data.slug}`,
-	title: video.data.title,
-	description: compactCopy(video.data.subtitle || video.data.description),
-	meta: [
-		video.data.type === "live" ? "Live session" : "Recorded session",
-		formatDuration(video.data.duration),
-	],
-	mediaSrc: getVideoThumbnailUrl(video.data.id),
-}));
+const videos = publishedVideos.slice(0, 1).map((video) => {
+	const duration = formatDuration(video.data.duration);
+	return {
+		href: `/watch/${video.data.slug}`,
+		title: video.data.title,
+		description: compactCopy(video.data.subtitle || video.data.description),
+		meta: [
+			video.data.type === "live" ? "Live session" : "Recorded session",
+			...(duration ? [duration] : []),
+		],
+		mediaSrc: getVideoThumbnailUrl(video.data.id),
+	};
+});
 
 const paths = learningPaths.slice(0, 8).map((path) => ({
 	href: `/learning-paths/${path.id}`,

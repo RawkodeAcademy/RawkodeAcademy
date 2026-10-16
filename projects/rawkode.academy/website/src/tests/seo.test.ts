@@ -461,6 +461,16 @@ describe("Video SEO", () => {
 				Boolean(data.publishedAt),
 				`${filePath} is missing publishedAt`,
 			).toBe(true);
+			if (!Object.hasOwn(data, "duration")) {
+				expect(data.type, `${filePath} can omit duration only when live`).toBe(
+					"live",
+				);
+				expect(
+					new Date(String(data.publishedAt)).getTime(),
+					`${filePath} can omit duration only while scheduled in the future`,
+				).toBeGreaterThan(Date.now());
+				continue;
+			}
 			expect(typeof data.duration, `${filePath} is missing duration`).toBe(
 				"number",
 			);
