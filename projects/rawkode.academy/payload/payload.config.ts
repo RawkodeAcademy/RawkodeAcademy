@@ -5,6 +5,7 @@ import {cloudflare} from './src/cloudflare'
 import { buildConfig } from 'payload'
 import { optionalPlugins, optionalGlobals } from './src/optional-mcp'
 import { createCollections } from './src/collections'
+import { siteRebuildFrom, type SiteRebuildEnvironment } from './src/site-rebuild'
 import {authConfig} from './src/auth/config'
 import {adminConfig} from './src/admin/config'
 import {parseDeveloperSubjects,type AdminAccess} from './src/admin/access'
@@ -24,7 +25,7 @@ export default buildConfig({
   csrf:auth.origins,
   // Server-only. adminAccess is read by admin server components; never put it in admin.custom.
   custom:{adminAccess},
-  collections:createCollections(auth,cloudflare.env.D1,adminAccess),
+  collections:createCollections(auth,cloudflare.env.D1,adminAccess,siteRebuildFrom(cloudflare.env as SiteRebuildEnvironment)),
   graphQL:{disableIntrospectionInProduction:false},
   globals:optionalGlobals,
   secret,

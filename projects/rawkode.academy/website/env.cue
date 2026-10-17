@@ -59,6 +59,21 @@ ci: pipelines: {
 		tasks: [_t.deploy.main, _t.deploy.review]
 	}
 
+	// Payload dispatches this when published catalogue content changes, so a
+	// CMS edit reaches the site without a commit. Content lives outside git,
+	// so this pipeline must deploy even though no file changed.
+	content: {
+		environment: "production"
+		when: {
+			manual: reason: {
+				description: "Why the site is being rebuilt (for example: payload publish)"
+				type:        "string"
+				default:     "payload publish"
+			}
+		}
+		tasks: [_t.rebuild]
+	}
+
 	pullRequest: {
 		environment: "production"
 		when: {
@@ -142,6 +157,19 @@ tasks: {
 			inputs: _reviewInputs
 			outputs: ["dist-review/**"]
 		}
+	}
+
+	// Same as deploy.main, but declares no inputs: cuenv always runs a task
+	// without inputs, which is what a content-only rebuild needs (the changed
+	// content is in Payload, so no file in the repository differs).
+	rebuild: schema.#Task & {
+		hermetic: false
+		command:  "sh"
+		args: [
+			"-lc",
+			"\(_toolchain) sh -c 'bun run build && bun x wrangler deploy --config ./dist/server/wrangler.json'",
+		]
+		env: PATH: _taskPath
 	}
 
 	deploy: schema.#TaskGroup & {
