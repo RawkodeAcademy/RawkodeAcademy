@@ -185,7 +185,7 @@ test('provenance sits read-only in a developer-only Source tab, after editorial 
 	const videos = tabsOf(bySlug.get('videos')!)
 	assert.deepEqual(
 		videos.map(tab => tab.label),
-		['Content', 'Relations', 'Media', 'Processing', 'Review', 'Source'],
+		['Content', 'Relations', 'Media', 'Processing', 'Review', 'YouTube', 'Source'],
 	)
 	assert.equal(allNamed(videos[0].fields)[0] && nameOf(allNamed(videos[0].fields)[0]), 'title')
 	const sidebar = bySlug

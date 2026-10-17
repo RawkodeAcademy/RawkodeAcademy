@@ -1,8 +1,10 @@
 import { ReviewFreezeNotice as ReviewFreezeNotice_4c9d8d7e67c47c84519e980885c045b4 } from '../../../src/admin/fields/ReviewFreeze'
 import { ReviewPanel as ReviewPanel_10f43ce177b238389bd9b1c568d619e3 } from '../../../src/admin/fields/ReviewPanel'
+import { YouTubeStatus as YouTubeStatus_ff5a0c30df8b9a5eea42905220614e2d } from '../../../src/admin/fields/YouTube'
 import { VideoPublishControl as VideoPublishControl_4c9d8d7e67c47c84519e980885c045b4 } from '../../../src/admin/fields/ReviewFreeze'
 import { VideoSaveDraftControl as VideoSaveDraftControl_4c9d8d7e67c47c84519e980885c045b4 } from '../../../src/admin/fields/ReviewFreeze'
 import { VideoUnpublishControl as VideoUnpublishControl_4c9d8d7e67c47c84519e980885c045b4 } from '../../../src/admin/fields/ReviewFreeze'
+import { ChannelConnect as ChannelConnect_ff5a0c30df8b9a5eea42905220614e2d } from '../../../src/admin/fields/YouTube'
 import { Icon as Icon_cefd8254694ef8a4fbc43b962e26b4af } from '../../../src/admin/graphics/Icon'
 import { Logo as Logo_8cc789135c00860801cfd7bf994d6912 } from '../../../src/admin/graphics/Logo'
 import { QuickLinks as QuickLinks_377ad7b843627b93865649f10034c221 } from '../../../src/admin/nav/QuickLinks'
@@ -20,9 +22,11 @@ import { R2ClientUploadHandler as R2ClientUploadHandler_85cc02ed84006fcc91d3aff3
 export const importMap = {
   "./src/admin/fields/ReviewFreeze#ReviewFreezeNotice": ReviewFreezeNotice_4c9d8d7e67c47c84519e980885c045b4,
   "./src/admin/fields/ReviewPanel#ReviewPanel": ReviewPanel_10f43ce177b238389bd9b1c568d619e3,
+  "./src/admin/fields/YouTube#YouTubeStatus": YouTubeStatus_ff5a0c30df8b9a5eea42905220614e2d,
   "./src/admin/fields/ReviewFreeze#VideoPublishControl": VideoPublishControl_4c9d8d7e67c47c84519e980885c045b4,
   "./src/admin/fields/ReviewFreeze#VideoSaveDraftControl": VideoSaveDraftControl_4c9d8d7e67c47c84519e980885c045b4,
   "./src/admin/fields/ReviewFreeze#VideoUnpublishControl": VideoUnpublishControl_4c9d8d7e67c47c84519e980885c045b4,
+  "./src/admin/fields/YouTube#ChannelConnect": ChannelConnect_ff5a0c30df8b9a5eea42905220614e2d,
   "./src/admin/graphics/Icon#Icon": Icon_cefd8254694ef8a4fbc43b962e26b4af,
   "./src/admin/graphics/Logo#Logo": Logo_8cc789135c00860801cfd7bf994d6912,
   "./src/admin/nav/QuickLinks#QuickLinks": QuickLinks_377ad7b843627b93865649f10034c221,

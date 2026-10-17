@@ -1,5 +1,7 @@
 import {reviewCollections} from './review/collections'
 import {isStaff} from './auth/access'
+import {channelsCollection,videoChannelFields} from './youtube/collections'
+import {youtubeSyncHook} from './youtube/hook'
 import {usersCollection} from './auth/payload'
 import type {AuthConfig} from './auth/config'
 import {pipelineCollection,pipelineVideoFields} from './pipeline'
@@ -123,6 +125,8 @@ const ordinal = (value: unknown) => typeof value === 'number' ? String(value) : 
 
 const withEditComponents = (config: CollectionConfig, edit: NonNullable<NonNullable<NonNullable<CollectionConfig['admin']>['components']>['edit']>): CollectionConfig =>
   ({ ...config, admin: { ...config.admin, components: { ...config.admin?.components, edit: { ...config.admin?.components?.edit, ...edit } } } })
+const withYouTubeSync = (config: CollectionConfig): CollectionConfig =>
+  ({ ...config, hooks: { ...config.hooks, afterChange: [...(config.hooks?.afterChange ?? []), youtubeSyncHook()] } })
 const updatedAtDescription = 'Shown to readers as Last updated. This is the system timestamp and changes on every save.'
 const people: LayoutOptions = {
   rows: [['forename','surname']],
@@ -130,9 +134,10 @@ const people: LayoutOptions = {
 }
 const builders: Record<string, Builder> = {
   // Publishing
-  videos: access => withEditComponents(content('videos', [title,text('tagline'),text('subtitle'),description,strings('whatYouWillLearn'),terms,{name:'publishedAt',type:'date',admin:{date:{pickerAppearance:'dayAndTime'}}}, {name:'duration',type:'number'}, {name:'audioFileSize',type:'number'},
+  videos: access => withYouTubeSync(withEditComponents(content('videos', [title,text('tagline'),text('subtitle'),description,strings('whatYouWillLearn'),terms,{name:'publishedAt',type:'date',admin:{date:{pickerAppearance:'dayAndTime'}}}, {name:'duration',type:'number'}, {name:'audioFileSize',type:'number'},
     {name:'type',type:'select',options:['live','recorded']}, {name:'category',type:'select',options:['announcement','editorial','interview','review','tutorial']},
     text('streamUrl'),text('thumbnailUrl'),text('mediaReference'),text('youtubeId'),json('realtimeKit'),json('podcast'),json('subscribeLinks'),relation('show','shows'),technologies,relation('guests','people',true),relation('episode','episodes'),relation('chapters','chapters',true)], {
+    youtube: videoChannelFields,
     processing: { fields: pipelineVideoFields, condition: data => Boolean(data?.processingRun || data?.processingState) },
     // Read-only review history. Extension point for workstreams D (grants)
     // and F (guarded share/publish commands).
@@ -144,7 +149,7 @@ const builders: Record<string, Builder> = {
     PublishButton: fieldComponents.videoPublishControl,
     SaveDraftButton: fieldComponents.videoSaveDraftControl,
     UnpublishButton: fieldComponents.videoUnpublishControl,
-  }),
+  })),
   shows: content('shows', [text('name'),{name:'status',type:'select',options:['coming-soon','active','archived']},text('tagline'),text('gameFormatUrl'),description,json('podcast'),json('subscribeLinks'),terms,relation('hosts','people',true),{...relation('episodes','episodes',true),admin:{readOnly:true,description:'Imported source list. Public show episodes are derived from Episode.show; edit that relationship on the episode.'}}]),
   episodes: content('episodes', [text('code'),terms,relation('video','videos'),relation('show','shows')]),
   articles: content('articles', [title,description,date('publishedAt'),date('updatedAt'),text('subtitle'),{name:'type',type:'select',options:['tutorial','article','guide','news']},{name:'howto',type:'checkbox'},authors(),technologies,relation('series','series'),relation('resources','learning-resources',true)], { sidebarDescriptions: { updatedAt: updatedAtDescription } }),
@@ -193,7 +198,7 @@ const builders: Record<string, Builder> = {
 // Nav order is first appearance in this list (see NAV_ORDER), followed by the
 // group:false collections. Order does not affect the stored schema.
 export const collectionOrder = [
-  'videos','shows','episodes','articles','news','series',
+  'videos','shows','episodes','channels','articles','news','series',
   'courses','course-modules','learning-paths','technologies',
   'people','testimonials','users',
   'media',
@@ -212,6 +217,7 @@ export const createCollections = (config:AuthConfig,db:D1Database,access:AdminAc
   const all: CollectionConfig[] = [
     ...reviewCollections(access),
     pipelineCollection(access),
+    channelsCollection(access),
     applyPreset(usersCollection(config,db),access),
     applyPreset({
       slug: 'deletion-markers', access: { read: staff, create: staff, update: () => false, delete: () => false },

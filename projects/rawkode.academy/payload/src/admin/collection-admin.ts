@@ -40,6 +40,13 @@ export const adminPresets: Record<string, AdminPreset> = {
 		listSearchableFields: ['title', 'slug', 'youtubeId', 'legacyId'],
 		defaultSort: '-publishedAt',
 	},
+	channels: {
+		group: 'Publishing',
+		description: 'YouTube channels the CMS publishes to. Connect each one with the Google account that owns it.',
+		useAsTitle: 'name',
+		defaultColumns: ['name', 'connection', 'youtubeTitle', 'privacy', 'updatedAt'],
+		listSearchableFields: ['name', 'youtubeTitle', 'youtubeChannelId'],
+	},
 	shows: {
 		group: 'Publishing',
 		description: 'Recurring shows. Episodes link a video to a show.',

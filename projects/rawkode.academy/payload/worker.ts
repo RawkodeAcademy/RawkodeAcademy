@@ -20,6 +20,7 @@ export class ReviewBridge extends WorkerEntrypoint<CloudflareEnv> {
   }
 }
 export {MediaWorkflow} from './src/media-workflow'
+export {YouTubeSyncWorkflow} from './src/youtube/workflow'
 
 export { ReviewMediaWorkflow } from './src/review-workflow'
 

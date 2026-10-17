@@ -87,6 +87,8 @@ export type LayoutOptions = {
 	rows?: string[][]
 	processing?: { fields: Field[]; condition?: Condition }
 	review?: Field[]
+	// Channel selection and sync status, written by the YouTube sync.
+	youtube?: Field[]
 	fieldAdmin?: Record<string, Record<string, unknown>>
 	sidebarDescriptions?: Record<string, string>
 }
@@ -155,6 +157,7 @@ export function arrange(fields: Field[], access: AdminAccess, options: LayoutOpt
 				]
 			: []),
 		...(options.review ? [{ label: 'Review', fields: options.review }] : []),
+		...(options.youtube ? [{ label: 'YouTube', fields: options.youtube }] : []),
 		...(source.length ? [sourceTab(source, access)] : []),
 	].filter(tab => tab.fields.length > 0)
 

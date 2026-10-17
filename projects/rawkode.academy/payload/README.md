@@ -124,6 +124,28 @@ The admin is configured without any schema change. `tests/admin-config.test.ts` 
 - **Theme.** `app/(payload)/custom.css` is plain, unlayered CSS that mirrors `semanticTokens.academy` from `packages/design-system/panda.config.ts`. `tests/admin-theme.test.ts` checks for token drift, checks that the ramps are complete and enforces WCAG AA contrast in both themes. The theme follows the OS setting.
 - **Screenshots.** Run `bun run dev` with `POC_CLOUDFLARE_PERSIST_PATH` and `POC_CLOUDFLARE_ENV_FILE` pointing at scratch state, using local auth and the loopback callback. Never point them at `.wrangler/state`. Afterwards, restore `next-env.d.ts` with `git checkout`.
 
+## YouTube channels and sync
+
+Channels (Publishing → Channels) are the YouTube channels the CMS publishes to. Sync is one-way: the CMS is the source of truth.
+
+- **Connect.** On a channel, **Connect YouTube** sends you to Google consent (`youtube.force-ssl`, offline). Sign in with the Google account that owns the channel. The callback checks that account owns the channel, creates one reusable RTMP stream if the channel has none, and seals the refresh token with AES-GCM under `YOUTUBE_TOKEN_KEY` into the `youtube_credentials` table. That table is not a Payload collection, so no API can read it.
+- **Publish.** Publishing a video with channels selected starts a `YouTubeSyncWorkflow` per connected channel. The instance id is `yt-<video>-<channel>-<hash of the YouTube copy>`, so republishing unchanged content does nothing.
+  - **Live videos with a future start:** create a broadcast, record its id, bind the reusable stream, then sync the copy.
+  - **Edits afterwards:** reschedule while the broadcast hasn't started, and merge title, description (with chapters and a link back) and tags into the existing snippet.
+  - **Videos with an existing `youtubeId`:** adopted, and their copy is kept in sync.
+  - **Recorded videos without one:** marked "not synced"; upload them on YouTube.
+- **Status.** Shown on the video's YouTube tab, from the `youtube_sync` table. A failure is recorded without its hash, so the next publish retries. Draft saves never touch YouTube, and back-catalogue videos are untouched until a channel is selected on them.
+
+Configuration (production Worker only; previews have no workflow binding, so they never sync):
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | secrets | OAuth web client from the Google Cloud project with the YouTube Data API v3 enabled |
+| `YOUTUBE_REDIRECT_URI` | var or secret | `https://admin.rawkode.academy/api/youtube/callback`, registered on that client |
+| `YOUTUBE_TOKEN_KEY` | secret | `openssl rand -base64 32` |
+
+Publish the OAuth consent screen to **In production**. In Testing, Google expires refresh tokens after seven days and scheduled syncs stop.
+
 ## GraphQL compatibility
 
 The public gateway at `https://api.rawkode.academy/`, deployed website subgraph and pinned repository schema were independently captured on 2026-10-04. Public source revision: `31edd9fd9d86c21a7e9a3a34cfe1933b44e99598`. Evidence includes raw introspection, SDL, checksums and representative operations. `capture:schema` deliberately refreshes these public baselines; ordinary checks do not update them.

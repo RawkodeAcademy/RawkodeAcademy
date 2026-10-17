@@ -30,6 +30,8 @@ export const fieldComponents = {
 	videoPublishControl: component('fields/ReviewFreeze#VideoPublishControl'),
 	videoSaveDraftControl: component('fields/ReviewFreeze#VideoSaveDraftControl'),
 	videoUnpublishControl: component('fields/ReviewFreeze#VideoUnpublishControl'),
+	channelConnect: component('fields/YouTube#ChannelConnect'),
+	youtubeStatus: component('fields/YouTube#YouTubeStatus'),
 }
 
 // Widgets render above Payload's built-in `collections` widget. Saved
