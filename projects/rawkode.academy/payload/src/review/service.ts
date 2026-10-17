@@ -110,7 +110,7 @@ export class ReviewService {
     if (input.action === 'share' || input.action === 'revoke') {
       staff(actor)
       await this.dependencies.video(input.videoId, actor)
-      const user = await this.store.one('SELECT id FROM users WHERE id=? AND role=?', input.userId, 'customer')
+      const user = await this.store.one("SELECT id FROM users WHERE id=? AND role IN ('customer','guest','sponsor')", input.userId)
       if (!user) throw new ReviewError(400, 'Choose an existing customer account')
       if (input.action === 'share') {
         await this.access.require(actor, input.videoId, input.revisionId, 'manage')

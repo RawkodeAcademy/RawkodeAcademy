@@ -196,10 +196,12 @@ test('revision grant migrations go up, down and up again on an empty review sche
   await enforce.up(args)
   await enforce.down(args)
   assert.deepEqual(schema(), expanded)
-  await migrations.at(-1)!.down(args)
+  // Look the expand step up by name: later migrations append to the list.
+  const grantsExpand = migrations.find(migration => migration.name === '20261009_130000_review_revision_grants')!
+  await grantsExpand.down(args)
   assert.equal(sqlite.prepare("SELECT count(*) AS n FROM pragma_table_info('review_decisions') WHERE name IN ('grant_id','source_checksum','deliverable_checksum')").get()?.n, 0, 'DROP COLUMN removes the pin columns')
   assert.equal(sqlite.prepare("SELECT count(*) AS n FROM sqlite_master WHERE name='review_decision_update'").get()?.n, 1)
-  await migrations.at(-1)!.up(args)
+  await grantsExpand.up(args)
   await enforce.up(args)
   assert.deepEqual(sqlite.prepare('PRAGMA foreign_key_check').all(), [])
 })

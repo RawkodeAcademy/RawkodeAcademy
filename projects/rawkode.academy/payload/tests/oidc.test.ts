@@ -272,6 +272,26 @@ test('production identity mapper keys by issuer+subject, never links by email, a
   assert.equal((await mapping.user(first))?.oidcSubject, 'one')
   assert.equal(await mapping.user(9999), null)
 })
+test('identity mapper keeps a staff-granted contributor role and demotes removed staff', async () => {
+  const config = authConfig({ OIDC_STAFF_SUBJECTS: '["one"]' })
+  const records: Record<string, any>[] = []
+  const payload = {
+    async find(args: any) { return { docs: records.filter(record => record.identityKey === args.where.identityKey.equals) } },
+    async create(args: any) { const doc = { ...args.data, id: records.length + 10 }; records.push(doc); return doc },
+    async update(args: any) { Object.assign(records.find(record => record.id === args.id)!, args.data) },
+    async findByID(args: any) { return records.find(record => record.id === args.id) },
+  }
+  const mapping = identityMapping(payload as never, config)
+  const guest = await mapping.map({ issuer: config.issuer, subject: 'guest' })
+  Object.assign(records.find(record => record.id === guest)!, { role: 'guest', person: 42 })
+  assert.equal(await mapping.map({ issuer: config.issuer, subject: 'guest', name: 'Signed in again' }), guest)
+  assert.equal(records.find(record => record.id === guest)?.role, 'guest')
+  assert.deepEqual({ role: (await mapping.user(guest))?.role, person: (await mapping.user(guest))?.person }, { role: 'guest', person: 42 })
+  const staff = await mapping.map({ issuer: config.issuer, subject: 'one' })
+  const demoted = identityMapping(payload as never, authConfig({ OIDC_STAFF_SUBJECTS: '[]' }))
+  await demoted.map({ issuer: config.issuer, subject: 'one' })
+  assert.equal(records.find(record => record.id === staff)?.role, 'customer')
+})
 test('identity mapper recovers a concurrent unique identity insertion without email fallback', async () => {
   const config = authConfig({})
   let winner: Record<string, unknown> | null = null

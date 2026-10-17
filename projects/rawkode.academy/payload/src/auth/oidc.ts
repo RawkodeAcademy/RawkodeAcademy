@@ -1,9 +1,10 @@
+import {type Role,sessionRole} from './access'
 import * as oauth from 'oauth4webapi'
 import type {AuthConfig} from './config'
 import type {AuthStore} from './store'
 import {requestSite,UntrustedOrigin} from './origin'
 export type Identity = {issuer:string;subject:string;name?:string;email?:string}
-export type AuthUser = {id:number;collection:'users';role:'staff'|'customer';name?:string;oidcIssuer?:string;oidcSubject?:string}
+export type AuthUser = {id:number;collection:'users';role:Role;person?:number|null;name?:string;oidcIssuer?:string;oidcSubject?:string}
 export type IdentityMapping = {map(identity:Identity):Promise<number>;user(id:number):Promise<AuthUser|null>}
 export async function digest(value:string) { return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),b=>b.toString(16).padStart(2,'0')).join('') }
 export function readCookie(headers:Headers,name:string):string|null {
@@ -82,7 +83,7 @@ export class OidcService {
     if(!session)return null
     const user=await this.mapping.user(session.userId)
     if(!user||user.oidcIssuer!==this.config.issuer||!user.oidcSubject)return null
-    user.role=this.config.staffSubjects.includes(user.oidcSubject)?'staff':'customer'
+    user.role=sessionRole(user.role,this.config.staffSubjects.includes(user.oidcSubject))
     return {user,expiresAt:session.expiresAt}
   }
   async logout(request:Request):Promise<Response> {

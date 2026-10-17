@@ -1,5 +1,6 @@
 import {reviewCollections} from './review/collections'
 import {isStaff} from './auth/access'
+import {contributorGuard,lockNonContributorFields,peopleAccess} from './auth/contributors'
 import {usersCollection} from './auth/payload'
 import type {AuthConfig} from './auth/config'
 import {pipelineCollection,pipelineVideoFields} from './pipeline'
@@ -98,6 +99,13 @@ const editorialHooks = (slug: string) => ({
   }],
 })
 type Builder = (access: AdminAccess) => CollectionConfig
+// Guests and sponsors propose drafts of their own Person (src/auth/contributors.ts).
+const withContributors = (config: CollectionConfig): CollectionConfig => ({
+  ...config,
+  access: peopleAccess,
+  fields: lockNonContributorFields(config.fields),
+  hooks: { ...config.hooks, beforeChange: [contributorGuard, ...(config.hooks?.beforeChange ?? [])] },
+})
 function content(slug: string, fields: Field[], layout: LayoutOptions = {}): Builder {
   return access => applyPreset({
     slug,
@@ -156,7 +164,7 @@ const builders: Record<string, Builder> = {
   'learning-paths': content('learning-paths', [title,description,date('publishedAt'),text('difficulty'),{name:'estimatedDuration',type:'number'},strings('prerequisites'),authors(),relation('courses','courses',true),relation('videos','videos',true),technologies]),
   technologies: content('technologies', [text('name'),json('seo'),json('logos'),text('category'),text('subcategory'),text('documentation'),text('icon'),text('logo'),text('source'),text('license'),text('status'),text('website'),json('cncf'),json('community'),json('matrix'),terms,strings('aliases'),strings('features'),strings('relatedTechnologies'),strings('useCases'),relation('learningResources','learning-resources')]),
   // People
-  people: content('people', [text('name'),text('forename'),text('surname'),text('github'),text('twitter'),text('bluesky'),text('mastodon'),text('linkedin'),text('website'),text('youtube'),text('githubHandle'),text('githubUrl'),text('avatarUrl'),{name:'biography',type:'textarea'},terms,{name:'links',type:'array',fields:[text('name'),text('url')]}], people),
+  people: access => withContributors(content('people', [text('name'),text('forename'),text('surname'),text('github'),text('twitter'),text('bluesky'),text('mastodon'),text('linkedin'),text('website'),text('youtube'),text('githubHandle'),text('githubUrl'),text('avatarUrl'),{name:'biography',type:'textarea'},terms,{name:'links',type:'array',fields:[text('name'),text('url')]}], people)(access)),
   testimonials: content('testimonials', [text('quote'), json('author'), { name: 'type', type: 'select', options: ['maintainer','partner','viewer'] }]),
   // Klustered
   seasons: domain('seasons', [sourceText('showId'), relation('show', 'shows'), text('name'), { name: 'status', type: 'select', options: ['interest','active','finished'] }, date('startDate'), date('endDate'), date('sourceCreatedAt'), date('sourceUpdatedAt')], [{ unique: true, fields: ['sourceShowId', 'slug'] }]),

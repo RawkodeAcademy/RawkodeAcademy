@@ -28,9 +28,10 @@ export class ReviewError extends Error {
   constructor(public status: number, message: string) { super(message) }
 }
 export function actorFromUser(user: unknown): ReviewActor {
-  const result = z.object({ id: positiveId, collection: z.literal('users'), role: z.enum(['staff', 'customer']) }).safeParse(user)
+  const result = z.object({ id: positiveId, collection: z.literal('users'), role: z.enum(['staff', 'customer', 'guest', 'sponsor']) }).safeParse(user)
   if (!result.success) throw new ReviewError(401, 'Sign in to review this video')
-  return result.data
+  // Guests and sponsors review as customers; contributor access is CMS-only.
+  return { id: result.data.id, collection: 'users', role: result.data.role === 'staff' ? 'staff' : 'customer' }
 }
 export function validateMetadata(metadata: ReviewMetadata, durationMs: number) {
   let previous = -1
