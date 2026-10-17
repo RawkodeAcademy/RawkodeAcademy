@@ -30,6 +30,10 @@ let _reviewInputs = [
 ]
 env: {
 	GRAPHQL_ENDPOINT: "https://api.rawkode.academy/"
+	// Where videos, shows, people and technologies come from at build time.
+	// "git" reads content/; "payload" exports published Payload records into
+	// .content/payload first (scripts/payload-content) and builds from that.
+	ACADEMY_CONTENT_SOURCE: "git"
 	// Bypass the game login gate in local dev only. Production MUST require
 	// login (games read Astro.locals.user); the production override forces it off.
 	DISABLE_GAME_AUTH: true
