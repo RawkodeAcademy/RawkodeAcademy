@@ -23,7 +23,17 @@ export const ANSWERS: Answer[] = [
 	{ name: "Paralus", kind: "CNCF Sandbox project", description: "Manages secure access to Kubernetes clusters.", url: "https://paralus.io" },
 ];
 export const normalize = (value: string) => value.toUpperCase().replace(/[^A-Z]/g, "");
-export const dayKey = (date = new Date()) => date.toISOString().slice(0, 10);
+// Cut raw input after its `length`th letter, keeping the player's spaces and punctuation.
+export function clampGuess(value: string, length: number) {
+	let letters = 0;
+	for (let i = 0; i < value.length; i++) {
+		if (!/[a-z]/i.test(value[i]!)) continue;
+		if (letters === length) return value.slice(0, i);
+		letters++;
+	}
+	return value;
+}
+export const dayKey =(date = new Date()) => date.toISOString().slice(0, 10);
 export function dailyPuzzle(date = new Date()) {
 	const day = Math.floor((Date.parse(`${dayKey(date)}T00:00:00Z`) - Date.UTC(2026, 9, 13)) / 86400000);
 	return { date: dayKey(date), answer: ANSWERS[((day % 18) + 18) % 18]! };

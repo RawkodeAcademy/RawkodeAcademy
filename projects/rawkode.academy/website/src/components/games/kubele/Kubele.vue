@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { academyGame } from "@rawkodeacademy/design-system";
-import { dailyPuzzle, dayKey, markGuess, MAX_GUESSES, normalize, restoreGuesses, shareResult } from "@/lib/games/kubele";
+import { clampGuess, dailyPuzzle, dayKey, markGuess, MAX_GUESSES, normalize, restoreGuesses, shareResult } from "@/lib/games/kubele";
 const props = defineProps<{ registered: boolean }>();
 const stats = ref<{ played: number; wins: number; streak: number; distribution: number[] } | null>(null);
 const theme = academyGame();
@@ -18,6 +18,12 @@ const rows = computed(() => Array.from({ length: MAX_GUESSES }, (_, index) => {
 	const marks = guesses.value[index] ? markGuess(word, target.value) : [];
 	return Array.from({ length: target.value.length }, (_, position) => ({ letter: word[position] ?? "", mark: marks[position] }));
 }));
+function onInput(event: Event) {
+	const field = event.target as HTMLInputElement;
+	const clamped = clampGuess(field.value, target.value.length);
+	if (clamped !== field.value) field.value = clamped;
+	input.value = clamped;
+}
 const storageKey = () => `kubele:v1:${puzzle.value.date}`;
 function load() {
 	try { guesses.value = restoreGuesses(localStorage.getItem(storageKey()), target.value); }
@@ -85,7 +91,7 @@ onUnmounted(() => { clearInterval(timer); window.removeEventListener("focus", ch
 		<p class="message" role="status" aria-live="polite">{{ message }}</p>
 		<form v-if="!finished" @submit.prevent="submit">
 			<label for="kubele-guess">Your guess ({{ target.length }} letters)</label>
-			<div class="entry"><input id="kubele-guess" v-model="input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" :maxlength="target.length * 2" aria-describedby="kubele-help" /><button type="submit">Guess</button></div>
+			<div class="entry"><input id="kubele-guess" :value="input" @input="onInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" :maxlength="target.length * 2" aria-describedby="kubele-help" /><button type="submit">Guess</button></div>
 			<p id="kubele-help" class="help">Type your guess and press Enter or select Guess.</p>
 		</form>
 		<section v-else class="result" aria-label="Puzzle result">

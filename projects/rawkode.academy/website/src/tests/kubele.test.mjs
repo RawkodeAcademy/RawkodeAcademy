@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ANSWERS, dailyPuzzle, markGuess, normalize, restoreGuesses, shareResult } from "../lib/games/kubele.ts";
+import { ANSWERS, clampGuess, dailyPuzzle, markGuess, normalize, restoreGuesses, shareResult } from "../lib/games/kubele.ts";
 
 test("same UTC date has one puzzle, including across time zones", () => {
 	assert.deepEqual(dailyPuzzle(new Date("2026-10-13T00:00:00Z")), dailyPuzzle(new Date("2026-10-13T23:59:59Z")));
@@ -28,4 +28,10 @@ test("sharing includes feedback and score without exposing guesses or answer", (
 	assert.match(result, /2\/6/); assert.match(result, /🟩/);
 	assert.ok(!result.includes("HELM")); assert.ok(!result.includes("HELP"));
 	assert.match(shareResult("2026-10-13", ["HELP"], "HELM"), /X\/6/);
+});
+test("input stops at the answer length so the board never hides extra letters", () => {
+	assert.equal(clampGuess("KUBERNETESES", 11), "KUBERNETESE");
+	assert.equal(clampGuess("Inspektor Gadget!", 15), "Inspektor Gadget!");
+	assert.equal(clampGuess("Service-Mesh-Plus", 11), "Service-Mesh-");
+	assert.equal(clampGuess("HE", 4), "HE");
 });
