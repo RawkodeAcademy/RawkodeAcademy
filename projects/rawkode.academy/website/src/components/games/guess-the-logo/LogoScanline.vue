@@ -10,13 +10,13 @@ defineProps<{
 <template>
 	<div class="gtl-logo-card" :class="[gameTheme.root, { revealed }]">
 		<!--
-			Homepage Hero technique: the duotone logo is cut into scanlines by a
+			Homepage Hero technique: the logo is cut into scanlines by a
 			repeating-gradient mask on its container, so the lines are the logo
 			itself rather than a stripe overlay painted across the card.
 		-->
-		<div class="gtl-logo-duotone" aria-hidden="true">
-			<div class="gtl-logo-mask-cyan" :style="`--icon-url: url(${iconUrl})`"></div>
-			<div class="gtl-logo-mask-purple" :style="`--icon-url: url(${iconUrl})`"></div>
+		<div class="gtl-logo-scanlines" aria-hidden="true">
+			<img :src="iconUrl" alt="" class="gtl-logo-mono" decoding="async" />
+			<div class="gtl-logo-tint" :style="`--icon-url: url(${iconUrl})`"></div>
 		</div>
 		<img
 			:src="iconUrl"
@@ -66,11 +66,13 @@ defineProps<{
 
 /*
  * Scanline mask (2px on / 2px off, 4px period), sized to the padded content
- * area. Everything inside renders only on the "on" rows.
+ * area. Everything inside renders only on the "on" rows. `isolation` keeps the
+ * tint's blend inside this layer.
  */
-.gtl-logo-duotone {
+.gtl-logo-scanlines {
 	position: absolute;
 	inset: 1.25rem;
+	isolation: isolate;
 	mask-image: repeating-linear-gradient(
 		to bottom,
 		black 0px,
@@ -91,11 +93,30 @@ defineProps<{
 	transition: opacity 350ms ease;
 }
 
-/* Duotone logo layers: cyan alpha wash under purple luminance key */
-.gtl-logo-mask-cyan,
-.gtl-logo-mask-purple {
+/*
+ * Boosted greyscale: the logo's own brightness supplies the detail. Contrast
+ * is clamped so dark logos never drop to black and bright ones never blow
+ * out to white, then shifted lighter on dark surfaces and darker on light.
+ */
+.gtl-logo-mono {
 	position: absolute;
 	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	filter: grayscale(1) contrast(0.55) brightness(0.8);
+}
+
+html.dark .gtl-logo-mono {
+	filter: grayscale(1) contrast(0.55) brightness(1.25);
+}
+
+/* Violet tint: takes hue from the token, keeps the greyscale's brightness */
+.gtl-logo-tint {
+	position: absolute;
+	inset: 0;
+	background-color: var(--colors-academy-status-violet);
+	mix-blend-mode: color;
 	mask-image: var(--icon-url);
 	-webkit-mask-image: var(--icon-url);
 	mask-repeat: no-repeat;
@@ -106,26 +127,13 @@ defineProps<{
 	-webkit-mask-size: contain;
 }
 
-.gtl-logo-mask-cyan {
-	background-color: var(--colors-academy-accent);
-	opacity: 0.28;
-	mask-mode: alpha;
-	-webkit-mask-mode: alpha;
-}
-
-.gtl-logo-mask-purple {
-	background-color: var(--colors-academy-status-violet);
-	mask-mode: luminance;
-	-webkit-mask-mode: luminance;
-}
-
 /* Hide the scanline logo (and show the full-colour image) when revealed */
-.gtl-logo-card.revealed .gtl-logo-duotone {
+.gtl-logo-card.revealed .gtl-logo-scanlines {
 	opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.gtl-logo-duotone {
+	.gtl-logo-scanlines {
 		animation: none;
 	}
 }
