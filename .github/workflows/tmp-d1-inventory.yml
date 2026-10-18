@@ -79,11 +79,11 @@ jobs:
         status=$?
         echo "::notice title=wrangler-exit::$status"
         # Errors only: wrangler does not print credentials.
-        grep -v "^\s*$" "$err" | tail -n 25 | sed 's/^/::warning title=stderr::/'
+        grep -v "^\s*$" "$err" | grep -v "^copying path" | tail -n 5 | sed 's/^/::warning title=stderr::/'
         json=$(sed -n '/^\[/,$p' "$out")
         if echo "$json" | jq -e . >/dev/null 2>&1; then
-          echo "$json" | jq -r '.[] | select(.name | startswith("platform-")) | "::notice title=d1::\(.name) \(.uuid)"'
-          echo "::notice title=d1-count::$(echo "$json" | jq '[.[] | select(.name | startswith("platform-"))] | length') platform databases"
+          # Annotations are capped per step, so report everything in one line.
+          echo "::notice title=d1-all::$(echo "$json" | jq -r '[.[] | select(.name | startswith("platform-")) | "\(.name)=\(.uuid)"] | sort | join(" ")')"
         else
           head -c 300 "$out" | tr '\n' ' ' | sed 's/^/::warning title=stdout::/'; echo
         fi
