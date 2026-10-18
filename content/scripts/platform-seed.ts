@@ -166,11 +166,167 @@ export async function videosSeed(root = contentRoot): Promise<Seed> {
 	return { table: "videos", rows, warnings };
 }
 
+// ---- Join services -------------------------------------------------------
+// Each relationship lives in its own service, keyed by the ids above.
+
+const ref = (value: unknown): string =>
+	typeof value === "object" && value !== null ? String((value as { id: unknown }).id) : String(value);
+const refs = (value: unknown): string[] => (Array.isArray(value) ? value.map(ref) : []);
+
+async function videoEntries(root: string) {
+	const entries: { data: Record<string, any>; file: string }[] = [];
+	for (const file of await walk(join(root, "videos"))) {
+		const { data } = await read(file);
+		if (data.id && data.slug) entries.push({ data, file });
+	}
+	return entries;
+}
+
+// Drops rows whose primary key was already seen, so a duplicate in frontmatter
+// warns instead of failing the whole seed.
+function unique(rows: Row[], key: (row: Row) => string, warnings: string[], label: string) {
+	const seen = new Set<string>();
+	return rows.filter((row) => {
+		const k = key(row);
+		if (seen.has(k)) {
+			warnings.push(`${label}: duplicate ${k}; kept the first`);
+			return false;
+		}
+		seen.add(k);
+		return true;
+	});
+}
+
+export async function videoGuestsSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	for (const { data } of await videoEntries(root))
+		refs(data.guests).forEach((guest, position) => rows.push({ video_id: String(data.id), guest_id: guest, position }));
+	return { table: "video_guests", rows: unique(rows, (r) => `${r.video_id}/${r.guest_id}`, warnings, "video_guests"), warnings };
+}
+
+export async function videoTechnologiesSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	for (const { data } of await videoEntries(root))
+		refs(data.technologies).forEach((technology, position) =>
+			// Collection ids carried an "/index" suffix, which is what broke the old join.
+			rows.push({ video_id: String(data.id), technology_id: technology.replace(/\/index$/, ""), position }),
+		);
+	return {
+		table: "video_technologies",
+		rows: unique(rows, (r) => `${r.video_id}/${r.technology_id}`, warnings, "video_technologies"),
+		warnings,
+	};
+}
+
+export async function showHostsSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	for (const file of await walk(join(root, "shows"))) {
+		const { data } = await read(file);
+		const id = String(data.id ?? stem(file));
+		refs(data.hosts).forEach((host, position) => rows.push({ show_id: id, host_id: host, position }));
+	}
+	return { table: "show_hosts", rows: unique(rows, (r) => `${r.show_id}/${r.host_id}`, warnings, "show_hosts"), warnings };
+}
+
+// Same rule the website used: S01E02 / E02 from the slug, else the slug.
+export function deriveEpisodeCode(slug: string): string {
+	const match = slug.match(/(?:s(\d+))?e(\d+)/i);
+	if (!match?.[2]) return slug;
+	const episode = `E${match[2].padStart(2, "0")}`;
+	return match[1] ? `S${match[1].padStart(2, "0")}${episode}` : episode;
+}
+
+export async function episodesSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	const codes = new Set<string>();
+	for (const { data } of await videoEntries(root)) {
+		if (!data.show) continue;
+		const showId = ref(data.show);
+		let code = deriveEpisodeCode(String(data.slug));
+		// (showId, code) is unique; the website silently returned the first match.
+		if (codes.has(`${showId}/${code.toLowerCase()}`)) {
+			warnings.push(`episodes: ${showId} already has ${code}; ${data.slug} uses its slug as the code`);
+			code = String(data.slug);
+		}
+		codes.add(`${showId}/${code.toLowerCase()}`);
+		rows.push({ videoId: String(data.id), showId, code });
+	}
+	return { table: "episodes", rows, warnings };
+}
+
+export async function chaptersSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	for (const { data } of await videoEntries(root))
+		for (const chapter of Array.isArray(data.chapters) ? data.chapters : [])
+			rows.push({ video_id: String(data.id), seconds: Math.floor(Number(chapter.startTime)), title: String(chapter.title) });
+	return { table: "chapters", rows: unique(rows, (r) => `${r.video_id}@${r.seconds}`, warnings, "chapters"), warnings };
+}
+
+export async function peopleLinksSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	for (const file of await walk(join(root, "people"))) {
+		const { data } = await read(file);
+		const links = Array.isArray(data.links) ? (data.links as { url: string; name: string }[]) : [];
+		links.forEach((link, position) => rows.push({ person_id: stem(file), url: String(link.url), name: String(link.name), position }));
+	}
+	return { table: "people_links", rows: unique(rows, (r) => `${r.person_id}/${r.url}`, warnings, "people_links"), warnings };
+}
+
+export async function peopleBiographiesSeed(root = contentRoot): Promise<Seed> {
+	const rows: Row[] = [];
+	for (const file of await walk(join(root, "people"))) {
+		const { body } = await read(file);
+		if (body) rows.push({ person_id: stem(file), biography: body });
+	}
+	return { table: "people_biographies", rows, warnings: [] };
+}
+
+export async function transcriptionTermsSeed(root = contentRoot): Promise<Seed> {
+	const warnings: string[] = [];
+	const rows: Row[] = [];
+	const add = (kind: string, foreignId: string, terms: unknown) => {
+		for (const term of list(terms) ?? []) rows.push({ kind, foreignId, term });
+	};
+	for (const { data } of await videoEntries(root)) {
+		add("video", String(data.id), data.terms);
+		// Episodes carried their video's terms.
+		if (data.show) add("episode", `${ref(data.show)}-${data.id}`, data.terms);
+	}
+	for (const file of await walk(join(root, "shows"))) {
+		const { data } = await read(file);
+		add("show", String(data.id ?? stem(file)), data.terms);
+	}
+	for (const file of await walk(join(root, "people"))) add("person", stem(file), (await read(file)).data.terms);
+	for (const file of await walk(join(root, "technologies"))) {
+		if (!/^index\.mdx?$/.test(basename(file))) continue;
+		add("technology", basename(dirname(file)), (await read(file)).data.terms);
+	}
+	return {
+		table: "transcription_terms",
+		rows: unique(rows, (r) => `${r.kind}/${r.foreignId}/${r.term}`, warnings, "transcription_terms"),
+		warnings,
+	};
+}
+
 export const seeds = {
 	people: peopleSeed,
 	technologies: technologiesSeed,
 	shows: showsSeed,
 	videos: videosSeed,
+	"video-guests": videoGuestsSeed,
+	"video-technologies": videoTechnologiesSeed,
+	"show-hosts": showHostsSeed,
+	episodes: episodesSeed,
+	chapters: chaptersSeed,
+	"people-links": peopleLinksSeed,
+	"people-biographies": peopleBiographiesSeed,
+	"transcription-terms": transcriptionTermsSeed,
 } as const;
 
 const literal = (value: Row[string]): string => {
