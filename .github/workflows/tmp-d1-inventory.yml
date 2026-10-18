@@ -73,9 +73,20 @@ jobs:
     - name: List platform D1 databases (names and ids only)
       working-directory: projects/rawkode.academy/platform/brackets
       run: |-
-        cuenv -e production exec -- sh -c 'bunx wrangler d1 list --json' > "$RUNNER_TEMP/d1.json"
-        jq -r '.[] | select(.name | startswith("platform-")) | "::notice title=d1::\(.name) \(.uuid)"' "$RUNNER_TEMP/d1.json"
-        echo "::notice title=d1-count::$(jq '[.[] | select(.name | startswith("platform-"))] | length' "$RUNNER_TEMP/d1.json") platform databases"
-        rm "$RUNNER_TEMP/d1.json"
+        set +e
+        out="$RUNNER_TEMP/d1.out"; err="$RUNNER_TEMP/d1.err"
+        cuenv -e production exec -- sh -c 'bunx wrangler d1 list --json' > "$out" 2> "$err"
+        status=$?
+        echo "::notice title=wrangler-exit::$status"
+        # Errors only: wrangler does not print credentials.
+        tail -n 5 "$err" | sed 's/^/::warning title=stderr::/'
+        json=$(sed -n '/^\[/,$p' "$out")
+        if echo "$json" | jq -e . >/dev/null 2>&1; then
+          echo "$json" | jq -r '.[] | select(.name | startswith("platform-")) | "::notice title=d1::\(.name) \(.uuid)"'
+          echo "::notice title=d1-count::$(echo "$json" | jq '[.[] | select(.name | startswith("platform-"))] | length') platform databases"
+        else
+          head -c 300 "$out" | tr '\n' ' ' | sed 's/^/::warning title=stdout::/'; echo
+        fi
+        rm -f "$out" "$err"
       env:
         OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
