@@ -1,5 +1,6 @@
 import {reviewCollections} from './review/collections'
 import {isStaff} from './auth/access'
+import {type QueueLoader,withProjection,workflowQueue} from './projection/hooks'
 import {usersCollection} from './auth/payload'
 import type {AuthConfig} from './auth/config'
 import {pipelineCollection,pipelineVideoFields} from './pipeline'
@@ -208,7 +209,7 @@ export const collectionOrder = [
 // or migrate:create emits index renames.
 export const compoundIndexOrder = ['bracket-applications','team-members','bracket-entries'] as const
 
-export const createCollections = (config:AuthConfig,db:D1Database,access:AdminAccess=noDevelopers): CollectionConfig[] => {
+export const createCollections = (config:AuthConfig,db:D1Database,access:AdminAccess=noDevelopers,projectionQueue:QueueLoader=workflowQueue): CollectionConfig[] => {
   const all: CollectionConfig[] = [
     ...reviewCollections(access),
     pipelineCollection(access),
@@ -229,5 +230,6 @@ export const createCollections = (config:AuthConfig,db:D1Database,access:AdminAc
   ]
   const bySlug = new Map(all.map(collection => [collection.slug, collection]))
   if (bySlug.size !== collectionOrder.length || all.some(collection => !(collectionOrder as readonly string[]).includes(collection.slug))) throw new Error('Every collection must appear exactly once in collectionOrder')
-  return collectionOrder.map(slug => bySlug.get(slug)!)
+  // Published catalogue changes are projected to KV for the website.
+  return collectionOrder.map(slug => withProjection(bySlug.get(slug)!, projectionQueue))
 }

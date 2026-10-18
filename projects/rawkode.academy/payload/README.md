@@ -124,6 +124,25 @@ The admin is configured without any schema change. `tests/admin-config.test.ts` 
 - **Theme.** `app/(payload)/custom.css` is plain, unlayered CSS that mirrors `semanticTokens.academy` from `packages/design-system/panda.config.ts`. `tests/admin-theme.test.ts` checks for token drift, checks that the ramps are complete and enforces WCAG AA contrast in both themes. The theme follows the OS setting.
 - **Screenshots.** Run `bun run dev` with `POC_CLOUDFLARE_PERSIST_PATH` and `POC_CLOUDFLARE_ENV_FILE` pointing at scratch state, using local auth and the loopback callback. Never point them at `.wrangler/state`. Afterwards, restore `next-env.d.ts` with `git checkout`.
 
+## Content projection (KV read model)
+
+The website and API never call Payload. When the public version of a catalogue record changes (publish, unpublish, an edit to a published record, or delete), a hook starts `ProjectionWorkflow`. The catalogue collections are videos, shows, people and technologies; their chapters and learning resources count with them. Draft saves and imports do not start it.
+
+1. **Project.** The Workflow calls `POST /api/projection` on this Worker (machine secret over `WORKER_SELF_REFERENCE`). That route maps every published record in the collection to the content entry shape the website's collections used (`{ id, data, body }`, `data` = raw frontmatter, `src/projection/entries.ts`), then writes the whole collection to KV as `content:v1:<collection>`. A reference to an unpublished record is dropped and logged rather than failing the projection.
+2. **Purge.** It purges the collection's edge cache tags (`src/projection/project.ts#purgeTags`). It purges again after 75 seconds, because KV takes up to a minute to propagate.
+3. **Release.** For a video scheduled in the future, it sleeps until `publishedAt` and purges once more.
+
+Staff can re-project everything with `POST /api/projection {"action":"rebuild"}`, e.g. after an import.
+
+**Enabling it (production only; previews must not write production KV).** Add these bindings to the top level of `wrangler.jsonc`, then set the purge secrets:
+
+```jsonc
+"kv_namespaces": [{ "binding": "CONTENT", "id": "<wrangler kv namespace create academy-content>" }],
+"workflows": [ /* existing */, { "binding": "PROJECTION_WORKFLOW", "name": "rawkode-academy-payload-projection", "class_name": "ProjectionWorkflow" }]
+```
+
+`wrangler secret put CACHE_PURGE_TOKEN` (an API token with Zone → Cache Purge) and `wrangler secret put CACHE_PURGE_ZONE_ID`. Without the Workflow binding the hooks do nothing. Without the purge secrets the projection still runs and skips purging.
+
 ## GraphQL compatibility
 
 The public gateway at `https://api.rawkode.academy/`, deployed website subgraph and pinned repository schema were independently captured on 2026-10-04. Public source revision: `31edd9fd9d86c21a7e9a3a34cfe1933b44e99598`. Evidence includes raw introspection, SDL, checksums and representative operations. `capture:schema` deliberately refreshes these public baselines; ordinary checks do not update them.
