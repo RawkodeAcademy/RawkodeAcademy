@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { join } from "node:path";
 import { graphql } from "graphql";
-import { peopleSeed, toSql } from "../../../../../content/scripts/platform-seed";
 import { getSchema } from "../read-model/schema";
-import { migratedD1, seed } from "./d1";
+import { migratedD1, loadFixtures } from "./d1";
 
 let db: Awaited<ReturnType<typeof migratedD1>>;
 const query = async (source: string, headers: Record<string, string> = {}) => {
@@ -18,14 +17,14 @@ const query = async (source: string, headers: Record<string, string> = {}) => {
 
 beforeAll(async () => {
 	db = await migratedD1(join(import.meta.dir, ".."));
-	await seed(db.DB, toSql(await peopleSeed()));
+	await loadFixtures(db.DB);
 });
 afterAll(() => db.dispose());
 
 describe("people read model", () => {
-	it("imports every person in content/people", async () => {
+	it("lists every person", async () => {
 		const { allPeople } = await query("{ allPeople { id } }");
-		expect(allPeople).toHaveLength((await peopleSeed()).rows.length);
+		expect(allPeople).toHaveLength(6);
 	});
 
 	it("serves a person the way the website subgraph did", async () => {
@@ -72,9 +71,8 @@ describe("people migrations", () => {
 		const { exec } = await import("./d1");
 		const { readFile } = await import("node:fs/promises");
 		await exec(old.DB, await readFile(join(import.meta.dir, "../data-model/migrations/0001_content_fields.sql"), "utf8"));
-		await seed(old.DB, toSql(await peopleSeed()));
-		const legacy = await old.DB.prepare("SELECT count(*) AS n FROM people WHERE id = 'legacy'").first<{ n: number }>();
-		expect(legacy?.n).toBe(0);
+		expect(await old.DB.prepare("SELECT forename, surname, name FROM people WHERE id = 'legacy'").first()).toEqual({ forename: "Old", surname: "Row", name: "" });
+		await loadFixtures(old.DB);
 		await old.dispose();
 	});
 });

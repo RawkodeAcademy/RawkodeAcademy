@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { join } from "node:path";
 import { graphql } from "graphql";
-import { peopleLinksSeed, toSql } from "../../../../../content/scripts/platform-seed";
 import { getSchema } from "../read-model/schema";
-import { exec, migratedD1, seed } from "./d1";
+import { exec, migratedD1 } from "./d1";
 
 const serviceDir = join(import.meta.dir, "..");
 let db: Awaited<ReturnType<typeof migratedD1>>;
@@ -24,7 +23,6 @@ const entity = async (typename: string, id: string, selection: string, DB = db.D
 
 beforeAll(async () => {
 	db = await migratedD1(serviceDir);
-	await seed(db.DB, toSql(await peopleLinksSeed()));
 });
 afterAll(() => db.dispose());
 

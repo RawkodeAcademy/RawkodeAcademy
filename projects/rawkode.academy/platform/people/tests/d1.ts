@@ -28,8 +28,7 @@ export async function exec(DB: D1Database, sql: string) {
 	for (const statement of statements) await DB.prepare(statement).run();
 }
 
-export async function seed(DB: D1Database, statements: string[]) {
-	for (let i = 0; i < statements.length; i += 50) {
-		await DB.batch(statements.slice(i, i + 50).map((s) => DB.prepare(s)));
-	}
+// Loads tests/fixtures.sql: a small slice of real content, in migration format.
+export async function loadFixtures(DB: D1Database) {
+	await exec(DB, await readFile(join(import.meta.dir, "fixtures.sql"), "utf8"));
 }

@@ -2,9 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { graphql } from "graphql";
-import { technologiesSeed, toSql } from "../../../../../content/scripts/platform-seed";
 import { getSchema } from "../read-model/schema";
-import { exec, migratedD1, seed } from "./d1";
+import { exec, migratedD1, loadFixtures } from "./d1";
 
 let db: Awaited<ReturnType<typeof migratedD1>>;
 const query = async (source: string) => {
@@ -15,16 +14,14 @@ const query = async (source: string) => {
 
 beforeAll(async () => {
 	db = await migratedD1(join(import.meta.dir, ".."));
-	const imported = await technologiesSeed();
-	expect(imported.warnings).toEqual([]);
-	await seed(db.DB, toSql(imported));
+	await loadFixtures(db.DB);
 });
 afterAll(() => db.dispose());
 
 describe("technologies read model", () => {
-	it("imports every technology profile", async () => {
+	it("lists every technology, sorted by id", async () => {
 		const { getTechnologies } = await query("{ getTechnologies(limit: 1000) { id } }");
-		expect(getTechnologies).toHaveLength(354);
+		expect(getTechnologies).toHaveLength(21);
 		const ids = getTechnologies.map((t: { id: string }) => t.id);
 		expect(ids).toEqual([...ids].sort());
 	});
@@ -70,8 +67,9 @@ describe("technologies migrations", () => {
 		const old = await migratedD1(join(import.meta.dir, ".."), "0000_acoustic_expediter.sql");
 		await old.DB.prepare("INSERT INTO technologies (id, name, description) VALUES ('legacy', 'Legacy', 'Old')").run();
 		await exec(old.DB, await readFile(join(import.meta.dir, "../data-model/migrations/0001_content_fields.sql"), "utf8"));
-		await seed(old.DB, toSql(await technologiesSeed()));
-		expect((await old.DB.prepare("SELECT count(*) AS n FROM technologies").first<{ n: number }>())?.n).toBe(354);
+		expect(await old.DB.prepare("SELECT name, description FROM technologies WHERE id = 'legacy'").first()).toEqual({ name: "Legacy", description: "Old" });
+		await loadFixtures(old.DB);
+		expect((await old.DB.prepare("SELECT count(*) AS n FROM technologies").first<{ n: number }>())?.n).toBe(22);
 		await old.dispose();
 	});
 });

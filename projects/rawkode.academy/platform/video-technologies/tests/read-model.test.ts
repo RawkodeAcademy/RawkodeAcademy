@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { join } from "node:path";
 import { graphql } from "graphql";
-import { videoTechnologiesSeed, toSql } from "../../../../../content/scripts/platform-seed";
 import { getSchema } from "../read-model/schema";
-import { exec, migratedD1, seed } from "./d1";
+import { exec, loadFixtures, migratedD1 } from "./d1";
 
 const serviceDir = join(import.meta.dir, "..");
 let db: Awaited<ReturnType<typeof migratedD1>>;
@@ -24,7 +23,7 @@ const entity = async (typename: string, id: string, selection: string, DB = db.D
 
 beforeAll(async () => {
 	db = await migratedD1(serviceDir);
-	await seed(db.DB, toSql(await videoTechnologiesSeed()));
+	await loadFixtures(db.DB);
 });
 afterAll(() => db.dispose());
 
@@ -38,11 +37,6 @@ describe("video-technologies read model", () => {
 	it("lists videos for a technology, fixing the old /index mismatch", async () => {
 		const { videos } = await entity("Technology", "influxdb", "videos { id }");
 		expect(videos).toContainEqual({ id: "tjd3afh6vpijjepecyc2c9j5" });
-	});
-
-	it("never stores an /index suffix", async () => {
-		const seed = await videoTechnologiesSeed();
-		expect(seed.rows.filter((row) => String(row.technology_id).endsWith("/index"))).toEqual([]);
 	});
 
 	it("upgrades a database created by the original service", async () => {

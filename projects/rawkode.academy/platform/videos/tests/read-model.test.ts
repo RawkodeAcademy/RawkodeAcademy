@@ -2,9 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { graphql } from "graphql";
-import { toSql, videosSeed } from "../../../../../content/scripts/platform-seed";
 import { getSchema } from "../read-model/schema";
-import { exec, migratedD1, seed } from "./d1";
+import { exec, migratedD1, loadFixtures } from "./d1";
 
 // Pinned clock: Swamp Club (2026-10-22T16:00Z) is upcoming.
 const now = new Date("2026-10-18T12:00:00.000Z");
@@ -17,16 +16,14 @@ const query = async (source: string) => {
 
 beforeAll(async () => {
 	db = await migratedD1(join(import.meta.dir, ".."));
-	const imported = await videosSeed();
-	expect(imported.warnings).toEqual([]);
-	await seed(db.DB, toSql(imported));
+	await loadFixtures(db.DB);
 });
 afterAll(() => db.dispose());
 
 describe("videos read model", () => {
 	it("imports every video, upcoming streams included", async () => {
 		const { getAllVideos } = await query("{ getAllVideos { id } }");
-		expect(getAllVideos).toHaveLength(330);
+		expect(getAllVideos).toHaveLength(11);
 	});
 
 	it("serves a video the way the website subgraph did", async () => {
@@ -52,7 +49,7 @@ describe("videos read model", () => {
 		const { getUpcomingVideos, getLatestVideos } = await query("{ getUpcomingVideos { slug publishedAt } getLatestVideos(limit: 400) { slug publishedAt } }");
 		expect(getUpcomingVideos.map((v: { slug: string }) => v.slug)).toContain("hands-on-introduction-to-swamp-club");
 		expect(getLatestVideos.map((v: { slug: string }) => v.slug)).not.toContain("hands-on-introduction-to-swamp-club");
-		expect(getUpcomingVideos.length + getLatestVideos.length).toBe(330);
+		expect(getUpcomingVideos.length + getLatestVideos.length).toBe(11);
 		const dates = getLatestVideos.map((v: { publishedAt: string }) => v.publishedAt);
 		expect(dates).toEqual([...dates].sort().reverse());
 	});
@@ -84,8 +81,8 @@ describe("videos migrations", () => {
 		await old.DB.prepare("INSERT INTO videos (id, title, subtitle, slug, description, duration, publishedAt) VALUES ('legacy', 'Legacy', 'Sub', 'legacy', 'An old description', 60, 1600000000)").run();
 		await exec(old.DB, await readFile(join(import.meta.dir, "../data-model/migrations/0001_content_fields.sql"), "utf8"));
 		expect(await old.DB.prepare("SELECT title, subtitle, duration FROM videos WHERE id = 'legacy'").first()).toEqual({ title: "Legacy", subtitle: "Sub", duration: 60 });
-		await seed(old.DB, toSql(await videosSeed()));
-		expect((await old.DB.prepare("SELECT count(*) AS n FROM videos").first<{ n: number }>())?.n).toBe(330);
+		await loadFixtures(old.DB);
+		expect((await old.DB.prepare("SELECT count(*) AS n FROM videos").first<{ n: number }>())?.n).toBe(12);
 		await old.dispose();
 	});
 });

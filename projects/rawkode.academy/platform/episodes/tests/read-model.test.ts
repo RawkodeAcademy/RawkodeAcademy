@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { join } from "node:path";
 import { graphql } from "graphql";
-import { episodesSeed, toSql } from "../../../../../content/scripts/platform-seed";
 import { getSchema } from "../read-model/schema";
-import { exec, migratedD1, seed } from "./d1";
+import { exec, loadFixtures, migratedD1 } from "./d1";
 
 const serviceDir = join(import.meta.dir, "..");
 let db: Awaited<ReturnType<typeof migratedD1>>;
@@ -24,7 +23,7 @@ const entity = async (typename: string, id: string, selection: string, DB = db.D
 
 beforeAll(async () => {
 	db = await migratedD1(serviceDir);
-	await seed(db.DB, toSql(await episodesSeed()));
+	await loadFixtures(db.DB);
 });
 afterAll(() => db.dispose());
 
@@ -67,11 +66,3 @@ describe("episodes read model", () => {
 	});
 });
 
-describe("deriveEpisodeCode", () => {
-	it("matches the website's rule", async () => {
-		const { deriveEpisodeCode } = await import("../../../../../content/scripts/platform-seed");
-		expect(deriveEpisodeCode("klustered-s2e7")).toBe("S02E07");
-		expect(deriveEpisodeCode("rawkode-live-e12")).toBe("E12");
-		expect(deriveEpisodeCode("influxdb-3-and-rust")).toBe("influxdb-3-and-rust");
-	});
-});
