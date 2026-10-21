@@ -151,7 +151,7 @@ export async function videosSeed(root = contentRoot): Promise<Seed> {
 			subtitle: optional(data.subtitle),
 			tagline: optional(data.tagline),
 			slug: String(data.slug),
-			description: String(data.description),
+			description: String(data.description).trim(),
 			what_you_will_learn: list(data.whatYouWillLearn),
 			duration: optional(data.duration),
 			audio_file_size: optional(data.audioFileSize),
