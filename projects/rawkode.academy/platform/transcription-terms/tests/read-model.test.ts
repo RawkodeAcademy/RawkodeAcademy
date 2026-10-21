@@ -28,6 +28,12 @@ beforeAll(async () => {
 afterAll(() => db.dispose());
 
 describe("transcription-terms read model", () => {
+	it("keeps the order the terms were written in", async () => {
+		expect(await entity("Video", "elpqrlouhe220jyf5tqr65vm", "terms")).toEqual({
+			terms: ["Kueue", "Kubernetes job queueing", "ClusterQueue", "LocalQueue", "ResourceFlavor"],
+		});
+	});
+
 	it("serves terms for every kind of entity", async () => {
 		expect(await entity("Video", "elpqrlouhe220jyf5tqr65vm", "terms")).toEqual({
 			terms: expect.arrayContaining(["Kueue", "Kubernetes job queueing"]),

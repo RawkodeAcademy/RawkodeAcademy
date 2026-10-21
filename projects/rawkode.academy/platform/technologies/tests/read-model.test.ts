@@ -40,8 +40,8 @@ describe("technologies read model", () => {
 		expect(technologyById).toMatchObject({
 			id: "kubernetes",
 			name: "Kubernetes",
-			icon: "https://content.rawkode.academy/logos/technologies/kubernetes.svg",
-			logo: "https://content.rawkode.academy/logos/technologies/kubernetes.svg",
+			icon: "https://content.rawkode.academy/technologies/kubernetes/icon.svg",
+			logo: "https://content.rawkode.academy/technologies/kubernetes/icon.svg",
 			website: "https://kubernetes.io/",
 			source: "https://github.com/kubernetes/kubernetes",
 			license: "Apache-2.0",
