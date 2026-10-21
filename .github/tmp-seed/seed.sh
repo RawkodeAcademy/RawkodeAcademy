@@ -9,7 +9,10 @@ w() { nix shell nixpkgs#bun nixpkgs#nodejs_24 -c env CLOUDFLARE_API_TOKEN="$CLOU
 sq() { nix shell nixpkgs#sqlite -c sqlite3 "$@"; }
 mkdir -p backup report
 
-services="people:people:id technologies:technologies:id shows:shows:id videos:videos:id
+services="people:people:id
+technologies:technologies:id
+shows:shows:id
+videos:videos:id
 video-guests:video_guests:video_id||'/'||guest_id
 video-technologies:video_technologies:video_id||'/'||technology_id
 show-hosts:show_hosts:show_id||'/'||host_id
@@ -42,6 +45,9 @@ while read -r line; do
 	sample=$(sq new.db "ATTACH 'old.db' AS o; SELECT group_concat(k, ' ') FROM (SELECT $key AS k FROM o.$table EXCEPT SELECT $key FROM main.$table ORDER BY 1 LIMIT 40)")
 	echo "::notice title=$service::rows $before -> $after; added $added; removed $removed; rewritten $((changed - removed))"
 	[ "$removed" != "0" ] && echo "::warning title=$service removed::$sample"
+	# Full lists of removed and rewritten rows, as they are now, for review.
+	sq -header -csv new.db "ATTACH 'old.db' AS o; SELECT * FROM o.$table WHERE $key IN (SELECT $key FROM o.$table EXCEPT SELECT $key FROM main.$table)" > "backup/removed-$service.csv"
+	sq -header -csv new.db "ATTACH 'old.db' AS o; SELECT * FROM (SELECT * FROM o.$table EXCEPT SELECT * FROM main.$table) WHERE $key IN (SELECT $key FROM main.$table)" > "backup/rewritten-$service.csv"
 	summary="$summary $service=$before->$after"
 
 	if [ "$MODE" = "apply" ]; then
