@@ -98,8 +98,12 @@ jobs:
       run: cuenv exec -- cuenv secrets setup onepassword
       env:
         OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-    - name: 'Run pipeline: default'
-      run: cuenv ci --pipeline default --path projects/rawkode.academy/api
+    # The workflow already filters pushes to the api project. Running the task
+    # directly avoids cuenv's affected-task false negatives, which skipped
+    # every gateway deploy after 2026-06-03. Wrangler 4 needs Node 22+.
+    - name: Deploy API gateway
+      working-directory: projects/rawkode.academy/api
+      run: cuenv -e production exec -- nix shell nixpkgs#nodejs_24 -c cuenv -e production task deploy
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_ACTOR: ${{ github.actor }}
