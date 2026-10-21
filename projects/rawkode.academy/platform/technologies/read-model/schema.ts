@@ -13,11 +13,14 @@ export interface PothosTypes {
 	Context: Record<string, unknown>;
 }
 
-const logoCdn = "https://content.rawkode.academy/logos/technologies";
+const cdn = "https://content.rawkode.academy";
+// Icons are published from content/technologies/<id>/icon.svg to the same path
+// on the CDN. The legacy logos/technologies/<id>.svg set is only a fallback.
+const logoCdn = `${cdn}/logos/technologies`;
 
 // Logos are served from the content CDN instead of being bundled from git.
 export const iconUrl = (technology: Pick<Technology, "id" | "logos">) =>
-	technology.logos?.icon ? `${logoCdn}/${technology.id}.svg` : null;
+	technology.logos?.icon ? `${cdn}/technologies/${technology.id}/icon.svg` : null;
 
 export const getSchema = (env: { DB: D1Database }): GraphQLSchema => {
 	const db = drizzle(env.DB, { schema: s });
