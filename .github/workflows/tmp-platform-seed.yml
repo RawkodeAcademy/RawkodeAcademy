@@ -79,7 +79,7 @@ jobs:
       run: |-
         cp .seed/.github/tmp-seed/platform-seed.ts content/scripts/platform-seed.ts
         set -o pipefail
-        cd content && cuenv exec -- bun scripts/platform-seed.ts --out "$RUNNER_TEMP/seed" 2>&1 | grep -v '^  shows/.*local file' | tee "$RUNNER_TEMP/rows.txt"
+        cd content && nix shell nixpkgs#bun -c bun scripts/platform-seed.ts --out "$RUNNER_TEMP/seed" 2>&1 | grep -v '^  shows/.*local file' | tee "$RUNNER_TEMP/rows.txt"
         echo "::notice title=seed rows (main@$(git rev-parse --short HEAD))::$(grep -E '^[a-z-]+: [0-9]+ rows' "$RUNNER_TEMP/rows.txt" | tr '\n' ' ')"
         grep -E '^  ' "$RUNNER_TEMP/rows.txt" | grep -v '^  shows/.*local file' | head -5 | sed 's/^ */::warning title=seed::/' || true
     - name: Back up, diff and seed
