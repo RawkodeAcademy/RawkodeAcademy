@@ -84,8 +84,11 @@ jobs:
       run: cuenv exec -- cuenv secrets setup onepassword
       env:
         OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-    - name: 'Run pipeline: default'
-      run: cuenv ci --pipeline default --path projects/rawkode.academy/platform/show-hosts
+    # The workflow already filters pushes to the show-hosts project. Running the
+    # task directly avoids cuenv's affected-task false negatives after merges.
+    - name: Deploy show-hosts services
+      working-directory: projects/rawkode.academy/platform/show-hosts
+      run: cuenv -e production exec -- cuenv -e production task ciDeploy
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_ACTOR: ${{ github.actor }}
