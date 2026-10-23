@@ -175,8 +175,8 @@ class YouTubeToR2:
             region_name='auto'
         )
 
-        # Cloud Run Jobs client
-        self.jobs_client = run_v2.JobsClient()
+        # Cloud Run Jobs client, created on first use so --skip-cloud-run works without GCP credentials
+        self.jobs_client = None
 
     def fetch_metadata_only(self, youtube_id, cookies_from_browser=None):
         """Fetch YouTube video metadata without downloading the video."""
@@ -627,6 +627,8 @@ class YouTubeToR2:
             )
 
             # Execute the job
+            if self.jobs_client is None:
+                self.jobs_client = run_v2.JobsClient()
             operation = self.jobs_client.run_job(request=request)
 
             # Get the operation name from the response
@@ -825,16 +827,16 @@ VALUES ('{cuid}', '{title}', '{subtitle}', '{slug}', '{description}', {duration}
                         logger.info("Skipping WebP thumbnail upload to content bucket - already completed")
 
                 # Trigger Cloud Run job
-                if not state.is_step_completed('cloud_run_triggered') or force_cloud_run:
+                if skip_cloud_run and not force_cloud_run:
+                    logger.info("Skipping Cloud Run job trigger as requested")
+                    operation_name = None
+                elif not state.is_step_completed('cloud_run_triggered') or force_cloud_run:
                     if state.is_step_completed('cloud_run_triggered') and force_cloud_run:
                         logger.info("Forcing Cloud Run job trigger (already completed previously)")
                     operation_name = self.trigger_cloud_run_job(video_cuid)
                     state.set_artifact('cloud_run_operation', operation_name)
                     state.set_artifact('cloud_run_triggered_at', datetime.now().isoformat())
                     state.mark_step_completed('cloud_run_triggered')
-                elif skip_cloud_run:
-                    logger.info("Skipping Cloud Run job trigger as requested")
-                    operation_name = None
                 else:
                     previous_trigger = state.get_artifact('cloud_run_triggered_at')
                     logger.info(f"Cloud Run job already triggered at {previous_trigger}")
