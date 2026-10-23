@@ -42,7 +42,9 @@ cuenv i plan
 cuenv i apply
 ```
 
-**Adding a domain:** add its zone to Cloudflare first, then create `domains/<domain>.cue` with its zone `id`. Resources cannot reference each other's attributes yet, so zones are not managed here.
+**Adding a domain:** add its zone to Cloudflare first, then create `domains/<domain>.cue` with its zone `id`. Zones themselves are not managed here.
+
+**Importing:** bring an existing object under management with `cuenv i import <type>.<name> <provider id>` (DNS records take `<zone id>/<record id>`), then `cuenv i plan`.
 
 **Provider types:** pinned in the root `cuenv.lock`; generated into `cue.mod/gen` (gitignored). Run `cuenv sync infrastructure` after cloning.
 

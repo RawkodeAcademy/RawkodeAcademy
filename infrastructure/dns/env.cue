@@ -6,7 +6,7 @@ schema.#Project
 
 name: "infrastructure-dns"
 
-let _infrastructure = [{allowInfrastructure: ["plan", "apply", "destroy"]}]
+let _infrastructure = [{allowInfrastructure: ["plan", "apply", "import", "destroy"]}]
 
 env: {
 	CLOUDFLARE_API_TOKEN: {
@@ -20,6 +20,6 @@ env: {
 	// TODO: create the Turso state database and point this at its token.
 	TURSO_AUTH_TOKEN: {
 		value: schema.#OnePasswordRef & {ref: "op://Private/Turso/infrastructure-dns/token"}
-		policies: [{allowInfrastructure: ["plan", "apply", "destroy", "state-list", "state-remove", "state-recover", "state-adopt", "unlock"]}]
+		policies: [{allowInfrastructure: ["plan", "apply", "import", "destroy", "state-list", "state-remove", "state-recover", "state-adopt", "unlock"]}]
 	}
 }

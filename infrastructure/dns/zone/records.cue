@@ -95,6 +95,8 @@ import (
 				configuration: {
 					zone_id: id
 					type:    "SRV"
+					// Cloudflare stores the priority both at the top level and in data.
+					priority: options.priority
 					data: {priority: options.priority, weight: options.weight, port: options.port, target: options.target}
 					ttl: options.ttl
 				}
