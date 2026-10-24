@@ -7,8 +7,12 @@ import (
 )
 
 infrastructure: {
-	// TODO: replace with the Turso state database URL.
-	state: turso: url: "libsql://infrastructure-dns-rawkode-academy.turso.io"
+	// TODO: replace with the ID `wrangler d1 create infrastructure-dns` prints.
+	state: d1: {
+		accountId:  "0aeb879de8e3cdde5fb3d413025222ce"
+		databaseId: "00000000-0000-0000-0000-000000000000"
+		token:      _cloudflareToken
+	}
 
 	providers: {
 		cloudflare: cloudflare_provider.#Provider

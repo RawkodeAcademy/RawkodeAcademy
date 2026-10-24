@@ -12,7 +12,7 @@ This directory contains infrastructure-as-code configurations for DNS, GitHub or
 
 ## dns/
 
-Manages DNS with cuenv infrastructure (`cuenv infrastructure`, alias `cuenv i`), which drives the Cloudflare and DNSimple Terraform providers directly. State lives in Turso.
+Manages DNS with cuenv infrastructure (`cuenv infrastructure`, alias `cuenv i`), which drives the Cloudflare and DNSimple Terraform providers directly. State lives in the `infrastructure-dns` Cloudflare D1 database.
 
 **Layout:**
 - `env.cue` - the cuenv project; 1Password-backed credentials limited to infrastructure actions
@@ -74,8 +74,7 @@ Scripts for Google Cloud Workload Identity configuration.
 ## Environment Variables
 
 DNS infrastructure requires these secrets (configured in `dns/env.cue`):
-- `CLOUDFLARE_API_TOKEN` - Cloudflare DNS
+- `CLOUDFLARE_API_TOKEN` - Cloudflare DNS, and the D1 state store (as `state: d1: token` in `infrastructure.cue`)
 - `DNSIMPLE_TOKEN` - DNSimple delegation
-- `TURSO_AUTH_TOKEN` - cuenv infrastructure state
 
 All secrets are sourced from 1Password via cuenv.
