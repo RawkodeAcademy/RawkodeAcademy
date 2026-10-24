@@ -7,10 +7,10 @@ import (
 )
 
 infrastructure: {
-	// TODO: replace with the ID `wrangler d1 create infrastructure-dns` prints.
+	// The rawkode-academy-cuenv-infrastructure D1 database.
 	state: d1: {
 		accountId:  "0aeb879de8e3cdde5fb3d413025222ce"
-		databaseId: "00000000-0000-0000-0000-000000000000"
+		databaseId: "ceacd475-c672-4a64-8f4c-cbd454c08135"
 		token:      _cloudflareToken
 	}
 

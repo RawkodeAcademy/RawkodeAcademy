@@ -12,7 +12,7 @@ This directory contains infrastructure-as-code configurations for DNS, GitHub or
 
 ## dns/
 
-Manages DNS with cuenv infrastructure (`cuenv infrastructure`, alias `cuenv i`), which drives the Cloudflare and DNSimple Terraform providers directly. State lives in the `infrastructure-dns` Cloudflare D1 database.
+Manages DNS with cuenv infrastructure (`cuenv infrastructure`, alias `cuenv i`), which drives the Cloudflare and DNSimple Terraform providers directly. State lives in the `rawkode-academy-cuenv-infrastructure` Cloudflare D1 database.
 
 **Layout:**
 - `env.cue` - the cuenv project; 1Password-backed credentials limited to infrastructure actions
