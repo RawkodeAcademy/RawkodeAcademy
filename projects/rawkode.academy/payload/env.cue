@@ -6,14 +6,8 @@ schema.#Project
 
 name: "rawkode-academy-payload"
 
-// cuenv 0.55.x gives each env.cue evaluation 10 seconds and silently drops a
-// project that exceeds it ("Found 38 projects", exit 0, nothing deployed).
-// This project's task graph evaluates close to that limit on CI runners, so its
-// workflows use 0.56.1, whose limit is 60 seconds (CUENV_EVAL_TIMEOUT).
-_cuenvBinary: "0.56.1"
-
-// 0.56.1 still skips a project whose env.cue fails to evaluate for any other
-// reason and still exits 0. The root env.cue turns that into a failed run by
+// cuenv has skipped a project whose env.cue fails to evaluate and still exited
+// 0 (seen through 0.56.1). The root env.cue turns that into a failed run by
 // requiring the pipeline report `cuenv ci` writes for this path.
 _ciRequireReport: "projects/rawkode.academy/payload"
 
